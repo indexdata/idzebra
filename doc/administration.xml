@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.23 2006-02-15 12:08:47 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.24 2006-02-16 15:13:25 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -1021,6 +1021,107 @@
     as an exercise for the reader. 
    </para>
    
+ </sect1>
+
+ <sect1 id="administration-extended-services">
+  <title>Extended Services: Remote Insert, Update and Delete</title>
+  
+  <para>
+    The extended services are not enabled by default in zebra - due to the
+    fact that they modify the system.
+    In order to allow anybody to update, use
+    <screen>
+    perm.anonymous: rw
+    </screen>
+    in the main zebra configuration file <filename>zebra.cfg</filename>.
+    Or, even better, allow only updates for a particular admin user. For
+    user <literal>admin</literal>, you could use:
+    <screen>
+     perm.admin: rw
+     passwd: passwordfile
+    </screen>
+    And in <filename>passwordfile</filename>, specify users and
+    passwords as colon seperated strings:
+    <screen> 
+     admin:secret
+    </screen> 
+   </para>
+   <para>
+    We can now start a yaz-client admin session and create a database:
+   <screen>
+    <![CDATA[
+     $ yaz-client localhost:9999 -u admin/secret
+     Z> adm-create
+     ]]>
+   </screen>
+    Now the <literal>Default</literal> database was created,
+    we can insert an XML file (esdd0006.grs
+    from example/gils/records) and index it:
+   <screen>  
+    <![CDATA[
+     Z> update insert 1 esdd0006.grs
+     ]]>
+   </screen>
+    The 3rd parameter - <literal>1</literal> here -
+      is the opaque record ID from <literal>Ext update</literal>.
+      It a record ID that <emphasis>we</emphasis> assign to the record
+    in question. If we do not 
+    assign one, the usual rules for match apply (recordId: from zebra.cfg).
+   </para>
+   <para>
+    Actually, we should have a way to specify "no opaque record id" for
+    yaz-client's update command.. We'll fix that.
+   </para>
+   <para>
+    The newly inserted record can be searched as usual:
+    <screen>
+    <![CDATA[
+     Z> f utah
+     Sent searchRequest.
+     Received SearchResponse.
+     Search was a success.
+     Number of hits: 1, setno 1
+     SearchResult-1: term=utah cnt=1
+     records returned: 0
+     Elapsed: 0.014179
+     ]]>
+    </screen>
+   </para>
+   <para>
+    Let's delete the beast:
+    <screen>
+    <![CDATA[
+     Z> update delete 1
+     No last record (update ignored)
+     Z> update delete 1 esdd0006.grs
+     Got extended services response
+     Status: done
+     Elapsed: 0.072441
+     Z> f utah
+     Sent searchRequest.
+     Received SearchResponse.
+     Search was a success.
+     Number of hits: 0, setno 2
+     SearchResult-1: term=utah cnt=0
+     records returned: 0
+     Elapsed: 0.013610
+     ]]>
+     </screen>
+    </para>
+    <para>
+    If shadow register is enabled in your
+    <filename>zebra.cfg</filename>,
+    you must run the adm-commit command
+    <screen>
+    <![CDATA[
+     Z> adm-commit
+     ]]>
+    </screen>
+     after each update session in order write your changes from the
+     shadow to the life register space.
+   </para>
+
+  
  </sect1>
 
  

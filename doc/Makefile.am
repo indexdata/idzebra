@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.37 2006-02-16 12:32:31 marc Exp $
+## $Id: Makefile.am,v 1.38 2006-02-16 15:13:25 marc Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -30,7 +30,9 @@ XMLFILES =  zebra.xml.in \
    zebrasrv-virtual.xml
 
 
-HTMLFILES = administration-ranking.html \
+HTMLFILES = \
+   administration-extended-services.html \
+   administration-ranking.html \
    administration.html \
    apps.html \
    architecture-maincomponents.html \
