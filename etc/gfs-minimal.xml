@@ -1,0 +1,8 @@
+<!-- $Id -->
+<!-- This is the minimal GFS configuration required for SRU support -->
+<yazgfs>
+  <server>
+    <config>zebra.cfg</config>
+    <cql2rpn>../tab/pqf.properties</cql2rpn>
+  </server>
+</yazgfs>

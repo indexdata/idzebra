@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  This example GFS configuration file is copied from
+  CVSROOT/k2-portal-oai-tunes/db/yazserver.xml
+-->
+<yazgfs>
+
+  <!-- one or more ports to listen to -->
+  <listen id="tcp1234">tcp:@:1234</listen>
+
+  <!-- one or more servers bound to ports - multiple servers on same
+  ports possible -->
+  <server id="k2-oai" listenref="tcp1234">
+
+    <!-- working directory for zebra -->
+    <directory>./</directory>
+
+    <!-- ordinary config file for zebra -->
+    <config>db/zebra.cfg</config>
+
+    <!-- location of CQL-to-PQF file -->
+    <!-- see: http://www.indexdata.com/yaz/doc/tools.tkl#tools.cql.map -->
+    <cql2rpn>db/cql2pqf.txt</cql2rpn>
+
+    <!-- explain message - send in SRW Explain
+      - yes, we understand Z39.50 and SRW on the same port !! -->
+    <explain xmlns="http://explain.z3950.org/dtd/2.0/">
+      <serverInfo>
+        <host>localhost</host>
+        <port>1234</port>
+        <database>k2-oai</database>
+      </serverInfo>
+    </explain>
+
+  </server>
+
+</yazgfs>

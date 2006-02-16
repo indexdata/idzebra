@@ -1,0 +1,40 @@
+# $Id: gfs-config.rnc,v 1.1 2006-02-16 10:43:15 mike Exp $
+
+namespace explain = "http://explain.z3950.org/dtd/2.0/"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+
+yazgfs = element yazgfs { attlist.yazgfs, listen*, server+ }
+attlist.yazgfs &= empty
+listen = element listen { attlist.listen, text }
+attlist.listen &= attribute id { text }?
+server =
+  element server {
+    attlist.server, host?, directory?, config?, cql2rpn?, explain?
+  }
+attlist.server &=
+  attribute id { text }?,
+  attribute listenref { text }?
+host = element host { attlist.host, text }
+attlist.host &= empty
+directory = element directory { attlist.directory, text }
+attlist.directory &= empty
+config = element config { attlist.config, text }
+attlist.config &= empty
+cql2rpn = element cql2rpn { attlist.cql2rpn, text }
+attlist.cql2rpn &= empty
+# It's a shame that we have to include a partial ZeeRex DTD here
+explain = element explain:explain { attlist.explain, serverInfo? }
+attlist.explain &=
+  [ a:defaultValue = "false" ]
+  attribute authoritative { "true" | "false" }?,
+  attribute id { text }?
+serverInfo =
+  element explain:serverInfo { attlist.serverInfo, explainHost, port, database }
+attlist.serverInfo &= empty
+explainHost = element explain:host { attlist.explainHost, text }
+attlist.explainHost &= empty
+port = element explain:port { attlist.port, text }
+attlist.port &= empty
+database = element explain:database { attlist.database, text }
+attlist.database &= empty
+start = yazgfs
