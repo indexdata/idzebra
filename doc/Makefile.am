@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.38 2006-02-16 15:13:25 marc Exp $
+## $Id: Makefile.am,v 1.39 2006-02-16 16:50:18 marc Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -30,7 +30,8 @@ XMLFILES =  zebra.xml.in \
    zebrasrv-virtual.xml
 
 
-HTMLFILES = \
+HTMLFILES =  \
+   administration-cql-to-pqf.html \
    administration-extended-services.html \
    administration-ranking.html \
    administration.html \
@@ -46,6 +47,7 @@ HTMLFILES = \
    file-ids.html \
    future.html \
    generic-ids.html \
+   gfs-config.html \
    grs-exchange-formats.html \
    grs-internal-representation.html \
    indexdata.html \

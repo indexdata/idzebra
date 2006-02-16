@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.4 2006-02-15 12:08:48 marc Exp $ -->
+  <!-- $Id: architecture.xml,v 1.5 2006-02-16 16:50:18 marc Exp $ -->
   <title>Overview of Zebra Architecture</title>
   
 
@@ -31,59 +31,6 @@
     -->
    </para>
   </sect1>
-
-  <sect1 id="architecture-workflow">
-   <title>Indexing and Retrieval Workflow</title>
-
-  <para>
-   Records pass through three different states during processing in the
-   system.
-  </para>
-
-  <para>
-
-   <itemizedlist>
-    <listitem>
-     
-     <para>
-      When records are accessed by the system, they are represented
-      in their local, or native format. This might be SGML or HTML files,
-      News or Mail archives, MARC records. If the system doesn't already
-      know how to read the type of data you need to store, you can set up an
-      input filter by preparing conversion rules based on regular
-      expressions and possibly augmented by a flexible scripting language
-      (Tcl).
-      The input filter produces as output an internal representation,
-      a tree structure.
-
-     </para>
-    </listitem>
-    <listitem>
-
-     <para>
-      When records are processed by the system, they are represented
-      in a tree-structure, constructed by tagged data elements hanging off a
-      root node. The tagged elements may contain data or yet more tagged
-      elements in a recursive structure. The system performs various
-      actions on this tree structure (indexing, element selection, schema
-      mapping, etc.),
-
-     </para>
-    </listitem>
-    <listitem>
-
-     <para>
-      Before transmitting records to the client, they are first
-      converted from the internal structure to a form suitable for exchange
-      over the network - according to the Z39.50 standard.
-     </para>
-    </listitem>
-
-   </itemizedlist>
-
-  </para>
-  </sect1>
-
 
   <sect1 id="architecture-maincomponents">
    <title>Main Components</title>
@@ -261,398 +208,61 @@ IDZebra filter grs.danbib (DBC DanBib records)
 
    </sect2>
 
-   <!--
-   <sect2 id="componentconfig">
-    <title>Configuration Files</title>
-    <para>
-     - yazserver XML based config file
-     - core Zebra ascii based config files
-     - filter module config files in many flavours  
-     - <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> to PQF ascii based config file
-    </para>
-   </sect2>
-   -->
-  </sect1>
-
-  <!--
-
-
-  <sect1 id="cqltopqf">
-   <title>Server Side <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> To PQF Conversion</title>
-   <para>
-  The cql2pqf.txt yaz-client config file, which is also used in the
-  yaz-server <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF process, is used to to drive
-  org.z3950.zing.cql.<ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>Node's toPQF() back-end and the YAZ <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF
-  converter.  This specifies the interpretation of various <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>
-  indexes, relations, etc. in terms of Type-1 query attributes.
- 
-  This configuration file generates queries using BIB-1 attributes.
-  See http://www.loc.gov/z3950/agency/zing/cql/dc-indexes.html
-  for the Maintenance Agency's work-in-progress mapping of Dublin Core
-  indexes to Attribute Architecture (util, XD and BIB-2)
-  attributes.
-
-  a) <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> set prefixes  are specified using the correct <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>/ <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/U
-  prefixes for the required index sets, or user-invented prefixes for
-  special index sets. An index set in <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> is roughly speaking equivalent to a
-  namespace specifier in XML.
-
-  b) The default index set to be used if none explicitely mentioned
-
-  c) Index mapping definitions of the form
-
-      index.cql.all  = 1=text
-
-  which means that the index "all" from the set "cql" is mapped on the
-  bib-1 RPN query "@attr 1=text" (where "text" is some existing index
-  in zebra, see indexing stylesheet) 
-
-  d) Relation mapping from <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> relations to bib-1 RPN "@attr 2= " stuff
-
-  e) Relation modifier mapping from <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> relations to bib-1 RPN "@attr
-  2= " stuff 
-
-  f) Position attributes
-
-  g) structure attributes
-
-  h) truncation attributes
-
-  See
-  http://www.indexdata.com/yaz/doc/tools.tkl#tools.cql.map for config
-  file details.
-
-
-   </para>
   </sect1>
 
 
-  <sect1 id="ranking">
-   <title>Static and Dynamic Ranking</title>
-   <para>
-      Zebra uses internally inverted indexes to look up term occurencies
-  in documents. Multiple queries from different indexes can be
-  combined by the binary boolean operations AND, OR and/or NOT (which
-  is in fact a binary AND NOT operation). To ensure fast query execution
-  speed, all indexes have to be sorted in the same order.
-
-  The indexes are normally sorted according to document ID in
-  ascending order, and any query which does not invoke a special
-  re-ranking function will therefore retrieve the result set in document ID
-  order.
-
-  If one defines the 
- 
-    staticrank: 1 
-
-  directive in the main core Zebra config file, the internal document
-  keys used for ordering are augmented by a preceeding integer, which
-  contains the static rank of a given document, and the index lists
-  are ordered 
-    - first by ascending static rank
-    - then by ascending document ID.
-
-  This implies that the default rank "0" is the best rank at the
-  beginning of the list, and "max int" is the worst static rank.
- 
-  The "alvis" and the experimental "xslt" filters are providing a
-  directive to fetch static rank information out of the indexed XML
-  records, thus making _all_ hit sets orderd after ascending static
-  rank, and for those doc's which have the same static rank, ordered
-  after ascending doc ID.
-  If one wants to do a little fiddeling with the static rank order,
-  one has to invoke additional re-ranking/re-ordering using dynamic 
-  reranking or score functions. These functions return positive
-  interger scores, where _highest_ score is best, which means that the
-  hit sets will be sorted according to _decending_ scores (in contrary
-  to the index lists which are sorted according to _ascending_ rank
-  number and document ID) 
-
-
-  Those are defined in the zebra C source files 
-
-   "rank-1" : zebra/index/rank1.c  
-              default TF/IDF like zebra dynamic ranking
-   "rank-static" : zebra/index/rankstatic.c
-              do-nothing dummy static ranking (this is just to prove
-              that the static rank can be used in dynamic ranking functions)  
-   "zvrank" : zebra/index/zvrank.c
-              many different dynamic TF/IDF ranking functions 
-
-   The are in the zebra config file enabled by a directive like:
-
-   rank: rank-static
-
-   Notice that the "rank-1" and "zvrank" do not use the static rank
-   information in the list keys, and will produce the same ordering
-   with our without static ranking enabled.
-
-   The dummy "rank-static" reranking/scoring function returns just
-     score = max int - staticrank
-   in order to preserve the ordering of hit sets with and without it's
-   call.
-
-   Obviously, one wants to make a new ranking function, which combines
-   static and dynamic ranking, which is left as an exercise for the
-   reader .. (Wray, this is your's ...)
-
-
-   </para>
-
-
-   <para>
-    yazserver frontend config file
-
-  db/yazserver.xml 
-
-  Setup of listening ports, and virtual zebra servers.
-  Note path to server-side <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF config file, and to
-   <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink> explain config section. 
-
-  The <directory> path is relative to the directory where zebra.init is placed
-  and is started up. The other pathes are relative to <directory>,
-  which in this case is the same.
-
-  see: http://www.indexdata.com/yaz/doc/server.vhosts.tkl
-
-   </para>
-
-   <para>
- Z39.50 searching:
-
-  search like this (using client-side <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF conversion):
-
-  yaz-client -q db/cql2pqf.txt localhost:9999
-  > format xml
-  > querytype cql2rpn
-  > f text=(plant and soil)
-  > s 1
-  > elements dc
-  > s 1
-  > elements index
-  > s 1
-  > elements alvis
-  > s 1
-  > elements snippet
-  > s 1
-
-
-  search like this (using server-side <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF conversion):
-  (the only difference is "querytype cql" instead of 
-   "querytype cql2rpn" and the call without specifying a local
-  conversion file)
-
-  yaz-client localhost:9999
- > format xml
-  > querytype cql
-  > f text=(plant and soil)
-  > s 1
-  > elements dc
-  > s 1
-  > elements index
-  > s 1
-  > elements alvis
-  > s 1
-  > elements snippet
-  > s 1
-
-  NEW: static relevance ranking - see examples in alvis2index.xsl
-
-  > f text = /relevant (plant and soil)
-  > elem dc
-  > s 1
-
-  > f title = /relevant a
-  > elem dc
-  > s 1
-
-
-
- <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/U searching
- Surf into http://localhost:9999
- 
- firefox http://localhost:9999
- 
- gives you an explain record. Unfortunately, the data found in the 
- <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF text file must be added by hand-craft into the explain
- section of the yazserver.xml file. Too bad, but this is all extreme
- new alpha stuff, and a lot of work has yet to be done ..
- 
- Searching via  <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink>: surf into the URL (lines broken here - concat on
- URL line)
- 
- - see number of hits:
- http://localhost:9999/?version=1.1&operation=searchRetrieve
-                       &query=text=(plant%20and%20soil)
- 
-
- - fetch record 5-7 in DC format
- http://localhost:9999/?version=1.1&operation=searchRetrieve
-                       &query=text=(plant%20and%20soil)
-                       &startRecord=5&maximumRecords=2&recordSchema=dc
- 
- 
- - even search using PQF queries using the extended verb "x-pquery",
-   which is special to YAZ/Zebra
- 
- http://localhost:9999/?version=1.1&operation=searchRetrieve
-                       &x-pquery=@attr%201=text%20@and%20plant%20soil
- 
- More info: read the fine manuals at http://www.loc.gov/z3950/agency/zing/srw/
-278,280d299
- Search via  <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>:
- read the fine manual at 
- http://www.loc.gov/z3950/agency/zing/srw/
-
- 
-and so on. The list of available indexes is found in db/cql2pqf.txt
-
-
-7) How do you add to the index attributes of any other type than "w"?
-I mean, in the context of making <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> queries. Let's say I want a date 
-attribute in there, so that one could do date > 20050101 in <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>.
-
-Currently for example 'date-modified' is of type 'w'.
-
-The 2-seconds-of-though solution:
-
-     in alvis2index.sl:
-
-  <z:index name="date-modified" type="d">
-      <xsl:value-of 
-           select="acquisition/acquisitionData/modifiedDate"/>
-    </z:index>
-
-But here's the catch...doesn't the use of the 'd' type require 
-structure type 'date' (@attr 4=5) in PQF? But then...how does that
-reflect in the <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>->RPN/PQF mapping - does it really work if I just
-change the type of an element in alvis2index.sl? I would think not...?
-
-
-
-
-              Kimmo
-
-
-Either do:
-
-   f @attr 4=5 @attr 1=date-modified 20050713
-
-or do 
-
-
-Either do:
-
-   f @attr 4=5 @attr 1=date-modified 20050713
-
-or do 
-
-querytype cql
-
- f date-modified=20050713
-
- f date-modified=20050713
- 
- Search ERROR 121 4 1+0 RPN: @attrset Bib-1 @attr 5=100 @attr 6=1 @attr 3=3 @att
-r 4=1 @attr 2=3 @attr "1=date-modified" 20050713
-
-
-
- f date-modified eq 20050713
-
-Search OK 23 3 1+0 RPN: @attrset Bib-1 @attr 5=100 @attr 6=1 @attr 3=3 @attr 4=5
- @attr 2=3 @attr "1=date-modified" 20050713
-
-
-   </para>
-
-   <para>
-E) EXTENDED SERVICE LIFE UPDATES
-
-The extended services are not enabled by default in zebra - due to the
-fact that they modify the system.
-
-In order to allow anybody to update, use
-perm.anonymous: rw
-in zebra.cfg.
-
-Or, even better, allow only updates for a particular admin user. For
-user 'admin', you could use:
-perm.admin: rw
-passwd: passwordfile
-
-And in passwordfile, specify users and passwords ..
-admin:secret
-
-We can now start a yaz-client admin session and create a database:
-
-$ yaz-client localhost:9999 -u admin/secret
-Authentication set to Open (admin/secret)
-Connecting...OK.
-Sent initrequest.
-Connection accepted by v3 target.
-ID     : 81
-Name   : Zebra Information Server/GFS/YAZ
-Version: Zebra 1.4.0/1.63/2.1.9
-Options: search present delSet triggerResourceCtrl scan sort
-extendedServices namedResultSets
-Elapsed: 0.007046
-Z> adm-create
-Admin request
-Got extended services response
-Status: done
-Elapsed: 0.045009
-:
-Now Default was created..  We can now insert an XML file (esdd0006.grs
-from example/gils/records) and index it:
-
-Z> update insert 1 esdd0006.grs
-Got extended services response
-Status: done
-Elapsed: 0.438016
-
-The 3rd parameter.. 1 here .. is the opaque record id from Ext update.
-It a record ID that _we_ assign to the record in question. If we do not
-assign one the usual rules for match apply (recordId: from zebra.cfg).
-
-Actually, we should have a way to specify "no opaque record id" for
-yaz-client's update command.. We'll fix that.
-
-Elapsed: 0.438016
-Z> f utah
-Sent searchRequest.
-Received SearchResponse.
-Search was a success.
-Number of hits: 1, setno 1
-SearchResult-1: term=utah cnt=1
-records returned: 0
-Elapsed: 0.014179
-
-Let's delete the beast:
-Z> update delete 1
-No last record (update ignored)
-Z> update delete 1 esdd0006.grs
-Got extended services response
-Status: done
-Elapsed: 0.072441
-Z> f utah
-Sent searchRequest.
-Received SearchResponse.
-Search was a success.
-Number of hits: 0, setno 2
-SearchResult-1: term=utah cnt=0
-records returned: 0
-Elapsed: 0.013610
-
-If shadow register is enabled you must run the adm-commit command in
-order write your changes..
-
-   </para>
-
-
-
+  <sect1 id="architecture-workflow">
+   <title>Indexing and Retrieval Workflow</title>
+
+  <para>
+   Records pass through three different states during processing in the
+   system.
+  </para>
+
+  <para>
+
+   <itemizedlist>
+    <listitem>
+     
+     <para>
+      When records are accessed by the system, they are represented
+      in their local, or native format. This might be SGML or HTML files,
+      News or Mail archives, MARC records. If the system doesn't already
+      know how to read the type of data you need to store, you can set up an
+      input filter by preparing conversion rules based on regular
+      expressions and possibly augmented by a flexible scripting language
+      (Tcl).
+      The input filter produces as output an internal representation,
+      a tree structure.
+
+     </para>
+    </listitem>
+    <listitem>
+
+     <para>
+      When records are processed by the system, they are represented
+      in a tree-structure, constructed by tagged data elements hanging off a
+      root node. The tagged elements may contain data or yet more tagged
+      elements in a recursive structure. The system performs various
+      actions on this tree structure (indexing, element selection, schema
+      mapping, etc.),
+
+     </para>
+    </listitem>
+    <listitem>
+
+     <para>
+      Before transmitting records to the client, they are first
+      converted from the internal structure to a form suitable for exchange
+      over the network - according to the Z39.50 standard.
+     </para>
+    </listitem>
+
+   </itemizedlist>
+
+  </para>
   </sect1>
--->
+
 
  </chapter> 
 

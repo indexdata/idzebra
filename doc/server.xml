@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.15 2006-02-16 14:45:51 marc Exp $ -->
+ <!-- $Id: server.xml,v 1.16 2006-02-16 16:50:18 marc Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -16,7 +16,7 @@
    zebrasrv manpage -->
 
 
- <sect2><title>DESCRIPTION</title>
+ <sect2><title>Description</title>
     <para>Zebra is a high-performance, general-purpose structured text indexing
    and retrieval engine. It reads structured records in a variety of input
    formats (eg. email, XML, MARC) and allows access to them through exact
@@ -36,12 +36,12 @@
   </sect2>
 
  <sect2>
-   <title>SYNOPSIS</title>
+   <title>Synopsis</title>
     &zebrasrv-synopsis;
  </sect2>
 
  <sect2>
-   <title>OPTIONS</title>
+   <title>Options</title>
     
    <para>
     The options for <command>zebrasrv</command> are the same
@@ -52,19 +52,13 @@
    
   &zebrasrv-options;
   </sect2>
-  <sect2 id="gfs-config"><title>VIRTUAL HOSTS</title>
-    <para>
-     <command>zebrasrv</command> uses the YAZ server frontend and does
-     support multiple virtual servers behind multiple listening sockets.
-    </para>
-    &zebrasrv-virtual;
-  </sect2>
-  <sect2><title>FILES</title>
+
+  <sect2><title>Files</title>
    <para>
     <filename>zebra.cfg</filename>
    </para>
   </sect2>
-  <sect2><title>SEE ALSO</title>
+  <sect2><title>See Also</title>
    <para>
     <citerefentry>
      <refentrytitle>zebraidx</refentrytitle>
@@ -74,18 +68,6 @@
      <refentrytitle>yaz-ztest</refentrytitle>
      <manvolnum>8</manvolnum>
     </citerefentry>
-   </para>
-   <para>
-    Section "The Z39.50 Server" in the Zebra manual.
-    <filename>http://www.indexdata.dk/zebra/doc/server.tkl</filename>
-   </para>
-   <para>
-    Section "Virtual Hosts" in the YAZ manual.
-    <filename>http://www.indexdata.dk/yaz/doc/server.vhosts.tkl</filename>
-   </para>
-   <para>
-    Section "Specification of <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> to RPN mappings" in the YAZ manual.
-    <filename>http://www.indexdata.dk/yaz/doc/tools.tkl#tools.cql.map</filename>
    </para>
    <para>
     The Zebra software is Copyright <command>Index Data</command> 
@@ -762,6 +744,72 @@
     and version-number specified)
     or with a simple HTTP GET at the server's basename.
    </para>
+    <para>
+     Unfortunately, the data found in the 
+     CQL-to-PQF text file must be added by hand-craft into the explain
+     section of the YAZ Frontend Server configuration file to be able
+     to provide a suitable explain record. 
+     Too bad, but this is all extreme
+     new alpha stuff, and a lot of work has yet to be done ..
+    </para>
+    <para>
+     There is no linkeage whatsoever between the Z39.50 explain model
+     and the SRU/SRW explain response (well, at least not implemented
+     in Zebra, that is ..).
+     </para>
+  </sect2>
+
+  <sect2>
+   <title>Some SRU Examples</title>
+    <para>
+     Surf into <literal>http://localhost:9999</literal>
+     to get an explain response, or use
+     <screen>
+     <![CDATA[
+      http://localhost:9999/?version=1.1&operation=explain
+     ]]>
+     </screen>
+    </para>
+    <para>
+     See number of hits for a query
+     <screen>
+     <![CDATA[
+       http://localhost:9999/?version=1.1&operation=searchRetrieve
+                       &query=text=(plant%20and%20soil)
+     ]]>
+     </screen>
+    </para>
+    <para>
+      Fetch record 5-7 in Dublin Core format
+     <screen>
+     <![CDATA[
+       http://localhost:9999/?version=1.1&operation=searchRetrieve
+                       &query=text=(plant%20and%20soil)
+                       &startRecord=5&maximumRecords=2&recordSchema=dc
+ 
+     ]]>
+     </screen>
+    </para>
+    <para>
+     Even search using PQF queries using the <emphasis>extended naughty 
+     verb</emphasis> <literal>x-pquery</literal>
+     <screen>
+     <![CDATA[
+      http://localhost:9999/?version=1.1&operation=searchRetrieve
+                       &x-pquery=@attr%201=text%20@and%20plant%20soil
+     ]]> 
+     </screen>
+     or scan indexes using the <emphasis>extended extremely naughty 
+     verb</emphasis> <literal>x-pScanClause</literal>
+     <screen>
+     <![CDATA[
+      http://localhost:9999/?version=1.1&operation=scan
+                       &x-pScanClause=@attr%201=text%20something
+     ]]> 
+     </screen>
+     <emphasis>Don't do this in production code!</emphasis>
+     But it's a great fast debugging aid.
+    </para>
   </sect2>
 
   <sect2>
