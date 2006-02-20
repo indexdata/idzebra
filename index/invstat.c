@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.46 2005-04-13 13:03:47 adam Exp $
+/* $Id: invstat.c,v 1.47 2006-02-20 12:41:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -45,27 +45,25 @@ struct inv_stat_info {
 #define SINGLETON_TYPE 8 /* the type to use for singletons that */ 
                          /* have no block and no block type */
 
-static void print_dict_item (ZebraMaps zm, const char *s, zint count,
+static void print_dict_item (ZebraHandle zh, const char *s, zint count,
             int firstsys, int firstseq, int lastsys, int lastseq )
 {
-    int reg_type = s[1];
-    char keybuf[IT_MAX_WORD+1];
-    char *to = keybuf;
-    const char *from = s + 2;
+    char dst[IT_MAX_WORD+1];
+    int ord;
+    int len = key_SU_decode(&ord, (const unsigned char *) s);
+    int index_type;
+    const char *db = 0;
 
-    while (*from)
+    if (!zh)
+	*dst = '\0';
+    else
     {
-        const char *res = zebra_maps_output (zm, reg_type, &from);
-        if (!res)
-            *to++ = *from++;
-        else
-            while (*res)
-                *to++ = *res++;
+        zebraExplain_lookup_ord (zh->reg->zei, ord, &index_type, &db, 0, 0);
+
+        zebra_term_untrans(zh, index_type, dst, s + len);
     }
-    *to = '\0';
-    /* yaz_log (YLOG_LOG, "%s", keybuf); */
-    printf("%10" ZINT_FORMAT0 " %s %d.%d - %d.%d\n", count, keybuf,
-              firstsys,firstseq, lastsys,lastseq);
+    printf("%02d:%10" ZINT_FORMAT0 " %s %d.%d - %d.%d\n", ord, count, dst,
+	   firstsys, firstseq, lastsys, lastseq);
 }
 
 static int inv_stat_handle (char *name, const char *info, int pos,
@@ -146,8 +144,8 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         i++;
     ++(stat_info->isam_occurrences[i]);
     if (stat_info->dumpwords)
-       print_dict_item(stat_info->zh->reg->zebra_maps, name, occur,
-          firstsys,firstseq, lastsys, lastseq);
+	print_dict_item(stat_info->zh, name, occur,
+			firstsys, firstseq, lastsys, lastseq);
     return 0;
 }
 
