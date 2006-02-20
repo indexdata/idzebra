@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.202 2006-02-09 08:31:02 adam Exp $
+/* $Id: extract.c,v 1.203 2006-02-20 18:39:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1372,6 +1372,12 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 
 	    if (zh->m_staticrank) /* rank config enabled ? */
 	    {
+		if (staticrank < 0)
+		{
+		    yaz_log(YLOG_WARN, "staticrank = %d. Setting to 0",
+			    staticrank);
+		    staticrank = 0;
+		}
 		*keyp++ = staticrank;
 		key_out.len = 4;
 	    }
@@ -1949,6 +1955,7 @@ void encode_key_init (struct encode_info *i)
     i->prevcmd=-1;
     i->keylen=0;
     i->encode_handle = iscz1_start();
+    i->decode_handle = iscz1_start();
 }
 
 #define OLDENCODE 1
@@ -1970,19 +1977,42 @@ void encode_key_write (char *k, struct encode_info *i, FILE *outf)
     /* and copy & align key so we can mangle */
     memcpy (&key, k+1, sizeof(struct it_key));  /* *k is insert/delete */
 
+#if 0
+    /* debugging */
+    key_logdump_txt(YLOG_LOG, &key, *k ? "i" : "d");
+#endif
+    assert(key.mem[0] >= 0);
+
     bp0 = bp++;
     iscz1_encode(i->encode_handle, &bp, &src);
+
     *bp0 = (*k * 128) + bp - bp0 - 1; /* length and insert/delete combined */
     if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
     {
         yaz_log (YLOG_FATAL|YLOG_ERRNO, "fwrite");
         exit (1);
     }
+
+#if 0
+    /* debugging */
+    if (1)
+    {
+	struct it_key key2;
+	const char *src = bp0+1;
+	char *dst = (char*) &key2;
+	iscz1_decode(i->decode_handle, &dst, &src);
+
+	key_logdump_txt(YLOG_LOG, &key2, *k ? "i" : "d");
+
+	assert(key2.mem[1]);
+    }
+#endif
 }
 
 void encode_key_flush (struct encode_info *i, FILE *outf)
-{ /* dummy routine */
+{ 
     iscz1_stop(i->encode_handle);
+    iscz1_stop(i->decode_handle);
 }
 
 #else

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.154 2005-10-28 09:22:50 adam Exp $
+/* $Id: index.h,v 1.155 2006-02-20 18:39:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -175,6 +175,7 @@ struct encode_info {
     int prevcmd;
     int keylen; /* tells if we have an unwritten key in buf, and how long*/
     void *encode_handle;
+    void *decode_handle;
     char buf[ENCODE_BUFLEN];
 };
 
