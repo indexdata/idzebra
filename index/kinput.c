@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.69 2005-11-10 11:25:13 adam Exp $
+/* $Id: kinput.c,v 1.70 2006-02-20 18:40:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -54,6 +54,14 @@ struct key_file {
     void *readInfo;
     Res res;
 };
+
+#if 1
+static void pkey(const char *b, int mode)
+{
+    key_logdump_txt(YLOG_LOG, b, mode ? "i" : "d");
+}
+#endif
+
 
 void getFnameTmp (Res res, char *fname, int no)
 {
@@ -218,6 +226,17 @@ int key_file_read (struct key_file *f, char *key)
 	srcbuf[j] = key_file_getc(f);
     dst = key + i;
     iscz1_decode(f->decode_handle, &dst, &src);
+
+#if 0
+    /* debugging */
+    if (1)
+    {
+	struct it_key k;
+	memcpy(&k, key+i, sizeof(k));
+	if (!k.mem[1])
+	    yaz_log(YLOG_LOG, "00 KEY");
+    }
+#endif
     return i + sizeof(struct it_key);
 }
 
@@ -230,7 +249,8 @@ struct heap_info {
     int    *ptr;
     int    (*cmp)(const void *p1, const void *p2);
     struct zebra_register *reg;
-    ZebraHandle zh; /* only used for raw reading that bypasses the heaps */
+    ZebraHandle zh;
+    int raw_reading; /* 1=raw /mem read. 0=file reading */
     int no_diffs;
     int no_updates;
     int no_deletions;
@@ -246,7 +266,7 @@ static struct heap_info *key_heap_malloc()
     hi->info.buf = 0;
     hi->heapnum = 0;
     hi->ptr = 0;
-    hi->zh=0;
+    hi->raw_reading = 0;
     hi->no_diffs = 0;
     hi->no_diffs = 0;
     hi->no_updates = 0;
@@ -256,13 +276,15 @@ static struct heap_info *key_heap_malloc()
     return hi;
 }
 
-struct heap_info *key_heap_init (int nkeys,
-                                 int (*cmp)(const void *p1, const void *p2))
+struct heap_info *key_heap_init_file(ZebraHandle zh,
+				     int nkeys,
+				     int (*cmp)(const void *p1, const void *p2))
 {
     struct heap_info *hi;
     int i;
 
     hi = key_heap_malloc();
+    hi->zh = zh;
     hi->info.file = (struct key_file **)
         xmalloc (sizeof(*hi->info.file) * (1+nkeys));
     hi->info.buf = (char **) xmalloc (sizeof(*hi->info.buf) * (1+nkeys));
@@ -276,12 +298,13 @@ struct heap_info *key_heap_init (int nkeys,
     return hi;
 }
 
-struct heap_info *key_heap_init_buff ( ZebraHandle zh,
-                                 int (*cmp)(const void *p1, const void *p2))
+struct heap_info *key_heap_init_raw(ZebraHandle zh,
+				    int (*cmp)(const void *p1, const void *p2))
 {
     struct heap_info *hi=key_heap_malloc();
-    hi->cmp=cmp;
-    hi->zh=zh;
+    hi->cmp = cmp;
+    hi->zh = zh;
+    hi->raw_reading = 1;
     return hi;
 }
 
@@ -290,7 +313,7 @@ void key_heap_destroy (struct heap_info *hi, int nkeys)
     int i;
     yaz_log (YLOG_DEBUG, "key_heap_destroy");
     yaz_log (YLOG_DEBUG, "key_heap_destroy nk=%d",nkeys);
-    if (!hi->zh)
+    if (!hi->raw_reading)
         for (i = 0; i<=nkeys; i++)
             xfree (hi->info.buf[i]);
     
@@ -354,9 +377,9 @@ static void key_heap_insert (struct heap_info *hi, const char *buf, int nbytes,
     }
 }
 
-static int heap_read_one_raw (struct heap_info *hi, char *name, char *key)
+static int heap_read_one_raw(struct heap_info *hi, char *name, char *key)
 {
-    ZebraHandle zh=hi->zh;
+    ZebraHandle zh = hi->zh;
     size_t ptr_i = zh->reg->ptr_i;
     char *cp;
     if (!ptr_i)
@@ -377,7 +400,7 @@ static int heap_read_one (struct heap_info *hi, char *name, char *key)
     char rbuf[INP_NAME_MAX];
     struct key_file *kf;
 
-    if (hi->zh) /* bypass the heap stuff, we have a readymade buffer */
+    if (hi->raw_reading)
         return heap_read_one_raw(hi, name, key);
 
     if (!hi->heapnum)
@@ -396,13 +419,6 @@ static int heap_read_one (struct heap_info *hi, char *name, char *key)
 
 #define PR_KEY_LOW 0
 #define PR_KEY_TOP 0
-
-#if 1
-static void pkey(const char *b, int mode)
-{
-    key_logdump_txt(YLOG_LOG, b, mode ? "i" : "d");
-}
-#endif
 
 #if 1
 /* for debugging only */
@@ -462,7 +478,7 @@ int heap_cread_item2(void *vp, char **dst, int *insertMode)
 	    p->look_level++;
 	}
 	memcpy (*dst, p->key_1, p->sz_1);
-#if 1
+#if 0
 	yaz_log(YLOG_LOG, "DUP level=%d", p->look_level);
 	pkey(*dst, *insertMode);
 #endif
@@ -664,6 +680,7 @@ int heap_inpb(struct heap_cread_info *hci, struct heap_info *hi)
         hi->no_diffs++;
 
 #if 0
+	assert(hi->zh);
         print_dict_item(hi->zh, hci->cur_name);
 #endif
         if ((dict_info = dict_lookup (hi->reg->dict, hci->cur_name)))
@@ -811,7 +828,7 @@ void zebra_index_merge (ZebraHandle zh)
             progressInfo.totalBytes += kf[i]->length;
             progressInfo.totalOffset += kf[i]->buf_size;
         }
-        hi = key_heap_init (nkeys, key_qsort_compare);
+        hi = key_heap_init_file(zh, nkeys, key_qsort_compare);
         hi->reg = zh->reg;
         
         for (i = 1; i<=nkeys; i++)
@@ -820,7 +837,7 @@ void zebra_index_merge (ZebraHandle zh)
     }  /* use file */
     else 
     { /* do not use file, read straight from buffer */
-        hi = key_heap_init_buff (zh, key_qsort_compare);
+        hi = key_heap_init_raw(zh, key_qsort_compare);
         hi->reg = zh->reg;
     }
 
