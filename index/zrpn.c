@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.208 2005-11-29 11:38:34 adam Exp $
+/* $Id: zrpn.c,v 1.209 2006-02-20 12:38:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -181,8 +181,12 @@ void zebra_term_untrans(ZebraHandle zh, int reg_type,
     {
         const char *cp = zebra_maps_output(zh->reg->zebra_maps,
 					   reg_type, &src);
-        if (!cp && len < IT_MAX_WORD-1)
-            dst[len++] = *src++;
+	if (!cp)
+	{
+	    if (len < IT_MAX_WORD-1)
+		dst[len++] = *src;
+	    src++;
+	}
         else
             while (*cp && len < IT_MAX_WORD-1)
                 dst[len++] = *cp++;
