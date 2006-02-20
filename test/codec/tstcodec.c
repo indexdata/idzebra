@@ -1,4 +1,4 @@
-/* $Id: tstcodec.c,v 1.7 2005-08-05 10:33:05 adam Exp $
+/* $Id: tstcodec.c,v 1.8 2006-02-20 18:33:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -151,17 +151,76 @@ void tstcodec1()
             printf ("offset=%d char1=%d char2=%d\n", i, cp1[i], cp2[i]);
     }
 }
-    
+
+int tstcodec2(int num)
+{
+    int errors = 0;
+    int i;
+    int max = 2048;
+    int neg = 0;  /* iscz1_{en,de}code does not handle negative numbers */
+    void *encode_handle =iscz1_start();
+    void *decode_handle =iscz1_start();
+
+    srand(12);
+    for (i = 0; i<num; i++)
+    {
+	struct it_key ar1, ar2;
+	int j;
+	ar1.len = 1;
+
+	for (j = 0; j<ar1.len; j++)
+	{
+	    int r = (rand() % max) - neg;
+	    ar1.mem[j] = r;
+	}
+	if (1)
+	{
+	    char dstbuf[100];
+	    const char *src = (const char *) &ar1;
+	    char *dst = dstbuf;
+	    iscz1_encode(encode_handle, &dst, &src);
+	    
+	    src = dstbuf;
+	    dst = (char *) &ar2;
+	    iscz1_decode(decode_handle, &dst, &src);
+	}
+
+	if (ar1.len != ar2.len)
+	{
+	    printf("tstcodec2: length does not match\n");
+	    errors++;
+	}
+	for (j = 0; j<ar1.len; j++)
+	{
+	    if (ar1.mem[j] != ar2.mem[j])
+	    {
+		printf("diff:\n");
+		for (j = 0; j<ar1.len; j++)
+		    printf(" %d " ZINT_FORMAT " " ZINT_FORMAT "\n",
+			   j, ar1.mem[j], ar2.mem[j]);
+		errors++;
+		break;
+	    }
+	}
+    }
+    iscz1_stop(encode_handle);
+    iscz1_stop(decode_handle);
+    return errors;
+}
+
 
 int main(int argc, char **argv)
 {
     int num = 0;
+    int ret;
     prog = *argv;
     if (argc > 1)
 	num = atoi(argv[1]);
     if (num < 1 || num > 100000000)
 	num = 10000;
     tstcodec1();
-    exit(tst_encode(num));
+    ret = tstcodec2(500);
+    ret = tst_encode(num);
+    exit(ret);
 }
     
