@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.40 2006-02-19 15:10:04 adam Exp $
+## $Id: Makefile.am,v 1.41 2006-02-20 07:13:31 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -21,7 +21,6 @@ XMLFILES =  zebra.xml.in \
    recordmodel-alvisxslt.xml \
    recordmodel-grs.xml \
    server.xml \
-   zebra.xml \
    zebraidx-commands.xml \
    zebraidx-options.xml \
    zebraidx.xml \
@@ -50,7 +49,6 @@ HTMLFILES =  \
    gfs-config.html \
    grs-exchange-formats.html \
    grs-internal-representation.html \
-   grs-record-model.html \
    indexdata.html \
    installation.debian.html \
    installation.html \
@@ -58,10 +56,8 @@ HTMLFILES =  \
    introduction.html \
    license.html \
    locating-records.html \
-   maincomponents.html \
    protocol-support.html \
    quick-start.html \
-   record-model.html \
    record-model-alvisxslt-conf.html \
    record-model-alvisxslt.html \
    record-model-grs-conf.html \
@@ -73,7 +69,6 @@ HTMLFILES =  \
    shadow-registers.html \
    simple-indexing.html \
    support.html \
-   workflow.html \
    zebra.html \
    zebraidx.html
 
