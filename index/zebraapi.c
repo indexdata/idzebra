@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.201 2006-02-09 08:31:02 adam Exp $
+/* $Id: zebraapi.c,v 1.202 2006-02-21 15:23:11 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -184,11 +184,18 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
 	const char *passwd_plain = 0;
 	const char *passwd_encrypt = 0;
 	const char *dbaccess = 0;
-        ZebraService zh = xmalloc(sizeof(*zh));
+        ZebraService zh = 0;
 
 	if (configName)
-	    res_read_file(res, configName);
-
+	{
+	    ZEBRA_RES ret = res_read_file(res, configName);
+	    if (ret != ZEBRA_OK)
+	    {
+		res_close(res);
+		return 0;
+	    }
+	}
+	zh = xmalloc(sizeof(*zh));
         zh->global_res = res;
         zh->sessions = 0;
         
