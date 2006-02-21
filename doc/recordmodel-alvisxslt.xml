@@ -1,5 +1,5 @@
  <chapter id="record-model-alvisxslt">
-  <!-- $Id: recordmodel-alvisxslt.xml,v 1.4 2006-02-16 14:45:51 marc Exp $ -->
+  <!-- $Id: recordmodel-alvisxslt.xml,v 1.5 2006-02-21 14:54:25 marc Exp $ -->
   <title>ALVIS XML Record Model and Filter Module</title>
   
 
@@ -423,6 +423,28 @@
     </para>
 
   </sect2>
+
+  <sect2 id="record-model-alvisxslt-example">
+   <title>ALVIS Filter OAI Indexing Example</title>
+   <para>
+     The sourcecode tarball contains a working Alvis filter example in
+     the directory <filename>examples/alvis-oai/</filename>, which
+     should get you started.  
+    </para>
+    <para>
+     More example data can be harvested from any OAI complient server,
+     see details at the  OAI 
+     <ulink url="http://www.openarchives.org/">
+      http://www.openarchives.org/</ulink> web site, and the community
+      links at 
+     <ulink url="http://www.openarchives.org/community/index.html">
+      http://www.openarchives.org/community/index.html</ulink>.
+     There is a  tutorial
+     found at
+     <ulink url="http://www.oaforum.org/tutorial/">
+      http://www.oaforum.org/tutorial/</ulink>.
+    </para>
+   </sect2>
 
   </sect1>
 

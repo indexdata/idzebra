@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.5 2006-02-16 16:50:18 marc Exp $ -->
+  <!-- $Id: architecture.xml,v 1.6 2006-02-21 14:54:25 marc Exp $ -->
   <title>Overview of Zebra Architecture</title>
   
 
@@ -46,36 +46,88 @@
    </para>
    <para>
     The Zebra indexer and information retrieval server consists of the
-    following main applications: the <literal>zebraidx</literal>
-    indexing maintenance utility, and the <literal>zebrasrv</literal>
-    information query and retireval server. Both are using some of the
+    following main applications: the <command>zebraidx</command>
+    indexing maintenance utility, and the <command>zebrasrv</command>
+    information query and retrieval server. Both are using some of the
     same main components, which are presented here.
    </para>    
    <para>    
-    This virtual package installs all the necessary packages to start
+    The virtual Debian package <literal>idzebra1.4</literal>
+    installs all the necessary packages to start
     working with Zebra - including utility programs, development libraries,
-    documentation and modules.
-     <literal>idzebra1.4</literal>
+    documentation and modules. 
   </para>    
    
    <sect2 id="componentcore">
-    <title>Core Zebra Module Containing Common Functionality</title>
+    <title>Core Zebra Libraries Containing Common Functionality</title>
     <para>
-     - loads external filter modules used for presenting
-     the recods in a search response.
-     - executes search requests in PQF/RPN, which are handed over from
-     the YAZ server frontend API   
-     - calls resorting/reranking algorithms on the hit sets
-     - returns - possibly ranked - result sets, hit
-     numbers, and the like internal data to the YAZ server backend API.
-    </para>
+     The core Zebra module is the meat of the <command>zebraidx</command>
+    indexing maintenance utility, and the <command>zebrasrv</command>
+    information query and retrieval server binaries. Shortly, the core
+    libraries are responsible for  
+     <variablelist>
+      <varlistentry>
+       <term>Dynamic Loading</term>
+       <listitem>
+        <para>of external filter modules, in case the application is
+        not compiled statically. These filter modules define indexing,
+        search and retrieval capabilities of the various input formats.  
+        </para>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term>Index Maintenance</term>
+       <listitem>
+        <para> Zebra maintains Term Dictionaries and ISAM index
+        entries in inverted index structures kept on disk. These are
+        optimized for fast inset, update and delete, as well as good
+        search performance.
+        </para>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term>Search Evaluation</term>
+       <listitem>
+        <para>by execution of search requests expressed in PQF/RPN
+         data structures, which are handed over from
+         the YAZ server frontend API. Search evaluation includes
+         construction of hit lists according to boolean combinations
+         of simpler searches. Fast performance is achieved by careful
+         use of index structures, and by evaluation specific index hit
+         lists in correct order. 
+        </para>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term>Ranking and Sorting</term>
+       <listitem>
+        <para>
+         components call resorting/re-ranking algorithms on the hit
+         sets. These might also be pre-sorted not only using the
+         assigned document ID's, but also using assigned static rank
+         information. 
+        </para>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term>Record Presentation</term>
+       <listitem>
+        <para>returns - possibly ranked - result sets, hit
+         numbers, and the like internal data to the YAZ server backend API
+         for shipping to the client. Each individual filter module
+         implements it's own specific presentation formats.
+        </para>
+       </listitem>
+      </varlistentry>
+     </variablelist>
+     </para>
     <para> 
-     This package contains all run-time libraries for Zebra.
-     <literal>libidzebra1.4</literal> 
-     This package includes documentation for Zebra in PDF and HTML.
-     <literal>idzebra1.4-doc</literal> 
-     This package includes common essential Zebra configuration files
+     The Debian package <literal>libidzebra1.4</literal> 
+     contains all run-time libraries for Zebra, the 
+     documentation in PDF and HTML is found in 
+     <literal>idzebra1.4-doc</literal>, and
      <literal>idzebra1.4-common</literal>
+     includes common essential Zebra configuration files.
     </para>
    </sect2>
    
@@ -83,27 +135,28 @@
    <sect2 id="componentindexer">
     <title>Zebra Indexer</title>
     <para>
-     the core Zebra indexer which
-     - loads external filter modules used for indexing data records of
-     different type. 
-     - creates, updates and drops databases and indexes
+     The  <command>zebraidx</command>
+     indexing maintenance utility 
+     loads external filter modules used for indexing data records of
+     different type, and creates, updates and drops databases and
+     indexes according to the rules defined in the filter modules.
     </para>    
     <para>    
-     This package contains Zebra utilities such as the zebraidx indexer
-     utility and the zebrasrv server.
-     <literal>idzebra1.4-utils</literal>
+     The Debian  package <literal>idzebra1.4-utils</literal> contains
+     the  <command>zebraidx</command> utility.
     </para>
    </sect2>
 
    <sect2 id="componentsearcher">
     <title>Zebra Searcher/Retriever</title>
     <para>
-     the core Zebra searcher/retriever which
+     This is the executable which runs the Z39.50/SRU/SRW server and
+     glues together the core libraries and the filter modules to one
+     great Information Retrieval server application. 
     </para>    
     <para>    
-     This package contains Zebra utilities such as the zebraidx indexer
-     utility and the zebrasrv server, and their associated man pages.
-     <literal>idzebra1.4-utils</literal>
+     The Debian  package <literal>idzebra1.4-utils</literal> contains
+     the  <command>zebrasrv</command> utility.
     </para>
    </sect2>
 
@@ -117,33 +170,48 @@
     </para>
     <para>
      In addition to Z39.50 requests, the YAZ server frontend acts
-     as HTTP server, honouring
-      <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink> SOAP requests, and  <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink> REST requests. Moreover, it can
-     translate inco ming <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> queries to PQF/RPN queries, if
+     as HTTP server, honoring
+      <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink> 
+     SOAP requests, and  
+     <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink> 
+     REST requests. Moreover, it can
+     translate incoming 
+     <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>
+     queries to
+     <ulink url="http://indexdata.com/yaz/doc/tools.tkl#PQF">PQF</ulink>
+      queries, if
      correctly configured. 
     </para>
     <para>
-    YAZ is a toolkit that allows you to develop software using the
-    ANSI Z39.50/ISO23950 standard for information retrieval.
-     <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/ <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink>
-    <literal>libyazthread.so</literal>
-    <literal>libyaz.so</literal>
-    <literal>libyaz</literal>
+     <ulink url="http://www.indexdata.com/yaz">YAZ</ulink>
+     is an Open Source  
+     toolkit that allows you to develop software using the
+     ANSI Z39.50/ISO23950 standard for information retrieval.
+     It is packaged in the Debian packages     
+     <literal>yaz</literal> and <literal>libyaz</literal>.
     </para>
    </sect2>
    
    <sect2 id="componentmodules">
     <title>Record Models and Filter Modules</title>
     <para>
-      all filter modules which do indexing and record display filtering:
-This virtual package contains all base IDZebra filter modules. EMPTY ???
-     <literal>libidzebra1.4-modules</literal>
+     The hard work of knowing <emphasis>what</emphasis> to index, 
+     <emphasis>how</emphasis> to do it, and <emphasis>which</emphasis>
+     part of the records to send in a search/retrieve response is
+     implemented in 
+     various filter modules. It is their responsibility to define the
+     exact indexing and record display filtering rules.
+     </para>
+     <para>
+     The virtual Debian package
+     <literal>libidzebra1.4-modules</literal> installs all base filter
+     modules. 
     </para>
 
    <sect3 id="componentmodulestext">
     <title>TEXT Record Model and Filter Module</title>
     <para>
-      Plain ASCII text filter
+      Plain ASCII text filter. TODO: add information here.
      <!--
      <literal>text module missing as deb file<literal>
      -->
@@ -153,53 +221,103 @@ This virtual package contains all base IDZebra filter modules. EMPTY ???
    <sect3 id="componentmodulesgrs">
     <title>GRS Record Model and Filter Modules</title>
     <para>
+    The GRS filter modules described in 
     <xref linkend="record-model-grs"/>
-
-     - grs.danbib     GRS filters of various kind (*.abs files)
-IDZebra filter grs.danbib (DBC DanBib records)
-  This package includes grs.danbib filter which parses DanBib records.
-  DanBib is the Danish Union Catalogue hosted by DBC
-  (Danish Bibliographic Centre).
-     <literal>libidzebra1.4-mod-grs-danbib</literal>
-
-
-     - grs.marc
-     - grs.marcxml
-  This package includes the grs.marc and grs.marcxml filters that allows
-  IDZebra to read MARC records based on ISO2709.
-
-     <literal>libidzebra1.4-mod-grs-marc</literal>
-
-     - grs.regx
-     - grs.tcl        GRS TCL scriptable filter
-  This package includes the grs.regx and grs.tcl filters.
-     <literal>libidzebra1.4-mod-grs-regx</literal>
-
-
-     - grs.sgml
-     <literal>libidzebra1.4-mod-grs-sgml not packaged yet ??</literal>
-
-     - grs.xml
-  This package includes the grs.xml filter which uses <ulink url="http://expat.sourceforge.net/">Expat</ulink> to
-  parse records in XML and turn them into IDZebra's internal grs node.
-     <literal>libidzebra1.4-mod-grs-xml</literal>
+    are all based on the Z39.50 specifications, and it is absolutely
+    mandatory to have the reference pages on BIB-1 attribute sets on
+    you hand when configuring GRS filters. The GRS filters come in
+    different flavors, and a short introduction is needed here.
+    GRS filters of various kind have also been called ABS filters due
+    to the <filename>*.abs</filename> configuration file suffix.
+    </para>
+    <para>
+     The <emphasis>grs.danbib</emphasis> filter is developed for 
+      DBC DanBib records.
+      DanBib is the Danish Union Catalogue hosted by DBC
+      (Danish Bibliographic Center). This filter is found in the
+      Debian package
+     <literal>libidzebra1.4-mod-grs-danbib</literal>.
+    </para>
+    <para>
+      The <emphasis>grs.marc</emphasis> and 
+      <emphasis>grs.marcxml</emphasis> filters are suited to parse and
+      index binary and XML versions of traditional library MARC records 
+      based on the ISO2709 standard. The Debian package for both
+      filters is 
+     <literal>libidzebra1.4-mod-grs-marc</literal>.
+    </para>
+    <para>
+      GRS TCL scriptable filters for extensive user configuration come
+     in two flavors: a regular expression filter 
+     <emphasis>grs.regx</emphasis> using TCL regular expressions, and
+     a general scriptable TCL filter called 
+     <emphasis>grs.tcl</emphasis>        
+     are both included in the 
+     <literal>libidzebra1.4-mod-grs-regx</literal> Debian package.
+    </para>
+    <para>
+      A general purpose SGML filter is called
+     <emphasis>grs.sgml</emphasis>. This filter is not yet packaged,
+     but planned to be in the  
+     <literal>libidzebra1.4-mod-grs-sgml</literal> Debian package.
+    </para>
+    <para>
+      The Debian  package 
+      <literal>libidzebra1.4-mod-grs-xml</literal> includes the 
+      <emphasis>grs.xml</emphasis> filter which uses <ulink
+      url="http://expat.sourceforge.net/">Expat</ulink> to 
+      parse records in XML and turn them into IDZebra's internal GRS node
+      trees. Have also a look at the Alvis XML/XSLT filter described in
+      the next session.
     </para>
    </sect3>
 
    <sect3 id="componentmodulesalvis">
     <title>ALVIS Record Model and Filter Module</title>
      <para>
-      <xref linkend="record-model-alvisxslt"/>
-      - alvis          Experimental Alvis XSLT filter
-      <literal>mod-alvis.so</literal>
-      <literal>libidzebra1.4-mod-alvis</literal>
+      The Alvis filter for XML files is an XSLT based input
+      filter. 
+      It indexes element and attribute content of any thinkable XML format
+      using full XPATH support, a feature which the standard Zebra
+      GRS SGML and XML filters lacked. The indexed documents are
+      parsed into a standard XML DOM tree, which restricts record size
+      according to availability of memory.
+    </para>
+    <para>
+      The Alvis filter 
+      uses XSLT display stylesheets, which let
+      the Zebra DB administrator associate multiple, different views on
+      the same XML document type. These views are chosen on-the-fly in
+      search time.
+     </para>
+    <para>
+      In addition, the Alvis filter configuration is not bound to the
+      arcane  BIB-1 Z39.50 library catalogue indexing traditions and
+      folklore, and is therefore easier to understand.
+    </para>
+    <para>
+      Finally, the Alvis  filter allows for static ranking at index
+      time, and to to sort hit lists according to predefined
+      static ranks. This imposes no overhead at all, both
+      search and indexing perform still 
+      <emphasis>O(1)</emphasis> irrespectively of document
+      collection size. This feature resembles Googles pre-ranking using
+      their Pagerank algorithm.
+    </para>
+    <para>
+      Details on the experimental Alvis XSLT filter are found in 
+      <xref linkend="record-model-alvisxslt"/>.
+      </para>
+     <para>
+      The Debian package <literal>libidzebra1.4-mod-alvis</literal>
+      contains the Alvis filter module.
      </para>
     </sect3>
 
    <sect3 id="componentmodulessafari">
     <title>SAFARI Record Model and Filter Module</title>
     <para>
-     - safari
+     SAFARI filter module TODO: add information here.
      <!--
      <literal>safari module missing as deb file<literal>
      -->
@@ -262,6 +380,109 @@ IDZebra filter grs.danbib (DBC DanBib records)
 
   </para>
   </sect1>
+
+
+<!--
+  <sect1 id="architecture-querylanguage">
+   <title>Query Languages</title>
+   
+   <para>
+
+http://www.loc.gov/z3950/agency/document.html
+
+    PQF and BIB-1 stuff to be explained
+    <ulink url="http://www.loc.gov/z3950/agency/defns/bib1.html">
+     http://www.loc.gov/z3950/agency/defns/bib1.html</ulink> 
+
+     <ulink url="http://www.loc.gov/z3950/agency/bib1.html">
+     http://www.loc.gov/z3950/agency/bib1.html</ulink> 
+
+     http://www.loc.gov/z3950/agency/markup/13.html
+    
+  </para>
+  </sect1>
+
+
+These attribute types are recognized regardless of attribute set. Some are recognized for search, others for scan.
+
+Search
+
+Type 	Name 	Version
+7 	Embedded Sort 	1.1
+8 	Term Set 	1.1
+9 	Rank weight 	1.1
+9 	Approx Limit 	1.4
+10 	Term Ref 	1.4
+
+Embedded Sort
+
+The embedded sort is a way to specify sort within a query - thus removing the need to send a Sort Request separately. It is both faster and does not require clients that deal with the Sort Facility.
+
+The value after attribute type 7 is 1=ascending, 2=descending.. The attributes+term (APT) node is separate from the rest and must be @or'ed. The term associated with APT is the level .. 0=primary sort, 1=secondary sort etc.. Example:
+
+Search for water, sort by title (ascending):
+
+  @or @attr 1=1016 water @attr 7=1 @attr 1=4 0
+
+Search for water, sort by title ascending, then date descending:
+
+  @or @or @attr 1=1016 water @attr 7=1 @attr 1=4 0 @attr 7=2 @attr 1=30 1
+
+Term Set
+
+The Term Set feature is a facility that allows a search to store hitting terms in a "pseudo" resultset; thus a search (as usual) + a scan-like facility. Requires a client that can do named result sets since the search generates two result sets. The value for attribute 8 is the name of a result set (string). The terms in term set are returned as SUTRS records.
+
+Seach for u in title, right truncated.. Store result in result set named uset.
+
+  @attr 5=1 @attr 1=4 @attr 8=uset u
+
+The model as one serious flaw.. We don't know the size of term set.
+
+Rank weight
+
+Rank weight is a way to pass a value to a ranking algorithm - so that one APT has one value - while another as a different one.
+
+Search for utah in title with weight 30 as well as any with weight 20.
+
+  @attr 2=102 @or @attr 9=30 @attr 1=4 utah @attr 9=20 utah
+
+Approx Limit
+
+Newer Zebra versions normally estemiates hit count for every APT (leaf) in the query tree. These hit counts are returned as part of the searchResult-1 facility.
+
+By setting a limit for the APT we can make Zebra turn into approximate hit count when a certain hit count limit is reached. A value of zero means exact hit count.
+
+We are intersted in exact hit count for a, but for b we allow estimates for 1000 and higher..
+
+  @and a @attr 9=1000 b
+
+This facility clashes with rank weight! Fortunately this is a Zebra 1.4 thing so we can change this without upsetting anybody!
+
+Term Ref
+
+Zebra supports the searchResult-1 facility.
+
+If attribute 10 is given, that specifies a subqueryId value returned as part of the search result. It is a way for a client to name an APT part of a query.
+
+Scan
+
+Type 	Name 	Version
+8 	Result set narrow 	1.3
+9 	Approx Limit 	1.4
+
+Result set narrow
+
+If attribute 8 is given for scan, the value is the name of a result set. Each hit count in scan is @and'ed with the result set given.
+
+Approx limit
+
+The approx (as for search) is a way to enable approx hit counts for scan hit counts. However, it does NOT appear to work at the moment.
+
+
+ AdamDickmeiss - 19 Dec 2005
+
+
+-->
 
 
  </chapter> 
