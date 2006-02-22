@@ -1,4 +1,4 @@
-/* $Id: attribute.c,v 1.20 2005-03-30 09:25:23 adam Exp $
+/* $Id: attribute.c,v 1.21 2006-02-22 08:42:16 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -56,8 +56,13 @@ int att_getentbyatt(ZebraHandle zi, attent *res, oid_value set, int att,
 	zebraExplain_loadAttsets (zi->reg->dh, zi->res);
 	p = data1_attset_search_id (zi->reg->dh, set);
     }
-    if (!p)
-	return -2;
+    if (!p)   /* set undefined */
+    {
+	if (sattr)     
+	    return -1; /* return bad string attribute */
+	else
+	    return -2; /* return bad set */
+    }
     if (!(r = getatt(p, att, sattr)))
 	return -1;
     res->attset_ordinal = r->parent->reference;
