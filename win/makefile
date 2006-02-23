@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.25.2.5 2005-08-30 13:09:13 adam Exp $
+# $Id: makefile,v 1.25.2.6 2006-02-23 14:30:32 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -155,9 +155,10 @@ iconv:
 # (if you set things up right!)
 
 COMMON_C_OPTIONS=          \
-  /nologo /W3 /GX /FD /c   \
+  /nologo /W3 /EHsc /FD /c   \
   /D "WIN32"               \
   /D"_CONSOLE" /D"_MBCS"   \
+  /D"_CRT_SECURE_NO_DEPRECATE" \
   $(ICONV_DEF)             \
   $(EXPAT_DEF)             \
   /FR"$(OBJDIR)\\"         \
