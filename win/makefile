@@ -1,11 +1,11 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.39 2006-02-09 09:20:23 adam Exp $
+# $Id: makefile,v 1.40 2006-02-23 14:41:15 adam Exp $
  
 ###########################################################
 ############### Parameters 
 ###########################################################
 
-DEBUG=1   # 0 for release, 1 for debug
+DEBUG=0   # 0 for release, 1 for debug
 
 # EXPAT is optional. It's required for grs.xml-filters.
 HAVE_EXPAT=1
@@ -197,12 +197,24 @@ libxslt:
 
 !endif
 
+!if $(HAVE_LIBXSLT)
+MOD_ALVIS_OBJS= $(OBJDIR)\alvis.obj
+MOD_ALVIS_CFLAGS=/DIDZEBRA_STATIC_ALVIS=1
+MOD_ALVIS_OBJS= $(OBJDIR)\xslt.obj
+MOD_ALVIS_CFLAGS=/DIDZEBRA_STATIC_XSLT=1
+!else
+MOD_ALVIS_OBJS=
+MOD_ALVIS_CFLAGS=
+MOD_ALVIS_OBJS=
+MOD_ALVIS_CFLAGS=
+!endif
+
 ### C and CPP compiler  (the same thing)
 # Note: $(CPP) has already been defined in the environment
 # (if you set things up right!)
 
 COMMON_C_OPTIONS=          \
-  /nologo /W3 /GX /FD /c   \
+  /nologo /W3 /EHsc /FD /c \
   /D "WIN32"               \
   /D"_CONSOLE" /D"_MBCS"   \
   $(ICONV_DEF)             \
@@ -220,8 +232,8 @@ COMMON_C_OPTIONS=          \
   /DIDZEBRA_STATIC_GRS_REGX=1 \
   /DIDZEBRA_STATIC_GRS_MARC=1 \
   /DIDZEBRA_STATIC_GRS_DANBIB=1 \
-  /DIDZEBRA_STATIC_ALVIS=1 \
-  /DIDZEBRA_STATIC_XSLT=1 \
+  $(MOD_ALVIS_CFLAGS) \
+  $(MOD_XSLT_CFLAGS) \
   /DIDZEBRA_STATIC_SAFARI=1 \
   $(BZIP2DEF)
 
@@ -308,7 +320,8 @@ APITEST_OBJS= \
 	$(OBJDIR)\apitest.obj
 
 ZEBRALIB_OBJS= \
-	$(OBJDIR)\alvis.obj \
+        $(MOD_ALVIS_OBJS) \
+	$(MOD_XSLT_OBJS) \
 	$(OBJDIR)\atoi_zn.obj \
 	$(OBJDIR)\attribute.obj \
 	$(OBJDIR)\bfile.obj \
@@ -402,7 +415,6 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\trunc.obj \
 	$(OBJDIR)\xmlread.obj \
 	$(OBJDIR)\xpath.obj \
-	$(OBJDIR)\xslt.obj \
 	$(OBJDIR)\zebra-lock.obj \
 	$(OBJDIR)\zebraapi.obj \
 	$(OBJDIR)\zebramap.obj \
