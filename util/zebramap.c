@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.32.2.4 2005-03-11 21:10:13 adam Exp $
+/* $Id: zebramap.c,v 1.32.2.5 2006-02-23 13:27:16 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -277,7 +277,7 @@ chrmaptab zebra_charmap_get (ZebraMaps zms, unsigned reg_id)
     }
     if (!zm->maptab)
     {
-	if (!zm->maptab_name || !yaz_matchstr (zm->maptab_name, "@"))
+	if (!zm->maptab_name || !strcmp (zm->maptab_name, "@"))
 	    return NULL;
 	if (!(zm->maptab = chrmaptab_create (zms->tabpath,
 					     zm->maptab_name, 0,
