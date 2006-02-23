@@ -1,4 +1,4 @@
-/* $Id: xslt1.c,v 1.5 2005-09-13 11:51:11 adam Exp $
+/* $Id: xslt1.c,v 1.6 2006-02-23 11:26:00 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -46,7 +46,8 @@ int main(int argc, char **argv)
 
     do_query(__LINE__, zh, "@attr 1=title computer", 3);
     do_query(__LINE__, zh, "@attr 1=control 11224466", 1);
-    do_query_x(__LINE__, zh, "@attr 1=titl computer", 0, 121);
+    do_query_x(__LINE__, zh, "@attr 1=titl computer", 0, 114);
+    do_query_x(__LINE__, zh, "@attr 1=4 computer", 0, 121);
     
     return close_down(zh, zs, 0);
 }
