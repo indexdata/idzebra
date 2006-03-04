@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.26 2006-03-04 21:07:57 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.27 2006-03-04 21:39:20 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -1141,6 +1141,31 @@
        echo "$error";
      ]]>
     </screen>  
+    The <literal>action</literal> parameter can be any of 
+    <literal>recordInsert</literal> (will fail if the record already exists),
+    <literal>recordReplace</literal> (will fail if the record does not exist),
+    <literal>recordDelete</literal> (will fail if the record does not
+       exist), and
+    <literal>specialUpdate</literal> (will insert or update the record
+       as needed).
+   </para>
+   <para>
+    If a record is inserted
+    using the action  <literal>recordInsert</literal> 
+    one can specify the optional
+    <literal>recordIdOpaque</literal> parameter, which is a
+    client-supplied, opaque record identifier. This identifier will
+    replace zebra's own automagic identifier generation.  
+   </para>
+   <para>
+    When using the action <literal>recordReplace</literal> or
+    <literal>recordDelete</literal>, one must specify the additional 
+    <literal>recordIdNumber</literal> parameter, which must be an
+    existing Zebra internal system ID number. When retrieving existing
+    records, the ID number is returned in the field
+    <literal>/*/id:idzebra/localnumber</literal> in the namespace
+    <literal>xmlns:id="http://www.indexdata.dk/zebra/"</literal>,
+    where it can be picked up for later record updates or deletes. 
    </para>
  </sect1>
 
