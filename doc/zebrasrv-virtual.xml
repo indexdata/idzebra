@@ -1,5 +1,5 @@
 <!-- 
-   $Id: zebrasrv-virtual.xml,v 1.3 2006-01-19 09:27:00 marc Exp $
+   $Id: zebrasrv-virtual.xml,v 1.4 2006-03-08 10:47:54 mike Exp $
    Description of the virtual host mechanism in YAZ GFS
    Included in both manual and man page for yaz-ztest
 -->
@@ -140,8 +140,13 @@
     <para>
      Specifies  <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/ <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink> ZeeRex content for this server. Copied verbatim
      to the client. As things are now, some of the Explain content
-     seeem redundant because host information, etc. is also stored
+     seems redundant because host information, etc. is also stored
      elsewhere.
+    </para>
+    <para>
+     The format of the Explain record is described in detail, with
+     examples, on the file ZeeRex web-site,
+     <ulink url="http://explain.z3950.org/"></ulink>.
     </para>
    </listitem>
   </varlistentry>

@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.16 2006-02-16 16:50:18 marc Exp $ -->
+ <!-- $Id: server.xml,v 1.17 2006-03-08 10:47:37 mike Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -743,6 +743,9 @@
     <literal>operation</literal>=<literal>explain</literal>
     and version-number specified)
     or with a simple HTTP GET at the server's basename.
+    The ZeeRex record returned in response is the one embedded
+    in the YAZ Frontend Server configuration file that is described in the
+    <link linkend="gfs-config">Virtual Hosts</link> documentation.
    </para>
     <para>
      Unfortunately, the data found in the 
@@ -755,7 +758,8 @@
     <para>
      There is no linkeage whatsoever between the Z39.50 explain model
      and the SRU/SRW explain response (well, at least not implemented
-     in Zebra, that is ..).
+     in Zebra, that is ..).  Zebra does not provide a means using
+     Z39.50 to obtain the ZeeRex record.
      </para>
   </sect2>
 
@@ -764,49 +768,40 @@
     <para>
      Surf into <literal>http://localhost:9999</literal>
      to get an explain response, or use
-     <screen>
-     <![CDATA[
+     <screen><![CDATA[
       http://localhost:9999/?version=1.1&operation=explain
-     ]]>
-     </screen>
+     ]]></screen>
     </para>
     <para>
      See number of hits for a query
-     <screen>
-     <![CDATA[
+     <screen><![CDATA[
        http://localhost:9999/?version=1.1&operation=searchRetrieve
                        &query=text=(plant%20and%20soil)
-     ]]>
-     </screen>
+     ]]></screen>
     </para>
     <para>
       Fetch record 5-7 in Dublin Core format
-     <screen>
-     <![CDATA[
+     <screen><![CDATA[
        http://localhost:9999/?version=1.1&operation=searchRetrieve
                        &query=text=(plant%20and%20soil)
                        &startRecord=5&maximumRecords=2&recordSchema=dc
- 
-     ]]>
-     </screen>
+     ]]></screen>
     </para>
     <para>
      Even search using PQF queries using the <emphasis>extended naughty 
      verb</emphasis> <literal>x-pquery</literal>
-     <screen>
-     <![CDATA[
+     <screen><![CDATA[
       http://localhost:9999/?version=1.1&operation=searchRetrieve
                        &x-pquery=@attr%201=text%20@and%20plant%20soil
-     ]]> 
-     </screen>
-     or scan indexes using the <emphasis>extended extremely naughty 
+     ]]></screen>
+    </para>
+    <para>
+     Or scan indexes using the <emphasis>extended extremely naughty 
      verb</emphasis> <literal>x-pScanClause</literal>
-     <screen>
-     <![CDATA[
+     <screen><![CDATA[
       http://localhost:9999/?version=1.1&operation=scan
                        &x-pScanClause=@attr%201=text%20something
-     ]]> 
-     </screen>
+     ]]></screen>
      <emphasis>Don't do this in production code!</emphasis>
      But it's a great fast debugging aid.
     </para>
