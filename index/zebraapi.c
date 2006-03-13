@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.202 2006-02-21 15:23:11 adam Exp $
+/* $Id: zebraapi.c,v 1.203 2006-03-13 17:42:09 mike Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -328,7 +328,14 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     data1_set_tabroot (reg->dh, reg_path);
     reg->recTypes = recTypes_init (zs->record_classes, reg->dh);
 
-    reg->zebra_maps = zebra_maps_open (res, reg_path);
+    if ((reg->zebra_maps = zebra_maps_open (res, reg_path)) == 0) {
+	/* ### Do we need to destroy reg->recTypes? */
+	bfs_destroy(reg->bfs);
+	data1_destroy(reg->dh);
+	xfree(reg);
+	return 0;
+    }
+
     reg->rank_classes = NULL;
 
     reg->key_buf = 0;
