@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.43 2005-08-30 12:23:02 adam Exp $
+/* $Id: zebramap.c,v 1.44 2006-03-13 17:40:28 mike Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -77,7 +77,8 @@ void zebra_maps_close (ZebraMaps zms)
     xfree (zms);
 }
 
-static void zebra_map_read (ZebraMaps zms, const char *name)
+/* Returns 0 if all is well, -1 on fatal error */
+static int zebra_map_read (ZebraMaps zms, const char *name, int fail_fatal)
 {
     FILE *f;
     char line[512];
@@ -88,8 +89,9 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 
     if (!(f = yaz_fopen(zms->tabpath, name, "r", zms->tabroot)))
     {
-	yaz_log(YLOG_WARN|YLOG_ERRNO, "%s", name);
-	return ;
+	int level = fail_fatal ? YLOG_FATAL : YLOG_WARN;
+	yaz_log(level|YLOG_ERRNO, "%s", name);
+	return -1;
     }
     while ((argc = readconf_line(f, &lineno, line, 512, argv, 10)))
     {
@@ -146,13 +148,15 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 
     for (zp = zms->map_list; zp; zp = zp->next)
 	zms->lookup_array[zp->reg_id] = zp;
+
+    return 0;
 }
 
 static void zms_map_handle (void *p, const char *name, const char *value)
 {
     ZebraMaps zms = (ZebraMaps) p;
     
-    zebra_map_read (zms, value);
+    (void) zebra_map_read (zms, value, 0);
 }
 
 ZebraMaps zebra_maps_open (Res res, const char *base)
@@ -180,7 +184,8 @@ ZebraMaps zebra_maps_open (Res res, const char *base)
     for (i = 0; i<256; i++)
 	zms->lookup_array[i] = 0;
     if (!res || !res_trav (res, "index", zms, zms_map_handle))
-	zebra_map_read (zms, "default.idx");
+	if (zebra_map_read (zms, "default.idx", 1) < 0)
+	    return 0;
 
     zms->wrbuf_1 = wrbuf_alloc();
 
