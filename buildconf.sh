@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: buildconf.sh,v 1.15 2006-03-20 09:30:13 mike Exp $
+# $Id: buildconf.sh,v 1.16 2006-03-20 09:41:08 mike Exp $
 set -x
 dir=`aclocal --print-ac-dir`
 aclocal -I .
@@ -62,7 +62,8 @@ Or just build the Debian packages without configuring
   dpkg-buildpackage -rfakeroot
 
 When building from a CVS checkout, you need these Debian tools:
-  docbook-utils, docbook, docbook-xml, docbook-dsssl, jade, jadetex,
+  docbook-utils, docbook, docbook-xml, docbook-dsssl,
+  docbook-defguide, docbook-website, docbook-xsl, jade, jadetex,
   libyaz-dev, libexpat1-dev, libtcl8.3-dev, libbz2-dev
 and if you want the Alvis/XSLT filter, you also need:
   libxslt1-dev
