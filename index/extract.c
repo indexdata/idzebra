@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.203 2006-02-20 18:39:43 adam Exp $
+/* $Id: extract.c,v 1.204 2006-03-20 15:17:30 mike Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1374,8 +1374,8 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 	    {
 		if (staticrank < 0)
 		{
-		    yaz_log(YLOG_WARN, "staticrank = %d. Setting to 0",
-			    staticrank);
+		    yaz_log(YLOG_WARN, "staticrank = %ld. Setting to 0",
+			    (long) staticrank);
 		    staticrank = 0;
 		}
 		*keyp++ = staticrank;
