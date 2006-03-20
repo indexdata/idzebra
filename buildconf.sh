@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: buildconf.sh,v 1.14 2006-02-07 00:17:44 adam Exp $
+# $Id: buildconf.sh,v 1.15 2006-03-20 09:30:13 mike Exp $
 set -x
 dir=`aclocal --print-ac-dir`
 aclocal -I .
@@ -64,5 +64,10 @@ Or just build the Debian packages without configuring
 When building from a CVS checkout, you need these Debian tools:
   docbook-utils, docbook, docbook-xml, docbook-dsssl, jade, jadetex,
   libyaz-dev, libexpat1-dev, libtcl8.3-dev, libbz2-dev
+and if you want the Alvis/XSLT filter, you also need:
+  libxslt1-dev
+
+To build against a YAZ in an adjacent dirctory, use:
+	CFLAGS="-g -O0" LDFLAGS="-L`pwd`/../yaz/src/.libs" CPPFLAGS="-I../yaz/include" ./configure
 EOF
 fi
