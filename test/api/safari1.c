@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.8 2005-11-10 08:08:19 adam Exp $
+/* $Id: safari1.c,v 1.9 2006-03-21 14:36:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -65,24 +65,24 @@ int main(int argc, char **argv)
     ZebraHandle zh = zebra_open(zs, 0);
 
     init_data(zh, myrec);
-    do_query(__LINE__, zh, "@attr 1=any the", 3);
-    do_query(__LINE__, zh, "@attr 1=any {the art}", 1);
-    do_query(__LINE__, zh, "@attr 1=any {den gamle}", 0);
-    do_query(__LINE__, zh, "@attr 1=any {the gamle}", 1);
-    do_query(__LINE__, zh, "@attr 1=any {the of}", 0);
+    do_query(__LINE__, zh, "@attr 4=3 @attr 1=any the", 3);
+    do_query(__LINE__, zh, "@attr 4=3 @attr 1=any @and the art", 1);
+    do_query(__LINE__, zh, "@attr 4=3 @attr 1=any @and den gamle", 0);
+    do_query(__LINE__, zh, "@attr 4=3 @attr 1=any @and the gamle", 1);
+    do_query(__LINE__, zh, "@attr 4=3 @attr 1=any @and the of", 0);
 
     /* verify that we get these records exactly */
     ids[0] = 24338;
     ids[1] = 24339;
     ids[2] = 24340;
-    meta_query(__LINE__, zh, "@attr 1=any mand", 3, ids);
+    meta_query(__LINE__, zh, "@attr 4=3 @attr 1=any mand", 3, ids);
 
     /* limit to 125061 */
     limits[0] = 125061;
     limits[1] = 0;
     zebra_set_limit(zh, 0, limits);
     ids[0] = 24339;
-    meta_query(__LINE__, zh, "@attr 1=any mand", 1, ids);
+    meta_query(__LINE__, zh, "@attr 4=3 @attr 1=any mand", 1, ids);
 
     /* limit to 125060, 125061 */
     limits[0] = 125061;
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
     zebra_set_limit(zh, 0, limits);
     ids[0] = 24338;
     ids[1] = 24339;
-    meta_query(__LINE__, zh, "@attr 1=any mand", 2, ids);
+    meta_query(__LINE__, zh, "@attr 4=3 @attr 1=any mand", 2, ids);
 
     /* all except 125062 */
     limits[0] = 125062;
@@ -100,11 +100,11 @@ int main(int argc, char **argv)
 
     ids[0] = 24338;
     ids[1] = 24339;
-    meta_query(__LINE__, zh, "@attr 1=any mand", 2, ids);
+    meta_query(__LINE__, zh, "@attr 4=3 @attr 1=any mand", 2, ids);
 
     /* no limit */
     zebra_set_limit(zh, 1, 0);
-    do_query(__LINE__, zh, "@attr 1=any mand", 3);
+    do_query(__LINE__, zh, "@attr 4=3 @attr 1=any mand", 3);
 
     return close_down(zh, zs, 0);
 }
