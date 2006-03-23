@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.155 2006-02-20 18:39:43 adam Exp $
+/* $Id: index.h,v 1.156 2006-03-23 09:15:25 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -27,6 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdlib.h>
 #include <idzebra/version.h>
 #include <idzebra/util.h>
+#include <idzebra/flock.h>
 #include <sortidx.h>
 
 #if HAVE_SYS_TIMES_H
@@ -141,24 +142,12 @@ void zebraIndexUnlock (ZebraHandle zh);
 int zebraIndexLock (BFiles bfs, ZebraHandle zh, int commitNow, const char *rval);
 int zebraIndexWait (ZebraHandle zh, int commitPhase);
 
+void zebra_lock_prefix (Res res, char *dst);
+
 #define FNAME_MAIN_LOCK   "zebraidx.LCK"
 #define FNAME_COMMIT_LOCK "zebracmt.LCK"
 #define FNAME_ORG_LOCK    "zebraorg.LCK"
 #define FNAME_TOUCH_TIME  "zebraidx.time"
-
-typedef struct zebra_lock_info *ZebraLockHandle;
-ZebraLockHandle zebra_lock_create(const char *dir,
-                                  const char *file, int excl_flag);
-void zebra_lock_destroy (ZebraLockHandle h);
-int zebra_lock (ZebraLockHandle h);
-int zebra_lock_nb (ZebraLockHandle h);
-int zebra_unlock (ZebraLockHandle h);
-int zebra_lock_fd (ZebraLockHandle h);
-void zebra_lock_prefix (Res res, char *dst);
-char *zebra_mk_fname (const char *dir, const char *name);
-
-int zebra_lock_w (ZebraLockHandle h);
-int zebra_lock_r (ZebraLockHandle h);
 
 void zebra_load_atts (data1_handle dh, Res res);
 

@@ -1,11 +1,11 @@
-## $Id: Makefile.am,v 1.35 2006-01-19 13:31:08 adam Exp $
+## $Id: Makefile.am,v 1.36 2006-03-23 09:15:25 adam Exp $
 
 noinst_PROGRAMS = apitest kdump
 
 lib_LTLIBRARIES = libidzebra-api.la
 
 libidzebra_api_la_SOURCES = dir.c dirs.c trav.c kinput.c kcompare.c \
- attribute.c symtab.c recindex.c recstat.c lockutil.c  \
+ attribute.c symtab.c recindex.c recstat.c \
  zebraapi.c api_swig.c \
  zinfo.c invstat.c sortidx.c compact.c zsets.c zrpn.c \
  rank1.c trunc.c retrieve.c extract.c rankstatic.c \
