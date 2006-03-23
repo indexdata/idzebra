@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2005, Index Data ApS
  * See the file LICENSE for details.
  *
- * $Id: tstflock.c,v 1.3 2006-03-23 17:32:03 adam Exp $
+ * $Id: tstflock.c,v 1.4 2006-03-23 17:50:17 adam Exp $
  */
 
 #include <yaz/test.h>
@@ -75,9 +75,8 @@ static void tst_win32()
             0,                 /* use default creation flags */
             &dwThreadId[i]);   /* returns the thread identifier */
     }
-    WaitForMultipleObjects(NUM_THREADS, handles, TRUE, INFINITE);
     /* join */
-    *seqp++ = '\0';
+    WaitForMultipleObjects(NUM_THREADS, handles, TRUE, INFINITE);
 }
 #endif
 
@@ -91,7 +90,6 @@ static void tst_pthread()
 
     for (i = 0; i<NUM_THREADS; i++)
         pthread_join(child_thread[i], 0);
-    *seqp++ = '\0';
 }
 #endif
 
