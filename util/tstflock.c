@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2005, Index Data ApS
  * See the file LICENSE for details.
  *
- * $Id: tstflock.c,v 1.2 2006-03-23 12:07:12 adam Exp $
+ * $Id: tstflock.c,v 1.3 2006-03-23 17:32:03 adam Exp $
  */
 
 #include <yaz/test.h>
@@ -58,7 +58,7 @@ DWORD WINAPI ThreadProc(void *p)
     return 0;
 }
 
-static void tst1()
+static void tst_win32()
 {
     HANDLE handles[NUM_THREADS];
     DWORD dwThreadId[NUM_THREADS];
@@ -68,12 +68,12 @@ static void tst1()
     {
         void *pData = &id[i];
         handles[i] = CreateThread(
-            NULL,              // default security attributes
-            0,                 // use default stack size  
-            ThreadProc,        // thread function 
-            pData,             // argument to thread function 
-            0,                 // use default creation flags 
-            &dwThreadId[i]);      // returns the thread identifier 
+            NULL,              /* default security attributes */
+            0,                 /* use default stack size */
+            ThreadProc,        /* thread function */
+            pData,             /* argument to thread function */
+            0,                 /* use default creation flags */
+            &dwThreadId[i]);   /* returns the thread identifier */
     }
     WaitForMultipleObjects(NUM_THREADS, handles, TRUE, INFINITE);
     /* join */
@@ -82,15 +82,15 @@ static void tst1()
 #endif
 
 #if YAZ_POSIX_THREADS
-static void tst1()
+static void tst_pthread()
 {
-    pthread_t child_thread[2];
-    int id1 = 1;
-    int id2 = 2;
-    pthread_create(&child_thread[0], 0 /* attr */, run_func, &id1);
-    pthread_create(&child_thread[1], 0 /* attr */, run_func, &id2);
-    pthread_join(child_thread[0], 0);
-    pthread_join(child_thread[1], 0);
+    pthread_t child_thread[NUM_THREADS];
+    int i, id[NUM_THREADS];
+    for (i = 0; i<NUM_THREADS; i++)
+        pthread_create(&child_thread[i], 0 /* attr */, run_func, &id[i]);
+
+    for (i = 0; i<NUM_THREADS; i++)
+        pthread_join(child_thread[i], 0);
     *seqp++ = '\0';
 }
 #endif
@@ -98,7 +98,15 @@ static void tst1()
 int main(int argc, char **argv)
 {
     YAZ_CHECK_INIT(argc, argv);
-    tst1();
+
+#ifdef WIN32
+    tst_win32();
+#endif
+#if YAZ_POSIX_THREADS
+    tst_pthread();
+#endif
+
+    *seqp++ = '\0';
     printf("seq=%s\n", seq);
 #if 0
     /* does not pass.. for bug 529 */
