@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.41 2006-02-23 14:43:13 adam Exp $
+# $Id: makefile,v 1.42 2006-03-23 12:07:13 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -124,11 +124,13 @@ ZEBRA_RES=$(OBJDIR)\idzebra.res
 ZSERVER=$(BINDIR)\zebrasrv.exe
 ZINDEX=$(BINDIR)\zebraidx.exe
 APITEST=$(BINDIR)\apitest.exe
+TSTFLOCK=$(BINDIR)\tstflock.exe
 
 # shortcut names defined here
 zindex: $(ZINDEX)
 zserver: $(ZSERVER)
 apitest: $(APITEST)
+tstflock: $(TSTFLOCK)
 dll: $(DLL) 
 ###########################################################
 ############### Compiler and linker options 
@@ -319,6 +321,8 @@ ZEBRAIDX_OBJS= \
 	$(OBJDIR)\main.obj 
 APITEST_OBJS= \
 	$(OBJDIR)\apitest.obj
+TSTFLOCK_OBJS= \
+	$(OBJDIR)\tstflock.obj
 
 ZEBRALIB_OBJS= \
         $(MOD_ALVIS_OBJS) \
@@ -372,7 +376,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\kcontrol.obj \
 	$(OBJDIR)\kinput.obj \
 	$(OBJDIR)\limit.obj \
-	$(OBJDIR)\lockutil.obj \
+	$(OBJDIR)\flock.obj \
 	$(OBJDIR)\lookgrep.obj \
 	$(OBJDIR)\lookup.obj \
 	$(OBJDIR)\lookupec.obj \
@@ -526,6 +530,20 @@ $(APITEST) : "$(BINDIR)" $(APITEST_OBJS) $(YAZLIBS)
 		$(LINK_LIBS) 
 		$(APITEST_OBJS)
 <<
+
+$(TSTFLOCK) : "$(BINDIR)" $(TSTFLOCK_OBJS)  $(IMPLIB)
+	@echo Linking $(TSTFLOCK)
+	$(LINK) @<<
+		$(LNKOPT) 
+		$(TSTFLOCK_LINK_OPTIONS)
+		/out:$(TSTFLOCK) 
+		$(IMPLIB)
+		$(YAZLIBS)
+		$(BZIP2LIB)
+		$(LINK_LIBS) 
+		$(TSTFLOCK_OBJS) 
+<<
+
 
 $(DLL) $(IMPLIB): "$(BINDIR)" $(ZEBRALIB_OBJS)
 	@echo Linking the dll  $(DLL)
