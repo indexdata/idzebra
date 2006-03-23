@@ -1,4 +1,4 @@
-/* $Id: flock.c,v 1.2 2006-03-23 20:38:00 adam Exp $
+/* $Id: flock.c,v 1.3 2006-03-23 20:40:31 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -44,7 +44,7 @@ struct zebra_lock_info {
     char *fname;
 };
 
-int log_level = 0;
+static int log_level = YLOG_LOG;
 
 char *zebra_mk_fname (const char *dir, const char *name)
 {
