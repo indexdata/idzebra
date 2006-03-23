@@ -1,4 +1,4 @@
-/* $Id: flock.c,v 1.1 2006-03-23 09:15:25 adam Exp $
+/* $Id: flock.c,v 1.2 2006-03-23 20:38:00 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -37,10 +37,14 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <idzebra/flock.h>
 #include <yaz/xmalloc.h>
+#include <yaz/log.h>
 
 struct zebra_lock_info {
     int fd;
+    char *fname;
 };
+
+int log_level = 0;
 
 char *zebra_mk_fname (const char *dir, const char *name)
 {
@@ -93,7 +97,7 @@ ZebraLockHandle zebra_lock_create (const char *dir, const char *name)
 	xfree (h);
         h = 0;
     }
-    xfree (fname);
+    h->fname = fname;
     return h;
 }
 
@@ -103,6 +107,7 @@ void zebra_lock_destroy (ZebraLockHandle h)
 	return;
     if (h->fd != -1)
 	close (h->fd);
+    xfree (h->fname);
     xfree (h);
 }
 
@@ -119,6 +124,7 @@ static int unixLock (int fd, int type, int cmd)
 
 int zebra_lock_w (ZebraLockHandle h)
 {
+    yaz_log(log_level, "zebra_lock_w p=%p fname=%s", h, h->fname);
 #ifdef WIN32
     return _locking (h->fd, _LK_LOCK, 1);
 #else
@@ -128,6 +134,7 @@ int zebra_lock_w (ZebraLockHandle h)
 
 int zebra_lock_r (ZebraLockHandle h)
 {
+    yaz_log(log_level, "zebra_lock_r p=%p fname=%s", h, h->fname);
 #ifdef WIN32
     return _locking (h->fd, _LK_LOCK, 1);
 #else
@@ -137,6 +144,7 @@ int zebra_lock_r (ZebraLockHandle h)
 
 int zebra_unlock (ZebraLockHandle h)
 {
+    yaz_log(log_level, "zebra_unlock fd=%d p=%p fname=%s", h->fd, h, h->fname);
 #ifdef WIN32
     return _locking (h->fd, _LK_UNLCK, 1);
 #else
