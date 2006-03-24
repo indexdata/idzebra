@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.8.2.2 2005-04-23 16:31:54 adam Exp $
+/* $Id: d1_read.c,v 1.8.2.3 2006-03-24 13:47:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1126,6 +1126,7 @@ int data1_iconv (data1_handle dh, NMEM m, data1_node *n,
                   const char *tocode, 
                   const char *fromcode)
 {
+    yaz_log(LOG_DEBUG, "data1_iconv tocode=%s fromcode=%s", tocode, fromcode);
     if (yaz_matchstr (tocode, fromcode))
     {
         WRBUF wrbuf = wrbuf_alloc();

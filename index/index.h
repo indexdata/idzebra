@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.109.2.1 2005-05-09 19:57:38 adam Exp $
+/* $Id: index.h,v 1.109.2.2 2006-03-24 13:47:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -50,6 +50,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "zinfo.h"
 #include <passwddb.h>
 #include <rset.h>
+#include <zebra-flock.h>
 
 YAZ_BEGIN_CDECL
 
@@ -152,19 +153,7 @@ int zebraIndexWait (ZebraHandle zh, int commitPhase);
 #define FNAME_ORG_LOCK    "zebraorg.LCK"
 #define FNAME_TOUCH_TIME  "zebraidx.time"
 
-typedef struct zebra_lock_info *ZebraLockHandle;
-ZebraLockHandle zebra_lock_create(const char *dir,
-                                  const char *file, int excl_flag);
-void zebra_lock_destroy (ZebraLockHandle h);
-int zebra_lock (ZebraLockHandle h);
-int zebra_lock_nb (ZebraLockHandle h);
-int zebra_unlock (ZebraLockHandle h);
-int zebra_lock_fd (ZebraLockHandle h);
 void zebra_lock_prefix (Res res, char *dst);
-char *zebra_mk_fname (const char *dir, const char *name);
-
-int zebra_lock_w (ZebraLockHandle h);
-int zebra_lock_r (ZebraLockHandle h);
 
 void zebra_load_atts (data1_handle dh, Res res);
 

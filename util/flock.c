@@ -1,6 +1,6 @@
-/* $Id: lockutil.c,v 1.18 2004-01-22 11:27:21 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
-   Index Data Aps
+/* $Id: flock.c,v 1.4.2.1 2006-03-24 13:47:30 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 
@@ -30,16 +30,21 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifdef WIN32
 #include <io.h>
 #include <sys/locking.h>
-#else
+#endif
+#if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
-#include "index.h"
+#include <zebra-flock.h>
+#include <yaz/xmalloc.h>
+#include <yaz/log.h>
 
 struct zebra_lock_info {
     int fd;
-    int excl_flag;
+    char *fname;
 };
+
+int log_level = 0 /* YLOG_LOG|YLOG_FLUSH */;
 
 char *zebra_mk_fname (const char *dir, const char *name)
 {
@@ -74,34 +79,26 @@ char *zebra_mk_fname (const char *dir, const char *name)
     return fname;
 }
 
-ZebraLockHandle zebra_lock_create (const char *dir,
-                                   const char *name, int excl_flag)
+ZebraLockHandle zebra_lock_create (const char *dir, const char *name)
 {
     char *fname = zebra_mk_fname(dir, name);
     ZebraLockHandle h = (ZebraLockHandle) xmalloc (sizeof(*h));
 
-    h->excl_flag = excl_flag;
     h->fd = -1;
-
-    
 #ifdef WIN32
-    if (!h->excl_flag)
-        h->fd = open (name, O_BINARY|O_RDONLY);
+    h->fd = open (name, O_BINARY|O_RDONLY);
     if (h->fd == -1)
-        h->fd = open (fname, ((h->excl_flag > 1) ? O_EXCL : 0)|
-	    (O_BINARY|O_CREAT|O_RDWR), 0666);
+        h->fd = open (fname, (O_BINARY|O_CREAT|O_RDWR), 0666);
 #else
-    h->fd= open (fname, ((h->excl_flag > 1) ? O_EXCL : 0)|
-	    (O_BINARY|O_CREAT|O_RDWR), 0666);
+    h->fd= open (fname, (O_BINARY|O_CREAT|O_RDWR), 0666);
 #endif
     if (h->fd == -1)
     {
-	if (h->excl_flag <= 1)
-            logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
 	xfree (h);
         h = 0;
     }
-    xfree (fname);
+    h->fname = fname;
+    yaz_log(log_level, "zebra_lock_create fd=%d p=%p fname=%s", h->fd, h, h->fname);
     return h;
 }
 
@@ -109,18 +106,11 @@ void zebra_lock_destroy (ZebraLockHandle h)
 {
     if (!h)
 	return;
+    yaz_log(log_level, "zebra_lock_destroy fd=%d p=%p fname=%s", h->fd, h, h->fname);
     if (h->fd != -1)
 	close (h->fd);
+    xfree (h->fname);
     xfree (h);
-}
-
-void zebra_lock_prefix (Res res, char *path)
-{
-    const char *lock_dir = res_get_def (res, "lockDir", "");
-
-    strcpy (path, lock_dir);
-    if (*path && path[strlen(path)-1] != '/')
-        strcat (path, "/");
 }
 
 #ifndef WIN32
@@ -136,42 +126,35 @@ static int unixLock (int fd, int type, int cmd)
 
 int zebra_lock_w (ZebraLockHandle h)
 {
+    int r;
+    yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s", h->fd, h, h->fname);
 #ifdef WIN32
-    return _locking (h->fd, _LK_LOCK, 1);
+    while ((r = _locking (h->fd, _LK_LOCK, 1)))
+        ;
 #else
-    return unixLock (h->fd, F_WRLCK, F_SETLKW);
+    r = unixLock (h->fd, F_WRLCK, F_SETLKW);
 #endif
+    yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s OK", h->fd, h, h->fname);
+    return r;
 }
 
 int zebra_lock_r (ZebraLockHandle h)
 {
+    int r;
+    yaz_log(log_level, "zebra_lock_r fd=%d p=%p fname=%s", h->fd, h, h->fname);
 #ifdef WIN32
-    return _locking (h->fd, _LK_LOCK, 1);
+    while ((r = _locking (h->fd, _LK_LOCK, 1)))
+        ;
 #else
-    return unixLock (h->fd, F_RDLCK, F_SETLKW);
+    r = unixLock (h->fd, F_RDLCK, F_SETLKW);
 #endif
-}
-
-int zebra_lock (ZebraLockHandle h)
-{
-#ifdef WIN32
-    return _locking (h->fd, _LK_LOCK, 1);
-#else
-    return unixLock (h->fd, h->excl_flag ? F_WRLCK : F_RDLCK, F_SETLKW);
-#endif
-}
-
-int zebra_lock_nb (ZebraLockHandle h)
-{
-#ifdef WIN32
-    return _locking (h->fd, _LK_NBLCK, 1);
-#else
-    return unixLock (h->fd, h->excl_flag ? F_WRLCK : F_RDLCK, F_SETLK);
-#endif
+    yaz_log(log_level, "zebra_lock_r fd=%d p=%p fname=%s OK", h->fd, h, h->fname);
+    return r;
 }
 
 int zebra_unlock (ZebraLockHandle h)
 {
+    yaz_log(log_level, "zebra_unlock fd=%d p=%p fname=%s", h->fd, h, h->fname);
 #ifdef WIN32
     return _locking (h->fd, _LK_UNLCK, 1);
 #else
@@ -179,7 +162,3 @@ int zebra_unlock (ZebraLockHandle h)
 #endif
 }
 
-int zebra_lock_fd (ZebraLockHandle h)
-{
-    return h->fd;
-}

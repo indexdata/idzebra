@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.10 2005-09-09 14:22:12 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.11 2006-03-24 13:47:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -638,11 +638,11 @@ static int zebra_select_register (ZebraHandle zh, const char *new_reg)
             res_set (zh->res, "lockDir", zh->path_reg);
         sprintf (fname, "norm.%s.LCK", zh->reg_name);
         zh->lock_normal =
-            zebra_lock_create (res_get(zh->res, "lockDir"), fname, 0);
+            zebra_lock_create (res_get(zh->res, "lockDir"), fname);
         
         sprintf (fname, "shadow.%s.LCK", zh->reg_name);
         zh->lock_shadow =
-            zebra_lock_create (res_get(zh->res, "lockDir"), fname, 0);
+            zebra_lock_create (res_get(zh->res, "lockDir"), fname);
 
 	if (!zh->lock_normal || !zh->lock_shadow)
 	{
@@ -2145,5 +2145,14 @@ int zebra_sort_by_specstr (ZebraHandle zh,
     
     zebra_end_read(zh);
     return sort_status;
+}
+
+void zebra_lock_prefix (Res res, char *path)
+{
+    const char *lock_dir = res_get_def (res, "lockDir", "");
+
+    strcpy (path, lock_dir);
+    if (*path && path[strlen(path)-1] != '/')
+        strcat (path, "/");
 }
 

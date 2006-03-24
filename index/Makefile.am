@@ -1,11 +1,11 @@
-## $Id: Makefile.am,v 1.24 2004-08-04 08:35:23 adam Exp $
+## $Id: Makefile.am,v 1.23.2.1 2006-03-24 13:47:29 adam Exp $
 
 noinst_PROGRAMS = apitest kdump
 
 noinst_LIBRARIES = libzebra.a
 
 libzebra_a_SOURCES = dir.c dirs.c trav.c kinput.c kcompare.c \
- attribute.c symtab.c recindex.c recstat.c lockutil.c  \
+ attribute.c symtab.c recindex.c recstat.c \
  zebraapi.c zinfo.c invstat.c sortidx.c compact.c zsets.c zrpn.c \
  rank1.c trunc.c retrieve.c extract.c livcode.c \
  index.h recindex.h recindxp.h \
@@ -23,7 +23,7 @@ zebraidx_SOURCES = main.c
 zebrasrv_SOURCES = zserver.c
 zebrash_SOURCES = zebrash.c
 apitest_SOURCES = apitest.c
-kdump_SOURCES = kdump.c
+kdump_SOURCES=kdump.c kcompare.c
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE) -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\"
 

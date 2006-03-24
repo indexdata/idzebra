@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.9 2004-08-04 08:35:27 adam Exp $
+## $Id: Makefile.am,v 1.8.2.1 2006-03-24 13:47:30 adam Exp $
 
 noinst_LIBRARIES = libutil.a
 
@@ -9,6 +9,6 @@ EXTRA_DIST = zebrasrv.rh
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\"
 LDADD = libutil.a $(YAZLIB) $(TCL_LIB)
 
-libutil_a_SOURCES = res.c charmap.c zebramap.c passwddb.c zebra-lock.c dirent.c xpath.c atoi_zn.c
+libutil_a_SOURCES = res.c flock.c charmap.c zebramap.c passwddb.c zebra-lock.c dirent.c xpath.c
 
 passtest_SOURCES = passtest.c
