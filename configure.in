@@ -1,8 +1,8 @@
 dnl Zebra, Index Data Aps, 1995-2005
-dnl $Id: configure.in,v 1.91.2.19 2006-02-23 13:29:41 adam Exp $
+dnl $Id: configure.in,v 1.91.2.20 2006-03-24 14:05:44 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
-AM_INIT_AUTOMAKE(idzebra,1.3.34)
+AM_INIT_AUTOMAKE(idzebra,1.3.35)
 dnl ------ Substitutions
 AC_SUBST(TCL_INCLUDE)
 AC_SUBST(TCL_LIB)
