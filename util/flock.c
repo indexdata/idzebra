@@ -1,4 +1,4 @@
-/* $Id: flock.c,v 1.3 2006-03-23 20:40:31 adam Exp $
+/* $Id: flock.c,v 1.4 2006-03-24 13:33:57 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -44,7 +44,7 @@ struct zebra_lock_info {
     char *fname;
 };
 
-static int log_level = YLOG_LOG;
+int log_level = 0 /* YLOG_LOG|YLOG_FLUSH */;
 
 char *zebra_mk_fname (const char *dir, const char *name)
 {
@@ -98,6 +98,7 @@ ZebraLockHandle zebra_lock_create (const char *dir, const char *name)
         h = 0;
     }
     h->fname = fname;
+    yaz_log(log_level, "zebra_lock_create fd=%d p=%p fname=%s", h->fd, h, h->fname);
     return h;
 }
 
@@ -105,6 +106,7 @@ void zebra_lock_destroy (ZebraLockHandle h)
 {
     if (!h)
 	return;
+    yaz_log(log_level, "zebra_lock_destroy fd=%d p=%p fname=%s", h->fd, h, h->fname);
     if (h->fd != -1)
 	close (h->fd);
     xfree (h->fname);
@@ -124,22 +126,30 @@ static int unixLock (int fd, int type, int cmd)
 
 int zebra_lock_w (ZebraLockHandle h)
 {
-    yaz_log(log_level, "zebra_lock_w p=%p fname=%s", h, h->fname);
+    int r;
+    yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s", h->fd, h, h->fname);
 #ifdef WIN32
-    return _locking (h->fd, _LK_LOCK, 1);
+    while ((r = _locking (h->fd, _LK_LOCK, 1)))
+        ;
 #else
-    return unixLock (h->fd, F_WRLCK, F_SETLKW);
+    r = unixLock (h->fd, F_WRLCK, F_SETLKW);
 #endif
+    yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s OK", h->fd, h, h->fname);
+    return r;
 }
 
 int zebra_lock_r (ZebraLockHandle h)
 {
-    yaz_log(log_level, "zebra_lock_r p=%p fname=%s", h, h->fname);
+    int r;
+    yaz_log(log_level, "zebra_lock_r fd=%d p=%p fname=%s", h->fd, h, h->fname);
 #ifdef WIN32
-    return _locking (h->fd, _LK_LOCK, 1);
+    while ((r = _locking (h->fd, _LK_LOCK, 1)))
+        ;
 #else
-    return unixLock (h->fd, F_RDLCK, F_SETLKW);
+    r = unixLock (h->fd, F_RDLCK, F_SETLKW);
 #endif
+    yaz_log(log_level, "zebra_lock_r fd=%d p=%p fname=%s OK", h->fd, h, h->fname);
+    return r;
 }
 
 int zebra_unlock (ZebraLockHandle h)
