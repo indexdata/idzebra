@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.25.2.6 2006-02-23 14:30:32 adam Exp $
+# $Id: makefile,v 1.25.2.7 2006-03-24 13:56:17 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -285,7 +285,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\insert.obj \
 	$(OBJDIR)\invstat.obj \
 	$(OBJDIR)\kcompare.obj \
-	$(OBJDIR)\lockutil.obj \
+	$(OBJDIR)\flock.obj \
 	$(OBJDIR)\lookgrep.obj \
 	$(OBJDIR)\lookup.obj \
 	$(OBJDIR)\lookupec.obj \
