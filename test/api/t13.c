@@ -1,4 +1,4 @@
-/* $Id: t13.c,v 1.3 2005-09-13 13:15:24 adam Exp $
+/* $Id: t13.c,v 1.4 2006-03-25 15:34:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -23,9 +23,10 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /** test resources */
 #include <stdlib.h>
 #include <string.h>
+#include <yaz/test.h>
 #include <idzebra/api.h>
 
-void tst()
+static void tst_res(void)
 {
     Res default_res;  /* default resources */
     Res temp_res;     /* temporary resources */
@@ -35,19 +36,18 @@ void tst()
     int i;
 
     default_res = res_open(0, 0); /* completely empty */
-    if (!default_res)
-	exit(1);
+    YAZ_CHECK(default_res);
+
     res_set(default_res, "name1", "value1");
 
     temp_res = res_open(0, 0); /* completely empty */
-    if (!temp_res)
-	exit(1);
+    YAZ_CHECK(temp_res);
     
     zs = zebra_start_res(0, default_res, temp_res);
-    if (!zs)
-	exit(2);
+    YAZ_CHECK(zs);
     
     zh = zebra_open(zs, 0);
+    YAZ_CHECK(zh);
 
     zebra_select_database(zh, "Default");
 
@@ -56,8 +56,7 @@ void tst()
     {
 	/* we should find the name1 from default_res */
 	val = zebra_get_resource(zh, "name1", 0);
-	if (!val || strcmp(val, "value1"))
-	    exit(3);
+	YAZ_CHECK(val && !strcmp(val, "value1"));
 
 	/* make local override */
 	res_set(temp_res, "name1", "value2");
@@ -65,16 +64,13 @@ void tst()
 
 	/* we should find the name1 from temp_res */
 	val = zebra_get_resource(zh, "name1", 0);
-	if (!val || strcmp(val, "value2"))
-	    exit(4);
+	YAZ_CHECK(val && !strcmp(val, "value2"));
 	
 	val = zebra_get_resource(zh, "name4", 0);
-	if (!val || strcmp(val, "value4"))
-	    exit(4);
+	YAZ_CHECK(val && !strcmp(val, "value4"));
 	
 	res_clear(temp_res);
     }
-
     zebra_close(zh);
     zebra_stop(zs);
 
@@ -82,8 +78,42 @@ void tst()
     res_close(default_res);
 }
 
+static void tst_no_config(void)
+{
+    static char *xml_buf = "<gils><title>myx</title></gils>";
+    ZebraService zs;
+    ZebraHandle zh;
+    SYSNO sysno = 0;
+
+    zs = zebra_start_res(0, 0, 0);
+    YAZ_CHECK(zs);
+
+    zh = zebra_open(zs, 0);
+    YAZ_CHECK(zh);
+
+    YAZ_CHECK_EQ(zebra_select_database(zh, "Default"), ZEBRA_OK);
+
+    YAZ_CHECK_EQ(zebra_init(zh), ZEBRA_OK);
+    
+    zebra_set_resource(zh, "profilePath", "${srcdir:-.}/../../tab");
+    
+    YAZ_CHECK_EQ(zebra_insert_record(zh /* handle */,
+				     "grs.xml" /* record type */,
+				     &sysno, 0 /* match */,
+				     0 /* fname */,
+				     xml_buf, strlen(xml_buf),
+				     0 /* force_update */),
+	      ZEBRA_OK);
+
+    zebra_close(zh);
+    zebra_stop(zs);
+}
+
+
 int main(int argc, char **argv)
 {
-    tst();
-    exit(0);
+    YAZ_CHECK_INIT(argc, argv);
+    tst_res();
+    tst_no_config();
+    YAZ_CHECK_TERM;
 }
