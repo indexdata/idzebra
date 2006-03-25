@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.204 2006-03-20 15:17:30 mike Exp $
+/* $Id: extract.c,v 1.205 2006-03-25 21:18:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -921,7 +921,7 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
     
     if (!recType)
     {
-        yaz_log (YLOG_WARN, "No such record type: %s", zh->m_record_type);
+        yaz_log (YLOG_WARN, "No such record type: %s", recordType);
         return ZEBRA_FAIL;
     }
     
