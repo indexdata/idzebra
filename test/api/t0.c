@@ -1,4 +1,4 @@
-/* $Id: t0.c,v 1.1 2006-02-21 15:23:11 adam Exp $
+/* $Id: t0.c,v 1.2 2006-03-25 15:33:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -23,16 +23,17 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /** t0 - test zebra_start .. */
 
 #include <stdlib.h>
-#include "testlib.h"
+#include <idzebra/api.h>
+#include <yaz/test.h>
 	
 int main(int argc, char **argv)
 {
     ZebraService zs;
 
-    start_log(argc, argv);
-
+    YAZ_CHECK_INIT(argc, argv);
+    
     zs = zebra_start("xxxxpoiasdfasfd.cfg");
-    if (zs)
-	exit(1);
-    return 0;
+    YAZ_CHECK(!zs);
+
+    YAZ_CHECK_TERM;
 }
