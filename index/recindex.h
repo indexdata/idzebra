@@ -1,4 +1,4 @@
-/* $Id: recindex.h,v 1.25 2005-08-09 12:30:46 adam Exp $
+/* $Id: recindex.h,v 1.26 2006-03-26 14:17:01 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -44,13 +44,13 @@ typedef struct record_info {
 typedef struct records_info *Records;
 
 Record rec_cp(Record rec);
-void rec_del(Records p, Record *recpp);
+ZEBRA_RES rec_del(Records p, Record *recpp);
 void rec_rm(Record *recpp);
-void rec_put(Records p, Record *recpp);
+ZEBRA_RES rec_put(Records p, Record *recpp);
 Record rec_new(Records p);
 Record rec_get(Records p, SYSNO sysno);
 Record rec_get_root(Records p);
-void rec_close (Records *p);
+ZEBRA_RES rec_close (Records *p);
 Records rec_open(BFiles bfs, int rw, int compression_method);
 char *rec_strdup(const char *s, size_t *len);
 void rec_prstat(Records p);

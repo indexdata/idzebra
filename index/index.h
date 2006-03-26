@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.156 2006-03-23 09:15:25 adam Exp $
+/* $Id: index.h,v 1.157 2006-03-26 14:17:01 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -217,7 +217,6 @@ struct zebra_register {
     int seqno;
     int last_val;
     int stop_flag;
-    int active; /* 0=shutdown, 1=enabled and inactive, 2=activated */
 
     zebra_rec_keys_t keys;
 

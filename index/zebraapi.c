@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.205 2006-03-25 15:33:29 adam Exp $
+/* $Id: zebraapi.c,v 1.206 2006-03-26 14:17:01 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -84,7 +84,7 @@ static struct zebra_register *zebra_register_open(ZebraService zs,
 						  int rw, int useshadow,
 						  Res res,
 						  const char *reg_path);
-static void zebra_register_close (ZebraService zs, struct zebra_register *reg);
+static void zebra_register_close(ZebraService zs, struct zebra_register *reg);
 
 ZebraHandle zebra_open(ZebraService zs, Res res)
 {
@@ -280,6 +280,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     const char *recordCompression = 0;
     const char *profilePath;
     char cwd[1024];
+    ZEBRA_RES ret = ZEBRA_OK;
 
     ASSERTZS;
     
@@ -378,7 +379,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     if (!(reg->records = rec_open (reg->bfs, rw, record_compression)))
     {
 	yaz_log (YLOG_WARN, "rec_open failed");
-	return 0;
+	ret = ZEBRA_FAIL;
     }
     if (rw)
     {
@@ -387,12 +388,12 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     if (!(reg->dict = dict_open_res (reg->bfs, FNAME_DICT, 40, rw, 0, res)))
     {
 	yaz_log (YLOG_WARN, "dict_open failed");
-	return 0;
+	ret = ZEBRA_FAIL;
     }
     if (!(reg->sortIdx = sortIdx_open (reg->bfs, rw)))
     {
 	yaz_log (YLOG_WARN, "sortIdx_open failed");
-	return 0;
+	ret = ZEBRA_FAIL;
     }
     if (res_get_match (res, "isam", "s", ISAM_DEFAULT))
     {
@@ -401,7 +402,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
 				      key_isams_m(res, &isams_m))))
 	{
 	    yaz_log (YLOG_WARN, "isams_open failed");
-	    return 0;
+	    ret = ZEBRA_FAIL;
 	}
     }
     if (res_get_match (res, "isam", "c", ISAM_DEFAULT))
@@ -411,7 +412,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
 				    rw, key_isamc_m(res, &isamc_m))))
 	{
 	    yaz_log (YLOG_WARN, "isamc_open failed");
-	    return 0;
+	    ret = ZEBRA_FAIL;
 	}
     }
     if (res_get_match (res, "isam", "b", ISAM_DEFAULT))
@@ -422,7 +423,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
                                        rw, key_isamc_m(res, &isamc_m), 0)))
 	{
 	    yaz_log (YLOG_WARN, "isamb_open failed");
-	    return 0;
+	    ret = ZEBRA_FAIL;
 	}
     }
     if (res_get_match (res, "isam", "bc", ISAM_DEFAULT))
@@ -433,7 +434,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
                                        rw, key_isamc_m(res, &isamc_m), 1)))
 	{
 	    yaz_log (YLOG_WARN, "isamb_open failed");
-	    return 0;
+	    ret = ZEBRA_FAIL;
 	}
     }
     if (res_get_match (res, "isam", "null", ISAM_DEFAULT))
@@ -444,19 +445,26 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
                                        rw, key_isamc_m(res, &isamc_m), -1)))
 	{
 	    yaz_log (YLOG_WARN, "isamb_open failed");
-	    return 0;
+	    ret = ZEBRA_FAIL;
 	}
     }
-    reg->zei = zebraExplain_open (reg->records, reg->dh,
-                                  res, rw, reg,
-                                  explain_extract);
-    if (!reg->zei)
+    if (reg->records)
     {
-	yaz_log (YLOG_WARN, "Cannot obtain EXPLAIN information");
+	reg->zei = zebraExplain_open(reg->records, reg->dh,
+				     res, rw, reg,
+				     explain_extract);
+	if (!reg->zei)
+	{
+	    yaz_log (YLOG_WARN, "Cannot obtain EXPLAIN information");
+	    ret = ZEBRA_FAIL;
+	}
+    }
+    
+    if (ret != ZEBRA_OK)
+    {
+	zebra_register_close(zs, reg);
 	return 0;
     }
-
-    reg->active = 2;
     yaz_log (YLOG_DEBUG, "zebra_register_open ok p=%p", reg);
     return reg;
 }
@@ -483,28 +491,26 @@ ZEBRA_RES zebra_admin_start (ZebraHandle zh)
     return ZEBRA_OK;
 }
 
-static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
+static void zebra_register_close(ZebraService zs, struct zebra_register *reg)
 {
     ASSERTZS;
     assert(reg);
     yaz_log(YLOG_DEBUG, "zebra_register_close p=%p", reg);
     reg->stop_flag = 0;
     zebra_chdir (zs);
-    if (reg->records)
-    {
-        zebraExplain_close (reg->zei);
-        dict_close (reg->dict);
-        if (reg->matchDict)
-            dict_close (reg->matchDict);
-	sortIdx_close (reg->sortIdx);
-	if (reg->isams)
-	    isams_close (reg->isams);
-        if (reg->isamc)
-            isamc_close (reg->isamc);
-        if (reg->isamb)
-            isamb_close (reg->isamb);
-        rec_close (&reg->records);
-    }
+    
+    zebraExplain_close (reg->zei);
+    dict_close (reg->dict);
+    if (reg->matchDict)
+	dict_close (reg->matchDict);
+    sortIdx_close (reg->sortIdx);
+    if (reg->isams)
+	isams_close (reg->isams);
+    if (reg->isamc)
+	isamc_close (reg->isamc);
+    if (reg->isamb)
+	isamb_close (reg->isamb);
+    rec_close (&reg->records);
 
     recTypes_destroy (reg->recTypes);
     zebra_maps_close (reg->zebra_maps);
@@ -564,7 +570,7 @@ ZEBRA_RES zebra_close (ZebraHandle zh)
     resultSetDestroy (zh, -1, 0, 0);
 
     if (zh->reg)
-        zebra_register_close (zh->service, zh->reg);
+        zebra_register_close(zh->service, zh->reg);
     zebra_close_res (zh);
     res_close(zh->session_res);
 
@@ -666,7 +672,7 @@ static void zebra_select_register (ZebraHandle zh, const char *new_reg)
         if (zh->reg)
         {
             resultSetInvalidate (zh);
-            zebra_register_close (zh->service, zh->reg);
+            zebra_register_close(zh->service, zh->reg);
             zh->reg = 0;
         }
         zebra_close_res(zh);
@@ -1628,7 +1634,7 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
         if (zh->reg)
 	{
             resultSetInvalidate (zh);
-            zebra_register_close (zh->service, zh->reg);
+            zebra_register_close(zh->service, zh->reg);
 	}
         zh->trans_w_no = zh->trans_no;
 
@@ -1770,7 +1776,7 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
         if (zh->reg)
 	{
             resultSetInvalidate (zh);
-            zebra_register_close (zh->service, zh->reg);
+            zebra_register_close(zh->service, zh->reg);
 	}
         zh->reg = zebra_register_open(zh->service, zh->reg_name,
                                       0, val == 'c' ? 1 : 0,
@@ -1846,7 +1852,7 @@ ZEBRA_RES zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
         
         resultSetInvalidate (zh);
 
-        zebra_register_close (zh->service, zh->reg);
+        zebra_register_close(zh->service, zh->reg);
         zh->reg = 0;
         
         yaz_log (YLOG_LOG, "Records: "ZINT_FORMAT" i/u/d "

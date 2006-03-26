@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.46 2005-08-22 08:18:43 adam Exp $
+/* $Id: recindex.c,v 1.47 2006-03-26 14:17:01 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -73,7 +73,7 @@ SYSNO rec_sysno_to_int(SYSNO sysno)
     return sysno - FAKE_OFFSET;
 }
 
-static void rec_write_head(Records p)
+static ZEBRA_RES rec_write_head(Records p)
 {
     int r;
 
@@ -84,8 +84,9 @@ static void rec_write_head(Records p)
     if (r)
     {
         yaz_log(YLOG_FATAL|YLOG_ERRNO, "write head of %s", p->index_fname);
-        exit(1);
+	return ZEBRA_FAIL;
     }
+    return ZEBRA_OK;
 }
 
 static void rec_tmp_expand(Records p, int size)
@@ -118,8 +119,7 @@ static int read_indx(Records p, SYSNO sysno, void *buf, int itemsize,
     if (r != 1 && !ignoreError)
     {
         yaz_log(YLOG_FATAL|YLOG_ERRNO, "read in %s at pos %ld",
-              p->index_fname, (long) pos);
-        exit(1);
+		p->index_fname, (long) pos);
     }
     return r;
 }
@@ -139,7 +139,7 @@ static void write_indx(Records p, SYSNO sysno, void *buf, int itemsize)
 		(char*) buf + sz1);
 }
 
-static void rec_release_blocks(Records p, SYSNO sysno)
+static ZEBRA_RES rec_release_blocks(Records p, SYSNO sysno)
 {
     struct record_index_entry entry;
     zint freeblock;
@@ -148,7 +148,7 @@ static void rec_release_blocks(Records p, SYSNO sysno)
     int first = 1;
 
     if (read_indx(p, sysno, &entry, sizeof(entry), 1) != 1)
-        return ;
+        return ZEBRA_FAIL;
 
     freeblock = entry.next;
     assert(freeblock > 0);
@@ -162,7 +162,7 @@ static void rec_release_blocks(Records p, SYSNO sysno)
 		     block_and_ref) != 1)
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "read in rec_del_single");
-            exit(1);
+	    return ZEBRA_FAIL;
         }
 	if (first)
 	{
@@ -176,9 +176,9 @@ static void rec_release_blocks(Records p, SYSNO sysno)
 			      sizeof(block_and_ref), block_and_ref))
 		{
 		    yaz_log(YLOG_FATAL|YLOG_ERRNO, "write in rec_del_single");
-		    exit(1);
+		    return ZEBRA_FAIL;
 		}
-		return;
+		return ZEBRA_OK;
 	    }
 	    first = 0;
 	}
@@ -187,7 +187,7 @@ static void rec_release_blocks(Records p, SYSNO sysno)
                       &p->head.block_free[dst_type]))
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "write in rec_del_single");
-            exit(1);
+	    return ZEBRA_FAIL;
         }
         p->head.block_free[dst_type] = freeblock;
         memcpy(&freeblock, block_and_ref, sizeof(freeblock));
@@ -195,21 +195,24 @@ static void rec_release_blocks(Records p, SYSNO sysno)
         p->head.block_used[dst_type]--;
     }
     p->head.total_bytes -= entry.size;
+    return ZEBRA_OK;
 }
 
-static void rec_delete_single(Records p, Record rec)
+static ZEBRA_RES rec_delete_single(Records p, Record rec)
 {
     struct record_index_entry entry;
 
-    rec_release_blocks(p, rec_sysno_to_int(rec->sysno));
+    if (rec_release_blocks(p, rec_sysno_to_int(rec->sysno)) != ZEBRA_OK)
+	return ZEBRA_FAIL;
 
     entry.next = p->head.index_free;
     entry.size = 0;
     p->head.index_free = rec_sysno_to_int(rec->sysno);
     write_indx(p, rec_sysno_to_int(rec->sysno), &entry, sizeof(entry));
+    return ZEBRA_OK;
 }
 
-static void rec_write_tmp_buf(Records p, int size, SYSNO *sysnos)
+static ZEBRA_RES rec_write_tmp_buf(Records p, int size, SYSNO *sysnos)
 {
     struct record_index_entry entry;
     int no_written = 0;
@@ -233,7 +236,7 @@ static void rec_write_tmp_buf(Records p, int size, SYSNO *sysnos)
                 yaz_log(YLOG_FATAL|YLOG_ERRNO, "read in %s at free block "
 			 ZINT_FORMAT,
 			 p->data_fname[dst_type], block_free);
-		exit(1);
+		return ZEBRA_FAIL;
             }
         }
         else
@@ -264,6 +267,7 @@ static void rec_write_tmp_buf(Records p, int size, SYSNO *sysnos)
     memcpy(cptr, &block_free, sizeof(block_free));
     bf_write(p->data_BFile[dst_type], block_prev, 0,
               sizeof(block_free) + (p->tmp_buf+size) - cptr, cptr);
+    return ZEBRA_OK;
 }
 
 Records rec_open(BFiles bfs, int rw, int compression_method)
@@ -271,19 +275,21 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
     Records p;
     int i, r;
     int version;
+    ZEBRA_RES ret = ZEBRA_OK;
 
     p = (Records) xmalloc(sizeof(*p));
     p->compression_method = compression_method;
     p->rw = rw;
     p->tmp_size = 1024;
-    p->tmp_buf = (char *) xmalloc(p->tmp_size);
     p->index_fname = "reci";
     p->index_BFile = bf_open(bfs, p->index_fname, RIDX_CHUNK, rw);
     if (p->index_BFile == NULL)
     {
         yaz_log(YLOG_FATAL|YLOG_ERRNO, "open %s", p->index_fname);
-        exit(1);
+	xfree(p);
+	return 0;
     }
+    p->tmp_buf = (char *) xmalloc(p->tmp_size);
     r = bf_read(p->index_BFile, 0, 0, 0, p->tmp_buf);
     switch (r)
     {
@@ -308,21 +314,24 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
             p->head.block_move[i] = p->head.block_size[i] * 24;
         }
         if (rw)
-            rec_write_head(p);
+	{
+            if (rec_write_head(p) != ZEBRA_OK)
+		ret = ZEBRA_FAIL;
+	}
         break;
     case 1:
         memcpy(&p->head, p->tmp_buf, sizeof(p->head));
         if (memcmp(p->head.magic, REC_HEAD_MAGIC, sizeof(p->head.magic)))
         {
             yaz_log(YLOG_FATAL, "file %s has bad format", p->index_fname);
-            exit(1);
+	    ret = ZEBRA_FAIL;
         }
 	version = atoi(p->head.version);
 	if (version != REC_VERSION)
 	{
 	    yaz_log(YLOG_FATAL, "file %s is version %d, but version"
 		  " %d is required", p->index_fname, version, REC_VERSION);
-	    exit(1);
+	    ret = ZEBRA_FAIL;
 	}
         break;
     }
@@ -341,7 +350,7 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
 					 rw)))
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "bf_open %s", p->data_fname[i]);
-            exit(1);
+	    ret = ZEBRA_FAIL;
         }
     }
     p->cache_max = 400;
@@ -349,6 +358,8 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
     p->record_cache = (struct record_cache_entry *)
 	xmalloc(sizeof(*p->record_cache)*p->cache_max);
     zebra_mutex_init(&p->mutex);
+    if (ret == ZEBRA_FAIL)
+	rec_close(&p);
     return p;
 }
 
@@ -462,7 +473,7 @@ static void rec_cache_flush_block1(Records p, Record rec, Record last_rec,
     }
 }
 
-static void rec_write_multiple(Records p, int saveCount)
+static ZEBRA_RES rec_write_multiple(Records p, int saveCount)
 {
     int i;
     short ref_count = 0;
@@ -473,6 +484,7 @@ static void rec_write_multiple(Records p, int saveCount)
     char *out_buf = (char *) xmalloc(out_size);
     SYSNO *sysnos = (SYSNO *) xmalloc(sizeof(*sysnos) * (p->cache_cur + 1));
     SYSNO *sysnop = sysnos;
+    ZEBRA_RES ret = ZEBRA_OK;
 
     for (i = 0; i<p->cache_cur - saveCount; i++)
     {
@@ -488,7 +500,10 @@ static void rec_write_multiple(Records p, int saveCount)
 	    last_rec = e->rec;
             break;
         case recordFlagWrite:
-	    rec_release_blocks(p, rec_sysno_to_int(e->rec->sysno));
+	    if (rec_release_blocks(p, rec_sysno_to_int(e->rec->sysno))
+		!= ZEBRA_OK)
+		ret = ZEBRA_FAIL;
+
             rec_cache_flush_block1(p, e->rec, last_rec, &out_buf,
 				    &out_size, &out_offset);
 	    *sysnop++ = rec_sysno_to_int(e->rec->sysno);
@@ -497,7 +512,9 @@ static void rec_write_multiple(Records p, int saveCount)
 	    last_rec = e->rec;
             break;
         case recordFlagDelete:
-            rec_delete_single(p, e->rec);
+            if (rec_delete_single(p, e->rec) != ZEBRA_OK)
+		ret = ZEBRA_FAIL;
+
 	    e->flag = recordFlagNop;
             break;
 	default:
@@ -551,20 +568,24 @@ static void rec_write_multiple(Records p, int saveCount)
 		&compression_method, sizeof(compression_method));
 		
 	/* -------- compression */
-	rec_write_tmp_buf(p, csize + sizeof(short) + sizeof(char), sysnos);
+	if (rec_write_tmp_buf(p, csize + sizeof(short) + sizeof(char), sysnos)
+	    != ZEBRA_OK)
+	    ret = ZEBRA_FAIL;
     }
     xfree(out_buf);
     xfree(sysnos);
+    return ret;
 }
 
-static void rec_cache_flush(Records p, int saveCount)
+static ZEBRA_RES rec_cache_flush(Records p, int saveCount)
 {
     int i, j;
+    ZEBRA_RES ret;
 
     if (saveCount >= p->cache_cur)
         saveCount = 0;
 
-    rec_write_multiple(p, saveCount);
+    ret = rec_write_multiple(p, saveCount);
 
     for (i = 0; i<p->cache_cur - saveCount; i++)
     {
@@ -576,6 +597,7 @@ static void rec_cache_flush(Records p, int saveCount)
         memcpy(p->record_cache+j, p->record_cache+i,
                 sizeof(*p->record_cache));
     p->cache_cur = saveCount;
+    return ret;
 }
 
 static Record *rec_cache_lookup(Records p, SYSNO sysno,
@@ -595,12 +617,13 @@ static Record *rec_cache_lookup(Records p, SYSNO sysno,
     return NULL;
 }
 
-static void rec_cache_insert(Records p, Record rec, enum recordCacheFlag flag)
+static ZEBRA_RES rec_cache_insert(Records p, Record rec, enum recordCacheFlag flag)
 {
     struct record_cache_entry *e;
+    ZEBRA_RES ret = ZEBRA_OK;
 
     if (p->cache_cur == p->cache_max)
-        rec_cache_flush(p, 1);
+        ret = rec_cache_flush(p, 1);
     else if (p->cache_cur > 0)
     {
         int i, j;
@@ -612,28 +635,36 @@ static void rec_cache_insert(Records p, Record rec, enum recordCacheFlag flag)
                 used += r->size[j];
         }
         if (used > 90000)
-            rec_cache_flush(p, 1);
+            ret = rec_cache_flush(p, 1);
     }
     assert(p->cache_cur < p->cache_max);
 
     e = p->record_cache + (p->cache_cur)++;
     e->flag = flag;
     e->rec = rec_cp(rec);
+    return ret;
 }
 
-void rec_close(Records *pp)
+ZEBRA_RES rec_close(Records *pp)
 {
     Records p = *pp;
     int i;
+    ZEBRA_RES ret = ZEBRA_OK;
 
-    assert(p);
+    if (!p)
+	return ret;
 
     zebra_mutex_destroy(&p->mutex);
-    rec_cache_flush(p, 0);
+    if (rec_cache_flush(p, 0) != ZEBRA_OK)
+	ret = ZEBRA_FAIL;
+
     xfree(p->record_cache);
 
     if (p->rw)
-        rec_write_head(p);
+    {
+        if (rec_write_head(p) != ZEBRA_OK)
+	    ret = ZEBRA_FAIL;
+    }
 
     if (p->index_BFile)
         bf_close(p->index_BFile);
@@ -647,6 +678,7 @@ void rec_close(Records *pp)
     xfree(p->tmp_buf);
     xfree(p);
     *pp = NULL;
+    return ret;
 }
 
 static Record rec_get_int(Records p, SYSNO sysno)
@@ -735,7 +767,7 @@ static Record rec_get_int(Records p, SYSNO sysno)
 	in_size = bz_size;
 #else
 	yaz_log(YLOG_FATAL, "cannot decompress record(s) in BZIP2 format");
-	exit(1);
+	return 0;
 #endif
 	break;
     case REC_COMPRESS_NONE:
@@ -789,7 +821,8 @@ static Record rec_get_int(Records p, SYSNO sysno)
 	}
     }
     xfree(bz_buf);
-    rec_cache_insert(p, rec, recordFlagNop);
+    if (rec_cache_insert(p, rec, recordFlagNop) != ZEBRA_OK)
+	return 0;
     return rec;
 }
 
@@ -822,7 +855,11 @@ static Record rec_new_int(Records p)
     {
         struct record_index_entry entry;
 
-        read_indx(p, p->head.index_free, &entry, sizeof(entry), 0);
+        if (read_indx(p, p->head.index_free, &entry, sizeof(entry), 0) < 1)
+	{
+	    xfree(rec);
+	    return 0;
+	}
         sysno = p->head.index_free;
         p->head.index_free = entry.next;
     }
@@ -847,9 +884,10 @@ Record rec_new(Records p)
     return rec;
 }
 
-void rec_del(Records p, Record *recpp)
+ZEBRA_RES rec_del(Records p, Record *recpp)
 {
     Record *recp;
+    ZEBRA_RES ret = ZEBRA_OK;
 
     zebra_mutex_lock(&p->mutex);
     (p->head.no_records)--;
@@ -860,16 +898,18 @@ void rec_del(Records p, Record *recpp)
     }
     else
     {
-        rec_cache_insert(p, *recpp, recordFlagDelete);
+        ret = rec_cache_insert(p, *recpp, recordFlagDelete);
         rec_rm(recpp);
     }
     zebra_mutex_unlock(&p->mutex);
     *recpp = NULL;
+    return ret;
 }
 
-void rec_put(Records p, Record *recpp)
+ZEBRA_RES rec_put(Records p, Record *recpp)
 {
     Record *recp;
+    ZEBRA_RES ret = ZEBRA_OK;
 
     zebra_mutex_lock(&p->mutex);
     if ((recp = rec_cache_lookup(p, (*recpp)->sysno, recordFlagWrite)))
@@ -879,11 +919,12 @@ void rec_put(Records p, Record *recpp)
     }
     else
     {
-        rec_cache_insert(p, *recpp, recordFlagWrite);
+        ret = rec_cache_insert(p, *recpp, recordFlagWrite);
         rec_rm(recpp);
     }
     zebra_mutex_unlock(&p->mutex);
     *recpp = NULL;
+    return ret;
 }
 
 void rec_rm(Record *recpp)

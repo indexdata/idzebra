@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.55 2006-02-20 12:41:42 adam Exp $
+/* $Id: zinfo.c,v 1.56 2006-03-26 14:17:01 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -150,11 +150,15 @@ static Record createRecord(Records records, SYSNO *sysno)
     if (*sysno)
     {
 	rec = rec_get(records, *sysno);
+	if (!rec)
+	    return 0;
 	xfree(rec->info[recInfo_storeData]);
     }
     else
     {
 	rec = rec_new(records);
+	if (!rec)
+	    return 0;
 	*sysno = rec->sysno;
 	
 	rec->info[recInfo_fileType] =
@@ -520,6 +524,12 @@ ZebraExplainInfo zebraExplain_open(
 
 	    /* write now because we want to be sure about the sysno */
 	    trec = rec_new(records);
+	    if (!trec)
+	    {
+		yaz_log(YLOG_FATAL, "Cannot create root Explain record");
+		nmem_destroy(zei->nmem);
+		return 0;
+	    }
 	    trec->info[recInfo_fileType] =
 		rec_strdup("grs.sgml", &trec->size[recInfo_fileType]);
 	    trec->info[recInfo_databaseName] =
@@ -529,11 +539,11 @@ ZebraExplainInfo zebraExplain_open(
 	    trec->info[recInfo_storeData] = (char *) xmalloc(sgml_len);
 	    memcpy(trec->info[recInfo_storeData], sgml_buf, sgml_len);
 	    trec->size[recInfo_storeData] = sgml_len;
-	    
+		
 	    rec_put(records, &trec);
 	    rec_rm(&trec);
-
 	}
+	
 	zebraExplain_newDatabase(zei, "IR-Explain-1", 0);
 	    
 	if (!zei->categoryList->dirty)
@@ -986,6 +996,8 @@ static void zebraExplain_writeCategoryList (ZebraExplainInfo zei,
 #endif
 
     drec = createRecord (zei->records, &sysno);
+    if (!drec)
+	return;
     
     node_ci = data1_search_tag (zei->dh, node_categoryList,
 				"/categoryList");
@@ -1040,6 +1052,8 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
 #endif
 
     drec = createRecord (zei->records, &zad->sysno);
+    if (!drec)
+	return;
     assert (zad->data1_tree);
 
     node_adinfo = data1_search_tag (zei->dh, zad->data1_tree,
@@ -1182,6 +1196,8 @@ static void zebraExplain_writeDatabase (ZebraExplainInfo zei,
     yaz_log(YLOG_LOG, "zebraExplain_writeDatabase %s", zdi->databaseName);
 #endif
     drec = createRecord (zei->records, &zdi->sysno);
+    if (!drec)
+	return;
     assert (zdi->data1_database);
 
     node_dbinfo = data1_search_tag (zei->dh, zdi->data1_database,
@@ -1272,6 +1288,8 @@ static void zebraExplain_writeAttributeSet (ZebraExplainInfo zei,
 #endif
 
     drec = createRecord (zei->records, &o->sysno);
+    if (!drec)
+	return;
     node_root =
 	data1_read_sgml (zei->dh, zei->nmem,
 			 "<explain><attributeSetInfo>AttributeSetInfo\n"
