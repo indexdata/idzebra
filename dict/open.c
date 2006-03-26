@@ -1,4 +1,4 @@
-/* $Id: open.c,v 1.23 2005-01-15 19:38:23 adam Exp $
+/* $Id: open.c,v 1.24 2006-03-26 14:03:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -76,7 +76,9 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
         if (strcmp (dict->head.magic_str, DICT_MAGIC))
         {
             yaz_log (YLOG_WARN, "Bad magic of `%s'", name);
-            exit (1);
+	    dict_bf_close(dict->dbf);
+	    xfree(dict);
+	    return 0;
         }
         if (dict->head.page_size != page_size)
         {
