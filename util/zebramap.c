@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.44 2006-03-13 17:40:28 mike Exp $
+/* $Id: zebramap.c,v 1.45 2006-03-26 14:05:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -181,14 +181,16 @@ ZebraMaps zebra_maps_open (Res res, const char *base)
 
     zms->lookup_array = (struct zebra_map**)
 	nmem_malloc (zms->nmem, sizeof(*zms->lookup_array)*256);
+    zms->wrbuf_1 = wrbuf_alloc();
+
     for (i = 0; i<256; i++)
 	zms->lookup_array[i] = 0;
     if (!res || !res_trav (res, "index", zms, zms_map_handle))
 	if (zebra_map_read (zms, "default.idx", 1) < 0)
+	{
+	    zebra_maps_close(zms);
 	    return 0;
-
-    zms->wrbuf_1 = wrbuf_alloc();
-
+	}
     return zms;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.47 2005-10-27 08:49:29 adam Exp $
+/* $Id: res.c,v 1.48 2006-03-26 14:05:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -379,7 +379,7 @@ ZEBRA_RES res_write_file(Res r, const char *fname)
     if (!fr)
     {
         yaz_log(YLOG_FATAL|YLOG_ERRNO, "Cannot create `%s'", fname);
-        exit(1);
+	return ZEBRA_FAIL;
     }
 
     for (re = r->first; re; re=re->next)
