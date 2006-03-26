@@ -1,4 +1,4 @@
-/* $Id: close.c,v 1.9 2005-01-15 19:38:19 adam Exp $
+/* $Id: close.c,v 1.10 2006-03-26 14:02:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -31,7 +31,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 int dict_close (Dict dict)
 {
-    assert (dict);
+    if (!dict)
+	return 0;
 
     if (dict->rw)
     {
