@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.206 2006-03-26 14:17:01 adam Exp $
+/* $Id: zebraapi.c,v 1.207 2006-03-28 12:39:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -332,7 +332,9 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     data1_set_tabroot (reg->dh, reg_path);
     reg->recTypes = recTypes_init (zs->record_classes, reg->dh);
 
-    if ((reg->zebra_maps = zebra_maps_open (res, reg_path)) == 0)
+    reg->zebra_maps =
+	zebra_maps_open(res, reg_path, profilePath);
+    if (!reg->zebra_maps)
     {
 	recTypes_destroy(reg->recTypes);
 	bfs_destroy(reg->bfs);
@@ -341,7 +343,6 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
 	xfree(reg);
 	return 0;
     }
-
     reg->rank_classes = NULL;
 
     reg->key_buf = 0;
@@ -375,6 +376,16 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
 	record_compression = REC_COMPRESS_NONE;
     if (!strcmp (recordCompression, "bzip2"))
 	record_compression = REC_COMPRESS_BZIP2;
+
+    if (1)
+    {
+	const char *index_fname = res_get_def(res, "index", "default.idx");
+	if (index_fname && *index_fname)
+	{
+	    if (zebra_maps_read_file(reg->zebra_maps, index_fname) != ZEBRA_OK)
+		ret = ZEBRA_FAIL;
+	}
+    }
 
     if (!(reg->records = rec_open (reg->bfs, rw, record_compression)))
     {

@@ -1,4 +1,4 @@
-/* $Id: zebramap.h,v 1.4 2005-03-11 17:56:33 adam Exp $
+/* $Id: zebramap.h,v 1.5 2006-03-28 12:39:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -31,7 +31,10 @@ YAZ_BEGIN_CDECL
 typedef struct zebra_maps *ZebraMaps;
 
 YAZ_EXPORT
-ZebraMaps zebra_maps_open (Res res, const char *base);
+ZebraMaps zebra_maps_open (Res res, const char *base_path,
+			   const char *profile_path);
+YAZ_EXPORT
+ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname);
 
 YAZ_EXPORT
 void zebra_maps_close (ZebraMaps zm);
