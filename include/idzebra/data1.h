@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.10 2005-06-23 06:45:46 adam Exp $
+/* $Id: data1.h,v 1.11 2006-03-29 10:43:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -367,8 +367,6 @@ typedef struct data1_node
 
 YAZ_EXPORT data1_handle data1_create (void);
 
-#define DATA1_FLAG_XML  1
-YAZ_EXPORT data1_handle data1_createx (int flags);
 
 YAZ_EXPORT void data1_destroy(data1_handle dh);
 YAZ_EXPORT data1_node *get_parent_tag(data1_handle dh, data1_node *n);

@@ -1,4 +1,4 @@
-/* $Id: d1_handle.c,v 1.7 2005-01-15 19:38:18 adam Exp $
+/* $Id: d1_handle.c,v 1.8 2006-03-29 10:43:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -26,6 +26,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <idzebra/data1.h>
 
+#define DATA1_FLAG_XML  1
+
 struct data1_handle_info {
     WRBUF wrbuf;
     char *tab_path;
@@ -41,15 +43,9 @@ struct data1_handle_info {
     int map_len;
 
     NMEM mem;
-    int flags;
 };
 
-data1_handle data1_create (void)
-{
-    return data1_createx(0);
-}
-
-data1_handle data1_createx (int flags)
+data1_handle data1_create(void)
 {
     data1_handle p = (data1_handle)xmalloc (sizeof(*p));
     if (!p)
@@ -64,7 +60,6 @@ data1_handle data1_createx (int flags)
     p->absyn_cache = NULL;
     p->attset_cache = NULL;
     p->mem = nmem_create ();
-    p->flags = flags;
     return p;
 }
 
@@ -162,5 +157,5 @@ FILE *data1_path_fopen (data1_handle dh, const char *file, const char *mode)
 
 int data1_is_xmlmode(data1_handle dh)
 {
-    return dh->flags & DATA1_FLAG_XML;
+    return 1;
 }

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.207 2006-03-28 12:39:07 adam Exp $
+/* $Id: zebraapi.c,v 1.208 2006-03-29 10:43:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -297,7 +297,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     yaz_log (YLOG_DEBUG, "zebra_register_open rw=%d useshadow=%d p=%p n=%s rp=%s",
              rw, useshadow, reg, name, reg_path ? reg_path : "(none)");
     
-    reg->dh = data1_createx (DATA1_FLAG_XML);
+    reg->dh = data1_create();
     if (!reg->dh)
     {
 	xfree(reg->name);
