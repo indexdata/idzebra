@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.42 2006-03-23 12:07:13 adam Exp $
+# $Id: makefile,v 1.43 2006-03-29 08:38:45 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -202,13 +202,13 @@ libxslt:
 !if $(HAVE_LIBXSLT)
 MOD_ALVIS_OBJS= $(OBJDIR)\alvis.obj
 MOD_ALVIS_CFLAGS=/DIDZEBRA_STATIC_ALVIS=1
-MOD_ALVIS_OBJS= $(OBJDIR)\xslt.obj
-MOD_ALVIS_CFLAGS=/DIDZEBRA_STATIC_XSLT=1
+MOD_XSLT_OBJS= $(OBJDIR)\xslt.obj
+MOD_XSLT_CFLAGS=/DIDZEBRA_STATIC_XSLT=1
 !else
 MOD_ALVIS_OBJS=
 MOD_ALVIS_CFLAGS=
-MOD_ALVIS_OBJS=
-MOD_ALVIS_CFLAGS=
+MOD_XSLT_OBJS=
+MOD_XSLT_CFLAGS=
 !endif
 
 ### C and CPP compiler  (the same thing)
