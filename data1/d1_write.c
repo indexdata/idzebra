@@ -1,4 +1,4 @@
-/* $Id: d1_write.c,v 1.3.2.1 2004-10-20 10:35:44 adam Exp $
+/* $Id: d1_write.c,v 1.3.2.2 2006-03-29 10:47:31 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -69,6 +69,31 @@ static void wrbuf_put_xattr(WRBUF b, data1_xattr *p)
     }
 }
 
+static void wrbuf_write_tag(WRBUF b, const char *tag, int opening)
+{
+    int i, fixup = 0;
+
+    /* see if we must fix the tag.. The grs.marc filter produces
+       a data1 tree with not well-formed XML */
+    if (*tag >= '0' && *tag <= '9')
+	fixup = 1;
+    for (i = 0; tag[i]; i++)
+	if (strchr( " <>$,()[]", tag[i]))
+	    fixup = 1;
+    if (fixup)
+    {
+	wrbuf_puts(b, "tag");
+	if (opening)
+	{
+	    wrbuf_puts(b, " value=\"");
+	    wrbuf_xmlputs(b, tag);
+	    wrbuf_puts(b, "\"");
+	}
+    }
+    else
+	wrbuf_puts(b, tag);
+}
+
 static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
                         int pretty_format)
 {
@@ -107,7 +132,7 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
                 if (pretty_format)
                     indent (b, col);
 		wrbuf_puts (b, "<");	
-		wrbuf_xmlputs (b, tag);
+		wrbuf_write_tag(b, tag, 1);
                 wrbuf_put_xattr (b, c->u.tag.attributes);
 		wrbuf_puts(b, ">");
                 if (pretty_format)
@@ -118,7 +143,7 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
                 if (pretty_format)
                     indent (b, col);
 		wrbuf_puts(b, "</");
-		wrbuf_xmlputs(b, tag);
+		wrbuf_write_tag(b, tag, 0);
 		wrbuf_puts(b, ">");
                 if (pretty_format)
                     wrbuf_puts (b, "\n");
@@ -211,7 +236,7 @@ char *data1_nodetoidsgml (data1_handle dh, data1_node *n, int select, int *len)
     if (!data1_is_xmlmode (dh))
     {
         wrbuf_puts (b, "<");
-        wrbuf_puts (b, n->u.root.type);
+	wrbuf_write_tag(b, n->u.root.type, 1);
         wrbuf_puts (b, ">\n");
     }
     if (nodetoidsgml(n, select, b, 0, 0 /* no pretty format */))
@@ -219,7 +244,7 @@ char *data1_nodetoidsgml (data1_handle dh, data1_node *n, int select, int *len)
     if (!data1_is_xmlmode (dh))
     {
         wrbuf_puts (b, "</");
-        wrbuf_puts (b, n->u.root.type);
+	wrbuf_write_tag(b, n->u.root.type, 0);
         wrbuf_puts (b, ">\n");
     }
     *len = wrbuf_len(b);
