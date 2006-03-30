@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.28 2006-02-09 08:31:02 adam Exp $
+/* $Id: zinfo.h,v 1.29 2006-03-30 09:52:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -69,7 +69,7 @@ void zebraExplain_flush (ZebraExplainInfo zei, void *updateHandle);
 
 int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
 			     int *index_type, const char **db,
-			     int *set, int *use);
+			     int *set, int *use, const char **string_index);
 
 int zebraExplain_trav_ord(ZebraExplainInfo zei, void *handle,
 			  int (*f)(void *handle, int ord));

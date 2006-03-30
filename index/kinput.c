@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.70 2006-02-20 18:40:23 adam Exp $
+/* $Id: kinput.c,v 1.71 2006-03-30 09:52:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -435,7 +435,7 @@ static void print_dict_item(ZebraHandle zh, const char *s)
     else
     {
         zebraExplain_lookup_ord (zh->reg->zei,
-			     ord, &index_type, &db, 0, 0);
+			     ord, &index_type, &db, 0, 0, 0);
 
         zebra_term_untrans(zh, index_type, dst, s + len);
 

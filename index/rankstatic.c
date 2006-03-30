@@ -1,4 +1,4 @@
-/* $Id: rankstatic.c,v 1.3 2005-08-19 11:04:23 adam Exp $
+/* $Id: rankstatic.c,v 1.4 2006-03-30 09:52:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -83,8 +83,30 @@ static void *begin (struct zebra_register *reg,
     si->no_rank_entries = 0;
     for (i = 0; i < numterms; i++)
     {
+	struct ord_list *ol = terms[i]->ol;
+
         yaz_log(log_level, "i=%d flags=%s '%s'", i, 
                 terms[i]->flags, terms[i]->name );
+
+	for (; ol; ol = ol->next)
+	{
+	    int index_type = 0;
+	    const char *db = 0;
+	    const char *string_index = 0;
+	    int set = -1;
+	    int use = -1;
+
+	    zebraExplain_lookup_ord(reg->zei,
+				    ol->ord, &index_type, &db, &set, &use,
+				    &string_index);
+
+	    if (string_index)
+		yaz_log(log_level, " ord=%d index_type=%c db=%s str-index=%s",
+		    ol->ord, index_type, db, string_index);
+	    else
+		yaz_log(log_level, " ord=%d index_type=%c db=%s set=%d use=%d",
+		    ol->ord, index_type, db, set, use);
+	}
 	if (!strncmp (terms[i]->flags, "rank,", 5)) 
 	    (si->no_rank_entries)++;
     }

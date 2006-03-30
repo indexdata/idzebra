@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.209 2006-02-20 12:38:42 adam Exp $
+/* $Id: zrpn.c,v 1.210 2006-03-30 09:52:16 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -245,7 +245,7 @@ static void add_isam_p(const char *name, const char *info,
         zebra_term_untrans  (p->zh, p->reg_type, term_tmp, name+len+1);
         yaz_log(log_level_rpn, "grep: %d %c %s", ord, name[len], term_tmp);
         zebraExplain_lookup_ord (p->zh->reg->zei,
-                                 ord, 0 /* index_type */, &db, &set, &use);
+                                 ord, 0 /* index_type */, &db, &set, &use, 0);
         yaz_log(log_level_rpn, "grep:  set=%d use=%d db=%s", set, use, db);
         
         resultSetAddTerm(p->zh, p->termset, name[len], db,

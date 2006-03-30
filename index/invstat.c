@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.47 2006-02-20 12:41:42 adam Exp $
+/* $Id: invstat.c,v 1.48 2006-03-30 09:52:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -58,7 +58,7 @@ static void print_dict_item (ZebraHandle zh, const char *s, zint count,
 	*dst = '\0';
     else
     {
-        zebraExplain_lookup_ord (zh->reg->zei, ord, &index_type, &db, 0, 0);
+        zebraExplain_lookup_ord (zh->reg->zei, ord, &index_type, &db, 0, 0, 0);
 
         zebra_term_untrans(zh, index_type, dst, s + len);
     }

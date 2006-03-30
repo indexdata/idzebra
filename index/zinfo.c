@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.56 2006-03-26 14:17:01 adam Exp $
+/* $Id: zinfo.c,v 1.57 2006-03-30 09:52:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1463,9 +1463,20 @@ int zebraExplain_trav_ord(ZebraExplainInfo zei, void *handle,
 int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
 			     int *index_type, 
 			     const char **db,
-			     int *set, int *use)
+			     int *set, int *use,
+			     const char **string_index)
 {
     struct zebDatabaseInfoB *zdb;
+
+    if (set)
+	*set = -1;
+    if (use)
+	*use = -1;
+    if (index_type)
+	*index_type = 0;
+    if (string_index)
+	*string_index = 0;
+
     for (zdb = zei->databaseInfo; zdb; zdb = zdb->next)
     {
 	struct zebSUInfoB *zsui;
@@ -1485,6 +1496,11 @@ int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
 		    if (use)
 			*use = zsui->info.u.su.use;
 		}
+
+		if (zsui->info.which == ZEB_SU_STR)
+		    if (string_index)
+			*string_index = zsui->info.u.str;
+
 		if (index_type)
 		    *index_type = zsui->info.index_type;
 		return 0;
