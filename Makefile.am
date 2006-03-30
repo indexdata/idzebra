@@ -1,17 +1,19 @@
-## $Id: Makefile.am,v 1.21 2005-01-16 20:19:20 adam Exp $
+## $Id: Makefile.am,v 1.22 2006-03-30 18:00:51 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
+
+ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS=util bfile dfa dict isams isamb isamc rset data1 \
  recctrl tab index test examples include doc
 
 aclocaldir=$(datadir)/aclocal
-aclocal_DATA = idzebra.m4
+aclocal_DATA = m4/idzebra.m4
 
 SPEC_FILE=$(PACKAGE).spec
 
 EXTRA_DIST= README NEWS $(SPEC_FILE) idzebra.spec.in \
- idzebra-config.in idzebra.m4 Doxyfile.in
+ idzebra-config.in m4/idzebra.m4 m4/yaz.m4 Doxyfile.in
 
 dist-hook:
 	cp $(srcdir)/LICENSE* $(distdir)
