@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.208 2006-03-29 10:43:24 adam Exp $
+/* $Id: zebraapi.c,v 1.209 2006-03-31 08:51:26 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -459,7 +459,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
 	    ret = ZEBRA_FAIL;
 	}
     }
-    if (reg->records)
+    if (ret == ZEBRA_OK)
     {
 	reg->zei = zebraExplain_open(reg->records, reg->dh,
 				     res, rw, reg,
