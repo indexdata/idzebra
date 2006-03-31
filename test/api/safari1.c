@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.9 2006-03-21 14:36:22 adam Exp $
+/* $Id: safari1.c,v 1.10 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -56,33 +56,34 @@ const char *myrec[] =
     0
 };
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
     zint ids[3];
     zint limits[3];
-    ZebraService zs = start_up("safari.cfg", argc, argv);
+    ZebraService zs = tl_start_up("safari.cfg", argc, argv);
     
     ZebraHandle zh = zebra_open(zs, 0);
 
-    init_data(zh, myrec);
-    do_query(__LINE__, zh, "@attr 4=3 @attr 1=any the", 3);
-    do_query(__LINE__, zh, "@attr 4=3 @attr 1=any @and the art", 1);
-    do_query(__LINE__, zh, "@attr 4=3 @attr 1=any @and den gamle", 0);
-    do_query(__LINE__, zh, "@attr 4=3 @attr 1=any @and the gamle", 1);
-    do_query(__LINE__, zh, "@attr 4=3 @attr 1=any @and the of", 0);
+    YAZ_CHECK(tl_init_data(zh, myrec));
+
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any the", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @and the art", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @and den gamle", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @and the gamle", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @and the of", 0));
 
     /* verify that we get these records exactly */
     ids[0] = 24338;
     ids[1] = 24339;
     ids[2] = 24340;
-    meta_query(__LINE__, zh, "@attr 4=3 @attr 1=any mand", 3, ids);
+    YAZ_CHECK(tl_meta_query(zh, "@attr 4=3 @attr 1=any mand", 3, ids));
 
     /* limit to 125061 */
     limits[0] = 125061;
     limits[1] = 0;
     zebra_set_limit(zh, 0, limits);
     ids[0] = 24339;
-    meta_query(__LINE__, zh, "@attr 4=3 @attr 1=any mand", 1, ids);
+    YAZ_CHECK(tl_meta_query(zh, "@attr 4=3 @attr 1=any mand", 1, ids));
 
     /* limit to 125060, 125061 */
     limits[0] = 125061;
@@ -91,7 +92,7 @@ int main(int argc, char **argv)
     zebra_set_limit(zh, 0, limits);
     ids[0] = 24338;
     ids[1] = 24339;
-    meta_query(__LINE__, zh, "@attr 4=3 @attr 1=any mand", 2, ids);
+    YAZ_CHECK(tl_meta_query(zh, "@attr 4=3 @attr 1=any mand", 2, ids));
 
     /* all except 125062 */
     limits[0] = 125062;
@@ -100,11 +101,13 @@ int main(int argc, char **argv)
 
     ids[0] = 24338;
     ids[1] = 24339;
-    meta_query(__LINE__, zh, "@attr 4=3 @attr 1=any mand", 2, ids);
+    YAZ_CHECK(tl_meta_query(zh, "@attr 4=3 @attr 1=any mand", 2, ids));
 
     /* no limit */
     zebra_set_limit(zh, 1, 0);
-    do_query(__LINE__, zh, "@attr 4=3 @attr 1=any mand", 3);
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any mand", 3));
 
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN

@@ -1,4 +1,4 @@
-/* $Id: xpath1.c,v 1.4 2005-09-13 11:51:10 adam Exp $
+/* $Id: xpath1.c,v 1.5 2006-03-31 15:58:10 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /** xpath1.c - index a simple sgml record and search in it */
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
     ZebraService zs;
     ZebraHandle zh;
@@ -38,20 +38,22 @@ int main(int argc, char **argv)
         "</sgml> \n",
         0};
 
-    zs = start_up(0, argc, argv);
+    zs = tl_start_up(0, argc, argv);
     zh = zebra_open(zs, 0);
-    init_data(zh, myrec);
+    YAZ_CHECK(tl_init_data(zh, myrec));
 
-    do_query(__LINE__,zh, "@attr 1=/sgml/tag before", 0);
-    do_query(__LINE__,zh, "@attr 1=/sgml/tag inside", 1);
-    do_query(__LINE__,zh, "@attr 1=/sgml/tag after", 0);
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag before", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag inside", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag after", 0));
 
-    do_query(__LINE__,zh, "@attr 1=/sgml/none after", 0);
-    do_query(__LINE__,zh, "@attr 1=/sgml/none inside", 0);
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/none after", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/none inside", 0));
 
-    do_query(__LINE__,zh, "@attr 1=/sgml before", 1);
-    do_query(__LINE__,zh, "@attr 1=/sgml inside", 1);
-    do_query(__LINE__,zh, "@attr 1=/sgml after", 1);
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml before", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml inside", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml after", 1));
 
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN

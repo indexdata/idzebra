@@ -1,4 +1,4 @@
-/* $Id: t3.c,v 1.18 2005-09-13 11:51:07 adam Exp $
+/* $Id: t3.c,v 1.19 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -30,14 +30,13 @@ const char *myrec[] ={
         "</gils>\n",
         0};
 
-	
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
     int i;
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
-    init_data(zh, myrec);
+    YAZ_CHECK(tl_init_data(zh, myrec));
 
     for (i = 0; i<4; i++)
     {
@@ -50,14 +49,30 @@ int main(int argc, char **argv)
         Z_RPNQuery *query = yaz_pqf_parse(parser, odr_input, 
                                           "@attr 1=4 my");
         zint hits;
-        zebra_begin_trans (zh, 1);
-        zebra_begin_trans (zh, 0);
+        if (zebra_begin_trans (zh, 1) != ZEBRA_OK)
+	{
+	    fprintf(stderr, "zebra_begin_trans failed\n");
+	    exit(1);
+	}
+        if (zebra_begin_trans (zh, 0) != ZEBRA_OK)
+	{
+	    fprintf(stderr, "zebra_begin_trans failed\n");
+	    exit(1);
+	}
         
         sprintf(setname, "s%d", i+1);
         zebra_search_RPN (zh, odr_input, query, setname, &hits);
 
-        zebra_end_trans (zh);
-        zebra_end_trans (zh);
+        if (zebra_end_trans (zh) != ZEBRA_OK)
+	{
+	    fprintf(stderr, "zebra_end_trans failed\n");
+	    exit(1);
+	}
+        if (zebra_end_trans (zh) != ZEBRA_OK)
+	{
+	    fprintf(stderr, "zebra_end_trans failed\n");
+	    exit(1);
+	}
         yaz_pqf_destroy(parser);
         zebra_deleteResultSet(zh, Z_DeleteRequest_list,
                               1, &setnamep, &status);
@@ -66,5 +81,8 @@ int main(int argc, char **argv)
     }
     zebra_commit(zh);
 
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN
+

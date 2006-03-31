@@ -1,4 +1,4 @@
-/* $Id: t6.c,v 1.11 2005-09-13 11:51:07 adam Exp $
+/* $Id: t6.c,v 1.12 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -24,15 +24,15 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "testlib.h"
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
     int i;
-    ZebraService zs = start_up("zebra6.cfg", argc, argv);
+    ZebraService zs = tl_start_up("zebra6.cfg", argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
     srand(17);
     
-    zebra_select_database(zh, "Default");
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
     zebra_init(zh);
     zebra_close(zh);
 
@@ -41,9 +41,11 @@ int main(int argc, char **argv)
 	int l;
 
 	zh = zebra_open (zs, 0);
-	zebra_select_database(zh, "Default");
+	YAZ_CHECK(zh);
+
+	YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 	
-	zebra_begin_trans (zh, 1);
+	YAZ_CHECK(zebra_begin_trans (zh, 1) == ZEBRA_OK);
 
 	for (l = 0; l<100; l++)
 	{
@@ -70,17 +72,20 @@ int main(int argc, char **argv)
 	    strcat(rec_buf, "</Control-Identifier></gils>");
 	    zebra_add_record (zh, rec_buf, strlen(rec_buf));
 	}
-	zebra_end_trans(zh);
+	YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
 	zebra_close(zh);
     }
     zh = zebra_open(zs, 0);
+    YAZ_CHECK(zh);
 
-    zebra_select_database(zh, "Default");
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
     zebra_set_resource(zh, "trunclimit", "2");
 
     /* check massive truncation: bug #281 */
-    do_query(__LINE__, zh, "@attr 1=4 @attr 2=1 z", -1);
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=1 z", -1));
 
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN

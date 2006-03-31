@@ -1,4 +1,4 @@
-/* $Id: t9.c,v 1.7 2005-09-13 11:51:07 adam Exp $
+/* $Id: t9.c,v 1.8 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -26,26 +26,25 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "rankingrecords.h"
 
-#define qry(zh,query,hits,string,score) \
-    ranking_query(__LINE__,(zh),(query),(hits),(string),(score))
-
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
-    init_data(zh, recs);
-
-    qry( zh, "@attr 1=1016 @attr 2=102 the",
-            3, "first title", 997 );
-
-    qry( zh, "@attr 1=1016 @attr 2=102 foo",
-            3, "second title", 850 );
-
+    YAZ_CHECK(tl_init_data(zh, recs));
+    
+    YAZ_CHECK(tl_ranking_query(zh, "@attr 1=1016 @attr 2=102 the",
+			       3, "first title", 997 ));
+    
+    YAZ_CHECK(tl_ranking_query(zh, "@attr 1=1016 @attr 2=102 foo",
+			       3, "second title", 850 ));
+    
     /* get the record with the most significant hit, that is the 'bar' */
     /* as that is the rarest of my search words */
-    qry( zh, "@attr 1=1016 @attr 2=102 @or @or the foo bar",
-            3, "third title", 940 );
-
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_ranking_query(zh, "@attr 1=1016 @attr 2=102 @or @or the foo bar",
+			       3, "third title", 940 ));
+    
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN

@@ -1,4 +1,4 @@
-/* $Id: charmap1.c,v 1.8 2005-09-13 11:51:07 adam Exp $
+/* $Id: charmap1.c,v 1.9 2006-03-31 15:58:06 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -22,64 +22,67 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "../api/testlib.h"
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
     char path[256];
 
-    check_filter(zs, "grs.xml");
+    tl_check_filter(zs, "grs.xml");
 
-    zebra_select_database(zh, "Default");
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
     zebra_init(zh);
 
-    zebra_begin_trans(zh, 1);
-    sprintf(path, "%.200s/x.xml", get_srcdir());
+    YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
+
+    sprintf(path, "%.200s/x.xml", tl_get_srcdir());
     zebra_repository_update(zh, path);
-    zebra_end_trans(zh);
+    YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);
 
-    do_query(__LINE__, zh, "@term string æ", 1);
+    YAZ_CHECK(tl_query(zh, "@term string æ", 1));
 
     /* search for UNICODE 1E25 - letter h with dot below */
-    do_query(__LINE__, zh, "@term string ḥ", 1);
+    YAZ_CHECK(tl_query(zh, "@term string ḥ", 1));
 
     /* search for UNICODE A ring */
-    do_query(__LINE__, zh, "@term string lås", 1);
+    YAZ_CHECK(tl_query(zh, "@term string lås", 1));
 
     /* search for aa  */
-    do_query(__LINE__, zh, "@term string laas", 1);
+    YAZ_CHECK(tl_query(zh, "@term string laas", 1));
 
     /* search for aa regular-1 */
-    do_query(__LINE__, zh, "@attr 5=102 @term string lås", 1);
+    YAZ_CHECK(tl_query(zh, "@attr 5=102 @term string lås", 1));
 
     /* search for aa regular-2 */
-    do_query(__LINE__, zh, "@attr 5=103 @term string lås", 1);
+    YAZ_CHECK(tl_query(zh, "@attr 5=103 @term string lås", 1));
 
     /* search for aa trunc=104 */
-    do_query(__LINE__, zh, "@attr 5=104 @term string laas", 1);
+    YAZ_CHECK(tl_query(zh, "@attr 5=104 @term string laas", 1));
 
     /* search for aa trunc=105 */
-    do_query(__LINE__, zh, "@attr 5=104 @term string laas", 1);
+    YAZ_CHECK(tl_query(zh, "@attr 5=104 @term string laas", 1));
 
     /* search for aaa  */
-    do_query(__LINE__, zh, "@term string laaas", 0);
+    YAZ_CHECK(tl_query(zh, "@term string laaas", 0));
     
     /* search ABC in title:0 .  */
-    do_query(__LINE__, zh, "@attr 4=3 @attr 1=4 ABC", 1);
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=4 ABC", 1));
     
     /* search DEF in title:0 .  */
-    do_query(__LINE__, zh, "@attr 4=3 @attr 1=4 DEF", 0);
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=4 DEF", 0));
     
     /* search [ in title:0 .  */
-    do_query(__LINE__, zh, "@attr 4=3 @attr 1=4 [", 1);
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=4 [", 1));
     
     /* search \ in title:0 .  */
-    do_query(__LINE__, zh, "@attr 4=3 @attr 1=4 \\\\\\\\", 1);
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=4 \\\\\\\\", 1));
 
     /* search { in title:0 .  */
-    do_query(__LINE__, zh, "@attr 4=3 @attr 1=4 \\{", 1);
-
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=4 \\{", 1));
+    
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN

@@ -1,4 +1,4 @@
-/* $Id: xslt2.c,v 1.6 2006-02-23 11:26:00 adam Exp $
+/* $Id: xslt2.c,v 1.7 2006-03-31 15:58:10 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -23,7 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include "testlib.h"
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
     char path[256];
     char record_buf[20000];
@@ -33,18 +33,18 @@ int main(int argc, char **argv)
     FILE *f;
     size_t r;
 
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
 
-    check_filter(zs, "xslt");
+    tl_check_filter(zs, "xslt");
 
-    zebra_select_database(zh, "Default");
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
     
     zebra_init(zh);
 
     zebra_set_resource(zh, "recordType", "xslt.marcschema-col.xml");
 
-    sprintf(path, "%.200s/marc-col.xml", get_srcdir());
+    sprintf(path, "%.200s/marc-col.xml", tl_get_srcdir());
     f = fopen(path, "rb");
     if (!f)
     {
@@ -63,12 +63,14 @@ int main(int argc, char **argv)
 
     /* for now only the first of the records in the collection is
        indexed. That can be seen as a bug */
-    init_data(zh, records_array);
+    YAZ_CHECK(tl_init_data(zh, records_array));
 
     /* only get hits from first record .. */
-    do_query(__LINE__, zh, "@attr 1=title computer", 1);
-    do_query(__LINE__, zh, "@attr 1=control 11224466", 1);
-    do_query_x(__LINE__, zh, "@attr 1=titl computer", 0, 114);
+    YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 1));
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=titl computer", 0, 114));
     
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN

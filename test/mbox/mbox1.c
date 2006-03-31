@@ -1,4 +1,4 @@
-/* $Id: mbox1.c,v 1.2 2005-09-13 11:51:08 adam Exp $
+/* $Id: mbox1.c,v 1.3 2006-03-31 15:58:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -22,23 +22,23 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "testlib.h"
 	
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
     char path[256];
 
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
 
-    check_filter(zs, "grs.regx");
-    zebra_select_database(zh, "Default");
+    tl_check_filter(zs, "grs.regx");
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
     zebra_init(zh);
 
-    zebra_begin_trans(zh, 1);
-    sprintf(path, "%.200s/mail1.mbx", get_srcdir());
+    YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
+    sprintf(path, "%.200s/mail1.mbx", tl_get_srcdir());
     zebra_repository_update(zh, path);
 
-    sprintf(path, "%.200s/mail3.mbx", get_srcdir());
+    sprintf(path, "%.200s/mail3.mbx", tl_get_srcdir());
     zebra_repository_update(zh, path);
 
 #if 0
@@ -47,8 +47,10 @@ int main(int argc, char **argv)
     zebra_repository_update(zh, path);
 #endif
 
-    zebra_end_trans(zh);
+    YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);
-
-    return close_down(zh, zs, 0);
+    
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN

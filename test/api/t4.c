@@ -1,4 +1,4 @@
-/* $Id: t4.c,v 1.18 2005-09-13 11:51:07 adam Exp $
+/* $Id: t4.c,v 1.19 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -32,29 +32,31 @@ const char *myrec[] = {
 	
 #define NUMBER_TO_FETCH_MAX 1000
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
     int i;
     int number_to_be_inserted = 5;
     int number_to_fetch = 5;
 
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
-    init_data(zh, myrec);
+    YAZ_CHECK(tl_init_data(zh, myrec));
 
-    zebra_begin_trans (zh, 1);
+    YAZ_CHECK(zebra_begin_trans (zh, 1) == ZEBRA_OK);
+
     for (i = 0; i< number_to_be_inserted-1; i++)
     {  /* -1 since already inserted one in init_data */
 	zebra_add_record(zh, myrec[0], strlen(myrec[0]));
     }
-    zebra_end_trans(zh);
+    YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
+
     zebra_close(zh);
     zebra_stop(zs);
 
-    zs = start_service("");
+    zs = tl_zebra_start("");
     zh = zebra_open(zs, 0);
-    zebra_select_database(zh, "Default");
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
     zebra_set_resource(zh, "sortmax", "3"); /* make small sort boundary */
 
     for (i = 0; i<2; i++)
@@ -88,7 +90,7 @@ int main(int argc, char **argv)
 
         odr_destroy(odr_input);
 
-        zebra_begin_trans(zh, 1);
+        YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
 
 	for (j = 0; j < number_to_fetch; j++)
 	    retrievalRecord[j].position = j+1;
@@ -119,9 +121,11 @@ int main(int argc, char **argv)
 	}
         odr_destroy(odr_output);
 
-        zebra_end_trans(zh);
-
+        YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     }
     zebra_commit(zh);
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN
+

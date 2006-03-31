@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.6 2005-09-13 11:51:08 adam Exp $
+/* $Id: t1.c,v 1.7 2006-03-31 15:58:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -22,30 +22,32 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "testlib.h"
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
     char path[256];
 
-    check_filter(zs, "grs.xml");
-    zebra_select_database(zh, "Default");
+    tl_check_filter(zs, "grs.xml");
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
     zebra_init(zh);
 
-    zebra_begin_trans(zh, 1);
-    sprintf(path, "%.200s/m1.xml", get_srcdir());
+    YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
+    sprintf(path, "%.200s/m1.xml", tl_get_srcdir());
     zebra_repository_update(zh, path);
-    sprintf(path, "%.200s/m2.xml", get_srcdir());
+    sprintf(path, "%.200s/m2.xml", tl_get_srcdir());
     zebra_repository_update(zh, path);
-    sprintf(path, "%.200s/m3.xml", get_srcdir());
+    sprintf(path, "%.200s/m3.xml", tl_get_srcdir());
     zebra_repository_update(zh, path);
-    zebra_end_trans(zh);
+    YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);
-
-    do_query(__LINE__,zh, "@and "
+    
+    YAZ_CHECK(tl_query(zh, "@and "
 	     "@attr 1=54 eng "
-	     "@and @attr 1=1003 jack @attr 1=4 computer", 2);
+	     "@and @attr 1=1003 jack @attr 1=4 computer", 2));
 
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN

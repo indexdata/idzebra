@@ -1,4 +1,4 @@
-/* $Id: t13.c,v 1.5 2006-03-25 21:17:40 adam Exp $
+/* $Id: t13.c,v 1.6 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -23,7 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /** test resources */
 #include <stdlib.h>
 #include <string.h>
-#include <yaz/test.h>
+#include "testlib.h"
 #include <idzebra/api.h>
 
 static void tst_res(void)
@@ -49,7 +49,7 @@ static void tst_res(void)
     zh = zebra_open(zs, 0);
     YAZ_CHECK(zh);
 
-    zebra_select_database(zh, "Default");
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
     /* run this a few times so we can see leaks easier */
     for (i = 0; i<10; i++)
@@ -109,11 +109,4 @@ static void tst_no_config(void)
     zebra_stop(zs);
 }
 
-
-int main(int argc, char **argv)
-{
-    YAZ_CHECK_INIT(argc, argv);
-    tst_res();
-    tst_no_config();
-    YAZ_CHECK_TERM;
-}
+TL_MAIN

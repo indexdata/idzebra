@@ -1,5 +1,5 @@
 
-/* $Id: xpath3.c,v 1.5 2005-09-13 11:51:11 adam Exp $
+/* $Id: xpath3.c,v 1.6 2006-03-31 15:58:10 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -36,20 +36,20 @@ const char *myrec[] = {
     0};
 
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
-    init_data(zh, myrec);
+    YAZ_CHECK(tl_init_data(zh, myrec));
 
-#define q(qry,hits) do_query(__LINE__,zh,qry,hits)
-
-    q("@attr 1=/root content",1);
-    q("@attr 1=/root/first content",1);
-    q("@attr {1=/root/first[@attr='danish']} content",1);
-    q("@attr {1=/root/second[@attr='danish lake']} content",1);
-    q("@attr {1=/root/third[@attr='dansk s\xc3\xb8']} content",1); 
+    YAZ_CHECK(tl_query(zh, "@attr 1=/root content",1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/root/first content",1));
+    YAZ_CHECK(tl_query(zh, "@attr {1=/root/first[@attr='danish']} content",1));
+    YAZ_CHECK(tl_query(zh, "@attr {1=/root/second[@attr='danish lake']} content",1));
+    YAZ_CHECK(tl_query(zh, "@attr {1=/root/third[@attr='dansk s\xc3\xb8']} content",1)); 
     /* FIXME - This triggers bug200 */
 
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN

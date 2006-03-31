@@ -1,4 +1,4 @@
-/* $Id: t12.c,v 1.2 2005-09-13 11:51:07 adam Exp $
+/* $Id: t12.c,v 1.3 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -24,48 +24,58 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "testlib.h"
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
     int i;
     int no_db = 140;
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
-    zebra_select_database(zh, "Default");
-    zebra_init(zh);
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
+    YAZ_CHECK(zebra_init(zh) == ZEBRA_OK);
     zebra_close(zh);
 
     zh = zebra_open(zs, 0);
+    YAZ_CHECK(zh);
     
-    zebra_begin_trans (zh, 1);
+    YAZ_CHECK(zebra_begin_trans (zh, 1) == ZEBRA_OK);
+
     for (i = 0; i<no_db; i++)
     {
 	char dbstr[20];
 	char rec_buf[100];
 
 	sprintf(dbstr, "%d", i);
-	zebra_select_database(zh, dbstr);
+	YAZ_CHECK(zebra_select_database(zh, dbstr) == ZEBRA_OK);
     
 	sprintf(rec_buf, "<gils><title>title %d</title></gils>\n", i);
 	zebra_add_record (zh, rec_buf, strlen(rec_buf));
 
     }
-    zebra_end_trans(zh);
+    YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
+
     zebra_close(zh);
     zh = zebra_open(zs, 0);
+    YAZ_CHECK(zh);
     for (i = 0; i<=no_db; i++)
     {
 	char dbstr[20];
 	char querystr[50];
 	sprintf(dbstr, "%d", i);
-	zebra_select_database(zh, dbstr);
+	YAZ_CHECK(zebra_select_database(zh, dbstr) == ZEBRA_OK);
 
 	sprintf(querystr, "@attr 1=4 %d", i);
 	if (i == no_db)
-	    do_query_x(__LINE__, zh, querystr, 0, 109);
+	{
+	    YAZ_CHECK(tl_query_x(zh, querystr, 0, 109));
+	}
 	else
-	    do_query(__LINE__, zh, querystr, 1);
+	{
+	    YAZ_CHECK(tl_query(zh, querystr, 1));
+	}
     }
-
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN
+

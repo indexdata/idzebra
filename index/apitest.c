@@ -1,4 +1,4 @@
-/* $Id: apitest.c,v 1.23 2005-09-13 11:51:06 adam Exp $
+/* $Id: apitest.c,v 1.24 2006-03-31 15:58:04 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -152,7 +152,11 @@ int main (int argc, char **argv)
 	printf ("zebras_open failed\n");
 	exit (1);
     }
-    zebra_select_databases (zh, 1, &base);
+    if (zebra_select_databases (zh, 1, &base) != ZEBRA_OK)
+    {
+	printf ("zebra_select_databases failed\n");
+	exit (1);
+    }
     /* Each argument to main will be a query */
     for (argno = 1; argno < argc; argno++)
     {

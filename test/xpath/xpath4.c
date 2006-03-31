@@ -1,4 +1,4 @@
-/* $Id: xpath4.c,v 1.4 2005-09-13 11:51:11 adam Exp $
+/* $Id: xpath4.c,v 1.5 2006-03-31 15:58:10 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -83,70 +83,70 @@ const char *myrec[] = {
     0};
 
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
 #if 0
     yaz_log_init_level( yaz_log_mask_str_x("xpath4,rsbetween", LOG_DEFAULT_LEVEL));
 #endif
 
-    init_data(zh, myrec);
+    YAZ_CHECK(tl_init_data(zh, myrec));
 
-#define q(qry,hits) do_query(__LINE__,zh,qry,hits)
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title foo",4));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title bar",2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='da'] foo",1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='en'] foo",1));
 
-    q("@attr 1=/record/title foo",4);
-    q("@attr 1=/record/title bar",2);
-    q("@attr 1=/record/title[@lang='da'] foo",1);
-    q("@attr 1=/record/title[@lang='en'] foo",1);
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='en'] english",1)); 
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='da'] english",0)); 
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='da'] danish",1));  
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='en'] danish",0));  
 
-    q("@attr 1=/record/title[@lang='en'] english",1); 
-    q("@attr 1=/record/title[@lang='da'] english",0); 
-    q("@attr 1=/record/title[@lang='da'] danish",1);  
-    q("@attr 1=/record/title[@lang='en'] danish",0);  
-
-    q("@attr 1=/record/title @and foo bar",2);
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title @and foo bar",2));
     /* The previous one returns two hits, as the and applies to the whole
     record, so it matches <title>foo</title><title>bar</title>
     This might not have to be like that, but currently that is what
     zebra does.  */
-    q("@and @attr 1=/record/title foo @attr 1=/record/title bar ",2);
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=/record/title foo @attr 1=/record/title bar ",2));
 
     /* check we get all the occureences for 'grunt' */
     /* this can only be seen in the log, with debugs on. bug #202 */
-    q("@attr 1=/record/author grunt",3);
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/author grunt",3));
 
     /* check nested tags */
-    q("@attr 1=/record/nested before",0);
-    q("@attr 1=/record/nested early",1);
-    q("@attr 1=/record/nested middle",1);
-    q("@attr 1=/record/nested late",1);
-    q("@attr 1=/record/nested after",0);
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nested before",0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nested early",1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nested middle",1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nested late",1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nested after",0));
 
-    q("@attr 1=/record/nested/nested before",0);
-    q("@attr 1=/record/nested/nested early",0);
-    q("@attr 1=/record/nested/nested middle",1);
-    q("@attr 1=/record/nested/nested late",0);
-    q("@attr 1=/record/nested/nested after",0);
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nested/nested before",0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nested/nested early",0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nested/nested middle",1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nested/nested late",0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nested/nested after",0));
 
-    q("@attr 1=/record/nestattr[@level='outer'] before",0);
-    q("@attr 1=/record/nestattr[@level='outer'] early",1);
-    q("@attr 1=/record/nestattr[@level='outer'] middle",1);
-    q("@attr 1=/record/nestattr[@level='outer'] late",1);
-    q("@attr 1=/record/nestattr[@level='outer'] after",0);
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr[@level='outer'] before",0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr[@level='outer'] early",1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr[@level='outer'] middle",1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr[@level='outer'] late",1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr[@level='outer'] after",0));
 
-    q("@attr 1=/record/nestattr[@level='inner'] before",0);
-    q("@attr 1=/record/nestattr[@level='inner'] early",0);
-    q("@attr 1=/record/nestattr[@level='inner'] middle",0);
-    q("@attr 1=/record/nestattr[@level='inner'] late",0);
-    q("@attr 1=/record/nestattr[@level='inner'] after",0);
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr[@level='inner'] before",0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr[@level='inner'] early",0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr[@level='inner'] middle",0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr[@level='inner'] late",0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr[@level='inner'] after",0));
 
-    q("@attr 1=/record/nestattr/nestattr[@level='inner'] before",0);
-    q("@attr 1=/record/nestattr/nestattr[@level='inner'] early",0);
-    q("@attr 1=/record/nestattr/nestattr[@level='inner'] middle",1);
-    q("@attr 1=/record/nestattr/nestattr[@level='inner'] late",0);
-    q("@attr 1=/record/nestattr/nestattr[@level='inner'] after",0);
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr/nestattr[@level='inner'] before",0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr/nestattr[@level='inner'] early",0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr/nestattr[@level='inner'] middle",1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr/nestattr[@level='inner'] late",0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/nestattr/nestattr[@level='inner'] after",0));
 
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN

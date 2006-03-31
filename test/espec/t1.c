@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.5 2005-09-13 11:51:08 adam Exp $
+/* $Id: t1.c,v 1.6 2006-03-31 15:58:06 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -22,35 +22,33 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "../api/testlib.h"
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
     char path[256];
-    int i, errs = 0;
+    int i;
 
-    check_filter(zs, "grs.xml");
+    tl_check_filter(zs, "grs.xml");
 
-    zebra_select_database(zh, "Default");
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
     zebra_init(zh);
 
-    zebra_begin_trans(zh, 1);
+    YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
     for (i = 1; i <= 1; i++)
     {
-        sprintf(path, "%.200s/rec%d.xml", get_srcdir(), i);
+        sprintf(path, "%.200s/rec%d.xml", tl_get_srcdir(), i);
         zebra_repository_update(zh, path);
     }
-    zebra_end_trans(zh);
+    YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);
 
-    do_query(__LINE__,zh, "@attr 1=1016 X2", 1);
-    do_query(__LINE__,zh, "@attr 1=1016 {X2 X3}", 1);
+    YAZ_CHECK(tl_query(zh, "@attr 1=1016 X2", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=1016 {X2 X3}", 1));
 
-    if (errs)
-    {
-	fprintf(stderr, "%d sysnos did not match\n", errs);
-	exit(1);
-    }
-    return close_down(zh, zs, 0);
+
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN

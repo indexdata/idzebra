@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.29 2005-12-15 13:28:32 adam Exp $
+/* $Id: testlib.c,v 1.30 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -42,7 +42,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /*    FIXME - parse command line arguments to set log levels etc */
 int log_level=0; /* not static, t*.c may use it */
 
-void start_log(int argc, char **argv)
+void tl_start_log(int argc, char **argv)
 {
     int cmd_level = 0;
     char logname[2048];
@@ -60,14 +60,14 @@ void start_log(int argc, char **argv)
 }
 
 /** 
- * start_up : do common start things, and a zebra_start
+ * tl_start_up : do common start things, and a zebra_start
  *    - nmem_init
  *    - build the name of logfile from argv[0], and open it
  *      if no argv passed, do not open a log
  *    - read zebra.cfg from env var srcdir if it exists; otherwise current dir 
  *      default to zebra.cfg, if no name is given
  */
-ZebraService start_up(char *cfgname, int argc, char **argv)
+ZebraService tl_start_up(char *cfgname, int argc, char **argv)
 {
 #if HAVE_SYS_RESOURCE_H
 #if HAVE_SYS_TIME_H
@@ -78,14 +78,14 @@ ZebraService start_up(char *cfgname, int argc, char **argv)
 #endif
 #endif
     nmem_init();
-    start_log(argc, argv);
-    return start_service(cfgname);
+    tl_start_log(argc, argv);
+    return tl_zebra_start(cfgname);
 }
 
 /**
  * get_srcdir: return env srcdir or . (if does does not exist)
  */
-const char *get_srcdir()
+const char *tl_get_srcdir()
 {
     const char *srcdir = getenv("srcdir");
     if (!srcdir || ! *srcdir)
@@ -93,72 +93,66 @@ const char *get_srcdir()
     return srcdir;
 
 }
-/** start_service - do a zebra_start with a decent config name */
-ZebraService start_service(const char *cfgname)
+/** tl_zebra_start - do a zebra_start with a decent config name */
+ZebraService tl_zebra_start(const char *cfgname)
 {
     char cfg[256];
-    const char *srcdir = get_srcdir();
-    ZebraService zs;
+    const char *srcdir = tl_get_srcdir();
     if (!cfgname || ! *cfgname )
         cfgname="zebra.cfg";
 
     sprintf(cfg, "%.200s/%.50s", srcdir, cfgname);
-    zs = zebra_start(cfg);
-    TL_ASSERT2(zs, "zebra_start_failed. Missing config file?");
-    return zs;
+    return  zebra_start(cfg);
 }
 
-
-/** close_down closes down the zebra, logfile, nmem, xmalloc etc. logs an OK */
-int close_down(ZebraHandle zh, ZebraService zs, int retcode)
+/** tl_close_down closes down the zebra, logfile, nmem, xmalloc etc. logs an OK */
+int tl_close_down(ZebraHandle zh, ZebraService zs)
 {
     if (zh)
         zebra_close(zh);
     if (zs)
         zebra_stop(zs);
 
-    if (retcode)
-        yaz_log(log_level,"========= Exiting with return code %d", retcode);
-    else
-        yaz_log(log_level,"========= All tests OK");
     nmem_exit();
     xmalloc_trav("x");
-    return retcode;
+    return 1;
 }
 
 /** inits the database and inserts test data */
 
-void init_data(ZebraHandle zh, const char **recs)
+int tl_init_data(ZebraHandle zh, const char **recs)
 {
-    int i;
-    char *addinfo;
-    assert(zh);
-    zebra_select_database(zh, "Default");
+    ZEBRA_RES res;
+
+    if (!zh)
+	return 0;
+
+    if (zebra_select_database(zh, "Default") != ZEBRA_OK)
+	return 0;
+
     yaz_log(log_level, "going to call init");
-    i = zebra_init(zh);
-    yaz_log(log_level, "init_data returned %d", i);
-    if (i) 
+    res = zebra_init(zh);
+    if (res == ZEBRA_FAIL) 
     {
-	yaz_log(log_level, "init_data: zebra_init failed with %d", i);
-        printf("init_data failed with %d\n", i);
-        zebra_result(zh, &i, &addinfo);
-        yaz_log(log_level, "Error %d  %s", i, addinfo);
-        printf("  Error %d   %s\n", i, addinfo);
-	TL_ASSERT(i == 0);
+	yaz_log(log_level, "init_data: zebra_init failed with %d", res);
+        printf("init_data failed with %d\n", res);
+	return 0;
     }
     if (recs)
     {
-        zebra_begin_trans (zh, 1);
+	int i;
+	if (zebra_begin_trans (zh, 1) != ZEBRA_OK)
+	    return 0;
         for (i = 0; recs[i]; i++)
             zebra_add_record(zh, recs[i], strlen(recs[i]));
-        zebra_end_trans(zh);
+        if (zebra_end_trans(zh) != ZEBRA_OK)
+	    return 0;
         zebra_commit(zh);
     }
-
+    return 1;
 }
 
-int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
-	       int experror)
+int tl_query_x(ZebraHandle zh, const char *query, zint exphits, int experror)
 {
     ODR odr;
     YAZ_PQF_Parser parser;
@@ -168,13 +162,20 @@ int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
     ZEBRA_RES rc;
 
     yaz_log(log_level, "======================================");
-    yaz_log(log_level, "qry[%d]: %s", lineno, query);
-    odr = odr_createmem (ODR_DECODE);    
+    yaz_log(log_level, "query: %s", query);
+    odr = odr_createmem (ODR_DECODE);
+    if (!odr)
+	return 0;
 
     parser = yaz_pqf_create();
     rpn = yaz_pqf_parse(parser, odr, query);
     yaz_pqf_destroy(parser);
-    TL_ASSERT2(rpn, "Parse of pqf failed");
+    if (!rpn)
+    {
+	odr_destroy(odr);
+	return 0;
+    }
+
     rc = zebra_search_RPN(zh, odr, rpn, setname, &hits);
     if (experror)
     {
@@ -185,7 +186,7 @@ int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
 		    "expected", rc);
 	    printf("Error: search returned %d (OK), but error was expected\n"
 		   "%s\n",  rc, query);
-	    TL_ASSERT(rc == ZEBRA_FAIL);
+	    return 0;
 	}
 	code = zebra_errCode(zh);
 	if (code != experror)
@@ -195,7 +196,7 @@ int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
 	    printf("Error: search returned error code %d, but error %d was "
 		   "expected\n%s\n",
 		   code, experror, query);
-	    TL_ASSERT(code == experror);
+	    return 0;
 	}
     }
     else
@@ -206,7 +207,7 @@ int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
 	    
 	    printf("Error: search returned %d. Code %d\n%s\n", rc, 
 		   code, query);
-	    exit (1);
+	    return 0;
 	}
 	if (exphits != -1 && hits != exphits)
 	{
@@ -215,23 +216,23 @@ int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
 	    printf("Error: search returned " ZINT_FORMAT 
 		   " hits instead of " ZINT_FORMAT "\n%s\n",
 		   hits, exphits, query);
-	    exit (1);
+	    return 0;
 	}
     }
-    odr_destroy (odr);
-    return hits;
+    odr_destroy(odr);
+    return 1;
 }
 
 
-int do_query(int lineno, ZebraHandle zh, const char *query, zint exphits)
+int tl_query(ZebraHandle zh, const char *query, zint exphits)
 {
-    return do_query_x(lineno, zh, query, exphits, 0);
+    return tl_query_x(zh, query, exphits, 0);
 }
 
-void do_scan(int lineno, ZebraHandle zh, const char *query,
-	     int pos, int num,
-	     int exp_pos, int exp_num, int exp_partial,
-	     const char **exp_entries)
+int tl_scan(ZebraHandle zh, const char *query,
+	    int pos, int num,
+	    int exp_pos, int exp_num, int exp_partial,
+	    const char **exp_entries)
 {
     ODR odr = odr_createmem(ODR_ENCODE);
     ZebraScanEntry *entries = 0;
@@ -239,7 +240,7 @@ void do_scan(int lineno, ZebraHandle zh, const char *query,
     ZEBRA_RES res;
 
     yaz_log(log_level, "======================================");
-    yaz_log(log_level, "scan[%d]: pos=%d num=%d %s", lineno, pos, num, query);
+    yaz_log(log_level, "scan: pos=%d num=%d %s", pos, num, query);
 
     res = zebra_scan_PQF(zh, odr, query, &pos, &num, &entries, &partial, 
 			 0 /* setname */);
@@ -247,7 +248,7 @@ void do_scan(int lineno, ZebraHandle zh, const char *query,
     {
 	printf("Error: scan returned %d (FAIL), but no error was expected\n"
 	       "%s\n",  res, query);
-	exit(1);
+	return 0;
     }
     else
     {
@@ -277,7 +278,7 @@ void do_scan(int lineno, ZebraHandle zh, const char *query,
 	    fails++;
 	}
 	if (fails)
-	    exit(1);
+	    return 0;
 	fails = 0;
 	if (exp_entries)
 	{
@@ -294,67 +295,65 @@ void do_scan(int lineno, ZebraHandle zh, const char *query,
 	    }
 	}
 	if (fails)
-	    exit(0);
+	    return 0;
     }
     odr_destroy(odr);
+    return 1;
 }
 
 /** 
  * makes a query, checks number of hits, and for the first hit, that 
  * it contains the given string, and that it gets the right score
  */
-void ranking_query(int lineno, ZebraHandle zh, char *query, 
-		   int exphits, char *firstrec, int firstscore)
+int tl_ranking_query(ZebraHandle zh, char *query, 
+		     int exphits, char *firstrec, int firstscore)
 {
     ZebraRetrievalRecord retrievalRecord[10];
     ODR odr_output = odr_createmem (ODR_ENCODE);    
     const char *setname="rsetname";
-    int hits;
     int rc;
     int i;
         
-    hits = do_query(lineno, zh, query, exphits);
+    if (!tl_query(zh, query, exphits))
+	return 0;
 
     for (i = 0; i<10; i++)
         retrievalRecord[i].position = i+1;
 
     rc = zebra_records_retrieve (zh, odr_output, setname, 0,
-				 VAL_TEXT_XML, hits, retrievalRecord);
-    
-    if (rc)
-    {
-        printf("Error: retrieve returned %d \n%s\n",rc,query);
-        exit (1);
-    }
+				 VAL_TEXT_XML, exphits, retrievalRecord);
+    if (rc != ZEBRA_OK)
+	return 0;
 
     if (!strstr(retrievalRecord[0].buf, firstrec))
     {
         printf("Error: Got the wrong record first\n");
         printf("Expected '%s' but got\n", firstrec);
         printf("%.*s\n", retrievalRecord[0].len, retrievalRecord[0].buf);
-        exit(1);
+	return 0;
     }
     
     if (retrievalRecord[0].score != firstscore)
     {
         printf("Error: first rec got score %d instead of %d\n",
 	       retrievalRecord[0].score, firstscore);
-        exit(1);
+	return 0;
     }
     odr_destroy (odr_output);
+    return 1;
 }
 
-void meta_query(int lineno, ZebraHandle zh, char *query, int exphits,
-		zint *ids)
+int tl_meta_query(ZebraHandle zh, char *query, int exphits,
+		  zint *ids)
 {
     ZebraMetaRecord *meta;
     ODR odr_output = odr_createmem (ODR_ENCODE);    
     const char *setname="rsetname";
     zint *positions = (zint *) malloc(1 + (exphits * sizeof(zint)));
-    int hits;
     int i;
         
-    hits = do_query(lineno, zh, query, exphits);
+    if (!tl_query(zh, query, exphits))
+	return 0;
     
     for (i = 0; i<exphits; i++)
         positions[i] = i+1;
@@ -364,7 +363,7 @@ void meta_query(int lineno, ZebraHandle zh, char *query, int exphits,
     if (!meta)
     {
         printf("Error: retrieve returned error\n%s\n", query);
-        exit (1);
+	return 0;
     }
 
     for (i = 0; i<exphits; i++)
@@ -373,15 +372,16 @@ void meta_query(int lineno, ZebraHandle zh, char *query, int exphits,
 	{
 	    printf("Expected id=" ZINT_FORMAT " but got id=" ZINT_FORMAT "\n",
 		   ids[i], meta[i].sysno);
-	    exit(1);
+	    return 0;
 	}
     }
     zebra_meta_records_destroy(zh, meta, exphits);
     odr_destroy (odr_output);
     free(positions);
+    return 1;
 }
 
-void do_sort(ZebraHandle zh, const char *query, zint hits, zint *exp)
+int tl_sort(ZebraHandle zh, const char *query, zint hits, zint *exp)
 {
     ZebraMetaRecord *recs;
     zint i;
@@ -390,14 +390,13 @@ void do_sort(ZebraHandle zh, const char *query, zint hits, zint *exp)
     zint min_val_exp = 0;
 
     assert(query);
-    do_query(__LINE__, zh, query, hits);
+    if (!tl_query(zh, query, hits))
+	return 0;
 
     recs = zebra_meta_records_create_range (zh, "rsetname", 1, 4);
     if (!recs)
-    {
-	fprintf(stderr, "recs==0\n");
-	exit(1);
-    }
+	return 0;
+
     /* find min for each sequence to get proper base offset */
     for (i = 0; i<hits; i++)
     {
@@ -422,7 +421,8 @@ void do_sort(ZebraHandle zh, const char *query, zint hits, zint *exp)
     zebra_meta_records_destroy (zh, recs, 4);
 
     if (errs)
-	exit(1);
+	return 0;
+    return 1;
 }
 
 
@@ -438,7 +438,7 @@ static void filter_cb(void *cd, const char *name)
 	f->occurred = 1;
 }
 
-void check_filter(ZebraService zs, const char *name)
+void tl_check_filter(ZebraService zs, const char *name)
 {
     struct finfo f;
 

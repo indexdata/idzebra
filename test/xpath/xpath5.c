@@ -1,4 +1,4 @@
-/* $Id: xpath5.c,v 1.4 2005-09-13 11:51:11 adam Exp $
+/* $Id: xpath5.c,v 1.5 2006-03-31 15:58:10 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -55,27 +55,25 @@ const char *recs[] = {
         0 };
 
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
-    init_data(zh, recs);
 
-//     yaz_log_init_level(LOG_ALL);
+    YAZ_CHECK(tl_init_data(zh, recs));
 
-#define q(qry,hits,string,score) \
-    ranking_query(__LINE__,zh,qry,hits,string,score)
+    YAZ_CHECK(tl_ranking_query(zh, "@attr 1=/record/title @attr 2=102 the",
+            3,"first title", 952));
+    YAZ_CHECK(tl_ranking_query(zh, "@attr 1=/ @attr 2=102 @or third foo",
+            3,"third title", 802));
 
-    q("@attr 1=/record/title @attr 2=102 the",
-            3,"first title",952);
-    q("@attr 1=/ @attr 2=102 @or third foo",
-            3,"third title",802);
+    YAZ_CHECK(tl_ranking_query(zh, "@attr 1=/ @attr 2=102 foo",
+            3,"second title", 850));
 
-    q("@attr 1=/ @attr 2=102 foo",
-            3,"second title",850);
+    YAZ_CHECK(tl_ranking_query(zh, "@attr 1=/record/ @attr 2=102 foo",
+            3,"second title", 927));
 
-    q("@attr 1=/record/ @attr 2=102 foo",
-            3,"second title",927);
-
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN

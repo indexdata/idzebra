@@ -1,4 +1,4 @@
-/* $Id: t8.c,v 1.8 2005-09-13 11:51:07 adam Exp $
+/* $Id: t8.c,v 1.9 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -55,41 +55,40 @@ const char *recs[] = {
         0};
         
 
-
-
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up("zebra8.cfg", argc, argv);
+    ZebraService zs = tl_start_up("zebra8.cfg", argc, argv);
     ZebraHandle zh = zebra_open (zs, 0);
 
-    init_data(zh, recs);
+    YAZ_CHECK(tl_init_data(zh, recs));
 
-#define Q(q,n) do_query(__LINE__,zh,q,n)
     /* couple of simple queries just to see that we have indexed the stuff */
-    Q( "@attr 1=4 title",2 );
-    Q( "title",2 );
+    YAZ_CHECK(tl_query(zh,  "@attr 1=4 title", 2));
+    YAZ_CHECK(tl_query(zh,  "title", 2));
     
     /* 1=2038: West-Bounding-Coordinate 2039: East: 2040: North: 2041 South*/
     /* 4=109: numeric string */
     /* 2=3: equal  2=1: less, 2=4: greater or equal 2=5 greater */
 
     /* N>25, search attributes work */
-    Q( "@attr 2=4 @attr gils 1=2040 @attr 4=109 25",2);
+    YAZ_CHECK(tl_query(zh,  "@attr 2=4 @attr gils 1=2040 @attr 4=109 25", 2));
 
     /* N=41, get rec1 only */
-    Q( "@attr 2=3 @attr gils 1=2040 @attr 4=109 41",1);
+    YAZ_CHECK(tl_query(zh,  "@attr 2=3 @attr gils 1=2040 @attr 4=109 41", 1));
 
     /* N=49, get both records */
-    Q( "@attr 2=3 @attr gils 1=2040 @attr 4=109 49",2);
+    YAZ_CHECK(tl_query(zh,  "@attr 2=3 @attr gils 1=2040 @attr 4=109 49", 2));
 
     /* W=-120 get both records */
-    Q( "@attr 2=3 @attr gils 1=2038 @attr 4=109 -120",2);
+    YAZ_CHECK(tl_query(zh,  "@attr 2=3 @attr gils 1=2038 @attr 4=109 -120", 2));
 
     /* W<-122 get only rec1 */
-    Q( "@attr 2=1 @attr gils 1=2038 @attr 4=109 '-120' ",1);
+    YAZ_CHECK(tl_query(zh,  "@attr 2=1 @attr gils 1=2038 @attr 4=109 '-120' ", 1));
 
     /* N=41 and N=49 get only rec2 */
-    Q( "@attr 2=3 @attr gils 1=2040 @attr 4=109 \"41 49\" ",1);
+    YAZ_CHECK(tl_query(zh, "@attr 2=3 @attr gils 1=2040 @attr 4=109 \"41 49\" ", 1));
 
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN

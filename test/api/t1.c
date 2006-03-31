@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.13 2005-09-13 11:51:07 adam Exp $
+/* $Id: t1.c,v 1.14 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -22,13 +22,16 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /** t1 - just start and stop */
 
+#include <yaz/test.h>
 #include "testlib.h"
 
-	
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
     
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN
+

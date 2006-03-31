@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.127 2005-09-13 11:51:06 adam Exp $
+/* $Id: main.c,v 1.128 2006-03-31 15:58:04 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -279,7 +279,8 @@ int main (int argc, char **argv)
     } /* while arg */
 
     if (trans_started)
-        zebra_end_trans (zh);
+        if (zebra_end_trans (zh) != ZEBRA_OK)
+            yaz_log (YLOG_WARN, "zebra_end_trans failed");
 
     zebra_close (zh);
     zebra_stop (zs);

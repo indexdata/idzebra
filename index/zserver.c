@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.144 2005-12-09 11:33:32 adam Exp $
+/* $Id: zserver.c,v 1.145 2006-03-31 15:58:04 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -391,10 +391,11 @@ int bend_sort (void *handle, bend_sort_rr *rr)
 {
     ZebraHandle zh = (ZebraHandle) handle;
 
-    zebra_sort (zh, rr->stream,
-                rr->num_input_setnames, (const char **) rr->input_setnames,
-		rr->output_setname, rr->sort_sequence, &rr->sort_status);
-    zebra_result (zh, &rr->errcode, &rr->errstring);
+    if (zebra_sort (zh, rr->stream,
+		    rr->num_input_setnames, (const char **) rr->input_setnames,
+		    rr->output_setname, rr->sort_sequence, &rr->sort_status)
+	!= ZEBRA_OK)
+	zebra_result (zh, &rr->errcode, &rr->errstring);
     return 0;
 }
 
@@ -446,7 +447,12 @@ static void es_admin_request (bend_esrequest_rr *rr, ZebraHandle zh, Z_AdminEsRe
     case Z_ESAdminOriginPartToKeep_commit:
 	yaz_log(YLOG_LOG, "adm-commit");
 	if (r->toKeep->databaseName)
-	    zebra_select_database(zh, r->toKeep->databaseName);
+	{
+	    if (zebra_select_database(zh, r->toKeep->databaseName) !=
+		ZEBRA_OK)
+		yaz_log(YLOG_WARN, "zebra_select_database failed in "
+			"adm-commit");
+	}
 	zebra_commit(zh);
 	break;
     case Z_ESAdminOriginPartToKeep_shutdown:
@@ -728,7 +734,11 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 			}
                     }
 		}
-                zebra_end_trans (zh);
+                if (zebra_end_trans (zh) != ZEBRA_OK)
+		{
+		    yaz_log(YLOG_WARN, "zebra_end_trans failed for"
+			    " extended service operation");
+		}
 	    }
 	}
     }

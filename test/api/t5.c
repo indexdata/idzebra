@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.14 2005-09-13 11:51:07 adam Exp $
+/* $Id: t5.c,v 1.15 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -21,6 +21,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 /** t5.c: proximity searches */
+#include <yaz/test.h>
 #include "testlib.h"
 
 const char *myrec[] = {
@@ -29,72 +30,74 @@ const char *myrec[] = {
         "<gils>\n<title>My title x</title>\n</gils>\n" ,
 	0} ;
 	
-
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
-    init_data(zh, myrec);
+    YAZ_CHECK(tl_init_data(zh, myrec));
 
     /* phrase searches */
-    do_query(__LINE__, zh, "@attr 1=4 my", 3);
-    do_query(__LINE__, zh, "@attr 1=4 {my x}", 1);
-    do_query(__LINE__, zh, "@attr 1=4 @attr 4=1 {my x}", 1);
-    do_query(__LINE__, zh, "@attr 1=4 {my x}", 1);
-    do_query(__LINE__, zh, "@attr 1=4 {x my}", 0);
-    do_query(__LINE__, zh, "@attr 1=4 {my x title}", 1);
-    do_query(__LINE__, zh, "@attr 1=4 {my title}", 2);
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 my", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 {my x}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=1 {my x}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 {my x}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 {x my}", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 {my x title}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 {my title}", 2));
 
     /* and-list searches */
-    do_query(__LINE__, zh, "@attr 1=4 @attr 4=6 {x my}", 2);
-    do_query(__LINE__, zh, "@attr 1=4 @attr 4=6 {my x}", 2);
-    do_query(__LINE__, zh, "@attr 1=4 @attr 4=6 {my my}", 3);
-    do_query(__LINE__, zh, "@attr 1=4 @attr 4=6 {e x}", 0);
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=6 {x my}", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=6 {my x}", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=6 {my my}", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=6 {e x}", 0));
 
     /* or-list searches */
-    do_query(__LINE__, zh, "@attr 1=4 @attr 4=105 {x my}", 3);
-    do_query(__LINE__, zh, "@attr 1=4 @attr 4=105 {my x}", 3);
-    do_query(__LINE__, zh, "@attr 1=4 @attr 4=105 {my my}", 3);
-    do_query(__LINE__, zh, "@attr 1=4 @attr 4=105 {e x}", 2);
-    do_query(__LINE__, zh, "@attr 1=4 @attr 4=106 {e x}", 2);
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=105 {x my}", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=105 {my x}", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=105 {my my}", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=105 {e x}", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=106 {e x}", 2));
 
-    do_query(__LINE__, zh, "@attr 1=4 @and x title", 2);
-
-    /* exl=0 distance=2 order=1 relation=2 (<=), known, unit=word */
-    do_query(__LINE__, zh, "@prox 0 2 1 2 k 2 my x", 2);
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @and x title", 2));
 
     /* exl=0 distance=2 order=1 relation=2 (<=), known, unit=word */
-    do_query(__LINE__, zh, "@prox 0 2 1 2 k 2 x my", 0);
+    YAZ_CHECK(tl_query(zh, "@prox 0 2 1 2 k 2 my x", 2));
+
+    /* exl=0 distance=2 order=1 relation=2 (<=), known, unit=word */
+    YAZ_CHECK(tl_query(zh, "@prox 0 2 1 2 k 2 x my", 0));
 
     /* exl=0 distance=2 order=0 relation=2 (<=), known, unit=word */
-    do_query(__LINE__, zh, "@prox 0 2 0 2 k 2 x my", 2);
+    YAZ_CHECK(tl_query(zh, "@prox 0 2 0 2 k 2 x my", 2));
 
     /* exl=0 distance=2 order=0 relation=3 (=), known, unit=word */
-    do_query(__LINE__, zh, "@prox 0 2 1 3 k 2 my x", 1);
+    YAZ_CHECK(tl_query(zh, "@prox 0 2 1 3 k 2 my x", 1));
 
     /* exl=1 distance=2 order=0 relation=3 (=), known, unit=word */
-    do_query(__LINE__, zh, "@prox 1 2 1 3 k 2 my x", 1);
+    YAZ_CHECK(tl_query(zh, "@prox 1 2 1 3 k 2 my x", 1));
 
     /* provoke unsupported use attribute */
-    do_query_x(__LINE__, zh, "@attr 1=999 @attr 4=1 x", 0, 114);
-    do_query_x(__LINE__, zh, "@attr 1=999 @attr 4=6 x", 0, 114);
-    do_query_x(__LINE__, zh, "@attr 1=999 @attr 4=105 x", 0, 114);
-    do_query_x(__LINE__, zh, "@attr 1=999 @attr 4=109 123", 0, 114);
-    do_query_x(__LINE__, zh, "@attrset 1.2.840.10003.3.1 @attr 1=999 x",
-	       0, 114);
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=999 @attr 4=1 x", 0, 114));
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=999 @attr 4=6 x", 0, 114));
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=999 @attr 4=105 x", 0, 114));
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=999 @attr 4=109 123", 0, 114));
+    YAZ_CHECK(tl_query_x(zh, "@attrset 1.2.840.10003.3.1 @attr 1=999 x",
+			 0, 114));
     /* provoke unsupported attribute set */
-    do_query_x(__LINE__, zh, "@attrset 1.2.8 @attr 1=999 @attr 4=1 x", 0, 121);
-    do_query_x(__LINE__, zh, "@attrset 1.2.8 @attr 1=999 @attr 4=6 x", 0,
-	       121);
-    do_query_x(__LINE__, zh, "@attrset 1.2.8 @attr 1=999 @attr 4=105 x", 0,
-	       121);
-    do_query_x(__LINE__, zh, "@attrset 1.2.8 @attr 1=999 @attr 4=109 123",
-	       0, 121);
+    YAZ_CHECK(tl_query_x(zh, "@attrset 1.2.8 @attr 1=999 @attr 4=1 x", 0, 121));
+    YAZ_CHECK(tl_query_x(zh, "@attrset 1.2.8 @attr 1=999 @attr 4=6 x", 0,
+	       121));
+    YAZ_CHECK(tl_query_x(zh, "@attrset 1.2.8 @attr 1=999 @attr 4=105 x", 0,
+	       121));
+    YAZ_CHECK(tl_query_x(zh, "@attrset 1.2.8 @attr 1=999 @attr 4=109 123",
+	       0, 121));
 
     /* provoke unsupported relation */
-    do_query_x(__LINE__, zh, "@attr 1=1016 @attr 2=6 x", 0, 117);
-    do_query_x(__LINE__, zh, "@attr 1=1016 @attr 2=6 @attr 4=109 x", 0, 114);
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=1016 @attr 2=6 x", 0, 117));
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=1016 @attr 2=6 @attr 4=109 x", 0, 114));
  
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN
+

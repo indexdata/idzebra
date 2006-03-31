@@ -1,4 +1,4 @@
-/* $Id: t10.c,v 1.9 2005-09-13 11:51:07 adam Exp $
+/* $Id: t10.c,v 1.10 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,9 +25,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "testlib.h"
 #include "rankingrecords.h"
 
-#define qry(zh,query,hits,string,score) \
-    ranking_query(__LINE__,(zh),(query),(hits),(string),(score))
-
 struct tst {
     char *schema;
     char *hit1;
@@ -37,8 +34,6 @@ struct tst {
     char *hit3;
     int score3;
 };
-
-
 
 struct tst tests[] = {
     {"ntc-atn", "first title", 0, "first title", 1000, "first title",1000 },
@@ -70,31 +65,33 @@ struct tst tests[] = {
     {0,0,0,0,0,0,0},
 };
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
     int i;
-    ZebraService zs = start_up("zebrazv.cfg", argc, argv);
+    ZebraService zs = tl_start_up("zebrazv.cfg", argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
   
-    init_data(zh, recs);
+    YAZ_CHECK(tl_init_data(zh, recs));
     zebra_close(zh);
     for (i = 0; tests[i].schema; i++)
     {
         zh = zebra_open(zs, 0);
-        zebra_select_database(zh, "Default");
+	YAZ_CHECK(zh);
+        YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
+
         zebra_set_resource(zh, "zvrank.weighting-scheme", tests[i].schema);
         yaz_log(YLOG_LOG,"============%d: %s ===========", i, tests[i].schema);
 
-        ranking_query( __LINE__, zh, "@attr 1=1016 @attr 2=102 the",
-                3, tests[i].hit1, tests[i].score1);
-        ranking_query( __LINE__, zh, "@attr 1=1016 @attr 2=102 @or foo bar",
-                3, tests[i].hit2, tests[i].score2);
-        ranking_query( __LINE__, zh, 
-                "@attr 1=1016 @attr 2=102 @or @or the foo bar",
-                3, tests[i].hit3, tests[i].score3);
-
+        YAZ_CHECK(tl_ranking_query(zh, "@attr 1=1016 @attr 2=102 the",
+				   3, tests[i].hit1, tests[i].score1));
+        YAZ_CHECK(tl_ranking_query(zh, "@attr 1=1016 @attr 2=102 @or foo bar",
+				   3, tests[i].hit2, tests[i].score2));
+        YAZ_CHECK(tl_ranking_query(zh, 
+				   "@attr 1=1016 @attr 2=102 @or @or the foo bar",
+				   3, tests[i].hit3, tests[i].score3));
         zebra_close(zh);
     }
-    
-    return close_down(0,zs,0);
+    YAZ_CHECK(tl_close_down(0, zs));
 }
+
+TL_MAIN

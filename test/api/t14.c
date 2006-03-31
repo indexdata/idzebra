@@ -1,4 +1,4 @@
-/* $Id: t14.c,v 1.2 2006-02-09 08:31:02 adam Exp $
+/* $Id: t14.c,v 1.3 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 2004-2005
    Index Data ApS
 
@@ -26,40 +26,34 @@ static void create_search_drop(ZebraHandle zh)
 {
     const char *rec = "<gils><title>some</title></gils>";
     const char *opaque_id = "9";
-    ZEBRA_RES res;
 
-    res = zebra_create_database (zh, "Default");
-    TL_ASSERT(res == ZEBRA_OK);
+    YAZ_CHECK(zebra_create_database (zh, "Default") == ZEBRA_OK);
 
     /* bug #447 */
-    res = zebra_admin_exchange_record (
+    YAZ_CHECK(zebra_admin_exchange_record (
+		  zh, rec, strlen(rec),
+		  opaque_id, strlen(opaque_id),
+		  1) == ZEBRA_OK); /* insert */
+
+    YAZ_CHECK(zebra_admin_exchange_record (
 	zh, rec, strlen(rec),
 	opaque_id, strlen(opaque_id),
-	1); /* insert */
-    TL_ASSERT(res == ZEBRA_OK);
+	4) == ZEBRA_OK); /* update/insert */
 
-    res = zebra_admin_exchange_record (
-	zh, rec, strlen(rec),
-	opaque_id, strlen(opaque_id),
-	4); /* update/insert */
-
-    TL_ASSERT(res == ZEBRA_OK);
-    do_query(__LINE__, zh, "@attr 1=4 some", 1);
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 some", 1));
 
     zebra_drop_database(zh, "Default");
 
-    do_query_x(__LINE__, zh, "@attr 1=4 some", 0, 109);
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=4 some", 0, 109));
 
 }
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up("zebra.cfg", argc, argv);
+    ZebraService zs = tl_start_up("zebra.cfg", argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
-    ZEBRA_RES res;
 
-    res = zebra_select_database(zh, "Default");
-    TL_ASSERT(res == ZEBRA_OK);
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
     zebra_init(zh);
 
@@ -67,7 +61,7 @@ int main(int argc, char **argv)
     /* bug #447 */
     create_search_drop(zh);
 
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
 
-
+TL_MAIN

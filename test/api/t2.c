@@ -1,4 +1,4 @@
-/* $Id: t2.c,v 1.17 2005-09-13 11:51:07 adam Exp $
+/* $Id: t2.c,v 1.18 2006-03-31 15:58:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -28,13 +28,16 @@ const char *myrec[] = {
         "</gils>\n",
         0};
 
-int main(int argc, char **argv)
+void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
 
-    init_data(zh, myrec);
-    do_query(__LINE__,zh, "@attr 1=4 my", 1);
+    YAZ_CHECK(tl_init_data(zh, myrec));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 my", 1));
 
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN
+

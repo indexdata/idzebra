@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.209 2006-03-31 08:51:26 adam Exp $
+/* $Id: zebraapi.c,v 1.210 2006-03-31 15:58:04 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1363,7 +1363,8 @@ ZEBRA_RES zebra_admin_exchange_record(ZebraHandle zh,
     {
         if (action == 1)  /* fail if insert */
         {
-	    zebra_end_trans(zh);
+	    if (zebra_end_trans(zh) != ZEBRA_OK)
+		yaz_log(YLOG_WARN, "zebra_end_trans failed");
 	    zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED,
 			   "Cannot insert record: already exist");
 	    return ZEBRA_FAIL;
@@ -1375,7 +1376,8 @@ ZEBRA_RES zebra_admin_exchange_record(ZebraHandle zh,
     {
         if (action == 2 || action == 3) /* fail if delete or update */
         {
-	    zebra_end_trans(zh);
+	    if (zebra_end_trans(zh) != ZEBRA_OK)
+		yaz_log(YLOG_WARN, "zebra_end_trans failed");
 	    zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED,
 			   "Cannot delete/update record: does not exist");
             return ZEBRA_FAIL;
@@ -1406,7 +1408,11 @@ ZEBRA_RES zebra_admin_exchange_record(ZebraHandle zh,
     {
         dict_delete_ord(zh->reg->matchDict, db_ord, recid_z);
     }
-    zebra_end_trans(zh);
+    if (zebra_end_trans(zh) != ZEBRA_OK)
+    {
+	yaz_log(YLOG_WARN, "zebra_end_trans failed");
+	res = ZEBRA_FAIL;
+    }
     return res;
 }
 
@@ -1466,7 +1472,11 @@ ZEBRA_RES zebra_drop_database(ZebraHandle zh, const char *db)
 		       "drop database only supported for isam:b");
 	ret = ZEBRA_FAIL;
     }
-    zebra_end_trans (zh);
+    if (zebra_end_trans (zh) != ZEBRA_OK)
+    {
+	yaz_log(YLOG_WARN, "zebra_end_trans failed");
+	ret = ZEBRA_FAIL;
+    }
     return ret;
 }
 
@@ -1485,7 +1495,10 @@ ZEBRA_RES zebra_create_database (ZebraHandle zh, const char *db)
     if (zebraExplain_newDatabase (zh->reg->zei, db, 0 
                                   /* explainDatabase */))
     {
-        zebra_end_trans (zh);
+        if (zebra_end_trans (zh) != ZEBRA_OK)
+	{
+	    yaz_log(YLOG_WARN, "zebra_end_trans failed");
+	}
 	zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED, db);
 	return ZEBRA_FAIL;
     }
@@ -2197,7 +2210,11 @@ ZEBRA_RES zebra_insert_record (ZebraHandle zh,
 				 match, fname,
 				 0, 
 				 0); /* allow_update */
-    zebra_end_trans(zh); 
+    if (zebra_end_trans(zh) != ZEBRA_OK)
+    {
+	yaz_log(YLOG_WARN, "zebra_end_trans failed");
+	res = ZEBRA_FAIL;
+    }
     return res; 
 }
 
@@ -2228,7 +2245,11 @@ ZEBRA_RES zebra_update_record (ZebraHandle zh,
 				 match, fname,
 				 force_update, 
 				 1); /* allow_update */
-    zebra_end_trans(zh); 
+    if (zebra_end_trans(zh) != ZEBRA_OK)
+    {
+	yaz_log(YLOG_WARN, "zebra_end_trans failed");
+	res = ZEBRA_FAIL;
+    }
     return res; 
 }
 
@@ -2257,7 +2278,11 @@ ZEBRA_RES zebra_delete_record (ZebraHandle zh,
 				 match,fname,
 				 force_update,
 				 1); /* allow_update */
-    zebra_end_trans(zh);
+    if (zebra_end_trans(zh) != ZEBRA_OK)
+    {
+	yaz_log(YLOG_WARN, "zebra_end_trans failed");
+	res = ZEBRA_FAIL;
+    }
     return res;
 }
 

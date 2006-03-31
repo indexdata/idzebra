@@ -1,4 +1,4 @@
-/* $Id: sort1.c,v 1.6 2005-09-13 11:51:09 adam Exp $
+/* $Id: sort1.c,v 1.7 2006-03-31 15:58:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,47 +20,49 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#include <assert.h>
 #include "../api/testlib.h"
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
     zint ids[5];
     char path[256];
     int i;
 
-    zebra_select_database(zh, "Default");
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
     zebra_init(zh);
 
-    zebra_begin_trans(zh, 1);
+    YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
     for (i = 1; i <= 4; i++)
     {
-        sprintf(path, "%.200s/rec%d.xml", get_srcdir(), i);
+        sprintf(path, "%.200s/rec%d.xml", tl_get_srcdir(), i);
         zebra_repository_update(zh, path);
     }
-    zebra_end_trans(zh);
+    YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);
 
     ids[0] = 3;
     ids[1] = 2;
     ids[2] = 4;
     ids[3] = 5;
-    do_sort(zh, "@or computer @attr 7=1 @attr 1=30 0", 4, ids);
+    YAZ_CHECK(tl_sort(zh, "@or computer @attr 7=1 @attr 1=30 0", 4, ids));
 
     ids[0] = 5;
     ids[1] = 4;
     ids[2] = 2;
     ids[3] = 3;
-    do_sort(zh, "@or computer @attr 7=1 @attr 1=1021 0", 4, ids);
+    YAZ_CHECK(tl_sort(zh, "@or computer @attr 7=1 @attr 1=1021 0", 4, ids));
 
     ids[0] = 2;
     ids[1] = 5;
     ids[2] = 4;
     ids[3] = 3;
-    do_sort(zh, "@or computer @attr 7=1 @attr 1=1021 @attr 4=109 0", 4, ids);
+    YAZ_CHECK(tl_sort(zh, "@or computer @attr 7=1 @attr 1=1021 @attr 4=109 0", 4, ids));
 
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+
+TL_MAIN

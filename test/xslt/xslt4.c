@@ -1,4 +1,4 @@
-/* $Id: xslt4.c,v 1.3 2006-02-23 11:26:00 adam Exp $
+/* $Id: xslt4.c,v 1.4 2006-03-31 15:58:10 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,35 +20,35 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#include <yaz/test.h>
 #include "testlib.h"
 	
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
     char path[256];
 
-    ZebraService zs = start_up("zebrastaticrank.cfg", argc, argv);
+    ZebraService zs = tl_start_up("zebrastaticrank.cfg", argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
 
-    check_filter(zs, "xslt");
+    tl_check_filter(zs, "xslt");
 
-    zebra_select_database(zh, "Default");
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
     zebra_init(zh);
 
     zebra_set_resource(zh, "recordType", "xslt.marcschema-col.xml");
     zebra_set_resource(zh, "staticrank", "1");
 
-    zebra_begin_trans(zh, 1);
-    sprintf(path, "%.200s/marc-col.xml", get_srcdir());
+    YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
+    sprintf(path, "%.200s/marc-col.xml", tl_get_srcdir());
     zebra_repository_update(zh, path);
 
-    zebra_end_trans(zh);
+    YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);
 
-
-    do_query(__LINE__, zh, "@attr 1=title computer", 3);
-    do_query(__LINE__, zh, "@attr 1=control 11224466", 1);
-    do_query_x(__LINE__, zh, "@attr 1=titl computer", 0, 114);
+    YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 1));
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=titl computer", 0, 114));
 
     if (1)
     {
@@ -56,7 +56,10 @@ int main(int argc, char **argv)
 	ids[0] = 2;
 	ids[1] = 4;
 	ids[2] = 3;
-	do_sort(zh, "@attr 1=title computer", 3, ids);
+	YAZ_CHECK(tl_sort(zh, "@attr 1=title computer", 3, ids));
     }
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN
+

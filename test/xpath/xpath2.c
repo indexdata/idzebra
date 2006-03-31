@@ -1,4 +1,4 @@
-/* $Id: xpath2.c,v 1.4 2005-09-13 11:51:11 adam Exp $
+/* $Id: xpath2.c,v 1.5 2006-03-31 15:58:10 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -69,14 +69,17 @@ const char *myrec[] = {
     0};
 
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
-    init_data(zh, myrec);
+    YAZ_CHECK(tl_init_data(zh, myrec));
 
-    do_query(__LINE__,zh, "@attr 1=/Zthes/termName Sauropoda", 1);
-    do_query(__LINE__,zh, "@attr 1=/Zthes/relation/termName Sauropoda",1);
+    YAZ_CHECK(tl_query(zh, "@attr 1=/Zthes/termName Sauropoda", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/Zthes/relation/termName Sauropoda", 1));
 
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN
+

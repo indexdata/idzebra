@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.4 2005-09-13 11:51:09 adam Exp $
+/* $Id: t1.c,v 1.5 2006-03-31 15:58:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -35,27 +35,28 @@ void check_koi8r()
     yaz_iconv_close(cd);
 }
 
-int main(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
     
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
     char path[256];
 
     check_koi8r();
 
-    zebra_select_database(zh, "Default");
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
     zebra_init(zh);
 
-    
-    zebra_begin_trans(zh, 1);
-    sprintf(path, "%.200s/records/simple-rusmarc", get_srcdir());
+    YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
+    sprintf(path, "%.200s/records/simple-rusmarc", tl_get_srcdir());
     zebra_repository_update(zh, path);
-    zebra_end_trans(zh);
+    YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);
 
-    do_query(__LINE__, zh, "@attr 1=21 \xfa\xc1\xcd\xd1\xd4\xc9\xce", 1);
+    YAZ_CHECK(tl_query(zh, "@attr 1=21 \xfa\xc1\xcd\xd1\xd4\xc9\xce", 1));
 
-    return close_down(zh, zs, 0);
+    YAZ_CHECK(tl_close_down(zh, zs));
 }
+
+TL_MAIN
