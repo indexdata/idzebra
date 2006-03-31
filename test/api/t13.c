@@ -1,4 +1,4 @@
-/* $Id: t13.c,v 1.6 2006-03-31 15:58:05 adam Exp $
+/* $Id: t13.c,v 1.7 2006-03-31 16:02:56 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -107,6 +107,13 @@ static void tst_no_config(void)
 
     zebra_close(zh);
     zebra_stop(zs);
+}
+
+static void tst(int argc, char **argv)
+{
+    tl_start_log(argc, argv);
+    tst_res();
+    tst_no_config();
 }
 
 TL_MAIN
