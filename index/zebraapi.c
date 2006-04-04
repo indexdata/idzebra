@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.11 2006-03-24 13:47:29 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.12 2006-04-04 00:06:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1739,19 +1739,24 @@ static int zebra_commit_ex (ZebraHandle zh, int clean_only)
             sync ();
 #endif
         }
-        logf (LOG_LOG, "commit clean");
-        bf_commitClean (bfs, rval);
         seqno++;
         zebra_set_state (zh, 'o', seqno);
+
+	zebra_unlock (zh->lock_shadow);
+	zebra_unlock (zh->lock_normal);
+
+	zebra_lock_w(zh->lock_shadow);
+        bf_commitClean (bfs, rval);
+	zebra_unlock (zh->lock_normal);
     }
     else
     {
+	zebra_unlock (zh->lock_shadow);
+	zebra_unlock (zh->lock_normal);
         logf (LOG_LOG, "nothing to commit");
     }
     bfs_destroy (bfs);
 
-    zebra_unlock (zh->lock_shadow);
-    zebra_unlock (zh->lock_normal);
     return 0;
 }
 
