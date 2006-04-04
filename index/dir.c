@@ -1,4 +1,4 @@
-/* $Id: dir.c,v 1.31 2005-06-14 20:28:53 adam Exp $
+/* $Id: dir.c,v 1.32 2006-04-04 00:09:00 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -70,8 +70,6 @@ struct dir_entry *dir_open (const char *rep, const char *base,
     if (!(dir = opendir(full_rep)))
     {
         yaz_log (YLOG_WARN|YLOG_ERRNO, "opendir %s", rep);
-        if (errno != ENOENT && errno != EACCES)
-            exit (1);
         return NULL;
     }
     entry = (struct dir_entry *) xmalloc (sizeof(*entry) * entry_max);
