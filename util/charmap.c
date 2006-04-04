@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.29.2.5 2005-03-11 21:10:13 adam Exp $
+/* $Id: charmap.c,v 1.29.2.6 2006-04-04 09:11:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -101,11 +101,12 @@ static chr_t_entry *set_map_string(chr_t_entry *root, NMEM nmem,
     }
     if (!len)
     {
-	if (!root->target || !root->target[0] || strcmp(root->target[0], to))
+	if (!root->target || !root->target[0] || strcmp((const char *)
+							root->target[0], to))
 	{
             if (from_0 && 
                 root->target && root->target[0] && root->target[0][0] &&
-                strcmp (root->target[0], CHR_UNKNOWN))
+                strcmp ((const char *)root->target[0], CHR_UNKNOWN))
             {
                 yaz_log (LOG_WARN, "duplicate entry for charmap from '%s'",
                          from_0);
