@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.210 2006-03-31 15:58:04 adam Exp $
+/* $Id: zebraapi.c,v 1.211 2006-04-04 00:00:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -754,8 +754,6 @@ static void zebra_select_register (ZebraHandle zh, const char *new_reg)
     {
 	if (res_get_int(zh->res, "staticrank", &zh->m_staticrank) == ZEBRA_OK)
 	    yaz_log(YLOG_LOG, "static rank set and is %d", zh->m_staticrank);
-	else
-	    yaz_log(YLOG_LOG, "static rank unset");
     }
 }
 
@@ -1988,19 +1986,24 @@ static ZEBRA_RES zebra_commit_ex(ZebraHandle zh, int clean_only)
             sync ();
 #endif
         }
-        yaz_log (YLOG_DEBUG, "commit clean");
-        bf_commitClean (bfs, rval);
         seqno++;
         zebra_set_state (zh, 'o', seqno);
+
+	zebra_unlock (zh->lock_shadow);
+	zebra_unlock (zh->lock_normal);
+
+	zebra_lock_w(zh->lock_shadow);
+        bf_commitClean (bfs, rval);
+	zebra_unlock (zh->lock_normal);
     }
     else
     {
+	zebra_unlock(zh->lock_shadow);
+	zebra_unlock(zh->lock_normal);
         yaz_log (log_level, "nothing to commit");
     }
     bfs_destroy (bfs);
 
-    zebra_unlock (zh->lock_shadow);
-    zebra_unlock (zh->lock_normal);
     return ZEBRA_OK;
 }
 
