@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.32 2006-03-31 15:58:03 adam Exp $
+/* $Id: api.h,v 1.33 2006-04-04 00:09:51 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
     \brief Zebra API
     
     Return codes:
-    Most functions return ZEBRA_RES, where ZEBRA_FAIL indicates
+    Most functions has return type ZEBRA_RES, where ZEBRA_FAIL indicates
     failure; ZEBRA_OK indicates success.
 */
 
@@ -39,7 +39,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 YAZ_BEGIN_CDECL
 
-/*
+/**
   expand GCC_ATTRIBUTE if GCC is in use. See :
   http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html
 */
@@ -90,8 +90,7 @@ typedef struct zebra_session *ZebraHandle;
 */
 typedef struct zebra_service *ZebraService;
 
-/** \fn ZebraService zebra_start(const char *configName)
-    \brief starts a Zebra service. 
+/** \brief Creates a Zebra Service.
     \param configName name of configuration file
     
     This function is a simplified version of zebra_start_res.
@@ -100,9 +99,7 @@ YAZ_EXPORT
 ZebraService zebra_start(const char *configName
     ) GCC_ATTRIBUTE((warn_unused_result));
 
-/** \fn ZebraService zebra_start_res(const char *configName, \
-                                     Res def_res, Res over_res)
-    \brief starts a Zebra service with resources.
+/** \brief Creates a Zebra service with resources.
     \param configName name of configuration file
     \param def_res default resources
     \param over_res overriding resources
@@ -115,115 +112,99 @@ ZebraService zebra_start_res(const char *configName,
 			     Res def_res, Res over_res
     ) GCC_ATTRIBUTE((warn_unused_result));
 
-/**
-   \brief stops a Zebra service.
-   \param zs service handle
-   
-   Frees resources used by the service.
+/** \brief stops a Zebra service.
+    \param zs service handle
+    
+    Frees resources used by the service.
 */
 YAZ_EXPORT
 ZEBRA_RES zebra_stop(ZebraService zs);
 
-/**
-   \brief Lists enabled Zebra filters
-   \param zs service handle
-   \param cd callback parameter (opaque)
-   \param cb callback function
- */
+/** \brief Lists enabled Zebra filters
+    \param zs service handle
+    \param cd callback parameter (opaque)
+    \param cb callback function
+*/
 YAZ_EXPORT
 void zebra_filter_info(ZebraService zs, void *cd,
 		       void (*cb)(void *cd, const char *name));
 
 
-/**
-   \brief Creates a Zebra session handle within service.
-   \param zs service handle.
-   
-   There should be one handle for each thread doing something
-   with zebra, be that searching or indexing. In simple apps 
-   one handle is sufficient 
+/** \brief Creates a Zebra session handle within service.
+    \param zs service handle.
+    \param res resources to be used for the service (NULL for none)
+    
+    There should be one handle for each thread doing something
+    with zebra, be that searching or indexing. In simple apps 
+    one handle is sufficient 
 */
 YAZ_EXPORT
 ZebraHandle zebra_open(ZebraService zs, Res res
     ) GCC_ATTRIBUTE((warn_unused_result));
 
-/**
-   \brief Destroys Zebra session handle.
-   \param zh zebra session handle.
+/** \brief Destroys Zebra session handle.
+    \param zh zebra session handle.
  */
 YAZ_EXPORT
 ZEBRA_RES zebra_close(ZebraHandle zh);
 
-/**
-   \brief Returns error code for last error
-   \param zh zebra session handle.
+/** \brief Returns error code for last error
+    \param zh zebra session handle.
 */
 YAZ_EXPORT
 int zebra_errCode(ZebraHandle zh);
 
-/**
-   \brief Returns error string for last error
-   \param zh zebra session handle.
+/** \brief Returns error string for last error
+    \param zh zebra session handle.
 */
 YAZ_EXPORT
 const char *zebra_errString(ZebraHandle zh);
 
-/**
-   \brief Returns additional info for last error
-   \param zh zebra session handle.
+/** \brief Returns additional info for last error
+    \param zh zebra session handle.
 */
 YAZ_EXPORT
 char *zebra_errAdd(ZebraHandle zh);
 
-/**
-   \brief Returns error code and additional info for last error
-   \param zh zebra session handle.
-   \param code pointer to returned error code
-   \param addinfo pointer to returned additional info
+/** \brief Returns error code and additional info for last error
+    \param zh zebra session handle.
+    \param code pointer to returned error code
+    \param addinfo pointer to returned additional info
 */
 YAZ_EXPORT
 void zebra_result(ZebraHandle zh, int *code, char **addinfo);
 
-/**
-   \brief Set limit before Zebra does approx hit count
-   \param zh session handle
-   \param approx_limit the limit
-   
-   Results will be approximiate if hit count is greater than the
-   limit specified. By default there is a high-limit (no limit).
+/** \brief Set limit before Zebra does approx hit count
+    \param zh session handle
+    \param approx_limit the limit
+    
+    Results will be approximiate if hit count is greater than the
+    limit specified. By default there is a high-limit (no limit).
 */
 ZEBRA_RES zebra_set_approx_limit(ZebraHandle zh, zint approx_limit);
 
-/**
-   \brief Search using PQF Query 
-   \param zh session handle
-   \param pqf_query query
-   \param setname name of resultset
-   \param hits of hits is returned
- */
+/** \brief Search using PQF Query String
+    \param zh session handle
+    \param pqf_query query
+    \param setname name of resultset
+    \param hits of hits is returned
+*/
 YAZ_EXPORT
 ZEBRA_RES zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
 		           const char *setname, zint *hits);
 
-/** \fn ZEBRA_RES zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query, \
-		const char *setname, zint *hits)
-    \brief Search using RPN Query 
+/** \brief Search using RPN Query structure (from ASN.1)
     \param zh session handle
     \param o ODR handle
     \param query RPN query using YAZ structure
     \param setname name of resultset
     \param hits number of hits is returned
- */
+*/
 YAZ_EXPORT
 ZEBRA_RES zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
 			      const char *setname, zint *hits);
 
-/** 
-    \fn ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream, \
-		const char *setname, Z_RecordComposition *comp, \
-		oid_value input_format, int num_recs, \
-		ZebraRetrievalRecord *recs)
-    \brief Retrieve records from result set (after search)
+/** \brief Retrieve records from result set (after search)
     \param zh session handle
     \param stream allocate records returned using this ODR
     \param setname name of result set to retrieve records from
@@ -239,13 +220,12 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 				 oid_value input_format,
 				 int num_recs,
 				 ZebraRetrievalRecord *recs);
-/**
-   \brief Deletes one or more resultsets 
-   \param zh session handle
-   \param function Z_DeleteResultSetRequest_{list,all}
-   \param num_setnames number of result sets
-   \param setnames result set names
-   \param statuses status result
+/** \brief Deletes one or more resultsets 
+    \param zh session handle
+    \param function Z_DeleteResultSetRequest_{list,all}
+    \param num_setnames number of result sets
+    \param setnames result set names
+    \param statuses status result
 */
 YAZ_EXPORT
 int zebra_deleteResultSet(ZebraHandle zh, int function,
@@ -253,38 +233,36 @@ int zebra_deleteResultSet(ZebraHandle zh, int function,
 			  int *statuses);
 
 
-/**
-   \brief returns number of term info terms assocaited with result set
-   \param zh session handle
-   \param setname result set name
-   \param num_terms number of terms returned in this integer
-
-   This function is used in conjunction with zebra_result_set_term_info.
-   If operation was successful, ZEBRA_OK is returned; otherwise
-   ZEBRA_FAIL is returned (typically non-existing setname)
+/** \brief returns number of term info terms assocaited with result set
+    \param zh session handle
+    \param setname result set name
+    \param num_terms number of terms returned in this integer
+    
+    This function is used in conjunction with zebra_result_set_term_info.
+    If operation was successful, ZEBRA_OK is returned; otherwise
+    ZEBRA_FAIL is returned (typically non-existing setname)
 */
 YAZ_EXPORT
 ZEBRA_RES zebra_result_set_term_no(ZebraHandle zh, const char *setname,
 				   int *num_terms);
 
-/**
-   \brief returns information about a term assocated with a result set
-   \param zh session handle
-   \param setname result set name
-   \param no the term we want to know about (0=first, 1=second,..)
-   \param count the number of occurrences of this term, aka hits (output) 
-   \param approx about hits: 0=exact,1=approx (output)
-   \param termbuf buffer for term string (intput, output)
-   \param termlen size of termbuf (input=max, output=actual length)
-   \param term_ref_id if non-NULL *term_ref_id holds term reference
-
-   Returns information about one search term associated with result set.
-   Use zebra_result_set_term_no to read total number of terms associated
-   with result set. If this function can not return information,
-   due to no out of range or bad result set name, ZEBRA_FAIL is
-   returned.
-   The passed termbuf must be able to hold at least *termlen characters.
-   Upon completion, *termlen holds actual length of search term.
+/** \brief returns information about a term assocated with a result set
+    \param zh session handle
+    \param setname result set name
+    \param no the term we want to know about (0=first, 1=second,..)
+    \param count the number of occurrences of this term, aka hits (output) 
+    \param approx about hits: 0=exact,1=approx (output)
+    \param termbuf buffer for term string (intput, output)
+    \param termlen size of termbuf (input=max, output=actual length)
+    \param term_ref_id if non-NULL *term_ref_id holds term reference
+    
+    Returns information about one search term associated with result set.
+    Use zebra_result_set_term_no to read total number of terms associated
+    with result set. If this function can not return information,
+    due to no out of range or bad result set name, ZEBRA_FAIL is
+    returned.
+    The passed termbuf must be able to hold at least *termlen characters.
+    Upon completion, *termlen holds actual length of search term.
 */
 YAZ_EXPORT
 ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
@@ -293,17 +271,16 @@ ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
 				     const char **term_ref_id);
 
 
-/**
-   \brief performs Scan (Z39.50 style)
-   \param zh session handle
-   \param stream ODR handle for result
-   \param zapt Attribute plus Term (start term)
-   \param attributeset Attributeset for Attribute plus Term
-   \param position input/output position
-   \param num_entries number of terms requested / returned 
-   \param entries list of resulting terms (ODR allocated)
-   \param is_partial upon return 1=partial, 0=complete
-   \param setname limit scan by this set (NULL means no limit)
+/** \brief performs Scan (Z39.50 style)
+    \param zh session handle
+    \param stream ODR handle for result
+    \param zapt Attribute plus Term (start term)
+    \param attributeset Attributeset for Attribute plus Term
+    \param position input/output position
+    \param num_entries number of terms requested / returned 
+    \param entries list of resulting terms (ODR allocated)
+    \param is_partial upon return 1=partial, 0=complete
+    \param setname limit scan by this set (NULL means no limit)
 */
 YAZ_EXPORT ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream,
 				Z_AttributesPlusTerm *zapt,
@@ -313,56 +290,52 @@ YAZ_EXPORT ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream,
 				int *is_partial,
 				const char *setname);
 
-/**
-   \brief performs Scan (taking PQF string)
-   \param zh session handle
-   \param stream ODR handle for result
-   \param query PQF scan query
-   \param position input/output position
-   \param num_entries number of terms requested / returned 
-   \param entries list of resulting terms (ODR allocated)
-   \param is_partial upon return 1=partial, 0=complete
-   \param setname limit scan by this set (NULL means no limit)
+/** \brief performs Scan (taking PQF string)
+    \param zh session handle
+    \param stream ODR handle for result
+    \param query PQF scan query
+    \param position input/output position
+    \param num_entries number of terms requested / returned 
+    \param entries list of resulting terms (ODR allocated)
+    \param is_partial upon return 1=partial, 0=complete
+    \param setname limit scan by this set (NULL means no limit)
 */
 YAZ_EXPORT
 ZEBRA_RES zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
-		    int *position, int *num_entries, ZebraScanEntry **entries,
-		    int *is_partial, const char *setname);
+			 int *position, int *num_entries,
+			 ZebraScanEntry **entries,
+			 int *is_partial, const char *setname);
 
-/**
-   \brief authenticate user. Returns 0 if OK, != 0 on failure
-   \param zh session handle
-   \param user user name
-   \param pass password
- */
+/** \brief authenticate user. Returns 0 if OK, != 0 on failure
+    \param zh session handle
+    \param user user name
+    \param pass password
+*/
 YAZ_EXPORT
 ZEBRA_RES zebra_auth(ZebraHandle zh, const char *user, const char *pass);
 
-/**
-   \brief Normalize zebra term for register (subject to change!)
-   \param zh session handle
-   \param reg_id register ID, 'w', 'p',..
-   \param input_str input string buffer
-   \param input_len input string length
-   \param output_str output string buffer
-   \param output_len output string length
- */
+/** \brief Normalize zebra term for register (subject to change!)
+    \param zh session handle
+    \param reg_id register ID, 'w', 'p',..
+    \param input_str input string buffer
+    \param input_len input string length
+    \param output_str output string buffer
+    \param output_len output string length
+*/
 YAZ_EXPORT
 int zebra_string_norm(ZebraHandle zh, unsigned reg_id, const char *input_str, 
-		int input_len, char *output_str, int output_len);
+		      int input_len, char *output_str, int output_len);
 
-/**
-   \brief Creates a database
-   \param zh session handle
-   \param db database to be created
+/** \brief Creates a database
+    \param zh session handle
+    \param db database to be created
 */
 YAZ_EXPORT
 ZEBRA_RES zebra_create_database(ZebraHandle zh, const char *db);
 
-/**
-   \brief Deletes a database (drop)
-   \param zh session handle
-   \param db database to be deleted
+/** \brief Deletes a database (drop)
+    \param zh session handle
+    \param db database to be deleted
 */
 YAZ_EXPORT
 ZEBRA_RES zebra_drop_database(ZebraHandle zh, const char *db);
