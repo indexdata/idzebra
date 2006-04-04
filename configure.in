@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2005
-dnl $Id: configure.in,v 1.91.2.21 2006-04-04 09:10:49 adam Exp $
+dnl $Id: configure.in,v 1.91.2.22 2006-04-04 09:18:53 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AM_INIT_AUTOMAKE(idzebra,1.3.35)
@@ -105,20 +105,14 @@ if test "$ac_cv_lib_readline_readline" = "yes"; then
         AC_TRY_LINK([
         #include <stdio.h>
         #include <readline/readline.h>
-        ],[
-        static void f()
-        {
-                rl_attempted_completion_over = 0;
-        }
+        ],[ 
+		rl_attempted_completion_over = 0;
         ],AC_DEFINE(HAVE_READLINE_COMPLETION_OVER))
         AC_TRY_LINK([
         #include <stdio.h>
         #include <readline/readline.h>
         ],[
-        static void f()
-        {
                 rl_completion_matches (0, 0);
-        }
         ],AC_DEFINE(HAVE_READLINE_RL_COMPLETION_MATCHES))
         LIBS=$xLIBS
 fi
@@ -136,7 +130,7 @@ if test "$with_iconv" != "no"; then
 	AC_TRY_LINK([
 		#include <iconv.h>
 	],[
-		static void f() {iconv_t t = iconv_open("", ""); }
+		iconv_t t = iconv_open("", "");
 	],[
 		AC_DEFINE(HAVE_ICONV_H)
 		AC_MSG_RESULT(yes)
@@ -145,7 +139,7 @@ if test "$with_iconv" != "no"; then
 		AC_TRY_LINK([
 			#include <iconv.h>
 		],[
-			static void f() {iconv_t t = iconv_open("", ""); }
+			iconv_t t = iconv_open("", "");
 		],[
 			AC_DEFINE(HAVE_ICONV_H)
 			AC_MSG_RESULT(yes)
