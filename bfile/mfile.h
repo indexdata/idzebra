@@ -1,4 +1,4 @@
-/* $Id: mfile.h,v 1.2 2005-01-15 19:38:18 adam Exp $
+/* $Id: mfile.h,v 1.3 2006-04-05 02:02:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -144,11 +144,6 @@ int mf_unlink(MFile mf);
  * Destroy all metafiles. No files may be opened.
  */
 void mf_reset(MFile_area ma);
-
-/*
- * Unlink the file by name, rather than MFile-handle.
- */
-int mf_unlink_name(MFile_area, const char *name);
 
 YAZ_END_CDECL
 

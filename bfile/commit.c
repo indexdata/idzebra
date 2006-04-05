@@ -1,4 +1,4 @@
-/* $Id: commit.c,v 1.25 2005-04-15 10:47:47 adam Exp $
+/* $Id: commit.c,v 1.26 2006-04-05 02:02:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -31,7 +31,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define CF_OPTIMIZE_COMMIT 0
 
-void cf_unlink (CFile cf)
+void cf_unlink(CFile cf)
 {
     if (cf->bucket_in_memory)
     {

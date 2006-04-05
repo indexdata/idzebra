@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.62 2005-06-14 20:28:53 adam Exp $
+/* $Id: mfile.c,v 1.63 2006-04-05 02:02:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -437,7 +437,7 @@ int mf_close(MFile mf)
 {
     int i;
 
-    yaz_log (YLOG_DEBUG, "mf_close(%s)", mf->name);
+    yaz_log (YLOG_DEBUG, "mf_close(%s) unlink=%d", mf->name, mf->unlink_flag);
     assert(mf->open);
     for (i = 0; i < mf->no_files; i++)
     {
@@ -604,7 +604,9 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 int mf_unlink(MFile mf)
 {
     if (mf->open)
+    {
         mf->unlink_flag = 1;
+    }
     else
     {
         int i;
@@ -614,11 +616,3 @@ int mf_unlink(MFile mf)
     return 0;
 }
 
-/*
- * Unlink the file by name, rather than MFile-handle. File should be closed.
- */
-int mf_unlink_name(MFile_area ma, const char *name)
-{
-    abort();
-    return 0;
-}
