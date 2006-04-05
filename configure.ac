@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.1 2006-03-28 17:03:55 adam Exp $
+dnl $Id: configure.ac,v 1.2 2006-04-05 02:01:21 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[1.4.0],[adam@indexdata.dk])
@@ -18,7 +18,7 @@ AM_DISABLE_SHARED
 AM_PROG_LIBTOOL
 dnl
 dnl ------ headers
-AC_CHECK_HEADERS(sys/times.h sys/time.h unistd.h sys/resource.h)
+AC_CHECK_HEADERS(sys/resource.h sys/times.h sys/time.h sys/wait.h unistd.h)
 dnl ------ crypt
 AC_CHECK_LIB(crypt, crypt)
 if test "$ac_cv_lib_crypt_crypt" = "yes"; then
