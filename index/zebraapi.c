@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.212 2006-04-05 02:10:20 adam Exp $
+/* $Id: zebraapi.c,v 1.213 2006-04-05 02:52:11 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1984,7 +1984,12 @@ static ZEBRA_RES zebra_commit_ex(ZebraHandle zh, int clean_only)
     zebra_lock_r (zh->lock_shadow);
 
     bfs = bfs_create (res_get (zh->res, "register"), zh->path_reg);
-
+    if (!bfs)
+    {
+	zebra_unlock(zh->lock_shadow);
+	zebra_unlock(zh->lock_normal);
+        return ZEBRA_FAIL;
+    }
     zebra_get_state (zh, &val, &seqno);
 
     if (rval && *rval)
