@@ -1,4 +1,4 @@
-/* $Id: trav.c,v 1.49 2005-06-14 20:28:54 adam Exp $
+/* $Id: trav.c,v 1.50 2006-04-05 02:11:44 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -70,7 +70,7 @@ static void repositoryExtractR (ZebraHandle zh, int deleteFlag, char *rep,
         switch (e[i].kind)
         {
         case dirs_file:
-            fileExtract (zh, NULL, rep, deleteFlag);
+            zebra_extract_file (zh, NULL, rep, deleteFlag);
             break;
         case dirs_dir:
             repositoryExtractR (zh, deleteFlag, rep, level+1);
@@ -94,7 +94,7 @@ static void fileDeleteR (ZebraHandle zh,
         {
         case dirs_file:
             sprintf (tmppath, "%s%s", base, dst->path);
-            fileExtract (zh, &dst->sysno, tmppath, 1);
+            zebra_extract_file (zh, &dst->sysno, tmppath, 1);
              
             strcpy (tmppath, dst->path);
             dst = dirs_read (di); 
@@ -191,7 +191,7 @@ static void fileUpdateR (ZebraHandle zh,
             case dirs_file:
                 if (e_src[i_src].mtime > dst->mtime)
                 {
-                    if (fileExtract (zh, &dst->sysno, tmppath, 0))
+                    if (zebra_extract_file (zh, &dst->sysno, tmppath, 0) == ZEBRA_OK)
                     {
                         dirs_add (di, src, dst->sysno, e_src[i_src].mtime);
                     }
@@ -219,7 +219,7 @@ static void fileUpdateR (ZebraHandle zh,
             switch (e_src[i_src].kind)
             {
             case dirs_file:
-                if (fileExtract (zh, &sysno, tmppath, 0))
+                if (zebra_extract_file (zh, &sysno, tmppath, 0) == ZEBRA_OK)
                     dirs_add (di, src, sysno, e_src[i_src].mtime);            
                 break;
             case dirs_dir:
@@ -238,7 +238,7 @@ static void fileUpdateR (ZebraHandle zh,
             switch (dst->kind)
             {
             case dirs_file:
-                fileExtract (zh, &dst->sysno, tmppath, 1);
+                zebra_extract_file (zh, &dst->sysno, tmppath, 1);
                 dirs_del (di, dst->path);
                 dst = dirs_read (di);
                 break;
@@ -319,13 +319,13 @@ static void fileUpdate (ZebraHandle zh, Dict dict, const char *path)
         if (e_dst)
         {
             if (sbuf.st_mtime > e_dst->mtime)
-                if (fileExtract (zh, &e_dst->sysno, src, 0))
+                if (zebra_extract_file (zh, &e_dst->sysno, src, 0) == ZEBRA_OK)
                     dirs_add (di, src, e_dst->sysno, sbuf.st_mtime);
         }
         else
         {
             SYSNO sysno = 0;
-            if (fileExtract (zh, &sysno, src, 0))
+            if (zebra_extract_file (zh, &sysno, src, 0) == ZEBRA_OK)
                  dirs_add (di, src, sysno, sbuf.st_mtime);
         }
         dirs_free (&di);
@@ -372,7 +372,7 @@ static void repositoryExtract (ZebraHandle zh,
     if (ret == -1)
         yaz_log (YLOG_WARN|YLOG_ERRNO, "Cannot access path %s", src);
     else if (S_ISREG(sbuf.st_mode))
-        fileExtract (zh, NULL, src, deleteFlag);
+        zebra_extract_file (zh, NULL, src, deleteFlag);
     else if (S_ISDIR(sbuf.st_mode))
 	repositoryExtractR (zh, deleteFlag, src, 0);
     else

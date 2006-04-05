@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.206 2006-03-30 09:52:15 adam Exp $
+/* $Id: extract.c,v 1.207 2006-04-05 02:11:44 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -379,13 +379,13 @@ static void init_extractCtrl(ZebraHandle zh, struct recExtractCtrl *ctrl)
     ctrl->flagShowRecords = !zh->m_flag_rw;
 }
 
-static int file_extract_record(ZebraHandle zh,
-			       SYSNO *sysno, const char *fname,
-			       int deleteFlag,
-			       struct file_read_info *fi,
-			       int force_update,
-			       RecType recType,
-			       void *recTypeClientData)
+static ZEBRA_RES file_extract_record(ZebraHandle zh,
+				     SYSNO *sysno, const char *fname,
+				     int deleteFlag,
+				     struct file_read_info *fi,
+				     int force_update,
+				     RecType recType,
+				     void *recTypeClientData)
 {
     RecordAttr *recordAttr;
     int r;
@@ -400,7 +400,7 @@ static int file_extract_record(ZebraHandle zh,
     {
         if (zebraExplain_newDatabase (zh->reg->zei, zh->basenames[0],
 				      zh->m_explain_database))
-	    return 0;
+	    return ZEBRA_FAIL;
     }
 
     if (fi->fd != -1)
@@ -447,7 +447,7 @@ static int file_extract_record(ZebraHandle zh,
 
         yaz_log_init_prefix2 (0);
 	if (r == RECCTRL_EXTRACT_EOF)
-	    return 0;
+	    return ZEBRA_FAIL;
 	else if (r == RECCTRL_EXTRACT_ERROR_GENERIC)
 	{
             /* error occured during extraction ... */
@@ -457,7 +457,7 @@ static int file_extract_record(ZebraHandle zh,
                 yaz_log (YLOG_WARN, "fail %s %s " PRINTF_OFF_T, zh->m_record_type,
                       fname, recordOffset);
             }
-            return 0;
+            return ZEBRA_FAIL;
         }
 	else if (r == RECCTRL_EXTRACT_ERROR_NO_SUCH_FILTER)
 	{
@@ -469,7 +469,7 @@ static int file_extract_record(ZebraHandle zh,
                       PRINTF_OFF_T, zh->m_record_type,
                       fname, recordOffset);
             }
-            return 0;
+            return ZEBRA_FAIL;
         }
         if (extractCtrl.match_criteria[0])
             matchStr = extractCtrl.match_criteria;	
@@ -488,7 +488,7 @@ static int file_extract_record(ZebraHandle zh,
 	    if (!matchStr)
 	    {
 		yaz_log(YLOG_WARN, "Bad match criteria");
-		return 0;
+		return ZEBRA_FAIL;
 	    }
 	}
 	if (matchStr)
@@ -508,12 +508,12 @@ static int file_extract_record(ZebraHandle zh,
          /* the extraction process returned no information - the record
             is probably empty - unless flagShowRecords is in use */
          if (!zh->m_flag_rw)
-             return 1;
+             return ZEBRA_OK;
   
          if (zh->records_processed < zh->m_file_verbose_limit)
 	     yaz_log (YLOG_WARN, "empty %s %s " PRINTF_OFF_T, zh->m_record_type,
 	    fname, recordOffset);
-         return 1;
+         return ZEBRA_OK;
     }
 
     if (! *sysno)
@@ -524,7 +524,7 @@ static int file_extract_record(ZebraHandle zh,
 	    yaz_log (YLOG_LOG, "delete %s %s " PRINTF_OFF_T, zh->m_record_type,
 		  fname, recordOffset);
             yaz_log (YLOG_WARN, "cannot delete record above (seems new)");
-            return 1;
+            return ZEBRA_OK;
         }
         if (zh->records_processed < zh->m_file_verbose_limit)
             yaz_log (YLOG_LOG, "add %s %s " PRINTF_OFF_T, zh->m_record_type,
@@ -610,7 +610,7 @@ static int file_extract_record(ZebraHandle zh,
             }
 	    rec_rm (&rec);
             logRecord (zh);
-            return 1;
+            return ZEBRA_OK;
         }
         else
         {
@@ -727,13 +727,14 @@ static int file_extract_record(ZebraHandle zh,
     /* commit this record */
     rec_put (zh->reg->records, &rec);
     logRecord (zh);
-    return 1;
+    return ZEBRA_OK;
 }
 
-int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname, 
-		 int deleteFlag)
+ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname, 
+			     int deleteFlag)
 {
-    int r, i, fd;
+    ZEBRA_RES r = ZEBRA_OK;
+    int i, fd;
     char gprefix[128];
     char ext[128];
     char ext_res[128];
@@ -784,7 +785,7 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
 			  &recTypeClientData)))
     {
         yaz_log(YLOG_WARN, "No such record type: %s", zh->m_record_type);
-        return 0;
+        return ZEBRA_FAIL;
     }
 
     switch(recType->version)
@@ -809,16 +810,15 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
         else
             strcpy (full_rep, fname);
         
-
         if ((fd = open (full_rep, O_BINARY|O_RDONLY)) == -1)
         {
             yaz_log (YLOG_WARN|YLOG_ERRNO, "open %s", full_rep);
 	    zh->m_record_type = original_record_type;
-            return 0;
+            return ZEBRA_FAIL;
         }
     }
     fi = file_read_start (fd);
-    do
+    while(1)
     {
 	fi->file_moffset = fi->file_offset;
 	fi->file_more = 0;  /* file_end not called (yet) */
@@ -829,8 +829,15 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
 	    fi->file_offset = fi->file_moffset;
 	    lseek(fi->fd, fi->file_moffset, SEEK_SET);
 	}
+	if (r != ZEBRA_OK)
+	{
+	    break;
+	}
+	if (sysno)
+	{
+	    break;
+	}
     }
-    while (r && !sysno);
     file_read_stop (fi);
     if (fd != -1)
         close (fd);
@@ -1554,7 +1561,7 @@ ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh,
 	    
 	    zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type,
 				    0/* db */, 0/* set */, 0/* use */,
-				    0 /* string index */);
+				    0 /* string_index */);
 	    assert(index_type);
 	    zebra_term_untrans_iconv(zh, nmem, index_type,
 				     &dst_term, str);

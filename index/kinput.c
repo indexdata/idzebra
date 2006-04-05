@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.71 2006-03-30 09:52:15 adam Exp $
+/* $Id: kinput.c,v 1.72 2006-04-05 02:11:44 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -55,7 +55,7 @@ struct key_file {
     Res res;
 };
 
-#if 1
+#if 0
 static void pkey(const char *b, int mode)
 {
     key_logdump_txt(YLOG_LOG, b, mode ? "i" : "d");
@@ -420,7 +420,7 @@ static int heap_read_one (struct heap_info *hi, char *name, char *key)
 #define PR_KEY_LOW 0
 #define PR_KEY_TOP 0
 
-#if 1
+#if 0
 /* for debugging only */
 static void print_dict_item(ZebraHandle zh, const char *s)
 {

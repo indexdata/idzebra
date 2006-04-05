@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.157 2006-03-26 14:17:01 adam Exp $
+/* $Id: index.h,v 1.158 2006-04-05 02:11:44 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -482,8 +482,8 @@ void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid);
 void extract_token_add (RecWord *p);
 int explain_extract (void *handle, Record rec, data1_node *n);
 
-int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
-		 int deleteFlag);
+ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname,
+			     int deleteFlag);
 
 ZEBRA_RES zebra_begin_read (ZebraHandle zh);
 ZEBRA_RES zebra_end_read (ZebraHandle zh);
