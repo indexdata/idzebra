@@ -1,4 +1,4 @@
-/* $Id: t15.c,v 1.2 2006-04-05 02:03:33 adam Exp $
+/* $Id: t15.c,v 1.3 2006-04-05 02:52:31 adam Exp $
    Copyright (C) 2004-2005
    Index Data ApS
 
@@ -20,7 +20,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#if HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+#if HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -80,12 +85,16 @@ static pid_t fork_service(ZebraService zs, int iter,
 
 static void tst(int argc, char **argv)
 {
-    ZebraService zs = tl_start_up("zebra15.cfg", argc, argv);
+    ZebraService zs;
+    ZebraHandle zh;
+    
+    mkdir("register", 0775);
+    mkdir("shadow", 0775);
 
-    ZebraHandle zh = zebra_open(zs, 0);
-
+    zs = tl_start_up("zebra15.cfg", argc, argv);
     YAZ_CHECK(zs);
 
+    zh = zebra_open(zs, 0);
     YAZ_CHECK(zh);
 
     YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
