@@ -1,4 +1,4 @@
-/* $Id: t15.c,v 1.1 2006-04-04 00:03:27 adam Exp $
+/* $Id: t15.c,v 1.2 2006-04-05 02:03:33 adam Exp $
    Copyright (C) 2004-2005
    Index Data ApS
 
@@ -83,6 +83,10 @@ static void tst(int argc, char **argv)
     ZebraService zs = tl_start_up("zebra15.cfg", argc, argv);
 
     ZebraHandle zh = zebra_open(zs, 0);
+
+    YAZ_CHECK(zs);
+
+    YAZ_CHECK(zh);
 
     YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 

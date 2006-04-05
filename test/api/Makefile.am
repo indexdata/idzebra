@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.33 2006-04-04 00:03:27 adam Exp $
+# $Id: Makefile.am,v 1.34 2006-04-05 02:03:33 adam Exp $
 
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c 
@@ -8,7 +8,7 @@ safaritests = safari1
 check_PROGRAMS = $(simpletests) $(safaritests)
 TESTS = $(check_PROGRAMS)
 
-EXTRA_DIST=zebra.cfg zebra6.cfg zebra8.cfg zebrazv.cfg safari.cfg
+EXTRA_DIST=zebra.cfg zebra6.cfg zebra8.cfg zebra15.cfg zebrazv.cfg safari.cfg
 
 noinst_LIBRARIES = libtestlib.a
 
