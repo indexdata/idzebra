@@ -1,4 +1,4 @@
-/* $Id: flock.c,v 1.5 2006-03-25 10:06:55 adam Exp $
+/* $Id: flock.c,v 1.6 2006-04-13 12:42:57 mike Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -95,7 +95,8 @@ ZebraLockHandle zebra_lock_create (const char *dir, const char *name)
     if (h->fd == -1)
     {
 	xfree (h);
-        h = 0;
+	yaz_log(YLOG_WARN | YLOG_ERRNO, "zebra_lock_create fail fname=%s", fname);
+        return 0;
     }
     h->fname = fname;
     yaz_log(log_level, "zebra_lock_create fd=%d p=%p fname=%s", h->fd, h, h->fname);
