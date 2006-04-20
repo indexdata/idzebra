@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.42 2006-04-20 10:25:17 adam Exp $
+## $Id: Makefile.am,v 1.43 2006-04-20 11:08:55 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUBDIRS = common
@@ -106,7 +106,7 @@ zebra.pdf: $(XMLFILES)
 	pdfjadetex zebra.tex >/dev/null
 	pdfjadetex zebra.tex >/dev/null
 
-index.tkl: $(XMLFILES) tkl.xsl
+index.tkl: $(XMLFILES) common/tkl.xsl
 	xsltproc common/tkl.xsl zebra.xml
 
 gils.txt: gils.sgml
