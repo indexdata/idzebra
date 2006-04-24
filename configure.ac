@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.3 2006-04-20 10:25:17 adam Exp $
+dnl $Id: configure.ac,v 1.4 2006-04-24 13:23:15 marc Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[1.4.0],[adam@indexdata.dk])
@@ -370,8 +370,41 @@ AC_OUTPUT([
   idzebra-config
   Doxyfile
 ],[sed s%idzebra_echo_source=yes%idzebra_echo_source=no%g < idzebra-config > util/idzebra-config && chmod +x idzebra-config util/idzebra-config])
+
+
+echo \ '
+Build and install binaries with the usual
+  make
+  make check
+  make install
+
+Build distribution tarball with
+  make dist
+
+Verify distribution tarball with
+  make distcheck
+
+Or just build the Debian packages without configuring
+  dpkg-buildpackage -rfakeroot
+'
+
 if test  -z "$YAZLIB"; then
 	echo "YAZ was not found. Use --with-yaz=DIR to specify location."
 	test -f /etc/debian_version && echo "Debian package libyaz-dev is required."
 fi
 
+echo \
+"------------------------------------------------------------------------
+Configuration:
+
+  Source code location:       ${srcdir}
+  C Preprocessor flags:       ${CPPFLAGS}
+  C Compiler:                 ${CC}
+  C Compiler flags:           ${CFLAGS}
+  Linker flags:               ${LDFLAGS}
+  Linked libs:                ${LIBS}
+  Host System Type:           ${host}
+  Install path:               ${prefix}
+  Automake:                   ${AUTOMAKE}
+
+------------------------------------------------------------------------"
