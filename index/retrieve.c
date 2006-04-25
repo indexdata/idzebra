@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.37 2005-10-28 09:22:50 adam Exp $
+/* $Id: retrieve.c,v 1.38 2006-04-25 13:52:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -127,6 +127,58 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
     *basenamep = (char *) odr_malloc (stream, strlen(basename)+1);
     strcpy (*basenamep, basename);
 
+    if (comp && comp->which == Z_RecordComp_simple &&
+        comp->u.simple->which == Z_ElementSetNames_generic && 
+        !strcmp (comp->u.simple->u.generic, "_storekeys_"))
+    {
+	WRBUF wrbuf = wrbuf_alloc();
+	zebra_rec_keys_t keys = zebra_rec_keys_open();
+	zebra_rec_keys_set_buf(keys,
+			       rec->info[recInfo_delKeys],
+			       rec->size[recInfo_delKeys],
+			       0);
+	if (zebra_rec_keys_rewind(keys))
+	{
+	    size_t slen;
+	    const char *str;
+	    struct it_key key_in;
+	    while(zebra_rec_keys_read(keys, &str, &slen, &key_in))
+	    {
+		int i;
+		int ord = key_in.mem[0];
+		int index_type;
+		const char *db = 0;
+		int set = 0;
+		int use = 0;
+		const char *string_index = 0;
+		char dst_buf[IT_MAX_WORD];
+		
+		zebraExplain_lookup_ord (zh->reg->zei, ord,
+					 &index_type, &db,
+					 &set, &use, &string_index);
+
+		if (string_index)
+		    wrbuf_printf(wrbuf, "%s", string_index);
+		else
+		    wrbuf_printf(wrbuf, "set=%d,use=%d", set, use);
+
+		zebra_term_untrans(zh, index_type, dst_buf, str);
+		wrbuf_printf(wrbuf, " %s", dst_buf);
+
+		for (i = 1; i < key_in.len; i++)
+		    wrbuf_printf(wrbuf, " " ZINT_FORMAT, key_in.mem[i]);
+		wrbuf_printf(wrbuf, "\n");
+
+	    }
+	}
+	*output_format = VAL_SUTRS;
+	*rec_lenp = wrbuf_len(wrbuf);
+	*rec_bufp = odr_malloc(stream, *rec_lenp);
+	memcpy(*rec_bufp, wrbuf_buf(wrbuf), *rec_lenp);
+	wrbuf_free(wrbuf, 1);
+	zebra_rec_keys_close(keys);
+	return 0;
+    }
     if (comp && comp->which == Z_RecordComp_simple &&
         comp->u.simple->which == Z_ElementSetNames_generic && 
         !strcmp (comp->u.simple->u.generic, "R"))
