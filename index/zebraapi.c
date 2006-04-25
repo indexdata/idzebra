@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.213 2006-04-05 02:52:11 adam Exp $
+/* $Id: zebraapi.c,v 1.214 2006-04-25 19:37:21 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2302,9 +2302,10 @@ ZEBRA_RES zebra_delete_record (ZebraHandle zh,
 
     ZEBRA_CHECK_HANDLE(zh);
 
-    assert(sysno);
     assert(buf);
-    yaz_log(log_level, "zebra_delete_record sysno=" ZINT_FORMAT, *sysno);
+    yaz_log(log_level, "zebra_delete_record");
+    if (sysno)
+	yaz_log(log_level, " sysno=" ZINT_FORMAT, *sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 
