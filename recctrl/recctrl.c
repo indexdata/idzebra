@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.22 2005-12-05 12:18:41 marc Exp $
+/* $Id: recctrl.c,v 1.23 2006-04-26 11:12:31 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -278,7 +278,11 @@ RecType recType_byName (RecTypes rts, Res res, const char *name,
 		slen++;  /* skip . */
 
 	    if (rti->recType->config)
-		(*(rti->recType)->config)(rti->clientData, res, name+slen);
+	    {
+		if ((*(rti->recType)->config)
+		    (rti->clientData, res, name+slen) != ZEBRA_OK)
+		    return 0;
+	    }
 	    return rti->recType;
 	}
     }

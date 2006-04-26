@@ -1,4 +1,4 @@
-/* $Id: csvread.c,v 1.3 2005-12-06 15:36:38 adam Exp $
+/* $Id: csvread.c,v 1.4 2006-04-26 11:12:31 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -66,7 +66,7 @@ struct csv_t {
 };
 
 
-static void grs_config_csv(void *clientData, Res res, const char *args)
+static ZEBRA_RES grs_config_csv(void *clientData, Res res, const char *args)
 {
   int i;
   struct csv_t *csvp = (struct csv_t*) clientData;
@@ -91,8 +91,8 @@ static void grs_config_csv(void *clientData, Res res, const char *args)
   /* csvp->field_names = 0; */ /*nmem_strdup(csvp->nmem, "a|b|c|d|e");*/
 
   csvp->field_name 
-    = nmem_malloc(csvp->nmem, 
-                  sizeof(*(csvp->field_name)) * csvp->max_nr_fields);
+      = nmem_malloc(csvp->nmem, 
+		    sizeof(*(csvp->field_name)) * csvp->max_nr_fields);
   for (i = 0; i < csvp->max_nr_fields; i++){
     csvp->field_name[i] = 0; 
   }
@@ -103,6 +103,7 @@ static void grs_config_csv(void *clientData, Res res, const char *args)
   */
 
   yaz_log (YLOG_LOG, "Ended CSV filter grs_config_csv");
+  return ZEBRA_OK;
 }
 
 

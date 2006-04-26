@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.32 2005-12-08 11:06:49 adam Exp $
+/* $Id: marcread.c,v 1.33 2006-04-26 11:12:31 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -821,11 +821,12 @@ static void *init_marc(Res res, RecType rt)
     return p;
 }
 
-static void config_marc(void *clientData, Res res, const char *args)
+static ZEBRA_RES config_marc(void *clientData, Res res, const char *args)
 {
     struct marc_info *p = (struct marc_info*) clientData;
     if (strlen(args) < sizeof(p->type))
 	strcpy(p->type, args);
+    return ZEBRA_OK;
 }
 
 static void destroy_marc(void *clientData)

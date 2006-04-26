@@ -1,4 +1,4 @@
-/* $Id: rectext.c,v 1.29 2005-06-23 06:45:47 adam Exp $
+/* $Id: rectext.c,v 1.30 2006-04-26 11:12:31 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -39,13 +39,14 @@ static void *filter_init (Res res, RecType recType)
     return tinfo;
 }
 
-static void filter_config(void *clientData, Res res, const char *args)
+static ZEBRA_RES filter_config(void *clientData, Res res, const char *args)
 {
     struct filter_info *tinfo = (struct filter_info*) clientData;
     xfree(tinfo->sep);
     tinfo->sep = 0;
     if (args && *args)
 	tinfo->sep = xstrdup(args);
+    return ZEBRA_OK;
 }
 
 static void filter_destroy (void *clientData)

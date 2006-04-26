@@ -1,4 +1,4 @@
-/* $Id: safari.c,v 1.10 2006-03-21 14:36:22 adam Exp $
+/* $Id: safari.c,v 1.11 2006-04-26 11:12:32 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -39,9 +39,9 @@ static void *filter_init (Res res, RecType recType)
     return tinfo;
 }
 
-static void filter_config(void *clientData, Res res, const char *args)
+static ZEBRA_RES filter_config(void *clientData, Res res, const char *args)
 {
-
+    return ZEBRA_OK;
 }
 
 static void filter_destroy(void *clientData)

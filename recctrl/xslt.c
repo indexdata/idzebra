@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.17 2005-08-24 08:30:37 adam Exp $
+/* $Id: xslt.c,v 1.18 2006-04-26 11:12:32 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -249,15 +249,16 @@ static struct filter_schema *lookup_schema(struct filter_info *tinfo,
     return 0;
 }
 
-static void filter_config(void *clientData, Res res, const char *args)
+static ZEBRA_RES filter_config(void *clientData, Res res, const char *args)
 {
     struct filter_info *tinfo = clientData;
     if (!args || !*args)
-	args = "xsltfilter.xml";
+	return ZEBRA_FAIL;
     if (tinfo->fname && !strcmp(args, tinfo->fname))
-	return;
+	return ZEBRA_OK;
     destroy_schemas(tinfo);
     create_schemas(tinfo, args);
+    return ZEBRA_OK;
 }
 
 static void filter_destroy(void *clientData)

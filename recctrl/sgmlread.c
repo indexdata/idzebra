@@ -1,4 +1,4 @@
-/* $Id: sgmlread.c,v 1.18 2005-11-16 04:33:22 adam Exp $
+/* $Id: sgmlread.c,v 1.19 2006-04-26 11:12:32 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -89,9 +89,9 @@ static void *grs_init_sgml(Res res, RecType recType)
     return p;
 }
 
-static void grs_config_sgml(void *clientData, Res res, const char *args)
+static ZEBRA_RES grs_config_sgml(void *clientData, Res res, const char *args)
 {
-
+    return ZEBRA_OK;
 }
 
 static void grs_destroy_sgml(void *clientData)

@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.59 2005-03-31 12:42:07 adam Exp $
+/* $Id: regxread.c,v 1.60 2006-04-26 11:12:31 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1866,11 +1866,12 @@ void *grs_init(Res res, RecType recType)
 }
 
 
-void grs_config(void *clientData, Res res, const char *args)
+ZEBRA_RES grs_config(void *clientData, Res res, const char *args)
 {
     struct lexSpecs *specs = (struct lexSpecs *) clientData;
     if (strlen(args) < sizeof(specs->type))
 	strcpy(specs->type, args);
+    return ZEBRA_OK;
 }
 
 data1_node *grs_read_regx (struct grs_read_info *p)

@@ -1,5 +1,5 @@
-/* $Id: recctrl.h,v 1.14 2005-08-22 08:19:51 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: recctrl.h,v 1.15 2006-04-26 11:12:31 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -20,8 +20,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#ifndef RECCTRL_H
-#define RECCTRL_H
+#ifndef IDZEBRA_RECCTRL_H
+#define IDZEBRA_RECCTRL_H
 
 #include <sys/types.h>
 #include <yaz/proto.h>
@@ -117,7 +117,7 @@ struct recType
     int version;
     char *name;                           /* Name of record type */
     void *(*init)(Res res, RecType recType);  /* Init function - called once */
-    void (*config)(void *clientData, Res res, const char *args); /* Config */
+    ZEBRA_RES (*config)(void *clientData, Res res, const char *args); /* Config */
     void (*destroy)(void *clientData);    /* Destroy function */
     int  (*extract)(void *clientData,
 		    struct recExtractCtrl *ctrl);   /* Extract proc */
