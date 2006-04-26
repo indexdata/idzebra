@@ -1,4 +1,4 @@
-/* $Id: xslt1.c,v 1.7 2006-03-31 15:58:10 adam Exp $
+/* $Id: xslt1.c,v 1.8 2006-04-26 13:27:16 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -26,6 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 void tst(int argc, char **argv)
 {
     char path[256];
+    char profile_path[256];
 
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
@@ -36,12 +37,16 @@ void tst(int argc, char **argv)
 
     zebra_init(zh);
 
+    sprintf(profile_path, "%s:%s/../../tab", 
+            tl_get_srcdir(), tl_get_srcdir());
+    zebra_set_resource(zh, "profilePath", profile_path);
+
     zebra_set_resource(zh, "recordType", "xslt.marcschema-col.xml");
 
     YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
-    sprintf(path, "%.200s/marc-col.xml", tl_get_srcdir());
-    YAZ_CHECK(zebra_repository_update(zh, path) == ZEBRA_OK);
+    sprintf(path, "%s/marc-col.xml", tl_get_srcdir());
 
+    YAZ_CHECK(zebra_repository_update(zh, path) == ZEBRA_OK);
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);
 

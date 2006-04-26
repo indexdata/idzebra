@@ -1,4 +1,4 @@
-/* $Id: xslt4.c,v 1.4 2006-03-31 15:58:10 adam Exp $
+/* $Id: xslt4.c,v 1.5 2006-04-26 13:27:16 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -26,6 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static void tst(int argc, char **argv)
 {
     char path[256];
+    char profile_path[256];
 
     ZebraService zs = tl_start_up("zebrastaticrank.cfg", argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
@@ -35,6 +36,10 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
     zebra_init(zh);
+
+    sprintf(profile_path, "%s:%s/../../tab", 
+            tl_get_srcdir(), tl_get_srcdir());
+    zebra_set_resource(zh, "profilePath", profile_path);
 
     zebra_set_resource(zh, "recordType", "xslt.marcschema-col.xml");
     zebra_set_resource(zh, "staticrank", "1");

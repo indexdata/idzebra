@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.18 2006-04-26 11:12:32 adam Exp $
+/* $Id: xslt.c,v 1.19 2006-04-26 13:27:16 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,6 +25,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <ctype.h>
 
 #include <yaz/diagbib1.h>
+#include <yaz/tpath.h>
+
 #include <libxml/xmlversion.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -35,25 +37,28 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <idzebra/util.h>
 #include <idzebra/recctrl.h>
 
-struct filter_schema {
+struct filter_xslt_schema {
     const char *name;
     const char *identifier;
     const char *stylesheet;
-    struct filter_schema *next;
+    struct filter_xslt_schema *next;
     const char *default_schema;
     const char *include_snippet;
     xsltStylesheetPtr stylesheet_xsp;
 };
 
-struct filter_info {
+struct filter_xslt_info {
     xmlDocPtr doc;
     char *fname;
+    char *full_name;
+    const char *profile_path;
     const char *split_level;
     const char *split_path;
     ODR odr;
-    struct filter_schema *schemas;
+    struct filter_xslt_schema *schemas;
     xmlTextReaderPtr reader;
 };
+
 
 #define ZEBRA_SCHEMA_XSLT_NS "http://indexdata.dk/zebra/xslt/1"
 
@@ -123,9 +128,12 @@ static int zebra_xmlInputCloseCallback (void * context)
 
 static void *filter_init(Res res, RecType recType)
 {
-    struct filter_info *tinfo = (struct filter_info *) xmalloc(sizeof(*tinfo));
+    struct filter_xslt_info *tinfo 
+      = (struct filter_xslt_info *) xmalloc(sizeof(*tinfo));
     tinfo->reader = 0;
     tinfo->fname = 0;
+    tinfo->full_name = 0;
+    tinfo->profile_path = 0;
     tinfo->split_level = 0;
     tinfo->split_path = 0;
     tinfo->odr = odr_createmem(ODR_ENCODE);
@@ -154,12 +162,12 @@ static int attr_content(struct _xmlAttr *attr, const char *name,
     return 0;
 }
 
-static void destroy_schemas(struct filter_info *tinfo)
+static void destroy_schemas(struct filter_xslt_info *tinfo)
 {
-    struct filter_schema *schema = tinfo->schemas;
+    struct filter_xslt_schema *schema = tinfo->schemas;
     while (schema)
     {
-	struct filter_schema *schema_next = schema->next;
+	struct filter_xslt_schema *schema_next = schema->next;
 	if (schema->stylesheet_xsp)
 	    xsltFreeStylesheet(schema->stylesheet_xsp);
 	xfree(schema);
@@ -172,25 +180,47 @@ static void destroy_schemas(struct filter_info *tinfo)
     tinfo->doc = 0;
 }
 
-static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
+static ZEBRA_RES create_schemas(struct filter_xslt_info *tinfo, 
+                                const char *fname)
 {
+    char tmp_full_name[1024];
     xmlNodePtr ptr;
     tinfo->fname = xstrdup(fname);
-    tinfo->doc = xmlParseFile(tinfo->fname);
-    if (!tinfo->doc)
-	return ZEBRA_FAIL;
+
+    if (yaz_filepath_resolve(tinfo->fname, tinfo->profile_path, 
+                             NULL, tmp_full_name))
+      tinfo->full_name = xstrdup(tmp_full_name);
+    else
+      tinfo->full_name = xstrdup(tinfo->fname);
+
+    yaz_log(YLOG_LOG, "xslt filter: loading config file %s", tinfo->full_name);
+
+    tinfo->doc = xmlParseFile(tinfo->full_name);
+    if (!tinfo->doc) {
+      yaz_log(YLOG_WARN, "xslt filter: could not parse config file %s", 
+              tinfo->full_name);
+      return ZEBRA_FAIL;
+    }
+
     ptr = xmlDocGetRootElement(tinfo->doc);
     if (!ptr || ptr->type != XML_ELEMENT_NODE ||
-	XML_STRCMP(ptr->name, "schemaInfo"))
-	return ZEBRA_FAIL;
+	XML_STRCMP(ptr->name, "schemaInfo")){
+          yaz_log(YLOG_WARN, 
+                  "xslt filter:  config file %s :" 
+                  " expected root element <schemaInfo>", 
+              tinfo->full_name);  
+      return ZEBRA_FAIL;
+    }
+    
     for (ptr = ptr->children; ptr; ptr = ptr->next)
     {
 	if (ptr->type != XML_ELEMENT_NODE)
 	    continue;
 	if (!XML_STRCMP(ptr->name, "schema"))
 	{
+            char tmp_xslt_full_name[1024];
 	    struct _xmlAttr *attr;
-	    struct filter_schema *schema = xmalloc(sizeof(*schema));
+	    struct filter_xslt_schema *schema = xmalloc(sizeof(*schema));
 	    schema->name = 0;
 	    schema->identifier = 0;
 	    schema->stylesheet = 0;
@@ -207,10 +237,17 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 		attr_content(attr, "default", &schema->default_schema);
 		attr_content(attr, "snippet", &schema->include_snippet);
 	    }
-	    if (schema->stylesheet)
-		schema->stylesheet_xsp =
-		    xsltParseStylesheetFile(
-			(const xmlChar*) schema->stylesheet);
+	    if (schema->stylesheet){
+              yaz_filepath_resolve(schema->stylesheet, tinfo->profile_path, 
+                                   NULL, tmp_xslt_full_name);
+              schema->stylesheet_xsp 
+                = xsltParseStylesheetFile((const xmlChar*) tmp_xslt_full_name);
+              if (!schema->stylesheet_xsp)
+                yaz_log(YLOG_WARN, 
+                        "xslt filter: could not parse xslt stylesheet %s", 
+                        tmp_xslt_full_name);
+            }
+            
 	}
 	else if (!XML_STRCMP(ptr->name, "split"))
 	{
@@ -230,10 +267,10 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
     return ZEBRA_OK;
 }
 
-static struct filter_schema *lookup_schema(struct filter_info *tinfo,
+static struct filter_xslt_schema *lookup_schema(struct filter_xslt_info *tinfo,
 					   const char *est)
 {
-    struct filter_schema *schema;
+    struct filter_xslt_schema *schema;
     for (schema = tinfo->schemas; schema; schema = schema->next)
     {
 	if (est)
@@ -251,11 +288,20 @@ static struct filter_schema *lookup_schema(struct filter_info *tinfo,
 
 static ZEBRA_RES filter_config(void *clientData, Res res, const char *args)
 {
-    struct filter_info *tinfo = clientData;
-    if (!args || !*args)
-	return ZEBRA_FAIL;
+    struct filter_xslt_info *tinfo = clientData;
+    if (!args || !*args){
+      yaz_log(YLOG_WARN, "xslt filter: need config file");
+      return ZEBRA_FAIL;
+    }
+
     if (tinfo->fname && !strcmp(args, tinfo->fname))
 	return ZEBRA_OK;
+    
+    tinfo->profile_path 
+      /* = res_get_def(res, "profilePath", DEFAULT_PROFILE_PATH); */
+      = res_get(res, "profilePath");
+    yaz_log(YLOG_LOG, "xslt filter: profilePath %s", tinfo->profile_path);
+
     destroy_schemas(tinfo);
     create_schemas(tinfo, args);
     return ZEBRA_OK;
@@ -263,7 +309,7 @@ static ZEBRA_RES filter_config(void *clientData, Res res, const char *args)
 
 static void filter_destroy(void *clientData)
 {
-    struct filter_info *tinfo = clientData;
+    struct filter_xslt_info *tinfo = clientData;
     destroy_schemas(tinfo);
     if (tinfo->reader)
 	xmlFreeTextReader(tinfo->reader);
@@ -282,7 +328,7 @@ static int ioclose_ex(void *context)
     return 0;
 }
 
-static void index_cdata(struct filter_info *tinfo, struct recExtractCtrl *ctrl,
+static void index_cdata(struct filter_xslt_info *tinfo, struct recExtractCtrl *ctrl,
 			xmlNodePtr ptr,	RecWord *recWord)
 {
     for(; ptr; ptr = ptr->next)
@@ -296,7 +342,7 @@ static void index_cdata(struct filter_info *tinfo, struct recExtractCtrl *ctrl,
     }
 }
 
-static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
+static void index_node(struct filter_xslt_info *tinfo,  struct recExtractCtrl *ctrl,
 		       xmlNodePtr ptr, RecWord *recWord)
 {
     for(; ptr; ptr = ptr->next)
@@ -332,7 +378,7 @@ static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
     }
 }
 
-static void index_record(struct filter_info *tinfo,struct recExtractCtrl *ctrl,
+static void index_record(struct filter_xslt_info *tinfo,struct recExtractCtrl *ctrl,
 			 xmlNodePtr ptr, RecWord *recWord)
 {
     if (ptr && ptr->type == XML_ELEMENT_NODE && ptr->ns &&
@@ -364,7 +410,7 @@ static void index_record(struct filter_info *tinfo,struct recExtractCtrl *ctrl,
     index_node(tinfo, ctrl, ptr, recWord);
 }
     
-static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
+static int extract_doc(struct filter_xslt_info *tinfo, struct recExtractCtrl *p,
 		       xmlDocPtr doc)
 {
     RecWord recWord;
@@ -372,7 +418,7 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
     xmlChar *buf_out;
     int len_out;
 
-    struct filter_schema *schema = lookup_schema(tinfo, zebra_xslt_ns);
+    struct filter_xslt_schema *schema = lookup_schema(tinfo, zebra_xslt_ns);
 
     params[0] = 0;
     set_param_str(params, "schema", zebra_xslt_ns, tinfo->odr);
@@ -412,7 +458,7 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
     return RECCTRL_EXTRACT_OK;
 }
 
-static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
+static int extract_split(struct filter_xslt_info *tinfo, struct recExtractCtrl *p)
 {
     int ret;
     int split_depth = 0;
@@ -454,7 +500,7 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
     return RECCTRL_EXTRACT_EOF;
 }
 
-static int extract_full(struct filter_info *tinfo, struct recExtractCtrl *p)
+static int extract_full(struct filter_xslt_info *tinfo, struct recExtractCtrl *p)
 {
     if (p->first_record) /* only one record per stream */
     {
@@ -474,7 +520,7 @@ static int extract_full(struct filter_info *tinfo, struct recExtractCtrl *p)
 
 static int filter_extract(void *clientData, struct recExtractCtrl *p)
 {
-    struct filter_info *tinfo = clientData;
+    struct filter_xslt_info *tinfo = clientData;
 
     odr_reset(tinfo->odr);
 
@@ -549,10 +595,10 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
     const char *esn = zebra_xslt_ns;
     const char *params[20];
-    struct filter_info *tinfo = clientData;
+    struct filter_xslt_info *tinfo = clientData;
     xmlDocPtr resDoc;
     xmlDocPtr doc;
-    struct filter_schema *schema;
+    struct filter_xslt_schema *schema;
     int window_size = -1;
 
     if (p->comp)
