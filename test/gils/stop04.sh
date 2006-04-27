@@ -1,21 +1,27 @@
 #!/bin/sh
-# $Id: stop04.sh,v 1.10 2005-01-03 12:08:04 adam Exp $
+# $Id: stop04.sh,v 1.11 2006-04-27 10:52:26 marc Exp $
 # test start and stop of the forked server 
 
-pp=${srcdir:-"."}
+srcdir=${srcdir:-"."}
+
+if [ "$srcdir" != "." ]
+    then
+    echo "Jumping over test"
+    exit 0
+fi
 
 LOG=stop04.log
 
 rm -f $LOG
 echo "initializing" >>$LOG
 mkdir -p reg
-../../index/zebraidx -l $LOG -c $pp/zebra1.cfg init || exit 1
+../../index/zebraidx -l $LOG -c $srcdir/zebra1.cfg init || exit 1
 
 #create a base to test on
-../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update records  || exit 1
+../../index/zebraidx -l $LOG -c $srcdir/zebra1.cfg update records  || exit 1
 
 echo "Starting server with (forked)..." >>$LOG
-../../index/zebrasrv -D -p z.pid -c $pp/zebra1.cfg -l $LOG unix:socket
+../../index/zebrasrv -D -p z.pid -c $srcdir/zebra1.cfg -l $LOG unix:socket
 
 echo "  checking that it runs... " >>$LOG
 test -f z.pid || exit 1

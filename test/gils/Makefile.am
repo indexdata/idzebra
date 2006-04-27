@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.17 2004-01-30 11:43:41 heikki Exp $
+# $Id: Makefile.am,v 1.18 2006-04-27 10:52:26 marc Exp $
 
 dist-hook:
 	-mkdir $(distdir)/records
@@ -9,4 +9,4 @@ check_SCRIPTS = stop01.sh stop02.sh stop03.sh stop04.sh \
 
 TESTS = $(check_SCRIPTS)
 
-EXTRA_DIST = zebra1.cfg zebra2.cfg $(check_SCRIPTS)
+EXTRA_DIST = cleanrecords.sh zebra1.cfg zebra2.cfg $(check_SCRIPTS)

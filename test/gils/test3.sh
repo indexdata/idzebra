@@ -1,25 +1,34 @@
 #!/bin/sh
-# $Id: test3.sh,v 1.7 2005-01-03 12:08:04 adam Exp $
+# $Id: test3.sh,v 1.8 2006-04-27 10:52:26 marc Exp $
 
 # Testing searches with lots of @and operators
 # in order to test the fast-forward operation of rsets
 
-pp=${srcdir:-"."}
+srcdir=${srcdir:-"."}
+
+if [ "$srcdir" != "." ]
+    then
+    echo "Jumping over test"
+    exit 0
+fi
 
 LOG=test3.log
 DBG="-v 1647"
 
 rm -f $LOG
 
+# these should not be here, will be created later
+$srcdir/cleanrecords.sh
+
 echo  "initializing..." >>$LOG
 mkdir -p reg
-../../index/zebraidx -l $LOG -c $pp/zebra1.cfg init || exit 1
+../../index/zebraidx -l $LOG -c $srcdir/zebra1.cfg init || exit 1
 
 echo "updating..." >>$LOG
-../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update $pp/records  || exit 1
+../../index/zebraidx -l $LOG -c $srcdir/zebra1.cfg update $srcdir/records  || exit 1
 
 echo "starting server..." >>$LOG
-../../index/zebrasrv -D -p z.pid -S -c $pp/zebra1.cfg $DBG -l $LOG unix:socket
+../../index/zebrasrv -D -p z.pid -S -c $srcdir/zebra1.cfg $DBG -l $LOG unix:socket
 
 echo "checking it runs..." >>$LOG
 test -f z.pid || exit 1
