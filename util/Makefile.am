@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.16 2006-03-23 09:15:25 adam Exp $
+## $Id: Makefile.am,v 1.17 2006-04-27 20:40:45 marc Exp $
 
 lib_LTLIBRARIES = libidzebra-util.la
 
@@ -25,3 +25,9 @@ passtest_SOURCES = passtest.c
 tstcharmap_SOURCES = tstcharmap.c
 
 tstflock_SOURCES = tstflock.c
+
+
+clean-local:
+	-rm -rf *.LCK 
+	-rm -rf *.log 
+	-rm -rf *.mf 

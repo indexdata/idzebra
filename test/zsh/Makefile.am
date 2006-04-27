@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.3 2003-09-16 14:43:30 adam Exp $
+# $Id: Makefile.am,v 1.4 2006-04-27 20:40:44 marc Exp $
 
 #dist-hook:
 #	-mkdir $(distdir)/records
@@ -10,4 +10,12 @@ check_SCRIPTS = testall.sh
 TESTS = testall.sh
 
 EXTRA_DIST = $(check_SCRIPTS) test1.zsh test2.zsh zebra.cfg 
+
+clean-local:
+	-rm -rf *.LCK 
+	-rm -rf *.log 
+	-rm -rf *.mf 
+	-rm -rf reg/*.LCK 
+	-rm -rf reg/*.log 
+	-rm -rf reg/*.mf 
 

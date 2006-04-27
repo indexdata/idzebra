@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.11 2004-12-15 13:07:07 adam Exp $
+# $Id: Makefile.am,v 1.12 2006-04-27 20:40:43 marc Exp $
 
 check_PROGRAMS = xpath1 xpath2 xpath3 xpath4 xpath5 xpath6
 
@@ -30,3 +30,7 @@ zebralibs = \
 
 LDADD = ../api/libtestlib.a $(zebralibs) $(YAZLALIB)
 
+clean-local:
+	-rm -rf *.LCK 
+	-rm -rf *.log 
+	-rm -rf *.mf 

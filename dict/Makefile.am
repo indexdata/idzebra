@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.11 2004-12-08 12:23:08 adam Exp $
+## $Id: Makefile.am,v 1.12 2006-04-27 20:40:41 marc Exp $
 
 lib_LTLIBRARIES = libidzebra-dict.la
 noinst_PROGRAMS = dicttest dictext
@@ -23,4 +23,10 @@ dicttest_SOURCES = dicttest.c
 dictext_SOURCES = dictext.c
 
 scantest_SOURCES = scantest.c
+
+
+clean-local:
+	-rm -rf *.LCK 
+	-rm -rf *.log 
+	-rm -rf *.mf 
 

@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.1 2005-06-14 20:03:02 adam Exp $
+# $Id: Makefile.am,v 1.2 2006-04-27 20:40:42 marc Exp $
 
 check_PROGRAMS = text grs.xml grs.marc
 
@@ -27,4 +27,8 @@ zebralibs = \
 
 LDADD = ../api/libtestlib.a $(zebralibs) $(YAZLALIB)
 
+clean-local:
+	-rm -rf *.LCK 
+	-rm -rf *.log 
+	-rm -rf *.mf 
 

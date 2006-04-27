@@ -1,6 +1,11 @@
-# $Id: Makefile.am,v 1.1 2003-09-08 09:30:17 adam Exp $
+# $Id: Makefile.am,v 1.2 2006-04-27 20:40:42 marc Exp $
 
 check_SCRIPTS = test1.sh
 TESTS = test1.sh
 
 EXTRA_DIST = zebra.cfg $(check_SCRIPTS) f1.xml
+
+clean-local:
+	-rm -rf *.LCK 
+	-rm -rf *.log 
+	-rm -rf *.mf 

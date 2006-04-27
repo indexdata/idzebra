@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.34 2006-04-05 02:03:33 adam Exp $
+# $Id: Makefile.am,v 1.35 2006-04-27 20:40:41 marc Exp $
 
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c 
@@ -50,3 +50,10 @@ zebralibs = \
 
 LDADD = libtestlib.a $(zebralibs) $(YAZLALIB)
 
+clean-local:
+	-rm -rf *.LCK 
+	-rm -rf *.log 
+	-rm -rf *.mf 
+	-rm -rf register/*.LCK 
+	-rm -rf register/*.log 
+	-rm -rf register/*.mf 

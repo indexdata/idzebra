@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.3 2005-06-14 10:33:31 adam Exp $
+# $Id: Makefile.am,v 1.4 2006-04-27 20:40:42 marc Exp $
 
 check_PROGRAMS = charmap1
 
@@ -24,5 +24,10 @@ zebralibs = \
  ../../util/libidzebra-util.la
 
 LDADD = ../api/libtestlib.a $(zebralibs) $(YAZLALIB)
+
+clean-local:
+	-rm -rf *.LCK 
+	-rm -rf *.log 
+	-rm -rf *.mf 
 
 

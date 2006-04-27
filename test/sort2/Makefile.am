@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.3 2004-12-04 01:08:33 adam Exp $
+# $Id: Makefile.am,v 1.4 2006-04-27 20:40:43 marc Exp $
 
 check_PROGRAMS = t1
 
@@ -26,4 +26,8 @@ zebralibs = \
 
 LDADD = ../api/libtestlib.a $(zebralibs) $(YAZLALIB)
 
+clean-local:
+	-rm -rf *.LCK 
+	-rm -rf *.log 
+	-rm -rf *.mf 
 
