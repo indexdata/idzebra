@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: testall.sh,v 1.5 2006-04-27 10:52:27 marc Exp $
+# $Id: testall.sh,v 1.6 2006-04-28 18:50:48 adam Exp $
 # run all zebrash tests
 
 srcdir=${srcdir:-"."}
@@ -11,7 +11,7 @@ rm -f *.mf reg/*.mf *.out
 for F in $srcdir/*.zsh
 do
   echo $F
-  if [ "." == $srcdir ] 
+  if [ "." = "$srcdir" ] 
       then  # running make check
       ../../index/zebrash -c $srcdir/zebra.cfg <$F >$F.out
   else   # running make distcheck
