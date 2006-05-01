@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.29 2006-04-25 12:26:26 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.30 2006-05-01 12:59:33 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -923,7 +923,48 @@
 
 
  <sect1 id="administration-ranking">
-  <title>Static and Dynamic Ranking</title>
+  <title>Relevance Ranking and Sorting of Result Sets</title>
+
+   <para>
+    The default ordering of a result set is left up to the server,
+    which inside Zebra means sorting in ascending document ID order. 
+    This is not always the order humans want to browse the sometimes
+    quite large hit sets. Ranking and sorting comes to the rescue.
+   </para>
+
+   <para> 
+    In case a good presentation ordering can be computed at
+    indexing time, we can use a fixed <literal>static ranking</literal>
+    scheme, which is provided for the <literal>alvis</literal>
+    indexing filter. This defines a fixed ordering of hit lists,
+    independently of the query issued. 
+   </para>
+
+   <para>
+    There are cases, however, where relevance of hit set documents is
+    hghly dependent on the query processed.
+    Simply put, <literal>dynamic relevance ranking</literal> 
+    sortes a set of retrieved 
+    records such
+    that those most likely to be relevant to your request are
+    retrieved first. 
+    Internally, Zebra  retrieves all documents ID's that satisfy your
+    search query, and re-orders the hit list to arrange them based on
+    a measurement of similarity between your query and the content of
+    each record. 
+   </para>
+
+   <para>
+    Finally, there are situations where hit sets of documents should be
+    <literal>sorted</literal> during query time according to the
+    lexicographical ordering of certain sort indexes created at
+    indexing time.
+   </para>
+
+
+
+ <sect2 id="administration-ranking-static">
+  <title>Static Ranking</title>
   
    <para>
     Zebra uses internally inverted indexes to look up term occurencies
@@ -970,6 +1011,11 @@
     after <emphasis>ascending</emphasis> doc <literal>ID</literal>.
     See <xref linkend="record-model-alvisxslt"/> for the glory details.
    </para>
+    </sect2>
+
+
+ <sect2 id="administration-ranking-dynamic">
+  <title>Dynamic Ranking</title>
    <para>
     If one wants to do a little fiddeling with the static rank order,
     one has to invoke additional re-ranking/re-ordering using dynamic 
@@ -982,27 +1028,13 @@
     to the index lists which are sorted according to
     <emphasis>ascending</emphasis> rank  number and document ID).
    </para>
-   <!--
-   <para>
-    Those are defined in the zebra C source files 
-    <screen>     
-    "rank-1" : zebra/index/rank1.c  
-               default TF/IDF like zebra dynamic ranking
-    "rank-static" : zebra/index/rankstatic.c
-               do-nothing dummy static ranking (this is just to prove
-               that the static rank can be used in dynamic ranking functions)  
-     "zvrank" : zebra/index/zvrank.c
-               many different dynamic TF/IDF ranking functions 
-    </screen> 
-   </para>
-   -->
    <para>
     Those are in the zebra config file enabled by a directive like (use
     only one of these a time!):
     <screen> 
-    rank: rank-1        # default
-    rank: rank-static   # dummy 
-    rank: zvrank        # TDF-IDF like
+    rank: rank-1        # default TDF-IDF like
+    rank: rank-static   # dummy do-nothing
+    rank: zvrank        # configurable, experimental TDF-IDF like
     </screen>
     Notice that the <literal>rank-1</literal> and
     <literal>zvrank</literal> do not use the static rank 
@@ -1020,7 +1052,146 @@
     function, which is left
     as an exercise for the reader. 
    </para>
-   
+
+
+   <para>
+    Invoking dynamic ranking is done in query time (this is why we
+    call it 'dynamic ranking' in the first place ..). One has to add
+    the Bib-1 relation attribute with
+    value "relevance" to the PQF query (that is, <literal>@attr
+    2=102</literal>, see also  
+    <ulink url="ftp://ftp.loc.gov/pub/z3950/defs/bib1.txt">
+     The BIB-1 Attribute Set Semantics</ulink>). 
+    To find all articles with the word 'Eoraptor' in
+    the title, and present them relevance ranked, one issues the PQF query:
+    <screen>
+     Z> f @attr 2=102 @attr 1=4 Eoraptor
+    </screen>
+   </para>
+ 
+   <para>
+     The default <literal>rank-1</literal> ranking module implements a 
+     TF-IDF (Term Frequecy over Inverse Document Frequency) like algorithm.
+   </para>
+
+   <para>
+     It is possible to apply dynamic ranking on parts of the PQF query
+     allone:
+     <screen>
+     Z> f @and @attr 2=102 @attr 1=1010 Utah @attr 1=1018 Springer
+     </screen>
+     searches for all documents which have the term 'Utah' on the
+     body of text, and which have the term 'Springer' in the publisher
+     field, and sort them in the order of the relvance ranking made on
+     the body of text index only. 
+   </para>
+    <para>
+     Rank weight is a way to pass a value to a ranking algorithm - so that 
+     one APT has one value - while another as a different one. For
+     example, we can 
+     search for 'utah' in use attribute set 'title' with weight 30, as
+     well as in use attribute set 'any' with weight 20.
+     <screen>
+     Z> f @attr 2=102 @or @attr 9=30 @attr 1=4 utah @attr 9=20 utah
+     </screen>
+    </para>
+    <warning>
+     <para>
+      The rank weight feature is experimental. It may change in future
+      releases of zebra, and is not production mature. 
+     </para>
+    </warning>
+    
+   <para>
+     Notice that <literal>dynamic ranking</literal> can be enabled in
+     sever side CQL query expansion by adding <literal>@attr
+     2=102</literal> to the CQL config file. For example
+     <screen>
+      relationModifier.relevant		= 2=102
+     </screen>
+     invokes dynamik ranking each time a CQL query of the form 
+    <screen>
+     Z> querytype cql
+     Z> f alvis.text =/relevant house
+    </screen>
+     is issued. Dynamic ranking can be enabled on specific CQL indexes
+     by (for example) setting
+     <screen>
+      index.alvis.text                        = 1=text 2=102
+     </screen>
+     which then invokes dynamik ranking each time a CQL query of the form 
+    <screen>
+     Z> querytype cql
+     Z> f alvis.text = house
+    </screen>
+     is issued.
+   </para>
+
+    </sect2>
+
+
+ <sect2 id="administration-ranking-sorting">
+  <title>Sorting</title>
+   <para>
+     Sorting is enabled in the configuration of record indexing. For
+     example, to enable sorting according to the BIB-1
+     <literal>Date/time-added-to-db</literal> field, one could add the line
+     <screen>
+        xelm /*/@created               Date/time-added-to-db:s
+     </screen>
+     to any <literal>.abs</literal> record indexing config file, or
+     similarily, one could add an indexing element of the form
+     <screen><![CDATA[       
+      <z:index name="date-modified" type="s">
+       <xsl:value-of select="some/xpath"/>
+      </z:index>
+      ]]></screen>
+     to any <literal>alvis</literal> indexing rule.
+     </para>
+     <para>
+     To trigger a sorting on a pre-defined sorting index of type
+     <literal>s</literal>, we can issue a sort with BIB-1
+     embedded sort attribute set <literal>7</literal>. 
+     The embedded sort is a way to specify sort within a query - thus
+     removing the need to send a Z39.50 <literal>Sort
+     Request</literal> separately. 
+     </para>
+     <para>
+     The value after attribute type <literal>7</literal> is 
+     <literal>1</literal> (=ascending), or <literal>2</literal>
+     (=descending). 
+     The attributes+term (APT) node is separate from the rest of the
+     PQF query, and must be <literal>@or</literal>'ed. 
+     The term associated with this attribute is the sorting level,
+     where
+     <literal>0</literal> specifies the primary sort key,
+     <literal>1</literal> the secondary sort key, and so on. 
+     </para>
+    <para>For example, a search for water, sort by title (ascending),
+    is expressed by the PQF query
+     <screen>
+     Z> f @or @attr 1=1016 water @attr 7=1 @attr 1=4 0
+     </screen>
+      whereas a search for water, sort by title ascending, 
+     then date descending would be
+     <screen>
+     Z> f @or @or @attr 1=1016 water @attr 7=1 @attr 1=4 0 @attr 7=2 @attr 1=30 1
+     </screen>
+    </para>
+    <para>
+     Notice the fundamental differences between <literal>dynamic
+     ranking</literal> and <literal>sorting</literal>: there can only
+     be one ranking function defined and configured, but there can be
+     specified multiple sorting indexes dynamically at search
+     time. Ranking does not need to use specific indexes, which means,
+     dynamic ranking can be enabled and disabled without
+     re-indexing. On the other hand, sorting indexes need to be
+     defined before indexing.
+     </para>
+
+ </sect2>
+
+
  </sect1>
 
  <sect1 id="administration-extended-services">
