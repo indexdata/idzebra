@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.30 2006-05-01 12:59:33 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.31 2006-05-01 13:07:40 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -942,7 +942,7 @@
 
    <para>
     There are cases, however, where relevance of hit set documents is
-    hghly dependent on the query processed.
+    highly dependent on the query processed.
     Simply put, <literal>dynamic relevance ranking</literal> 
     sortes a set of retrieved 
     records such
@@ -1073,6 +1073,17 @@
      The default <literal>rank-1</literal> ranking module implements a 
      TF-IDF (Term Frequecy over Inverse Document Frequency) like algorithm.
    </para>
+
+   <warning>
+     <para>
+      Notice that <literal>dynamic ranking</literal> is not compatible
+      with <literal>estimated hit sizes</literal>, as all documents in
+      a hit set must be acessed to compute the correct placing in a
+      ranking sorted list. Therefore the use attribute setting
+      <literal>@attr 2=102</literal> clashes with 
+      <literal>@attr 9=</literal>. 
+     </para>
+   </warning>  
 
    <para>
      It is possible to apply dynamic ranking on parts of the PQF query
