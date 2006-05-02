@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.32 2006-05-02 12:23:02 mike Exp $ -->
+ <!-- $Id: administration.xml,v 1.33 2006-05-02 12:55:18 mike Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -1088,51 +1088,51 @@
    </warning>  
 
    <para>
-     It is possible to apply dynamic ranking on parts of the PQF query
-     allone:
+     It is possible to apply dynamic ranking on only parts of the PQF query:
      <screen>
-     Z> f @and @attr 2=102 @attr 1=1010 Utah @attr 1=1018 Springer
+     @and @attr 2=102 @attr 1=1010 Utah @attr 1=1018 Springer
      </screen>
      searches for all documents which have the term 'Utah' on the
      body of text, and which have the term 'Springer' in the publisher
      field, and sort them in the order of the relvance ranking made on
-     the body of text index only. 
+     the body-of-text index only. 
    </para>
     <para>
-     Rank weight is a way to pass a value to a ranking algorithm - so that 
-     one APT has one value - while another as a different one. For
-     example, we can 
-     search for 'utah' in use attribute set 'title' with weight 30, as
-     well as in use attribute set 'any' with weight 20.
+     Ranking weights may be used to pass a value to a ranking
+     algorithm, using the non-standard BIB-1 attribute type 9.
+     This allows one branch of a query to use one value while
+     another branch uses a different one.  For example, we can search
+     for <literal>utah</literal> in the title index with weight 30, as
+     well as in the ``any'' index with weight 20:
      <screen>
-     Z> f @attr 2=102 @or @attr 9=30 @attr 1=4 utah @attr 9=20 utah
+     @attr 2=102 @or @attr 9=30 @attr 1=4 utah @attr 9=20 utah
      </screen>
     </para>
     <warning>
      <para>
-      The rank weight feature is experimental. It may change in future
+      The ranking-weight feature is experimental. It may change in future
       releases of zebra, and is not production mature. 
      </para>
     </warning>
     
    <para>
-     Notice that <literal>dynamic ranking</literal> can be enabled in
-     sever side CQL query expansion by adding <literal>@attr
-     2=102</literal> to the CQL config file. For example
+     Notice that dynamic ranking can be enabled in sever side CQL
+     query expansion by adding <literal>@attr&nbsp;2=102</literal> to
+     the CQL config file. For example
      <screen>
       relationModifier.relevant		= 2=102
      </screen>
-     invokes dynamik ranking each time a CQL query of the form 
+     invokes dynamic ranking each time a CQL query of the form 
     <screen>
      Z> querytype cql
      Z> f alvis.text =/relevant house
     </screen>
-     is issued. Dynamic ranking can be enabled on specific CQL indexes
-     by (for example) setting
+     is issued. Dynamic ranking can also be automatically used on
+     specific CQL indexes by (for example) setting
      <screen>
       index.alvis.text                        = 1=text 2=102
      </screen>
-     which then invokes dynamik ranking each time a CQL query of the form 
+     which then invokes dynamic ranking each time a CQL query of the form 
     <screen>
      Z> querytype cql
      Z> f alvis.text = house
@@ -1146,59 +1146,63 @@
  <sect2 id="administration-ranking-sorting">
   <title>Sorting</title>
    <para>
-     Sorting is enabled in the configuration of record indexing. For
-     example, to enable sorting according to the BIB-1
+     Zebra sorts efficiently using special sorting indexes
+     (type=<literal>s</literal>; so each sortable index must be known
+     at indexing time, specified in the configuration of record
+     indexing.  For example, to enable sorting according to the BIB-1
      <literal>Date/time-added-to-db</literal> field, one could add the line
      <screen>
         xelm /*/@created               Date/time-added-to-db:s
      </screen>
-     to any <literal>.abs</literal> record indexing config file, or
-     similarily, one could add an indexing element of the form
+     to any <literal>.abs</literal> record-indexing configuration file.
+     Similarily, one could add an indexing element of the form
      <screen><![CDATA[       
       <z:index name="date-modified" type="s">
        <xsl:value-of select="some/xpath"/>
       </z:index>
       ]]></screen>
-     to any <literal>alvis</literal> indexing rule.
+     to any <literal>alvis</literal>-filter indexing stylesheet.
      </para>
      <para>
-     To trigger a sorting on a pre-defined sorting index of type
-     <literal>s</literal>, we can issue a sort with BIB-1
-     embedded sort attribute set <literal>7</literal>. 
-     The embedded sort is a way to specify sort within a query - thus
-     removing the need to send a Z39.50 <literal>Sort
-     Request</literal> separately. 
+      Indexing can be specified at searching time using a query term
+      carrying the non-standard
+      BIB-1 attribute-type <literal>7</literal>.  This removes the
+      need to send a Z39.50 <literal>Sort Request</literal>
+      separately, and can dramatically improve latency when the client
+      and server are on separate networks.
+      The sorting part of the query is separate from the rest of the
+      query - the actual search specification - and must be combined
+      with it using OR.
      </para>
      <para>
-     The value after attribute type <literal>7</literal> is 
-     <literal>1</literal> (=ascending), or <literal>2</literal>
-     (=descending). 
-     The attributes+term (APT) node is separate from the rest of the
-     PQF query, and must be <literal>@or</literal>'ed. 
-     The term associated with this attribute is the sorting level,
-     where
-     <literal>0</literal> specifies the primary sort key,
-     <literal>1</literal> the secondary sort key, and so on. 
+      A sorting subquery needs two attributes: an index (such as a
+      BIB-1 type-1 attribute) specifying which index to sort on, and a
+      type-7 attribute whose value is be <literal>1</literal> for
+      ascending sorting, or <literal>2</literal> for descending.  The
+      term associated with the sorting attribute is the priority of
+      the sort key, where <literal>0</literal> specifies the primary
+      sort key, <literal>1</literal> the secondary sort key, and so
+      on.
      </para>
     <para>For example, a search for water, sort by title (ascending),
     is expressed by the PQF query
      <screen>
-     Z> f @or @attr 1=1016 water @attr 7=1 @attr 1=4 0
+     @or @attr 1=1016 water @attr 7=1 @attr 1=4 0
      </screen>
       whereas a search for water, sort by title ascending, 
      then date descending would be
      <screen>
-     Z> f @or @or @attr 1=1016 water @attr 7=1 @attr 1=4 0 @attr 7=2 @attr 1=30 1
+     @or @or @attr 1=1016 water @attr 7=1 @attr 1=4 0 @attr 7=2 @attr 1=30 1
      </screen>
     </para>
     <para>
      Notice the fundamental differences between <literal>dynamic
-     ranking</literal> and <literal>sorting</literal>: there can only
-     be one ranking function defined and configured, but there can be
-     specified multiple sorting indexes dynamically at search
-     time. Ranking does not need to use specific indexes, which means,
+     ranking</literal> and <literal>sorting</literal>: there can be
+     only one ranking function defined and configured; but multiple
+     sorting indexes can be specified dynamically at search
+     time. Ranking does not need to use specific indexes, so
      dynamic ranking can be enabled and disabled without
-     re-indexing. On the other hand, sorting indexes need to be
+     re-indexing; whereas, sorting indexes need to be
      defined before indexing.
      </para>
 
