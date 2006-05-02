@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.9 2006-04-26 11:12:31 adam Exp $
+/* $Id: alvis.c,v 1.10 2006-05-02 08:27:43 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -582,13 +582,15 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	window_size = atoi(schema->include_snippet);
 
     params[0] = 0;
-    set_param_str(params, "schema", esn, p->odr);
+    set_param_int(params, "id", p->localno, p->odr);
     if (p->fname)
 	set_param_str(params, "filename", p->fname, p->odr);
+    if (p->staticrank >= 0)
+	set_param_int(params, "rank", p->staticrank, p->odr);
+    set_param_str(params, "schema", esn, p->odr);
     if (p->score >= 0)
 	set_param_int(params, "score", p->score, p->odr);
     set_param_int(params, "size", p->recordSize, p->odr);
-    set_param_int(params, "id", p->localno, p->odr);
 
     if (window_size >= 0)
 	set_param_xml(params, "snippet", snippet_doc(p, 1, window_size),

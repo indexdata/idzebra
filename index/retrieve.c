@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.38 2006-04-25 13:52:38 adam Exp $
+/* $Id: retrieve.c,v 1.39 2006-05-02 08:27:43 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -253,6 +253,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
 	}
     }
     retrieveCtrl.localno = sysno;
+    retrieveCtrl.staticrank = recordAttr->staticrank;
     retrieveCtrl.score = score;
     retrieveCtrl.recordSize = recordAttr->recordSize;
     retrieveCtrl.odr = stream;

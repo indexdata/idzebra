@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.15 2006-04-26 11:12:31 adam Exp $
+/* $Id: recctrl.h,v 1.16 2006-05-02 08:27:43 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -96,6 +96,7 @@ struct recRetrieveCtrl {
     char      *encoding;              /* preferred character encoding      */
     zint      localno;                /* local id of record                */
     int       score;                  /* score 0-1000 or -1 if none        */
+    int       staticrank;             /* static rank >= 0,  0 if none */
     int       recordSize;             /* size of record in bytes */
     char      *fname;                 /* name of file (or NULL if internal) */
     data1_handle dh;
