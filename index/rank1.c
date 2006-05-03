@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.28 2006-05-03 09:31:26 marc Exp $
+/* $Id: rank1.c,v 1.29 2006-05-03 13:26:12 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -130,7 +130,7 @@ static void *begin (struct zebra_register *reg,
             if (cp)
                 si->entries[i].rank_weight = atoi (cp+3);
             else
-                si->entries[i].rank_weight = 34;
+              si->entries[i].rank_weight = 34; /* sqrroot of 1000 */
             yaz_log(log_level, " i=%d weight=%d g="ZINT_FORMAT, i,
                      si->entries[i].rank_weight, g);
 	    (si->no_rank_entries)++;
