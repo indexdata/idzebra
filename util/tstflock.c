@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2005, Index Data ApS
  * See the file LICENSE for details.
  *
- * $Id: tstflock.c,v 1.4 2006-03-23 17:50:17 adam Exp $
+ * $Id: tstflock.c,v 1.5 2006-05-03 09:42:39 marc Exp $
  */
 
 #include <yaz/test.h>
@@ -112,11 +112,5 @@ int main(int argc, char **argv)
 #endif
     YAZ_CHECK_TERM;
 }
-/*
- * Local variables:
- * c-basic-offset: 4
- * indent-tabs-mode: nil
- * End:
- * vim: shiftwidth=4 tabstop=8 expandtab
- */
+
 
