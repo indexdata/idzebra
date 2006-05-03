@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.158 2006-04-05 02:11:44 adam Exp $
+/* $Id: index.h,v 1.159 2006-05-03 09:31:26 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -308,23 +308,6 @@ struct zebra_session {
     struct zebra_limit *m_limit;
 };
 
-struct rank_control {
-    char *name;
-    void *(*create)(ZebraHandle zh);
-    void (*destroy)(struct zebra_register *reg, void *class_handle);
-    void *(*begin)(struct zebra_register *reg, 
-                   void *class_handle, RSET rset, NMEM nmem,
-                   TERMID *terms, int numterms);
-    /* ### Could add parameters to begin:
-     *	char *index;	// author, title, etc.
-     *	int dbsize;	// number of records in database
-     *	int rssize;	// number of records in result set (estimate?)
-     */
-    void (*end)(struct zebra_register *reg, void *set_handle);
-    int (*calc)(void *set_handle, zint sysno, zint staticrank,
-		int *stop_flag);
-    void (*add)(void *set_handle, int seqno, TERMID term);
-};
 
 struct term_set_entry {
     char *term;
@@ -401,16 +384,8 @@ typedef struct attent
     data1_local_attribute *local_attributes;
 } attent;
 
-void zebraRankInstall (struct zebra_register *reg, struct rank_control *ctrl);
-ZebraRankClass zebraRankLookup (ZebraHandle zh, const char *name);
-void zebraRankDestroy (struct zebra_register *reg);
-
 int att_getentbyatt(ZebraHandle zh, attent *res, oid_value set, int att,
 		const char *sattr);
-
-extern struct rank_control *rank_1_class;
-extern struct rank_control *rank_zv_class;
-extern struct rank_control *rank_static_class;
 
 int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, 
 			zebra_snippets *hit_snippet, ODR stream,

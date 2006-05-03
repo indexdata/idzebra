@@ -1,17 +1,25 @@
-## $Id: Makefile.am,v 1.37 2006-05-01 08:27:20 adam Exp $
+## $Id: Makefile.am,v 1.38 2006-05-03 09:31:25 marc Exp $
 
 noinst_PROGRAMS = apitest kdump zebrasrv2 zebraidx2
 
 lib_LTLIBRARIES = libidzebra-api.la libidzebra-all.la
 
 libidzebra_all_la_SOURCES = 
-libidzebra_api_la_SOURCES = dir.c dirs.c trav.c kinput.c kcompare.c \
- attribute.c symtab.c recindex.c recstat.c \
- zebraapi.c api_swig.c \
- zinfo.c invstat.c sortidx.c compact.c zsets.c zrpn.c \
- rank1.c trunc.c retrieve.c extract.c rankstatic.c \
- index.h recindex.h recindxp.h reckeys.c reckeys.h \
- zinfo.h zserver.h zvrank.c limit.c kcontrol.c orddict.c orddict.h
+libidzebra_api_la_SOURCES = \
+  api_swig.c attribute.c \
+  compact.c \
+  dir.c dirs.c \
+  extract.c \
+  index.h invstat.c \
+  kinput.c kcompare.c  kcontrol.c \
+  limit.c \
+  orddict.c orddict.h \
+  rank.h rank1.c ranksimilarity.c rankstatic.c \
+  recindex.c  recindex.h recindxp.h reckeys.c reckeys.h recstat.c retrieve.c \
+  sortidx.c symtab.c \
+  trav.c trunc.c \
+  zebraapi.c zinfo.c zinfo.h zserver.h zsets.c zrpn.c \
+  zvrank.c
 
 bin_PROGRAMS = zebraidx zebrasrv zebrash
 

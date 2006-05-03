@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.28 2006-05-03 09:31:26 marc Exp $
+/* $Id: ranksimilarity.c,v 1.1 2006-05-03 09:31:26 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -22,6 +22,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <stdio.h>
 #include <assert.h>
+#include <limits.h>
 #ifdef WIN32
 #include <io.h>
 #endif
@@ -35,11 +36,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static int log_level = 0;
 static int log_initialized = 0;
 
-struct rank_class_info {
+struct ranksimilarity_class_info {
     int dummy;
 };
 
-struct rank_term_info {
+struct ranksimilarity_term_info {
     int local_occur;
     zint global_occur;
     int global_inv;
@@ -49,23 +50,14 @@ struct rank_term_info {
     int term_index;
 };
 
-struct rank_set_info {
+struct ranksimilarity_set_info {
     int last_pos;
     int no_entries;
     int no_rank_entries;
-    struct rank_term_info *entries;
+    struct ranksimilarity_term_info *entries;
     NMEM nmem;
 };
 
-static int log2_int (zint g)
-{
-    int n = 0;
-    if (g < 0)
-	return 0;
-    while ((g = g>>1))
-	n++;
-    return n;
-}
 
 /*
  * create: Creates/Initialises this rank handler. This routine is 
@@ -73,16 +65,16 @@ static int log2_int (zint g)
  */
 static void *create (ZebraHandle zh)
 {
-    struct rank_class_info *ci = 
-        (struct rank_class_info *) xmalloc (sizeof(*ci));
+    struct ranksimilarity_class_info *ci = 
+        (struct ranksimilarity_class_info *) xmalloc (sizeof(*ci));
 
     if (!log_initialized)
     {
-        log_level = yaz_log_module_level("rank1");
+        log_level = yaz_log_module_level("ranksimilarity");
         log_initialized = 1;
     }
-    yaz_log(log_level, "rank-1 create");
-    return ci;
+    yaz_log(log_level, "create()");
+    return 0;
 }
 
 /*
@@ -92,9 +84,9 @@ static void *create (ZebraHandle zh)
  */
 static void destroy (struct zebra_register *reg, void *class_handle)
 {
-    struct rank_class_info *ci = (struct rank_class_info *) class_handle;
-
-    yaz_log(log_level, "rank-1 destroy");
+    struct ranksimilarity_class_info *ci 
+      = (struct ranksimilarity_class_info *) class_handle;
+    yaz_log(log_level, "destroy()");
     xfree (ci);
 }
 
@@ -108,42 +100,50 @@ static void *begin (struct zebra_register *reg,
                     void *class_handle, RSET rset, NMEM nmem,
                     TERMID *terms, int numterms)
 {
-    struct rank_set_info *si = 
-        (struct rank_set_info *) nmem_malloc (nmem,sizeof(*si));
+    struct ranksimilarity_set_info *si = 
+        (struct ranksimilarity_set_info *) nmem_malloc (nmem, sizeof(*si));
     int i;
 
-    yaz_log(log_level, "rank-1 begin");
+    yaz_log(log_level, "begin()");
+
+    /* count how many terms are ranked (2=102 or similar) */
     si->no_entries = numterms;
     si->no_rank_entries = 0;
     si->nmem=nmem;
-    si->entries = (struct rank_term_info *)
+    si->entries = (struct ranksimilarity_term_info *)
 	nmem_malloc (si->nmem, sizeof(*si->entries)*numterms); 
+
+    /* looping all terms in a specific field of query */
     for (i = 0; i < numterms; i++)
     {
-	zint g = rset_count(terms[i]->rset);
-        yaz_log(log_level, "i=%d flags=%s '%s'", i, 
+	struct ord_list *ol = terms[i]->ol;
+
+        yaz_log(log_level, "begin() term i=%d flags=%s '%s'", i, 
                 terms[i]->flags, terms[i]->name );
-	if  (!strncmp (terms[i]->flags, "rank,", 5)) 
+
+	for (; ol; ol = ol->next)
 	{
-            const char *cp = strstr(terms[i]->flags+4, ",w=");
-	    si->entries[i].rank_flag = 1;
-            if (cp)
-                si->entries[i].rank_weight = atoi (cp+3);
-            else
-                si->entries[i].rank_weight = 34;
-            yaz_log(log_level, " i=%d weight=%d g="ZINT_FORMAT, i,
-                     si->entries[i].rank_weight, g);
-	    (si->no_rank_entries)++;
+	    int index_type = 0;
+	    const char *db = 0;
+	    const char *string_index = 0;
+	    int set = -1;
+	    int use = -1;
+
+	    zebraExplain_lookup_ord(reg->zei,
+				    ol->ord, &index_type, &db, &set, &use,
+				    &string_index);
+
+	    if (string_index)
+		yaz_log(log_level, "begin() ord=%d index_type=%c db=%s str-index=%s",
+		    ol->ord, index_type, db, string_index);
+	    else
+		yaz_log(log_level, "begin() ord=%d index_type=%c db=%s set=%d use=%d",
+		    ol->ord, index_type, db, set, use);
 	}
-	else
-	    si->entries[i].rank_flag = 0;
-	si->entries[i].local_occur = 0;  /* FIXME */
-	si->entries[i].global_occur = g;
-	si->entries[i].global_inv = 32 - log2_int (g);
-	yaz_log(log_level, " global_inv = %d g = " ZINT_FORMAT, 
-                (int) (32-log2_int (g)), g);
-        si->entries[i].term = terms[i];
-        si->entries[i].term_index=i;
+	if (!strncmp (terms[i]->flags, "rank,", 5)) 
+	    (si->no_rank_entries)++;
+
+        /* setting next entry in term */
         terms[i]->rankpriv = &(si->entries[i]);
     }
     return si;
@@ -155,8 +155,7 @@ static void *begin (struct zebra_register *reg,
  */
 static void end (struct zebra_register *reg, void *set_handle)
 {
-    yaz_log(log_level, "rank-1 end");
-    /* no need to free anything, they are in nmems */
+    yaz_log(log_level, "end()");
 }
 
 
@@ -167,20 +166,22 @@ static void end (struct zebra_register *reg, void *set_handle)
  */
 static void add (void *set_handle, int seqno, TERMID term)
 {
-    struct rank_set_info *si = (struct rank_set_info *) set_handle;
-    struct rank_term_info *ti;
+  struct ranksimilarity_set_info *si = (struct ranksimilarity_set_info *) set_handle;
+  struct ranksimilarity_term_info *ti; 
     assert(si);
     if (!term)
     {
-        yaz_log(log_level, "rank-1 add NULL term");
+      /* yaz_log(log_level, "add() NULL term"); */
         return;
     }
-    ti= (struct rank_term_info *) term->rankpriv;
+
+    
+    ti= (struct ranksimilarity_term_info *) term->rankpriv;
     assert(ti);
     si->last_pos = seqno;
     ti->local_occur++;
-    yaz_log(log_level, "rank-1 add seqno=%d term=%s count=%d", 
-            seqno, term->name,ti->local_occur);
+    /* yaz_log(log_level, "add() seqno=%d term=%s count=%d", 
+       seqno, term->name,ti->local_occur); */
 }
 
 /*
@@ -192,29 +193,34 @@ static void add (void *set_handle, int seqno, TERMID term)
 static int calc (void *set_handle, zint sysno, zint staticrank,
 		 int *stop_flag)
 {
-    int i, lo, divisor, score = 0;
-    struct rank_set_info *si = (struct rank_set_info *) set_handle;
+  int i, score = 0;
+  struct ranksimilarity_set_info *si 
+    = (struct ranksimilarity_set_info *) set_handle;
+  
+  yaz_log(log_level, "calc()");
+  
+  if (!si->no_rank_entries)
+    return -1;   /* ranking not enabled for any terms */
 
-    if (!si->no_rank_entries) 
-	return -1;   /* ranking not enabled for any terms */
+  /* here you put in your own score function */
+  
+  
+  /* reset the counts for the next term */
+  for (i = 0; i < si->no_entries; i++)
+    si->entries[i].local_occur = 0;
+  
+  /* if we set *stop_flag = 1, we stop processing (of result set list) */
+  /* staticrank = 0 is highest, MAXINT lowest */
 
-    for (i = 0; i < si->no_entries; i++)
-    {
-        yaz_log(log_level, "calc: i=%d rank_flag=%d lo=%d",
-                i, si->entries[i].rank_flag, si->entries[i].local_occur);
-	if (si->entries[i].rank_flag && (lo = si->entries[i].local_occur))
-	    score += (8+log2_int (lo)) * si->entries[i].global_inv *
-                si->entries[i].rank_weight;
-    }
-    divisor = si->no_rank_entries * (8+log2_int (si->last_pos/si->no_entries));
-    score = score / divisor;
-    yaz_log(log_level, "calc sysno=" ZINT_FORMAT " score=%d", sysno, score);
-    if (score > 1000)
-	score = 1000;
-    /* reset the counts for the next term */
-    for (i = 0; i < si->no_entries; i++)
-	si->entries[i].local_occur = 0;
-    return score;
+
+  /* here goes your formula to compute a scoring function */
+  /* you may use all the gathered statistics here */
+
+  score = INT_MAX - staticrank;  /* but score is reverse (logical) */
+
+
+
+  return score;
 }
 
 /*
@@ -236,7 +242,7 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
  */
 
 static struct rank_control rank_control = {
-    "rank-1",
+    "rank-similarity",
     create,
     destroy,
     begin,
@@ -245,4 +251,4 @@ static struct rank_control rank_control = {
     add,
 };
  
-struct rank_control *rank_1_class = &rank_control;
+struct rank_control *rank_similarity_class = &rank_control;

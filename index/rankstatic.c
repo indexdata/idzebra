@@ -1,4 +1,4 @@
-/* $Id: rankstatic.c,v 1.4 2006-03-30 09:52:15 adam Exp $
+/* $Id: rankstatic.c,v 1.5 2006-05-03 09:31:26 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -31,6 +31,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 #include "index.h"
+#include "rank.h"
 
 static int log_level = 0;
 static int log_initialized = 0;

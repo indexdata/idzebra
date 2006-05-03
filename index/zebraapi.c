@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.214 2006-04-25 19:37:21 adam Exp $
+/* $Id: zebraapi.c,v 1.215 2006-05-03 09:31:26 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -36,6 +36,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/pquery.h>
 #include <yaz/sortspec.h>
 #include "index.h"
+#include "rank.h"
 #include "orddict.h"
 #include <charmap.h>
 #include <idzebra/api.h>
@@ -377,8 +378,10 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     reg->key_file_no = 0;
     reg->ptr_i = 0;
     
+    /* installing rank classes */
     zebraRankInstall (reg, rank_1_class);
     zebraRankInstall (reg, rank_zv_class);
+    zebraRankInstall (reg, rank_similarity_class);
     zebraRankInstall (reg, rank_static_class);
 
     recordCompression = res_get_def (res, "recordCompression", "none");

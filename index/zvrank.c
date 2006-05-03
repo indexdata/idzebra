@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.19 2005-08-19 11:04:23 adam Exp $
+/* $Id: zvrank.c,v 1.20 2006-05-03 09:31:26 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -52,6 +52,7 @@ fernuni-hagen.de>
 #endif
 
 #include "index.h"
+#include "rank.h"
 
 static int log_level = 0;
 static int log_initialized = 0;

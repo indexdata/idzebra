@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.99 2006-01-26 22:17:16 adam Exp $
+/* $Id: zsets.c,v 1.100 2006-05-03 09:31:26 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -30,6 +30,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 #include "index.h"
+#include "rank.h"
 #include <yaz/diagbib1.h>
 #include <rset.h>
 
