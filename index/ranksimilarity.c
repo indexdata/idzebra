@@ -1,4 +1,4 @@
-/* $Id: ranksimilarity.c,v 1.2 2006-05-03 13:55:20 marc Exp $
+/* $Id: ranksimilarity.c,v 1.3 2006-05-04 10:11:09 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -40,24 +40,52 @@ struct ranksimilarity_class_info {
   int dummy;
 };
 
+/** term specific info and statistics to be used under ranking */
 struct ranksimilarity_term_info {
-  /* frequency of term within document */
-  int freq_term_doc;
-  /* frequency of term within result set */
+
+  /** frequency of term within document field */
+  int freq_term_docfield;
+
+  /** frequency of term within result set of given term */
   zint freq_term_resset;
-  /* rank flag is one if term is to be included in ranking */
+
+  /** number of docs within result set */
+  zint no_docs_resset;
+
+  /** number of terms in this field */
+  zint no_terms_field;
+
+  /** number of docs with this field in database*/
+  zint no_docs_field;
+
+  /** rank flag is one if term is to be included in ranking */
   int rank_flag;
-  /* relative ranking weight of term */
+
+  /** relative ranking weight of term */
   int term_weight;
+
+  /** term id used to access term name and other info */
   TERMID term;
+
+  /** index number in terms[i] array */
   int term_index;
 };
 
 struct ranksimilarity_set_info {
   int last_pos;
-  int no_entries;
-  int no_rank_entries;
+
+  /** number of terms in query */
+  int no_terms_query;
+
+  /** number of terms in query which are included in ranking */
+  int no_ranked_terms_query;
+
+  /** number of documents in entire collection */
+  zint no_docs_database;
+
+  /** array of size no_terms_query with statistics gathered per term */
   struct ranksimilarity_term_info *entries;
+
   NMEM nmem;
 };
 
@@ -67,9 +95,10 @@ static void  ranksimilar_rec_reset(struct ranksimilarity_set_info *si)
 {
   int i;
   
-  for (i = 0; i < si->no_entries; i++){
-    si->entries[i].freq_term_doc = 0;
-  }
+  for (i = 0; i < si->no_terms_query; i++)
+    {
+      si->entries[i].freq_term_docfield = 0;
+    }
 }
 
 
@@ -120,9 +149,14 @@ static void *begin (struct zebra_register *reg,
     
   yaz_log(log_level, "begin() numterms=%d", numterms);
  
-  si->no_entries = numterms;
-  /* count how many terms are ranked (2=102 or similar) */
-  si->no_rank_entries = 0;
+  /* setting database global statistics */
+   si->no_docs_database = -1;  /* TODO */
+
+  /* setting query statistics */
+   si->no_terms_query = numterms;
+   si->no_ranked_terms_query = 0;
+
+  /* setting internal data structures */
   si->nmem=nmem;
   si->entries = (struct ranksimilarity_term_info *)
     nmem_malloc (si->nmem, sizeof(*si->entries)*numterms); 
@@ -148,11 +182,33 @@ static void *begin (struct zebra_register *reg,
         {
           const char *cp = strstr(terms[i]->flags+4, ",w=");
 
-          (si->no_rank_entries)++;
+          (si->no_ranked_terms_query)++;
           ol = terms[i]->ol;
           si->entries[i].rank_flag = 1;
+
+          /* notice that the call to rset_count(rset) has he side-effect of setting
+             rset->hits_limit = rset_count(rset) ??? */
           si->entries[i].freq_term_resset = rset_count(terms[i]->rset);
-          if (cp)
+          /* si->entries[i].freq_term_resset = terms[i]->rset->hits_count; */
+
+          
+          yaz_log(log_level, "begin() rset_count(terms[%d]->rset) = %d", 
+            i, rset_count(terms[i]->rset)); 
+          yaz_log(log_level, "begin() terms[%d]->rset->hits_limit = %d", 
+                  i, terms[i]->rset->hits_limit); 
+          yaz_log(log_level, "begin() terms[%d]->rset->hits_count = %d", 
+                  i, terms[i]->rset->hits_count); 
+          yaz_log(log_level, "begin() terms[%d]->rset->hits_round = %d", 
+                  i, terms[i]->rset->hits_round); 
+          yaz_log(log_level, "begin() terms[%d]->rset->hits_approx = %d", 
+                  i, terms[i]->rset->hits_approx); 
+          
+
+          si->entries[i].no_docs_resset = -1; /*TODO*/
+          si->entries[i].no_docs_field = -1;   /*TODO*/
+          si->entries[i].no_terms_field = -1;   /*TODO*/
+          
+         if (cp)
             si->entries[i].term_weight = atoi (cp+3);
           else
             si->entries[i].term_weight = 34; /* sqrroot of 1000 */
@@ -218,16 +274,16 @@ static void add (void *set_handle, int seqno, TERMID term)
   assert(si);
   if (!term)
     {
-      yaz_log(log_level, "add() seqno=%d NULL term", seqno);
+      /* yaz_log(log_level, "add() seqno=%d NULL term", seqno); */
       return;
     }
 
   ti= (struct ranksimilarity_term_info *) term->rankpriv;
   assert(ti);
   si->last_pos = seqno;
-  ti->freq_term_doc++;
-  yaz_log(log_level, "add() seqno=%d term=%s freq_term_doc=%d", 
-     seqno, term->name, ti->freq_term_doc);
+  ti->freq_term_docfield++;
+  /* yaz_log(log_level, "add() seqno=%d term=%s freq_term_docfield=%d", 
+     seqno, term->name, ti->freq_term_docfield); */
 }
 
 /*
@@ -247,13 +303,15 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
   yaz_log(log_level, "calc() sysno =      %d", sysno);
   yaz_log(log_level, "calc() staticrank = %d", staticrank);
         
-  yaz_log(log_level, "calc() si->no_entries = %d", 
-          si->no_entries);
-  yaz_log(log_level, "calc() si->no_rank_entries = %d", 
-          si->no_rank_entries);
+  yaz_log(log_level, "calc() si->no_terms_query = %d", 
+          si->no_terms_query);
+  yaz_log(log_level, "calc() si->no_ranked_terms_query = %d", 
+          si->no_ranked_terms_query);
+  yaz_log(log_level, "calc() si->no_docs_database = %d", 
+          si->no_docs_database); 
 
   
-  if (!si->no_rank_entries)
+  if (!si->no_ranked_terms_query)
     return -1;   /* ranking not enabled for any terms */
 
   
@@ -262,7 +320,7 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
 
   /* here goes your formula to compute a scoring function */
   /* you may use all the gathered statistics here */
-  for (i = 0; i < si->no_entries; i++)
+  for (i = 0; i < si->no_terms_query; i++)
     {
       yaz_log(log_level, "calc() entries[%d] termid %d", 
               i, si->entries[i].term);
@@ -273,10 +331,16 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
                 i, si->entries[i].rank_flag );
         yaz_log(log_level, "calc() entries[%d] term_weight %d", 
                 i, si->entries[i].term_weight );
-        yaz_log(log_level, "calc() entries[%d] freq_term_doc %d", 
-                i, si->entries[i].freq_term_doc );
+        yaz_log(log_level, "calc() entries[%d] freq_term_docfield %d", 
+                i, si->entries[i].freq_term_docfield );
         yaz_log(log_level, "calc() entries[%d] freq_term_resset %d", 
                 i, si->entries[i].freq_term_resset );
+        yaz_log(log_level, "calc() entries[%d] no_docs_resset %d", 
+                i, si->entries[i].no_docs_resset );
+        yaz_log(log_level, "calc() entries[%d] no_docs_field %d", 
+                i, si->entries[i].no_docs_field );
+        yaz_log(log_level, "calc() entries[%d] no_terms_field %d", 
+                i, si->entries[i].no_terms_field );
       }
     }
   
