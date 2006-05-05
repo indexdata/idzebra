@@ -1,4 +1,4 @@
-/* $Id: bfile.h,v 1.7 2006-05-05 09:14:02 adam Exp $
+/* $Id: bfile.h,v 1.8 2006-05-05 09:15:11 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -194,7 +194,8 @@ int bf_free(BFile bf, int no, const zint *blocks);
    Note that if a register area has unlimited size, that is represented
    as max_bytes = -1.
 
-*/ 
+*/
+YAZ_EXPORT
 int bfs_register_directory_stat(BFiles bfs, int no, const char **directory,
 				double *used_bytes, double *max_bytes);
 
@@ -212,6 +213,7 @@ int bfs_register_directory_stat(BFiles bfs, int no, const char **directory,
    Note that if a shadow area has unlimited size, that is represented
    as max_bytes = -1.
 */ 
+YAZ_EXPORT
 int bfs_shadow_directory_stat(BFiles bfs, int no, const char **directory,
 			      double *used_bytes, double *max_bytes);
 
