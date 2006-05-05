@@ -1,4 +1,4 @@
-/* $Id: d1_handle.c,v 1.9 2006-05-05 13:17:34 adam Exp $
+/* $Id: d1_handle.c,v 1.10 2006-05-05 17:18:50 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -150,9 +150,9 @@ const char *data1_get_tabroot (data1_handle dp)
 
 FILE *data1_path_fopen (data1_handle dh, const char *file, const char *mode)
 {
-    yaz_log(YLOG_DEBUG, "data1_fath_fopen file=%s mode=%s", file, mode);
     const char *path = data1_get_tabpath(dh);
     const char *root = data1_get_tabroot(dh);
+    yaz_log(YLOG_DEBUG, "data1_fath_fopen file=%s mode=%s", file, mode);
     return yaz_fopen (path, file, "r", root);
 }
 
