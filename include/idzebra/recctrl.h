@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.17 2006-05-05 07:34:25 adam Exp $
+/* $Id: recctrl.h,v 1.18 2006-05-05 09:12:21 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -136,6 +136,10 @@ typedef struct recTypes *RecTypes;
 
 YAZ_EXPORT
 RecTypeClass recTypeClass_create (Res res, NMEM nmem);
+
+YAZ_EXPORT
+void recTypeClass_load_modules(RecTypeClass *rts, NMEM nmem,
+			       const char *module_path);
 
 YAZ_EXPORT
 RecTypeClass recTypeClass_add_modules(Res res, NMEM nmem,
