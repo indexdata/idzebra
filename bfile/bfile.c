@@ -1,4 +1,4 @@
-/* $Id: bfile.c,v 1.45 2005-09-19 09:37:31 adam Exp $
+/* $Id: bfile.c,v 1.46 2006-05-05 09:14:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -436,4 +436,21 @@ int bf_free(BFile bf, int no, const zint *blocks)
 	bf_write(bf, bf->free_list, 0, sizeof(buf), buf);
     }
     return 0;
+}
+
+int bfs_register_directory_stat(BFiles bfs, int no, const char **directory,
+				double *used_bytes, double *max_bytes)
+{
+    return mf_area_directory_stat(bfs->register_area, no, directory,
+				  used_bytes, max_bytes);
+}
+
+
+int bfs_shadow_directory_stat(BFiles bfs, int no, const char **directory,
+			      double *used_bytes, double *max_bytes)
+{
+    if (!bfs->commit_area)
+	return 0;
+    return mf_area_directory_stat(bfs->commit_area, no, directory,
+				  used_bytes, max_bytes);
 }

@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.48 2006-03-30 09:52:15 adam Exp $
+/* $Id: invstat.c,v 1.49 2006-05-05 09:14:03 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -149,6 +149,28 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     return 0;
 }
 
+static void show_bfs_stats(BFiles bfs)
+{
+    int i = 0;
+    const char *directory = 0;
+    double used_bytes, max_bytes;
+    printf("Register:\n");
+    while (bfs_register_directory_stat(bfs, i, &directory,
+				       &used_bytes, &max_bytes))
+    {
+	printf ("%s %10.0lf %10.0lf\n", directory, used_bytes, max_bytes);
+	i++;
+    }
+    i = 0;
+    printf("Shadow:\n");
+    while (bfs_shadow_directory_stat(bfs, i, &directory,
+				       &used_bytes, &max_bytes))
+    {
+	printf ("%s %10.0lf %10.0lf\n", directory, used_bytes, max_bytes);
+	i++;
+    }
+}
+
 int zebra_register_statistics (ZebraHandle zh, int dumpdict)
 {
     int i, prev;
@@ -160,6 +182,8 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
 
     if (zebra_begin_read (zh))
 	return 1;
+
+    show_bfs_stats(zebra_get_bfs(zh));
 
     stat_info.zh = zh;
     stat_info.dumpwords=dumpdict;

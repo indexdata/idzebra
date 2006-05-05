@@ -1,4 +1,4 @@
-/* $Id: mfile.h,v 1.3 2006-04-05 02:02:37 adam Exp $
+/* $Id: mfile.h,v 1.4 2006-05-05 09:14:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -145,6 +145,23 @@ int mf_unlink(MFile mf);
  */
 void mf_reset(MFile_area ma);
 
+/* \brief gets statistics about directory in metafile area
+   \param ma the area
+   \param no directory number (0=first, 1=second,...)
+   \param directory holds directory name (if found)
+   \param used_bytes used file bytes in directory (if found)
+   \param max_bytes max usage of bytes (if found)
+   \retval 1 no is within range and directory, used, max are set.
+   \retval 0 no is out of range and directory, used, max are unset
+
+   We are using double, because off_t may have a different size
+   on same platform depending on whether 64-bit is enabled or not.
+   Note that if an area has unlimited size, that is represented
+   as max_bytes = -1.
+*/ 
+int mf_area_directory_stat(MFile_area ma, int no, const char **directory,
+			   double *bytes_used, double *bytes_max);
+    
 YAZ_END_CDECL
 
 #endif

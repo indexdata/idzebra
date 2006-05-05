@@ -1,5 +1,5 @@
-/* $Id: bfile.h,v 1.6 2006-04-04 00:10:09 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: bfile.h,v 1.7 2006-05-05 09:14:02 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -48,6 +48,7 @@ typedef struct BFile_struct *BFile;
 /** \brief creates a Block files collection
     \param spec register specification , e.g. "d1:100M d2:1G"
     \param base base directory for register spec (if that is relative path)
+    \return block files handle
 */
 BFiles bfs_create (const char *spec, const char *base);
 
@@ -69,6 +70,8 @@ int bf_close (BFile bf);
     \param bf extended block file opened with bf_xopen
     \param version version to be put in a file
     \param more_info more information to be stored in file (header)
+    \retval 0 succes
+    \retval -1 failure (can never happen as the code is now)
 */    
 YAZ_EXPORT
 int bf_xclose (BFile bf, int version, const char *more_info);
@@ -78,6 +81,8 @@ int bf_xclose (BFile bf, int version, const char *more_info);
     \param name filename
     \param block_size block size in bytes
     \param wflag 1=opened for read&write, 0=read only
+    \retval 0 succes
+    \retval -1 failure (can never happen as the code is now)
 */
 YAZ_EXPORT
 BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag);
@@ -102,21 +107,22 @@ BFile bf_xopen(BFiles bfs, const char *name, int block_size, int wflag,
     \param offset offset within block to be read
     \param nbytes number of bytes to read (0 for whole block)
     \param buf raw bytes with content (at least nbytes of size)
-    
-    Returns 1 if whole block could be read; 0 otherwise.
+    \retval 1 whole block could be read
+    \retval 0 whole block could not be read
  */
 YAZ_EXPORT
 int bf_read (BFile bf, zint no, int offset, int nbytes, void *buf);
 
-/** \brief writes bytes to file
+/** \brief writes block of bytes to file
     \param bf block file handle
     \param no block no
     \param offset within block
     \param nbytes number of bytes to write
     \param buf buffer to write
+    \retval 0 succes (block could be written)
 
-    Writes the content of buffer to a block within a block file (or
-    whole block). Returns 1 if successful; 0 otherwise.
+    This function can not return a failure. System calls exit(1)
+    if write failed.
  */
 YAZ_EXPORT
 int bf_write (BFile bf, zint no, int offset, int nbytes, const void *buf);
@@ -124,14 +130,16 @@ int bf_write (BFile bf, zint no, int offset, int nbytes, const void *buf);
 /** \brief enables or disables shadow for block files
     \param bfs block files
     \param spec  such as  "shadow:100M /other:200M"; or NULL to disable
+    \retval ZEBRA_OK successful. spec is OK
+    \retval ZEBRA_FAIL failure.
 */
 YAZ_EXPORT
 ZEBRA_RES bf_cache (BFiles bfs, const char *spec);
 
 /** \brief Check if there is content in shadow area (to be committed).
     \param bfs block files
-    
-    Returns 1 if there is content in shadow area; 0 otherwise.
+    \retval 1 there is content in shadow area
+    \retval 0 no content in shadow area
 */
 YAZ_EXPORT
 int bf_commitExists (BFiles bfs);
@@ -170,6 +178,42 @@ int bf_alloc(BFile bf, int no, zint *blocks);
 */
 YAZ_EXPORT
 int bf_free(BFile bf, int no, const zint *blocks);
+
+
+/* \brief gets statistics about directory in register area
+   \param bfs block files
+   \param no directory number (0=first, 1=second,...)
+   \param directory holds directory name (if found)
+   \param used_bytes used file bytes in directory (if found)
+   \param max_bytes max usage of bytes (if found)
+   \retval 1 no is within range and directory, used, max are set.
+   \retval 0 no is out of range and directory, used, max are unset
+
+   We are using double, because off_t may have a different size
+   on same platform depending on whether 64-bit is enabled or not.
+   Note that if a register area has unlimited size, that is represented
+   as max_bytes = -1.
+
+*/ 
+int bfs_register_directory_stat(BFiles bfs, int no, const char **directory,
+				double *used_bytes, double *max_bytes);
+
+/* \brief gets statistics about directory in shadow area
+   \param bfs block files
+   \param no directory number (0=first, 1=second,...)
+   \param directory holds directory name (if found)
+   \param used_bytes used file bytes in directory (if found)
+   \param max_bytes max usage of bytes (if found)
+   \retval 1 no is within range and directory, used, max are set.
+   \retval 0 no is out of range and directory, used, max are unset
+
+   We are using double, because off_t may have a different size
+   on same platform depending on whether 64-bit is enabled or not.
+   Note that if a shadow area has unlimited size, that is represented
+   as max_bytes = -1.
+*/ 
+int bfs_shadow_directory_stat(BFiles bfs, int no, const char **directory,
+			      double *used_bytes, double *max_bytes);
 
 YAZ_END_CDECL
 

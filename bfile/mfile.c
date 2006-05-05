@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.63 2006-04-05 02:02:36 adam Exp $
+/* $Id: mfile.c,v 1.64 2006-05-05 09:14:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -616,3 +616,20 @@ int mf_unlink(MFile mf)
     return 0;
 }
 
+int mf_area_directory_stat(MFile_area ma, int no, const char **directory,
+			   double *used_bytes, double *max_bytes)
+{
+    int i;
+    mf_dir *d = ma->dirs;
+    for (i = 0; d && i<no; i++, d = d->next)
+	;
+    if (!d)
+	return 0;
+    if (directory)
+	*directory = d->name;
+    if (max_bytes)
+	*max_bytes = d->max_bytes;
+    if (used_bytes)
+	*used_bytes = d->max_bytes - d->avail_bytes;
+    return 1;
+}
