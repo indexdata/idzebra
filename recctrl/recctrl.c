@@ -1,5 +1,5 @@
-/* $Id: recctrl.c,v 1.23 2006-04-26 11:12:31 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: recctrl.c,v 1.24 2006-05-05 07:34:26 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -53,13 +53,10 @@ struct recTypes {
 static void recTypeClass_add (struct recTypeClass **rts, RecType *rt,
 			      NMEM nmem, void *module_handle);
 
+
 RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 {
     struct recTypeClass *rts = 0;
-#if HAVE_DLFCN_H
-    const char *module_path = res_get_def(res, "modulePath",
-					  DEFAULT_MODULE_PATH);
-#endif
 
 #ifdef IDZEBRA_STATIC_GRS_SGML
     if (1)
@@ -68,6 +65,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 	recTypeClass_add (&rts, idzebra_filter_grs_sgml, nmem, 0);
     }
 #endif
+
 #ifdef IDZEBRA_STATIC_TEXT
     if (1)
     {
@@ -75,6 +73,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 	recTypeClass_add (&rts, idzebra_filter_text, nmem, 0);
     }
 #endif
+
 #ifdef IDZEBRA_STATIC_GRS_XML
 #if HAVE_EXPAT_H
     if (1)
@@ -84,6 +83,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     }
 #endif
 #endif
+
 #ifdef IDZEBRA_STATIC_GRS_REGX
     if (1)
     {
@@ -91,6 +91,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 	recTypeClass_add (&rts, idzebra_filter_grs_regx, nmem, 0);
     }
 #endif
+
 #ifdef IDZEBRA_STATIC_GRS_MARC
     if (1)
     {
@@ -98,6 +99,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 	recTypeClass_add (&rts, idzebra_filter_grs_marc, nmem, 0);
     }
 #endif
+
 #ifdef IDZEBRA_STATIC_GRS_CSV
     if (1)
     {
@@ -105,6 +107,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 	recTypeClass_add (&rts, idzebra_filter_grs_csv, nmem, 0);
     }
 #endif
+
 #ifdef IDZEBRA_STATIC_GRS_DANBIB
     if (1)
     {
@@ -112,6 +115,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 	recTypeClass_add (&rts, idzebra_filter_grs_danbib, nmem, 0);
     }
 #endif
+
 #ifdef IDZEBRA_STATIC_SAFARI
     if (1)
     {
@@ -119,6 +123,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 	recTypeClass_add (&rts, idzebra_filter_safari, nmem, 0);
     }
 #endif
+
 #ifdef IDZEBRA_STATIC_ALVIS
 #if HAVE_XSLT
     if (1)
@@ -128,6 +133,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     }
 #endif
 #endif
+
 #ifdef IDZEBRA_STATIC_XSLT
 #if HAVE_XSLT
     if (1)
@@ -137,7 +143,12 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     }
 #endif
 #endif
+    return rts;
+}
 
+void recTypeClass_load_modules(RecTypeClass *rts, NMEM nmem,
+			       const char *module_path)
+{
 #if HAVE_DLFCN_H
     if (module_path)
     {
@@ -163,7 +174,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 		    if (mod_p && (fl = dlsym(mod_p, "idzebra_filter")))
 		    {
 			yaz_log(YLOG_LOG, "Loaded filter module %s", fname);
-			recTypeClass_add(&rts, fl, nmem, mod_p);
+			recTypeClass_add(rts, fl, nmem, mod_p);
 		    }
 		    else if (mod_p)
 		    {
@@ -185,11 +196,10 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 	}
     }
 #endif
-    return rts;
 }
 
-static void recTypeClass_add (struct recTypeClass **rts, RecType *rt,
-			      NMEM nmem, void *module_handle)
+static void recTypeClass_add(struct recTypeClass **rts, RecType *rt,
+			     NMEM nmem, void *module_handle)
 {
     while (*rt)
     {

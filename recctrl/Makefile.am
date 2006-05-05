@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.18 2005-12-05 12:18:40 marc Exp $
+## $Id: Makefile.am,v 1.19 2006-05-05 07:34:26 adam Exp $
 
 common_libs = libidzebra-recctrl.la \
  ../data1/libidzebra-data1.la \
@@ -81,4 +81,4 @@ EXTRA_libidzebra_recctrl_la_SOURCES = \
  $(mod_xslt_la_SOURCES)
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) $(XSLT_CFLAGS) \
- $(TCL_INCLUDE) -DDEFAULT_MODULE_PATH=\"$(pkglibdir)\"
+ $(TCL_INCLUDE) 

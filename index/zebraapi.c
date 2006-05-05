@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.215 2006-05-03 09:31:26 marc Exp $
+/* $Id: zebraapi.c,v 1.216 2006-05-05 07:34:25 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -246,6 +246,14 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
         zh->path_root = res_get (zh->global_res, "root");
 	zh->nmem = nmem_create();
 	zh->record_classes = recTypeClass_create (zh->global_res, zh->nmem);
+
+	if (1)
+	{
+	    const char *module_path = res_get(res, "modulePath");
+	    if (module_path)
+		recTypeClass_load_modules(&zh->record_classes, zh->nmem,
+					  module_path);
+	}
         return zh;
     }
     return 0;
