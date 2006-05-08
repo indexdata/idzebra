@@ -1,4 +1,4 @@
-/* $Id: ranksimilarity.c,v 1.4 2006-05-08 10:09:07 marc Exp $
+/* $Id: ranksimilarity.c,v 1.5 2006-05-08 14:03:16 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -55,14 +55,17 @@ struct ranksimilarity_term_info {
   /** number of terms in this field */
   zint no_terms_field;
 
-  /** number of docs with this field in database*/
+  /** number of docs with this field in database */
   zint no_docs_field;
+
+  /** size of all docs with this field in database (in bytes ir terms ??) */
+  zint size_docs_field;
 
   /** rank flag is one if term is to be included in ranking */
   int rank_flag;
 
-  /** relative ranking weight of term */
-  int term_weight;
+  /** relative ranking weight of term field */
+  int field_weight;
 
   /** term id used to access term name and other info */
   TERMID term;
@@ -82,6 +85,9 @@ struct ranksimilarity_set_info {
 
   /** number of documents in entire collection */
   zint no_docs_database;
+
+  /** size of all documents in entire collection (in bytes or terms ??)*/
+  zint size_docs_database;
 
   /** array of size no_terms_query with statistics gathered per term */
   struct ranksimilarity_term_info *entries;
@@ -151,6 +157,7 @@ static void *begin (struct zebra_register *reg,
  
   /* setting database global statistics */
    si->no_docs_database = -1;  /* TODO */
+   si->size_docs_database = -1;  /* TODO */
 
   /* setting query statistics */
    si->no_terms_query = numterms;
@@ -194,12 +201,13 @@ static void *begin (struct zebra_register *reg,
           si->entries[i].freq_term_resset = rset_count(terms[i]->rset);
           si->entries[i].no_docs_resset =  terms[i]->rset->hits_count;
           si->entries[i].no_docs_field = -1;   /*TODO*/
+          si->entries[i].size_docs_field = -1;   /*TODO*/
           si->entries[i].no_terms_field = -1;   /*TODO*/
 
           if (cp)
-            si->entries[i].term_weight = atoi (cp+3);
+            si->entries[i].field_weight = atoi (cp+3);
           else
-            si->entries[i].term_weight = 34; /* sqrroot of 1000 */
+            si->entries[i].field_weight = 34; /* sqrroot of 1000 */
 
 
           /*
@@ -309,6 +317,8 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
           si->no_ranked_terms_query);
   yaz_log(log_level, "calc() si->no_docs_database = " ZINT_FORMAT,  
           si->no_docs_database); 
+  yaz_log(log_level, "calc() si->size_docs_database = " ZINT_FORMAT,  
+          si->size_docs_database); 
 
   
   if (!si->no_ranked_terms_query)
@@ -329,8 +339,8 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
                 i, si->entries[i].term->name, si->entries[i].term->flags);
         yaz_log(log_level, "calc() entries[%d] rank_flag %d", 
                 i, si->entries[i].rank_flag );
-        yaz_log(log_level, "calc() entries[%d] term_weight %d", 
-                i, si->entries[i].term_weight );
+        yaz_log(log_level, "calc() entries[%d] field_weight %d", 
+                i, si->entries[i].field_weight );
         yaz_log(log_level, "calc() entries[%d] freq_term_docfield %d", 
                 i, si->entries[i].freq_term_docfield );
         yaz_log(log_level, "calc() entries[%d] freq_term_resset " ZINT_FORMAT,
@@ -339,6 +349,8 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
                 i, si->entries[i].no_docs_resset );
         yaz_log(log_level, "calc() entries[%d] no_docs_field " ZINT_FORMAT, 
                 i, si->entries[i].no_docs_field );
+        yaz_log(log_level, "calc() entries[%d] size_docs_field " ZINT_FORMAT, 
+                i, si->entries[i].size_docs_field );
         yaz_log(log_level, "calc() entries[%d] no_terms_field " ZINT_FORMAT, 
                 i, si->entries[i].no_terms_field );
       }
