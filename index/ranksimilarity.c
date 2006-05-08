@@ -1,4 +1,4 @@
-/* $Id: ranksimilarity.c,v 1.3 2006-05-04 10:11:09 marc Exp $
+/* $Id: ranksimilarity.c,v 1.4 2006-05-08 10:09:07 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -182,39 +182,38 @@ static void *begin (struct zebra_register *reg,
         {
           const char *cp = strstr(terms[i]->flags+4, ",w=");
 
+          yaz_log(log_level, "begin() terms[%d]: '%s' flags=%s", 
+                  i, terms[i]->name, terms[i]->flags);
+
           (si->no_ranked_terms_query)++;
           ol = terms[i]->ol;
+
           si->entries[i].rank_flag = 1;
-
-          /* notice that the call to rset_count(rset) has he side-effect of setting
-             rset->hits_limit = rset_count(rset) ??? */
+          /* notice that the call to rset_count(rset) has he side-effect 
+             of setting rset->hits_limit = rset_count(rset) ??? */
           si->entries[i].freq_term_resset = rset_count(terms[i]->rset);
-          /* si->entries[i].freq_term_resset = terms[i]->rset->hits_count; */
-
-          
-          yaz_log(log_level, "begin() rset_count(terms[%d]->rset) = %d", 
-            i, rset_count(terms[i]->rset)); 
-          yaz_log(log_level, "begin() terms[%d]->rset->hits_limit = %d", 
-                  i, terms[i]->rset->hits_limit); 
-          yaz_log(log_level, "begin() terms[%d]->rset->hits_count = %d", 
-                  i, terms[i]->rset->hits_count); 
-          yaz_log(log_level, "begin() terms[%d]->rset->hits_round = %d", 
-                  i, terms[i]->rset->hits_round); 
-          yaz_log(log_level, "begin() terms[%d]->rset->hits_approx = %d", 
-                  i, terms[i]->rset->hits_approx); 
-          
-
-          si->entries[i].no_docs_resset = -1; /*TODO*/
+          si->entries[i].no_docs_resset =  terms[i]->rset->hits_count;
           si->entries[i].no_docs_field = -1;   /*TODO*/
           si->entries[i].no_terms_field = -1;   /*TODO*/
-          
-         if (cp)
+
+          if (cp)
             si->entries[i].term_weight = atoi (cp+3);
           else
             si->entries[i].term_weight = 34; /* sqrroot of 1000 */
 
-          yaz_log(log_level, "begin() terms[%d]: '%s' flags=%s", 
-                  i, terms[i]->name, terms[i]->flags);
+
+          /*
+          yaz_log(log_level, "begin() rset_count(terms[%d]->rset) = " 
+                  ZINT_FORMAT, i, rset_count(terms[i]->rset)); 
+          yaz_log(log_level, "begin() terms[%d]->rset->hits_limit = "
+                  ZINT_FORMAT, i, terms[i]->rset->hits_limit); 
+          yaz_log(log_level, "begin() terms[%d]->rset->hits_count = "
+                  ZINT_FORMAT, i, terms[i]->rset->hits_count); 
+          yaz_log(log_level, "begin() terms[%d]->rset->hits_round = "
+                  ZINT_FORMAT, i, terms[i]->rset->hits_round); 
+          yaz_log(log_level, "begin() terms[%d]->rset->hits_approx = %d", 
+                  i, terms[i]->rset->hits_approx);
+          */
           
           /* looping indexes where term terms[i] is found */
           for (; ol; ol = ol->next)
@@ -231,11 +230,11 @@ static void *begin (struct zebra_register *reg,
               
               if (string_index)
 		yaz_log(log_level, 
-                        "begin() index: ord=%d type=%c db=%s str-index=%s",
+                        "begin()    index: ord=%d type=%c db=%s str-index=%s",
                         ol->ord, index_type, db, string_index);
               else
 		yaz_log(log_level, 
-                        "begin() index: ord=%d type=%c db=%s set=%d use=%d",
+                        "begin()    index: ord=%d type=%c db=%s set=%d use=%d",
                         ol->ord, index_type, db, set, use);
             }
      
@@ -259,6 +258,7 @@ static void end (struct zebra_register *reg, void *set_handle)
 {
   yaz_log(log_level, "end()");
 }
+
 
 
 /**
@@ -300,14 +300,14 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
     = (struct ranksimilarity_set_info *) set_handle;
   
   
-  yaz_log(log_level, "calc() sysno =      %d", sysno);
-  yaz_log(log_level, "calc() staticrank = %d", staticrank);
+  yaz_log(log_level, "calc() sysno =      " ZINT_FORMAT, sysno);
+  yaz_log(log_level, "calc() staticrank = " ZINT_FORMAT, staticrank);
         
   yaz_log(log_level, "calc() si->no_terms_query = %d", 
           si->no_terms_query);
   yaz_log(log_level, "calc() si->no_ranked_terms_query = %d", 
           si->no_ranked_terms_query);
-  yaz_log(log_level, "calc() si->no_docs_database = %d", 
+  yaz_log(log_level, "calc() si->no_docs_database = " ZINT_FORMAT,  
           si->no_docs_database); 
 
   
@@ -322,7 +322,7 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
   /* you may use all the gathered statistics here */
   for (i = 0; i < si->no_terms_query; i++)
     {
-      yaz_log(log_level, "calc() entries[%d] termid %d", 
+      yaz_log(log_level, "calc() entries[%d] termid %p", 
               i, si->entries[i].term);
       if (si->entries[i].term){
         yaz_log(log_level, "calc() entries[%d] term '%s' flags=%s", 
@@ -333,13 +333,13 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
                 i, si->entries[i].term_weight );
         yaz_log(log_level, "calc() entries[%d] freq_term_docfield %d", 
                 i, si->entries[i].freq_term_docfield );
-        yaz_log(log_level, "calc() entries[%d] freq_term_resset %d", 
+        yaz_log(log_level, "calc() entries[%d] freq_term_resset " ZINT_FORMAT,
                 i, si->entries[i].freq_term_resset );
-        yaz_log(log_level, "calc() entries[%d] no_docs_resset %d", 
+        yaz_log(log_level, "calc() entries[%d] no_docs_resset " ZINT_FORMAT, 
                 i, si->entries[i].no_docs_resset );
-        yaz_log(log_level, "calc() entries[%d] no_docs_field %d", 
+        yaz_log(log_level, "calc() entries[%d] no_docs_field " ZINT_FORMAT, 
                 i, si->entries[i].no_docs_field );
-        yaz_log(log_level, "calc() entries[%d] no_terms_field %d", 
+        yaz_log(log_level, "calc() entries[%d] no_terms_field " ZINT_FORMAT, 
                 i, si->entries[i].no_terms_field );
       }
     }
