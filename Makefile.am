@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.22 2006-03-30 18:00:51 adam Exp $
+## $Id: Makefile.am,v 1.23 2006-05-08 12:09:49 marc Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -34,3 +34,12 @@ dist-hook:
 
 cvs2cl:
 	cvs2cl
+
+
+dox:
+	doxygen
+
+showdox:
+	doxygen
+	firefox -new-window file:///`pwd`/$(top_srcdir)/dox/html/index.html &
+
