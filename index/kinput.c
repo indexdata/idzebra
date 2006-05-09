@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.72 2006-04-05 02:11:44 adam Exp $
+/* $Id: kinput.c,v 1.73 2006-05-09 08:12:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -311,8 +311,6 @@ struct heap_info *key_heap_init_raw(ZebraHandle zh,
 void key_heap_destroy (struct heap_info *hi, int nkeys)
 {
     int i;
-    yaz_log (YLOG_DEBUG, "key_heap_destroy");
-    yaz_log (YLOG_DEBUG, "key_heap_destroy nk=%d",nkeys);
     if (!hi->raw_reading)
         for (i = 0; i<=nkeys; i++)
             xfree (hi->info.buf[i]);
@@ -386,8 +384,6 @@ static int heap_read_one_raw(struct heap_info *hi, char *name, char *key)
         return 0;
     --(zh->reg->ptr_i);
     cp=(zh->reg->key_buf)[zh->reg->ptr_top - ptr_i];
-    yaz_log (YLOG_DEBUG, " raw: i=%ld top=%ld cp=%p", (long) ptr_i,
-	  (long) zh->reg->ptr_top, cp);
     strcpy(name, cp);
     memcpy(key, cp+strlen(name)+1, KEY_SIZE);
     hi->no_iterations++;
