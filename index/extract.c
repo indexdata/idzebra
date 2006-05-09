@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.207 2006-04-05 02:11:44 adam Exp $
+/* $Id: extract.c,v 1.208 2006-05-09 11:31:37 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -526,13 +526,23 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
             yaz_log (YLOG_WARN, "cannot delete record above (seems new)");
             return ZEBRA_OK;
         }
-        if (zh->records_processed < zh->m_file_verbose_limit)
-            yaz_log (YLOG_LOG, "add %s %s " PRINTF_OFF_T, zh->m_record_type,
-                  fname, recordOffset);
+
         rec = rec_new (zh->reg->records);
-
+        
         *sysno = rec->sysno;
-
+        
+        if (zh->records_processed < zh->m_file_verbose_limit)
+          if (matchStr)
+            yaz_log(YLOG_LOG, "add %s %s " PRINTF_OFF_T 
+                    " " ZINT_FORMAT " %s" ,
+                    zh->m_record_type,
+                    fname, recordOffset, *sysno, matchStr);
+          else
+            yaz_log(YLOG_LOG, "add %s %s " PRINTF_OFF_T 
+                    " " ZINT_FORMAT , 
+                    zh->m_record_type,
+                    fname, recordOffset, *sysno);
+        
 	recordAttr = rec_init_attr (zh->reg->zei, rec);
 	recordAttr->staticrank = extractCtrl.staticrank;
 
@@ -542,6 +552,8 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
             dict_insert_ord(zh->reg->matchDict, db_ord, matchStr,
 			    sizeof(*sysno), sysno);
         }
+
+
 #if NATTR
 	extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
 #else
@@ -591,15 +603,27 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
             /* record going to be deleted */
             if (zebra_rec_keys_empty(delkeys))
             {
-                yaz_log (YLOG_LOG, "delete %s %s " PRINTF_OFF_T,
-			 zh->m_record_type, fname, recordOffset);
+                yaz_log (YLOG_LOG, "delete %s %s " PRINTF_OFF_T 
+                         " " ZINT_FORMAT,
+			 zh->m_record_type, fname, recordOffset, *sysno);
                 yaz_log (YLOG_WARN, "cannot delete file above, storeKeys false (1)");
             }
             else
             {
                 if (zh->records_processed < zh->m_file_verbose_limit)
-                    yaz_log (YLOG_LOG, "delete %s %s " PRINTF_OFF_T,
-			     zh->m_record_type, fname, recordOffset);
+                  if (matchStr)
+                    yaz_log(YLOG_LOG, "delete %s %s " PRINTF_OFF_T 
+                            " " ZINT_FORMAT " %s" ,
+                            zh->m_record_type,
+                            fname, recordOffset, *sysno, matchStr);
+                  else
+                    yaz_log(YLOG_LOG, "delete %s %s " PRINTF_OFF_T 
+                            " " ZINT_FORMAT , 
+                            zh->m_record_type,
+                            fname, recordOffset, *sysno);
+
+
+
                 zh->records_deleted++;
                 if (matchStr)
 		{
@@ -616,8 +640,17 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
         {
 	    /* flush new keys for sort&search etc */
             if (zh->records_processed < zh->m_file_verbose_limit)
-                yaz_log (YLOG_LOG, "update %s %s " PRINTF_OFF_T,
-                      zh->m_record_type, fname, recordOffset);
+                  if (matchStr)
+                    yaz_log(YLOG_LOG, "update %s %s " PRINTF_OFF_T 
+                            " " ZINT_FORMAT " %s" ,
+                            zh->m_record_type,
+                            fname, recordOffset, *sysno, matchStr);
+                  else
+                    yaz_log(YLOG_LOG, "update %s %s " PRINTF_OFF_T 
+                            " " ZINT_FORMAT , 
+                            zh->m_record_type,
+                            fname, recordOffset, *sysno);
+
 	    recordAttr->staticrank = extractCtrl.staticrank;
 #if NATTR
             extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
@@ -1027,6 +1060,8 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
             dict_insert_ord(zh->reg->matchDict, db_ord, matchStr,
 			    sizeof(*sysno), sysno);
         }
+
+
 #if NATTR
 	extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
 #else
