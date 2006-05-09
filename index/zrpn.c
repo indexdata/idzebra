@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.210 2006-03-30 09:52:16 adam Exp $
+/* $Id: zrpn.c,v 1.211 2006-05-09 10:46:56 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1239,6 +1239,8 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 		term_dict[prefix_len++] = 1;
 		term_dict[prefix_len++] = ord_buf[i];
 	    }
+	    if (ord_len > init_pos)
+		init_pos = ord_len;
 	}
 	bases_ok++;
         if (prefix_len)
@@ -1318,7 +1320,6 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         case 103:       /* Regexp-2 */
             regex_range = 1;
             term_dict[j++] = '(';
-	    init_pos = 2;
             if (!term_103(zh->reg->zebra_maps, reg_type,
                           &termp, term_dict + j, &regex_range,
 			  space_split, term_dst))
