@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.58 2006-05-10 08:13:23 adam Exp $
+/* $Id: zinfo.c,v 1.59 2006-05-10 09:08:55 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1421,29 +1421,52 @@ int zebraExplain_lookup_attr_su_any_index(ZebraExplainInfo zei,
 int zebraExplain_lookup_attr_su(ZebraExplainInfo zei, int index_type,
 				int set, int use)
 {
-    struct zebSUInfoB *zsui;
+    struct zebSUInfoB **zsui;
 
+#if 0
+    yaz_log(YLOG_LOG, "lookup_attr_su index_type=%d set=%d use=%d",
+            index_type, set, use);
+#endif
     assert (zei->curDatabaseInfo);
-    for (zsui = zei->curDatabaseInfo->attributeDetails->SUInfo;
-	 zsui; zsui=zsui->next)
-        if (zsui->info.index_type == index_type &&
-	    zsui->info.which == ZEB_SU_SET_USE &&
-	    zsui->info.u.su.use == use && zsui->info.u.su.set == set)
-            return zsui->info.ordinal;
+    for (zsui = &zei->curDatabaseInfo->attributeDetails->SUInfo;
+	 *zsui; zsui = &(*zsui)->next)
+        if ((*zsui)->info.index_type == index_type &&
+	    (*zsui)->info.which == ZEB_SU_SET_USE &&
+	    (*zsui)->info.u.su.use == use && (*zsui)->info.u.su.set == set)
+        {
+            struct zebSUInfoB *zsui_this = *zsui;
+
+            /* take it out of the list and move to front */
+            *zsui = (*zsui)->next;
+            zsui_this->next = zei->curDatabaseInfo->attributeDetails->SUInfo;
+            zei->curDatabaseInfo->attributeDetails->SUInfo = zsui_this;
+
+            return zsui_this->info.ordinal;
+        }
     return -1;
 }
 
 int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, int index_type,
 				 const char *str)
 {
-    struct zebSUInfoB *zsui;
+    struct zebSUInfoB **zsui;
 
     assert (zei->curDatabaseInfo);
-    for (zsui = zei->curDatabaseInfo->attributeDetails->SUInfo;
-	 zsui; zsui=zsui->next)
-        if (zsui->info.index_type == index_type &&
-	    zsui->info.which == ZEB_SU_STR && !strcmp(zsui->info.u.str, str))
-            return zsui->info.ordinal;
+    for (zsui = &zei->curDatabaseInfo->attributeDetails->SUInfo;
+	 *zsui; zsui = &(*zsui)->next)
+        if ((*zsui)->info.index_type == index_type
+            && (*zsui)->info.which == ZEB_SU_STR 
+            && !strcmp((*zsui)->info.u.str, str))
+        {
+            struct zebSUInfoB *zsui_this = *zsui;
+
+            /* take it out of the list and move to front */
+            *zsui = (*zsui)->next;
+            zsui_this->next = zei->curDatabaseInfo->attributeDetails->SUInfo;
+            zei->curDatabaseInfo->attributeDetails->SUInfo = zsui_this;
+
+            return zsui_this->info.ordinal;
+        }
     return -1;
 }
 
