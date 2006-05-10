@@ -1,5 +1,5 @@
 /*
- * $Id: testclient.c,v 1.2 2004-09-22 12:13:10 heikki Exp $
+ * $Id: testclient.c,v 1.3 2006-05-10 08:13:35 adam Exp $
  *
  * Z39.50 client specifically for Zebra testing.
  */
@@ -125,3 +125,11 @@ int main(int argc, char **argv)
     ZOOM_connection_destroy (z);
     exit (exit_code);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

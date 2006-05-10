@@ -1,4 +1,4 @@
-/* $Id: sortidx.c,v 1.15 2005-08-18 19:20:38 adam Exp $
+/* $Id: sortidx.c,v 1.16 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -144,3 +144,11 @@ void sortIdx_read (SortIdx si, char *buf)
     if (!r)
         memset (buf, 0, SORT_IDX_ENTRYSIZE);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

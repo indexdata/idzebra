@@ -1,4 +1,4 @@
-/* $Id: passwddb.c,v 1.12 2005-05-30 13:27:08 adam Exp $
+/* $Id: passwddb.c,v 1.13 2006-05-10 08:13:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -171,4 +171,12 @@ int passwd_db_file_plain(Passwd_db db, const char *fname)
 {
     return passwd_db_file_int(db, fname, 0);
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

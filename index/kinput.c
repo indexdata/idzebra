@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.73 2006-05-09 08:12:22 adam Exp $
+/* $Id: kinput.c,v 1.74 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -885,3 +885,11 @@ void zebra_index_merge (ZebraHandle zh)
 
     key_heap_destroy (hi, nkeys);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

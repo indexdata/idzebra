@@ -1,4 +1,4 @@
-/* $Id: recstat.c,v 1.14 2005-06-14 20:28:54 adam Exp $
+/* $Id: recstat.c,v 1.15 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -58,3 +58,11 @@ void rec_prstat (Records records)
           "Total size with overhead             %8" ZINT_FORMAT0,
 	  total_bytes);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

@@ -1,4 +1,4 @@
-/* $Id: recindex.h,v 1.26 2006-03-26 14:17:01 adam Exp $
+/* $Id: recindex.h,v 1.27 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -72,3 +72,11 @@ enum {
 
 YAZ_END_CDECL
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

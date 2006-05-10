@@ -1,4 +1,4 @@
-/* $Id: xslt1.c,v 1.8 2006-04-26 13:27:16 marc Exp $
+/* $Id: xslt1.c,v 1.9 2006-05-10 08:13:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -59,4 +59,12 @@ void tst(int argc, char **argv)
 }
 
 TL_MAIN
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

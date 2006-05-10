@@ -1,4 +1,4 @@
-/* $Id: insert.c,v 1.25 2005-01-15 19:38:21 adam Exp $
+/* $Id: insert.c,v 1.26 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -448,4 +448,12 @@ int dict_insert (Dict dict, const char *str, int userlen, void *userinfo)
     return dict_ins (dict, (const Dict_char *) str, dict->head.root,
 		     userlen, userinfo);
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

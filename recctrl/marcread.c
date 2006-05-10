@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.33 2006-04-26 11:12:31 adam Exp $
+/* $Id: marcread.c,v 1.34 2006-05-10 08:13:28 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -889,3 +889,11 @@ idzebra_filter
     0,
 };
     
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

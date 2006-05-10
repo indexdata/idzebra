@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.35 2005-09-16 09:58:39 adam Exp $
+/* $Id: rsisamb.c,v 1.36 2006-05-10 08:13:33 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -186,3 +186,11 @@ static int r_write(RSFD rfd, const void *buf)
     yaz_log(YLOG_FATAL, "ISAMB set type is read-only");
     return -1;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

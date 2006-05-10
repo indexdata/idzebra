@@ -1,5 +1,5 @@
 /*
-    $Id: marcomp.h,v 1.1 2003-02-28 12:33:39 oleg Exp $
+    $Id: marcomp.h,v 1.2 2006-05-10 08:13:28 adam Exp $
 */
 #ifndef MARCOMP_H
 #define MARCOMP_H
@@ -107,3 +107,11 @@ const char *mc_error(mc_errcode no);
 #endif
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

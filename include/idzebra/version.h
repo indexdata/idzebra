@@ -1,4 +1,4 @@
-/* $Id: version.h,v 1.3 2005-03-30 09:25:23 adam Exp $
+/* $Id: version.h,v 1.4 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -24,6 +24,14 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define ZEBRAVER "1.4.0"
 
-#define ZEBRADATE "$Date: 2005-03-30 09:25:23 $"
+#define ZEBRADATE "$Date: 2006-05-10 08:13:20 $"
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

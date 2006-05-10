@@ -1,5 +1,5 @@
 /*
-    $Id: inline.h,v 1.3 2003-11-24 12:54:57 mike Exp $
+    $Id: inline.h,v 1.4 2006-05-10 08:13:28 adam Exp $
 */
 #ifndef INLINE_H
 #define INLINE_H
@@ -35,3 +35,11 @@ void inline_destroy_field(inline_field *p);
 #endif
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

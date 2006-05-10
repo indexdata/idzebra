@@ -1,4 +1,4 @@
-/* $Id: direntz.h,v 1.11 2005-01-15 22:13:14 adam Exp $
+/* $Id: direntz.h,v 1.12 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -45,4 +45,12 @@ YAZ_END_CDECL
 #include <sys/types.h>
 #include <dirent.h>
 #endif
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

@@ -1,4 +1,4 @@
-/* $Id: lookup.c,v 1.13 2005-01-15 19:38:23 adam Exp $
+/* $Id: lookup.c,v 1.14 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -103,3 +103,11 @@ char *dict_lookup (Dict dict, const char *p)
         return NULL;
     return dict_look (dict, (const Dict_char *) p, dict->head.root);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

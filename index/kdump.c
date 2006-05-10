@@ -1,4 +1,4 @@
-/* $Id: kdump.c,v 1.30 2005-08-05 10:40:13 adam Exp $
+/* $Id: kdump.c,v 1.31 2006-05-10 08:13:21 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -195,3 +195,11 @@ int main (int argc, char **argv)
     exit (0);
 }
 #endif    
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

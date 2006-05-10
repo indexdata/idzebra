@@ -1,4 +1,4 @@
-/* $Id: rank.h,v 1.1 2006-05-03 09:31:26 marc Exp $
+/* $Id: rank.h,v 1.2 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -61,3 +61,11 @@ extern struct rank_control *rank_similarity_class;
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

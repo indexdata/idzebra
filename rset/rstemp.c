@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.65 2005-06-14 20:28:54 adam Exp $
+/* $Id: rstemp.c,v 1.66 2006-05-10 08:13:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -333,3 +333,11 @@ static void r_pos(RSFD rfd, double  *current, double  *total)
     *current = (double) mrfd->cur;
     *total = (double) info->hits;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

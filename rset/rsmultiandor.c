@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.19 2005-05-24 11:35:43 adam Exp $
+/* $Id: rsmultiandor.c,v 1.20 2006-05-10 08:13:33 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -621,4 +621,12 @@ static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
     }
 }
 
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

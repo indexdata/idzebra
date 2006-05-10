@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.36 2005-12-09 11:33:32 adam Exp $
+/* $Id: zebrash.c,v 1.37 2006-05-10 08:13:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -861,3 +861,11 @@ int main (int argc, char ** argv)
     shell();
     return 0;
 } /* main */
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

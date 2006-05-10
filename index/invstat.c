@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.49 2006-05-05 09:14:03 adam Exp $
+/* $Id: invstat.c,v 1.50 2006-05-10 08:13:21 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -298,4 +298,12 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
     zebra_end_read (zh);
     return 0;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

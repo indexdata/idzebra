@@ -1,4 +1,4 @@
-/* $Id: dirent.c,v 1.7 2005-01-15 19:38:41 adam Exp $
+/* $Id: dirent.c,v 1.8 2006-05-10 08:13:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -75,4 +75,12 @@ void closedir(DIR *dd)
 }
 
 #endif
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

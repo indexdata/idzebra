@@ -1,4 +1,4 @@
-/* $Id: isamc-p.h,v 1.15 2005-04-19 08:44:30 adam Exp $
+/* $Id: isamc-p.h,v 1.16 2006-05-10 08:13:27 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -103,4 +103,12 @@ int isamc_write_block (ISAMC is, int cat, zint pos, char *src);
 
 YAZ_END_CDECL
 
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.29 2006-05-03 13:26:12 marc Exp $
+/* $Id: rank1.c,v 1.30 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -246,3 +246,11 @@ static struct rank_control rank_control = {
 };
  
 struct rank_control *rank_1_class = &rank_control;
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

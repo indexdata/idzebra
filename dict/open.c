@@ -1,4 +1,4 @@
-/* $Id: open.c,v 1.24 2006-03-26 14:03:18 adam Exp $
+/* $Id: open.c,v 1.25 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -105,3 +105,11 @@ int dict_strlen (const Dict_char *s)
 {
     return strlen((const char *) s);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

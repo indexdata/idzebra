@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.208 2006-05-09 11:31:37 marc Exp $
+/* $Id: extract.c,v 1.209 2006-05-10 08:13:21 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2159,3 +2159,11 @@ void encode_key_flush (struct encode_info *i, FILE *outf)
     i->prevseq=0;
 }
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.128 2006-03-31 15:58:04 adam Exp $
+/* $Id: main.c,v 1.129 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -303,4 +303,12 @@ int main (int argc, char **argv)
     exit (0);
     return 0;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

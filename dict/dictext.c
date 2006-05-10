@@ -1,4 +1,4 @@
-/* $Id: dictext.c,v 1.13 2005-04-15 10:47:48 adam Exp $
+/* $Id: dictext.c,v 1.14 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -107,4 +107,12 @@ int main (int argc, char **argv)
 }
 
 
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

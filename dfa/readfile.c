@@ -1,4 +1,4 @@
-/* $Id: readfile.c,v 1.11 2005-03-30 09:25:23 adam Exp $
+/* $Id: readfile.c,v 1.12 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -164,3 +164,11 @@ int read_file (const char *s, struct DFA *dfa)
     fclose (inf);
     return err_no;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

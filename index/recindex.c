@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.47 2006-03-26 14:17:01 adam Exp $
+/* $Id: recindex.c,v 1.48 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -976,4 +976,12 @@ char *rec_strdup(const char *s, size_t *len)
     strcpy(p, s);
     return p;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

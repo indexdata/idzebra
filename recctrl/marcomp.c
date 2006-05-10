@@ -1,5 +1,5 @@
 /*
-    $Id: marcomp.c,v 1.5 2005-01-03 19:27:53 adam Exp $
+    $Id: marcomp.c,v 1.6 2006-05-10 08:13:28 adam Exp $
 
     marcomp.c - compiler of MARC statements.
 */
@@ -403,3 +403,11 @@ mc_subfield *mc_getsubfields(mc_context *c, mc_subfield *parent)
     }     
     return psf;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

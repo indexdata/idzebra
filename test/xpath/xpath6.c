@@ -1,4 +1,4 @@
-/* $Id: xpath6.c,v 1.8 2006-03-31 15:58:10 adam Exp $
+/* $Id: xpath6.c,v 1.9 2006-05-10 08:13:41 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -82,3 +82,11 @@ static void tst(int argc, char **argv)
 }
 
 TL_MAIN
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

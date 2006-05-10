@@ -1,4 +1,4 @@
-/* $Id: d1_sutrs.c,v 1.4 2005-01-15 19:38:18 adam Exp $
+/* $Id: d1_sutrs.c,v 1.5 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -149,3 +149,11 @@ char *data1_nodetobuf (data1_handle dh, data1_node *n, int select, int *len)
     *len = wrbuf_len(b);
     return wrbuf_buf(b);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

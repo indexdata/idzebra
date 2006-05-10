@@ -1,4 +1,4 @@
-/* $Id: lookgrep.c,v 1.30 2005-11-01 10:16:08 adam Exp $
+/* $Id: lookgrep.c,v 1.31 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -441,3 +441,11 @@ void dict_grep_cmap (Dict dict, void *vp,
     dict->grep_cmap = cmap;
     dict->grep_cmap_data = vp;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

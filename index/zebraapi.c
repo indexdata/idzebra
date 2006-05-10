@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.216 2006-05-05 07:34:25 adam Exp $
+/* $Id: zebraapi.c,v 1.217 2006-05-10 08:13:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2472,4 +2472,12 @@ void zebra_lock_prefix (Res res, char *path)
     if (*path && path[strlen(path)-1] != '/')
         strcat (path, "/");
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

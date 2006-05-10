@@ -1,4 +1,4 @@
-/* $Id: states.c,v 1.9 2005-01-15 21:45:42 adam Exp $
+/* $Id: states.c,v 1.10 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -196,3 +196,11 @@ void sort_DFA_states (struct DFA_states *dfas)
     ifree (dfas->hasharray);
     dfas->hasharray = NULL;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

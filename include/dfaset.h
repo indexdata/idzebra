@@ -1,4 +1,4 @@
-/* $Id: dfaset.h,v 1.1 2005-01-15 21:45:42 adam Exp $
+/* $Id: dfaset.h,v 1.2 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -54,4 +54,12 @@ int         eq_DFASet     (DFASetType s, DFASet s1, DFASet s2);
 
 YAZ_END_CDECL
 #endif
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.20 2006-05-03 09:31:26 marc Exp $
+/* $Id: zvrank.c,v 1.21 2006-05-10 08:13:26 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -841,4 +841,12 @@ static struct rank_control rank_control_vsm = {
 };
  
 struct rank_control *rank_zv_class = &rank_control_vsm;
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

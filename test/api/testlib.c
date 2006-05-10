@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.31 2006-04-04 00:02:34 adam Exp $
+/* $Id: testlib.c,v 1.32 2006-05-10 08:13:35 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -458,4 +458,12 @@ void tl_check_filter(ZebraService zs, const char *name)
 
 
 
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

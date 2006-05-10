@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.20 2006-05-02 08:27:43 marc Exp $
+/* $Id: xslt.c,v 1.21 2006-05-10 08:13:31 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -725,3 +725,11 @@ idzebra_filter
     &filter_type,
     0,
 };
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.46 2006-03-28 12:39:08 adam Exp $
+/* $Id: zebramap.c,v 1.47 2006-05-10 08:13:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -499,4 +499,12 @@ WRBUF zebra_replace(ZebraMaps zms, unsigned reg_id, const char *ex_list,
     wrbuf_write(zms->wrbuf_1, input_str, input_len);
     return zms->wrbuf_1;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

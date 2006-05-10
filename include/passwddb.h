@@ -1,4 +1,4 @@
-/* $Id: passwddb.h,v 1.7 2005-05-30 13:27:08 adam Exp $
+/* $Id: passwddb.h,v 1.8 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -39,4 +39,12 @@ void passwd_db_show (Passwd_db db);
 YAZ_END_CDECL
 
 #endif
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

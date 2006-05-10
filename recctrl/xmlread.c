@@ -1,4 +1,4 @@
-/* $Id: xmlread.c,v 1.20 2005-06-14 18:27:23 adam Exp $
+/* $Id: xmlread.c,v 1.21 2006-05-10 08:13:31 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -538,4 +538,12 @@ idzebra_filter
 };
     
 #endif
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

@@ -1,4 +1,4 @@
-/* $Id: isams.h,v 1.3 2005-04-13 13:03:47 adam Exp $
+/* $Id: isams.h,v 1.4 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -63,3 +63,11 @@ int isams_pp_num (ISAMS_PP pp);
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

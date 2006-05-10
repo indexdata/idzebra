@@ -1,4 +1,4 @@
-/* $Id: charmap.h,v 1.14 2005-06-15 21:31:45 adam Exp $
+/* $Id: charmap.h,v 1.15 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -52,3 +52,11 @@ YAZ_EXPORT const char *chr_map_output(chrmaptab t, const char **from, int len);
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

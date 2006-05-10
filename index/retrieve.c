@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.39 2006-05-02 08:27:43 marc Exp $
+/* $Id: retrieve.c,v 1.40 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -320,3 +320,11 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
     *addinfo = retrieveCtrl.addinfo;
     return retrieveCtrl.diagnostic;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

@@ -1,4 +1,4 @@
-/* $Id: set.c,v 1.10 2005-01-15 21:45:42 adam Exp $
+/* $Id: set.c,v 1.11 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -253,3 +253,11 @@ int eq_DFASet (DFASetType st, DFASet s1, DFASet s2)
             return 0;
     return s1 == s2;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

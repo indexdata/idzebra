@@ -110,3 +110,11 @@ void args_use (IDZebraSession sess,
   if (local) res_close(local);                                   \
 
 #endif /* API_SWIG_H */
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

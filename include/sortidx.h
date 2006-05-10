@@ -1,4 +1,4 @@
-/* $Id: sortidx.h,v 1.8 2005-01-15 21:45:42 adam Exp $
+/* $Id: sortidx.h,v 1.9 2006-05-10 08:13:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -43,3 +43,11 @@ void sortIdx_read (SortIdx si, char *buf);
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

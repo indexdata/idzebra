@@ -1,4 +1,4 @@
-/* $Id: dclose.c,v 1.8 2005-01-15 19:38:21 adam Exp $
+/* $Id: dclose.c,v 1.9 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -41,3 +41,11 @@ int dict_bf_close (Dict_BFile dbf)
     xfree (dbf);
     return i;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

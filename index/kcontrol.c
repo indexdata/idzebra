@@ -1,4 +1,4 @@
-/* $Id: kcontrol.c,v 1.1 2005-05-03 09:11:34 adam Exp $
+/* $Id: kcontrol.c,v 1.2 2006-05-10 08:13:21 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -73,4 +73,12 @@ struct rset_key_control *zebra_key_control_create(ZebraHandle zh)
     cp->ref_count = 1;
     return kc;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

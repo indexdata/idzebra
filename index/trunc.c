@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.64 2005-10-22 17:32:09 adam Exp $
+/* $Id: trunc.c,v 1.65 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -464,4 +464,12 @@ RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
 			  scope, termid);
     return result;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

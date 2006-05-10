@@ -1,4 +1,4 @@
-/* $Id: commit.c,v 1.26 2006-04-05 02:02:36 adam Exp $
+/* $Id: commit.c,v 1.27 2006-05-10 08:13:17 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -247,4 +247,12 @@ void cf_commit (CFile cf)
     else if (cf->head.state == 2)
         cf_commit_flat (cf);
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

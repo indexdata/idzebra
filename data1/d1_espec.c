@@ -1,4 +1,4 @@
-/* $Id: d1_espec.c,v 1.9 2005-03-05 11:35:18 adam Exp $
+/* $Id: d1_espec.c,v 1.10 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -365,3 +365,11 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
     fclose (f);
     return res;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

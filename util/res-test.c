@@ -1,4 +1,4 @@
-/* $Id: res-test.c,v 1.10 2005-01-15 19:38:42 adam Exp $
+/* $Id: res-test.c,v 1.11 2006-05-10 08:13:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -68,3 +68,11 @@ int main(int argc, char **argv)
     res_close (res);
     return 0;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

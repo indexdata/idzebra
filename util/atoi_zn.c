@@ -1,4 +1,4 @@
-/* $Id: atoi_zn.c,v 1.3 2005-03-30 09:25:25 adam Exp $
+/* $Id: atoi_zn.c,v 1.4 2006-05-10 08:13:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -36,4 +36,12 @@ zint atoi_zn (const char *buf, zint len)
     }
     return val;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

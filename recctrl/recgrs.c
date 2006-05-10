@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.108 2006-02-07 00:17:44 adam Exp $
+/* $Id: recgrs.c,v 1.109 2006-05-10 08:13:28 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1552,4 +1552,12 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     nmem_destroy(mem);
     return 0;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

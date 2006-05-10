@@ -1,4 +1,4 @@
-/* $Id: d1_prtree.c,v 1.7 2005-01-15 19:38:18 adam Exp $
+/* $Id: d1_prtree.c,v 1.8 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -135,3 +135,11 @@ void data1_pr_tree (data1_handle dh, data1_node *n, FILE *out)
 {
     pr_tree (dh, n, out, 0);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.10 2006-05-02 08:27:43 marc Exp $
+/* $Id: alvis.c,v 1.11 2006-05-10 08:13:28 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -679,3 +679,11 @@ idzebra_filter
     &filter_type,
     0,
 };
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

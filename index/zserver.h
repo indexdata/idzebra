@@ -1,4 +1,4 @@
-/* $Id: zserver.h,v 1.59 2005-01-15 19:38:29 adam Exp $
+/* $Id: zserver.h,v 1.60 2006-05-10 08:13:25 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -29,3 +29,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 YAZ_BEGIN_CDECL
 
 YAZ_END_CDECL
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

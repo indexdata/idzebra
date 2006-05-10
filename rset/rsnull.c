@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.36 2005-06-02 11:59:54 adam Exp $
+/* $Id: rsnull.c,v 1.37 2006-05-10 08:13:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -95,3 +95,11 @@ static int r_write(RSFD rfd, const void *buf)
     yaz_log(YLOG_FATAL, "NULL set type is read-only");
     return -1;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

@@ -1,4 +1,4 @@
-/* $Id: dcompact.c,v 1.13 2005-01-15 19:38:21 adam Exp $
+/* $Id: dcompact.c,v 1.14 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -142,3 +142,11 @@ int dict_copy_compact (BFiles bfs, const char *from_name, const char *to_name)
     dict_close (dict_to);
     return 0;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

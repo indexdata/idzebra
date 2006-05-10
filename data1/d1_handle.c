@@ -1,4 +1,4 @@
-/* $Id: d1_handle.c,v 1.10 2006-05-05 17:18:50 adam Exp $
+/* $Id: d1_handle.c,v 1.11 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -160,3 +160,11 @@ int data1_is_xmlmode(data1_handle dh)
 {
     return 1;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

@@ -1,4 +1,4 @@
-/* $Id: scan.c,v 1.19 2005-01-15 19:38:24 adam Exp $
+/* $Id: scan.c,v 1.20 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -226,3 +226,11 @@ int dict_scan (Dict dict, char *str, int *before, int *after, void *client,
     return dict_scan_r (dict, dict->head.root, 0, (Dict_char *) str,
 			before, after, client, f);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

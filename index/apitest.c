@@ -1,4 +1,4 @@
-/* $Id: apitest.c,v 1.24 2006-03-31 15:58:04 adam Exp $
+/* $Id: apitest.c,v 1.25 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -287,3 +287,11 @@ int main (int argc, char **argv)
     zebra_stop (zs);
     return 0;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

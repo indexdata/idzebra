@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.23 2006-02-07 00:17:44 adam Exp $
+/* $Id: d1_absyn.c,v 1.24 2006-05-10 08:13:17 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1227,3 +1227,11 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
     yaz_log(YLOG_DEBUG, "%s: data1_read_absyn end", file);
     return res;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

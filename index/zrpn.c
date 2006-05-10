@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.211 2006-05-09 10:46:56 adam Exp $
+/* $Id: zrpn.c,v 1.212 2006-05-10 08:13:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -3126,4 +3126,12 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    *position, *num_entries);
     return ZEBRA_OK;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

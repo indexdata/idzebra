@@ -1,4 +1,4 @@
-/* $Id: zint.c,v 1.1 2005-03-30 09:25:25 adam Exp $
+/* $Id: zint.c,v 1.2 2006-05-10 08:13:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -50,3 +50,11 @@ void zebra_zint_decode(const char **src, zint *pos)
     d += ((zint) c << r);
     *pos = d;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

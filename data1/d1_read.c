@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.17 2005-04-28 08:12:28 adam Exp $
+/* $Id: d1_read.c,v 1.18 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1178,3 +1178,11 @@ void data1_concat_text(data1_handle dh, NMEM m, data1_node *n)
         data1_concat_text(dh, m, n->child);
     }
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

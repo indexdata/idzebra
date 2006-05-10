@@ -1,4 +1,4 @@
-/* $Id: isam-codec.h,v 1.2 2005-01-15 19:38:24 adam Exp $
+/* $Id: isam-codec.h,v 1.3 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -32,3 +32,11 @@ typedef struct {
 } ISAM_CODEC;
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

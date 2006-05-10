@@ -1,4 +1,4 @@
-/* $Id: cfile.c,v 1.35 2005-04-15 10:47:47 adam Exp $
+/* $Id: cfile.c,v 1.36 2006-05-10 08:13:17 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -520,4 +520,12 @@ int cf_close (CFile cf)
     xfree (cf);
     return 0;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

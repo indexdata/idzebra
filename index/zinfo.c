@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.57 2006-03-30 09:52:15 adam Exp $
+/* $Id: zinfo.c,v 1.58 2006-05-10 08:13:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1667,3 +1667,11 @@ void zebraExplain_loadAttsets (data1_handle dh, Res res)
      If the database doesn't exist globally (in TargetInfo) an 
      AttributeSetInfo must be added (globally).
  */
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

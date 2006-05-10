@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.52 2005-06-22 19:42:39 adam Exp $
+/* $Id: rset.c,v 1.53 2006-05-10 08:13:33 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -402,4 +402,12 @@ void rset_visit(RSET rset, int level)
     for (i = 0; i<rset->no_children; i++)
 	rset_visit(rset->children[i], level+1);
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

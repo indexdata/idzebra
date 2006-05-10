@@ -1,4 +1,4 @@
-/* $Id: isams.c,v 1.12 2005-04-13 13:03:48 adam Exp $
+/* $Id: isams.c,v 1.13 2006-05-10 08:13:28 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -250,4 +250,12 @@ int isams_read_item (ISAMS_PP pp, char **dst)
     return 1;
 }
 
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

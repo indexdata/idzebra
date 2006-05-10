@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.11 2006-03-29 10:43:24 adam Exp $
+/* $Id: data1.h,v 1.12 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -590,3 +590,11 @@ YAZ_EXPORT void data1_absyn_destroy(data1_handle dh);
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

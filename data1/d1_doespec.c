@@ -1,4 +1,4 @@
-/* $Id: d1_doespec.c,v 1.8 2005-02-08 00:36:08 adam Exp $
+/* $Id: d1_doespec.c,v 1.9 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -371,3 +371,11 @@ int data1_doespec1 (data1_handle dh, data1_node *n, Z_Espec1 *e)
     }
     return 0;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

@@ -1,4 +1,4 @@
-/* $Id: ranksimilarity.c,v 1.6 2006-05-10 07:54:41 marc Exp $
+/* $Id: ranksimilarity.c,v 1.7 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -403,3 +403,11 @@ static struct rank_control rank_control = {
 };
  
 struct rank_control *rank_similarity_class = &rank_control;
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

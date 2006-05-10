@@ -1,5 +1,5 @@
 /*
-    $Id: inline.c,v 1.5 2004-12-13 20:51:32 adam Exp $
+    $Id: inline.c,v 1.6 2006-05-10 08:13:28 adam Exp $
 */
 #include <stdio.h>
 #include <string.h>
@@ -123,3 +123,11 @@ int inline_parse(inline_field *pif, const char *tag, const char *s)
     }
     return 0;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

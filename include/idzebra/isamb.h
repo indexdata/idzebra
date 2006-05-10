@@ -1,4 +1,4 @@
-/* $Id: isamb.h,v 1.5 2005-04-13 13:03:47 adam Exp $
+/* $Id: isamb.h,v 1.6 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -75,3 +75,11 @@ void isamb_dump(ISAMB b, ISAM_P pos, void (*pr)(const char *str));
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

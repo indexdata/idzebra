@@ -1,4 +1,4 @@
-/* $Id: delete.c,v 1.11 2005-01-15 19:38:21 adam Exp $
+/* $Id: delete.c,v 1.12 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -229,3 +229,11 @@ int dict_delete_subtree (Dict dict, const char *p, void *client,
     return dict_del_string (dict, (const Dict_char*) p, dict->head.root, 1,
 			    client, f);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

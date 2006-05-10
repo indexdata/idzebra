@@ -1,4 +1,4 @@
-/* $Id: scantest.c,v 1.4 2005-04-29 18:43:30 adam Exp $
+/* $Id: scantest.c,v 1.5 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -186,3 +186,11 @@ int main(int argc, char **argv)
 	exit(1);
     exit(0);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

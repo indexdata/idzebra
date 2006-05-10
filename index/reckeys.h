@@ -1,4 +1,4 @@
-/* $Id: reckeys.h,v 1.3 2005-11-09 11:51:29 adam Exp $
+/* $Id: reckeys.h,v 1.4 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -47,3 +47,11 @@ void zebra_rec_keys_set_buf(zebra_rec_keys_t p, char *buf, size_t sz,
 			    int copy_buf);
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

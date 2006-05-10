@@ -1,4 +1,4 @@
-/* $Id: flock.h,v 1.2 2006-03-23 12:06:37 adam Exp $
+/* $Id: flock.h,v 1.3 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -48,3 +48,11 @@ int zebra_lock_r (ZebraLockHandle h);
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

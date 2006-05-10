@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.18 2006-05-05 09:12:21 adam Exp $
+/* $Id: recctrl.h,v 1.19 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -169,3 +169,11 @@ RecType recType_byName(RecTypes rts, Res res, const char *name,
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

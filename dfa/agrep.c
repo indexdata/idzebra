@@ -1,4 +1,4 @@
-/* $Id: agrep.c,v 1.16 2005-06-14 20:28:53 adam Exp $
+/* $Id: agrep.c,v 1.17 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -299,3 +299,11 @@ char **argv;
     dfa_delete (&dfa);
     return 0;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

@@ -1,4 +1,4 @@
-/* $Id: isamc.c,v 1.30 2005-04-13 13:03:48 adam Exp $
+/* $Id: isamc.c,v 1.31 2006-05-10 08:13:27 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -573,4 +573,12 @@ zint isamc_pp_num (ISAMC_PP pp)
 {
     return pp->numKeys;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

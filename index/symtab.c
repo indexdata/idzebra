@@ -1,4 +1,4 @@
-/* $Id: symtab.c,v 1.8 2005-01-15 19:38:27 adam Exp $
+/* $Id: symtab.c,v 1.9 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -90,3 +90,11 @@ void strtab_del (struct strtab *t,
         }
     xfree (t);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

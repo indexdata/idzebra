@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.29 2006-03-30 09:52:15 adam Exp $
+/* $Id: zinfo.h,v 1.30 2006-05-10 08:13:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -88,3 +88,11 @@ RecordAttr *rec_init_attr (ZebraExplainInfo zei, Record rec);
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

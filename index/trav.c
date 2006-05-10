@@ -1,4 +1,4 @@
-/* $Id: trav.c,v 1.50 2006-04-05 02:11:44 adam Exp $
+/* $Id: trav.c,v 1.51 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -446,4 +446,12 @@ void repositoryDelete (ZebraHandle zh, const char *path)
     assert (path);
     repositoryExtractG (zh, path, 1);
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

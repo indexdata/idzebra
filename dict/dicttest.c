@@ -1,4 +1,4 @@
-/* $Id: dicttest.c,v 1.35 2005-09-13 11:51:05 adam Exp $
+/* $Id: dicttest.c,v 1.36 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -319,3 +319,11 @@ int main (int argc, char **argv)
     res_close (my_resource);
     return 0;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

@@ -1,4 +1,4 @@
-/* $Id: zebra-lock.c,v 1.8 2005-01-15 19:38:42 adam Exp $
+/* $Id: zebra-lock.c,v 1.9 2006-05-10 08:13:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -224,3 +224,11 @@ int zebra_mutex_cond_signal (Zebra_mutex_cond *p)
     return 0;
 #endif
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

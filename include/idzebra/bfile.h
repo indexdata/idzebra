@@ -1,4 +1,4 @@
-/* $Id: bfile.h,v 1.8 2006-05-05 09:15:11 adam Exp $
+/* $Id: bfile.h,v 1.9 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -220,3 +220,11 @@ int bfs_shadow_directory_stat(BFiles bfs, int no, const char **directory,
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

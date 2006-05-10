@@ -1,4 +1,4 @@
-/* $Id: cfile.h,v 1.17 2005-01-15 19:38:17 adam Exp $
+/* $Id: cfile.h,v 1.18 2006-05-10 08:13:17 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -86,3 +86,11 @@ void cf_commit (CFile cf);
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

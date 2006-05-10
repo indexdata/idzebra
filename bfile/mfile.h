@@ -1,4 +1,4 @@
-/* $Id: mfile.h,v 1.4 2006-05-05 09:14:02 adam Exp $
+/* $Id: mfile.h,v 1.5 2006-05-10 08:13:17 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -165,3 +165,11 @@ int mf_area_directory_stat(MFile_area ma, int no, const char **directory,
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

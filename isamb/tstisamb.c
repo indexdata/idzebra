@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.22 2005-10-27 09:09:52 adam Exp $
+/* $Id: tstisamb.c,v 1.23 2006-05-10 08:13:27 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -581,3 +581,11 @@ int main(int argc, char **argv)
     exit(0);
     return 0;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

@@ -1,4 +1,4 @@
-/* $Id: bfile.c,v 1.46 2006-05-05 09:14:02 adam Exp $
+/* $Id: bfile.c,v 1.47 2006-05-10 08:13:17 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -454,3 +454,11 @@ int bfs_shadow_directory_stat(BFiles bfs, int no, const char **directory,
     return mf_area_directory_stat(bfs->commit_area, no, directory,
 				  used_bytes, max_bytes);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

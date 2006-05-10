@@ -1,4 +1,4 @@
-/* $Id: t15.c,v 1.3 2006-04-05 02:52:31 adam Exp $
+/* $Id: t15.c,v 1.4 2006-05-10 08:13:35 adam Exp $
    Copyright (C) 2004-2005
    Index Data ApS
 
@@ -130,3 +130,11 @@ static void tst(int argc, char **argv)
 }
 
 TL_MAIN
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.145 2006-03-31 15:58:04 adam Exp $
+/* $Id: zserver.c,v 1.146 2006-05-10 08:13:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -841,3 +841,11 @@ int main (int argc, char **argv)
 
     return statserv_main (argc, argv, bend_init, bend_close);
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

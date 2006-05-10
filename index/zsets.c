@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.100 2006-05-03 09:31:26 marc Exp $
+/* $Id: zsets.c,v 1.101 2006-05-10 08:13:26 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1201,4 +1201,12 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
     }
     return ZEBRA_OK;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

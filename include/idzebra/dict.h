@@ -1,4 +1,4 @@
-/* $Id: dict.h,v 1.4 2005-05-01 20:43:11 adam Exp $
+/* $Id: dict.h,v 1.5 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -98,3 +98,11 @@ int dict_copy_compact (BFiles bfs, const char *from, const char *to);
 YAZ_END_CDECL
    
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

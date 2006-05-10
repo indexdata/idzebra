@@ -1,4 +1,4 @@
-/* $Id: orddict.h,v 1.2 2006-02-09 08:31:02 adam Exp $
+/* $Id: orddict.h,v 1.3 2006-05-10 08:13:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -39,3 +39,11 @@ int dict_delete_subtree_ord(Dict d, int ord, void *client,
 
 YAZ_END_CDECL
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

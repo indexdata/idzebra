@@ -1,4 +1,4 @@
-/* $Id: attribute.c,v 1.21 2006-02-22 08:42:16 adam Exp $
+/* $Id: attribute.c,v 1.22 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -69,3 +69,11 @@ int att_getentbyatt(ZebraHandle zi, attent *res, oid_value set, int att,
     res->local_attributes = r->locals;
     return 0;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

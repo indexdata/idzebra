@@ -1,4 +1,4 @@
-/* $Id: d1_attset.c,v 1.7 2005-01-15 19:38:18 adam Exp $
+/* $Id: d1_attset.c,v 1.8 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -191,3 +191,11 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
     fclose(f);
     return res;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

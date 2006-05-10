@@ -1,4 +1,4 @@
-/* $Id: dir.c,v 1.32 2006-04-04 00:09:00 adam Exp $
+/* $Id: dir.c,v 1.33 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -154,3 +154,11 @@ void dir_free (struct dir_entry **e_p)
     xfree (e);
     *e_p = NULL;
 }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

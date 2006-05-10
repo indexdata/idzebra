@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.39 2005-08-22 08:17:01 adam Exp $
+/* $Id: charmap.c,v 1.40 2006-05-10 08:13:44 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -762,4 +762,12 @@ void chrmaptab_destroy(chrmaptab tab)
 	nmem_destroy (tab->nmem);
 }
 
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

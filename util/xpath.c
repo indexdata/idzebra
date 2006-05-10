@@ -1,4 +1,4 @@
-/* $Id: xpath.c,v 1.5 2005-01-15 19:38:42 adam Exp $
+/* $Id: xpath.c,v 1.6 2006-05-10 08:13:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -241,4 +241,12 @@ void dump_xp_steps (struct xpath_location_step *xpath, int no)
         fprintf (stderr, "\n");
     }
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

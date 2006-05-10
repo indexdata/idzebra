@@ -1,4 +1,4 @@
-/* $Id: res.h,v 1.8 2005-09-15 09:27:18 pop Exp $
+/* $Id: res.h,v 1.9 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -94,3 +94,11 @@ void res_dump (Res r, int level);
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.57 2005-05-24 20:40:15 adam Exp $
+/* $Id: rsbool.c,v 1.58 2006-05-10 08:13:33 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -511,4 +511,12 @@ static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
     rset_getterms(info->rset_l, terms, maxterms, curterm);
     rset_getterms(info->rset_r, terms, maxterms, curterm);
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

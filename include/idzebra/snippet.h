@@ -1,4 +1,4 @@
-/* $Id: snippet.h,v 1.4 2005-08-26 10:13:30 adam Exp $
+/* $Id: snippet.h,v 1.5 2006-05-10 08:13:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -66,3 +66,11 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

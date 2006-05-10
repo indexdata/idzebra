@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.29 2005-05-24 11:35:43 adam Exp $
+/* $Id: rsprox.c,v 1.30 2006-05-10 08:13:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -332,4 +332,12 @@ static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
     for (i = 0; i<ct->no_children; i++)
         rset_getterms(ct->children[i], terms, maxterms, curterm);
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.18 2006-03-31 15:58:05 adam Exp $
+/* $Id: testlib.h,v 1.19 2006-05-10 08:13:35 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -124,3 +124,11 @@ void tl_check_filter(ZebraService zs, const char *name);
 
 #define TL_MAIN int main(int argc, char **argv) { \
  YAZ_CHECK_INIT(argc, argv); tst(argc, argv); YAZ_CHECK_TERM; }
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

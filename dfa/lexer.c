@@ -1,4 +1,4 @@
-/* $Id: lexer.c,v 1.14 2005-03-30 09:25:23 adam Exp $
+/* $Id: lexer.c,v 1.15 2006-05-10 08:13:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -136,4 +136,12 @@ int main (int argc, char **argv)
     }
     return 0;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.57 2005-05-31 07:29:10 adam Exp $
+/* $Id: kcompare.c,v 1.58 2006-05-10 08:13:21 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -337,4 +337,12 @@ int key_SU_decode (int *ch, const unsigned char *out)
     *ch += (*out - 1) * fact;
     return len;
 }
+
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
 

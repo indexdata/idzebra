@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.33 2006-04-04 00:09:51 adam Exp $
+/* $Id: api.h,v 1.34 2006-05-10 08:13:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -571,3 +571,11 @@ YAZ_END_CDECL
  */
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+

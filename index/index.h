@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.159 2006-05-03 09:31:26 marc Exp $
+/* $Id: index.h,v 1.160 2006-05-10 08:13:21 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -491,3 +491,11 @@ void zebra_term_untrans(ZebraHandle zh, int reg_type,
 YAZ_END_CDECL
 
 #endif
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+
