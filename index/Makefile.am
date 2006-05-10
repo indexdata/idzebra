@@ -1,10 +1,9 @@
-## $Id: Makefile.am,v 1.38 2006-05-03 09:31:25 marc Exp $
+## $Id: Makefile.am,v 1.39 2006-05-10 09:11:22 adam Exp $
 
-noinst_PROGRAMS = apitest kdump zebrasrv2 zebraidx2
+noinst_PROGRAMS = apitest kdump
 
-lib_LTLIBRARIES = libidzebra-api.la libidzebra-all.la
+lib_LTLIBRARIES = libidzebra-api.la
 
-libidzebra_all_la_SOURCES = 
 libidzebra_api_la_SOURCES = \
   api_swig.c attribute.c \
   compact.c \
@@ -49,13 +48,4 @@ AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) \
 zebrash_LDADD= $(zebralibs) $(YAZLALIB) $(READLINE_LIBS)
 
 LDADD = $(zebralibs) $(YAZLALIB)
-
-## Try make zebraidx zebrasrv versions with a combined lib
-libidzebra_all_la_LIBADD = $(zebralibs) $(YAZLALIB)
-
-zebraidx2_SOURCES = main.c
-zebraidx2_LDADD= libidzebra-all.la $(YAZLALIB) 
-
-zebrasrv2_SOURCES = zserver.c
-zebrasrv2_LDADD= libidzebra-all.la $(YAZLALIB) 
 
