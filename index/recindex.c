@@ -1,5 +1,5 @@
-/* $Id: recindex.c,v 1.48 2006-05-10 08:13:22 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: recindex.c,v 1.49 2006-05-10 12:30:02 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -955,8 +955,9 @@ Record rec_cp(Record rec)
         else
         {
             n->size[i] = rec->size[i];
-            n->info[i] = (char *) xmalloc(rec->size[i]);
+            n->info[i] = (char *) xmalloc(rec->size[i]+1);
             memcpy(n->info[i], rec->info[i], rec->size[i]);
+            n->info[i][rec->size[i]] = '\0';
         }
     return n;
 }
