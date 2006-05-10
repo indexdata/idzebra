@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.210 2006-05-10 12:31:08 adam Exp $
+/* $Id: extract.c,v 1.211 2006-05-10 13:54:01 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -387,6 +387,7 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
 				     RecType recType,
 				     void *recTypeClientData)
 {
+    const char *match_str_to_print = "";
     RecordAttr *recordAttr;
     int r;
     const char *matchStr = 0;
@@ -475,7 +476,13 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
             matchStr = extractCtrl.match_criteria;	
     }
 
-    /* perform match if sysno not known and if match criteria is specified */
+    /* if matchStr is set now - we assume it's printable .
+       For internal matchStr (see below) we don't print */
+    if (matchStr)
+        match_str_to_print = matchStr;
+
+    /* perform internal match if sysno not known and if match criteria is
+       specified already */
     if (!sysno) 
     {
         sysnotmp = 0;
@@ -533,16 +540,10 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
         
         if (zh->records_processed < zh->m_file_verbose_limit)
         {
-            if (matchStr)
-                yaz_log(YLOG_LOG, "add %s %s " PRINTF_OFF_T 
-                        " " ZINT_FORMAT " %s" ,
-                        zh->m_record_type,
-                        fname, recordOffset, *sysno, matchStr);
-            else
-                yaz_log(YLOG_LOG, "add %s %s " PRINTF_OFF_T 
-                        " " ZINT_FORMAT , 
-                        zh->m_record_type,
-                        fname, recordOffset, *sysno);
+            yaz_log(YLOG_LOG, "add %s %s " PRINTF_OFF_T 
+                    " " ZINT_FORMAT " %s" ,
+                    zh->m_record_type,
+                    fname, recordOffset, *sysno, match_str_to_print);
         }
 	recordAttr = rec_init_attr (zh->reg->zei, rec);
 	recordAttr->staticrank = extractCtrl.staticrank;
@@ -613,16 +614,10 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
             {
                 if (zh->records_processed < zh->m_file_verbose_limit)
                 {
-                    if (matchStr)
-                        yaz_log(YLOG_LOG, "delete %s %s " PRINTF_OFF_T 
-                                " " ZINT_FORMAT " %s" ,
-                                zh->m_record_type,
-                                fname, recordOffset, *sysno, matchStr);
-                    else
-                        yaz_log(YLOG_LOG, "delete %s %s " PRINTF_OFF_T 
-                                " " ZINT_FORMAT , 
-                                zh->m_record_type,
-                                fname, recordOffset, *sysno);
+                    yaz_log(YLOG_LOG, "delete %s %s " PRINTF_OFF_T 
+                            " " ZINT_FORMAT " %s" ,
+                            zh->m_record_type,
+                            fname, recordOffset, *sysno, match_str_to_print);
                 }
                 zh->records_deleted++;
                 if (matchStr)
@@ -641,16 +636,10 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
 	    /* flush new keys for sort&search etc */
             if (zh->records_processed < zh->m_file_verbose_limit)
             {
-                if (matchStr)
-                    yaz_log(YLOG_LOG, "update %s %s " PRINTF_OFF_T 
-                            " " ZINT_FORMAT " %s" ,
-                            zh->m_record_type,
-                            fname, recordOffset, *sysno, matchStr);
-                else
-                    yaz_log(YLOG_LOG, "update %s %s " PRINTF_OFF_T 
-                            " " ZINT_FORMAT , 
-                            zh->m_record_type,
-                            fname, recordOffset, *sysno);
+                yaz_log(YLOG_LOG, "update %s %s " PRINTF_OFF_T 
+                        " " ZINT_FORMAT " %s" ,
+                        zh->m_record_type,
+                        fname, recordOffset, *sysno, match_str_to_print);
             }
 	    recordAttr->staticrank = extractCtrl.staticrank;
 #if NATTR
