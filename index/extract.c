@@ -1,5 +1,5 @@
-/* $Id: extract.c,v 1.209 2006-05-10 08:13:21 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: extract.c,v 1.210 2006-05-10 12:31:08 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -532,17 +532,18 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
         *sysno = rec->sysno;
         
         if (zh->records_processed < zh->m_file_verbose_limit)
-          if (matchStr)
-            yaz_log(YLOG_LOG, "add %s %s " PRINTF_OFF_T 
-                    " " ZINT_FORMAT " %s" ,
-                    zh->m_record_type,
-                    fname, recordOffset, *sysno, matchStr);
-          else
-            yaz_log(YLOG_LOG, "add %s %s " PRINTF_OFF_T 
-                    " " ZINT_FORMAT , 
-                    zh->m_record_type,
-                    fname, recordOffset, *sysno);
-        
+        {
+            if (matchStr)
+                yaz_log(YLOG_LOG, "add %s %s " PRINTF_OFF_T 
+                        " " ZINT_FORMAT " %s" ,
+                        zh->m_record_type,
+                        fname, recordOffset, *sysno, matchStr);
+            else
+                yaz_log(YLOG_LOG, "add %s %s " PRINTF_OFF_T 
+                        " " ZINT_FORMAT , 
+                        zh->m_record_type,
+                        fname, recordOffset, *sysno);
+        }
 	recordAttr = rec_init_attr (zh->reg->zei, rec);
 	recordAttr->staticrank = extractCtrl.staticrank;
 
@@ -611,19 +612,18 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
             else
             {
                 if (zh->records_processed < zh->m_file_verbose_limit)
-                  if (matchStr)
-                    yaz_log(YLOG_LOG, "delete %s %s " PRINTF_OFF_T 
-                            " " ZINT_FORMAT " %s" ,
-                            zh->m_record_type,
-                            fname, recordOffset, *sysno, matchStr);
-                  else
-                    yaz_log(YLOG_LOG, "delete %s %s " PRINTF_OFF_T 
-                            " " ZINT_FORMAT , 
-                            zh->m_record_type,
-                            fname, recordOffset, *sysno);
-
-
-
+                {
+                    if (matchStr)
+                        yaz_log(YLOG_LOG, "delete %s %s " PRINTF_OFF_T 
+                                " " ZINT_FORMAT " %s" ,
+                                zh->m_record_type,
+                                fname, recordOffset, *sysno, matchStr);
+                    else
+                        yaz_log(YLOG_LOG, "delete %s %s " PRINTF_OFF_T 
+                                " " ZINT_FORMAT , 
+                                zh->m_record_type,
+                                fname, recordOffset, *sysno);
+                }
                 zh->records_deleted++;
                 if (matchStr)
 		{
@@ -640,17 +640,18 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
         {
 	    /* flush new keys for sort&search etc */
             if (zh->records_processed < zh->m_file_verbose_limit)
-                  if (matchStr)
+            {
+                if (matchStr)
                     yaz_log(YLOG_LOG, "update %s %s " PRINTF_OFF_T 
                             " " ZINT_FORMAT " %s" ,
                             zh->m_record_type,
                             fname, recordOffset, *sysno, matchStr);
-                  else
+                else
                     yaz_log(YLOG_LOG, "update %s %s " PRINTF_OFF_T 
                             " " ZINT_FORMAT , 
                             zh->m_record_type,
                             fname, recordOffset, *sysno);
-
+            }
 	    recordAttr->staticrank = extractCtrl.staticrank;
 #if NATTR
             extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
@@ -1350,12 +1351,66 @@ int explain_extract (void *handle, Record rec, data1_node *n)
     return 0;
 }
 
+void extract_rec_keys_adjust(ZebraHandle zh, int is_insert,
+                             zebra_rec_keys_t reckeys)
+{
+    ZebraExplainInfo zei = zh->reg->zei;
+    struct ord_stat {
+        int no;
+        int ord;
+        struct ord_stat *next;
+    };
+
+    if (zebra_rec_keys_rewind(reckeys))
+    {
+        struct ord_stat *ord_list = 0;
+        struct ord_stat *p;
+	size_t slen;
+	const char *str;
+	struct it_key key_in;
+	while(zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
+        {
+            int ord = key_in.mem[0]; 
+
+            for (p = ord_list; p ; p = p->next)
+                if (p->ord == ord)
+                {
+                    p->no++;
+                    break;
+                }
+            if (!p)
+            {
+                p = xmalloc(sizeof(*p));
+                p->no = 1;
+                p->ord = ord;
+                p->next = ord_list;
+                ord_list = p;
+            }
+        }
+
+        p = ord_list;
+        while (p)
+        {
+            struct ord_stat *p1 = p;
+
+            if (is_insert)
+                zebraExplain_ord_adjust_occurrences(zei, p->ord, p->no, 1);
+            else
+                zebraExplain_ord_adjust_occurrences(zei, p->ord, - p->no, -1);
+            p = p->next;
+            xfree(p1);
+        }
+    }
+}
+
 void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
                               int cmd,
 			      zebra_rec_keys_t reckeys,
 			      zint staticrank)
 {
     ZebraExplainInfo zei = zh->reg->zei;
+
+    extract_rec_keys_adjust(zh, cmd, reckeys);
 
     if (!zh->reg->key_buf)
     {
@@ -1403,7 +1458,7 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 	    zh->reg->key_buf_used +=
 		key_SU_encode(ch, (char*)zh->reg->key_buf +
 			      zh->reg->key_buf_used);
-	    
+
 	    /* copy the 0-terminated stuff from str to output */
 	    memcpy((char*)zh->reg->key_buf + zh->reg->key_buf_used, str, slen);
 	    zh->reg->key_buf_used += slen;

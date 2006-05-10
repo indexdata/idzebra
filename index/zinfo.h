@@ -1,5 +1,5 @@
-/* $Id: zinfo.h,v 1.30 2006-05-10 08:13:23 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: zinfo.h,v 1.31 2006-05-10 12:31:09 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -70,6 +70,13 @@ void zebraExplain_flush (ZebraExplainInfo zei, void *updateHandle);
 int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
 			     int *index_type, const char **db,
 			     int *set, int *use, const char **string_index);
+
+int zebraExplain_ord_adjust_occurrences(ZebraExplainInfo zei, int ord,
+                                        int term_delta, int doc_delta);
+
+int zebraExplain_ord_get_occurrences(ZebraExplainInfo zei, int ord,
+                                     zint *term_occurrences,
+                                     zint *doc_occurrences);
 
 int zebraExplain_trav_ord(ZebraExplainInfo zei, void *handle,
 			  int (*f)(void *handle, int ord));

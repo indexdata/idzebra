@@ -1,5 +1,5 @@
-/* $Id: zinfo.c,v 1.59 2006-05-10 09:08:55 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: zinfo.c,v 1.60 2006-05-10 12:31:08 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -44,6 +44,8 @@ struct zebSUInfo {
 	} su;
     } u;
     int ordinal;
+    zint doc_occurrences;
+    zint term_occurrences;
 };
 
 struct zebSUInfoB {
@@ -594,6 +596,8 @@ static void zebraExplain_readAttributeDetails(ZebraExplainInfo zei,
 	data1_node *node_str = NULL;
 	data1_node *node_ordinal = NULL;
 	data1_node *node_type = NULL;
+        data1_node *node_doc_occurrences = NULL;
+        data1_node *node_term_occurrences = NULL;
 	data1_node *np2;
 	char oid_str[128];
 	int oid_str_len;
@@ -615,6 +619,15 @@ static void zebraExplain_readAttributeDetails(ZebraExplainInfo zei,
 		node_ordinal = np2->child;
 	    else if (!strcmp(np2->u.tag.tag, "type"))
 		node_type = np2->child;
+	    else if (!strcmp(np2->u.tag.tag, "dococcurrences"))
+		node_doc_occurrences = np2->child;
+	    else if (!strcmp(np2->u.tag.tag, "termoccurrences"))
+		node_term_occurrences = np2->child;
+            else
+            {
+                yaz_log(YLOG_LOG, "Unknown tag '%s' in attributeDetails",
+                        np2->u.tag.tag);
+            }
 	}
 	assert(node_ordinal);
 
@@ -629,6 +642,18 @@ static void zebraExplain_readAttributeDetails(ZebraExplainInfo zei,
 	    (*zsuip)->info.index_type = 'w';
 	}
 
+        if (node_doc_occurrences)
+        {
+            data1_node *np = node_doc_occurrences;
+            (*zsuip)->info.doc_occurrences = atoi_zn(np->u.data.data,
+                                                     np->u.data.len);
+        }
+        if (node_term_occurrences)
+        {
+            data1_node *np = node_term_occurrences;
+            (*zsuip)->info.term_occurrences = atoi_zn(np->u.data.data,
+                                                      np->u.data.len);
+        }
 	if (node_set && node_use)
 	{
 	    (*zsuip)->info.which = ZEB_SU_SET_USE;
@@ -1165,6 +1190,11 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
 	}
 	data1_mk_tag_data_int (zei->dh, node_attr, "ordinal",
 			       zsui->info.ordinal, zei->nmem);
+
+        data1_mk_tag_data_zint (zei->dh, node_attr, "dococcurrences",
+                                zsui->info.doc_occurrences, zei->nmem);
+        data1_mk_tag_data_zint (zei->dh, node_attr, "termoccurrences",
+                                zsui->info.term_occurrences, zei->nmem);
     }
     /* convert to "SGML" and write it */
 #if ZINFO_DEBUG
@@ -1482,14 +1512,78 @@ int zebraExplain_trav_ord(ZebraExplainInfo zei, void *handle,
     }
     return 0;
 }
-			  
-int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
-			     int *index_type, 
-			     const char **db,
-			     int *set, int *use,
-			     const char **string_index)
+
+
+struct zebSUInfoB *zebraExplain_get_sui_info (ZebraExplainInfo zei, int ord,
+                                              int dirty_mark,
+                                              const char **db)
 {
     struct zebDatabaseInfoB *zdb;
+
+    for (zdb = zei->databaseInfo; zdb; zdb = zdb->next)
+    {
+	struct zebSUInfoB **zsui;
+
+	if (zdb->attributeDetails->readFlag)
+	    zebraExplain_readAttributeDetails (zei, zdb->attributeDetails);
+
+	for (zsui = &zdb->attributeDetails->SUInfo; *zsui;
+             zsui = &(*zsui)->next)
+	    if ((*zsui)->info.ordinal == ord)
+            {
+                struct zebSUInfoB *zsui_this = *zsui;
+                
+                /* take it out of the list and move to front */
+                *zsui = (*zsui)->next;
+                zsui_this->next = zdb->attributeDetails->SUInfo;
+                zdb->attributeDetails->SUInfo = zsui_this;
+
+                if (dirty_mark)
+                    zdb->attributeDetails->dirty = 1;
+                if (db)
+                    *db = zdb->databaseName;
+                return zsui_this;
+            }
+    }
+    return 0;
+}
+
+
+
+int zebraExplain_ord_adjust_occurrences(ZebraExplainInfo zei, int ord,
+                                        int term_delta, int doc_delta)
+{
+    struct zebSUInfoB *zsui = zebraExplain_get_sui_info(zei, ord, 1, 0);
+    if (zsui)
+    {
+        zsui->info.term_occurrences += term_delta;
+        zsui->info.doc_occurrences += doc_delta;
+        return 0;
+    }
+    return -1;
+}
+
+int zebraExplain_ord_get_occurrences(ZebraExplainInfo zei, int ord,
+                                     zint *term_occurrences,
+                                     zint *doc_occurrences)
+{
+    struct zebSUInfoB *zsui = zebraExplain_get_sui_info(zei, ord, 0, 0);
+    if (zsui)
+    {
+        *term_occurrences = zsui->info.term_occurrences;
+        *doc_occurrences = zsui->info.doc_occurrences;
+        return 0;
+    }
+    return -1;
+}
+
+int zebraExplain_lookup_ord(ZebraExplainInfo zei, int ord,
+			    int *index_type, 
+			    const char **db,
+			    int *set, int *use,
+			    const char **string_index)
+{
+    struct zebSUInfoB *zsui;
 
     if (set)
 	*set = -1;
@@ -1500,37 +1594,29 @@ int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
     if (string_index)
 	*string_index = 0;
 
-    for (zdb = zei->databaseInfo; zdb; zdb = zdb->next)
+    zsui = zebraExplain_get_sui_info(zei, ord, 0, db);
+    if (zsui)
     {
-	struct zebSUInfoB *zsui;
-
-	if (zdb->attributeDetails->readFlag)
-	    zebraExplain_readAttributeDetails (zei, zdb->attributeDetails);
-	    
-	for (zsui = zdb->attributeDetails->SUInfo; zsui; zsui = zsui->next)
-	    if (zsui->info.ordinal == ord)
-	    {
-		if (db)
-		    *db = zdb->databaseName;
-		if (zsui->info.which == ZEB_SU_SET_USE)
-		{
-		    if (set)
-			*set = zsui->info.u.su.set;
-		    if (use)
-			*use = zsui->info.u.su.use;
-		}
-
-		if (zsui->info.which == ZEB_SU_STR)
-		    if (string_index)
-			*string_index = zsui->info.u.str;
-
-		if (index_type)
-		    *index_type = zsui->info.index_type;
-		return 0;
-	    }
+        if (zsui->info.which == ZEB_SU_SET_USE)
+        {
+            if (set)
+                *set = zsui->info.u.su.set;
+            if (use)
+                *use = zsui->info.u.su.use;
+        }
+        
+        if (zsui->info.which == ZEB_SU_STR)
+            if (string_index)
+                *string_index = zsui->info.u.str;
+        
+        if (index_type)
+            *index_type = zsui->info.index_type;
+        return 0;
     }
     return -1;
 }
+
+
 
 zebAccessObject zebraExplain_announceOid (ZebraExplainInfo zei,
 					  zebAccessObject *op,
@@ -1587,6 +1673,8 @@ int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
     zsui->info.u.su.set = set;
     zsui->info.u.su.use = use;
     zsui->info.ordinal = (zei->ordinalSU)++;
+    zsui->info.doc_occurrences = 0;
+    zsui->info.term_occurrences = 0;
     return zsui->info.ordinal;
 }
 
