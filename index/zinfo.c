@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.60 2006-05-10 12:31:08 adam Exp $
+/* $Id: zinfo.c,v 1.61 2006-05-10 13:46:55 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1656,43 +1656,43 @@ void zebraExplain_addAttributeSet (ZebraExplainInfo zei, int set)
     }
 }
 
-int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
-			     int set, int use)
+struct zebSUInfoB *zebraExplain_add_sui_info(ZebraExplainInfo zei,
+                                             int index_type)
 {
     struct zebSUInfoB *zsui;
 
     assert (zei->curDatabaseInfo);
-    zebraExplain_addAttributeSet (zei, set);
     zsui = (struct zebSUInfoB *) nmem_malloc (zei->nmem, sizeof(*zsui));
     zsui->next = zei->curDatabaseInfo->attributeDetails->SUInfo;
     zei->curDatabaseInfo->attributeDetails->SUInfo = zsui;
     zei->curDatabaseInfo->attributeDetails->dirty = 1;
     zei->dirty = 1;
     zsui->info.index_type = index_type;
+    zsui->info.doc_occurrences = 0;
+    zsui->info.term_occurrences = 0;
+    zsui->info.ordinal = (zei->ordinalSU)++;
+    return zsui;
+}
+
+int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
+			     int set, int use)
+{
+    struct zebSUInfoB *zsui = zebraExplain_add_sui_info(zei, index_type);
+
+    zebraExplain_addAttributeSet (zei, set);
     zsui->info.which = ZEB_SU_SET_USE;
     zsui->info.u.su.set = set;
     zsui->info.u.su.use = use;
-    zsui->info.ordinal = (zei->ordinalSU)++;
-    zsui->info.doc_occurrences = 0;
-    zsui->info.term_occurrences = 0;
     return zsui->info.ordinal;
 }
 
 int zebraExplain_add_attr_str(ZebraExplainInfo zei, int index_type,
 			      const char *index_name)
 {
-    struct zebSUInfoB *zsui;
+    struct zebSUInfoB *zsui = zebraExplain_add_sui_info(zei, index_type);
 
-    assert (zei->curDatabaseInfo);
-    zsui = (struct zebSUInfoB *) nmem_malloc (zei->nmem, sizeof(*zsui));
-    zsui->next = zei->curDatabaseInfo->attributeDetails->SUInfo;
-    zei->curDatabaseInfo->attributeDetails->SUInfo = zsui;
-    zei->curDatabaseInfo->attributeDetails->dirty = 1;
-    zei->dirty = 1;
-    zsui->info.index_type = index_type;
     zsui->info.which = ZEB_SU_STR;
     zsui->info.u.str = nmem_strdup(zei->nmem, index_name);
-    zsui->info.ordinal = (zei->ordinalSU)++;
     return zsui->info.ordinal;
 }
 
