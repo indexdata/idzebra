@@ -1,4 +1,4 @@
-/* $Id: ranksimilarity.c,v 1.5 2006-05-08 14:03:16 marc Exp $
+/* $Id: ranksimilarity.c,v 1.6 2006-05-10 07:54:41 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -52,13 +52,14 @@ struct ranksimilarity_term_info {
   /** number of docs within result set */
   zint no_docs_resset;
 
-  /** number of terms in this field */
+  /**  number of terms in this field */
   zint no_terms_field;
 
   /** number of docs with this field in database */
   zint no_docs_field;
 
-  /** size of all docs with this field in database (in bytes ir terms ??) */
+  /** sum of size of all docs with this field in database 
+      (in bytes or terms ??) */
   zint size_docs_field;
 
   /** rank flag is one if term is to be included in ranking */
@@ -86,7 +87,9 @@ struct ranksimilarity_set_info {
   /** number of documents in entire collection */
   zint no_docs_database;
 
-  /** size of all documents in entire collection (in bytes or terms ??)*/
+  /** sum of size of all documents in entire collection 
+    (in bytes or terms ?? best implemented as sum of size of 
+      all indexes/fields in db ??)*/
   zint size_docs_database;
 
   /** array of size no_terms_query with statistics gathered per term */
@@ -290,8 +293,8 @@ static void add (void *set_handle, int seqno, TERMID term)
   assert(ti);
   si->last_pos = seqno;
   ti->freq_term_docfield++;
-  /* yaz_log(log_level, "add() seqno=%d term=%s freq_term_docfield=%d", 
-     seqno, term->name, ti->freq_term_docfield); */
+  /*yaz_log(log_level, "add() seqno=%d term=%s freq_term_docfield=%d", 
+    seqno, term->name, ti->freq_term_docfield); */
 }
 
 /*
