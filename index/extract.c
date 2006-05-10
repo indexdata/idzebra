@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.211 2006-05-10 13:54:01 adam Exp $
+/* $Id: extract.c,v 1.212 2006-05-10 14:13:45 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -36,11 +36,18 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <direntz.h>
 #include <charmap.h>
 
-#if _FILE_OFFSET_BITS == 64
-#define PRINTF_OFF_T "%Ld"
+#ifdef WIN32
+#define PRINTF_OFF_T "%I64d"
+#else
+/* !WIN32 */
+#if SIZEOF_OFF_T == SIZEOF_LONG_LONG
+#define PRINTF_OFF_T "%lld"
 #else
 #define PRINTF_OFF_T "%ld"
 #endif
+
+#endif
+
 
 #define USE_SHELLSORT 0
 

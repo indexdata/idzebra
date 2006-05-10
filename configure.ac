@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.4 2006-04-24 13:23:15 marc Exp $
+dnl $Id: configure.ac,v 1.5 2006-05-10 14:13:45 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[1.4.0],[adam@indexdata.dk])
@@ -265,6 +265,9 @@ if test "$bits" = "64"; then
 else
 	AC_MSG_RESULT(no)
 fi
+AC_CHECK_SIZEOF([off_t])
+AC_CHECK_SIZEOF([long long])
+AC_CHECK_SIZEOF([long])
 dnl ------ Modules
 AC_SUBST(SHARED_MODULE_LA)
 SHARED_MODULE_LA=""
