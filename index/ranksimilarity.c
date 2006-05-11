@@ -1,4 +1,4 @@
-/* $Id: ranksimilarity.c,v 1.7 2006-05-10 08:13:22 adam Exp $
+/* $Id: ranksimilarity.c,v 1.8 2006-05-11 10:26:13 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -52,21 +52,17 @@ struct ranksimilarity_term_info {
   /** number of docs within result set */
   zint no_docs_resset;
 
-  /**  number of terms in this field */
-  zint no_terms_field;
+   /** number of docs with this fieldindex in database */
+  zint no_docs_fieldindex;
 
-  /** number of docs with this field in database */
-  zint no_docs_field;
-
-  /** sum of size of all docs with this field in database 
-      (in bytes or terms ??) */
-  zint size_docs_field;
+  /**  number of terms in this fieldindex */
+  zint no_terms_fieldindex;
 
   /** rank flag is one if term is to be included in ranking */
   int rank_flag;
 
-  /** relative ranking weight of term field */
-  int field_weight;
+  /** relative ranking weight of term fieldindex */
+  int fieldindex_weight;
 
   /** term id used to access term name and other info */
   TERMID term;
@@ -84,13 +80,11 @@ struct ranksimilarity_set_info {
   /** number of terms in query which are included in ranking */
   int no_ranked_terms_query;
 
-  /** number of documents in entire collection */
+  /** number of documents in entire database */
   zint no_docs_database;
 
-  /** sum of size of all documents in entire collection 
-    (in bytes or terms ?? best implemented as sum of size of 
-      all indexes/fields in db ??)*/
-  zint size_docs_database;
+  /** number of terms in entire database */
+  zint no_terms_database;
 
   /** array of size no_terms_query with statistics gathered per term */
   struct ranksimilarity_term_info *entries;
@@ -160,7 +154,7 @@ static void *begin (struct zebra_register *reg,
  
   /* setting database global statistics */
    si->no_docs_database = -1;  /* TODO */
-   si->size_docs_database = -1;  /* TODO */
+   si->no_terms_database = -1;  /* TODO */
 
   /* setting query statistics */
    si->no_terms_query = numterms;
@@ -175,7 +169,7 @@ static void *begin (struct zebra_register *reg,
   ranksimilar_rec_reset(si);
 
 
-  /* looping all terms in a specific field of query */
+  /* looping all terms in a specific fieldindex of query */
   for (i = 0; i < numterms; i++)
     {
       struct ord_list *ol = NULL;
@@ -192,6 +186,9 @@ static void *begin (struct zebra_register *reg,
         {
           const char *cp = strstr(terms[i]->flags+4, ",w=");
 
+          zint no_docs_fieldindex = 0;
+          zint no_terms_fieldindex = 0;
+ 
           yaz_log(log_level, "begin() terms[%d]: '%s' flags=%s", 
                   i, terms[i]->name, terms[i]->flags);
 
@@ -203,14 +200,12 @@ static void *begin (struct zebra_register *reg,
              of setting rset->hits_limit = rset_count(rset) ??? */
           si->entries[i].freq_term_resset = rset_count(terms[i]->rset);
           si->entries[i].no_docs_resset =  terms[i]->rset->hits_count;
-          si->entries[i].no_docs_field = -1;   /*TODO*/
-          si->entries[i].size_docs_field = -1;   /*TODO*/
-          si->entries[i].no_terms_field = -1;   /*TODO*/
+
 
           if (cp)
-            si->entries[i].field_weight = atoi (cp+3);
+            si->entries[i].fieldindex_weight = atoi (cp+3);
           else
-            si->entries[i].field_weight = 34; /* sqrroot of 1000 */
+            si->entries[i].fieldindex_weight = 34; /* sqrroot of 1000 */
 
 
           /*
@@ -227,18 +222,24 @@ static void *begin (struct zebra_register *reg,
           */
           
           /* looping indexes where term terms[i] is found */
-          for (; ol; ol = ol->next)
+          
+         for (; ol; ol = ol->next)
             {
               int index_type = 0;
               const char *db = 0;
               const char *string_index = 0;
               int set = -1;
               int use = -1;
-              
+
               zebraExplain_lookup_ord(reg->zei,
                                       ol->ord, &index_type, &db, &set, &use,
                                       &string_index);
-              
+
+              no_docs_fieldindex 
+                  += zebraExplain_ord_get_doc_occurrences(reg->zei, ol->ord);
+              no_terms_fieldindex 
+                  += zebraExplain_ord_get_term_occurrences(reg->zei, ol->ord);
+
               if (string_index)
 		yaz_log(log_level, 
                         "begin()    index: ord=%d type=%c db=%s str-index=%s",
@@ -249,6 +250,8 @@ static void *begin (struct zebra_register *reg,
                         ol->ord, index_type, db, set, use);
             }
      
+          si->entries[i].no_docs_fieldindex = no_docs_fieldindex;
+          si->entries[i].no_terms_fieldindex = no_terms_fieldindex;
         }
         
       si->entries[i].term = terms[i];
@@ -320,8 +323,8 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
           si->no_ranked_terms_query);
   yaz_log(log_level, "calc() si->no_docs_database = " ZINT_FORMAT,  
           si->no_docs_database); 
-  yaz_log(log_level, "calc() si->size_docs_database = " ZINT_FORMAT,  
-          si->size_docs_database); 
+  yaz_log(log_level, "calc() si->no_terms_database = " ZINT_FORMAT,  
+          si->no_terms_database); 
 
   
   if (!si->no_ranked_terms_query)
@@ -342,20 +345,20 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
                 i, si->entries[i].term->name, si->entries[i].term->flags);
         yaz_log(log_level, "calc() entries[%d] rank_flag %d", 
                 i, si->entries[i].rank_flag );
-        yaz_log(log_level, "calc() entries[%d] field_weight %d", 
-                i, si->entries[i].field_weight );
+        yaz_log(log_level, "calc() entries[%d] fieldindex_weight %d", 
+                i, si->entries[i].fieldindex_weight );
         yaz_log(log_level, "calc() entries[%d] freq_term_docfield %d", 
                 i, si->entries[i].freq_term_docfield );
         yaz_log(log_level, "calc() entries[%d] freq_term_resset " ZINT_FORMAT,
                 i, si->entries[i].freq_term_resset );
         yaz_log(log_level, "calc() entries[%d] no_docs_resset " ZINT_FORMAT, 
                 i, si->entries[i].no_docs_resset );
-        yaz_log(log_level, "calc() entries[%d] no_docs_field " ZINT_FORMAT, 
-                i, si->entries[i].no_docs_field );
-        yaz_log(log_level, "calc() entries[%d] size_docs_field " ZINT_FORMAT, 
-                i, si->entries[i].size_docs_field );
-        yaz_log(log_level, "calc() entries[%d] no_terms_field " ZINT_FORMAT, 
-                i, si->entries[i].no_terms_field );
+        yaz_log(log_level, "calc() entries[%d] no_docs_fieldindex " 
+                ZINT_FORMAT, 
+                i, si->entries[i].no_docs_fieldindex );
+        yaz_log(log_level, "calc() entries[%d] no_terms_fieldindex " 
+                ZINT_FORMAT, 
+                i, si->entries[i].no_terms_fieldindex );
       }
     }
   
