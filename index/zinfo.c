@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.61 2006-05-10 13:46:55 adam Exp $
+/* $Id: zinfo.c,v 1.62 2006-05-11 10:15:33 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1575,6 +1575,22 @@ int zebraExplain_ord_get_occurrences(ZebraExplainInfo zei, int ord,
         return 0;
     }
     return -1;
+}
+
+zint zebraExplain_ord_get_doc_occurrences(ZebraExplainInfo zei, int ord)
+{
+    struct zebSUInfoB *zsui = zebraExplain_get_sui_info(zei, ord, 0, 0);
+    if (zsui)
+        return zsui->info.doc_occurrences;
+    return 0;
+}
+
+zint zebraExplain_ord_get_term_occurrences(ZebraExplainInfo zei, int ord)
+{
+    struct zebSUInfoB *zsui = zebraExplain_get_sui_info(zei, ord, 0, 0);
+    if (zsui)
+        return zsui->info.term_occurrences;
+    return 0;
 }
 
 int zebraExplain_lookup_ord(ZebraExplainInfo zei, int ord,

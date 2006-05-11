@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.31 2006-05-10 12:31:09 adam Exp $
+/* $Id: zinfo.h,v 1.32 2006-05-11 10:15:33 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -74,9 +74,8 @@ int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
 int zebraExplain_ord_adjust_occurrences(ZebraExplainInfo zei, int ord,
                                         int term_delta, int doc_delta);
 
-int zebraExplain_ord_get_occurrences(ZebraExplainInfo zei, int ord,
-                                     zint *term_occurrences,
-                                     zint *doc_occurrences);
+zint zebraExplain_ord_get_term_occurrences(ZebraExplainInfo zei, int ord);
+zint zebraExplain_ord_get_doc_occurrences(ZebraExplainInfo zei, int ord);
 
 int zebraExplain_trav_ord(ZebraExplainInfo zei, void *handle,
 			  int (*f)(void *handle, int ord));
