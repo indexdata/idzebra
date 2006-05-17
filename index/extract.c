@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.212 2006-05-10 14:13:45 adam Exp $
+/* $Id: extract.c,v 1.213 2006-05-17 17:46:45 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -87,6 +87,8 @@ static void logRecord (ZebraHandle zh)
               zh->records_deleted);
     }
 }
+
+static void extract_add_index_string (RecWord *p, const char *str, int length);
 
 static void extract_set_store_data_prepare(struct recExtractCtrl *p);
 
@@ -386,6 +388,16 @@ static void init_extractCtrl(ZebraHandle zh, struct recExtractCtrl *ctrl)
     ctrl->flagShowRecords = !zh->m_flag_rw;
 }
 
+static void all_matches_add(struct recExtractCtrl *ctrl)
+{
+    RecWord word;
+    extract_init(ctrl, &word);
+    word.index_name = "allrecords";
+    word.index_type = 'w';
+    word.seqno = 1;
+    extract_add_index_string (&word, "", 0);
+}
+
 static ZEBRA_RES file_extract_record(ZebraHandle zh,
 				     SYSNO *sysno, const char *fname,
 				     int deleteFlag,
@@ -479,8 +491,9 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
             }
             return ZEBRA_FAIL;
         }
+        all_matches_add(&extractCtrl);
         if (extractCtrl.match_criteria[0])
-            matchStr = extractCtrl.match_criteria;	
+            matchStr = extractCtrl.match_criteria;
     }
 
     /* if matchStr is set now - we assume it's printable .
@@ -991,6 +1004,8 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
 	return ZEBRA_FAIL;
     }
 
+    all_matches_add(&extractCtrl);
+        
     if (extractCtrl.match_criteria[0])
 	match_criteria = extractCtrl.match_criteria;
 
@@ -1688,7 +1703,7 @@ void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys)
     }
 }
 
-void extract_add_index_string (RecWord *p, const char *str, int length)
+void extract_add_index_string(RecWord *p, const char *str, int length)
 {
     struct it_key key;
 

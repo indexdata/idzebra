@@ -1,5 +1,5 @@
-/* $Id: zrpn.c,v 1.212 2006-05-10 08:13:23 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: zrpn.c,v 1.213 2006-05-17 17:46:45 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -969,7 +969,10 @@ static int string_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         break;
     case 3:
     case 102:
+    case 103:
     case -1:
+        if (!**term_sub)
+            return 1;
         yaz_log(log_level_rpn, "Relation =");
         if (!term_100(zh->reg->zebra_maps, reg_type, term_sub,
                       term_component, space_split, term_dst))
@@ -1568,7 +1571,9 @@ static ZEBRA_RES term_list_trunc(ZebraHandle zh,
     struct grep_info grep_info;
     const char *termp = termz;
     int alloc_sets = 0;
+    int empty_term = *termz ? 0 : 1;
 
+    empty_term = 0;
     *num_result_sets = 0;
     *term_dst = 0;
     if (grep_info_prepare(zh, zapt, &grep_info, reg_type) == ZEBRA_FAIL)
@@ -1606,6 +1611,11 @@ static ZEBRA_RES term_list_trunc(ZebraHandle zh,
 	if ((*result_sets)[*num_result_sets] == 0)
 	    break;
 	(*num_result_sets)++;
+
+        if (empty_term)
+            break;
+        if (!*termp)
+            break;
     }
     grep_info_delete(&grep_info);
     return ZEBRA_OK;
@@ -2410,6 +2420,15 @@ static ZEBRA_RES rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 				     xpath_use,
 				     num_bases, basenames, rset_nmem,
 				     rset, kc);
+    }
+    else if (!strcmp(search_type, "always"))
+    {
+        *termz = '\0';
+        res = rpn_search_APT_phrase(zh, zapt, termz, attributeSet, stream,
+                                    reg_id, complete_flag, rank_type,
+                                    xpath_use,
+                                    num_bases, basenames, rset_nmem,
+                                    rset, kc);
     }
     else
     {

@@ -1,3 +1,6 @@
+Implemented bug #588: allrecords search. Using @attr 1=allrecords ""
+matches all records in a database.
+
 Zebra reads (non-standard) attribute 10 for RPN queries. The value, when
 specified, is returned as subqueryId in SearchResult-1. It un-specified
 no subqueryId is part of SearchResult-1.

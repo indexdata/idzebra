@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.74 2006-05-10 08:13:22 adam Exp $
+/* $Id: kinput.c,v 1.75 2006-05-17 17:46:45 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -603,7 +603,7 @@ int heap_inpc (struct heap_cread_info *hci, struct heap_info *hi)
         char *dict_info;
 
         strcpy (this_name, hci->cur_name);
-	assert (hci->cur_name[1]);
+	assert (hci->cur_name[0]);
         hi->no_diffs++;
         if ((dict_info = dict_lookup (hi->reg->dict, hci->cur_name)))
         {
@@ -648,7 +648,7 @@ int heap_inp0(struct heap_cread_info *hci, struct heap_info *hi)
 	int mode;
 
         strcpy (this_name, hci->cur_name);
-	assert (hci->cur_name[1]);
+	assert (hci->cur_name[0]);
         hi->no_diffs++;
 
 	while (heap_cread_item2(hci, &dst, &mode))
@@ -672,7 +672,7 @@ int heap_inpb(struct heap_cread_info *hci, struct heap_info *hi)
         char *dict_info;
 
         strcpy (this_name, hci->cur_name);
-	assert (hci->cur_name[1]);
+	assert (hci->cur_name[0]);
         hi->no_diffs++;
 
 #if 0
@@ -726,7 +726,7 @@ int heap_inps (struct heap_cread_info *hci, struct heap_info *hi)
         char *dict_info;
 
         strcpy (this_name, hci->cur_name);
-	assert (hci->cur_name[1]);
+	assert (hci->cur_name[0]);
         hi->no_diffs++;
         if (!(dict_info = dict_lookup (hi->reg->dict, hci->cur_name)))
         {
