@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.217 2006-05-10 08:13:23 adam Exp $
+/* $Id: zebraapi.c,v 1.218 2006-05-18 12:03:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -368,12 +368,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
 
     reg->keys = zebra_rec_keys_open();
 
-#if NATTR
     reg->sortKeys = zebra_rec_keys_open();
-#else
-    reg->sortKeys.buf = 0;
-    reg->sortKeys.buf_max = 0;
-#endif
 
     reg->records = 0;
     reg->dict = 0;
@@ -551,11 +546,7 @@ static void zebra_register_close(ZebraService zs, struct zebra_register *reg)
     data1_destroy (reg->dh);
 
     zebra_rec_keys_close(reg->keys);
-#if NATTR
     zebra_rec_keys_close(reg->sortKeys);
-#else
-    xfree(reg->sortKeys.buf);
-#endif
 
     xfree(reg->key_buf);
     xfree(reg->name);

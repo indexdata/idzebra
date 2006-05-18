@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.160 2006-05-10 08:13:21 adam Exp $
+/* $Id: index.h,v 1.161 2006-05-18 12:03:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -184,16 +184,6 @@ typedef struct zebra_rank_class {
 
 #include "reckeys.h"
 
-#if NATTR
-
-#else
-struct sortKeys {
-    int buf_used;
-    int buf_max;
-    char *buf;
-};
-#endif
-
 struct zebra_register {
     char *name;
     
@@ -219,12 +209,7 @@ struct zebra_register {
     int stop_flag;
 
     zebra_rec_keys_t keys;
-
-#if NATTR
     zebra_rec_keys_t sortKeys;
-#else
-    struct sortKeys sortKeys;
-#endif
     char **key_buf;
     size_t ptr_top;
     size_t ptr_i;
@@ -446,13 +431,8 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
                               int cmd, zebra_rec_keys_t reckeys,
 			      zint staticrank);
-#if NATTR
 void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
                             int cmd, zebra_rec_keys_t skp);
-#else
-void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
-                            int cmd, struct sortKeys *skp);
-#endif
 void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid);
 void extract_token_add (RecWord *p);
 int explain_extract (void *handle, Record rec, data1_node *n);

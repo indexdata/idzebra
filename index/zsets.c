@@ -1,5 +1,5 @@
-/* $Id: zsets.c,v 1.101 2006-05-10 08:13:26 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: zsets.c,v 1.102 2006-05-18 12:03:05 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -538,7 +538,11 @@ void zebra_meta_records_destroy (ZebraHandle zh, ZebraMetaRecord *records,
 
 struct sortKeyInfo {
     int relation;
+#if 0
     int attrUse;
+#else
+    int ord;
+#endif
     int numerical;
 };
 
@@ -554,7 +558,7 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
     sortIdx_sysno (zh->reg->sortIdx, sysno);
     for (i = 0; i<num_criteria; i++)
     {
-        sortIdx_type (zh->reg->sortIdx, criteria[i].attrUse);
+        sortIdx_type (zh->reg->sortIdx, criteria[i].ord);
         sortIdx_read (zh->reg->sortIdx, this_entry.buf[i]);
     }
     i = sort_info->num_entries;
@@ -849,22 +853,28 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
             return ZEBRA_FAIL;
         case Z_SortKey_sortAttributes:
             yaz_log(log_level_sort, "key %d is of type sortAttributes", i+1);
-            sort_criteria[i].attrUse =
-                zebra_maps_sort (zh->reg->zebra_maps,
-                                 sk->u.sortAttributes,
-                                 &sort_criteria[i].numerical);
-            yaz_log(log_level_sort, "use value = %d", sort_criteria[i].attrUse);
-            if (sort_criteria[i].attrUse == -1)
+            if (1)
             {
-		zebra_setError(
-		    zh, YAZ_BIB1_USE_ATTRIBUTE_REQUIRED_BUT_NOT_SUPPLIED, 0); 
-                return ZEBRA_FAIL;
-            }
-            if (sortIdx_type (zh->reg->sortIdx, sort_criteria[i].attrUse))
-            {
-		zebra_setError(
-		    zh, YAZ_BIB1_CANNOT_SORT_ACCORDING_TO_SEQUENCE, 0);
-                return ZEBRA_FAIL;
+                int ord;
+                int use = zebra_maps_sort(zh->reg->zebra_maps,
+                                          sk->u.sortAttributes,
+                                          &sort_criteria[i].numerical);
+                yaz_log(log_level_sort, "use value = %d", use);
+                if (use == -1)
+                {
+                    zebra_setError(
+                        zh, YAZ_BIB1_USE_ATTRIBUTE_REQUIRED_BUT_NOT_SUPPLIED, 0); 
+                    return ZEBRA_FAIL;
+                }
+                ord = zebraExplain_lookup_attr_su_any_index(zh->reg->zei, 
+                                                            VAL_IDXPATH, use);
+                if (ord == -1)
+                {
+                    zebra_setError(
+                        zh, YAZ_BIB1_CANNOT_SORT_ACCORDING_TO_SEQUENCE, 0);
+                    return ZEBRA_FAIL;
+                }
+                sort_criteria[i].ord = ord;
             }
             break;
         }

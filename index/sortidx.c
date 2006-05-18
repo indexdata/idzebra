@@ -1,5 +1,5 @@
-/* $Id: sortidx.c,v 1.16 2006-05-10 08:13:22 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: sortidx.c,v 1.17 2006-05-18 12:03:05 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -21,7 +21,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 
- 
+#include <assert.h> 
 #include <string.h>
 
 #include <yaz/log.h>
@@ -140,7 +140,10 @@ void sortIdx_add (SortIdx si, const char *buf, int len)
 
 void sortIdx_read (SortIdx si, char *buf)
 {
-    int r = bf_read (si->current_file->bf, si->sysno+1, 0, 0, buf);
+    int r;
+
+    assert(si->current_file);
+    r = bf_read (si->current_file->bf, si->sysno+1, 0, 0, buf);
     if (!r)
         memset (buf, 0, SORT_IDX_ENTRYSIZE);
 }

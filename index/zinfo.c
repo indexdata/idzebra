@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.62 2006-05-11 10:15:33 adam Exp $
+/* $Id: zinfo.c,v 1.63 2006-05-18 12:03:05 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1438,8 +1438,13 @@ int zebraExplain_lookup_attr_su_any_index(ZebraExplainInfo zei,
 					  int set, int use)
 {
     struct zebSUInfoB *zsui;
+    int ord;
 
     assert (zei->curDatabaseInfo);
+
+    ord = zebraExplain_lookup_attr_su(zei, 'w', set, use);
+    if (ord != -1)
+        return ord;
     for (zsui = zei->curDatabaseInfo->attributeDetails->SUInfo;
 	 zsui; zsui=zsui->next)
         if (zsui->info.which == ZEB_SU_SET_USE &&
