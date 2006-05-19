@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.46 2006-05-19 17:28:55 adam Exp $
+# $Id: makefile,v 1.47 2006-05-19 17:33:18 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -219,6 +219,7 @@ COMMON_C_OPTIONS=          \
   /nologo /W3 /EHsc /FD /c \
   /D "WIN32"               \
   /D"_CONSOLE" /D"_MBCS"   \
+  /DYAZ_USE_NEW_LOG=1      \
   /D"_CRT_SECURE_NO_DEPRECATE" \
   $(ICONV_DEF)             \
   $(EXPAT_DEF)             \
