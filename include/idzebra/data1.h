@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.13 2006-05-19 13:49:34 adam Exp $
+/* $Id: data1.h,v 1.14 2006-05-19 23:45:29 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -52,12 +52,6 @@ YAZ_BEGIN_CDECL
 
 struct data1_attset;
 
-typedef struct data1_local_attribute
-{
-    int local;
-    struct data1_local_attribute *next;
-} data1_local_attribute;
-
 typedef struct data1_attset data1_attset;    
 typedef struct data1_att data1_att;
 typedef struct data1_attset_child data1_attset_child;
@@ -67,7 +61,6 @@ struct data1_att
     data1_attset *parent;          /* attribute set */
     char *name;                    /* symbolic name of this attribute */
     int value;                     /* attribute value */
-    data1_local_attribute *locals; /* local index values */
     data1_att *next;
 };
 

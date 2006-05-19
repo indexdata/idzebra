@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.163 2006-05-19 23:20:24 adam Exp $
+/* $Id: index.h,v 1.164 2006-05-19 23:45:29 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -132,10 +132,6 @@ int strtab_src (struct strtab *t, const char *name, void ***infop);
 void strtab_del (struct strtab *t,
                  void (*func)(const char *name, void *info, void *data),
                  void *data);
-int index_char_cvt (int c);
-int index_word_prefix (char *string, int attset_ordinal,
-                       int local_attribute, const char *databaseName);
-
 
 void zebraIndexLockMsg (ZebraHandle zh, const char *str);
 void zebraIndexUnlock (ZebraHandle zh);
@@ -148,8 +144,6 @@ void zebra_lock_prefix (Res res, char *dst);
 #define FNAME_COMMIT_LOCK "zebracmt.LCK"
 #define FNAME_ORG_LOCK    "zebraorg.LCK"
 #define FNAME_TOUCH_TIME  "zebraidx.time"
-
-void zebra_load_atts (data1_handle dh, Res res);
 
 int key_SU_decode (int *ch, const unsigned char *out);
 int key_SU_encode (int ch, char *out);
@@ -362,14 +356,6 @@ int zebra_server_lock_destroy (ZebraService zh);
 int zebra_server_lock (ZebraService zh, int lockCommit);
 void zebra_server_unlock (ZebraService zh, int commitPhase);
 int zebra_server_lock_get_state (ZebraService zh, time_t *timep);
-
-#if 1
-typedef struct attent
-{
-    int attset_ordinal;
-    data1_local_attribute *local_attributes;
-} attent;
-#endif
 
 int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, 
 			zebra_snippets *hit_snippet, ODR stream,

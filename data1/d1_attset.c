@@ -1,4 +1,4 @@
-/* $Id: d1_attset.c,v 1.9 2006-05-19 13:49:33 adam Exp $
+/* $Id: d1_attset.c,v 1.10 2006-05-19 23:45:28 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -85,42 +85,24 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 	    int num;
 	    char *name;
 	    data1_att *t;
-	    data1_local_attribute *locals;
 	    
 	    if (argc < 3)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to att", file, lineno);
 		continue;
 	    }
+            if (argc > 3)
+            {
+		yaz_log(YLOG_WARN, "%s:%d: Local attributes not supported",
+                        file, lineno);
+	    }
 	    num = atoi (argv[1]);
 	    name = argv[2];
 	    
-	    if (argc == 3) /* no local attributes given */
-	    {
-		locals = (data1_local_attribute *)
-		    nmem_malloc(mem, sizeof(*locals));
-		locals->local = num;
-		locals->next = 0;
-	    }
-	    else /* parse the string "local{,local}" */
-	    {
-		char *p = argv[3];
-		data1_local_attribute **ap = &locals;
-		do
-		{
-		    *ap = (data1_local_attribute *)
-			nmem_malloc(mem, sizeof(**ap));
-		    (*ap)->local = atoi(p);
-		    (*ap)->next = 0;
-		    ap = &(*ap)->next;
-		}
-		while ((p = strchr(p, ',')) && *(++p));
-	    }
 	    t = *attp = (data1_att *)nmem_malloc(mem, sizeof(*t));
 	    t->parent = res;
 	    t->name = nmem_strdup(mem, name);
 	    t->value = num;
-	    t->locals = locals;
 	    t->next = 0;
 	    attp = &t->next;
 	}
