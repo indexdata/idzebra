@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.43 2006-03-29 08:38:45 adam Exp $
+# $Id: makefile,v 1.44 2006-05-19 13:49:38 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -329,6 +329,7 @@ ZEBRALIB_OBJS= \
 	$(MOD_XSLT_OBJS) \
 	$(OBJDIR)\atoi_zn.obj \
 	$(OBJDIR)\attribute.obj \
+	$(OBJDIR)\attrfind.obj \
 	$(OBJDIR)\bfile.obj \
 	$(OBJDIR)\bset.obj \
 	$(OBJDIR)\cfile.obj \

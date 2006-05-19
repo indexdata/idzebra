@@ -1,5 +1,5 @@
-/* $Id: t9.c,v 1.10 2006-05-19 13:49:35 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: attrfind.h,v 1.1 2006-05-19 13:49:34 adam Exp $
+   Copyright (C) 2005-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -20,34 +20,35 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-/** t9.c - test rank-1 */
+#ifndef ATTRFIND_H
+#define ATTRFIND_H
 
-#include "testlib.h"
+#include <yaz/yconfig.h>
+#include <yaz/z-core.h>
+#include <yaz/oid.h>
 
-#include "rankingrecords.h"
+YAZ_BEGIN_CDECL
 
-static void tst(int argc, char **argv)
-{
-    ZebraService zs = tl_start_up(0, argc, argv);
-    ZebraHandle zh = zebra_open(zs, 0);
+typedef struct {
+    int type;
+    int major;
+    int minor;
+    Z_AttributeElement **attributeList;
+    int num_attributes;
+} AttrType;
 
-    YAZ_CHECK(tl_init_data(zh, recs));
+void attr_init_APT(AttrType *src, Z_AttributesPlusTerm *zapt, int type);
+
+void attr_init_AttrList(AttrType *src, Z_AttributeList *list, int type);
+
+int attr_find_ex(AttrType *src, oid_value *attributeSetP,
+                 const char **string_value);
+int attr_find(AttrType *src, oid_value *attributeSetP);
     
-    YAZ_CHECK(tl_ranking_query(zh, "@attr 1=4 @attr 2=102 the",
-			       3, "first title", 1000 ));
-    
-    YAZ_CHECK(tl_ranking_query(zh, "@attr 1=62 @attr 2=102 foo",
-			       3, "second title", 850 ));
-    
-    /* get the record with the most significant hit, that is the 'bar' */
-    /* as that is the rarest of my search words */
-    YAZ_CHECK(tl_ranking_query(zh, "@attr 1=1016 @attr 2=102 @or @or the foo bar",
-			       3, "third title", 813 ));
-    
-    YAZ_CHECK(tl_close_down(zh, zs));
-}
 
-TL_MAIN
+YAZ_END_CDECL
+
+#endif
 /*
  * Local variables:
  * c-basic-offset: 4

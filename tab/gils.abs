@@ -1,7 +1,7 @@
 # This is the abstract syntax (and most of the top-level profile info)
 # for GILS version 2.
 #
-# $Id: gils.abs,v 1.2 2002-12-02 16:55:14 adam Exp $
+# $Id: gils.abs,v 1.3 2006-05-19 13:49:35 adam Exp $
 
 name gils
 reference GILS-schema
@@ -22,7 +22,7 @@ esetname F @
 
 systag sysno none
 
-#all Any
+all Any
 
 elm (1,1)                   schemaIdentifier		-
 elm (1,10)                  rank 			-

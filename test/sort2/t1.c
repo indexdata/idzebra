@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.6 2006-05-10 08:13:39 adam Exp $
+/* $Id: t1.c,v 1.7 2006-05-19 13:49:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -47,7 +47,7 @@ static void tst(int argc, char **argv)
     ids[1] = 5;
     ids[2] = 3;
     ids[3] = 4;
-    YAZ_CHECK(tl_sort(zh, "@or computer @attr 7=1 @attr 1=4 0", 4, ids));
+    YAZ_CHECK(tl_sort(zh, "@or @attr 1=4 computer @attr 7=1 @attr 1=4 0", 4, ids));
 
     YAZ_CHECK(tl_close_down(zh, zs));
 }

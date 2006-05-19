@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.16 2006-05-10 08:13:35 adam Exp $
+/* $Id: t5.c,v 1.17 2006-05-19 13:49:35 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -62,19 +62,19 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @and x title", 2));
 
     /* exl=0 distance=2 order=1 relation=2 (<=), known, unit=word */
-    YAZ_CHECK(tl_query(zh, "@prox 0 2 1 2 k 2 my x", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @prox 0 2 1 2 k 2 my x", 2));
 
     /* exl=0 distance=2 order=1 relation=2 (<=), known, unit=word */
-    YAZ_CHECK(tl_query(zh, "@prox 0 2 1 2 k 2 x my", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @prox 0 2 1 2 k 2 x my", 0));
 
     /* exl=0 distance=2 order=0 relation=2 (<=), known, unit=word */
-    YAZ_CHECK(tl_query(zh, "@prox 0 2 0 2 k 2 x my", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @prox 0 2 0 2 k 2 x my", 2));
 
     /* exl=0 distance=2 order=0 relation=3 (=), known, unit=word */
-    YAZ_CHECK(tl_query(zh, "@prox 0 2 1 3 k 2 my x", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @prox 0 2 1 3 k 2 my x", 1));
 
     /* exl=1 distance=2 order=0 relation=3 (=), known, unit=word */
-    YAZ_CHECK(tl_query(zh, "@prox 1 2 1 3 k 2 my x", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @prox 1 2 1 3 k 2 my x", 1));
 
     /* provoke unsupported use attribute */
     YAZ_CHECK(tl_query_x(zh, "@attr 1=999 @attr 4=1 x", 0, 114));
@@ -93,7 +93,7 @@ static void tst(int argc, char **argv)
 	       0, 121));
 
     /* provoke unsupported relation */
-    YAZ_CHECK(tl_query_x(zh, "@attr 1=1016 @attr 2=6 x", 0, 117));
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=4 @attr 2=6 x", 0, 117));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=1016 @attr 2=6 @attr 4=109 x", 0, 114));
  
     YAZ_CHECK(tl_close_down(zh, zs));

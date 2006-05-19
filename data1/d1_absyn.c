@@ -1,5 +1,5 @@
-/* $Id: d1_absyn.c,v 1.24 2006-05-10 08:13:17 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: d1_absyn.c,v 1.25 2006-05-19 13:49:33 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -28,6 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <yaz/oid.h>
 #include <idzebra/data1.h>
+#include <idzebra/recctrl.h>
 #include <zebra_xpath.h>
 #include <d1_absyn.h>
 
@@ -509,17 +510,11 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
     return res;
 }
 
-/* *ostrich*
-
-   added arg xpelement... when called from xelm context, it's 1, saying
-   that ! means xpath, not element name as attribute name...
-
-   pop, 2002-12-13
- */
-static int parse_termlists (data1_handle dh, data1_termlist ***tpp,
-			    char *cp, const char *file, int lineno,
-			    const char *element_name, data1_absyn *res,
-			    int xpelement)
+static int parse_termlists(data1_handle dh, data1_termlist ***tpp,
+                           char *cp, const char *file, int lineno,
+                           const char *element_name, data1_absyn *res,
+                           int xpelement,
+                           data1_attset *attset)
 {
     data1_termlist **tp = *tpp;
     while(1)
@@ -570,27 +565,24 @@ static int parse_termlists (data1_handle dh, data1_termlist ***tpp,
 	    nmem_malloc(data1_nmem_get(dh), sizeof(**tp));
 	(*tp)->next = 0;
         
-#if NATTR
-	(*tp)->index_name = nmem_strdup(data1_nmem_get(dh), element_name);
-	if (*attname == '!' && xpelement)
-	    (*tp)->index_name = 0;
-#else
-	if (!xpelement) {
-            if (*attname == '!')
+        if (*attname == '!')
+        {
+            if (!xpelement && element_name)
                 strcpy(attname, element_name);
-	}
-	if (!((*tp)->att = data1_getattbyname(dh, res->attset, attname))) 
-	{
-            if ((!xpelement) || (*attname != '!')) {
-                yaz_log(YLOG_WARN,
-                        "%s:%d: Couldn't find att '%s' in attset",
-                        file, lineno, attname);
-                return -1;
-            } else {
-                (*tp)->att = 0;
+            else if (xpelement)
+                strcpy(attname, ZEBRA_XPATH_CDATA);
+        }
+        if (attset)
+        {
+            if (!data1_getattbyname(dh, attset, attname))
+            {
+                yaz_log(YLOG_WARN, "Index '%s' not found in attset(s)",
+                        attname);
             }
-	}
-#endif   
+        }
+
+        (*tp)->index_name = nmem_strdup(data1_nmem_get(dh), attname);
+        assert (*(*tp)->index_name != '!');
 	if (r == 2 && (source = strchr(structure, ':')))
 	    *source++ = '\0';   /* cut off structure .. */
 	else
@@ -704,6 +696,8 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 {
     data1_sub_elements *cur_elements = NULL;
     data1_xpelement *cur_xpelement = NULL;
+    data1_attset *attset_list = data1_empty_attset(dh);
+    data1_attset_child **attset_childp = &attset_list->children;
 
     data1_absyn *res = 0;
     FILE *f;
@@ -712,7 +706,6 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
     data1_maptab **maptabp;
     data1_marctab **marcp;
     data1_termlist *all = 0;
-    data1_attset_child **attset_childp;
     data1_tagset **tagset_childp;
     struct data1_systag **systagsp;
     int level = 0;
@@ -737,9 +730,6 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
     systagsp = &res->systags;
     tagset_childp = &res->tagset;
 
-    res->attset = data1_empty_attset (dh);
-    attset_childp =  &res->attset->children;
-
     res->varset = 0;
     res->esetnames = 0;
     esetpp = &res->esetnames;
@@ -750,7 +740,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
     res->sub_elements = NULL;
     res->main_elements = NULL;
     res->xp_elements = NULL;
-    
+
     while (f && (argc = read_absyn_line(f, &lineno, line, 512, argv, 50)))
     {
 	char *cmd = *argv;
@@ -859,9 +849,8 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    p = termlists;
 	    if (*p != '-')
 	    {
-		assert (res->attset);
-		
-		if (parse_termlists (dh, &tp, p, file, lineno, name, res, 0))
+		if (parse_termlists (dh, &tp, p, file, lineno, name, res, 0,
+                                     attset_list))
 		{
 		    fclose (f);
 		    return 0;
@@ -949,10 +938,8 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    p = termlists;
 	    if (*p != '-')
 	    {
-		assert (res->attset);
-		
 		if (parse_termlists (dh, &tp, p, file, lineno,
-                                     xpath_expr, res, 1))
+                                     xpath_expr, res, 1, attset_list))
 		{
 		    fclose (f);
 		    return 0;
@@ -1015,7 +1002,8 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 		     file, lineno);
 		continue;
 	    }
-	    if (parse_termlists (dh, &tp, argv[1], file, lineno, 0, res, 0))
+	    if (parse_termlists (dh, &tp, argv[1], file, lineno, 0, res, 0,
+                                 attset_list))
 	    {
 		fclose (f);
 		return 0;
@@ -1051,31 +1039,27 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	}
 	else if (!strcmp(cmd, "attset"))
 	{
-#if NATTR
-	    yaz_log(YLOG_WARN, "%s:%d: attset obsolete", file, lineno);
-#else
-	    char *name;
-	    data1_attset *attset;
-	    
-	    if (argc != 2)
-	    {
-		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to attset",
-		     file, lineno);
-		continue;
-	    }
-	    name = argv[1];
-	    if (!(attset = data1_get_attset (dh, name)))
-	    {
-		yaz_log(YLOG_WARN, "%s:%d: Couldn't find attset  %s",
-		     file, lineno, name);
-		continue;
-	    }
-	    *attset_childp = (data1_attset_child *)
-		nmem_malloc (data1_nmem_get(dh), sizeof(**attset_childp));
-	    (*attset_childp)->child = attset;
-	    (*attset_childp)->next = 0;
-	    attset_childp = &(*attset_childp)->next;
-#endif
+           char *name;
+           data1_attset *attset;
+           
+           if (argc != 2)
+           {
+               yaz_log(YLOG_WARN, "%s:%d: Bad # of args to attset",
+                    file, lineno);
+               continue;
+           }
+           name = argv[1];
+           if (!(attset = data1_get_attset (dh, name)))
+           {
+               yaz_log(YLOG_WARN, "%s:%d: Couldn't find attset  %s",
+                       file, lineno, name);
+               continue;
+           }
+           *attset_childp = (data1_attset_child *)
+               nmem_malloc (data1_nmem_get(dh), sizeof(**attset_childp));
+           (*attset_childp)->child = attset;
+           (*attset_childp)->next = 0;
+           attset_childp = &(*attset_childp)->next;
 	}
 	else if (!strcmp(cmd, "tagset"))
 	{

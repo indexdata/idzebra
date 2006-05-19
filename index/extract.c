@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.214 2006-05-18 12:03:05 adam Exp $
+/* $Id: extract.c,v 1.215 2006-05-19 13:49:34 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -96,12 +96,7 @@ static void extract_init (struct recExtractCtrl *p, RecWord *w)
 {
     w->zebra_maps = p->zebra_maps;
     w->seqno = 1;
-#if NATTR
-#else
-    w->attrSet = VAL_BIB1;
-    w->attrUse = 1016;
-#endif
-    w->index_name = 0;
+    w->index_name = "any";
     w->index_type = 'w';
     w->extractCtrl = p;
     w->record_id = 0;
@@ -110,17 +105,22 @@ static void extract_init (struct recExtractCtrl *p, RecWord *w)
 
 static void searchRecordKey(ZebraHandle zh,
 			    zebra_rec_keys_t reckeys,
-			    int attrSetS, int attrUseS,
+                            const char *index_name,
 			    const char **ws, int ws_length)
 {
     int i;
-    int ch;
+    int ch = -1;
 
     for (i = 0; i<ws_length; i++)
         ws[i] = NULL;
 
-    ch = zebraExplain_lookup_attr_su_any_index(zh->reg->zei,
-					       attrSetS, attrUseS);
+    if (ch < 0)
+        ch = zebraExplain_lookup_attr_str(zh->reg->zei, '0', index_name);
+    if (ch < 0)
+        ch = zebraExplain_lookup_attr_str(zh->reg->zei, 'p', index_name);
+    if (ch < 0)
+        ch = zebraExplain_lookup_attr_str(zh->reg->zei, 'w', index_name);
+
     if (ch < 0)
 	return ;
 
@@ -236,9 +236,7 @@ static char *fileMatchStr (ZebraHandle zh,
         {
 	    const char *ws[32];
 	    char attset_str[64], attname_str[64];
-	    data1_attset *attset;
 	    int i;
-            int attSet = 1, attUse = 1;
             int first = 1;
 	    
 	    for (s++; strchr(FILE_MATCH_BLANK, *s); s++)
@@ -251,7 +249,9 @@ static char *fileMatchStr (ZebraHandle zh,
 	    
 	    for (; strchr(FILE_MATCH_BLANK, *s); s++)
 		;
-	    if (*s == ',')
+	    if (*s != ',')
+                strcpy(attname_str, attset_str);
+            else
 	    {
 		for (s++; strchr(FILE_MATCH_BLANK, *s); s++)
 		    ;
@@ -261,18 +261,8 @@ static char *fileMatchStr (ZebraHandle zh,
 			attname_str[i++] = *s;
 		attname_str[i] = '\0';
 	    }
-	    
-	    if ((attset = data1_get_attset (zh->reg->dh, attset_str)))
-	    {
-		data1_att *att;
-		attSet = attset->reference;
-		att = data1_getattbyname(zh->reg->dh, attset, attname_str);
-		if (att)
-		    attUse = att->value;
-		else
-		    attUse = atoi (attname_str);
-	    }
-            searchRecordKey (zh, reckeys, attSet, attUse, ws, 32);
+
+            searchRecordKey (zh, reckeys, attname_str, ws, 32);
 
             if (*s != ')')
             {
@@ -1621,24 +1611,13 @@ void extract_add_index_string(RecWord *p, const char *str, int length)
     ZebraExplainInfo zei = zh->reg->zei;
     int ch;
 
-    if (p->index_name)
-    {
-	ch = zebraExplain_lookup_attr_str(zei, p->index_type, p->index_name);
-	if (ch < 0)
-	    ch = zebraExplain_add_attr_str(zei, p->index_type, p->index_name);
-    }
-    else
-    {
-#if NATTR
-	return;
-#else
-	ch = zebraExplain_lookup_attr_su(zei, p->index_type, 
-					 p->attrSet, p->attrUse);
-	if (ch < 0)
-	    ch = zebraExplain_add_attr_su(zei, p->index_type,
-					  p->attrSet, p->attrUse);
-#endif
-    }
+    if (!p->index_name)
+        return;
+
+    ch = zebraExplain_lookup_attr_str(zei, p->index_type, p->index_name);
+    if (ch < 0)
+        ch = zebraExplain_add_attr_str(zei, p->index_type, p->index_name);
+
     key.len = 4;
     key.mem[0] = ch;
     key.mem[1] = p->record_id;
@@ -1673,24 +1652,12 @@ static void extract_add_sort_string(RecWord *p, const char *str, int length)
     ZebraExplainInfo zei = zh->reg->zei;
     int ch;
 
-    if (p->index_name)
-    {
-	ch = zebraExplain_lookup_attr_str(zei, p->index_type, p->index_name);
-	if (ch < 0)
-	    ch = zebraExplain_add_attr_str(zei, p->index_type, p->index_name);
-    }
-    else
-    {
-#if NATTR
-	return;
-#else
-	ch = zebraExplain_lookup_attr_su(zei, p->index_type, 
-                                         VAL_IDXPATH, p->attrUse);
-	if (ch < 0)
-	    ch = zebraExplain_add_attr_su(zei, p->index_type,
-					  VAL_IDXPATH, p->attrUse);
-#endif
-    }
+    if (!p->index_name)
+        return;
+
+    ch = zebraExplain_lookup_attr_str(zei, p->index_type, p->index_name);
+    if (ch < 0)
+        ch = zebraExplain_add_attr_str(zei, p->index_type, p->index_name);
     key.len = 4;
     key.mem[0] = ch;
     key.mem[1] = p->record_id;

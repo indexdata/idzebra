@@ -1,5 +1,5 @@
-/* $Id: d1_absyn.h,v 1.3 2006-05-10 08:13:18 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: d1_absyn.h,v 1.4 2006-05-19 13:49:34 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -46,7 +46,6 @@ struct data1_absyn
     char *name;
     oid_value reference;
     data1_tagset *tagset;
-    data1_attset *attset;
     data1_varset *varset;
     data1_esetname *esetnames;
     data1_maptab *maptabs;

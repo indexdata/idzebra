@@ -1,5 +1,5 @@
-/* $Id: d1_attset.c,v 1.8 2006-05-10 08:13:18 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: d1_attset.c,v 1.9 2006-05-19 13:49:33 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -27,21 +27,21 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <idzebra/data1.h>
 
-data1_att *data1_getattbyname(data1_handle dh, data1_attset *s, char *name)
+data1_att *data1_getattbyname(data1_handle dh, data1_attset *s, const char *name)
 {
     data1_att *r;
     data1_attset_child *c;
     
     /* scan local set */
     for (r = s->atts; r; r = r->next)
-	if (!data1_matchstr(r->name, name))
-	    return r;
+        if (!data1_matchstr(r->name, name))
+            return r;
     for (c = s->children; c; c = c->next)
     {
-	assert (c->child);
-	/* scan included sets */
-	if ((r = data1_getattbyname (dh, c->child, name)))
-	    return r;
+        assert (c->child);
+        /* scan included sets */
+        if ((r = data1_getattbyname (dh, c->child, name)))
+            return r;
     }
     return 0;
 }

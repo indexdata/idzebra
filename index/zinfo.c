@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.63 2006-05-18 12:03:05 adam Exp $
+/* $Id: zinfo.c,v 1.64 2006-05-19 13:49:34 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1491,7 +1491,7 @@ int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, int index_type,
 	 *zsui; zsui = &(*zsui)->next)
         if ((*zsui)->info.index_type == index_type
             && (*zsui)->info.which == ZEB_SU_STR 
-            && !strcmp((*zsui)->info.u.str, str))
+            && !yaz_matchstr((*zsui)->info.u.str, str))
         {
             struct zebSUInfoB *zsui_this = *zsui;
 
@@ -1700,6 +1700,7 @@ int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
 {
     struct zebSUInfoB *zsui = zebraExplain_add_sui_info(zei, index_type);
 
+    yaz_log(YLOG_WARN, "add_attr_su");
     zebraExplain_addAttributeSet (zei, set);
     zsui->info.which = ZEB_SU_SET_USE;
     zsui->info.u.su.set = set;

@@ -1,4 +1,4 @@
-/* $Id: util.h,v 1.6 2006-05-10 08:13:20 adam Exp $
+/* $Id: util.h,v 1.7 2006-05-19 13:49:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -83,9 +83,6 @@ YAZ_END_CDECL
 
 #define CAST_ZINT_TO_INT(x) (int)(x)
 #define CAST_ZINT_TO_DOUBLE(x) (double)(x)
-
-/* NATTR=1 for string-attribute architecture, =0 for set+use . */
-#define NATTR 0
 
 #endif
 /*

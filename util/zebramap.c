@@ -1,5 +1,5 @@
-/* $Id: zebramap.c,v 1.48 2006-05-17 17:46:45 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: zebramap.c,v 1.49 2006-05-19 13:49:38 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
    This file is part of the Zebra server.
@@ -25,6 +25,7 @@
 #include <ctype.h>
 
 #include <charmap.h>
+#include <attrfind.h>
 #include <yaz/yaz-util.h>
 
 #include <idzebra/zebramap.h>
@@ -275,78 +276,6 @@ const char *zebra_maps_output(ZebraMaps zms, unsigned reg_id,
 }
 
 
-/* ------------------------------------ */
-
-typedef struct {
-    int type;
-    int major;
-    int minor;
-    Z_AttributeElement **attributeList;
-    int num_attributes;
-} AttrType;
-
-static int attr_find(AttrType *src, oid_value *attributeSetP)
-{
-    while (src->major < src->num_attributes)
-    {
-        Z_AttributeElement *element;
-
-        element = src->attributeList[src->major];
-        if (src->type == *element->attributeType)
-        {
-            switch (element->which) 
-            {
-            case Z_AttributeValue_numeric:
-                ++(src->major);
-                if (element->attributeSet && attributeSetP)
-                {
-                    oident *attrset;
-
-                    attrset = oid_getentbyoid(element->attributeSet);
-                    *attributeSetP = attrset->value;
-                }
-                return *element->value.numeric;
-                break;
-            case Z_AttributeValue_complex:
-                if (src->minor >= element->value.complex->num_list ||
-                    element->value.complex->list[src->minor]->which !=  
-                    Z_StringOrNumeric_numeric)
-                    break;
-                ++(src->minor);
-                if (element->attributeSet && attributeSetP)
-                {
-                    oident *attrset;
-
-                    attrset = oid_getentbyoid(element->attributeSet);
-                    *attributeSetP = attrset->value;
-                }
-                return *element->value.complex->list[src->minor-1]->u.numeric;
-            default:
-                assert(0);
-            }
-        }
-        ++(src->major);
-    }
-    return -1;
-}
-
-static void attr_init_APT(AttrType *src, Z_AttributesPlusTerm *zapt, int type)
-{
-    src->attributeList = zapt->attributes->attributes;
-    src->num_attributes = zapt->attributes->num_attributes;
-    src->type = type;
-    src->major = 0;
-    src->minor = 0;
-}
-
-static void attr_init_AttrList(AttrType *src, Z_AttributeList *list, int type)
-{
-    src->attributeList = list->attributes;
-    src->num_attributes = list->num_attributes;
-    src->type = type;
-    src->major = 0;
-    src->minor = 0;
-}
 
 /* ------------------------------------ */
 

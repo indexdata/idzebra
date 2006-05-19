@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test3.sh,v 1.8 2006-04-27 10:52:26 marc Exp $
+# $Id: test3.sh,v 1.9 2006-05-19 13:49:36 adam Exp $
 
 # Testing searches with lots of @and operators
 # in order to test the fast-forward operation of rsets
@@ -37,7 +37,7 @@ echo "search A1..." >>$LOG
 ../api/testclient -c 17 unix:socket utah > log || exit 1
 
 echo "search A2..." >>$LOG
-../api/testclient -c 30 unix:socket the > log || exit 1
+../api/testclient -c 31 unix:socket the > log || exit 1
 
 echo "search A3..." >>$LOG
 ../api/testclient -c 4 unix:socket deposits > log || exit 1
@@ -69,19 +69,19 @@ echo "search C6..." >>$LOG
 
 
 echo "search D1..." >>$LOG
-../api/testclient -c 29 unix:socket "@and the of "  > log || exit 1
+../api/testclient -c 30 unix:socket "@and the of "  > log || exit 1
 
 echo "search D2..." >>$LOG
-../api/testclient -c 29 unix:socket "@and of the"  > log || exit 1
+../api/testclient -c 30 unix:socket "@and of the"  > log || exit 1
 
 echo "search D3..." >>$LOG
-../api/testclient -c 29 unix:socket "@and @and the of of"  > log || exit 1
+../api/testclient -c 30 unix:socket "@and @and the of of"  > log || exit 1
 
 echo "search D4..." >>$LOG
-../api/testclient -c 29 unix:socket "@and @and of the the"  > log || exit 1
+../api/testclient -c 30 unix:socket "@and @and of the the"  > log || exit 1
 
 echo "search D5..." >>$LOG
-../api/testclient -c 29 unix:socket "@and @and @and the of of the"  > log || exit 1
+../api/testclient -c 30 unix:socket "@and @and @and the of of the"  > log || exit 1
 
 echo "search D6..." >>$LOG
 ../api/testclient -c 15 unix:socket '@and @and in the data' > log || exit 1
@@ -94,22 +94,22 @@ echo "search D8..." >>$LOG
 # This one failed at early fast-forwards
 
 echo "search E1..." >>$LOG
-../api/testclient -c 40 unix:socket "@or the utah"  > log || exit 1
+../api/testclient -c 41 unix:socket "@or the utah"  > log || exit 1
 
 echo "search E2..." >>$LOG
-../api/testclient -c 40 unix:socket "@or utah the"  > log || exit 1
+../api/testclient -c 41 unix:socket "@or utah the"  > log || exit 1
 
 echo "search E3..." >>$LOG
 ../api/testclient -c 42 unix:socket "@or deposits @or the utah"  > log || exit 1
 
 echo "search E4..." >>$LOG
-../api/testclient -c 2 unix:socket "@and deposits @or the utah"  > log || exit 1
+../api/testclient -c 3 unix:socket "@and deposits @or the utah"  > log || exit 1
 
 echo "search E5..." >>$LOG
-../api/testclient -c 2 unix:socket "@and @or the utah deposits"  > log || exit 1
+../api/testclient -c 3 unix:socket "@and @or the utah deposits"  > log || exit 1
 
 echo "search F1..." >>$LOG
-../api/testclient -c 23 unix:socket "@not the utah "  > log || exit 1
+../api/testclient -c 24 unix:socket "@not the utah "  > log || exit 1
 
 echo "search F2..." >>$LOG
 ../api/testclient -c 10 unix:socket "@not utah the "  > log || exit 1

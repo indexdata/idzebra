@@ -1,5 +1,5 @@
-/* $Id: attribute.c,v 1.22 2006-05-10 08:13:20 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: attribute.c,v 1.23 2006-05-19 13:49:34 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -23,30 +23,30 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 
 #include <yaz/log.h>
+#include <yaz/diagbib1.h>
 #include <idzebra/res.h>
 #include <idzebra/util.h>
+#include <attrfind.h>
 #include "index.h"
 
-static data1_att *getatt(data1_attset *p, int att, const char *sattr)
+static data1_att *getatt(data1_attset *p, int att)
 {
     data1_att *a;
     data1_attset_child *c;
 
     /* scan local set */
     for (a = p->atts; a; a = a->next)
-	if (sattr && !yaz_matchstr(sattr, a->name))
-	    return a;
-	else if (a->value == att)
+	if (a->value == att)
 	    return a;
     /* scan included sets */
     for (c = p->children; c; c = c->next)
-	if ((a = getatt(c->child, att, sattr)))
+	if ((a = getatt(c->child, att)))
 	    return a;
     return 0;
 }
 
-int att_getentbyatt(ZebraHandle zi, attent *res, oid_value set, int att,
-		const char *sattr)
+static int att_getentbyatt(ZebraHandle zi, oid_value set, int att,
+                           const char **name)
 {
     data1_att *r;
     data1_attset *p;
@@ -57,18 +57,120 @@ int att_getentbyatt(ZebraHandle zi, attent *res, oid_value set, int att,
 	p = data1_attset_search_id (zi->reg->dh, set);
     }
     if (!p)   /* set undefined */
-    {
-	if (sattr)     
-	    return -1; /* return bad string attribute */
-	else
-	    return -2; /* return bad set */
-    }
-    if (!(r = getatt(p, att, sattr)))
+        return -2;
+    if (!(r = getatt(p, att)))
 	return -1;
-    res->attset_ordinal = r->parent->reference;
-    res->local_attributes = r->locals;
+    *name = r->name;
     return 0;
 }
+
+
+ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
+                                  Z_AttributeList *attr_list,
+                                  int index_type,
+                                  oid_value curAttributeSet,
+                                  int *ord)
+{
+    int use_value = -1;
+    const char *use_string = 0;
+    AttrType use;
+
+    attr_init_AttrList(&use, attr_list, 1);
+    use_value = attr_find_ex(&use, &curAttributeSet, &use_string);
+
+    if (use_value < 0)
+    {
+        if (!use_string)
+            use_string = "any";
+    }
+    else
+    {
+        /* we have a use attribute and attribute set */
+        int r;
+        
+        r = att_getentbyatt(zh, curAttributeSet, use_value, &use_string);
+        if (r == -2)
+        {
+            zebra_setError_zint(zh,  YAZ_BIB1_UNSUPP_ATTRIBUTE_SET, 0);
+            return ZEBRA_FAIL;
+        }
+        if (r == -1)
+        {
+            zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE,  use_value);
+            return ZEBRA_FAIL;
+        }
+    }
+    if (!use_string)
+    {
+        zebra_setError(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, 0);
+        return ZEBRA_FAIL;
+    }
+    *ord = zebraExplain_lookup_attr_str(zh->reg->zei, index_type, use_string);
+    if (*ord == -1)
+    {
+        if (use_value < 0)
+            zebra_setError(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, use_string);
+        else
+            zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, use_value);
+        return ZEBRA_FAIL;
+    }
+    return ZEBRA_OK;
+}
+
+ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
+                            Z_AttributesPlusTerm *zapt,
+                            int index_type,
+                            const char *xpath_use,
+                            oid_value curAttributeSet,
+                            int *ord)
+{
+    if (!xpath_use)
+        return zebra_attr_list_get_ord(zh, zapt->attributes,
+                                       index_type, curAttributeSet, ord);
+    else
+    {
+        *ord = zebraExplain_lookup_attr_str(zh->reg->zei, index_type,
+                                            xpath_use);
+        if (*ord == -1)
+        {
+            yaz_log(YLOG_LOG, "zebra_apt_get_ord FAILED xpath=%s index_type=%c",
+                    xpath_use, index_type);
+            zebra_setError(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, 0);
+            return ZEBRA_FAIL;
+        }
+        else
+        {
+            yaz_log(YLOG_LOG, "zebra_apt_get_ord OK xpath=%s index_type=%c",
+                    xpath_use, index_type);
+        }
+        return ZEBRA_OK;
+    }
+}
+
+ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,
+                             Z_SortAttributes *sortAttributes,
+                             int *ord,
+                             int *numerical)
+{
+    AttrType structure;
+    int structure_value;
+    attr_init_AttrList(&structure, sortAttributes->list, 4);
+
+    *numerical = 0;
+    structure_value = attr_find(&structure, 0);
+    if (structure_value == 109)
+        *numerical = 1;
+    
+    if (zebra_attr_list_get_ord(zh, sortAttributes->list,
+                                's', VAL_BIB1, ord)== ZEBRA_OK)
+        return ZEBRA_OK;
+    if (zebra_attr_list_get_ord(zh, sortAttributes->list,
+                                'S', VAL_BIB1, ord)== ZEBRA_OK)
+        return ZEBRA_OK;
+    return ZEBRA_FAIL;
+}
+
+
 /*
  * Local variables:
  * c-basic-offset: 4

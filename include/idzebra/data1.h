@@ -1,5 +1,5 @@
-/* $Id: data1.h,v 1.12 2006-05-10 08:13:20 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: data1.h,v 1.13 2006-05-19 13:49:34 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -88,7 +88,7 @@ struct data1_attset
 typedef struct data1_handle_info *data1_handle;
 
 YAZ_EXPORT data1_att *data1_getattbyname(data1_handle dh, data1_attset *s,
-					 char *name);
+					 const char *name);
 YAZ_EXPORT data1_attset *data1_read_attset(data1_handle dh, const char *file);
 
 YAZ_EXPORT data1_attset *data1_empty_attset(data1_handle dh);
@@ -245,11 +245,7 @@ struct data1_tagset
 
 typedef struct data1_termlist
 {
-#if NATTR
     char *index_name;
-#else
-    data1_att *att;
-#endif
     char *structure;
     char *source;
     struct data1_termlist *next;

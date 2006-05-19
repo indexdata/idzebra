@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.161 2006-05-18 12:03:05 adam Exp $
+/* $Id: index.h,v 1.162 2006-05-19 13:49:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -363,14 +363,13 @@ int zebra_server_lock (ZebraService zh, int lockCommit);
 void zebra_server_unlock (ZebraService zh, int commitPhase);
 int zebra_server_lock_get_state (ZebraService zh, time_t *timep);
 
+#if 1
 typedef struct attent
 {
     int attset_ordinal;
     data1_local_attribute *local_attributes;
 } attent;
-
-int att_getentbyatt(ZebraHandle zh, attent *res, oid_value set, int att,
-		const char *sattr);
+#endif
 
 int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, 
 			zebra_snippets *hit_snippet, ODR stream,
@@ -467,6 +466,24 @@ ZEBRA_RES zebra_get_hit_vector(ZebraHandle zh, const char *setname, zint sysno);
 
 void zebra_term_untrans(ZebraHandle zh, int reg_type,
 			char *dst, const char *src);
+
+ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
+                            Z_AttributesPlusTerm *zapt,
+                            int index_type,
+                            const char *xpath_use,
+                            oid_value curAttributeSet,
+                            int *ord);
+
+ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
+                                  Z_AttributeList *attr_list,
+                                  int index_type,
+                                  oid_value curAttributeSet,
+                                  int *ord);
+
+ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,
+                             Z_SortAttributes *sortAttributes,
+                             int *ord,
+                             int *numerical);
 
 YAZ_END_CDECL
 

@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.17 2006-04-27 20:40:45 marc Exp $
+## $Id: Makefile.am,v 1.18 2006-05-19 13:49:38 adam Exp $
 
 lib_LTLIBRARIES = libidzebra-util.la
 
@@ -18,7 +18,7 @@ AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) -DDEFAULT_PROFILE_PATH=\"$(pkgdat
 LDADD = libidzebra-util.la $(YAZLALIB)
 
 libidzebra_util_la_SOURCES = zint.c res.c charmap.c zebramap.c passwddb.c \
- zebra-lock.c dirent.c xpath.c atoi_zn.c snippet.c flock.c
+ zebra-lock.c dirent.c xpath.c atoi_zn.c snippet.c flock.c attrfind.c
 
 passtest_SOURCES = passtest.c
 

@@ -1,4 +1,4 @@
-/* $Id: t8.c,v 1.10 2006-05-10 08:13:35 adam Exp $
+/* $Id: t8.c,v 1.11 2006-05-19 13:49:35 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -64,7 +64,6 @@ static void tst(int argc, char **argv)
 
     /* couple of simple queries just to see that we have indexed the stuff */
     YAZ_CHECK(tl_query(zh,  "@attr 1=4 title", 2));
-    YAZ_CHECK(tl_query(zh,  "title", 2));
     
     /* 1=2038: West-Bounding-Coordinate 2039: East: 2040: North: 2041 South*/
     /* 4=109: numeric string */

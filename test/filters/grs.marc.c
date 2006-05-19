@@ -1,4 +1,4 @@
-/* $Id: grs.marc.c,v 1.4 2006-05-10 08:13:36 adam Exp $
+/* $Id: grs.marc.c,v 1.5 2006-05-19 13:49:35 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -42,9 +42,9 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);
 
-    YAZ_CHECK(tl_query(zh, "computer", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 computer", 1));
 
-    YAZ_CHECK(tl_query(zh, "computee", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 computee", 0));
 
     YAZ_CHECK(tl_close_down(zh, zs));
 }

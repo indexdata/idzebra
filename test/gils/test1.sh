@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.14 2006-04-27 10:52:26 marc Exp $
+# $Id: test1.sh,v 1.15 2006-05-19 13:49:36 adam Exp $
 
 srcdir=${srcdir:-"."}
 
@@ -44,7 +44,7 @@ grep "^Result count: 17$" log >/dev/null || exit 1
 
 echo "search 2..." >>$LOG
 ../api/testclient unix:socket "@or utah the" > log || exit 1
-grep "^Result count: 40$" log >/dev/null || exit 1
+grep "^Result count: 41$" log >/dev/null || exit 1
 
 echo "search 3..." >>$LOG
 ../api/testclient unix:socket "@attr 1=4 the" > log || exit 1

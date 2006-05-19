@@ -1,3 +1,9 @@
+Zebra uses string attributes for indexing internally. Using set+numeric
+use attribute can still be used. But that is a search-only conversion which
+inspects .att-set files as indicated using attset-directives in zebra.cfg.
+attset references are no longer required, but when used they deserve
+as "check" for that the index names used are also present in .att.
+
 Implemented bug #588: allrecords search. Using @attr 1=allrecords ""
 matches all records in a database.
 
