@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.103 2006-05-19 13:49:35 adam Exp $
+/* $Id: zsets.c,v 1.104 2006-05-19 23:20:24 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -40,8 +40,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 struct zebra_set_term_entry {
     int reg_type;
     char *db;
-    int set;
-    int use;
+    char *index_name;
     char *term;
 };
 
@@ -181,9 +180,9 @@ ZEBRA_RES resultSetAddRPN (ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
     return res;
 }
 
-void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
-                       const char *db, int set,
-                       int use, const char *term)
+void resultSetAddTerm(ZebraHandle zh, ZebraSet s, int reg_type,
+                      const char *db, const char *index_name, 
+                      const char *term)
 {
     assert(zh); /* compiler shut up */
     if (!s->nmem)
@@ -202,9 +201,8 @@ void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
     {
         s->term_entries[s->hits].reg_type = reg_type;
         s->term_entries[s->hits].db = nmem_strdup (s->nmem, db);
-        s->term_entries[s->hits].set = set;
-        s->term_entries[s->hits].use = use;
-        s->term_entries[s->hits].term = nmem_strdup (s->nmem, term);
+        s->term_entries[s->hits].index_name = nmem_strdup(s->nmem, index_name);
+        s->term_entries[s->hits].term = nmem_strdup(s->nmem, term);
     }
     (s->hits)++;
 }

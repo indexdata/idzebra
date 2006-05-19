@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.40 2006-05-10 08:13:22 adam Exp $
+/* $Id: retrieve.c,v 1.41 2006-05-19 23:20:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -153,9 +153,8 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
 		const char *string_index = 0;
 		char dst_buf[IT_MAX_WORD];
 		
-		zebraExplain_lookup_ord (zh->reg->zei, ord,
-					 &index_type, &db,
-					 &set, &use, &string_index);
+		zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db,
+					&string_index);
 
 		if (string_index)
 		    wrbuf_printf(wrbuf, "%s", string_index);

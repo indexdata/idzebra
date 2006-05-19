@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.32 2006-05-11 10:15:33 adam Exp $
+/* $Id: zinfo.h,v 1.33 2006-05-19 23:20:24 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -50,10 +50,6 @@ void zebraExplain_close (ZebraExplainInfo zei);
 int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database);
 int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
 			      int explain_database);
-int zebraExplain_lookup_attr_su(ZebraExplainInfo zei, int index_type,
-				int set, int use);
-int zebraExplain_lookup_attr_su_any_index(ZebraExplainInfo zei,
-					  int set, int use);
 int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
 			     int set, int use);
 int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, int index_type,
@@ -69,7 +65,7 @@ void zebraExplain_flush (ZebraExplainInfo zei, void *updateHandle);
 
 int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
 			     int *index_type, const char **db,
-			     int *set, int *use, const char **string_index);
+			     const char **string_index);
 
 int zebraExplain_ord_adjust_occurrences(ZebraExplainInfo zei, int ord,
                                         int term_delta, int doc_delta);

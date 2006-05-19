@@ -1,4 +1,4 @@
-/* $Id: rankstatic.c,v 1.6 2006-05-10 08:13:22 adam Exp $
+/* $Id: rankstatic.c,v 1.7 2006-05-19 23:20:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -98,8 +98,7 @@ static void *begin (struct zebra_register *reg,
 	    int use = -1;
 
 	    zebraExplain_lookup_ord(reg->zei,
-				    ol->ord, &index_type, &db, &set, &use,
-				    &string_index);
+				    ol->ord, &index_type, &db, &string_index);
 
 	    if (string_index)
 		yaz_log(log_level, " ord=%d index_type=%c db=%s str-index=%s",

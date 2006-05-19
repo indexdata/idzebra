@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.162 2006-05-19 13:49:34 adam Exp $
+/* $Id: index.h,v 1.163 2006-05-19 23:20:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -334,9 +334,9 @@ RSET rset_trunc(ZebraHandle zh, ISAM_P *isam_p, int no,
 		struct ord_list *ol, int reg_type,
 		zint hits_limit, const char *term_ref_id);
 
-void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
-		       const char *db, int set,
-		       int use, const char *term);
+void resultSetAddTerm(ZebraHandle zh, ZebraSet s, int reg_type,
+                      const char *db, const char *index_name,
+                      const char *term);
 ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov);
 ZebraSet resultSetGet (ZebraHandle zh, const char *name);
 ZEBRA_RES resultSetAddRPN (ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,

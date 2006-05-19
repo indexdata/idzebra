@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.214 2006-05-19 13:49:34 adam Exp $
+/* $Id: zrpn.c,v 1.215 2006-05-19 23:20:24 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -151,19 +151,19 @@ static void add_isam_p(const char *name, const char *info,
     if (p->termset)
     {
         const char *db;
-        int set, use;
         char term_tmp[IT_MAX_WORD];
         int ord = 0;
+        const char *index_name;
         int len = key_SU_decode (&ord, (const unsigned char *) name);
         
         zebra_term_untrans  (p->zh, p->reg_type, term_tmp, name+len+1);
         yaz_log(log_level_rpn, "grep: %d %c %s", ord, name[len], term_tmp);
-        zebraExplain_lookup_ord (p->zh->reg->zei,
-                                 ord, 0 /* index_type */, &db, &set, &use, 0);
-        yaz_log(log_level_rpn, "grep:  set=%d use=%d db=%s", set, use, db);
+        zebraExplain_lookup_ord(p->zh->reg->zei,
+                                ord, 0 /* index_type */, &db, &index_name);
+        yaz_log(log_level_rpn, "grep:  db=%s index=%s", db, index_name);
         
         resultSetAddTerm(p->zh, p->termset, name[len], db,
-			 set, use, term_tmp);
+			 index_name, term_tmp);
     }
 #endif
     (p->isam_p_indx)++;
@@ -2548,9 +2548,6 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     int after;
     int base_no;
     char termz[IT_MAX_WORD+20];
-    AttrType use;
-    int use_value;
-    const char *use_string = 0;
     struct scan_info *scan_info_array;
     ZebraScanEntry *glist;
     int ords[32], ord_no = 0;
@@ -2603,9 +2600,6 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     yaz_log(YLOG_DEBUG, "position = %d, num = %d set=%d",
 	    pos, num, attributeset);
         
-    attr_init_APT(&use, zapt, 1);
-    use_value = attr_find_ex(&use, &attributeset, &use_string);
-
     if (zebra_maps_attr(zh->reg->zebra_maps, zapt, &index_type, &search_type,
 			rank_type, &complete_flag, &sort_flag))
     {
@@ -2613,10 +2607,6 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	zebra_setError(zh, YAZ_BIB1_UNSUPP_ATTRIBUTE_TYPE, 0);
         return ZEBRA_FAIL;
     }
-    yaz_log(YLOG_DEBUG, "use_value = %d", use_value);
-
-    if (use_value == -1)
-        use_value = 1016;
     for (base_no = 0; base_no < num_bases && ord_no < 32; base_no++)
     {
 	int ord;
