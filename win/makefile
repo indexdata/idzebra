@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.45 2006-05-19 17:28:11 adam Exp $
+# $Id: makefile,v 1.46 2006-05-19 17:28:55 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -428,7 +428,8 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\zinfo.obj \
 	$(OBJDIR)\zint.obj \
 	$(OBJDIR)\zrpn.obj \
-	$(OBJDIR)\zsets.obj 
+	$(OBJDIR)\zsets.obj \
+	$(OBJDIR)\zvrank.obj 
 
 ALL_OBJS=\
   $(ZEBRALIB_OBJS) \
