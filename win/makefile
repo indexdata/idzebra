@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.44 2006-05-19 13:49:38 adam Exp $
+# $Id: makefile,v 1.45 2006-05-19 17:28:11 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -389,6 +389,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\orddict.obj \
 	$(OBJDIR)\passwddb.obj \
 	$(OBJDIR)\rank1.obj \
+	$(OBJDIR)\ranksimilarity.obj \
 	$(OBJDIR)\rankstatic.obj \
 	$(OBJDIR)\recctrl.obj \
 	$(OBJDIR)\recgrs.obj \
@@ -427,8 +428,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\zinfo.obj \
 	$(OBJDIR)\zint.obj \
 	$(OBJDIR)\zrpn.obj \
-	$(OBJDIR)\zsets.obj \
-	$(OBJDIR)\zvrank.obj
+	$(OBJDIR)\zsets.obj 
 
 ALL_OBJS=\
   $(ZEBRALIB_OBJS) \
