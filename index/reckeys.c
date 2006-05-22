@@ -1,5 +1,5 @@
-/* $Id: reckeys.c,v 1.4 2006-05-10 08:13:22 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: reckeys.c,v 1.5 2006-05-22 13:28:00 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -53,12 +53,15 @@ struct zebra_rec_keys_t_ {
 
 struct zebra_rec_key_entry **zebra_rec_keys_mk_hash(zebra_rec_keys_t p,
 						    const char *buf,
-						    size_t len)
+						    size_t len,
+                                                    const struct it_key *key)
 {
     unsigned h = 0;
     size_t i;
     for (i = 0; i<len; i++)
 	h = h * 65509 + buf[i];
+    for (i = 0; i<key->len; i++)
+	h = h * 65509 + key->mem[i];
     return &p->entries[h % (unsigned) p->hash_size];
 }
 
@@ -87,7 +90,7 @@ zebra_rec_keys_t zebra_rec_keys_open()
     p->decode_handle = iscz1_start(); 
 
     p->nmem = nmem_create();
-    p->hash_size = 127;
+    p->hash_size = 1023;
     p->entries = 0;
 
     init_hash(p);
@@ -148,7 +151,8 @@ int zebra_rec_keys_add_hash(zebra_rec_keys_t keys,
 			    const char *str, size_t slen,
 			    const struct it_key *key)
 {
-    struct zebra_rec_key_entry **kep = zebra_rec_keys_mk_hash(keys, str, slen);
+    struct zebra_rec_key_entry **kep = zebra_rec_keys_mk_hash(keys,
+                                                              str, slen, key);
     while (*kep)
     {
 	struct zebra_rec_key_entry *e = *kep;
