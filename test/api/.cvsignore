@@ -12,3 +12,5 @@ testclient
 zebrasrv.pid
 *.lo
 *.la
+register
+shadow
