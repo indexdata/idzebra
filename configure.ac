@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.6 2006-05-23 09:41:06 marc Exp $
+dnl $Id: configure.ac,v 1.7 2006-05-23 10:04:43 marc Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[1.4.0],[adam@indexdata.dk])
@@ -398,11 +398,9 @@ fi
 
 echo \
 "------------------------------------------------------------------------
-Configuration:
 
-  Package:                    ${PACKAGE}
-  Version:                    ${VERSION}
-  Bugreport:                  ${PACKAGE_BUGREPORT}
+  ZEBRA Package:              ${PACKAGE}
+  ZEBRA Version:              ${VERSION}
   Source code location:       ${srcdir}
   C Preprocessor:             ${CPP}
   C Preprocessor flags:       ${CPPFLAGS}
@@ -415,6 +413,10 @@ Configuration:
   Automake:                   ${AUTOMAKE}
   Archiver:                   ${AR}
   Ranlib:                     ${RANLIB}
-
+  YAZ Version:                ${YAZVERSION}
+  YAZ Include:                ${YAZINC}
+  YAZ La Lib:                 ${YAZLALIB}
+  YAZ Lib:                    ${YAZLIB}
+  Bugreport:                  ${PACKAGE_BUGREPORT}
 
 ------------------------------------------------------------------------"
