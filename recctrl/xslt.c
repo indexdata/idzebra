@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.21 2006-05-10 08:13:31 adam Exp $
+/* $Id: xslt.c,v 1.22 2006-05-23 15:21:58 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -273,16 +273,24 @@ static struct filter_xslt_schema *lookup_schema(struct filter_xslt_info *tinfo,
     struct filter_xslt_schema *schema;
     for (schema = tinfo->schemas; schema; schema = schema->next)
     {
-	if (est)
+        /* find requested schema */
+	if (est) 
 	{
 	    if (schema->identifier && !strcmp(schema->identifier, est))
 		return schema;
 	    if (schema->name && !strcmp(schema->name, est))
 		return schema;
 	}
+
+        /* or return default schema if defined */
 	if (schema->default_schema)
 	    return schema;
     }
+
+    /* return first schema if no default schema defined */
+    if (tinfo->schemas)
+        return tinfo->schemas;
+    
     return 0;
 }
 
@@ -593,8 +601,8 @@ static const char *snippet_doc(struct recRetrieveCtrl *p, int text_mode,
 
 static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
-    const char *esn = zebra_xslt_ns;
-    const char *params[20];
+    const char *esn = 0;
+    const char *params[32];
     struct filter_xslt_info *tinfo = clientData;
     xmlDocPtr resDoc;
     xmlDocPtr doc;
@@ -633,7 +641,12 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	set_param_str(params, "filename", p->fname, p->odr);
     if (p->staticrank >= 0)
 	set_param_int(params, "rank", p->staticrank, p->odr);
-    set_param_str(params, "schema", esn, p->odr);
+
+     /* should use default elem set here .. */     if (esn)
+         set_param_str(params, "schema", esn, p->odr);
+     else
+         set_param_str(params, "schema", "", p->odr);
+
     if (p->score >= 0)
 	set_param_int(params, "score", p->score, p->odr);
     set_param_int(params, "size", p->recordSize, p->odr);

@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.11 2006-05-10 08:13:28 adam Exp $
+/* $Id: alvis.c,v 1.12 2006-05-23 15:21:58 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -41,6 +41,7 @@ struct filter_schema {
     const char *stylesheet;
     struct filter_schema *next;
     const char *default_schema;
+    /* char default_schema; */
     const char *include_snippet;
     xsltStylesheetPtr stylesheet_xsp;
 };
@@ -211,6 +212,8 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 		schema->stylesheet_xsp =
 		    xsltParseStylesheetFile(
 			(const xmlChar*) schema->stylesheet);
+
+                
 	}
 	else if (!XML_STRCMP(ptr->name, "split"))
 	{
@@ -236,16 +239,24 @@ static struct filter_schema *lookup_schema(struct filter_info *tinfo,
     struct filter_schema *schema;
     for (schema = tinfo->schemas; schema; schema = schema->next)
     {
-	if (est)
+        /* find requested schema */
+	if (est) 
 	{
 	    if (schema->identifier && !strcmp(schema->identifier, est))
 		return schema;
 	    if (schema->name && !strcmp(schema->name, est))
 		return schema;
 	}
+
+        /* or return default schema if defined */
 	if (schema->default_schema)
 	    return schema;
     }
+
+    /* return first schema if no default schema defined */
+    if (tinfo->schemas)
+        return tinfo->schemas;
+    
     return 0;
 }
 
@@ -547,8 +558,9 @@ static const char *snippet_doc(struct recRetrieveCtrl *p, int text_mode,
 
 static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
-    const char *esn = zebra_xslt_ns;
-    const char *params[20];
+    /* const char *esn = zebra_xslt_ns; */
+    const char *esn = 0;
+    const char *params[32];
     struct filter_info *tinfo = clientData;
     xmlDocPtr resDoc;
     xmlDocPtr doc;
@@ -587,7 +599,11 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	set_param_str(params, "filename", p->fname, p->odr);
     if (p->staticrank >= 0)
 	set_param_int(params, "rank", p->staticrank, p->odr);
-    set_param_str(params, "schema", esn, p->odr);
+    if (esn)
+        set_param_str(params, "schema", esn, p->odr);
+    else
+        set_param_str(params, "schema", "", p->odr);
+    /* should use default elem set here .. */
     if (p->score >= 0)
 	set_param_int(params, "score", p->score, p->odr);
     set_param_int(params, "size", p->recordSize, p->odr);
