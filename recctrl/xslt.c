@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.23 2006-05-24 08:23:01 marc Exp $
+/* $Id: xslt.c,v 1.24 2006-05-24 12:56:56 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -275,15 +275,15 @@ static struct filter_xslt_schema *lookup_schema(struct filter_xslt_info *tinfo,
     {
         /* find requested schema */
 	if (est) 
-	{
+	{    
 	    if (schema->identifier && !strcmp(schema->identifier, est))
-		return schema;
+                return schema;
+            
 	    if (schema->name && !strcmp(schema->name, est))
 		return schema;
-	}
-
+	} 
         /* or return default schema if defined */
-	if (schema->default_schema)
+        else if (schema->default_schema)
 	    return schema;
     }
 

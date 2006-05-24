@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.13 2006-05-24 08:23:01 marc Exp $
+/* $Id: alvis.c,v 1.14 2006-05-24 12:56:56 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -208,6 +208,11 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 		attr_content(attr, "default", &schema->default_schema);
 		attr_content(attr, "snippet", &schema->include_snippet);
 	    }
+            /*yaz_log(YLOG_LOG, "XSLT add %s %s %s", 
+              schema->name, schema->identifier, schema->stylesheet); */
+
+            /* find requested schema */
+
 	    if (schema->stylesheet)
 		schema->stylesheet_xsp =
 		    xsltParseStylesheetFile(
@@ -237,19 +242,20 @@ static struct filter_schema *lookup_schema(struct filter_info *tinfo,
 					   const char *est)
 {
     struct filter_schema *schema;
+
     for (schema = tinfo->schemas; schema; schema = schema->next)
-    {
+    { 
         /* find requested schema */
 	if (est) 
-	{
+	{    
 	    if (schema->identifier && !strcmp(schema->identifier, est))
-		return schema;
+                return schema;
+            
 	    if (schema->name && !strcmp(schema->name, est))
 		return schema;
-	}
-
+	} 
         /* or return default schema if defined */
-	if (schema->default_schema)
+        else if (schema->default_schema)
 	    return schema;
     }
 
