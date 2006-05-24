@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.12 2006-05-23 15:21:58 marc Exp $
+/* $Id: alvis.c,v 1.13 2006-05-24 08:23:01 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -599,11 +599,17 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	set_param_str(params, "filename", p->fname, p->odr);
     if (p->staticrank >= 0)
 	set_param_int(params, "rank", p->staticrank, p->odr);
+
     if (esn)
         set_param_str(params, "schema", esn, p->odr);
     else
-        set_param_str(params, "schema", "", p->odr);
-    /* should use default elem set here .. */
+        if (schema->name)
+            set_param_str(params, "schema", schema->name, p->odr);
+        else if (schema->identifier)
+            set_param_str(params, "schema", schema->identifier, p->odr);
+        else
+            set_param_str(params, "schema", "", p->odr);
+
     if (p->score >= 0)
 	set_param_int(params, "score", p->score, p->odr);
     set_param_int(params, "size", p->recordSize, p->odr);
