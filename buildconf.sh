@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: buildconf.sh,v 1.19 2006-05-05 17:19:38 adam Exp $
+# $Id: buildconf.sh,v 1.20 2006-05-24 19:12:46 adam Exp $
 if automake --version|head -1 |grep '1\.[4-7]'; then
     echo "automake 1.4-1.7 is active. You should use automake 1.8 or later"
     if test -f /etc/debian_version; then
@@ -69,10 +69,9 @@ Verify distribution tarball with
 Or just build the Debian packages without configuring
   dpkg-buildpackage -rfakeroot
 
-When building from a CVS checkout, you need these Debian tools:
-  docbook-utils, docbook, docbook-xml, docbook-dsssl,
-  docbook-defguide, docbook-website, docbook-xsl, jade, jadetex,
-  libyaz-dev, libexpat1-dev, libtcl8.3-dev, libbz2-dev
+When building from a CVS checkout, you need these Debian packages:
+  docbook, docbook-xml, docbook-xsl, xsltproc,
+  libyaz-dev, libexpat1-dev, tcl8.4-dev, libbz2-dev
 and if you want the Alvis/XSLT filter, you also need:
   libxslt1-dev
 

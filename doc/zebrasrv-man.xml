@@ -1,4 +1,6 @@
-<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.1/docbookx.dtd"
+[
      <!ENTITY zebrasrv-synopsis SYSTEM "zebrasrv-synopsis.xml">
      <!ENTITY zebrasrv-options SYSTEM "zebrasrv-options.xml">
      <!ENTITY zebrasrv-virtual SYSTEM "zebrasrv-virtual.xml">
@@ -9,7 +11,7 @@
      <!-- <!ENTITY zebrasrv-commands SYSTEM "zebrasrv-commands.xml"> -->
 
 
-<!-- $Id: zebrasrv-man.sgml,v 1.5 2005-08-12 13:50:51 marc Exp $ -->
+<!-- $Id: zebrasrv-man.xml,v 1.1 2006-05-24 19:12:46 adam Exp $ -->
 <refentry id="zebrasrv">
  
  <refmeta>

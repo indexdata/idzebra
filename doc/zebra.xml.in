@@ -1,37 +1,13 @@
 <?xml version="1.0" standalone="no"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-                    "@DTD_DIR@/docbookx.dtd" [
-        <!ENTITY oslash "&#x00F8;"> <!-- CIRCLED DIVISION SLASH -->
-        <!ENTITY chap-introduction SYSTEM "introduction.xml">
-        <!ENTITY chap-installation SYSTEM "installation.xml">
-        <!ENTITY chap-quickstart SYSTEM "quickstart.xml">
-        <!ENTITY chap-examples SYSTEM "examples.xml">
-        <!ENTITY chap-architecture SYSTEM "architecture.xml">
-        <!ENTITY chap-administration SYSTEM "administration.xml">
-        <!ENTITY chap-zebraidx SYSTEM "zebraidx.xml">
-        <!ENTITY chap-server SYSTEM "server.xml">
-        <!ENTITY chap-recordmodel-grs SYSTEM "recordmodel-grs.xml">
-        <!ENTITY chap-recordmodel-alvisxslt SYSTEM "recordmodel-alvisxslt.xml">
-        <!ENTITY app-license SYSTEM "license.xml">
-        <!ENTITY app-indexdata SYSTEM "indexdata.xml">
-
-        <!ENTITY zebraidx-options SYSTEM "zebraidx-options.xml">
-        <!ENTITY zebraidx-commands SYSTEM "zebraidx-commands.xml">
-        <!ENTITY zebrasrv-synopsis SYSTEM "zebrasrv-synopsis.xml">
-        <!ENTITY zebrasrv-options SYSTEM "zebrasrv-options.xml">
-        <!ENTITY zebrasrv-virtual SYSTEM "zebrasrv-virtual.xml">
-        <!ENTITY gfs-synopsis-app "zebrasrv">
-
-	<!ENTITY ref-architecture-representation '
-		<xref linkend="architecture-representation"/>'>
-	<!ENTITY ref-record-types '
-		<xref linkend="record-types"/>'>
-	<!ENTITY ref-configuration-file '
-		<xref linkend="configuration-file"/>'>
-	<!ENTITY ref-shadow-registers '
-		<xref linkend="shadow-registers"/>'>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1//EN"
+ "http://www.oasis-open.org/docbook/xml/4.1/docbookx.dtd"
+[
+     <!ENTITY % entities  SYSTEM "@srcdir@/entities.ent">
+     %entities;
+     <!ENTITY % common  SYSTEM "@srcdir@/common/common.ent">
+     %common;
 ]>
-<!-- $Id: zebra.xml.in,v 1.27 2006-04-25 12:26:27 marc Exp $ -->
+<!-- $Id: zebra.xml.in,v 1.28 2006-05-24 19:12:46 adam Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>

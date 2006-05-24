@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.44 2006-04-26 11:08:41 adam Exp $
+## $Id: Makefile.am,v 1.45 2006-05-24 19:12:46 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUBDIRS = common
@@ -22,7 +22,6 @@ XMLFILES =  zebra.xml.in \
    zebrasrv-options.xml \
    zebrasrv-synopsis.xml \
    zebrasrv-virtual.xml
-
 
 HTMLFILES =  \
    administration-cql-to-pqf.html \
@@ -64,7 +63,7 @@ HTMLFILES =  \
    shadow-registers.html \
    simple-indexing.html \
    support.html \
-   zebra.html \
+   index.html \
    zebraidx.html
 
 PNGFILES=zebra.png
@@ -72,30 +71,27 @@ EPSFILES=zebra.eps
 
 MANFILES=zebraidx.1 zebrasrv.8 idzebra-config.1
 
-REFFILES=zebraidx-man.sgml zebrasrv-man.sgml idzebra-config-man.sgml
+REFFILES=zebraidx-man.xml zebrasrv-man.xml idzebra-config-man.xml
 
-doc_DATA = $(HTMLFILES) zebra.pdf $(PNGFILES)
+doc_DATA = $(HTMLFILES) $(PNGFILES)
 man_MANS = $(MANFILES)
 
 EXTRA_DIST = $(XMLFILES) $(REFFILES) \
 	$(doc_DATA) $(EPSFILES) $(man_MANS) $(REFFILES) \
-	zvrank.txt marc_indexing.xml
+	zvrank.txt marc_indexing.xml entities.ent
 
-zebraidx.1: zebraidx-man.sgml zebraidx-options.xml zebraidx-commands.xml
-	if test ! -f zebraidx-options.xml ; then ln -s $(srcdir)/zebraidx-options.xml .; fi
-	if test ! -f zebraidx-commands.xml ; then ln -s $(srcdir)/zebraidx-commands.xml .; fi
-	docbook2man $(srcdir)/zebraidx-man.sgml
+zebraidx.1: zebraidx-man.xml zebraidx-options.xml zebraidx-commands.xml
+	xsltproc common/man.xsl $(srcdir)/zebraidx-man.xml
 
-# zebrasrv-commands.xml
-zebrasrv.8: zebrasrv-man.sgml  zebrasrv-options.xml \
+zebrasrv.8: zebrasrv-man.xml  zebrasrv-options.xml \
             zebrasrv-synopsis.xml zebrasrv-virtual.xml
-	docbook2man $(srcdir)/zebrasrv-man.sgml
+	xsltproc common/man.xsl $(srcdir)/zebrasrv-man.xml
 
-idzebra-config.1: idzebra-config-man.sgml
-	docbook2man $(srcdir)/idzebra-config-man.sgml
+idzebra-config.1: idzebra-config-man.xml
+	xsltproc common/man.xsl $(srcdir)/idzebra-config-man.xml
 
 $(HTMLFILES): $(XMLFILES)
-	jade -E14 -D $(srcdir) -d common/html.dsl -t sgml $(srcdir)/common/xml.dcl zebra.xml
+	xsltproc common/html.xsl zebra.xml
 
 zebra.pdf: $(XMLFILES)
 	for i in $(PNGFILES); do \
@@ -122,7 +118,7 @@ clean-data-hook:
 	rm -f [0-9]* *.bak
 
 dist-hook:
-	for f in $(srcdir)/*.html; do \
+	for f in *.html; do \
 		found=0; \
 		b=`basename $$f`; \
 		for h in $(HTMLFILES); do \

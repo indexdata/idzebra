@@ -1,21 +1,20 @@
-<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.1/docbookx.dtd"
+[
      <!ENTITY zebraidx-options SYSTEM "zebraidx-options.xml">
      <!ENTITY zebraidx-commands SYSTEM "zebraidx-commands.xml">
      <!ENTITY % ref-head "the section entitled">
      <!ENTITY % ref-tail "in <citetitle>Zebra - User's Guide
 	and Reference</citetitle>">
-     <!ENTITY ref-local-representation "
-	%ref-head; <citetitle>Local Representation</citetitle> %ref-tail;">
-     <!ENTITY ref-record-types "
-	%ref-head; <citetitle>Record Types</citetitle> %ref-tail;">
-     <!ENTITY ref-configuration-file "
-	%ref-head; <citetitle>The Zebra Configuration File</citetitle>
-	%ref-tail;">
-     <!ENTITY ref-shadow-registers "
-	%ref-head; <citetitle>Safe Updating - Using Shadow
-	Registers</citetitle> %ref-tail;">
+
+     <!ENTITY ref-architecture-representation "">
+     <!ENTITY ref-local-representation "<citetitle>Local Representation</citetitle>">
+     <!ENTITY ref-record-types "<citetitle>Record Types</citetitle>">
+     <!ENTITY ref-configuration-file "<citetitle>The Zebra Configuration File</citetitle>">
+     <!ENTITY ref-shadow-registers "<citetitle>Safe Updating - Using Shadow
+	Registers</citetitle>">
 ]>
-<!-- $Id: zebraidx-man.sgml,v 1.4 2003-09-05 10:50:33 adam Exp $ -->
+<!-- $Id: zebraidx-man.xml,v 1.1 2006-05-24 19:12:46 adam Exp $ -->
 <refentry id="zebraidx">
  
  <refmeta>

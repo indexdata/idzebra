@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.7 2006-05-23 10:04:43 marc Exp $
+dnl $Id: configure.ac,v 1.8 2006-05-24 19:12:46 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[1.4.0],[adam@indexdata.dk])
@@ -354,6 +354,7 @@ AC_OUTPUT([
   doc/common/Makefile
   doc/common/html.dsl
   doc/common/html.xsl
+  doc/common/man.xsl
   doc/common/print.dsl
   doc/common/tkl.xsl
   test/Makefile test/gils/Makefile test/usmarc/Makefile test/api/Makefile

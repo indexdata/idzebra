@@ -1,5 +1,7 @@
-<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
-<!-- $Id: idzebra-config-man.sgml,v 1.1 2004-09-28 20:38:25 adam Exp $ -->
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN"
+ "http://www.oasis-open.org/docbook/xml/4.1/docbookx.dtd"
+[ ]>
+<!-- $Id: idzebra-config-man.xml,v 1.1 2006-05-24 19:12:46 adam Exp $ -->
 <refentry id="idzebra-config">
  
  <refmeta>

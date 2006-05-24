@@ -1,4 +1,4 @@
-; $Id: zebra.nsi,v 1.27 2005-08-25 12:53:42 adam Exp $
+; $Id: zebra.nsi,v 1.28 2006-05-24 19:12:47 adam Exp $
 
 !define VERSION "1.4.0"
 !define VS_RUNTIME_LOCATION "c:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\Bin"
@@ -93,15 +93,12 @@ Section "Zebra Documentation"
 	SetOutPath $INSTDIR\doc
 	File ..\doc\*.html
 	File ..\doc\*.png
-	File ..\doc\*.pdf
 	File ..\doc\*.xml
 	File ..\doc\*.in
 	File ..\doc\*.xsl
 	SetOutPath "$SMPROGRAMS\Index Data\Zebra\"
 	CreateShortCut "$SMPROGRAMS\Index Data\Zebra\HTML Documentation.lnk" \
-                 "$INSTDIR\doc\zebra.html"
-	CreateShortCut "$SMPROGRAMS\Index Data\Zebra\PDF Documentaion.lnk" \
-                 "$INSTDIR\doc\zebra.pdf"
+                 "$INSTDIR\doc\index.html"
 SectionEnd
 
 Section "Zebra Examples"
