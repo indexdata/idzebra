@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.24 2006-05-24 12:56:56 marc Exp $
+/* $Id: xslt.c,v 1.25 2006-05-24 18:31:33 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -692,7 +692,9 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     {
 	xmlChar *buf_out;
 	int len_out;
-	xmlDocDumpMemory(resDoc, &buf_out, &len_out);
+
+        xsltSaveResultToString(&buf_out, &len_out, resDoc,
+                               schema->stylesheet_xsp);	
 
 	p->output_format = VAL_TEXT_XML;
 	p->rec_len = len_out;
@@ -705,7 +707,9 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     {
 	xmlChar *buf_out;
 	int len_out;
-	xmlDocDumpMemory(resDoc, &buf_out, &len_out);
+
+        xsltSaveResultToString(&buf_out, &len_out, resDoc,
+                               schema->stylesheet_xsp);	
 
 	p->output_format = VAL_SUTRS;
 	p->rec_len = len_out;
