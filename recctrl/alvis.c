@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.15 2006-05-24 18:31:33 adam Exp $
+/* $Id: alvis.c,v 1.16 2006-05-29 13:48:43 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -31,6 +31,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <libxml/xmlIO.h>
 #include <libxml/xmlreader.h>
 #include <libxslt/transform.h>
+#include <libxslt/xsltutils.h>
 
 #include <idzebra/util.h>
 #include <idzebra/recctrl.h>
@@ -352,11 +353,12 @@ static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
 static void index_record(struct filter_info *tinfo,struct recExtractCtrl *ctrl,
 			 xmlNodePtr ptr, RecWord *recWord)
 {
+    const char *type_str = "update";
+
     if (ptr && ptr->type == XML_ELEMENT_NODE && ptr->ns &&
 	!XML_STRCMP(ptr->ns->href, zebra_xslt_ns)
 	&& !XML_STRCMP(ptr->name, "record"))
     {
-	const char *type_str = "update";
 	const char *id_str = 0;
 	const char *rank_str = 0;
 	struct _xmlAttr *attr;
@@ -368,17 +370,20 @@ static void index_record(struct filter_info *tinfo,struct recExtractCtrl *ctrl,
 	}
 	if (id_str)
 	    sscanf(id_str, "%255s", ctrl->match_criteria);
+
 	if (rank_str)
-	{
 	    ctrl->staticrank = atoi(rank_str);
-	    yaz_log(YLOG_LOG, "rank=%d",ctrl->staticrank);
-	}
-	else
-	    yaz_log(YLOG_LOG, "no rank");
 	
 	ptr = ptr->children;
     }
-    index_node(tinfo, ctrl, ptr, recWord);
+
+    if (!strcmp("update", type_str))
+        index_node(tinfo, ctrl, ptr, recWord);
+    else if (!strcmp("delete", type_str))
+         yaz_log(YLOG_WARN, "alvis filter delete: to be implemented");
+    else
+         yaz_log(YLOG_WARN, "alvis filter: unknown record type '%s'", 
+                 type_str);
 }
     
 static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,

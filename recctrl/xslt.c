@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.25 2006-05-24 18:31:33 adam Exp $
+/* $Id: xslt.c,v 1.26 2006-05-29 13:48:43 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -33,6 +33,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <libxml/xmlIO.h>
 #include <libxml/xmlreader.h>
 #include <libxslt/transform.h>
+/* #include <libxslt/xsltutils.h> */
 
 #include <idzebra/util.h>
 #include <idzebra/recctrl.h>
