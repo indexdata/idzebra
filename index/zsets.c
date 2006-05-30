@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.104 2006-05-19 23:20:24 adam Exp $
+/* $Id: zsets.c,v 1.105 2006-05-30 21:41:35 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -556,8 +556,12 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
     sortIdx_sysno (zh->reg->sortIdx, sysno);
     for (i = 0; i<num_criteria; i++)
     {
-        sortIdx_type (zh->reg->sortIdx, criteria[i].ord);
-        sortIdx_read (zh->reg->sortIdx, this_entry.buf[i]);
+        memset(this_entry.buf[i], '\0', SORT_IDX_ENTRYSIZE);
+        if (criteria[i].ord != -1)
+        {
+            sortIdx_type (zh->reg->sortIdx, criteria[i].ord);
+            sortIdx_read (zh->reg->sortIdx, this_entry.buf[i]);
+        }
     }
     i = sort_info->num_entries;
     while (--i >= 0)
@@ -578,7 +582,7 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
             else
             {
                 rel = memcmp (this_entry.buf[j], sort_info->entries[i]->buf[j],
-                          SORT_IDX_ENTRYSIZE);
+                              SORT_IDX_ENTRYSIZE);
             }
             if (rel)
                 break;
@@ -815,7 +819,16 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     {
         Z_SortKeySpec *sks = sort_sequence->specs[i];
         Z_SortKey *sk;
+        ZEBRA_RES res;
 
+        sort_criteria[i].ord = -1;
+        sort_criteria[i].numerical = 0;
+
+        if (sks->which == Z_SortKeySpec_missingValueData)
+        {
+	    zebra_setError(zh, YAZ_BIB1_UNSUPP_MISSING_DATA_ACTION, 0);
+            return ZEBRA_FAIL;
+        }
         if (*sks->sortRelation == Z_SortKeySpec_ascending)
             sort_criteria[i].relation = 'A';
         else if (*sks->sortRelation == Z_SortKeySpec_descending)
@@ -845,7 +858,8 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
             sort_criteria[i].ord = 
                 zebraExplain_lookup_attr_str(zh->reg->zei, 's',
                                              sk->u.sortField);
-            if (sort_criteria[i].ord == -1)
+            if (sks->which != Z_SortKeySpec_null
+                && sort_criteria[i].ord == -1)
             {
                 zebra_setError(zh,
                                YAZ_BIB1_CANNOT_SORT_ACCORDING_TO_SEQUENCE, 0);
@@ -859,10 +873,10 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
             return ZEBRA_FAIL;
         case Z_SortKey_sortAttributes:
             yaz_log(log_level_sort, "key %d is of type sortAttributes", i+1);
-            if (zebra_sort_get_ord(zh, sk->u.sortAttributes,
-                                   &sort_criteria[i].ord,
-                                   &sort_criteria[i].numerical)
-                != ZEBRA_OK)
+            res = zebra_sort_get_ord(zh, sk->u.sortAttributes,
+                                     &sort_criteria[i].ord,
+                                     &sort_criteria[i].numerical);
+            if (sks->which != Z_SortKeySpec_null && res != ZEBRA_OK)
                 return ZEBRA_FAIL;
             break;
         }
