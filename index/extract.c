@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.217 2006-05-30 13:21:14 adam Exp $
+/* $Id: extract.c,v 1.218 2006-05-30 13:44:44 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -48,6 +48,25 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #endif
 
+#define ENCODE_BUFLEN 768
+struct encode_info {
+#if 0
+    int  sysno;  /* previously written values for delta-compress */
+    int  seqno;
+    int  cmd;
+    int prevsys; /* buffer for skipping insert/delete pairs */
+    int prevseq;
+    int prevcmd;
+    int keylen; /* tells if we have an unwritten key in buf, and how long*/
+#endif
+    void *encode_handle;
+    void *decode_handle;
+    char buf[ENCODE_BUFLEN];
+};
+
+static void encode_key_init (struct encode_info *i);
+static void encode_key_write (char *k, struct encode_info *i, FILE *outf);
+static void encode_key_flush (struct encode_info *i, FILE *outf);
 
 #define USE_SHELLSORT 0
 
@@ -1881,21 +1900,10 @@ void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
 
 void encode_key_init (struct encode_info *i)
 {
-    i->sysno = 0;
-    i->seqno = 0;
-    i->cmd = -1;
-    i->prevsys=0;
-    i->prevseq=0;
-    i->prevcmd=-1;
-    i->keylen=0;
     i->encode_handle = iscz1_start();
     i->decode_handle = iscz1_start();
 }
 
-/* this is the old encode_key_write 
- * may be deleted once we are confident that the new works
- * HL 15-oct-2002
- */
 void encode_key_write (char *k, struct encode_info *i, FILE *outf)
 {
     struct it_key key;

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.165 2006-05-30 13:21:14 adam Exp $
+/* $Id: index.h,v 1.166 2006-05-30 13:44:44 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -147,25 +147,6 @@ void zebra_lock_prefix (Res res, char *dst);
 
 int key_SU_decode (int *ch, const unsigned char *out);
 int key_SU_encode (int ch, char *out);
-
-#define ENCODE_BUFLEN 768
-struct encode_info {
-    int  sysno;  /* previously written values for delta-compress */
-    int  seqno;
-    int  cmd;
-    int prevsys; /* buffer for skipping insert/delete pairs */
-    int prevseq;
-    int prevcmd;
-    int keylen; /* tells if we have an unwritten key in buf, and how long*/
-    void *encode_handle;
-    void *decode_handle;
-    char buf[ENCODE_BUFLEN];
-};
-
-void encode_key_init (struct encode_info *i);
-char *encode_key_int (int d, char *bp);
-void encode_key_write (char *k, struct encode_info *i, FILE *outf);
-void encode_key_flush (struct encode_info *i, FILE *outf);
 
 typedef struct zebra_set *ZebraSet;
 
