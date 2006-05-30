@@ -1,11 +1,11 @@
 Makefile
 Makefile.in
-zebra.xml
 zebra.tex
 zebra.out
 zebra.log
 zebra.aux
 zebra.pdf
+local.ent
 manpage.links
 manpage.refs
 tkl.xsl

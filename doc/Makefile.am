@@ -1,9 +1,9 @@
-## $Id: Makefile.am,v 1.45 2006-05-24 19:12:46 adam Exp $
+## $Id: Makefile.am,v 1.46 2006-05-30 23:08:29 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUBDIRS = common
 
-XMLFILES =  zebra.xml.in \
+XMLFILES =  zebra.xml \
    administration.xml \
    architecture.xml \
    examples.xml \
@@ -78,20 +78,23 @@ man_MANS = $(MANFILES)
 
 EXTRA_DIST = $(XMLFILES) $(REFFILES) \
 	$(doc_DATA) $(EPSFILES) $(man_MANS) $(REFFILES) \
-	zvrank.txt marc_indexing.xml entities.ent
+	zvrank.txt marc_indexing.xml entities.ent local.ent.in
 
 zebraidx.1: zebraidx-man.xml zebraidx-options.xml zebraidx-commands.xml
-	xsltproc common/man.xsl $(srcdir)/zebraidx-man.xml
+	$(MAN_COMPILE) $(srcdir)/zebraidx-man.xml
 
 zebrasrv.8: zebrasrv-man.xml  zebrasrv-options.xml \
             zebrasrv-synopsis.xml zebrasrv-virtual.xml
-	xsltproc common/man.xsl $(srcdir)/zebrasrv-man.xml
+	$(MAN_COMPILE) $(srcdir)/zebrasrv-man.xml
 
 idzebra-config.1: idzebra-config-man.xml
-	xsltproc common/man.xsl $(srcdir)/idzebra-config-man.xml
+	$(MAN_COMPILE) $(srcdir)/idzebra-config-man.xml
 
 $(HTMLFILES): $(XMLFILES)
-	xsltproc common/html.xsl zebra.xml
+	$(HTML_COMPILE) $(srcdir)/zebra.xml
+
+index.tkl: $(XMLFILES) common/tkl.xsl
+	$(TKL_COMPILE) $(srcdir)/zebra.xml
 
 zebra.pdf: $(XMLFILES)
 	for i in $(PNGFILES); do \
@@ -101,9 +104,6 @@ zebra.pdf: $(XMLFILES)
 	pdfjadetex zebra.tex >/dev/null
 	pdfjadetex zebra.tex >/dev/null
 	pdfjadetex zebra.tex >/dev/null
-
-index.tkl: $(XMLFILES) common/tkl.xsl
-	xsltproc common/tkl.xsl zebra.xml
 
 gils.txt: gils.sgml
 	sgml2txt -f gils.sgml

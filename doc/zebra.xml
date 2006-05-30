@@ -2,12 +2,14 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1//EN"
  "http://www.oasis-open.org/docbook/xml/4.1/docbookx.dtd"
 [
-     <!ENTITY % entities  SYSTEM "@srcdir@/entities.ent">
+     <!ENTITY % local SYSTEM "local.ent">
+     %local;
+     <!ENTITY % entities  SYSTEM "entities.ent">
      %entities;
-     <!ENTITY % common  SYSTEM "@srcdir@/common/common.ent">
+     <!ENTITY % common  SYSTEM "common/common.ent">
      %common;
 ]>
-<!-- $Id: zebra.xml.in,v 1.28 2006-05-24 19:12:46 adam Exp $ -->
+<!-- $Id: zebra.xml,v 1.5 2006-05-30 23:08:29 adam Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
@@ -43,7 +45,7 @@
    <simpara>
     This manual explains how to build and install Zebra, configure it
     appropriately for your application, add data and set up a running
-    information service.  It describes version @VERSION@ of Zebra.
+    information service.  It describes version &version; of Zebra.
    </simpara>
    <simpara>
     <inlinemediaobject>
