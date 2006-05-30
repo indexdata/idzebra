@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.216 2006-05-19 23:20:24 adam Exp $
+/* $Id: extract.c,v 1.217 2006-05-30 13:21:14 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1892,9 +1892,6 @@ void encode_key_init (struct encode_info *i)
     i->decode_handle = iscz1_start();
 }
 
-#define OLDENCODE 1
-
-#ifdef OLDENCODE
 /* this is the old encode_key_write 
  * may be deleted once we are confident that the new works
  * HL 15-oct-2002
@@ -1949,107 +1946,6 @@ void encode_key_flush (struct encode_info *i, FILE *outf)
     iscz1_stop(i->decode_handle);
 }
 
-#else
-
-/* new encode_key_write
- * The idea is to buffer one more key, and compare them
- * If we are going to delete and insert the same key, 
- * we may as well not bother. Should make a difference in 
- * updates with small modifications (appending to a mbox)
- */
-void encode_key_write (char *k, struct encode_info *i, FILE *outf)
-{
-    struct it_key key;
-    char *bp; 
-
-    if (*k)  /* first time for new key */
-    {
-        bp = i->buf;
-        while ((*bp++ = *k++))
-            ;
-	i->keylen= bp - i->buf -1;    
-	assert(i->keylen+1+sizeof(struct it_key) < ENCODE_BUFLEN);
-    }
-    else
-    {
-	bp=i->buf + i->keylen;
-	*bp++=0;
-	k++;
-    }
-
-    memcpy (&key, k+1, sizeof(struct it_key));
-    if (0==i->prevsys) /* no previous filter, fill up */
-    {
-        i->prevsys=key.sysno;
-	i->prevseq=key.seqno;
-	i->prevcmd=*k;
-    }
-    else if ( (i->prevsys==key.sysno) &&
-              (i->prevseq==key.seqno) &&
-	      (i->prevcmd!=*k) )
-    { /* same numbers, diff cmd, they cancel out */
-        i->prevsys=0;
-    }
-    else 
-    { /* different stuff, write previous, move buf */
-        bp = encode_key_int ( (i->prevsys - i->sysno) * 2 + i->prevcmd, bp);
-	if (i->sysno != i->prevsys)
-	{
-	    i->sysno = i->prevsys;
-	    i->seqno = 0;
-        }
-        else if (!i->seqno && !i->prevseq && i->cmd == i->prevcmd)
-	{
-	    return; /* ??? Filters some sort of duplicates away */
-	            /* ??? Can this ever happen   -H 15oct02 */
-	}
-        bp = encode_key_int (i->prevseq - i->seqno, bp);
-        i->seqno = i->prevseq;
-        i->cmd = i->prevcmd;
-        if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
-        {
-            yaz_log (YLOG_FATAL|YLOG_ERRNO, "fwrite");
-            exit (1);
-        }
-        i->keylen=0; /* ok, it's written, forget it */
-	i->prevsys=key.sysno;
-	i->prevseq=key.seqno;
-	i->prevcmd=*k;
-    }
-}
-
-void encode_key_flush (struct encode_info *i, FILE *outf)
-{ /* flush the last key from i */
-    char *bp =i->buf + i->keylen;
-    if (0==i->prevsys)
-    {
-        return; /* nothing to flush */
-    }
-    *bp++=0;
-    bp = encode_key_int ( (i->prevsys - i->sysno) * 2 + i->prevcmd, bp);
-    if (i->sysno != i->prevsys)
-    {
-        i->sysno = i->prevsys;
-        i->seqno = 0;
-    }
-    else if (!i->seqno && !i->prevseq && i->cmd == i->prevcmd)
-    {
-        return; /* ??? Filters some sort of duplicates away */
-                /* ??? Can this ever happen   -H 15oct02 */
-    }
-    bp = encode_key_int (i->prevseq - i->seqno, bp);
-    i->seqno = i->prevseq;
-    i->cmd = i->prevcmd;
-    if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
-    {
-        yaz_log (YLOG_FATAL|YLOG_ERRNO, "fwrite");
-        exit (1);
-    }
-    i->keylen=0; /* ok, it's written, forget it */
-    i->prevsys=0; /* forget the values too */
-    i->prevseq=0;
-}
-#endif
 /*
  * Local variables:
  * c-basic-offset: 4

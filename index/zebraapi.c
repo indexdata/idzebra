@@ -1,5 +1,5 @@
-/* $Id: zebraapi.c,v 1.218 2006-05-18 12:03:05 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: zebraapi.c,v 1.219 2006-05-30 13:21:16 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -576,7 +576,7 @@ ZEBRA_RES zebra_stop(ZebraService zs)
     return ZEBRA_OK;
 }
 
-ZEBRA_RES zebra_close (ZebraHandle zh)
+ZEBRA_RES zebra_close(ZebraHandle zh)
 {
     ZebraService zs;
     struct zebra_session **sp;
@@ -1934,31 +1934,33 @@ ZEBRA_RES zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
     return ZEBRA_OK;
 }
 
-int zebra_repository_update (ZebraHandle zh, const char *path)
+ZEBRA_RES zebra_repository_update(ZebraHandle zh, const char *path)
 {
     ASSERTZH;
     assert(path);
     yaz_log (log_level, "updating %s", path);
-    repositoryUpdate (zh, path);
-    return 0;
+
+    if (zh->m_record_id && !strcmp (zh->m_record_id, "file"))
+        return zebra_update_file_match(zh, path);
+    else
+        return zebra_update_from_path(zh, path);
 }
 
-int zebra_repository_delete (ZebraHandle zh, const char *path)
+ZEBRA_RES zebra_repository_delete(ZebraHandle zh, const char *path)
 {
     ASSERTZH;
     assert(path);
     yaz_log (log_level, "deleting %s", path);
-    repositoryDelete (zh, path);
-    return 0;
+    return zebra_delete_from_path(zh, path);
 }
 
-int zebra_repository_show (ZebraHandle zh, const char *path)
+ZEBRA_RES zebra_repository_show(ZebraHandle zh, const char *path)
 {
     ASSERTZH;
     assert(path);
     yaz_log(log_level, "zebra_repository_show");
     repositoryShow (zh, path);
-    return 0;
+    return ZEBRA_OK;
 }
 
 static ZEBRA_RES zebra_commit_ex(ZebraHandle zh, int clean_only)
@@ -2196,38 +2198,17 @@ void zebra_set_shadow_enable (ZebraHandle zh, int value)
     zh->shadow_enable = value;
 }
 
-/* Used by Perl API.. Added the record buffer dup to zebra_records_retrieve
-   so that it's identicical to the original api_records_retrieve */
-void api_records_retrieve (ZebraHandle zh, ODR stream,
-			   const char *setname, Z_RecordComposition *comp,
-			   oid_value input_format, int num_recs,
-			   ZebraRetrievalRecord *recs)
-{
-    zebra_records_retrieve(zh, stream, setname, comp, input_format,
-			   num_recs, recs);
-}
-
-/* ---------------------------------------------------------------------------
-  Record insert(=update), delete 
-
-  If sysno is provided, then it's used to identify the record.
-  If not, and match_criteria is provided, then sysno is guessed
-  If not, and a record is provided, then sysno is got from there
-NOTE: Now returns 0 at success and updates sysno, which is an int*
-  20-jun-2003 Heikki
-*/
-
-int zebra_add_record(ZebraHandle zh,
-		     const char *buf, int buf_size)
+ZEBRA_RES zebra_add_record(ZebraHandle zh,
+                           const char *buf, int buf_size)
 {
     return zebra_update_record(zh, 0, 0 /* sysno */, 0, 0, buf, buf_size, 0);
 }
 
-ZEBRA_RES zebra_insert_record (ZebraHandle zh, 
-			       const char *recordType,
-			       SYSNO *sysno, const char *match,
-			       const char *fname,
-			       const char *buf, int buf_size, int force_update)
+ZEBRA_RES zebra_insert_record(ZebraHandle zh, 
+			      const char *recordType,
+			      SYSNO *sysno, const char *match,
+			      const char *fname,
+			      const char *buf, int buf_size, int force_update)
 {
     ZEBRA_RES res;
     ASSERTZH;

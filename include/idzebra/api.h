@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.34 2006-05-10 08:13:19 adam Exp $
+/* $Id: api.h,v 1.35 2006-05-30 13:21:13 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -391,11 +391,17 @@ ZEBRA_RES zebra_init(ZebraHandle zh);
 YAZ_EXPORT
 ZEBRA_RES zebra_compact(ZebraHandle zh);
 
-YAZ_EXPORT int zebra_repository_update(ZebraHandle zh, const char *path);
-YAZ_EXPORT int zebra_repository_delete(ZebraHandle zh, const char *path);
-YAZ_EXPORT int zebra_repository_show(ZebraHandle zh, const char *path);
+YAZ_EXPORT 
+ZEBRA_RES zebra_repository_update(ZebraHandle zh, const char *path);
 
-YAZ_EXPORT int zebra_add_record(ZebraHandle zh, const char *buf, int buf_size);
+YAZ_EXPORT 
+ZEBRA_RES zebra_repository_delete(ZebraHandle zh, const char *path);
+
+YAZ_EXPORT 
+ZEBRA_RES zebra_repository_show(ZebraHandle zh, const char *path);
+
+YAZ_EXPORT 
+ZEBRA_RES zebra_add_record(ZebraHandle zh, const char *buf, int buf_size);
 			       
 YAZ_EXPORT 
 ZEBRA_RES zebra_insert_record(ZebraHandle zh, 

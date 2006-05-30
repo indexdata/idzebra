@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.47 2006-05-19 17:33:18 adam Exp $
+# $Id: makefile,v 1.48 2006-05-30 13:21:21 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -419,7 +419,8 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\sortidx.obj \
 	$(OBJDIR)\states.obj \
 	$(OBJDIR)\symtab.obj \
-	$(OBJDIR)\trav.obj \
+	$(OBJDIR)\update_path.obj \
+	$(OBJDIR)\update_file.obj \
 	$(OBJDIR)\trunc.obj \
 	$(OBJDIR)\xmlread.obj \
 	$(OBJDIR)\xpath.obj \

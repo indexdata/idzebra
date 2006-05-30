@@ -1,5 +1,5 @@
-/* $Id: trav.c,v 1.51 2006-05-10 08:13:22 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: update_file.c,v 1.1 2006-05-30 13:21:16 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -37,6 +37,24 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "index.h"
 
+#if 0
+static int dump_file_dict_func(char *name, const char *info, int pos,
+				void *client)
+{
+    yaz_log(YLOG_LOG, "%s", name);
+    return 0;
+}
+static void dump_file_dict(Dict dict)
+{
+    int before = 10;
+    int after = 1000;
+    char term[1000];
+    
+    strcpy(term, "0");
+    dict_scan (dict, term, &before, &after, 0, dump_file_dict_func);
+}
+#endif
+
 static int repComp (const char *a, const char *b, size_t len)
 {
     if (!len)
@@ -44,44 +62,7 @@ static int repComp (const char *a, const char *b, size_t len)
     return memcmp (a, b, len);
 }
 
-static void repositoryExtractR (ZebraHandle zh, int deleteFlag, char *rep,
-				int level)
-{
-    struct dir_entry *e;
-    int i;
-    size_t rep_len = strlen (rep);
-
-    e = dir_open (rep, zh->path_reg, zh->m_follow_links);
-    if (!e)
-        return;
-    yaz_log (YLOG_LOG, "dir %s", rep);
-    if (rep[rep_len-1] != '/')
-        rep[rep_len] = '/';
-    else
-        --rep_len;
-    
-    for (i=0; e[i].name; i++)
-    {
-	char *ecp;
-        strcpy (rep +rep_len+1, e[i].name);
-	if ((ecp = strrchr (e[i].name, '/')))
-	    *ecp = '\0';
-
-        switch (e[i].kind)
-        {
-        case dirs_file:
-            zebra_extract_file (zh, NULL, rep, deleteFlag);
-            break;
-        case dirs_dir:
-            repositoryExtractR (zh, deleteFlag, rep, level+1);
-            break;
-        }
-    }
-    dir_free (&e);
-
-}
-
-static void fileDeleteR (ZebraHandle zh,
+static void fileDelete_r(ZebraHandle zh,
                          struct dirs_info *di, struct dirs_entry *dst,
                          const char *base, char *src)
 {
@@ -111,10 +92,10 @@ static void fileDeleteR (ZebraHandle zh,
     }
 }
 
-static void fileUpdateR (ZebraHandle zh,
-                         struct dirs_info *di, struct dirs_entry *dst,
-			 const char *base, char *src, 
-			 int level)
+static void file_update_r(ZebraHandle zh,
+                          struct dirs_info *di, struct dirs_entry *dst,
+                          const char *base, char *src, 
+                          int level)
 {
     struct dir_entry *e_src;
     int i_src = 0;
@@ -146,7 +127,7 @@ static void fileUpdateR (ZebraHandle zh,
     else if (!e_src)
     {
         strcpy (src, dst->path);
-        fileDeleteR (zh, di, dst, base, src);
+        fileDelete_r(zh, di, dst, base, src);
         return;
     }
     else
@@ -201,7 +182,7 @@ static void fileUpdateR (ZebraHandle zh,
                 dst = dirs_read (di);
                 break;
             case dirs_dir:
-                fileUpdateR (zh, di, dst, base, src, level+1);
+                file_update_r(zh, di, dst, base, src, level+1);
                 dst = dirs_last (di);
                 yaz_log (YLOG_DEBUG, "last is %s", dst ? dst->path : "null");
                 break;
@@ -223,7 +204,7 @@ static void fileUpdateR (ZebraHandle zh,
                     dirs_add (di, src, sysno, e_src[i_src].mtime);            
                 break;
             case dirs_dir:
-                fileUpdateR (zh, di, dst, base, src, level+1);
+                file_update_r(zh, di, dst, base, src, level+1);
                 if (dst)
                     dst = dirs_last (di);
                 break;
@@ -243,7 +224,7 @@ static void fileUpdateR (ZebraHandle zh,
                 dst = dirs_read (di);
                 break;
             case dirs_dir:
-                fileDeleteR (zh, di, dst, base, src);
+                fileDelete_r(zh, di, dst, base, src);
                 dst = dirs_last (di);
             }
         }
@@ -251,39 +232,7 @@ static void fileUpdateR (ZebraHandle zh,
     dir_free (&e_src);
 }
 
-void repositoryShow (ZebraHandle zh, const char *path)
-{
-    char src[1024];
-    int src_len;
-    struct dirs_entry *dst;
-    Dict dict;
-    struct dirs_info *di;
-
-    if (!(dict = dict_open_res (zh->reg->bfs, FMATCH_DICT, 50, 0, 0, zh->res)))
-    {
-        yaz_log (YLOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
-	return;
-    }
-    
-    strncpy(src, path, sizeof(src)-1);
-    src[sizeof(src)-1]='\0';
-    src_len = strlen (src);
-    
-    if (src_len && src[src_len-1] != '/')
-    {
-        src[src_len] = '/';
-        src[++src_len] = '\0';
-    }
-    
-    di = dirs_open (dict, src, zh->m_flag_rw);
-    
-    while ( (dst = dirs_read (di)) )
-        yaz_log (YLOG_LOG, "%s", dst->path);
-    dirs_free (&di);
-    dict_close (dict);
-}
-
-static void fileUpdate (ZebraHandle zh, Dict dict, const char *path)
+static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
 {
     struct dirs_info *di;
     struct stat sbuf;
@@ -339,7 +288,7 @@ static void fileUpdate (ZebraHandle zh, Dict dict, const char *path)
         }
         di = dirs_open (dict, src, zh->m_flag_rw);
         *dst = '\0';
-        fileUpdateR (zh, di, dirs_read (di), src, dst, 0);
+        file_update_r(zh, di, dirs_read (di), src, dst, 0);
         dirs_free (&di);
     }
     else
@@ -348,104 +297,30 @@ static void fileUpdate (ZebraHandle zh, Dict dict, const char *path)
     }
 }
 
-static void repositoryExtract (ZebraHandle zh,
-                               int deleteFlag, const char *path)
+ZEBRA_RES zebra_update_file_match(ZebraHandle zh, const char *path)
 {
-    struct stat sbuf;
-    char src[1024];
-    int ret;
-
-    assert (path);
-
-    if (zh->path_reg && !yaz_is_abspath(path))
+    Dict dict;
+    if (!(dict = dict_open_res (zh->reg->bfs, FMATCH_DICT, 50,
+                                zh->m_flag_rw, 0, zh->res)))
     {
-        strcpy (src, zh->path_reg);
-        strcat (src, "/");
+        yaz_log (YLOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
+        return ZEBRA_FAIL;
     }
-    else
-        *src = '\0';
-    strcat (src, path);
-    ret = zebra_file_stat (src, &sbuf, zh->m_follow_links);
-
-    strcpy (src, path);
-
-    if (ret == -1)
-        yaz_log (YLOG_WARN|YLOG_ERRNO, "Cannot access path %s", src);
-    else if (S_ISREG(sbuf.st_mode))
-        zebra_extract_file (zh, NULL, src, deleteFlag);
-    else if (S_ISDIR(sbuf.st_mode))
-	repositoryExtractR (zh, deleteFlag, src, 0);
-    else
-        yaz_log (YLOG_WARN, "Skipping path %s", src);
-}
-
-static void repositoryExtractG (ZebraHandle zh, const char *path, 
-				int deleteFlag)
-{
     if (!strcmp(path, "") || !strcmp(path, "-"))
     {
         char src[1024];
-	
-        while (scanf ("%1020s", src) == 1)
-            repositoryExtract (zh, deleteFlag, src);
+        while (scanf ("%s", src) == 1)
+            file_update_top(zh, dict, src);
     }
     else
-        repositoryExtract (zh, deleteFlag, path);
-}
-
+        file_update_top(zh, dict, path);
 #if 0
-static int dump_file_dict_func(char *name, const char *info, int pos,
-				void *client)
-{
-    yaz_log(YLOG_LOG, "%s", name);
-    return 0;
-}
-static void dump_file_dict(Dict dict)
-{
-    int before = 10;
-    int after = 1000;
-    char term[1000];
-    
-    strcpy(term, "0");
-    dict_scan (dict, term, &before, &after, 0, dump_file_dict_func);
-}
+    dump_file_dict(dict);
 #endif
-
-void repositoryUpdate (ZebraHandle zh, const char *path)
-{
-    assert (path);
-    if (zh->m_record_id && !strcmp (zh->m_record_id, "file"))
-    {
-        Dict dict;
-        if (!(dict = dict_open_res (zh->reg->bfs, FMATCH_DICT, 50,
-				    zh->m_flag_rw, 0, zh->res)))
-        {
-            yaz_log (YLOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
-	    return ;
-        }
-        if (!strcmp(path, "") || !strcmp(path, "-"))
-        {
-            char src[1024];
-            while (scanf ("%s", src) == 1)
-                fileUpdate (zh, dict, src);
-        }
-        else
-            fileUpdate (zh, dict, path);
-#if 0
-	dump_file_dict(dict);
-#endif
-        dict_close (dict);
-	
-    }
-    else 
-        repositoryExtractG (zh, path, 0);
+    dict_close (dict);
+    return ZEBRA_OK;
 }
 
-void repositoryDelete (ZebraHandle zh, const char *path)
-{
-    assert (path);
-    repositoryExtractG (zh, path, 1);
-}
 
 /*
  * Local variables:

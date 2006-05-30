@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.164 2006-05-19 23:45:29 adam Exp $
+/* $Id: index.h,v 1.165 2006-05-30 13:21:14 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -470,6 +470,10 @@ ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,
                              Z_SortAttributes *sortAttributes,
                              int *ord,
                              int *numerical);
+
+ZEBRA_RES zebra_update_file_match(ZebraHandle zh, const char *path);
+ZEBRA_RES zebra_update_from_path(ZebraHandle zh, const char *path);
+ZEBRA_RES zebra_delete_from_path(ZebraHandle zh, const char *path);
 
 YAZ_END_CDECL
 
