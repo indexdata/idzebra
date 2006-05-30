@@ -1,4 +1,4 @@
-/* $Id: t15.c,v 1.4 2006-05-10 08:13:35 adam Exp $
+/* $Id: t15.c,v 1.5 2006-05-30 13:06:35 adam Exp $
    Copyright (C) 2004-2005
    Index Data ApS
 
@@ -64,8 +64,8 @@ static void search_process(ZebraService zs, int iter)
 	
 	YAZ_CHECK(hits >= hits_max);
 	if (hits < hits_max)
-	    printf("hits=%lld hits_max=%lld\n", hits, hits_max);
-	    hits_max = hits;
+	    printf("i=%d hits=%lld hits_max=%lld\n", i, hits, hits_max);
+        hits_max = hits;
 	zebra_close(zh);
     }
 }
