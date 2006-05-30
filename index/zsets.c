@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.49.2.5 2006-01-19 13:32:46 adam Exp $
+/* $Id: zsets.c,v 1.49.2.6 2006-05-30 21:43:15 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005
    Index Data Aps
 
@@ -492,8 +492,12 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
     sortIdx_sysno (zh->reg->sortIdx, sysno);
     for (i = 0; i<num_criteria; i++)
     {
-	sortIdx_type (zh->reg->sortIdx, criteria[i].attrUse);
-	sortIdx_read (zh->reg->sortIdx, this_entry.buf[i]);
+        memset(this_entry.buf[i], '\0', SORT_IDX_ENTRYSIZE);
+	if (criteria[i].attrUse != -1)
+	{
+	    sortIdx_type (zh->reg->sortIdx, criteria[i].attrUse);
+	    sortIdx_read (zh->reg->sortIdx, this_entry.buf[i]);
+	}
     }
     i = sort_info->num_entries;
     while (--i >= 0)
@@ -753,7 +757,14 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
 	{
 	    zh->errCode = 237;
 	    return;
-	}	
+	}
+
+	if (sks->which == Z_SortKeySpec_missingValueData)
+	{
+	    zh->errCode = 213;
+	    return;
+	}
+
 	sk = sks->sortElement->u.generic;
 	switch (sk->which)
 	{
@@ -772,15 +783,20 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
 				 sk->u.sortAttributes,
                                  &sort_criteria[i].numerical);
 	    yaz_log (LOG_DEBUG, "use value = %d", sort_criteria[i].attrUse);
-	    if (sort_criteria[i].attrUse == -1)
+	    if (sort_criteria[i].attrUse == -1 && sks->which != Z_SortKeySpec_null)
 	    {
 		zh->errCode = 116;
 		return;
 	    }
 	    if (sortIdx_type (zh->reg->sortIdx, sort_criteria[i].attrUse))
 	    {
-		zh->errCode = 207;
-		return;
+		if (sks->which != Z_SortKeySpec_null)
+		{
+		    zh->errCode = 207;
+		    return;
+		}
+		else
+		    sort_criteria[i].attrUse = -1;
 	    }
 	    break;
 	}
