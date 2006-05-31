@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.25 2006-05-10 08:13:28 adam Exp $
+/* $Id: recctrl.c,v 1.26 2006-05-31 16:11:58 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -134,15 +134,17 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 #endif
 #endif
 
+
 #ifdef IDZEBRA_STATIC_XSLT
 #if HAVE_XSLT
-    if (1)
+    if (0)
     {
 	extern RecType idzebra_filter_xslt[];
 	recTypeClass_add (&rts, idzebra_filter_xslt, nmem, 0);
     }
 #endif
 #endif
+
     return rts;
 }
 

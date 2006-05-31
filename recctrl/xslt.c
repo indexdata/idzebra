@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.26 2006-05-29 13:48:43 marc Exp $
+/* $Id: xslt.c,v 1.27 2006-05-31 16:11:58 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -238,6 +238,7 @@ static ZEBRA_RES create_schemas(struct filter_xslt_info *tinfo,
 		attr_content(attr, "default", &schema->default_schema);
 		attr_content(attr, "snippet", &schema->include_snippet);
 	    }
+
 	    if (schema->stylesheet){
               yaz_filepath_resolve(schema->stylesheet, tinfo->profile_path, 
                                    NULL, tmp_xslt_full_name);

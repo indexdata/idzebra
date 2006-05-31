@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.16 2006-05-29 13:48:43 marc Exp $
+/* $Id: alvis.c,v 1.17 2006-05-31 16:11:58 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,6 +25,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <ctype.h>
 
 #include <yaz/diagbib1.h>
+#include <yaz/tpath.h>
+
 #include <libxml/xmlversion.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -50,6 +52,8 @@ struct filter_schema {
 struct filter_info {
     xmlDocPtr doc;
     char *fname;
+    char *full_name;
+    const char *profile_path;
     const char *split_level;
     const char *split_path;
     ODR odr;
@@ -128,6 +132,8 @@ static void *filter_init(Res res, RecType recType)
     struct filter_info *tinfo = (struct filter_info *) xmalloc(sizeof(*tinfo));
     tinfo->reader = 0;
     tinfo->fname = 0;
+    tinfo->full_name = 0;
+    tinfo->profile_path = 0;
     tinfo->split_level = 0;
     tinfo->split_path = 0;
     tinfo->odr = odr_createmem(ODR_ENCODE);
@@ -176,21 +182,44 @@ static void destroy_schemas(struct filter_info *tinfo)
 
 static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 {
+    char tmp_full_name[1024];
     xmlNodePtr ptr;
     tinfo->fname = xstrdup(fname);
-    tinfo->doc = xmlParseFile(tinfo->fname);
-    if (!tinfo->doc)
+
+   if (yaz_filepath_resolve(tinfo->fname, tinfo->profile_path, 
+                             NULL, tmp_full_name))
+      tinfo->full_name = xstrdup(tmp_full_name);
+    else
+      tinfo->full_name = xstrdup(tinfo->fname);
+
+    yaz_log(YLOG_LOG, "alvis filter: loading config file %s", tinfo->full_name);
+
+    tinfo->doc = xmlParseFile(tinfo->full_name);
+
+    if (!tinfo->doc){
+        yaz_log(YLOG_WARN, "alvis filter: could not parse config file %s", 
+                tinfo->full_name);
+
 	return ZEBRA_FAIL;
+    }
+    
     ptr = xmlDocGetRootElement(tinfo->doc);
     if (!ptr || ptr->type != XML_ELEMENT_NODE ||
-	XML_STRCMP(ptr->name, "schemaInfo"))
-	return ZEBRA_FAIL;
+	XML_STRCMP(ptr->name, "schemaInfo")){
+        yaz_log(YLOG_WARN, 
+                "alvis filter:  config file %s :" 
+                " expected root element <schemaInfo>", 
+                tinfo->full_name);  
+        return ZEBRA_FAIL;
+    }
+
     for (ptr = ptr->children; ptr; ptr = ptr->next)
     {
 	if (ptr->type != XML_ELEMENT_NODE)
 	    continue;
 	if (!XML_STRCMP(ptr->name, "schema"))
-	{
+	{  
+            char tmp_xslt_full_name[1024];
 	    struct _xmlAttr *attr;
 	    struct filter_schema *schema = xmalloc(sizeof(*schema));
 	    schema->name = 0;
@@ -214,11 +243,17 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 
             /* find requested schema */
 
-	    if (schema->stylesheet)
-		schema->stylesheet_xsp =
-		    xsltParseStylesheetFile(
-			(const xmlChar*) schema->stylesheet);
-
+	    if (schema->stylesheet){
+              yaz_filepath_resolve(schema->stylesheet, tinfo->profile_path, 
+                                   NULL, tmp_xslt_full_name);
+              schema->stylesheet_xsp 
+                = xsltParseStylesheetFile((const xmlChar*) tmp_xslt_full_name);
+              if (!schema->stylesheet_xsp)
+                yaz_log(YLOG_WARN, 
+                        "alvis filter: could not parse xslt stylesheet %s", 
+                        tmp_xslt_full_name);
+            }
+            
                 
 	}
 	else if (!XML_STRCMP(ptr->name, "split"))
@@ -270,10 +305,19 @@ static struct filter_schema *lookup_schema(struct filter_info *tinfo,
 static ZEBRA_RES filter_config(void *clientData, Res res, const char *args)
 {
     struct filter_info *tinfo = clientData;
-    if (!args || !*args)
-	return ZEBRA_FAIL;
+    if (!args || !*args){
+      yaz_log(YLOG_WARN, "alvis filter: need config file");
+      return ZEBRA_FAIL;
+    }
+
     if (tinfo->fname && !strcmp(args, tinfo->fname))
 	return ZEBRA_OK;
+    
+    tinfo->profile_path 
+      /* = res_get_def(res, "profilePath", DEFAULT_PROFILE_PATH); */
+      = res_get(res, "profilePath");
+    yaz_log(YLOG_LOG, "alvis filter: profilePath %s", tinfo->profile_path);
+
     destroy_schemas(tinfo);
     create_schemas(tinfo, args);
     return ZEBRA_OK;
