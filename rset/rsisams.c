@@ -1,4 +1,4 @@
-/* $Id: rsisams.c,v 1.24 2006-05-10 08:13:33 adam Exp $
+/* $Id: rsisams.c,v 1.25 2006-06-01 13:05:52 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -90,9 +90,9 @@ RSFD r_open (RSET ct, int flag)
         ptinfo=(struct rfd_private *)(rfd->priv);
     else {
         ptinfo = (struct rfd_private *) nmem_malloc(ct->nmem,sizeof(*ptinfo));
-        ptinfo->pt = isams_pp_open (info->is, info->pos);
         rfd->priv=ptinfo;
     }
+    ptinfo->pt = isams_pp_open (info->is, info->pos);
     return rfd;
 }
 
