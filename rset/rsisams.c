@@ -1,5 +1,5 @@
-/* $Id: rsisams.c,v 1.25 2006-06-01 13:05:52 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: rsisams.c,v 1.26 2006-06-01 13:10:16 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -39,7 +39,7 @@ static const struct rset_control control =
     rset_get_one_term,
     r_open,
     r_close,
-    0, /* no foward */
+    0, /* no forward */
     r_pos,
     r_read,
     r_write,
@@ -61,7 +61,7 @@ RSET rsisams_create(NMEM nmem, struct rset_key_control *kcontrol,
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term, 0, 0);
     struct rset_private *info;
-    info = (struct rset_private *) nmem_malloc(rnew->nmem,sizeof(*info));
+    info = (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
     rnew->priv = info;
     info->is = is;
     info->pos = pos;
@@ -85,12 +85,12 @@ RSFD r_open (RSET ct, int flag)
         yaz_log (YLOG_FATAL, "ISAMS set type is read-only");
         return NULL;
     }
-    rfd=rfd_create_base(ct);
+    rfd = rfd_create_base(ct);
     if (rfd->priv)
-        ptinfo=(struct rfd_private *)(rfd->priv);
+        ptinfo = (struct rfd_private *)(rfd->priv);
     else {
         ptinfo = (struct rfd_private *) nmem_malloc(ct->nmem,sizeof(*ptinfo));
-        rfd->priv=ptinfo;
+        rfd->priv = ptinfo;
     }
     ptinfo->pt = isams_pp_open (info->is, info->pos);
     return rfd;
@@ -107,10 +107,9 @@ static void r_close (RSFD rfd)
 static int r_read (RSFD rfd, void *buf, TERMID *term)
 {
     struct rfd_private *ptinfo = (struct rfd_private *)(rfd->priv);
-    int rc;
-    rc=isams_pp_read(ptinfo->pt, buf);
+    int rc = isams_pp_read(ptinfo->pt, buf);
     if (rc && term)
-        *term=rfd->rset->term;
+        *term = rfd->rset->term;
     return rc;
 }
 
