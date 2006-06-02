@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.26 2006-05-31 16:11:58 marc Exp $
+/* $Id: recctrl.c,v 1.27 2006-06-02 13:55:55 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -100,22 +100,6 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     }
 #endif
 
-#ifdef IDZEBRA_STATIC_GRS_CSV
-    if (1)
-    {
-	extern RecType idzebra_filter_grs_csv[];
-	recTypeClass_add (&rts, idzebra_filter_grs_csv, nmem, 0);
-    }
-#endif
-
-#ifdef IDZEBRA_STATIC_GRS_DANBIB
-    if (1)
-    {
-	extern RecType idzebra_filter_grs_danbib[];
-	recTypeClass_add (&rts, idzebra_filter_grs_danbib, nmem, 0);
-    }
-#endif
-
 #ifdef IDZEBRA_STATIC_SAFARI
     if (1)
     {
@@ -130,17 +114,6 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     {
 	extern RecType idzebra_filter_alvis[];
 	recTypeClass_add (&rts, idzebra_filter_alvis, nmem, 0);
-    }
-#endif
-#endif
-
-
-#ifdef IDZEBRA_STATIC_XSLT
-#if HAVE_XSLT
-    if (0)
-    {
-	extern RecType idzebra_filter_xslt[];
-	recTypeClass_add (&rts, idzebra_filter_xslt, nmem, 0);
     }
 #endif
 #endif
