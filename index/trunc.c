@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.65 2006-05-10 08:13:22 adam Exp $
+/* $Id: trunc.c,v 1.66 2006-06-06 21:01:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -134,8 +134,8 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
     RSFD result_rsfd;
     int nn = 0;
 
-    result = rstemp_create(rset_nmem, kctrl, scope,
-			   res_get(zi->res, "setTmpDir"), termid);
+    result = rset_create_temp(rset_nmem, kctrl, scope,
+                              res_get(zi->res, "setTmpDir"), termid);
     result_rsfd = rset_open(result, RSETF_WRITE);
 
     if (to - from > merge_chunk)
@@ -414,7 +414,7 @@ RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
     termid = rset_term_create(term, length, flags, term_type, rset_nmem, ol,
 			      reg_type, hits_limit, term_ref_id);
     if (no < 1)
-	return rsnull_create(rset_nmem, kctrl, termid);
+	return rset_create_null(rset_nmem, kctrl, termid);
     
     if (zi->reg->isams)
     {
@@ -445,9 +445,8 @@ RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
                 rsets[i] = rsisamb_create(rset_nmem, kctrl, scope,
 					  zi->reg->isamb, isam_p[i],
 					  0 /* termid */);
-            r = rsmulti_or_create(rset_nmem, kctrl, scope,
-				  termid /* termid */,
-				  no, rsets);
+            r = rset_create_or(rset_nmem, kctrl, scope,
+                               termid, no, rsets);
             xfree(rsets);
             return r;
         } 
@@ -456,7 +455,7 @@ RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
     else
     {
         yaz_log(YLOG_WARN, "Unknown isam set in rset_trunc");
-	return rsnull_create(rset_nmem, kctrl, 0);
+	return rset_create_null(rset_nmem, kctrl, 0);
     }
     trunc_chunk = atoi(res_get_def(zi->res, "truncchunk", "20"));
     result = rset_trunc_r(zi, term, length, flags, isam_p, 0, no, trunc_chunk,

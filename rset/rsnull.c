@@ -1,5 +1,5 @@
-/* $Id: rsnull.c,v 1.37 2006-05-10 08:13:34 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: rsnull.c,v 1.38 2006-06-06 21:01:31 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -45,8 +45,8 @@ static const struct rset_control control =
     r_write,
 };
 
-RSET rsnull_create(NMEM nmem, struct rset_key_control *kcontrol,
-		   TERMID term)
+RSET rset_create_null(NMEM nmem, struct rset_key_control *kcontrol,
+                      TERMID term)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, 0, term, 0, 0);
     rnew->priv = 0;

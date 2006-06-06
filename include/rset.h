@@ -1,5 +1,5 @@
-/* $Id: rset.h,v 1.58 2006-05-10 08:13:18 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: rset.h,v 1.59 2006-06-06 21:01:30 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -226,33 +226,27 @@ void rset_close(RSFD rfd);
 /** rset_count counts or estimates the keys in it*/
 zint rset_count(RSET rs);
 
-RSET rstemp_create(NMEM nmem, struct rset_key_control *kcontrol,
-                    int scope, const char *temp_path, TERMID term);
+RSET rset_create_temp(NMEM nmem, struct rset_key_control *kcontrol,
+                      int scope, const char *temp_path, TERMID term);
 
-RSET rsnull_create(NMEM nmem, struct rset_key_control *kcontrol, TERMID term);
+RSET rset_create_null(NMEM nmem, struct rset_key_control *kcontrol, TERMID term);
 
-RSET rsbool_create_and(NMEM nmem, struct rset_key_control *kcontrol,
-		       int scope, RSET rset_l, RSET rset_r);
+RSET rset_create_not(NMEM nmem, struct rset_key_control *kcontrol,
+                     int scope, RSET rset_l, RSET rset_r);
 
-RSET rsbool_create_or(NMEM nmem, struct rset_key_control *kcontrol,
-		      int scope, RSET rset_l, RSET rset_r);
+RSET rset_create_between(NMEM nmem, struct rset_key_control *kcontrol,
+                         int scope, RSET rset_l, RSET rset_m, RSET rset_r, 
+                         RSET rset_attr);
 
-RSET rsbool_create_not(NMEM nmem, struct rset_key_control *kcontrol,
-		       int scope, RSET rset_l, RSET rset_r);
+RSET rset_create_or(NMEM nmem, struct rset_key_control *kcontrol,
+                          int scope, TERMID termid, int no_rsets, RSET* rsets);
 
-RSET rsbetween_create(NMEM nmem, struct rset_key_control *kcontrol,
-		      int scope, RSET rset_l, RSET rset_m, RSET rset_r, 
-		      RSET rset_attr);
+RSET rset_create_and(NMEM nmem, struct rset_key_control *kcontrol,
+                     int scope, int no_rsets, RSET* rsets);
 
-RSET rsmulti_or_create(NMEM nmem, struct rset_key_control *kcontrol,
-		       int scope, TERMID termid, int no_rsets, RSET* rsets);
-
-RSET rsmulti_and_create(NMEM nmem, struct rset_key_control *kcontrol,
-			int scope, int no_rsets, RSET* rsets);
-
-RSET rsprox_create(NMEM nmem, struct rset_key_control *kcontrol,
-		   int scope, int rset_no, RSET *rset,
-		   int ordered, int exclusion, int relation, int distance);
+RSET rset_create_prox(NMEM nmem, struct rset_key_control *kcontrol,
+                      int scope, int rset_no, RSET *rset,
+                      int ordered, int exclusion, int relation, int distance);
 
 RSET rsisamb_create(NMEM nmem, struct rset_key_control *kcontrol,
 		    int scope, ISAMB is, ISAM_P pos, TERMID term);

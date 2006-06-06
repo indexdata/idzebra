@@ -1,5 +1,5 @@
-/* $Id: rstemp.c,v 1.66 2006-05-10 08:13:34 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: rstemp.c,v 1.67 2006-06-06 21:01:31 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -81,8 +81,8 @@ struct rfd_private {
 static int log_level = 0;
 static int log_level_initialized = 0;
 
-RSET rstemp_create(NMEM nmem, struct rset_key_control *kcontrol,
-                   int scope, const char *temp_path, TERMID term)
+RSET rset_create_temp(NMEM nmem, struct rset_key_control *kcontrol,
+                      int scope, const char *temp_path, TERMID term)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term,
 				 0, 0);

@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.105 2006-05-30 21:41:35 adam Exp $
+/* $Id: zsets.c,v 1.106 2006-06-06 21:01:30 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1172,8 +1172,8 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 	NMEM nmem = nmem_create();
 	struct it_key key;
 	RSET rsets[2], rset_comb;
-	RSET rset_temp = rstemp_create(nmem, kc, kc->scope, 
-				       res_get (zh->res, "setTmpDir"),0 );
+	RSET rset_temp = rset_create_temp(nmem, kc, kc->scope, 
+                                          res_get (zh->res, "setTmpDir"),0 );
 	
 	TERMID termid;
 	RSFD rsfd = rset_open(rset_temp, RSETF_WRITE);
@@ -1189,7 +1189,7 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 	rsets[0] = rset_temp;
 	rsets[1] = rset_dup(sset->rset);
 	
-	rset_comb = rsmulti_and_create(nmem, kc, kc->scope, 2, rsets);
+	rset_comb = rset_create_and(nmem, kc, kc->scope, 2, rsets);
 
 	rsfd = rset_open(rset_comb, RSETF_READ);
 

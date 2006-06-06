@@ -1,5 +1,5 @@
-/* $Id: rsprox.c,v 1.30 2006-05-10 08:13:34 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: rsprox.c,v 1.31 2006-06-06 21:01:31 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -70,11 +70,11 @@ struct rset_prox_rfd {
 };    
 
 
-RSET rsprox_create(NMEM nmem, struct rset_key_control *kcontrol,
-		   int scope,
-		   int rset_no, RSET *rset,
-		   int ordered, int exclusion,
-		   int relation, int distance)
+RSET rset_create_prox(NMEM nmem, struct rset_key_control *kcontrol,
+                      int scope,
+                      int rset_no, RSET *rset,
+                      int ordered, int exclusion,
+                      int relation, int distance)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, 0,
 				 rset_no, rset);

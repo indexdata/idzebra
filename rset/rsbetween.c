@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.43 2006-05-10 08:13:32 adam Exp $
+/* $Id: rsbetween.c,v 1.44 2006-06-06 21:01:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -102,9 +102,9 @@ static void checkterm(RSET rs, char *tag, NMEM nmem)
 }
 
 
-RSET rsbetween_create(NMEM nmem, struct rset_key_control *kcontrol,
-		      int scope,
-		      RSET rset_l, RSET rset_m, RSET rset_r, RSET rset_attr)
+RSET rset_create_between(NMEM nmem, struct rset_key_control *kcontrol,
+                         int scope,
+                         RSET rset_l, RSET rset_m, RSET rset_r, RSET rset_attr)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, 0, 0, 0);
     struct rset_between_info *info=
@@ -141,8 +141,8 @@ RSET rsbetween_create(NMEM nmem, struct rset_key_control *kcontrol,
     }
     rnew->no_children = 1;
     rnew->children = nmem_malloc(rnew->nmem, sizeof(RSET *));
-    rnew->children[0] = rsmulti_and_create(nmem, kcontrol, 
-					   scope, n, rsetarray);
+    rnew->children[0] = rset_create_and(nmem, kcontrol, 
+                                        scope, n, rsetarray);
     rnew->priv = info;
     yaz_log(log_level, "create rset at %p", rnew);
     return rnew;

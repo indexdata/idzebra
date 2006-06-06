@@ -1,5 +1,5 @@
-/* $Id: rsmultiandor.c,v 1.20 2006-05-10 08:13:33 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: rsmultiandor.c,v 1.21 2006-06-06 21:01:31 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -282,15 +282,15 @@ static RSET rsmulti_andor_create(NMEM nmem,
     return rnew;
 }
 
-RSET rsmulti_or_create(NMEM nmem, struct rset_key_control *kcontrol,
-		       int scope, TERMID termid, int no_rsets, RSET* rsets)
+RSET rset_create_or(NMEM nmem, struct rset_key_control *kcontrol,
+                    int scope, TERMID termid, int no_rsets, RSET* rsets)
 {
     return rsmulti_andor_create(nmem, kcontrol, scope, termid,
                                 no_rsets, rsets, &control_or);
 }
 
-RSET rsmulti_and_create(NMEM nmem, struct rset_key_control *kcontrol,
-			int scope, int no_rsets, RSET* rsets)
+RSET rset_create_and(NMEM nmem, struct rset_key_control *kcontrol,
+                     int scope, int no_rsets, RSET* rsets)
 {
     return rsmulti_andor_create(nmem, kcontrol, scope, 0,
                                 no_rsets, rsets, &control_and);

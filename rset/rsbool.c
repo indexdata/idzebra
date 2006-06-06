@@ -1,5 +1,5 @@
-/* $Id: rsbool.c,v 1.58 2006-05-10 08:13:33 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: rsbool.c,v 1.59 2006-06-06 21:01:30 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -37,38 +37,9 @@ static void r_close(RSFD rfd);
 static void r_delete(RSET ct);
 static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf);
 static void r_pos(RSFD rfd, double *current, double *total); 
-static int r_read_and(RSFD rfd, void *buf, TERMID *term);
-static int r_read_or(RSFD rfd, void *buf, TERMID *term);
 static int r_read_not(RSFD rfd, void *buf, TERMID *term);
 static int r_write(RSFD rfd, const void *buf);
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
-
-
-static const struct rset_control control_and = 
-{
-    "and",
-    r_delete,
-    r_get_terms,
-    r_open,
-    r_close,
-    r_forward, 
-    r_pos,    
-    r_read_and,
-    r_write,
-};
-
-static const struct rset_control control_or = 
-{
-    "or",
-    r_delete,
-    r_get_terms,
-    r_open,
-    r_close,
-    r_forward, 
-    r_pos,
-    r_read_or,
-    r_write,
-};
 
 static const struct rset_control control_not = 
 {
@@ -119,23 +90,8 @@ static RSET rsbool_create_base(const struct rset_control *ctrl,
     return rnew;
 }
 
-RSET rsbool_create_and( NMEM nmem, struct rset_key_control *kcontrol,
-                        int scope, RSET rset_l, RSET rset_r)
-{
-    return rsbool_create_base(&control_and, nmem, kcontrol,
-                              scope,
-                              rset_l, rset_r);
-}
-
-RSET rsbool_create_or(NMEM nmem, struct rset_key_control *kcontrol,
-                      int scope, RSET rset_l, RSET rset_r)
-{
-    return rsbool_create_base(&control_or, nmem, kcontrol,
-                              scope, rset_l, rset_r);
-}
-
-RSET rsbool_create_not(NMEM nmem, struct rset_key_control *kcontrol,
-                       int scope, RSET rset_l, RSET rset_r)
+RSET rset_create_not(NMEM nmem, struct rset_key_control *kcontrol,
+                     int scope, RSET rset_l, RSET rset_r)
 {
     return rsbool_create_base(&control_not, nmem, kcontrol,
                               scope, rset_l, rset_r);
@@ -214,202 +170,6 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term,
           2,9
           3,1
 */
-
-static int r_read_and(RSFD rfd, void *buf, TERMID *term)
-{
-    struct rfd_private *p=(struct rfd_private *)rfd->priv;
-    const struct rset_key_control *kctrl=rfd->rset->keycontrol;
-
-    while (p->more_l || p->more_r)
-    {
-        int cmp;
-
-        if (p->more_l && p->more_r)
-            cmp = (*kctrl->cmp)(p->buf_l, p->buf_r);
-        else if (p->more_l)
-            cmp = -rfd->rset->scope;
-        else
-            cmp = rfd->rset->scope;
-#if RSET_DEBUG
-        yaz_log(YLOG_DEBUG, "r_read_and [%p] looping: m=%d/%d c=%d t=%d",
-                        rfd, p->more_l, p->more_r, cmp, p->tail);
-        (*kctrl->log_item)(YLOG_DEBUG, p->buf_l, "left ");
-        (*kctrl->log_item)(YLOG_DEBUG, p->buf_r, "right ");
-#endif
-        if (!cmp)
-        {  /* cmp==0 */
-            memcpy (buf, p->buf_l, kctrl->key_size);
-            if (term)
-                *term=p->term_l;
-            p->more_l = rset_read(p->rfd_l, p->buf_l, &p->term_l);
-            p->tail = 1;
-        }
-        else if ( (cmp>0) && (cmp<rfd->rset->scope))
-        {  /* typically cmp == 1 */
-            memcpy (buf, p->buf_r, kctrl->key_size);
-            if (term)
-                *term=p->term_r;
-            p->more_r = rset_read(p->rfd_r, p->buf_r, &p->term_r);
-            p->tail = 1;
-#if RSET_DEBUG
-            yaz_log(YLOG_DEBUG, "r_read_and [%p] returning R m=%d/%d c=%d",
-                    rfd, p->more_l, p->more_r, cmp);
-            key_logdump(YLOG_DEBUG,buf);
-            (*kctrl->log_item)(YLOG_DEBUG, buf, "");
-#endif
-            p->hits++;
-            return 1;
-        }
-        else if ( (cmp<0) && (-cmp<rfd->rset->scope))
-        {  /* cmp == -1 */
-            memcpy (buf, p->buf_l, kctrl->key_size);
-            if (term)
-                *term=p->term_l;
-            p->more_l = rset_read(p->rfd_l, p->buf_l,&p->term_l);
-            p->tail = 1;
-#if RSET_DEBUG
-            yaz_log(YLOG_DEBUG, "r_read_and [%p] returning L m=%d/%d c=%d",
-                    rfd, p->more_l, p->more_r, cmp);
-            (*kctrl->log_item)(YLOG_DEBUG, buf, "");
-#endif
-            p->hits++;
-            return 1;
-        }
-        else if (cmp >= rfd->rset->scope )  
-        {  /* cmp == 2 */
-            if (p->tail)
-            {
-                memcpy (buf, p->buf_r, kctrl->key_size);
-                if (term)
-                    *term=p->term_r;
-                p->more_r = rset_read(p->rfd_r, p->buf_r, &p->term_r);
-                if (!p->more_r || (*kctrl->cmp)(p->buf_r, buf) > 1)
-                    p->tail = 0;
-#if RSET_DEBUG
-                yaz_log(YLOG_DEBUG, "r_read_and [%p] returning R tail m=%d/%d c=%d",
-                        rfd, p->more_l, p->more_r, cmp);
-                (*kctrl->log_item)(YLOG_DEBUG, buf, "");
-#endif
-                p->hits++;
-                return 1;
-            }
-            else
-            {
-#if RSET_DEBUG
-                yaz_log(YLOG_DEBUG, "r_read_and [%p] about to forward R "
-                                 "m=%d/%d c=%d",
-                        rfd, p->more_l, p->more_r, cmp);
-#endif
-                if (p->more_r && p->more_l)
-                    p->more_r = rset_forward( p->rfd_r, p->buf_r,
-                             &p->term_r, p->buf_l);
-                else 
-                    return 0; /* no point in reading further */
-            }
-        }
-        else  
-        { /* cmp == -2 */
-            if (p->tail)
-            {
-                memcpy (buf, p->buf_l, kctrl->key_size);
-                if (term)
-                    *term = p->term_l;
-                p->more_l = rset_read(p->rfd_l, p->buf_l, &p->term_l);
-                if (!p->more_l || (*kctrl->cmp)(p->buf_l, buf) > 1)
-                    p->tail = 0;
-#if RSET_DEBUG
-                yaz_log(YLOG_DEBUG, "r_read_and [%p] returning L tail m=%d/%d c=%d",
-                        rfd, p->more_l, p->more_r, cmp);
-                (*kctrl->log_item)(YLOG_DEBUG, buf, "");
-#endif
-                p->hits++;
-                return 1;
-            }
-            else
-            {
-#if RSET_DEBUG
-                yaz_log(YLOG_DEBUG, "r_read_and [%p] about to forward L "
-                                 "m=%d/%d c=%d",
-                        rfd, p->more_l, p->more_r, cmp);
-#endif
-                if (p->more_r && p->more_l)
-                    p->more_l = rset_forward(p->rfd_l, p->buf_l, 
-                                 &p->term_l, p->buf_r);
-                else 
-                    return 0; /* no point in reading further */
-            }
-        }
-    }
-#if RSET_DEBUG
-    yaz_log(YLOG_DEBUG, "r_read_and [%p] reached its end",rfd);
-#endif
-    return 0;
-}
-
-static int r_read_or (RSFD rfd, void *buf, TERMID *term)
-{
-    struct rfd_private *p = (struct rfd_private *)rfd->priv;
-    const struct rset_key_control *kctrl = rfd->rset->keycontrol;
-
-    while (p->more_l || p->more_r)
-    {
-        int cmp;
-
-        if (p->more_l && p->more_r)
-            cmp = (*kctrl->cmp)(p->buf_l, p->buf_r);
-        else if (p->more_r)
-            cmp = rfd->rset->scope;
-        else
-            cmp = -rfd->rset->scope;
-        if (!cmp)
-        { /* cmp==0 */
-            memcpy (buf, p->buf_l, kctrl->key_size);
-            if (term)
-                *term = p->term_l;
-            p->more_l = rset_read(p->rfd_l, p->buf_l, &p->term_l);
-            /* FIXME - is this right, should we not leave _r as it is */
-            /* and return that in the next read, so that ranking etc */
-            /* get to see both? */
-            p->more_r = rset_read(p->rfd_r, p->buf_r, &p->term_r);
-#if RSET_DEBUG
-            yaz_log(YLOG_DEBUG, "r_read_or returning A m=%d/%d c=%d",
-                    p->more_l, p->more_r, cmp);
-            (*kctrl->log_item)(YLOG_DEBUG, buf, "");
-#endif
-            p->hits++;
-            return 1;
-        }
-        else if (cmp > 0)
-        {
-            memcpy (buf, p->buf_r, kctrl->key_size);
-            if (term)
-                *term = p->term_r;
-            p->more_r = rset_read(p->rfd_r, p->buf_r, &p->term_r);
-#if RSET_DEBUG
-            yaz_log(YLOG_DEBUG, "r_read_or returning B m=%d/%d c=%d",
-                    p->more_l, p->more_r, cmp);
-            (*kctrl->log_item)(YLOG_DEBUG, buf, "");
-#endif
-            p->hits++;
-            return 1;
-        }
-        else
-        {
-            memcpy (buf, p->buf_l, kctrl->key_size);
-            if (term)
-                *term = p->term_l;
-            p->more_l = rset_read( p->rfd_l, p->buf_l, &p->term_l);
-#if RSET_DEBUG
-            yaz_log(YLOG_DEBUG, "r_read_or returning C m=%d/%d c=%d",
-                    p->more_l, p->more_r, cmp);
-            (*kctrl->log_item)(YLOG_DEBUG, buf, "");
-#endif
-            p->hits++;
-            return 1;
-        }
-    }
-    return 0;
-}
 
 static int r_read_not(RSFD rfd, void *buf, TERMID *term)
 {
