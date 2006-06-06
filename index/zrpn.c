@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.141.2.13 2005-05-04 10:41:37 adam Exp $
+/* $Id: zrpn.c,v 1.141.2.14 2006-06-06 13:07:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -1615,7 +1615,7 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
         bool_parms.key_size = sizeof(struct it_key);
 	bool_parms.cmp = key_compare_it;
 	bool_parms.log_item = key_logdump_txt;
-        result = rset_create (rset_kind_and_forward, &bool_parms);
+        result = rset_create (rset_kind_and, &bool_parms);
     }
     return result;
 }
@@ -1858,7 +1858,7 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
         bool_parms.key_size = sizeof(struct it_key);
 	bool_parms.cmp = key_compare_it;
 	bool_parms.log_item = key_logdump_txt;
-        result = rset_create (rset_kind_and_forward, &bool_parms);
+        result = rset_create (rset_kind_and, &bool_parms);
     }
     return result;
 }
