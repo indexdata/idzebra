@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.48 2006-05-30 13:21:21 adam Exp $
+# $Id: makefile,v 1.49 2006-06-06 09:46:52 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -15,7 +15,7 @@ EXPAT_DIR=c:\Expat-1.95.8
 HAVE_ICONV=1
 ICONV_DIR=c:\iconv-1.9.1.win32
 
-# libxslt. For xslt+alvis
+# libxslt. For alvis
 HAVE_LIBXSLT=1
 LIBXSLT_DIR=c:\libxslt-1.1.14.win32
 
@@ -202,13 +202,9 @@ libxslt:
 !if $(HAVE_LIBXSLT)
 MOD_ALVIS_OBJS= $(OBJDIR)\alvis.obj
 MOD_ALVIS_CFLAGS=/DIDZEBRA_STATIC_ALVIS=1
-MOD_XSLT_OBJS= $(OBJDIR)\xslt.obj
-MOD_XSLT_CFLAGS=/DIDZEBRA_STATIC_XSLT=1
 !else
 MOD_ALVIS_OBJS=
 MOD_ALVIS_CFLAGS=
-MOD_XSLT_OBJS=
-MOD_XSLT_CFLAGS=
 !endif
 
 ### C and CPP compiler  (the same thing)
@@ -237,7 +233,6 @@ COMMON_C_OPTIONS=          \
   /DIDZEBRA_STATIC_GRS_MARC=1 \
   /DIDZEBRA_STATIC_GRS_DANBIB=1 \
   $(MOD_ALVIS_CFLAGS) \
-  $(MOD_XSLT_CFLAGS) \
   /DIDZEBRA_STATIC_SAFARI=1 \
   $(BZIP2DEF)
 
@@ -327,7 +322,6 @@ TSTFLOCK_OBJS= \
 
 ZEBRALIB_OBJS= \
         $(MOD_ALVIS_OBJS) \
-	$(MOD_XSLT_OBJS) \
 	$(OBJDIR)\atoi_zn.obj \
 	$(OBJDIR)\attribute.obj \
 	$(OBJDIR)\attrfind.obj \
@@ -356,7 +350,6 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\d1_tagset.obj \
 	$(OBJDIR)\d1_varset.obj \
 	$(OBJDIR)\d1_write.obj \
-	$(OBJDIR)\danbibr.obj \
 	$(OBJDIR)\dclose.obj \
 	$(OBJDIR)\dcompact.obj \
 	$(OBJDIR)\delete.obj \
