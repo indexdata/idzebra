@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.21 2006-06-07 13:10:19 marc Exp $ -->
+ <!-- $Id: server.xml,v 1.22 2006-06-07 13:17:48 marc Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -553,7 +553,7 @@
     <para>
      Classic Explain only defines retrieaval of Explain information
      via ASN.1. Pratically no Z39.50 clients supports this. Fortunately
-     they don't have to - since Zebra allows retrieaval of this information
+     they don't have to - since Zebra allows retrieval of this information
      in the other formats.
     </para>
     <para>
@@ -584,11 +584,23 @@
     </para>
     
     <sect3>
-     <title>Example searches</title>
+     <title>Example searches with yaz-client</title>
+
+     
+     <para>
+      List supported categories to find out which explain commands are
+      supported: 
+      <screen>
+       Z> base IR-Explain-1
+       Z> @attr exp1 1=1 categorylist
+       Z> form sutrs
+       Z> show 1+2
+      </screen>
+     </para>
 
      <para>
-      Get targetinfo, that is, investigate which databases exist at
-      this server:
+      Get target info, that is, investigate which databases exist at
+      this server endpoint:
       <screen>
        Z> base IR-Explain-1
        Z> @attr exp1 1=1 targetinfo
@@ -602,7 +614,7 @@
      </para>
 
      <para>
-      List supported categories (using yaz-client), the number of hits
+      List all supported databases, the number of hits
       is the number of databases found, which most commonly are the
       following two:
       the <literal>Default</literal> and the
@@ -616,23 +628,12 @@
      </para>
      
      <para>
-      List supported categories:
-      <screen>
-       Z> base IR-Explain-1
-       Z> @attr exp1 1=1 categorylist
-       Z> form sutrs
-       Z> show 1+2
-      </screen>
-     </para>
-
-     
-     <para>
-      Get databaseinfo record for database <literal>Default</literal>.
+      Get database info record for database <literal>Default</literal>.
       <screen>
        Z> base IR-Explain-1
        Z> @and @attr exp1 1=1 databaseinfo @attr exp1 1=3 Default
       </screen>
-      Identicall query with explicitely specified attributeset:
+      Identical query with explicitly specified attribute set:
       <screen>
        Z> base IR-Explain-1
        Z> @attrset exp1 @and @attr 1=1 databaseinfo @attr 1=3 Default
@@ -650,7 +651,7 @@
        Z> base IR-Explain-1
        Z> @and @attr exp1 1=1 attributedetails @attr exp1 1=3 Default
       </screen>
-      Identicall query with explicitely specified attributeset:
+      Identical query with explicitly specified attribute set:
       <screen>
        Z> base IR-Explain-1
        Z> @attrset exp1 @and @attr 1=1 attributedetails @attr 1=3 Default
