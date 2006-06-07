@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.10 2006-06-02 10:59:21 adam Exp $
+dnl $Id: configure.ac,v 1.11 2006-06-07 20:50:23 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[1.4.0],[adam@indexdata.dk])
@@ -308,8 +308,6 @@ ZEBRA_MODULE(text,static,    [  --enable-mod-text       Text filter])
 ZEBRA_MODULE(grs-sgml,static,[  --enable-mod-grs-sgml   Simple SGML/XML filter])
 ZEBRA_MODULE(grs-regx,shared,[  --enable-mod-grs-regx   REGX/TCL filter])
 ZEBRA_MODULE(grs-marc,shared,[  --enable-mod-grs-marc   MARC filter])
-ZEBRA_MODULE(grs-csv,shared, [  --enable-mod-grs-csv    CSV filter])
-ZEBRA_MODULE(grs-danbib,shared,[  --enable-mod-grs-danbib DanBib filter (DBC)])
 ZEBRA_MODULE(safari,shared,  [  --enable-mod-safari Safari filter (DBC)])
 if test "$ac_cv_header_expat_h" = "yes"; then
    def="shared"
@@ -322,7 +320,6 @@ if test "$XSLT_VER"; then
 else
    def="no"
 fi
-ZEBRA_MODULE(xslt,[$def],    [  --enable-mod-xslt       XSLT filter])
 ZEBRA_MODULE(alvis,[$def],   [  --enable-mod-alvis      ALVIS filter])
 dnl ------ ANSI C Header files
 AC_STDC_HEADERS
