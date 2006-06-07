@@ -9,3 +9,4 @@ idzebra-config
 *.la
 *.log
 tstflock
+my.LCK
