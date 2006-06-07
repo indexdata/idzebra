@@ -1,4 +1,4 @@
-/* $Id: ranksimilarity.c,v 1.9 2006-05-19 23:20:24 adam Exp $
+/* $Id: ranksimilarity.c,v 1.10 2006-06-07 10:50:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -366,7 +366,12 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
  
 
   /* staticrank = 0 is highest, MAXINT lowest */
-  score = INT_MAX - staticrank;  /* but score is reverse (logical) */
+  if (staticrank >= INT_MAX)
+    score = 0;
+  else
+  { /* but score is reverse (logical) */
+    score = INT_MAX - CAST_ZINT_TO_INT(staticrank);
+  }
 
 
   /* debugging statistics output */

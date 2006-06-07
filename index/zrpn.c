@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.216 2006-06-06 21:01:30 adam Exp $
+/* $Id: zrpn.c,v 1.217 2006-06-07 10:50:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -199,7 +199,7 @@ static int term_pre(ZebraMaps zebra_maps, int reg_type, const char **src,
 }
 
 
-static void esc_str(char *out_buf, int out_size,
+static void esc_str(char *out_buf, size_t out_size,
 		    const char *in_buf, int in_size)
 {
     int k;

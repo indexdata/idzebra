@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.147 2006-06-07 10:14:41 adam Exp $
+/* $Id: zserver.c,v 1.148 2006-06-07 10:50:09 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -368,7 +368,8 @@ static int bend_scan (void *handle, bend_scan_rr *r)
 	for (i = 0; i < r->num_entries; i++)
 	{
 	    r->entries[i].term = entries[i].term;
-	    r->entries[i].occurrences = entries[i].occurrences;
+	    r->entries[i].occurrences =
+                CAST_ZINT_TO_INT(entries[i].occurrences);
 	}
     }
     else

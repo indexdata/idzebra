@@ -1,4 +1,4 @@
-/* $Id: rankstatic.c,v 1.7 2006-05-19 23:20:24 adam Exp $
+/* $Id: rankstatic.c,v 1.8 2006-06-07 10:50:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -148,7 +148,10 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
 
     /* if we set *stop_flag = 1, we stop processing (of result set list) */
     /* staticrank = 0 is highest, MAXINT lowest */
-    return INT_MAX - staticrank;  /* but score is reverse (logical) */
+    if (staticrank >= INT_MAX)
+        return 0;
+    /* but score is reverse (logical) */
+    return INT_MAX - CAST_ZINT_TO_INT(staticrank);
 }
 
 /*

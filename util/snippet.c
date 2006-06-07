@@ -1,4 +1,4 @@
-/* $Id: snippet.c,v 1.7 2006-06-07 10:14:42 adam Exp $
+/* $Id: snippet.c,v 1.8 2006-06-07 10:50:09 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -95,9 +95,9 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
 
     while(1)
     {
-	int window_start;
-	int first_seq_no_best_window = 0;
-	int last_seq_no_best_window = 0;
+	zint window_start;
+	zint first_seq_no_best_window = 0;
+	zint last_seq_no_best_window = 0;
 	int number_best_window = 0;
 	zebra_snippet_word *hit_w, *doc_w;
 	int min_ord = 0; /* not set yet */
@@ -118,7 +118,7 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
 	    {
 		zebra_snippet_word *look_w = hit_w;
 		int number_this = 0;
-		int seq_no_last = 0;
+		zint seq_no_last = 0;
 		while (look_w && look_w->seqno < hit_w->seqno + window_size)
 		{
 		    if (look_w->ord == ord)
