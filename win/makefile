@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.49 2006-06-06 09:46:52 adam Exp $
+# $Id: makefile,v 1.50 2006-06-07 10:01:11 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -217,6 +217,7 @@ COMMON_C_OPTIONS=          \
   /D"_CONSOLE" /D"_MBCS"   \
   /DYAZ_USE_NEW_LOG=1      \
   /D"_CRT_SECURE_NO_DEPRECATE" \
+  /D"_CRT_NONSTDC_NO_DEPRECATE" \
   $(ICONV_DEF)             \
   $(EXPAT_DEF)             \
   $(LIBXML2_DEF)           \
