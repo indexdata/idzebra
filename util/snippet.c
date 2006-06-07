@@ -1,4 +1,4 @@
-/* $Id: snippet.c,v 1.8 2006-06-07 10:50:09 adam Exp $
+/* $Id: snippet.c,v 1.9 2006-06-07 11:00:46 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -137,8 +137,10 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
 	    }
 	}
 	yaz_log(YLOG_DEBUG, "ord=%d", ord);
-	yaz_log(YLOG_DEBUG, "first_seq_no_best_window=%d", first_seq_no_best_window);
-	yaz_log(YLOG_DEBUG, "last_seq_no_best_window=%d", last_seq_no_best_window);
+	yaz_log(YLOG_DEBUG, "first_seq_no_best_window=" ZINT_FORMAT,
+                first_seq_no_best_window);
+	yaz_log(YLOG_DEBUG, "last_seq_no_best_window=" ZINT_FORMAT,
+                last_seq_no_best_window);
 	yaz_log(YLOG_DEBUG, "number_best_window=%d", number_best_window);
 
 	window_start = (first_seq_no_best_window + last_seq_no_best_window -
