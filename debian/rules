@@ -9,7 +9,7 @@
 #export DH_VERBOSE=1
 
 # This is the debhelper compatability version to use.
-export DH_COMPAT=2
+export DH_COMPAT=4
 
 CONFIG_FLAGS=--with-tclconfig=/usr/lib/tcl8.3 --with-yaz=/usr/bin --prefix=/usr
 
@@ -97,7 +97,7 @@ binary-arch: build install
 
 	dh_installdeb -p idzebra
 	#dh_installman -p idzebra doc/zebraidx.1 doc/zebrasrv.8
-	dh_installman -p idzebra debian/tmp/usr/man/man1/zebraidx.1 debian/tmp/usr/man/man8/zebrasrv.8
+	dh_installman -p idzebra debian/tmp/usr/share/man/man1/zebraidx.1 debian/tmp/usr/share/man/man8/zebrasrv.8
 
 	dh_strip
 	dh_compress -a
