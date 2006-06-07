@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.50 2006-06-07 10:01:11 adam Exp $
+# $Id: makefile,v 1.51 2006-06-07 14:37:02 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -576,6 +576,7 @@ $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR):
 yaz: $(YAZ_DLL_TARGET)
 
 $(YAZ_DLL_TARGET) : $(YAZ_DLL_SOURCE)
+	copy $(YAZBINDIR)\*.dll.manifest $(BINDIR)
 	copy $(YAZBINDIR)\*.dll $(BINDIR)
 
 ###########################################################
