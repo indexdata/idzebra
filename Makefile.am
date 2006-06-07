@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.14.2.1 2005-01-16 20:19:03 adam Exp $
+## $Id: Makefile.am,v 1.14.2.2 2006-06-07 07:43:47 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -10,6 +10,7 @@ SPEC_FILE=$(PACKAGE).spec
 EXTRA_DIST= README NEWS $(SPEC_FILE) idzebra.spec.in
 
 dist-hook:
+	if test -x /usr/bin/cvs2cl -a -d CVS; then cvs2cl -F ZEBRA_1_3_16_branch; fi
 	cp $(srcdir)/LICENSE* $(distdir)
 	mkdir $(distdir)/win
 	for i in $(srcdir)/win/*; do \
@@ -30,5 +31,3 @@ dist-hook:
 		cd $(srcdir)/perl;cp --parents $$f $$pdir); \
 	done
 
-cvs2cl:
-	cvs2cl -F ZEBRA_1_3_16_branch
