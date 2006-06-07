@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.51 2006-05-19 23:20:24 adam Exp $
+/* $Id: invstat.c,v 1.52 2006-06-07 10:14:41 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -120,7 +120,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     {
         ISAMB_PP pp;
         struct it_key key;
-        int cat = (int) (isam_p & 3);
+        int cat = CAST_ZINT_TO_INT(isam_p & 3);
         int level;
         zint size;
         zint blocks;
@@ -242,13 +242,13 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
 		     stat_info.no_isam_entries[i]);
 
 	    if (stat_info.no_isam_entries[i])
-		fprintf (stdout, " %8d   %f",
-			 (int) ((1023.0 + (double)
-                                 isamc_block_used(zh->reg->isamc, i) *
-				 isamc_block_size(zh->reg->isamc,i))/1024),
-			 ((double) isamc_block_used(zh->reg->isamc, i) *
+		fprintf(stdout, " %8d   %f",
+                        (int) ((1023.0 + (double)
+                          isamc_block_used(zh->reg->isamc, i) *
+                          isamc_block_size(zh->reg->isamc,i))/1024),
+                        ((double) isamc_block_used(zh->reg->isamc, i) *
 			  isamc_block_size(zh->reg->isamc,i))/
-			 stat_info.no_isam_entries[i]);
+                        stat_info.no_isam_entries[i]);
 	    fprintf (stdout, "\n");
 	}
     }

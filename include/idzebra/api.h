@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.35 2006-05-30 13:21:13 adam Exp $
+/* $Id: api.h,v 1.36 2006-06-07 10:14:40 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -53,10 +53,10 @@ YAZ_BEGIN_CDECL
 #endif
 
 typedef struct {
-    int processed;
-    int inserted;
-    int updated;
-    int deleted;
+    zint processed;
+    zint inserted;
+    zint updated;
+    zint deleted;
     long utime;
     long stime;
 } ZebraTransactionStatus;

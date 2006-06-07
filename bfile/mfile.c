@@ -1,5 +1,5 @@
-/* $Id: mfile.c,v 1.65 2006-05-10 08:13:17 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: mfile.c,v 1.66 2006-06-07 10:14:39 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -628,9 +628,15 @@ int mf_area_directory_stat(MFile_area ma, int no, const char **directory,
     if (directory)
 	*directory = d->name;
     if (max_bytes)
-	*max_bytes = d->max_bytes;
+    {
+        /* possible loss of data. But it's just statistics and lies */
+	*max_bytes = (double) d->max_bytes;
+    }
     if (used_bytes)
-	*used_bytes = d->max_bytes - d->avail_bytes;
+    {
+        /* possible loss of data. But it's just statistics and lies */
+	*used_bytes = (double) (d->max_bytes - d->avail_bytes);
+    }
     return 1;
 }
 /*

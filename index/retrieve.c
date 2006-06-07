@@ -1,5 +1,5 @@
-/* $Id: retrieve.c,v 1.41 2006-05-19 23:20:24 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: retrieve.c,v 1.42 2006-06-07 10:14:41 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -145,7 +145,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
 	    while(zebra_rec_keys_read(keys, &str, &slen, &key_in))
 	    {
 		int i;
-		int ord = key_in.mem[0];
+		int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
 		int index_type;
 		const char *db = 0;
 		int set = 0;

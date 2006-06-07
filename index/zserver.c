@@ -1,5 +1,5 @@
-/* $Id: zserver.c,v 1.146 2006-05-10 08:13:23 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: zserver.c,v 1.147 2006-06-07 10:14:41 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -251,15 +251,15 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
         se->subqueryExpression->u.term->termComment = 0;
         se->subqueryInterpretation = 0;
         se->subqueryRecommendation = 0;
-	if (count > 2000000000)
-	    count = 2000000000;
-        se->subqueryCount = odr_intdup(r->stream, (int) count);
+	if (count > 2147483646)
+	    count = 2147483647;
+        se->subqueryCount = odr_intdup(r->stream, CAST_ZINT_TO_INT(count));
         se->subqueryWeight = 0;
         se->resultsByDB = 0;
     }
 }
 
-int bend_search (void *handle, bend_search_rr *r)
+int bend_search(void *handle, bend_search_rr *r)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     zint zhits = 0;
@@ -282,10 +282,9 @@ int bend_search (void *handle, bend_search_rr *r)
 	    zebra_result(zh, &r->errcode, &r->errstring);
 	else
 	{
-	    if (zhits >   2147483646)
-		r->hits = 2147483647;
-	    else
-	    r->hits = (int) zhits;
+	    if (zhits > 2147483646)
+		zhits = 2147483647;
+            r->hits = CAST_ZINT_TO_INT(zhits);
             search_terms (zh, r);
 	}
         break;

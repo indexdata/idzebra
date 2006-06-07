@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.219 2006-05-30 13:21:16 adam Exp $
+/* $Id: zebraapi.c,v 1.220 2006-06-07 10:14:41 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1901,10 +1901,10 @@ ZEBRA_RES zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
                  zh->records_processed, zh->records_inserted,
                  zh->records_updated, zh->records_deleted);
         
-        status->processed = (int) zh->records_processed;
-        status->inserted = (int) zh->records_inserted;
-        status->updated = (int) zh->records_updated;
-        status->deleted = (int) zh->records_deleted;
+        status->processed = zh->records_processed;
+        status->inserted = zh->records_inserted;
+        status->updated = zh->records_updated;
+        status->deleted = zh->records_deleted;
         
         zebra_get_state (zh, &val, &seqno);
         if (val != 'd')

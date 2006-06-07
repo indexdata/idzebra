@@ -1,4 +1,4 @@
-/* $Id: reckeys.c,v 1.5 2006-05-22 13:28:00 adam Exp $
+/* $Id: reckeys.c,v 1.6 2006-06-07 10:14:41 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -58,10 +58,11 @@ struct zebra_rec_key_entry **zebra_rec_keys_mk_hash(zebra_rec_keys_t p,
 {
     unsigned h = 0;
     size_t i;
+    int j;
     for (i = 0; i<len; i++)
 	h = h * 65509 + buf[i];
-    for (i = 0; i<key->len; i++)
-	h = h * 65509 + key->mem[i];
+    for (j = 0; j<key->len; j++)
+	h = h * 65509 + CAST_ZINT_TO_INT(key->mem[j]);
     return &p->entries[h % (unsigned) p->hash_size];
 }
 

@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.106 2006-06-06 21:01:30 adam Exp $
+/* $Id: zsets.c,v 1.107 2006-06-07 10:14:42 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -954,7 +954,7 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
     {
 	RSFD rfd = rset_open(rset, RSETF_READ);
 	struct rank_control *rc = rank_class->control;
-	double score;
+	int score;
 	zint count = 0;
 	
 	void *handle =

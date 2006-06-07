@@ -1,5 +1,5 @@
-/* $Id: snippet.c,v 1.6 2006-05-10 08:13:46 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: snippet.c,v 1.7 2006-06-07 10:14:42 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.

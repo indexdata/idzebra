@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.218 2006-05-30 13:44:44 adam Exp $
+/* $Id: extract.c,v 1.219 2006-06-07 10:14:40 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -145,7 +145,7 @@ static void searchRecordKey(ZebraHandle zh,
 
     if (zebra_rec_keys_rewind(reckeys))
     {
-	int startSeq = -1;
+	zint startSeq = -1;
 	const char *str;
 	size_t slen;
 	struct it_key key;
@@ -158,7 +158,7 @@ static void searchRecordKey(ZebraHandle zh,
 	    
 	    if (key.mem[0] == ch)
 	    {
-		int woff;
+		zint woff;
 		
 		if (startSeq == -1)
 		    startSeq = seqno;
@@ -1300,7 +1300,7 @@ void extract_rec_keys_adjust(ZebraHandle zh, int is_insert,
 	struct it_key key_in;
 	while(zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
         {
-            int ord = key_in.mem[0]; 
+            int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
 
             for (p = ord_list; p ; p = p->next)
                 if (p->ord == ord)
@@ -1384,7 +1384,7 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 		(char*)zh->reg->key_buf + zh->reg->key_buf_used;
 
 	    /* encode the ordinal value (field/use/attribute) .. */
-	    ch = (int) key_in.mem[0];
+	    ch = CAST_ZINT_TO_INT(key_in.mem[0]);
 	    zh->reg->key_buf_used +=
 		key_SU_encode(ch, (char*)zh->reg->key_buf +
 			      zh->reg->key_buf_used);
@@ -1573,11 +1573,13 @@ ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh,
 	{
 	    char dst_buf[IT_MAX_WORD];
 	    char *dst_term = dst_buf;
-	    int ord, seqno;
+	    int ord;
+            zint seqno;
 	    int index_type;
+
 	    assert(key.len <= 4 && key.len > 2);
-	    seqno = (int) key.mem[key.len-1];
-	    ord = key.mem[0];
+	    seqno = key.mem[key.len-1];
+	    ord = CAST_ZINT_TO_INT(key.mem[0]);
 	    
 	    zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type,
 				    0/* db */, 0 /* string_index */);
@@ -1603,20 +1605,20 @@ void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys)
 	while (zebra_rec_keys_read(reckeys, &str, &slen, &key))
 	{
 	    char dst_buf[IT_MAX_WORD];
-	    int seqno;
+	    zint seqno;
 	    int index_type;
+            int ord = CAST_ZINT_TO_INT(key.mem[0]);
 	    const char *db = 0;
 	    assert(key.len <= 4 && key.len > 2);
 
-	    zebraExplain_lookup_ord(zh->reg->zei,
-				    key.mem[0], &index_type, &db, 0);
+	    zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db, 0);
 	    
-	    seqno = (int) key.mem[key.len-1];
+	    seqno = key.mem[key.len-1];
 	    
 	    zebra_term_untrans(zh, index_type, dst_buf, str);
 	    
-	    yaz_log(YLOG_LOG, "ord=" ZINT_FORMAT " seqno=%d term=%s",
-		    key.mem[0], seqno, dst_buf); 
+	    yaz_log(YLOG_LOG, "ord=%d seqno=" ZINT_FORMAT 
+                    " term=%s", ord, seqno, dst_buf); 
 	}
     }
 }
@@ -1887,7 +1889,7 @@ void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
 
 	while (zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
         {
-            int ord = (int) key_in.mem[0];
+            int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
             
             sortIdx_type(sortIdx, ord);
             if (cmd == 1)

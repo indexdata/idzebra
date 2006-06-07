@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.49 2006-05-10 12:30:02 adam Exp $
+/* $Id: recindex.c,v 1.50 2006-06-07 10:14:41 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -106,7 +106,7 @@ static int read_indx(Records p, SYSNO sysno, void *buf, int itemsize,
 {
     int r;
     zint pos = (sysno-1)*itemsize;
-    int off = (int) (pos%RIDX_CHUNK);
+    int off = CAST_ZINT_TO_INT(pos%RIDX_CHUNK);
     int sz1 = RIDX_CHUNK - off;    /* sz1 is size of buffer to read.. */
 
     if (sz1 > itemsize)
@@ -127,7 +127,7 @@ static int read_indx(Records p, SYSNO sysno, void *buf, int itemsize,
 static void write_indx(Records p, SYSNO sysno, void *buf, int itemsize)
 {
     zint pos = (sysno-1)*itemsize;
-    int off = (int) (pos%RIDX_CHUNK);
+    int off = CAST_ZINT_TO_INT(pos%RIDX_CHUNK);
     int sz1 = RIDX_CHUNK - off;    /* sz1 is size of buffer to read.. */
 
     if (sz1 > itemsize)
@@ -152,7 +152,7 @@ static ZEBRA_RES rec_release_blocks(Records p, SYSNO sysno)
 
     freeblock = entry.next;
     assert(freeblock > 0);
-    dst_type = (int) (freeblock & 7);
+    dst_type = CAST_ZINT_TO_INT(freeblock & 7);
     assert(dst_type < REC_BLOCK_TYPES);
     freeblock = freeblock / 8;
     while (freeblock)
@@ -259,7 +259,8 @@ static ZEBRA_RES rec_write_tmp_buf(Records p, int size, SYSNO *sysnos)
             cptr = p->tmp_buf + no_written;
         }
         block_prev = block_free;
-        no_written += (int)(p->head.block_size[dst_type]) - sizeof(zint);
+        no_written += CAST_ZINT_TO_INT(p->head.block_size[dst_type]) 
+            - sizeof(zint);
         p->head.block_used[dst_type]++;
     }
     assert(block_prev != -1);
@@ -345,9 +346,9 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
     }
     for (i = 0; i<REC_BLOCK_TYPES; i++)
     {
-        if (!(p->data_BFile[i] = bf_open(bfs, p->data_fname[i],
-					 (int) (p->head.block_size[i]),
-					 rw)))
+        if (!(p->data_BFile[i] =
+              bf_open(bfs, p->data_fname[i],
+                      CAST_ZINT_TO_INT(p->head.block_size[i]), rw)))
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "bf_open %s", p->data_fname[i]);
 	    ret = ZEBRA_FAIL;
@@ -432,7 +433,7 @@ static void rec_cache_flush_block1(Records p, Record rec, Record last_rec,
 
     for (i = 0; i<REC_NO_INFO; i++)
     {
-	if (*out_offset + (int) rec->size[i] + 20 > *out_size)
+	if (*out_offset + CAST_ZINT_TO_INT(rec->size[i]) + 20 > *out_size)
 	{
 	    int new_size = *out_offset + rec->size[i] + 65536;
 	    char *np = (char *) xmalloc(new_size);

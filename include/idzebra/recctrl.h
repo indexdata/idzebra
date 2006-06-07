@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.20 2006-05-19 13:49:34 adam Exp $
+/* $Id: recctrl.h,v 1.21 2006-06-07 10:14:40 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -79,7 +79,7 @@ struct recExtractCtrl {
     int       flagShowRecords;
     int       seqno[256];
     char      match_criteria[256];
-    int       staticrank;
+    zint      staticrank;
     void      (*schemaAdd)(struct recExtractCtrl *p, Odr_oid *oid);
     data1_handle dh;
     void      *handle;
