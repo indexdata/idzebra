@@ -1,13 +1,10 @@
-; $Id: zebra.nsi,v 1.30 2006-06-07 14:37:37 adam Exp $
+; $Id: zebra.nsi,v 1.31 2006-06-07 18:26:02 adam Exp $
 
 !define VERSION "1.4.0"
 
-; Microsoft runtime CRT
-; VS 2003
-; !define VS_RUNTIME "c:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\Bin\msvcr71.dll"
-
 ; VS 2005
-!define VS_RUNTIME "c:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\msvcr80.dll"
+!define VS_RUNTIME_DLL      "c:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\msvcr80.dll"
+!define VS_RUNTIME_MANIFEST "c:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\Microsoft.VC80.CRT.manifest"
 
 !include "MUI.nsh"
 
@@ -75,6 +72,8 @@ SectionEnd ; end of default section
 Section "Zebra Runtime"
 	SectionIn 1 2
 	SetOutPath $INSTDIR\bin
+	File "${VS_RUNTIME_DLL}"
+	File "${VS_RUNTIME_MANIFEST}"
 	File ..\bin\*.exe
 	File ..\bin\*.manifest
 	File ..\bin\idzebra.dll
@@ -84,7 +83,6 @@ Section "Zebra Runtime"
 	File ..\bin\libxslt.dll
 	File ..\bin\yaz.dll
 	File ..\bin\libexpat.dll
-	File "${VS_RUNTIME}"
 SectionEnd
 
 Section "Zebra Development"
