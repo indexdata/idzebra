@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.20 2006-06-06 08:55:22 adam Exp $ -->
+ <!-- $Id: server.xml,v 1.21 2006-06-07 13:10:19 marc Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -540,14 +540,15 @@
     <para>
      Zebra maintains a "classic" 
      <ulink url="&url.z39.50.explain;">Explain</ulink> database
-     on the-side. 
+     on the side. 
      This database is called <literal>IR-Explain-1</literal> and can be
-     searched using attribute Exp-1.
+     searched using the attribute set <literal>exp-1</literal>.
     </para>
     <para>
-     The records in the explain database is of type 
+     The records in the explain database are of type 
      <literal>grs.sgml</literal> and can be retrieved as
-     SUTRS, XML, GRS-1 + ASN.1 Explain.
+     <literal>SUTRS</literal>, <literal>XML</literal>, 
+     <literal>GRS-1</literal> and  <literal>ASN.1</literal> Explain.
     </para>
     <para>
      Classic Explain only defines retrieaval of Explain information
@@ -569,36 +570,90 @@
      </para>
     </note>
     <para>
-     The following Explain categories are supported: CategoryList, TargetInfo,
-     DatabaseInfo, AttributeDetails .
+     The following Explain categories are supported: 
+     <literal>CategoryList</literal>, <literal>TargetInfo</literal>,
+     <literal>DatabaseInfo</literal>, <literal>AttributeDetails</literal>.
     </para>
     <para>
      The following Explain search atributes are supported:
-     ExplainCategory (1), DatabaseName (3), DateAdded (9), DateChanged(10).
+     <literal>ExplainCategory</literal> (@attr 1=1), 
+     <literal>DatabaseName</literal> (@attr 1=3), 
+     <literal>DateAdded</literal> (@attr 1=9), 
+     <literal>DateChanged</literal>(@ayyt 1=10).
      See <filename>tab/explain.att</filename> for more information.
     </para>
     
     <sect3>
      <title>Example searches</title>
-     
+
      <para>
-      List supported categories:
+      Get targetinfo, that is, investigate which databases exist at
+      this server:
       <screen>
-       @attr exp1 1=1 categorylist
+       Z> base IR-Explain-1
+       Z> @attr exp1 1=1 targetinfo
+       Z> form xml
+       Z> show 1+1
+       Z> form grs-1
+       Z> show 1+1
+       Z> form sutrs
+       Z> show 1+1
       </screen>
      </para>
 
      <para>
-      Get targetinfo
+      List supported categories (using yaz-client), the number of hits
+      is the number of databases found, which most commonly are the
+      following two:
+      the <literal>Default</literal> and the
+      <literal>IR-Explain-1</literal> databases.
       <screen>
-       @attr exp1 1=1 targetinfo
+       Z> base IR-Explain-1
+       Z> f @attr exp1 1=1 databaseinfo
+       Z> form sutrs
+       Z> show 1+2
       </screen>
      </para>
      
      <para>
+      List supported categories:
+      <screen>
+       Z> base IR-Explain-1
+       Z> @attr exp1 1=1 categorylist
+       Z> form sutrs
+       Z> show 1+2
+      </screen>
+     </para>
+
+     
+     <para>
       Get databaseinfo record for database <literal>Default</literal>.
       <screen>
-       @and @attr exp1 1=1 databaseinfo @attr exp1 1=3 Default
+       Z> base IR-Explain-1
+       Z> @and @attr exp1 1=1 databaseinfo @attr exp1 1=3 Default
+      </screen>
+      Identicall query with explicitely specified attributeset:
+      <screen>
+       Z> base IR-Explain-1
+       Z> @attrset exp1 @and @attr 1=1 databaseinfo @attr 1=3 Default
+      </screen>
+     </para>
+
+     <para>
+      Get attribute details record for database
+      <literal>Default</literal>.
+      This query is very useful to study the internal Zebra indexes.
+      If records have been indexed using the <literal>alvis</literal>
+      XSLT filter, the string representation names of the known indexes can be
+      found.
+      <screen>
+       Z> base IR-Explain-1
+       Z> @and @attr exp1 1=1 attributedetails @attr exp1 1=3 Default
+      </screen>
+      Identicall query with explicitely specified attributeset:
+      <screen>
+       Z> base IR-Explain-1
+       Z> @attrset exp1 @and @attr 1=1 attributedetails @attr 1=3 Default
       </screen>
      </para>
 
