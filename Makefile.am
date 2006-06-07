@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.23 2006-05-08 12:09:49 marc Exp $
+## $Id: Makefile.am,v 1.24 2006-06-07 07:50:58 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -16,6 +16,7 @@ EXTRA_DIST= README NEWS $(SPEC_FILE) idzebra.spec.in \
  idzebra-config.in m4/idzebra.m4 m4/yaz.m4 Doxyfile.in
 
 dist-hook:
+	if test -x /usr/bin/cvs2cl -a -d CVS; then cvs2cl ; fi
 	cp $(srcdir)/LICENSE* $(distdir)
 	mkdir $(distdir)/win
 	for i in $(srcdir)/win/*; do \
