@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.11 2006-06-07 20:50:23 adam Exp $
+dnl $Id: configure.ac,v 1.12 2006-06-08 08:30:37 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[1.4.0],[adam@indexdata.dk])
@@ -34,7 +34,7 @@ else
 fi
 dnl
 dnl ------ YAZ
-YAZ_INIT($yazflag,2.1.19)
+YAZ_INIT($yazflag,2.1.20)
 YAZ_DOC
 dnl ----- libXSLT
 AC_SUBST(XSLT_LIBS)
