@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
   <schemaInfo>
-    <schema name="alvis" stylesheet="db2/alvis2alvis.xsl" />
+    <schema name="mods" stylesheet="MARC21slim2MODS3-1.xs" />
     <schema name="index" identifier="http://indexdata.dk/zebra/xslt/1"
-            stylesheet="db2/alvis2index.xsl" />
-    <schema name="dc" default="1" stylesheet="db2/alvis2dc.xsl" />
-    <schema name="dc-short" stylesheet="db2/alvis2dc_short.xsl" />
-    <schema name="snippet" snippet="25" stylesheet="db2/alvis2snippet.xsl" />
-    <schema name="help" stylesheet="db2/alvis2help.xsl" />
-    <!-- Added by KV -->
-    <schema name="pretty" stylesheet="db2/alvis2pretty.xsl" /> 
-    <schema name="D9.1" stylesheet="db2/alvis2D9_1.xsl" /> 
+            stylesheet="MARC21slim2INDEX.xsl" />
+    <schema name="dc" default="1" stylesheet="MARC21slim2SRWDC.xsl" />
     <split level="1"/> 
   </schemaInfo>
 
