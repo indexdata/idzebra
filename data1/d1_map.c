@@ -1,4 +1,4 @@
-/* $Id: d1_map.c,v 1.9 2006-05-10 08:13:18 adam Exp $
+/* $Id: d1_map.c,v 1.10 2006-06-08 10:33:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -42,10 +42,7 @@ data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
     int local_numeric = 0;
 
     if (!(f = data1_path_fopen(dh, file, "r")))
-    {
-	yaz_log(YLOG_WARN|YLOG_ERRNO, "%s", file);
 	return 0;
-    }
 
     res->name = 0;
     res->target_absyn_ref = VAL_NONE;

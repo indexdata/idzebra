@@ -1,4 +1,4 @@
-/* $Id: d1_handle.c,v 1.11 2006-05-10 08:13:18 adam Exp $
+/* $Id: d1_handle.c,v 1.12 2006-06-08 10:33:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -49,7 +49,7 @@ data1_handle data1_create(void)
 {
     data1_handle p = (data1_handle)xmalloc (sizeof(*p));
     if (!p)
-	return NULL;
+	return 0;
     p->tab_path = NULL;
     p->tab_root = NULL;
     p->wrbuf = wrbuf_alloc();
@@ -150,10 +150,22 @@ const char *data1_get_tabroot (data1_handle dp)
 
 FILE *data1_path_fopen (data1_handle dh, const char *file, const char *mode)
 {
+    FILE *f;
     const char *path = data1_get_tabpath(dh);
     const char *root = data1_get_tabroot(dh);
-    yaz_log(YLOG_DEBUG, "data1_fath_fopen file=%s mode=%s", file, mode);
-    return yaz_fopen (path, file, "r", root);
+    if (!path || !*path)
+    {
+        yaz_log(YLOG_DEBUG, "data1_fath_fopen file=%s mode=%s no open",
+                file, mode);
+	return 0;
+    }
+    yaz_log(YLOG_DEBUG, "data1_fath_fopen path=%s root=%s "
+            "file=%s mode=%s", path ? path : "NULL",
+            root ? root : "NULL", file, mode);
+    f = yaz_fopen(path, file, "r", root);
+    if (!f)
+	yaz_log(YLOG_WARN|YLOG_ERRNO, "Couldn't open %s", file);
+    return f;
 }
 
 int data1_is_xmlmode(data1_handle dh)

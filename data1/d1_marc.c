@@ -1,4 +1,4 @@
-/* $Id: d1_marc.c,v 1.14 2006-05-10 08:13:18 adam Exp $
+/* $Id: d1_marc.c,v 1.15 2006-06-08 10:33:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -44,10 +44,7 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
     int argc;
     
     if (!(f = data1_path_fopen(dh, file, "r")))
-    {
-	yaz_log(YLOG_WARN|YLOG_ERRNO, "%s", file);
 	return 0;
-    }
 
     res->name = 0;
     res->reference = VAL_NONE;

@@ -1,4 +1,4 @@
-/* $Id: d1_espec.c,v 1.10 2006-05-10 08:13:18 adam Exp $
+/* $Id: d1_espec.c,v 1.11 2006-06-08 10:33:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -225,10 +225,7 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
     Z_Espec1 *res = (Z_Espec1 *)nmem_malloc(nmem, sizeof(*res));
     
     if (!(f = data1_path_fopen(dh, file, "r")))
-    {
-	yaz_log(YLOG_WARN|YLOG_ERRNO, "%s", file);
 	return 0;
-    }
     
     res->num_elementSetNames = 0;
     res->elementSetNames = 0;

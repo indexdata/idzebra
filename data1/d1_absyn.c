@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.25 2006-05-19 13:49:33 adam Exp $
+/* $Id: d1_absyn.c,v 1.26 2006-06-08 10:33:19 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -166,7 +166,7 @@ data1_absyn *data1_absyn_search (data1_handle dh, const char *name)
 	    return p->absyn;
 	p = p->next;
     }
-    return NULL;
+    return 0;
 }
 /* *ostrich*
    We need to destroy DFAs, in xp_element (xelm) definitions 
@@ -241,7 +241,7 @@ data1_attset *data1_attset_search_name (data1_handle dh, const char *name)
 	    return p->attset;
 	p = p->next;
     }
-    return NULL;
+    return 0;
 }
 
 data1_attset *data1_attset_search_id (data1_handle dh, int id)
@@ -254,7 +254,7 @@ data1_attset *data1_attset_search_id (data1_handle dh, int id)
 	    return p->attset;
 	p = p->next;
     }
-    return NULL;
+    return 0;
 }
 
 data1_attset *data1_attset_add (data1_handle dh, const char *name)
@@ -715,7 +715,6 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 
     if (!(f = data1_path_fopen(dh, file, "r")))
     {
-	yaz_log(YLOG_WARN|YLOG_ERRNO, "Couldn't open %s", file);
         if (file_must_exist)
             return 0;
     }
@@ -1208,7 +1207,6 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	fix_element_ref (dh, res, cur_elements->elements);
     }
     *systagsp = 0;
-    yaz_log(YLOG_DEBUG, "%s: data1_read_absyn end", file);
     return res;
 }
 /*
