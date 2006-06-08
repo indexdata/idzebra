@@ -1,0 +1,8 @@
+http://www.loc.gov/standards/marcxml/
+
+The Library of Congress' Network Development and MARC Standards Office
+is developing a framework for working with MARC data in a XML
+environment. This framework is intended to be flexible and extensible
+to allow users to work with MARC data in ways specific to their
+needs. The framework itself includes many components such as schemas,
+stylesheets, and software tools.  
