@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
   <schemaInfo>
-    <schema name="mods" stylesheet="MARC21slim2MODS3-1.xs" />
+    <schema name="dc" default="1" stylesheet="MARC21slim2SRWDC.xsl" />
     <schema name="index" identifier="http://indexdata.dk/zebra/xslt/1"
             stylesheet="MARC21slim2INDEX.xsl" />
-    <schema name="dc" default="1" stylesheet="MARC21slim2SRWDC.xsl" />
+    <schema name="mads" stylesheet="MARC21slim2MADS.xs" />
+    <schema name="mods" stylesheet="MARC21slim2MODS3-1.xs" />
     <split level="1"/> 
   </schemaInfo>
 
