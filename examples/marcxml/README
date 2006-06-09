@@ -9,3 +9,39 @@ environment.
 
 http://www.loc.gov/standards/marcxml/
 
+
+To run these examples, try this:
+
+
+../../index/zebraidx init
+../../index/zebraidx update collection-*.xml
+../../index/zebrasrv
+
+then start yaz-client and search
+
+Z> open localhost:9999
+Z> scan @attr 1=4 ""
+Z> find @attr 1=4 aida
+Z> form xml
+Z> elem dc
+Z> s 1+1
+Z> elem marc
+Z> s 1+1
+Z> elem mads
+Z> s 1+1
+Z> elem mods
+Z> s 1+1
+
+To see how this record has been indexed, try
+Z> elem index
+Z> s 1+1
+
+The indexes can also be acessed using the string names:
+Scan 'Author-name-personal' as words
+Z> scan @attr 1=Author-name-personal de
+
+Scan 'Author-name-personal' as phrase
+Z> scan @attr 1=Author-name-personal @attr 4=1 @attr 6=2 de
+
+
+
