@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- 
-$Id: identity.xsl,v 1.2 2006-06-09 20:46:38 marc Exp $
+$Id: zebra.xsl,v 1.1 2006-06-09 20:46:38 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -24,14 +24,26 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 -->
 
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  version="1.0">
+                xmlns:z="http://indexdata.dk/zebra/xslt/1" 
+                version="1.0">
+
+  <xsl:param name="id" select="''"/>
+  <xsl:param name="filename" select="''"/>
+  <xsl:param name="rank" select="''"/>
+  <xsl:param name="score" select="''"/>
+  <xsl:param name="schema" select="''"/>
+  <xsl:param name="size" select="''"/>
 
   <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
 
   <!-- match on any record -->
   <xsl:template match="/">
-      <xsl:copy-of select="/"/>
+    <z:info z:id="{$id}"
+            z:filename="{$filename}"
+            z:rank="{$rank}"
+            z:score="{$score}"
+            z:schema="{$schema}"
+            z:size="{$size}"/>
   </xsl:template>
-
 
 </xsl:stylesheet>

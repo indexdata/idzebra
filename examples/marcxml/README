@@ -32,6 +32,11 @@ Z> s 1+1
 Z> elem mods
 Z> s 1+1
 
+To see the zebra system internal info on this record, issue
+
+Z> elem zebra
+Z> s 1+1
+
 To see how this record has been indexed, try
 Z> elem index
 Z> s 1+1

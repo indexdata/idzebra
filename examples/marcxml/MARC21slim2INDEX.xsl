@@ -1,4 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- xsltproc MARC21slim2INDEX.xsl collection-2.xml -->
+
+<!-- 
+$Id: MARC21slim2INDEX.xsl,v 1.5 2006-06-09 20:46:38 marc Exp $
+   Copyright (C) 1995-2006
+   Index Data ApS
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+-->
+
 <xsl:stylesheet 
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
     xmlns:z="http://indexdata.dk/zebra/xslt/1" 
@@ -55,9 +80,12 @@
      </xsl:variable>
 
      <z:record id="{$controlField001}" type="update">
+
+
        <!-- <xsl:attribute name="id"></xsl:attribute> -->
        <!-- <xsl:attribute name="type">update</xsl:attribute> -->
        <!-- <xsl:attribute name="rank"></xsl:attribute> -->
+
        <xsl:call-template name="bib1_rules"/>
      </z:record>
    </xsl:template>

@@ -1,0 +1,998 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://www.loc.gov/MARC21/slim" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/MARC21/slim
+http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd">
+	<record>
+		<leader>00549cz   2200169n  4500</leader>
+		<controlfield tag="001">n  00015403 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010915063228.0</controlfield>
+		<controlfield tag="008">000906n| acannaabn          |n aba      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  00015403 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="b">eng</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">Uk</subfield>
+		</datafield>
+		<datafield tag="100" ind1="1" ind2="0">
+			<subfield code="a">Watson, George</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">[Author of Dogs have souls too]</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Dogs have souls too, c2001:</subfield>
+			<subfield code="b">t.p. (George Watson)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">LC database, Sept. 6, 2000</subfield>
+			<subfield code="b">(hdg.: Watson, George)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">[Author of Customer service triggers]</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Customer service triggers, 1994:</subfield>
+			<subfield code="b">t.p. (George Watson)</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>01374cz   2200253n  4500</leader>
+		<controlfield tag="001">n  00093008 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010921071258.0</controlfield>
+		<controlfield tag="008">000327n| acannaabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  00093008 </subfield>
+		</datafield>
+		<datafield tag="035" ind1=" " ind2=" ">
+			<subfield code="a">(OCoLC)oca05185075</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="b">eng</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">OrU</subfield>
+		</datafield>
+		<datafield tag="111" ind1="2" ind2=" ">
+			<subfield code="a">Nuclear Free and Independent Pacific Conference</subfield>
+		</datafield>
+		<datafield tag="411" ind1="2" ind2=" ">
+			<subfield code="a">NFIPC</subfield>
+		</datafield>
+		<datafield tag="411" ind1="2" ind2=" ">
+			<subfield code="a">N.F.I.P. Conference</subfield>
+		</datafield>
+		<datafield tag="411" ind1="2" ind2=" ">
+			<subfield code="a">NFIP Conference</subfield>
+		</datafield>
+		<datafield tag="411" ind1="2" ind2=" ">
+			<subfield code="a">Nuclear Free &amp; Independent Pacific Conference</subfield>
+		</datafield>
+		<datafield tag="410" ind1="2" ind2=" ">
+			<subfield code="a">Nuclear Free and Independent Pacific Movement.</subfield>
+			<subfield code="b">Conference</subfield>
+		</datafield>
+		<datafield tag="511" ind1="2" ind2=" ">
+			<subfield code="w">a</subfield>
+			<subfield code="a">Nuclear Free Pacific Conference</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Report of the 7th Nuclear Free and Independent Pacific Conference 9-13 December 1996 Suva, Fiji, c1997:</subfield>
+			<subfield code="b">cover (Nuclear Free &amp; Independent Pacific Conference) p. 1 (7th Conference of the Nuclear Free and Independent Pacific Movement)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Nuclear Free and Independent Pacific Conference, 1983:</subfield>
+			<subfield code="b">p. 7 (NFIPC) p. 8 (4th, July 10-20, 1983, Port Vila, Vanuatu)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">For a nuclear free and independent Pacific, 1991:</subfield>
+			<subfield code="b">cover (6th N.F.I.P. Conference, Aotearoa, 1990)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">NFIP Conference--1987 report, 1987:</subfield>
+			<subfield code="b">p. 1 (5th NFIP Conference, held in Manila, Nov. 1987) p. 6 (5th Nuclear Free and Independent Pacific Conference)</subfield>
+		</datafield>
+		<datafield tag="675" ind1=" " ind2=" ">
+			<subfield code="a">Nuclear-Free Pacific Conference--1983, 1983: foreword (3rd, held May 10-18, 1980, in Honolulu, Hawaii)</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00423cz   2200145n  4500</leader>
+		<controlfield tag="001">n  00907108 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010915071247.0</controlfield>
+		<controlfield tag="008">001027n| acannaabn          |a aaa      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  00907108 </subfield>
+		</datafield>
+		<datafield tag="035" ind1=" " ind2=" ">
+			<subfield code="a">(OCoLC)oca05391408</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="b">eng</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+			<subfield code="d">WaU</subfield>
+		</datafield>
+		<datafield tag="100" ind1="1" ind2=" ">
+			<subfield code="a">Ārmīn, Muħsin</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Armin, Mohsen</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Bīmhā va umīdʹhā, 1999:</subfield>
+			<subfield code="b">t.p. (Muħsin Ārmīn) p. 4 of cover (Mohsen Armin [in rom.])</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00433cz   2200145n  4500</leader>
+		<controlfield tag="001">n  00907109 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010915071247.0</controlfield>
+		<controlfield tag="008">001027n| acannaabn          |a aaa      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  00907109 </subfield>
+		</datafield>
+		<datafield tag="035" ind1=" " ind2=" ">
+			<subfield code="a">(OCoLC)oca05391409</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="b">eng</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+			<subfield code="d">WaU</subfield>
+		</datafield>
+		<datafield tag="100" ind1="1" ind2=" ">
+			<subfield code="a">Razzāqī, Ħujjat</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Razzaghi, Hojjat</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Bīmhā va umīdʹhā, 1999:</subfield>
+			<subfield code="b">t.p. (Ħujjat Razzāqī) p. 4 of cover (Hojjat Razzaghi [in rom.])</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00561nz   2200205n  4500</leader>
+		<controlfield tag="001">n  42002886 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19840322000000.0</controlfield>
+		<controlfield tag="008">830112n| acaaaaaa|          |a ana |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  42002886 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="130" ind1=" " ind2="0">
+			<subfield code="a">Atomic energy review.</subfield>
+			<subfield code="p">Special issue.</subfield>
+		</datafield>
+		<datafield tag="410" ind1="2" ind2="0">
+			<subfield code="a">International Atomic Energy Agency.</subfield>
+			<subfield code="t">Atomic energy review.</subfield>
+			<subfield code="p">Special issue</subfield>
+		</datafield>
+		<datafield tag="642" ind1=" " ind2=" ">
+			<subfield code="a">no. 7</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="643" ind1=" " ind2=" ">
+			<subfield code="a">Vienna</subfield>
+			<subfield code="b">International Atomic Energy Agency</subfield>
+		</datafield>
+		<datafield tag="644" ind1=" " ind2=" ">
+			<subfield code="a">f</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="645" ind1=" " ind2=" ">
+			<subfield code="a">t</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="646" ind1=" " ind2=" ">
+			<subfield code="a">s</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="667" ind1=" " ind2=" ">
+			<subfield code="a">Document</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Molybdenum, 1980.</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00671cz   2200217n  4500</leader>
+		<controlfield tag="001">n  42004507 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19930319143544.6</controlfield>
+		<controlfield tag="008">830202n| acaaaaaa|          |a ana |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  42004507 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="130" ind1=" " ind2="0">
+			<subfield code="a">Bibliotheca Athena.</subfield>
+		</datafield>
+		<datafield tag="430" ind1=" " ind2="0">
+			<subfield code="a">Athena, Biblioteca</subfield>
+		</datafield>
+		<datafield tag="642" ind1=" " ind2=" ">
+			<subfield code="a">nuova ser., 4</subfield>
+			<subfield code="d">1983-&lt;   &gt;</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="642" ind1=" " ind2=" ">
+			<subfield code="a">12</subfield>
+			<subfield code="d">&lt;1973   &gt;-1983</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="643" ind1=" " ind2=" ">
+			<subfield code="a">Roma</subfield>
+			<subfield code="b">Edizioni dell'Ateneo</subfield>
+		</datafield>
+		<datafield tag="644" ind1=" " ind2=" ">
+			<subfield code="a">f</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="645" ind1=" " ind2=" ">
+			<subfield code="a">t</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="646" ind1=" " ind2=" ">
+			<subfield code="a">s</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Grillo, A. Tra filologia e narratologia, c1988:</subfield>
+			<subfield code="b">ser. t.p.</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Dionysius, P. Dionysii Bassaricon et Gigantiadis fragmenta, 1973:</subfield>
+			<subfield code="b">ser. t.p. (Bibliotheca Athena, 12)</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00807nz   2200205n  4500</leader>
+		<controlfield tag="001">n  42005879 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19840322000000.0</controlfield>
+		<controlfield tag="008">830216n| acaabaaa|          |a ana |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  42005879 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="130" ind1=" " ind2="0">
+			<subfield code="a">CCAS studies in Arab-American relations.</subfield>
+		</datafield>
+		<datafield tag="410" ind1="2" ind2="0">
+			<subfield code="a">Georgetown University.</subfield>
+			<subfield code="b">Center for Contemporary Arab Studies.</subfield>
+			<subfield code="t">CCAS studies in Arab-American relations</subfield>
+		</datafield>
+		<datafield tag="410" ind1="2" ind2="0">
+			<subfield code="w">nnaa</subfield>
+			<subfield code="a">Georgetown University, Washington, D.C.</subfield>
+			<subfield code="b">Center for Contemporary Arab Studies.</subfield>
+			<subfield code="t">CCAS studies in Arab-American relations</subfield>
+		</datafield>
+		<datafield tag="430" ind1=" " ind2="0">
+			<subfield code="a">C.C.A.S. studies in Arab-American relations</subfield>
+		</datafield>
+		<datafield tag="643" ind1=" " ind2=" ">
+			<subfield code="a">Washington, D.C.</subfield>
+			<subfield code="b">Center for Contemporary Arab Studies, Georgetown University</subfield>
+		</datafield>
+		<datafield tag="644" ind1=" " ind2=" ">
+			<subfield code="a">f</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="645" ind1=" " ind2=" ">
+			<subfield code="a">t</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="646" ind1=" " ind2=" ">
+			<subfield code="a">s</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">The United States, Arabia, and the Gulf, 1980.</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00827nz   2200217n  4500</leader>
+		<controlfield tag="001">n  42009212 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19840322000000.0</controlfield>
+		<controlfield tag="008">830218n| acaaaaaa|          |a ana |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  42009212 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="050" ind1=" " ind2=" ">
+			<subfield code="a">QL401</subfield>
+			<subfield code="b">.H3</subfield>
+		</datafield>
+		<datafield tag="130" ind1=" " ind2="0">
+			<subfield code="a">Occasional papers on mollusks.</subfield>
+		</datafield>
+		<datafield tag="410" ind1="2" ind2="0">
+			<subfield code="w">nna</subfield>
+			<subfield code="a">Harvard University.</subfield>
+			<subfield code="b">Museum of Comparative Zoology.</subfield>
+			<subfield code="b">Dept. of Mollusks.</subfield>
+			<subfield code="t">Occasional papers on mollusks</subfield>
+		</datafield>
+		<datafield tag="642" ind1=" " ind2=" ">
+			<subfield code="a">v. 4, no. 60</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="643" ind1=" " ind2=" ">
+			<subfield code="a">Cambridge, Mass.</subfield>
+			<subfield code="b">Dept. of Mollusks, Museum of Comparative Zoölogy, Harvard Univ.</subfield>
+		</datafield>
+		<datafield tag="644" ind1=" " ind2=" ">
+			<subfield code="a">n</subfield>
+			<subfield code="d">items processed after Sept. 30, 1983</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="644" ind1=" " ind2=" ">
+			<subfield code="a">f</subfield>
+			<subfield code="d">items processed before Oct. 1, 1983</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="645" ind1=" " ind2=" ">
+			<subfield code="a">t</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="646" ind1=" " ind2=" ">
+			<subfield code="a">c</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Johnson, R.I. Recent and fossil Unionacea and Mutelacea (freshwater bivalves) of the Caribbean Islands. 1981.</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00642cz   2200181n  4500</leader>
+		<controlfield tag="001">n  42018914 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19870306091853.0</controlfield>
+		<controlfield tag="008">830416n| acaabaaa|          |a ana |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  42018914 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="130" ind1=" " ind2="0">
+			<subfield code="a">Perspectives on the American Revolution.</subfield>
+		</datafield>
+		<datafield tag="410" ind1="2" ind2="0">
+			<subfield code="a">United States Capitol Historical Society.</subfield>
+			<subfield code="t">Perspectives on the American Revolution</subfield>
+		</datafield>
+		<datafield tag="643" ind1=" " ind2=" ">
+			<subfield code="a">Charlottesville</subfield>
+			<subfield code="b">Published for the United States Capitol Historical Society by the University Press of Virginia</subfield>
+		</datafield>
+		<datafield tag="644" ind1=" " ind2=" ">
+			<subfield code="a">f</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="645" ind1=" " ind2=" ">
+			<subfield code="a">t</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="646" ind1=" " ind2=" ">
+			<subfield code="a">s</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Slavery and freedom in the age of the American Revolution. 1983.</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>01233cz   2200277n  4500</leader>
+		<controlfield tag="001">n  42022651 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19961025115532.3</controlfield>
+		<controlfield tag="008">830328n| acaaaaaa|          |a ana |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  42022651 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="130" ind1=" " ind2="0">
+			<subfield code="a">Skrifter utgivna av Svenska barnboksinstitutet</subfield>
+		</datafield>
+		<datafield tag="410" ind1="2" ind2="0">
+			<subfield code="w">nnaa</subfield>
+			<subfield code="a">Svenska barnboksinstitutet.</subfield>
+			<subfield code="t">Skrifter</subfield>
+		</datafield>
+		<datafield tag="410" ind1="2" ind2="0">
+			<subfield code="a">Svenska barnboksinstitutet.</subfield>
+			<subfield code="t">Skrifter utgivna av Svenska barnboksinstitutet</subfield>
+		</datafield>
+		<datafield tag="430" ind1=" " ind2="0">
+			<subfield code="a">Studies published by the Swedish Institute for Children's Books</subfield>
+		</datafield>
+		<datafield tag="430" ind1=" " ind2="0">
+			<subfield code="a">Skriter utgivna av Svenska barnboksinstitutet</subfield>
+		</datafield>
+		<datafield tag="430" ind1=" " ind2="0">
+			<subfield code="a">Svenska barnboksinstitutets skriftserie</subfield>
+		</datafield>
+		<datafield tag="642" ind1=" " ind2=" ">
+			<subfield code="a">nr 12</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="643" ind1=" " ind2=" ">
+			<subfield code="a">Lund</subfield>
+			<subfield code="b">LiberLäromedel</subfield>
+			<subfield code="d">some issues</subfield>
+		</datafield>
+		<datafield tag="644" ind1=" " ind2=" ">
+			<subfield code="a">f</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="645" ind1=" " ind2=" ">
+			<subfield code="a">t</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="646" ind1=" " ind2=" ">
+			<subfield code="a">s</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Kåreland, L. Möte med barnlitteraturen, c1980.</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Nikolajeva, M. The magic code, c1988:</subfield>
+			<subfield code="b">p. 4 of cover (Studies published by the Swedish Institute for Children's Books)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Löfgren, E. Schoolmates of the long-ago, 1993:</subfield>
+			<subfield code="b">ser. t.p. (Skriter [sic] utgivna av Svenska barnboksinstitutet)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Läsebok, 1993:</subfield>
+			<subfield code="b">p. 1 (Svenska barnboksinstitutets skriftserie) p. 309 (Skrifter utgivna av Svenska barnboksinstitutet)</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00768nz   2200205n  4500</leader>
+		<controlfield tag="001">n  42023909 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19840322000000.0</controlfield>
+		<controlfield tag="008">830401n| acaaaaaa|          |a ana |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  42023909 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="130" ind1=" " ind2="0">
+			<subfield code="a">Studies in Irish language and literature.</subfield>
+		</datafield>
+		<datafield tag="410" ind1="2" ind2="0">
+			<subfield code="a">Queen's University of Belfast.</subfield>
+			<subfield code="b">Dept. of Celtic.</subfield>
+			<subfield code="t">Studies in Irish language and literature</subfield>
+		</datafield>
+		<datafield tag="410" ind1="2" ind2="0">
+			<subfield code="a">Queen's University of Belfast.</subfield>
+			<subfield code="b">Institute of Irish Studies.</subfield>
+			<subfield code="t">Studies in Irish language and literature</subfield>
+		</datafield>
+		<datafield tag="642" ind1=" " ind2=" ">
+			<subfield code="a">v. 4</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="643" ind1=" " ind2=" ">
+			<subfield code="a">Belfast</subfield>
+			<subfield code="b">Institute of Irish Studies, Queen's Univ. of Belfast</subfield>
+		</datafield>
+		<datafield tag="644" ind1=" " ind2=" ">
+			<subfield code="a">f</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="645" ind1=" " ind2=" ">
+			<subfield code="a">t</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="646" ind1=" " ind2=" ">
+			<subfield code="a">s</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Ó Baóill, C. Contributions to a comparative study of Ulster Irish &amp; Scottish Gaelic, 1978.</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00687nz   2200193n  4500</leader>
+		<controlfield tag="001">n  42031684 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19840322000000.0</controlfield>
+		<controlfield tag="008">830425n| acaaaaaa|          |a ana |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  42031684 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="130" ind1=" " ind2="0">
+			<subfield code="a">Harvard library of computer graphics ... mapping collection.</subfield>
+		</datafield>
+		<datafield tag="410" ind1="2" ind2="0">
+			<subfield code="a">Harvard University.</subfield>
+			<subfield code="b">Laboratory for Computer Graphics and Spatial Analysis.</subfield>
+			<subfield code="t">Harvard library of computer graphics ... mapping collection</subfield>
+		</datafield>
+		<datafield tag="642" ind1=" " ind2=" ">
+			<subfield code="a">v. 9</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="643" ind1=" " ind2=" ">
+			<subfield code="a">Cambridge, Mass.</subfield>
+			<subfield code="b">Harvard University, Laboratory for Computer Graphics and Spatial Analysis</subfield>
+		</datafield>
+		<datafield tag="644" ind1=" " ind2=" ">
+			<subfield code="a">f</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="645" ind1=" " ind2=" ">
+			<subfield code="a">t</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="646" ind1=" " ind2=" ">
+			<subfield code="a">s</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Computer graphics hardware, c1980.</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00553cz   2200193n  4500</leader>
+		<controlfield tag="001">n  42034650 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20000916204253.0</controlfield>
+		<controlfield tag="008">830429nc acaabaaan          |a ana |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  42034650 </subfield>
+		</datafield>
+		<datafield tag="035" ind1=" " ind2=" ">
+			<subfield code="a">(OCoLC)oca00032329</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="b">eng</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">OCoLC</subfield>
+		</datafield>
+		<datafield tag="130" ind1=" " ind2="0">
+			<subfield code="a">Nong tian ji ben jian she cong shu.</subfield>
+		</datafield>
+		<datafield tag="430" ind1=" " ind2="0">
+			<subfield code="w">nne</subfield>
+			<subfield code="a">Nung tʿien chi pen chien she tsʿung shu</subfield>
+		</datafield>
+		<datafield tag="643" ind1=" " ind2=" ">
+			<subfield code="a">Xi'an</subfield>
+			<subfield code="b">Shanxi ke xue ji shu chu ban she</subfield>
+		</datafield>
+		<datafield tag="644" ind1=" " ind2=" ">
+			<subfield code="a">f</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="645" ind1=" " ind2=" ">
+			<subfield code="a">t</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="646" ind1=" " ind2=" ">
+			<subfield code="a">s</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Li, H. T. Shan-hsi yen chien ti kai liang, 1981.</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>01068cz   2200241n  4500</leader>
+		<controlfield tag="001">n  42037249 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19850502074119.0</controlfield>
+		<controlfield tag="008">830517n| acabbaaa|          |a aaa |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  42037249 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="100" ind1="1" ind2="0">
+			<subfield code="a">Bach, Johann Sebastian,</subfield>
+			<subfield code="d">1685-1750.</subfield>
+			<subfield code="t">Keyboard music.</subfield>
+			<subfield code="k">Selections (Bach Guild)</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2="0">
+			<subfield code="a">Bach, Johann Sebastian,</subfield>
+			<subfield code="d">1685-1750.</subfield>
+			<subfield code="t">Historical anthology of music.</subfield>
+			<subfield code="n">V,</subfield>
+			<subfield code="p">Baroque (late).</subfield>
+			<subfield code="n">F,</subfield>
+			<subfield code="p">Johann Sebastian Bach.</subfield>
+			<subfield code="n">1,</subfield>
+			<subfield code="p">Works for keyboard</subfield>
+		</datafield>
+		<datafield tag="430" ind1=" " ind2="0">
+			<subfield code="a">Historical anthology of music.</subfield>
+			<subfield code="n">V,</subfield>
+			<subfield code="p">Baroque (late).</subfield>
+			<subfield code="n">F,</subfield>
+			<subfield code="p">Johann Sebastian Bach.</subfield>
+			<subfield code="n">1,</subfield>
+			<subfield code="p">Works for keyboard</subfield>
+		</datafield>
+		<datafield tag="430" ind1=" " ind2="0">
+			<subfield code="w">nnaa</subfield>
+			<subfield code="a">Historical anthology of music,</subfield>
+			<subfield code="n">period V,</subfield>
+			<subfield code="n">category F,</subfield>
+			<subfield code="n">sub-category 1</subfield>
+		</datafield>
+		<datafield tag="430" ind1=" " ind2="0">
+			<subfield code="a">Johann Sebastian Bach.</subfield>
+			<subfield code="n">1,</subfield>
+			<subfield code="p">Works for keyboard</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2="0">
+			<subfield code="a">Bach, Johann Sebastian,</subfield>
+			<subfield code="d">1685-1750.</subfield>
+			<subfield code="t">Johann Sebastian Bach.</subfield>
+			<subfield code="n">1,</subfield>
+			<subfield code="p">Works for keyboard</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2="0">
+			<subfield code="a">Bach, Johann Sebastian,</subfield>
+			<subfield code="d">1685-1750.</subfield>
+			<subfield code="t">Works for keyboard</subfield>
+		</datafield>
+		<datafield tag="643" ind1=" " ind2=" ">
+			<subfield code="a">New York, NY</subfield>
+			<subfield code="b">Bach Guild</subfield>
+		</datafield>
+		<datafield tag="644" ind1=" " ind2=" ">
+			<subfield code="a">f</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="645" ind1=" " ind2=" ">
+			<subfield code="a">t</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="646" ind1=" " ind2=" ">
+			<subfield code="a">s</subfield>
+			<subfield code="5">DLC</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Bach, J.S. Organ works [SR] c1981.</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00656cz   2200157n  4500</leader>
+		<controlfield tag="001">n  50000657 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19910605055735.1</controlfield>
+		<controlfield tag="008">800208n| acannaab|          |a ana |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  50000657 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC-S</subfield>
+		</datafield>
+		<datafield tag="110" ind1="2" ind2="0">
+			<subfield code="a">Folger Shakespeare Library</subfield>
+		</datafield>
+		<datafield tag="410" ind1="2" ind2="0">
+			<subfield code="w">nnaa</subfield>
+			<subfield code="a">Folger Shakespeare Library, Washington, D.C.</subfield>
+		</datafield>
+		<datafield tag="410" ind1="1" ind2="0">
+			<subfield code="a">Washington (D.C.).</subfield>
+			<subfield code="b">Folger Shakespeare Library</subfield>
+		</datafield>
+		<datafield tag="510" ind1="2" ind2="0">
+			<subfield code="a">Shakespeare Theatre at the Folger</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Phone call to Shakespeare Theatre at the Folger administrative offices, 5/16/91</subfield>
+			<subfield code="b">(Shakespeare Theatre at the Folger is an independent organization working in cooperation with the Folger Shakespeare Library)</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00811cz   2200181n  4500</leader>
+		<controlfield tag="001">n  50001478 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19880219082238.9</controlfield>
+		<controlfield tag="008">800310n| acannaab|          |a aaa |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  50001478 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2=" ">
+			<subfield code="a">PS3569.H3324</subfield>
+		</datafield>
+		<datafield tag="100" ind1="1" ind2="0">
+			<subfield code="a">Shange, Ntozake.</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2="0">
+			<subfield code="a">Williams, Paulette L.</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Her For colored girls who have considered suicide, c1975.</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Her From okra to greens, a different love story, 1984:</subfield>
+			<subfield code="b">CIP t.p. (Ntozake Shange) data sheet (b. 1948)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Page, J.A. Selected black Amer., African and Caribbean authors, 1985</subfield>
+			<subfield code="b">(Shangé, Ntozake [Paulette L. Williams]; dancer, teacher, playwright; b. Trenton, N.J., 10-18-1948)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Contemp. authors, v. 85-88</subfield>
+			<subfield code="b">(Shange, Ntozake, 1948- ; original name Paulette Williams; name changed, 1971)</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>01385cz   2200301n  4500</leader>
+		<controlfield tag="001">n  50007677 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010111070244.0</controlfield>
+		<controlfield tag="008">800331n| acannaabn          |a aaa      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  50007677 </subfield>
+		</datafield>
+		<datafield tag="035" ind1=" " ind2=" ">
+			<subfield code="a">(OCoLC)oca00043216</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="b">eng</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+			<subfield code="d">OCoLC</subfield>
+		</datafield>
+		<datafield tag="100" ind1="1" ind2=" ">
+			<subfield code="a">Ben-Gurion, David,</subfield>
+			<subfield code="d">1886-1973.</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Green, David,</subfield>
+			<subfield code="d">1886-1973</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Yariv, S. S.,</subfield>
+			<subfield code="d">1886-1973</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Bin Jūriyūn,</subfield>
+			<subfield code="d">1886-1973</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Ben-Guryon, Daṿid,</subfield>
+			<subfield code="d">1886-1973</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Grin, Daṿid,</subfield>
+			<subfield code="d">1886-1973</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Gurion, David Ben-,</subfield>
+			<subfield code="d">1886-1973</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Guryon, Daṿid Ben-,</subfield>
+			<subfield code="d">1886-1973</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Gruen, David Joseph,</subfield>
+			<subfield code="d">1886-1973</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Gryn, David,</subfield>
+			<subfield code="d">1886-1973</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Ben Gourion,</subfield>
+			<subfield code="d">1886-1973</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Ben Gourion, David,</subfield>
+			<subfield code="d">1886-1973</subfield>
+		</datafield>
+		<datafield tag="400" ind1="1" ind2=" ">
+			<subfield code="a">Grün, David,</subfield>
+			<subfield code="d">1886-1973</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Teveth, S. Ben-Gurion, 1987:</subfield>
+			<subfield code="b">pub. info. (David Joseph Gruen)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Ben Gourion, 1998:</subfield>
+			<subfield code="b">cover (David Gryn)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Encyclopedia.com Website, Jan. 10, 2001 : Ben-Gurion, David (1886-1973, Israeli statesman and 1st prime minister (1949-53, 1955-63); b. Poland as David Grün; settled in Palestine 1906, devoted his life to ZIONISM, and was a founder of the Mapai (later Labor) party; during the struggle (1947-48) for independence he headed Israel's defense efforts, and once independence was achieved he became prime minister)</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00337nz   2200133n  4500</leader>
+		<controlfield tag="001">n  50020441 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19840322000000.0</controlfield>
+		<controlfield tag="008">800501n| acannaab|          |b ana |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  50020441 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="110" ind1="2" ind2="0">
+			<subfield code="a">Polished Apple (Firm)</subfield>
+		</datafield>
+		<datafield tag="410" ind1="2" ind2="0">
+			<subfield code="a">Wilhite Productions.</subfield>
+			<subfield code="b">Polished Apple</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Break the fast. [FS] 1976.</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00506cz   2200145n  4500</leader>
+		<controlfield tag="001">n  50025113 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010915071351.0</controlfield>
+		<controlfield tag="008">800718n| acannaabn          |n aaa      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  50025113 </subfield>
+		</datafield>
+		<datafield tag="035" ind1=" " ind2=" ">
+			<subfield code="a">(OCoLC)oca00060513</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="b">eng</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">PPi-MA</subfield>
+		</datafield>
+		<datafield tag="100" ind1="1" ind2=" ">
+			<subfield code="a">Hawkins, John,</subfield>
+			<subfield code="c">Sir,</subfield>
+			<subfield code="d">1719-1789</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Author's General list ... of music ... 1776.</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">New Grove, 2nd ed.</subfield>
+			<subfield code="b">(Hawkins, Sir John; b. Mar. 29, 1719, London, d. May 21, 1789, London; English music historian and antiquary)</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>01446cz   2200277n  4500</leader>
+		<controlfield tag="001">n  50025199 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19930107083508.0</controlfield>
+		<controlfield tag="008">800718n| acannaab|          |a aaa |||  </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">n  50025199 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+			<subfield code="d">MnHi</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="100" ind1="0" ind2="0">
+			<subfield code="a">Sitting Bull,</subfield>
+			<subfield code="d">1834?-1890</subfield>
+		</datafield>
+		<datafield tag="400" ind1="0" ind2="0">
+			<subfield code="w">nnaa</subfield>
+			<subfield code="a">Sitting Bull,</subfield>
+			<subfield code="c">Dakota chief,</subfield>
+			<subfield code="d">1831-1890</subfield>
+		</datafield>
+		<datafield tag="400" ind1="0" ind2="0">
+			<subfield code="a">Tatanka Yotanka,</subfield>
+			<subfield code="d">1834?-1890</subfield>
+		</datafield>
+		<datafield tag="400" ind1="0" ind2="0">
+			<subfield code="a">Tatanka Iyotake,</subfield>
+			<subfield code="d">1834?-1890</subfield>
+		</datafield>
+		<datafield tag="400" ind1="0" ind2="0">
+			<subfield code="a">Four Horn,</subfield>
+			<subfield code="d">1834?-1890</subfield>
+		</datafield>
+		<datafield tag="400" ind1="0" ind2="0">
+			<subfield code="a">Sitting Buffalo Bull,</subfield>
+			<subfield code="d">1834?-1890</subfield>
+		</datafield>
+		<datafield tag="400" ind1="0" ind2="0">
+			<subfield code="a">Tah-ton-ka-he-yo-ta-kah,</subfield>
+			<subfield code="d">1834?-1890</subfield>
+		</datafield>
+		<datafield tag="400" ind1="0" ind2="0">
+			<subfield code="a">Tatanka Iyotanka,</subfield>
+			<subfield code="d">1834?-1890</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Garst, D. S.  Sitting Bull, 1946.</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Ency. Amer., 1982:</subfield>
+			<subfield code="b">v. 24, p. 852 (Sitting Bull; 1834?-1890; Tatanka Yotanka)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Ency. Brit.  Microp., 1975:</subfield>
+			<subfield code="b">v. 9, p. 243 (Sitting Bull; Tatanka Iyotake; b. ca. 1831)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Hodge, F.W.  Handbook of American Indians, 1910:</subfield>
+			<subfield code="b">v. 2, p. 583 (Sitting Bull; Tatanka Yotanka; Sitting Buffalo Bull; name was Four Horn and was chg. to Sitting Bull when he "made medicine" in 1857; b. 1834)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">WWWAm, hist. vol., p. 485</subfield>
+			<subfield code="b">(Sitting Bull; b. ca. 1834)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">MnHi files</subfield>
+			<subfield code="b">(hdg: Sitting Bull, Dakota chief, 1837-1890; Sitting Bull, Dakota chief, 1837?-1890)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">U.S. Dept. of the Interior.  Lib.  Biog. and hist. index of Am. Indians ... 1966:</subfield>
+			<subfield code="b">v. 7, p. 372-375 (Sitting Bull; Tah-ton-ka-he-yo-ta-kah; Tatanka Iyotanka; Tatanka Yotanka)</subfield>
+		</datafield>
+	</record>
+</collection>

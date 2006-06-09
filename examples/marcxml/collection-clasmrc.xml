@@ -1,0 +1,1402 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://www.loc.gov/MARC21/slim" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/MARC21/slim
+http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd">
+	<record>
+		<leader>00834nw   2200193n  4500</leader>
+		<controlfield tag="001">CF 91000008</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528091722.0</controlfield>
+		<controlfield tag="008">910215acaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 91000008</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">HF1</subfield>
+			<subfield code="c">HF6182</subfield>
+			<subfield code="j">Commerce</subfield>
+		</datafield>
+		<datafield tag="453" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">HT684.22</subfield>
+			<subfield code="h">Communities.  Classes.  Races</subfield>
+			<subfield code="h">Classes</subfield>
+			<subfield code="h">Classes arising from occupation</subfield>
+			<subfield code="h">Middle class</subfield>
+			<subfield code="j">Commercial</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">HE380.8</subfield>
+			<subfield code="c">HE560</subfield>
+			<subfield code="h">Transportation and communications</subfield>
+			<subfield code="h">Water transportation</subfield>
+			<subfield code="j">Waterways</subfield>
+			<subfield code="t">commerce</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">HE1</subfield>
+			<subfield code="c">HE9900</subfield>
+			<subfield code="j">Transportation and communications</subfield>
+			<subfield code="t">Commerce</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">HE561</subfield>
+			<subfield code="c">HE971</subfield>
+			<subfield code="h">Transportation and communications</subfield>
+			<subfield code="h">Water transportation</subfield>
+			<subfield code="j">Shipping</subfield>
+			<subfield code="t">Commerce</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">GT6010</subfield>
+			<subfield code="c">GT6060</subfield>
+			<subfield code="h">Manners and customs (General)</subfield>
+			<subfield code="h">Customs relative to special classes.  By occupation</subfield>
+			<subfield code="j">Commercial occupations</subfield>
+			<subfield code="t">Commerce</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Commerce</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00877nw   2200181n  4500</leader>
+		<controlfield tag="001">CF 91000424</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528091739.0</controlfield>
+		<controlfield tag="008">910605acaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 91000424</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">HF2999</subfield>
+			<subfield code="c">HF4055</subfield>
+			<subfield code="h">Commerce</subfield>
+			<subfield code="j">By region or country</subfield>
+		</datafield>
+		<datafield tag="453" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">HF1379.2</subfield>
+			<subfield code="h">Commerce</subfield>
+			<subfield code="h">International economic relations</subfield>
+			<subfield code="h">International trade</subfield>
+			<subfield code="j">By region or country</subfield>
+		</datafield>
+		<datafield tag="453" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">HF1417.32</subfield>
+			<subfield code="h">Commerce</subfield>
+			<subfield code="h">International economic relations</subfield>
+			<subfield code="h">Exports</subfield>
+			<subfield code="j">By region or country</subfield>
+		</datafield>
+		<datafield tag="453" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">HF1420.2</subfield>
+			<subfield code="h">Commerce</subfield>
+			<subfield code="h">International economic relations</subfield>
+			<subfield code="h">Imports</subfield>
+			<subfield code="j">By region or country</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">HF71</subfield>
+			<subfield code="c">HF73</subfield>
+			<subfield code="h">Commerce</subfield>
+			<subfield code="j">Trade ministries.  Departments of commerce.  Bureaus of trade</subfield>
+			<subfield code="t">serial publications issued by local agencies</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">HF351</subfield>
+			<subfield code="c">HF355</subfield>
+			<subfield code="h">Commerce</subfield>
+			<subfield code="h">History</subfield>
+			<subfield code="j">General commercial history</subfield>
+			<subfield code="t">works on a the commercial history of a particular region or country</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00345nw   2200133n  4500</leader>
+		<controlfield tag="001">CF 91000425</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528091740.0</controlfield>
+		<controlfield tag="008">910605acaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 91000425</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">HF3000</subfield>
+			<subfield code="c">HF3163</subfield>
+			<subfield code="h">Commerce</subfield>
+			<subfield code="h">By region or country</subfield>
+			<subfield code="j">United States</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">HF1</subfield>
+			<subfield code="c">HF6182</subfield>
+			<subfield code="j">Commerce</subfield>
+			<subfield code="t">commerce of the United States</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00346nw   2200133n  4500</leader>
+		<controlfield tag="001">CF 91000474</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528091742.0</controlfield>
+		<controlfield tag="008">910605acaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 91000474</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">HF3211</subfield>
+			<subfield code="c">HF3212.2</subfield>
+			<subfield code="h">Commerce</subfield>
+			<subfield code="h">By region or country</subfield>
+			<subfield code="j">America (General)</subfield>
+		</datafield>
+		<datafield tag="453" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">HF2999</subfield>
+			<subfield code="h">Commerce</subfield>
+			<subfield code="h">By region or country</subfield>
+			<subfield code="j">America</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>05859nw   2201273n  4500</leader>
+		<controlfield tag="001">CF 91000477</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960608112800.0</controlfield>
+		<controlfield tag="008">910605abaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 91000477</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">HF3221</subfield>
+			<subfield code="c">HF4040.7</subfield>
+			<subfield code="h">Commerce</subfield>
+			<subfield code="h">By region or country</subfield>
+			<subfield code="j">Other regions or countries</subfield>
+		</datafield>
+		<datafield tag="453" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">HF405.2</subfield>
+			<subfield code="h">Commerce</subfield>
+			<subfield code="h">History</subfield>
+			<subfield code="h">By period</subfield>
+			<subfield code="h">Middle Ages</subfield>
+			<subfield code="j">By region or country</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">HF1</subfield>
+			<subfield code="c">HF52</subfield>
+			<subfield code="h">Commerce</subfield>
+			<subfield code="j">Periodicals. Serials</subfield>
+			<subfield code="t">periodicals on the commerce of other regions or countries</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">HF1</subfield>
+			<subfield code="c">HF6182</subfield>
+			<subfield code="j">Commerce</subfield>
+			<subfield code="t">commerce of other regions or countries</subfield>
+		</datafield>
+		<datafield tag="762" ind1=" " ind2=" ">
+			<subfield code="z">H7</subfield>
+			<subfield code="i">modified</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="i">Add number in table to</subfield>
+			<subfield code="b">HF3210</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="i">For Great Britain use:</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3505</subfield>
+			<subfield code="c">HF3505.6</subfield>
+			<subfield code="i">Through 1800</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3505</subfield>
+			<subfield code="i">General works</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3505.15</subfield>
+			<subfield code="i">Medieval</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3505.2</subfield>
+			<subfield code="i">Modern</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3505.4</subfield>
+			<subfield code="i">17th century</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="1">
+			<subfield code="x">HF3505.6</subfield>
+			<subfield code="i">18th century</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3505.8</subfield>
+			<subfield code="c">HF3505.9</subfield>
+			<subfield code="i">Early 19th century to 1870</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3505.8</subfield>
+			<subfield code="i">General works</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3505.9</subfield>
+			<subfield code="i">Orders in council   </subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3506</subfield>
+			<subfield code="c">HF3506.2</subfield>
+			<subfield code="i">Recent, 1870-</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3506</subfield>
+			<subfield code="i">General works</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3506.2</subfield>
+			<subfield code="i">World War I</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="i">For Ireland use:</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3539</subfield>
+			<subfield code="i">Local</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3539.A2A</subfield>
+			<subfield code="c">HF3539.A2Z</subfield>
+			<subfield code="i">Counties</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3539.A3</subfield>
+			<subfield code="c">HF3539.Z</subfield>
+			<subfield code="i">Cities, etc.</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="i">For British Commonwealth use:</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3540</subfield>
+			<subfield code="i">General works</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="i">For Germany use:</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3566</subfield>
+			<subfield code="c">HF3566.2</subfield>
+			<subfield code="i">Recent</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3566</subfield>
+			<subfield code="i">General works</subfield>
+		</datafield>
+		<datafield tag="761" ind1=" " ind2="0">
+			<subfield code="x">HF3566.2</subfield>
+			<subfield code="i">World War I</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.1</subfield>
+			<subfield code="i">Under each country:</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.2</subfield>
+			<subfield code="i">10 nos.</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.3</subfield>
+			<subfield code="a">1</subfield>
+			<subfield code="j">Periodicals.  Societies.  Serials</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.4</subfield>
+			<subfield code="a">1.5</subfield>
+			<subfield code="j">Statistics (Monographs)</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.5</subfield>
+			<subfield code="a">2</subfield>
+			<subfield code="j">Congresses</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.6</subfield>
+			<subfield code="a">3</subfield>
+			<subfield code="j">Directories</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.7</subfield>
+			<subfield code="i">Class here foreign trade directories</subfield>
+			<subfield code="p">680</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.8</subfield>
+			<subfield code="i">For directories of domestic commerce or industry, see </subfield>
+			<subfield code="s">HF5071-HF5330</subfield>
+			<subfield code="p">253</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.9</subfield>
+			<subfield code="a">4</subfield>
+			<subfield code="c">7</subfield>
+			<subfield code="j">General works.  History</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.10</subfield>
+			<subfield code="i">Including works on export trade</subfield>
+			<subfield code="p">680</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.11</subfield>
+			<subfield code="a">4</subfield>
+			<subfield code="h">General works.  History</subfield>
+			<subfield code="j">General</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="1">
+			<subfield code="8">1.12</subfield>
+			<subfield code="a">4.5</subfield>
+			<subfield code="c">4.6.Z</subfield>
+			<subfield code="h">General works.  History</subfield>
+			<subfield code="j">Biography</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.13</subfield>
+			<subfield code="a">4.5</subfield>
+			<subfield code="h">General works.  History</subfield>
+			<subfield code="h">Biography</subfield>
+			<subfield code="j">Collective</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="1">
+			<subfield code="8">1.14</subfield>
+			<subfield code="a">4.6.A</subfield>
+			<subfield code="c">4.6.Z</subfield>
+			<subfield code="h">General works.  History</subfield>
+			<subfield code="h">Biography</subfield>
+			<subfield code="j">Individual</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.15</subfield>
+			<subfield code="a">5</subfield>
+			<subfield code="h">General works.  History</subfield>
+			<subfield code="j">Early</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.16</subfield>
+			<subfield code="a">6</subfield>
+			<subfield code="h">General works.  History</subfield>
+			<subfield code="j">Recent</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.17</subfield>
+			<subfield code="a">6.5</subfield>
+			<subfield code="h">General works. History</subfield>
+			<subfield code="h">Recent</subfield>
+			<subfield code="j">1945-</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.18</subfield>
+			<subfield code="a">7</subfield>
+			<subfield code="j">Handbooks, manuals, etc.</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="1">
+			<subfield code="8">1.19</subfield>
+			<subfield code="a">8.A</subfield>
+			<subfield code="c">8.Z</subfield>
+			<subfield code="j">Foreign commerce.  By region or country, A-Z</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.20</subfield>
+			<subfield code="i">Class here descriptive works</subfield>
+			<subfield code="p">680</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.21</subfield>
+			<subfield code="i">For works on policy, see </subfield>
+			<subfield code="s">HF1451-HF1647</subfield>
+			<subfield code="p">253</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.22</subfield>
+			<subfield code="a">9</subfield>
+			<subfield code="c">10</subfield>
+			<subfield code="j">Local commerce</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.23</subfield>
+			<subfield code="i">Including foreign trade and foreign trade directories of individual areas</subfield>
+			<subfield code="p">680</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.24</subfield>
+			<subfield code="i">Under each:</subfield>
+			<subfield code="p">763</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.24.1</subfield>
+			<subfield code="a">.A1</subfield>
+			<subfield code="c">.A3</subfield>
+			<subfield code="j">Periodicals.  Societies.  Serials</subfield>
+			<subfield code="p">763</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.24.2</subfield>
+			<subfield code="i">For domestic trade directories, see </subfield>
+			<subfield code="s">HF5071-HF5330</subfield>
+			<subfield code="p">763</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="1">
+			<subfield code="8">1.25</subfield>
+			<subfield code="a">9.A</subfield>
+			<subfield code="c">9.Z</subfield>
+			<subfield code="h">Local commerce</subfield>
+			<subfield code="j">By state, etc.</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="1">
+			<subfield code="8">1.26</subfield>
+			<subfield code="a">10.A</subfield>
+			<subfield code="c">10.Z</subfield>
+			<subfield code="h">Local commerce</subfield>
+			<subfield code="j">By city</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.26</subfield>
+			<subfield code="i">5 nos.</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.27</subfield>
+			<subfield code="a">1</subfield>
+			<subfield code="j">Periodicals.  Societies.  Serials</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.28</subfield>
+			<subfield code="a">1.5</subfield>
+			<subfield code="j">Statistics (Monographs)</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.29</subfield>
+			<subfield code="a">1.7</subfield>
+			<subfield code="j">Congresses</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.30</subfield>
+			<subfield code="a">1.8</subfield>
+			<subfield code="j">Directories</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.31</subfield>
+			<subfield code="i">Class here foreign trade directories</subfield>
+			<subfield code="p">680</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.32</subfield>
+			<subfield code="i">For directories of domestic commerce or industry, see </subfield>
+			<subfield code="s">HF5071-HF5330</subfield>
+			<subfield code="p">253</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.33</subfield>
+			<subfield code="a">2</subfield>
+			<subfield code="j">General works.  History</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.34</subfield>
+			<subfield code="i">Including works on export trade</subfield>
+			<subfield code="p">680</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.35</subfield>
+			<subfield code="a">2.3</subfield>
+			<subfield code="h">General works.  History</subfield>
+			<subfield code="j">1945-</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.36</subfield>
+			<subfield code="a">2.5</subfield>
+			<subfield code="j">Handbooks, manuals, etc.</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="1">
+			<subfield code="8">1.37</subfield>
+			<subfield code="a">3.A</subfield>
+			<subfield code="c">3.Z</subfield>
+			<subfield code="j">Foreign commerce.  By region or country</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.38</subfield>
+			<subfield code="i">Class here descriptive works</subfield>
+			<subfield code="p">680</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.39</subfield>
+			<subfield code="i">For works on policy, see </subfield>
+			<subfield code="s">HF1451-HF1647</subfield>
+			<subfield code="p">253</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.40</subfield>
+			<subfield code="a">4</subfield>
+			<subfield code="c">5</subfield>
+			<subfield code="j">Local commerce</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.41</subfield>
+			<subfield code="i">Including foreign trade and foreign trade directories of individual areas</subfield>
+			<subfield code="p">680</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.41.1</subfield>
+			<subfield code="i">Under each:</subfield>
+			<subfield code="p">763</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.41.2</subfield>
+			<subfield code="a">.A1</subfield>
+			<subfield code="c">.A3</subfield>
+			<subfield code="j">Periodicals.  Societies.  Serials</subfield>
+			<subfield code="p">763</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.41.3</subfield>
+			<subfield code="i">For domestic trade directories, see </subfield>
+			<subfield code="s">HF5071-HF5330</subfield>
+			<subfield code="p">763</subfield>
+			<subfield code="p">453</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="1">
+			<subfield code="8">1.42</subfield>
+			<subfield code="a">4.A</subfield>
+			<subfield code="c">4.Z</subfield>
+			<subfield code="h">Local commerce</subfield>
+			<subfield code="j">By state, etc.</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="1">
+			<subfield code="8">1.43</subfield>
+			<subfield code="a">5.A</subfield>
+			<subfield code="c">5.Z</subfield>
+			<subfield code="h">Local commerce</subfield>
+			<subfield code="j">By city</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.44</subfield>
+			<subfield code="i">For Poland, use 4.5</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.45</subfield>
+			<subfield code="i">1  no.</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.46</subfield>
+			<subfield code="a">.A1</subfield>
+			<subfield code="c">.A4</subfield>
+			<subfield code="j">Periodicals.  Societies.  Serials</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.47</subfield>
+			<subfield code="a">.A45</subfield>
+			<subfield code="j">Statistics (Monographs)</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.48</subfield>
+			<subfield code="a">.A46</subfield>
+			<subfield code="j">Congresses</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.49</subfield>
+			<subfield code="a">.A48</subfield>
+			<subfield code="j">Directories</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.50</subfield>
+			<subfield code="i">Class here foreign trade directories</subfield>
+			<subfield code="p">680</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.51</subfield>
+			<subfield code="i">For directories of domestic commerce of industry, see</subfield>
+			<subfield code="s">HF5071-HF5330</subfield>
+			<subfield code="p">253</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.52</subfield>
+			<subfield code="a">.A5</subfield>
+			<subfield code="c">.Z4</subfield>
+			<subfield code="j">General works.  History</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.53</subfield>
+			<subfield code="i">Including works on export trade</subfield>
+			<subfield code="p">680</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.54</subfield>
+			<subfield code="a">.Z5</subfield>
+			<subfield code="h">General works.  History</subfield>
+			<subfield code="j">1945-</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="0">
+			<subfield code="8">1.55</subfield>
+			<subfield code="a">.Z6</subfield>
+			<subfield code="j">Handbooks, manuals, etc.</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="1">
+			<subfield code="8">1.56</subfield>
+			<subfield code="a">.Z7A</subfield>
+			<subfield code="c">.Z7Z</subfield>
+			<subfield code="j">Foreign commerce.  By region or country</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.57</subfield>
+			<subfield code="i">Class here descriptive works</subfield>
+			<subfield code="p">680</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.58</subfield>
+			<subfield code="i">For works on policy, see </subfield>
+			<subfield code="s">HF1451-HF1647</subfield>
+			<subfield code="p">253</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="1">
+			<subfield code="8">1.59</subfield>
+			<subfield code="a">.Z8</subfield>
+			<subfield code="c">.Z9</subfield>
+			<subfield code="j">Local commerce</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="0" ind2="8">
+			<subfield code="8">1.60</subfield>
+			<subfield code="i">Including foreign trade and foreign trade directories of individual areas</subfield>
+			<subfield code="p">680</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="1">
+			<subfield code="8">1.61</subfield>
+			<subfield code="a">.Z8A</subfield>
+			<subfield code="c">.Z8Z</subfield>
+			<subfield code="h">Local commerce</subfield>
+			<subfield code="j">By state, etc.</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+		<datafield tag="763" ind1="1" ind2="1">
+			<subfield code="8">1.62</subfield>
+			<subfield code="a">.Z9A</subfield>
+			<subfield code="c">.Z9Z</subfield>
+			<subfield code="h">Local commerce</subfield>
+			<subfield code="j">By city</subfield>
+			<subfield code="p">153</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00972nw   2200193n  4500</leader>
+		<controlfield tag="001">CF 94024867</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528095450.0</controlfield>
+		<controlfield tag="008">930129acaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94024867</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">P1</subfield>
+			<subfield code="c">P1091</subfield>
+			<subfield code="j">Philology.  Linguistics</subfield>
+		</datafield>
+		<datafield tag="453" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">P120.52</subfield>
+			<subfield code="h">Philology.  Linguistics</subfield>
+			<subfield code="h">Language.  Linguistic theory.  Comparative grammar</subfield>
+			<subfield code="h">Science of language (Linguistics)</subfield>
+			<subfield code="j">Periodicals, societies, collections, etc.</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">P120.52</subfield>
+			<subfield code="c">P149</subfield>
+			<subfield code="h">Philology.  Linguistics</subfield>
+			<subfield code="h">Language.  Linguistic theory.  Comparative grammar</subfield>
+			<subfield code="j">Science of language (Linguistics)</subfield>
+			<subfield code="t">Philology.  Linguistics</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">GN452</subfield>
+			<subfield code="c">GN452.5</subfield>
+			<subfield code="h">Anthropology</subfield>
+			<subfield code="h">Ethnology.  Social and cultural anthropology</subfield>
+			<subfield code="h">Cultural traits, customs, and institutions</subfield>
+			<subfield code="h">Intellectual life</subfield>
+			<subfield code="j">Communication</subfield>
+			<subfield code="t">Linguistics</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">Z40.A3</subfield>
+			<subfield code="c">Z40.Z</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="j">General works.  History</subfield>
+			<subfield code="t">Philology and linguistics</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Philology</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Linguistics</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00757nw   2200169n  4500</leader>
+		<controlfield tag="001">CF 94030130</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528100048.0</controlfield>
+		<controlfield tag="008">930525acaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94030130</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">TR824</subfield>
+			<subfield code="c">TR835</subfield>
+			<subfield code="h">Photography</subfield>
+			<subfield code="h">Applied photography</subfield>
+			<subfield code="j">Photographic reproduction.  Photocopying processes</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">Z48</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="j">Processes of duplicating (manifolding)</subfield>
+			<subfield code="t">Photographic reproduction</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">Z265</subfield>
+			<subfield code="c">Z265.5</subfield>
+			<subfield code="h">Book industries and trade</subfield>
+			<subfield code="h">Printing</subfield>
+			<subfield code="j">Representation of reproduction of books, documents, etc., by photography, microphotography, and other means</subfield>
+			<subfield code="t">technical aspects of photographic reproduction</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Photographic reproduction</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Photocopying processes</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00491nw   2200145n  4500</leader>
+		<controlfield tag="001">CF 94030241</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528100056.0</controlfield>
+		<controlfield tag="008">930529aaaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94030241</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">TR1045</subfield>
+			<subfield code="h">Photography</subfield>
+			<subfield code="h">Photomechanical processes</subfield>
+			<subfield code="h">Electrophotography</subfield>
+			<subfield code="h">Electrostatic printing</subfield>
+			<subfield code="j">Xerography</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">Z48</subfield>
+			<subfield code="h">Books (General).  Writing.  Pleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="j">Duplicating processes.  Copying services</subfield>
+			<subfield code="t">Xerography</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Xerography</subfield>
+			<subfield code="b">Electrostatic printing</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00480nw   2200169n  4500</leader>
+		<controlfield tag="001">CF 94041099</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528101339.0</controlfield>
+		<controlfield tag="008">930914accaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94041099</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">Z4</subfield>
+			<subfield code="c">Z115.72</subfield>
+			<subfield code="j">Books (General).  Writing.  Paleography</subfield>
+		</datafield>
+		<datafield tag="453" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">ZA4149.2</subfield>
+			<subfield code="h">Information resources (General)</subfield>
+			<subfield code="h">Information in specific formats or media</subfield>
+			<subfield code="j">Books and other print media</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Books (General)</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Paleography</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Writing</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>01127nw   2200193n  4500</leader>
+		<controlfield tag="001">CF 94041108</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528101339.0</controlfield>
+		<controlfield tag="008">930914acaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94041108</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">Z40</subfield>
+			<subfield code="c">Z104.5</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="j">Writing</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">Z6081</subfield>
+			<subfield code="h">Subject bibliography</subfield>
+			<subfield code="j">Graphology</subfield>
+			<subfield code="t">Writing</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">P211</subfield>
+			<subfield code="c">P211.5</subfield>
+			<subfield code="h">Philology.  Linguistics</subfield>
+			<subfield code="h">Language.  Linguistic theory.  Comparative grammar</subfield>
+			<subfield code="h">Comparative grammar</subfield>
+			<subfield code="h">General special</subfield>
+			<subfield code="j">Written communication.  History of writing and alphabet</subfield>
+			<subfield code="t">general works on writing</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">BF889</subfield>
+			<subfield code="c">BF905</subfield>
+			<subfield code="h">Psychology</subfield>
+			<subfield code="j">Graphology.  Study of handwriting</subfield>
+			<subfield code="t">Writing, autographs, penmanship</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">Z7004.W69</subfield>
+			<subfield code="h">Subject bibliography</subfield>
+			<subfield code="h">Philology and linguistics</subfield>
+			<subfield code="h">Special topics, A-Z</subfield>
+			<subfield code="j">Writing systems.  Written communication</subfield>
+			<subfield code="t">Writing</subfield>
+		</datafield>
+		<datafield tag="680" ind1="0" ind2=" ">
+			<subfield code="i">Class here works on the physical appearance or production of writing.  For works on the typology and the history of writing systems and the alphabet, or on the relation between a writing system and the sounds or language that it represents, see P211-P214</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Writing</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00300nw   2200121n  4500</leader>
+		<controlfield tag="001">CF 94041110</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528101340.0</controlfield>
+		<controlfield tag="008">930914abaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94041110</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">Z40.A3</subfield>
+			<subfield code="c">Z40.Z</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="j">General works.  History</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00779nw   2200217n  4500</leader>
+		<controlfield tag="001">CF 94041111</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528101340.0</controlfield>
+		<controlfield tag="008">930914acaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94041111</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">Z41.A2</subfield>
+			<subfield code="c">Z42.5</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="j">Autographs.  Signatures</subfield>
+		</datafield>
+		<datafield tag="453" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">CT205.2</subfield>
+			<subfield code="h">Biography</subfield>
+			<subfield code="h">General collective biography</subfield>
+			<subfield code="j">Autographs</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">Z105</subfield>
+			<subfield code="c">Z115.72</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="j">Manuscripts.  Paleography</subfield>
+			<subfield code="t">Autographs</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">Z5615</subfield>
+			<subfield code="h">Subject bibliography</subfield>
+			<subfield code="j">Collectors and collecting</subfield>
+			<subfield code="t">Autographs</subfield>
+		</datafield>
+		<datafield tag="680" ind1="0" ind2=" ">
+			<subfield code="i">Including forgery, collecting of autographs, etc.</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Autographs</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Signatures</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Forgery</subfield>
+			<subfield code="b">Books</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Autographs, Collecting of</subfield>
+			<subfield code="b">Books</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00397nw   2200133n  4500</leader>
+		<controlfield tag="001">CF 94041115</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528101340.0</controlfield>
+		<controlfield tag="008">930914aaaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94041115</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">Z42.3.A7</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="h">Autographs.  Signatures</subfield>
+			<subfield code="h">Autographs of classes of persons and ethnic groups, A-Z</subfield>
+			<subfield code="j">Artists</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Artists</subfield>
+			<subfield code="b">Autographs</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00360nw   2200121n  4500</leader>
+		<controlfield tag="001">CF 94041116</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528101340.0</controlfield>
+		<controlfield tag="008">930914abaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94041116</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">Z42.3.A</subfield>
+			<subfield code="c">Z42.3.Z</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="h">Autographs.  Signatures</subfield>
+			<subfield code="j">Autographs of classes of persons and ethnic groups, A-Z</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00397nw   2200133n  4500</leader>
+		<controlfield tag="001">CF 94041117</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528101340.0</controlfield>
+		<controlfield tag="008">930915aaaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94041117</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">Z42.3.A9</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="h">Autographs.  Signatures</subfield>
+			<subfield code="h">Autographs of classes of persons and ethnic groups, A-Z</subfield>
+			<subfield code="j">Authors</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Authors</subfield>
+			<subfield code="b">Autographs</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00667nw   2200169n  4500</leader>
+		<controlfield tag="001">CF 94041118</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528101340.0</controlfield>
+		<controlfield tag="008">930915aaaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94041118</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">Z42.3.K5</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="h">Autographs.  Signatures</subfield>
+			<subfield code="h">Autographs of classes of persons and ethnic groups, A-Z</subfield>
+			<subfield code="j">Kings and rulers.  Royalty</subfield>
+		</datafield>
+		<datafield tag="453" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">Z42.3.R682</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="h">Autographs.  Signatures</subfield>
+			<subfield code="h">Autographs of classes of persons and ethnic groups, A-Z</subfield>
+			<subfield code="j">Royalty</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Kings and rulers</subfield>
+			<subfield code="b">Autographs</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Rulers</subfield>
+			<subfield code="b">Autographs</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Royalty</subfield>
+			<subfield code="b">Autographs</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00403nw   2200133n  4500</leader>
+		<controlfield tag="001">CF 94041119</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528101340.0</controlfield>
+		<controlfield tag="008">930915aaaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94041119</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">Z42.3.P7</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="h">Autographs.  Signatures</subfield>
+			<subfield code="h">Autographs of classes of persons and ethnic groups, A-Z</subfield>
+			<subfield code="j">Presidents</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Presidents</subfield>
+			<subfield code="b">Autographs</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>01025nw   2200217n  4500</leader>
+		<controlfield tag="001">CF 94041138</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528101342.0</controlfield>
+		<controlfield tag="008">930915aaaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94041138</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">Z48</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="j">Duplicating processes.  Copying services</subfield>
+		</datafield>
+		<datafield tag="453" ind1="0" ind2=" ">
+			<subfield code="w">j</subfield>
+			<subfield code="a">HD9999.C748</subfield>
+			<subfield code="h">Economic history and conditions</subfield>
+			<subfield code="h">Special industries and trades</subfield>
+			<subfield code="h">Miscellaneous industries and trades, A-Z</subfield>
+			<subfield code="j">Copying process</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">Z265</subfield>
+			<subfield code="c">Z265.5</subfield>
+			<subfield code="h">Book industries and trade</subfield>
+			<subfield code="h">Printing</subfield>
+			<subfield code="j">Representation or reproduction of books, documents, etc., by photography, microphotography, and other means</subfield>
+			<subfield code="t">Processes of duplicating</subfield>
+		</datafield>
+		<datafield tag="553" ind1="0" ind2=" ">
+			<subfield code="w">l</subfield>
+			<subfield code="a">HF5541.C8</subfield>
+			<subfield code="h">Commerce</subfield>
+			<subfield code="h">Business</subfield>
+			<subfield code="h">Equipment</subfield>
+			<subfield code="h">Other appliances</subfield>
+			<subfield code="j">Copying machines</subfield>
+			<subfield code="t">Process of duplicating</subfield>
+		</datafield>
+		<datafield tag="680" ind1="0" ind2=" ">
+			<subfield code="i">Including processes other than printing directly from type, e. g. mimeographing, multilithing</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Copying services</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Duplicating processes</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Mimeographing</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Multilithing</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00453nw   2200169n  4500</leader>
+		<controlfield tag="001">CF 94041139</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528101342.0</controlfield>
+		<controlfield tag="008">930915acaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94041139</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">Z49</subfield>
+			<subfield code="c">Z51.5</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="j">Typewriters.  Typewriting.  Keyboards.  Keyboarding</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Keyboards</subfield>
+			<subfield code="b">Writing</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Keyboarding</subfield>
+			<subfield code="b">Writing</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Typewriters</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Typewriting</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00391nw   2200157n  4500</leader>
+		<controlfield tag="001">CF 94041283</controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">19960528101351.0</controlfield>
+		<controlfield tag="008">930916acaaaaaa</controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">CF 94041283</subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="084" ind1="0" ind2=" ">
+			<subfield code="a">lcc</subfield>
+		</datafield>
+		<datafield tag="153" ind1=" " ind2=" ">
+			<subfield code="a">Z53</subfield>
+			<subfield code="c">Z99</subfield>
+			<subfield code="h">Books (General).  Writing.  Paleography</subfield>
+			<subfield code="h">Writing</subfield>
+			<subfield code="j">Shorthand.  Stenography.  Phonography</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Shorthand</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Stenography</subfield>
+		</datafield>
+		<datafield tag="753" ind1=" " ind2=" ">
+			<subfield code="a">Phonography</subfield>
+		</datafield>
+	</record>
+</collection>

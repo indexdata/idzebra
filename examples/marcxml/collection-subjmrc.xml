@@ -1,0 +1,762 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://www.loc.gov/MARC21/slim" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/MARC21/slim
+http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd">
+	<record>
+		<leader>00669cz   2200169n  4500</leader>
+		<controlfield tag="001">sh 00005894 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010905102058.0</controlfield>
+		<controlfield tag="008">000411i| dnannbaba          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 00005894 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">IEN</subfield>
+			<subfield code="b">eng</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="073" ind1=" " ind2=" ">
+			<subfield code="a">H 1095</subfield>
+			<subfield code="a">H 1105</subfield>
+			<subfield code="a">H 1153</subfield>
+			<subfield code="a">H 1159</subfield>
+			<subfield code="z">lcsh</subfield>
+		</datafield>
+		<datafield tag="180" ind1=" " ind2=" ">
+			<subfield code="x">Inventory control</subfield>
+		</datafield>
+		<datafield tag="480" ind1=" " ind2=" ">
+			<subfield code="x">Control, Inventory</subfield>
+		</datafield>
+		<datafield tag="667" ind1=" " ind2=" ">
+			<subfield code="a">Further subdivide geographically only under types of industries, organizations, and facilities.</subfield>
+		</datafield>
+		<datafield tag="680" ind1=" " ind2=" ">
+			<subfield code="i">Use as a topical subdivision under names of individual corporate bodies, military services, and types of industries, organizations, and facilities.</subfield>
+		</datafield>
+		<datafield tag="681" ind1=" " ind2=" ">
+			<subfield code="i">Reference under the heading</subfield>
+			<subfield code="a">Inventory control</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>01059cz   2200229n  4500</leader>
+		<controlfield tag="001">sh 85014644 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904152614.0</controlfield>
+		<controlfield tag="008">010724i| anannbabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85014644 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+			<subfield code="d">WaU</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">QL696.F32</subfield>
+			<subfield code="c">Zoology</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Black-shouldered kite</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Black-shouldered hawk</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="w">nne</subfield>
+			<subfield code="a">Black-winged kite</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Elanus caeruleus</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Kite, Black-shouldered</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Elanus</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Faanes, C.A. Habitat suitability index models. Black-shouldered kite, 1987:</subfield>
+			<subfield code="b">p. 1 (Elanus caeruleus)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">ITIS, July 24, 2001</subfield>
+			<subfield code="b">(Elanus caeruleus. Vernacular name: black-shouldered kite)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Banks, R.C. Obsolete English names of North American birds and their modern equivalents, via WWW, July 24, 2001</subfield>
+			<subfield code="b">(old names: hawk, black-shouldered; kite, white-tailed; current name: kite, black-shouldered; sci. name: Elanus caeruleus)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">The Sibley-Monroe classification of the world's birds, via WWW, July 24, 2001</subfield>
+			<subfield code="b">(Elanus caeruleus, Black-winged Kite)</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00292cz   2200121n  4500</leader>
+		<controlfield tag="001">sh 85017490 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010905120454.0</controlfield>
+		<controlfield tag="008">010820i| anannbabn          |n ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85017490 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">BQ1126</subfield>
+			<subfield code="b">BQ1129</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Buddhism</subfield>
+			<subfield code="x">Sacred books</subfield>
+			<subfield code="x">Preservation</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00627cz   2200169n  4500</leader>
+		<controlfield tag="001">sh 85024268 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904173144.0</controlfield>
+		<controlfield tag="008">010813i| anannbabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85024268 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Malaysian drama (Chinese)</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="w">nne</subfield>
+			<subfield code="a">Chinese drama</subfield>
+			<subfield code="z">Malaysia</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="w">nne</subfield>
+			<subfield code="a">Chinese drama</subfield>
+			<subfield code="x">Malaysian authors</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Malaysian literature (Chinese)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Work cat.: Seng, Y.C. Modern Chinese drama in Malaysia (1919-1969) : its development and representative playwrights, thesis, 1993.</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Ding, C.M. Perempuan yang memecahkan cermin : drama Mahua, 1977.</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00277cz   2200121n  4500</leader>
+		<controlfield tag="001">sh 85024427 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904084521.0</controlfield>
+		<controlfield tag="008">860211|| anannbabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85024427 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Ojibwa Indians</subfield>
+			<subfield code="v">Treaties</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Treaties</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00301cz   2200121n  4500</leader>
+		<controlfield tag="001">sh 85024828 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904153651.0</controlfield>
+		<controlfield tag="008">010717|| anannbabn          |n ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85024828 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">M2101.5</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Choruses, Sacred (Unison) with instrumental ensemble</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>01167cz   2200229n  4500</leader>
+		<controlfield tag="001">sh 85028571 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904160402.0</controlfield>
+		<controlfield tag="008">010723 | anannbabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85028571 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Colonization</subfield>
+		</datafield>
+		<datafield tag="360" ind1=" " ind2=" ">
+			<subfield code="i">subdivision</subfield>
+			<subfield code="a">Colonization</subfield>
+			<subfield code="i">under names of countries, etc., and under classes of persons and ethnic groups, e.g.</subfield>
+			<subfield code="a">Africa--Colonization; African Americans--Colonization; Indians of North America--Colonization; Mennonites--Colonization</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Colonisation</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Imperialism</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Land settlement</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="a">Colonies</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="a">Decolonization</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="a">Emigration and immigration</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">LC database, July 23, 2001</subfield>
+			<subfield code="b">(titles: colonisation)</subfield>
+		</datafield>
+		<datafield tag="680" ind1=" " ind2=" ">
+			<subfield code="i">Here are entered works on the policy of settling immigrants or nationals in colonial areas. Works on migration from one country to another are entered under</subfield>
+			<subfield code="a">Emigration and immigration.</subfield>
+			<subfield code="i">Works on migration within a country are entered under</subfield>
+			<subfield code="a">Migration, Internal.</subfield>
+			<subfield code="i">Works on general colonial policy, including land settlement, are entered under</subfield>
+			<subfield code="a">Colonies.</subfield>
+		</datafield>
+		<datafield tag="681" ind1=" " ind2=" ">
+			<subfield code="i">Note under</subfield>
+			<subfield code="a">Agricultural colonies</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>01138cz   2200253n  4500</leader>
+		<controlfield tag="001">sh 85029492 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904160459.0</controlfield>
+		<controlfield tag="008">010723i| anannbabn          |b ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85029492 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+			<subfield code="d">NNU</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">HV6773</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Computer crimes</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Computer fraud</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Computers</subfield>
+			<subfield code="x">Law and legislation</subfield>
+			<subfield code="x">Criminal provisions</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Computers and crime</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Cyber crimes</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Cybercrimes</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Electronic crimes (Computer crimes)</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Crime</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="a">Privacy, Right of</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">00351496: Adamski, A. Prawo kame komputerowe, c2000.</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Excite WWW directory of subjects, July 10, 2001</subfield>
+			<subfield code="b">(cybercrimes; subcategory under Criminal, Branches of law, Law, Education)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Electronic crime needs assessment for state and local law enforcement, 2001:</subfield>
+			<subfield code="b">glossary, p. 41 (electronic crime includes but is not limited to fraud, theft, forgery, child pornography or exploitation, stalking, traditional white-collar crimes, privacy violations, illegal drug transactions, espionage, computer intrusions; no synonyms given)</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00376cz   2200145n  4500</leader>
+		<controlfield tag="001">sh 85030618 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010905122154.0</controlfield>
+		<controlfield tag="008">010726ic anannbabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85030618 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">M1039.4.Y35</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Concertos (Yang qin)</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="w">nne</subfield>
+			<subfield code="a">Concertos (Yang chʿin)</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="w">nne</subfield>
+			<subfield code="a">Concertos (Yang chʿin with orchestra)</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00330cz   2200145n  4500</leader>
+		<controlfield tag="001">sh 85030622 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010905124622.0</controlfield>
+		<controlfield tag="008">860211i| anannbabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85030622 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">ML42</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Concert programs</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="w">nne</subfield>
+			<subfield code="a">Concerts</subfield>
+			<subfield code="v">Programs</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Programs</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00655cz   2200193n  4500</leader>
+		<controlfield tag="001">sh 85030804 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904160553.0</controlfield>
+		<controlfield tag="008">010709i| anannbabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85030804 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">ML458</subfield>
+			<subfield code="c">History</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">MT85</subfield>
+			<subfield code="c">Instruction</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Conducting</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="w">nne</subfield>
+			<subfield code="a">Conducting (Music)</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Music</subfield>
+			<subfield code="x">Performance</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Massin. De la variation, c2000.</subfield>
+		</datafield>
+		<datafield tag="680" ind1=" " ind2=" ">
+			<subfield code="i">Here are entered works on orchestral conducting or a combination of orchestral and choral conducting. Works on choral conducting are entered under</subfield>
+			<subfield code="a">Choral conducting.</subfield>
+		</datafield>
+		<datafield tag="681" ind1=" " ind2=" ">
+			<subfield code="i">Note under</subfield>
+			<subfield code="a">Choral conducting</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00423cz   2200157n  4500</leader>
+		<controlfield tag="001">sh 85035207 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904163338.0</controlfield>
+		<controlfield tag="008">010724i| anannbabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85035207 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">RC136.7</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Cysticercosis</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Cysticercus disease</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Cestode diseases</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Intl. dict. med. biol.</subfield>
+			<subfield code="b">(cysticercosis, also called cysticercus disease)</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00270cz   2200109n  4500</leader>
+		<controlfield tag="001">sh 85035327 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010905094850.0</controlfield>
+		<controlfield tag="008">860211|| anannbabn          |n ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85035327 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+		</datafield>
+		<datafield tag="151" ind1=" " ind2=" ">
+			<subfield code="a">Czechoslovakia</subfield>
+			<subfield code="x">Politics and government</subfield>
+			<subfield code="y">1938-1945</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00644cz   2200229n  4500</leader>
+		<controlfield tag="001">sh 85042675 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904162409.0</controlfield>
+		<controlfield tag="008">010709i| anannbabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85042675 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">MT80</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Embellishment (Music)</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Diminution (Music)</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Ornamentation (Music)</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Ornaments (Music)</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Music</subfield>
+			<subfield code="x">Performance</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Performance practice (Music)</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="a">Musical notation</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="a">Variation (Music)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Heim, N.M. Ornamentation for the clarinetist, c1993.</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Massin. De la variation, c2000.</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00469cz   2200181n  4500</leader>
+		<controlfield tag="001">sh 85042676 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904162503.0</controlfield>
+		<controlfield tag="008">010709|| anannbabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85042676 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">MT80</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Embellishment (Vocal music)</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Colorature</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Fioriture</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Embellishment (Music)</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Vocal music</subfield>
+			<subfield code="x">History and criticism</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Massin. De la variation, c2000.</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00627cz   2200193n  4500</leader>
+		<controlfield tag="001">sh 85044605 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904170102.0</controlfield>
+		<controlfield tag="008">010726ic anannbabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85044605 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">MT335.E7</subfield>
+			<subfield code="c">Instruction</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Er hu</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="w">nne</subfield>
+			<subfield code="a">Erh hu</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Erhu</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Musical instruments</subfield>
+			<subfield code="z">China</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Stringed instruments, Bowed</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Chiang, C. Jiang Jian-hua plays compositions for er-hu and symphony orchestra [SR] p1988</subfield>
+			<subfield code="b">(erhu)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">New Grove dict. musicl instruments:</subfield>
+			<subfield code="b">(erhu (erh-hu) 2 strong fiddle of the Han Chinese)</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00339cz   2200133n  4500</leader>
+		<controlfield tag="001">sh 85044606 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904170152.0</controlfield>
+		<controlfield tag="008">010724ic anannbabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85044606 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Er hu and yang qin music</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="w">nne</subfield>
+			<subfield code="a">Erh hu and yang chʿin music</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Yang qin and er hu music</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00610cz   2200157n  4500</leader>
+		<controlfield tag="001">sh 85044607 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904170250.0</controlfield>
+		<controlfield tag="008">010726ic anannbabn          |a ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85044607 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">M59.E7</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Er hu music</subfield>
+		</datafield>
+		<datafield tag="360" ind1=" " ind2=" ">
+			<subfield code="i">headings for forms and types of music that include "er hu" and headings with medium of performance that include "er hu"</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="w">nne</subfield>
+			<subfield code="a">Erh hu music</subfield>
+		</datafield>
+		<datafield tag="680" ind1=" " ind2=" ">
+			<subfield code="i">Here are entered compositions not in a specific form or of a specific type for solo er hu, and collections of compositions in several forms or types for solo er hu.</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00705cz   2200181n  4500</leader>
+		<controlfield tag="001">sh 85049599 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904172700.0</controlfield>
+		<controlfield tag="008">010719i| anannbabn          |b ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85049599 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+			<subfield code="d">WaU</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">QL737.R68</subfield>
+			<subfield code="c">Zoology</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Flying squirrels</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">Petauristinae</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Sciuridae</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Squirrels</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Am. heritage dict. of the Eng. lang., c2000</subfield>
+			<subfield code="b">(flying squirrel: any of various nocturnal squirrels of the genera Pteromys, Petaurista, Glaucomys, and related genera, having membranes along each side of the body between the forelegs and hind legs that enable it to glide between trees)</subfield>
+		</datafield>
+		<datafield tag="675" ind1=" " ind2=" ">
+			<subfield code="a">ITIS, July 19, 2001</subfield>
+		</datafield>
+	</record>
+	<record>
+		<leader>00842cz   2200205n  4500</leader>
+		<controlfield tag="001">sh 85055232 </controlfield>
+		<controlfield tag="003">DLC</controlfield>
+		<controlfield tag="005">20010904172753.0</controlfield>
+		<controlfield tag="008">010719i| anannbabn          |b ana      </controlfield>
+		<datafield tag="010" ind1=" " ind2=" ">
+			<subfield code="a">sh 85055232 </subfield>
+		</datafield>
+		<datafield tag="040" ind1=" " ind2=" ">
+			<subfield code="a">DLC</subfield>
+			<subfield code="c">DLC</subfield>
+			<subfield code="d">DLC</subfield>
+			<subfield code="d">WaU</subfield>
+		</datafield>
+		<datafield tag="053" ind1=" " ind2="0">
+			<subfield code="a">QL737.R68</subfield>
+			<subfield code="c">Zoology</subfield>
+		</datafield>
+		<datafield tag="150" ind1=" " ind2=" ">
+			<subfield code="a">Glaucomys</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">American flying squirrels</subfield>
+		</datafield>
+		<datafield tag="450" ind1=" " ind2=" ">
+			<subfield code="a">New World flying squirrels</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Flying squirrels</subfield>
+		</datafield>
+		<datafield tag="550" ind1=" " ind2=" ">
+			<subfield code="w">g</subfield>
+			<subfield code="a">Sciuridae</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">ITIS, July 19, 2001</subfield>
+			<subfield code="b">(Glaucomys. Vernacular names: New World flying squirrels; American flying squirrels. Subfamily: Pteromyinae. Family: Sciuridae)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Mammal species of the world, via WWW, July 19, 2001</subfield>
+			<subfield code="b">(Glaucomys. Common name: American flying squirrels)</subfield>
+		</datafield>
+		<datafield tag="670" ind1=" " ind2=" ">
+			<subfield code="a">Walker's mammals of the world, via WWW, July 19, 2001</subfield>
+			<subfield code="b">(Rodentia; Sciuridae; Glaucomys: New World Flying Squirrels)</subfield>
+		</datafield>
+	</record>
+</collection>
