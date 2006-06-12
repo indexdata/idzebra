@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.13 2006-06-12 09:27:00 marc Exp $
+dnl $Id: configure.ac,v 1.14 2006-06-12 23:46:21 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[1.4.0],[adam@indexdata.dk])
@@ -287,7 +287,12 @@ AC_DEFUN([ZEBRA_MODULE],[
 	   fi
         fi
 	m=`echo $1|tr .- __`
-	if test "$myen" = "shared"; then
+	if test "$myen" = "no"; then
+	   AC_MSG_RESULT([disabled])
+	elif test "$2" = "disabled"; then
+	   AC_MSG_RESULT([disabled])
+	   AC_MSG_ERROR([Cannot enable mod-$1 because of missing libs (XML, etc)])
+	elif test "$myen" = "shared"; then
 	   AC_MSG_RESULT([shared])
 	   SHARED_MODULE_LA="${SHARED_MODULE_LA} mod-$1.la"
 	elif test "$myen" = "static" -o "$myen" = "yes"; then
@@ -296,8 +301,6 @@ AC_DEFUN([ZEBRA_MODULE],[
 	   STATIC_MODULE_LADD="${STATIC_MODULE_LADD} \$(mod_${m}_la_LADD)"
 	   modcpp=`echo $1|tr abcdefghijklmnopqrstuvwxyz- ABCDEFGHIJKLMNOPQRSTUVWXYZ_`
 	   AC_DEFINE_UNQUOTED([IDZEBRA_STATIC_$modcpp])
-	elif test "$myen" = "no"; then
-	   AC_MSG_RESULT([disabled])
 	else
 	   AC_MSG_RESULT([$myen])
 	   AC_MSG_ERROR([invalid --enable-mod-$1 value. Use on,off,static or shared])
@@ -312,15 +315,15 @@ ZEBRA_MODULE(safari,shared,  [  --enable-mod-safari Safari filter (DBC)])
 if test "$ac_cv_header_expat_h" = "yes"; then
    def="shared"
 else
-   def="no"
+   def="disabled"
 fi
 ZEBRA_MODULE(grs-xml,[$def], [  --enable-mod-grs-xml    XML filter (Expat based)])
 if test "$XSLT_VER"; then
    def="shared"
 else
-   def="no"
+   def="disabled"
 fi
-ZEBRA_MODULE(alvis,[$def],   [  --enable-mod-alvis      ALVIS filter])
+ZEBRA_MODULE(alvis,[$def],   [  --enable-mod-alvis      ALVIS filter (Requires libxslt)])
 dnl ------ ANSI C Header files
 AC_STDC_HEADERS
 if test "$ac_cv_header_stdc" = "no"; then
