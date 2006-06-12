@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.40 2006-05-30 13:21:14 adam Exp $
+## $Id: Makefile.am,v 1.41 2006-06-12 09:39:18 marc Exp $
 
 noinst_PROGRAMS = apitest kdump
 
@@ -17,8 +17,8 @@ libidzebra_api_la_SOURCES = \
   recindex.c  recindex.h recindxp.h reckeys.c reckeys.h recstat.c retrieve.c \
   sortidx.c symtab.c \
   update_path.c update_file.c trunc.c \
-  zebraapi.c zinfo.c zinfo.h zserver.h zsets.c zrpn.c \
-  zvrank.c
+  zebraapi.c zinfo.c zinfo.h zserver.h zsets.c zrpn.c
+
 
 bin_PROGRAMS = zebraidx zebrasrv zebrash
 

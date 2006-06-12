@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.46 2006-05-30 23:08:29 adam Exp $
+## $Id: Makefile.am,v 1.47 2006-06-12 09:39:17 marc Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUBDIRS = common
@@ -78,7 +78,7 @@ man_MANS = $(MANFILES)
 
 EXTRA_DIST = $(XMLFILES) $(REFFILES) \
 	$(doc_DATA) $(EPSFILES) $(man_MANS) $(REFFILES) \
-	zvrank.txt marc_indexing.xml entities.ent local.ent.in
+	marc_indexing.xml entities.ent local.ent.in
 
 zebraidx.1: zebraidx-man.xml zebraidx-options.xml zebraidx-commands.xml
 	$(MAN_COMPILE) $(srcdir)/zebraidx-man.xml

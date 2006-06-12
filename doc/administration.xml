@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.33 2006-05-02 12:55:18 mike Exp $ -->
+ <!-- $Id: administration.xml,v 1.34 2006-06-12 09:39:18 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -1033,10 +1033,9 @@
     <screen> 
     rank: rank-1        # default TDF-IDF like
     rank: rank-static   # dummy do-nothing
-    rank: zvrank        # configurable, experimental TDF-IDF like
     </screen>
-    Notice that the <literal>rank-1</literal> and
-    <literal>zvrank</literal> do not use the static rank 
+    Notice that the <literal>rank-1</literal> algorithm
+    does not use the static rank 
     information in the list keys, and will produce the same ordering
     with or without static ranking enabled.
    </para>
