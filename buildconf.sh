@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: buildconf.sh,v 1.20 2006-05-24 19:12:46 adam Exp $
+# $Id: buildconf.sh,v 1.21 2006-06-12 23:44:39 adam Exp $
 if automake --version|head -1 |grep '1\.[4-7]'; then
     echo "automake 1.4-1.7 is active. You should use automake 1.8 or later"
     if test -f /etc/debian_version; then
@@ -74,8 +74,5 @@ When building from a CVS checkout, you need these Debian packages:
   libyaz-dev, libexpat1-dev, tcl8.4-dev, libbz2-dev
 and if you want the Alvis/XSLT filter, you also need:
   libxslt1-dev
-
-To build against a YAZ in an adjacent dirctory, use:
-	CFLAGS="-g -O0" LDFLAGS="-L`pwd`/../yaz/src/.libs" CPPFLAGS="-I../yaz/include" ./configure
 EOF
 fi
