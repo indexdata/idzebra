@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.35 2006-06-12 11:48:24 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.36 2006-06-12 11:59:11 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -989,8 +989,8 @@
     <screen>
     staticrank: 1 
     </screen> 
-    directive in the main core Zebra config file, the internal document
-    keys used for ordering are augmented by a preceeding integer, which
+    directive in the main core Zebra configuration file, the internal document
+    keys used for ordering are augmented by a preceding integer, which
     contains the static rank of a given document, and the index lists
     are ordered 
     first by ascending static rank,
@@ -1002,7 +1002,7 @@
    <para>
     The experimental <literal>alvis</literal> filter provides a
     directive to fetch static rank information out of the indexed XML
-    records, thus making <emphasis>all</emphasis> hit sets orderd
+    records, thus making <emphasis>all</emphasis> hit sets ordered
     after <emphasis>ascending</emphasis> static
     rank, and for those doc's which have the same static rank, ordered
     after <emphasis>ascending</emphasis> doc <literal>ID</literal>.
@@ -1019,14 +1019,14 @@
     ranking or score functions. These functions return positive
     integer scores, where <emphasis>highest</emphasis> score is 
     ``best'';
-    hit sets are sorted according to <emphasis>decending</emphasis> 
+    hit sets are sorted according to <emphasis>descending</emphasis> 
     scores (in contrary
     to the index lists which are sorted according to
     ascending rank number and document ID).
    </para>
    <para>
     Dynamic ranking is enabled by a directive like one of the
-    following in the zebra config file (use only one of these a time!):
+    following in the zebra configuration file (use only one of these a time!):
     <screen> 
     rank: rank-1        # default TDF-IDF like
     rank: rank-static   # dummy do-nothing
@@ -1061,9 +1061,9 @@
      algorithms, which only considers searching in one full-text
      index, this one works on multiple indexes at the same time.
      More precisely, 
-     Zebra does boolean queries and searches in specific adressed
+     Zebra does boolean queries and searches in specific addressed
      indexes (there are inverted indexes pointing from terms in the
-     dictionaly to documents and term positions inside documents). 
+     dictionary to documents and term positions inside documents). 
      It works like this:
      <variablelist>
       <varlistentry>
@@ -1124,7 +1124,7 @@
          </screen>
          searches for all documents which have the term 'Utah' on the
          body of text, and which have the term 'Springer' in the publisher
-         field, and sort them in the order of the relvance ranking made on
+         field, and sort them in the order of the relevance ranking made on
          the body-of-text index only. 
         </para>
        </listitem>
@@ -1134,7 +1134,7 @@
        <term>Hit list merging</term>
        <listitem>
         <para>
-         Fourth, the atomic hist lists are merged according to the boolean
+         Fourth, the atomic hit lists are merged according to the boolean
          conditions to a final hit list of documents to be returned.
         </para>
         <para>
@@ -1313,7 +1313,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
      <para>
       <literal>Dynamic ranking</literal> is not compatible
       with <literal>estimated hit sizes</literal>, as all documents in
-      a hit set must be acessed to compute the correct placing in a
+      a hit set must be accessed to compute the correct placing in a
       ranking sorted list. Therefore the use attribute setting
       <literal>@attr&nbsp;2=102</literal> clashes with 
       <literal>@attr&nbsp;9=integer</literal>. 
@@ -1376,7 +1376,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
         xelm /*/@created               Date/time-added-to-db:s
      </screen>
      to any <literal>.abs</literal> record-indexing configuration file.
-     Similarily, one could add an indexing element of the form
+     Similarly, one could add an indexing element of the form
      <screen><![CDATA[       
       <z:index name="date-modified" type="s">
        <xsl:value-of select="some/xpath"/>
