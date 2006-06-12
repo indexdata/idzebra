@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.34 2006-06-12 09:39:18 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.35 2006-06-12 11:48:24 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -402,7 +402,7 @@
   <para>
    The default behavior of the Zebra system is to reference the
    records from their original location, i.e. where they were found when you
-   ran <literal>zebraidx</literal>.
+   run <literal>zebraidx</literal>.
    That is, when a client wishes to retrieve a record
    following a search operation, the files are accessed from the place
    where you originally put them - if you remove the files (without
@@ -946,10 +946,8 @@
     There are cases, however, where relevance of hit set documents is
     highly dependent on the query processed.
     Simply put, <literal>dynamic relevance ranking</literal> 
-    sorts a set of retrieved 
-    records such
-    that those most likely to be relevant to your request are
-    retrieved first. 
+    sorts a set of retrieved records such that those most likely to be
+    relevant to your request are retrieved first. 
     Internally, Zebra retrieves all documents that satisfy your
     query, and re-orders the hit list to arrange them based on
     a measurement of similarity between your query and the content of
@@ -1021,8 +1019,7 @@
     ranking or score functions. These functions return positive
     integer scores, where <emphasis>highest</emphasis> score is 
     ``best'';
-    hit sets are sorted according to
-    <emphasis>decending</emphasis> 
+    hit sets are sorted according to <emphasis>decending</emphasis> 
     scores (in contrary
     to the index lists which are sorted according to
     ascending rank number and document ID).
@@ -1034,25 +1031,8 @@
     rank: rank-1        # default TDF-IDF like
     rank: rank-static   # dummy do-nothing
     </screen>
-    Notice that the <literal>rank-1</literal> algorithm
-    does not use the static rank 
-    information in the list keys, and will produce the same ordering
-    with or without static ranking enabled.
    </para>
-   <para>
-    The dummy <literal>rank-static</literal> reranking/scoring
-    function returns just 
-    <literal>score = max int - staticrank</literal>
-    in order to preserve the static ordering of hit sets that would
-    have been produced had it not been invoked.
-    Obviously, to combine static and dynamic ranking usefully,
-    it is necessary
-    to make a new ranking 
-    function; this is left
-    as an exercise for the reader. 
-   </para>
-
-
+ 
    <para>
     Dynamic ranking is done at query time rather than
     indexing time (this is why we
@@ -1069,15 +1049,269 @@
      @attr 2=102 @attr 1=4 Eoraptor
     </screen>
    </para>
- 
+
+    <sect3 id="administration-ranking-dynamic-rank1">
+     <title>Dynamically ranking using PQF queries with the 'rank-1' 
+      algorithm</title>
+
    <para>
      The default <literal>rank-1</literal> ranking module implements a 
-     TF-IDF (Term Frequecy over Inverse Document Frequency) like algorithm.
+     TF/IDF (Term Frequecy over Inverse Document Frequency) like
+     algorithm. In contrast to the usual defintion of TF/IDF
+     algorithms, which only considers searching in one full-text
+     index, this one works on multiple indexes at the same time.
+     More precisely, 
+     Zebra does boolean queries and searches in specific adressed
+     indexes (there are inverted indexes pointing from terms in the
+     dictionaly to documents and term positions inside documents). 
+     It works like this:
+     <variablelist>
+      <varlistentry>
+       <term>Query Components</term>
+       <listitem>
+        <para>
+         First, the boolean query is dismantled into it's principal components,
+         i.e. atomic queries where one term is looked up in one index.
+         For example, the query
+         <screen>
+        @attr 2=102 @and @attr 1=1010 Utah @attr 1=1018 Springer
+         </screen>
+         is a boolean AND between the atomic parts
+         <screen>
+       @attr 2=102 @attr 1=1010 Utah
+         </screen>
+          and
+         <screen>
+       @attr 2=102 @attr 1=1018 Springer
+         </screen>
+         which gets processed each for itself.
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>Atomic hit lists</term>
+       <listitem>
+        <para>
+         Second, for each atomic query, the hit list of documents is
+         computed.
+        </para>
+        <para>
+         In this example, two hit lists for each index  
+         <literal>@attr 1=1010</literal>  and  
+         <literal>@attr 1=1018</literal> are computed.
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>Atomic scores</term>
+       <listitem>
+        <para>
+         Third, each document in the hit list is assigned a score (_if_ ranking
+         is enabled and requested in the query)  using a TF/IDF scheme.
+        </para>
+        <para>
+         In this example, both atomic parts of the query assign the magic
+         <literal>@attr 2=102</literal> relevance attribute, and are
+         to be used in the relevance ranking functions. 
+        </para>
+        <para>
+         It is possible to apply dynamic ranking on only parts of the
+         PQF query: 
+         <screen>
+          @and @attr 2=102 @attr 1=1010 Utah @attr 1=1018 Springer
+         </screen>
+         searches for all documents which have the term 'Utah' on the
+         body of text, and which have the term 'Springer' in the publisher
+         field, and sort them in the order of the relvance ranking made on
+         the body-of-text index only. 
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>Hit list merging</term>
+       <listitem>
+        <para>
+         Fourth, the atomic hist lists are merged according to the boolean
+         conditions to a final hit list of documents to be returned.
+        </para>
+        <para>
+        This step is always performed, independently of the fact that
+        dynamic ranking is enabled or not.
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>Document score computation</term>
+       <listitem>
+        <para>
+         Fifth, the total score of a document is computed as a linear
+         combination of the atomic scores of the atomic hit lists
+        </para>
+        <para>
+         Ranking weights may be used to pass a value to a ranking
+         algorithm, using the non-standard BIB-1 attribute type 9.
+         This allows one branch of a query to use one value while
+         another branch uses a different one.  For example, we can search
+         for <literal>utah</literal> in the 
+         <literal>@attr 1=4</literal> index with weight 30, as
+         well as in the <literal>@attr 1=1010</literal> index with weight 20:
+         <screen>
+         @attr 2=102 @or @attr 9=30 @attr 1=4 utah @attr 9=20 @attr 1=1010 city
+         </screen>
+        </para>
+        <para>
+         The default weight is
+         sqrt(1000) ~ 34 , as the Z39.50 standard prescribes that the top score
+         is 1000 and the bottom score is 0, encoded in integers.
+        </para>
+        <warning>
+         <para>
+          The ranking-weight feature is experimental. It may change in future
+          releases of zebra. 
+         </para>
+        </warning>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>Re-sorting of hit list</term>
+       <listitem>
+        <para>
+         Finally, the final hit list is re-ordered according to scores.
+        </para>
+       </listitem>
+      </varlistentry>
+     </variablelist>
+ 
+
+<!--
+Still need to describe the exact TF/IDF formula. Here's the info, need -->
+<!--to extract it in human readable form .. MC
+
+static int calc (void *set_handle, zint sysno, zint staticrank,
+                 int *stop_flag)
+{
+    int i, lo, divisor, score = 0;
+    struct rank_set_info *si = (struct rank_set_info *) set_handle;
+
+    if (!si->no_rank_entries)
+        return -1;   /* ranking not enabled for any terms */
+
+    for (i = 0; i < si->no_entries; i++)
+    {
+        yaz_log(log_level, "calc: i=%d rank_flag=%d lo=%d",
+                i, si->entries[i].rank_flag, si->entries[i].local_occur);
+        if (si->entries[i].rank_flag && (lo = si->entries[i].local_occur))
+            score += (8+log2_int (lo)) * si->entries[i].global_inv *
+                si->entries[i].rank_weight;
+    }
+    divisor = si->no_rank_entries * (8+log2_int (si->last_pos/si->no_entries));
+    score = score / divisor;
+    yaz_log(log_level, "calc sysno=" ZINT_FORMAT " score=%d", sysno, score);
+    if (score > 1000)
+        score = 1000;
+    /* reset the counts for the next term */
+    for (i = 0; i < si->no_entries; i++)
+        si->entries[i].local_occur = 0;
+    return score;
+}
+
+
+where lo = si->entries[i].local_occur is the local documents term-within-index frequency, si->entries[i].global_inv represents the IDF part (computed in static void *begin()), and
+si->entries[i].rank_weight is the weight assigner per index (default 34, or set in the @attr 9=xyz magic)
+
+Finally, the IDF part is computed as:
+
+static void *begin (struct zebra_register *reg,
+                    void *class_handle, RSET rset, NMEM nmem,
+                    TERMID *terms, int numterms)
+{
+    struct rank_set_info *si =
+        (struct rank_set_info *) nmem_malloc (nmem,sizeof(*si));
+    int i;
+
+    yaz_log(log_level, "rank-1 begin");
+    si->no_entries = numterms;
+    si->no_rank_entries = 0;
+    si->nmem=nmem;
+    si->entries = (struct rank_term_info *)
+        nmem_malloc (si->nmem, sizeof(*si->entries)*numterms);
+    for (i = 0; i < numterms; i++)
+    {
+        zint g = rset_count(terms[i]->rset);
+        yaz_log(log_level, "i=%d flags=%s '%s'", i,
+                terms[i]->flags, terms[i]->name );
+        if  (!strncmp (terms[i]->flags, "rank,", 5))
+        {
+            const char *cp = strstr(terms[i]->flags+4, ",w=");
+            si->entries[i].rank_flag = 1;
+            if (cp)
+                si->entries[i].rank_weight = atoi (cp+3);
+            else
+              si->entries[i].rank_weight = 34; /* sqrroot of 1000 */
+            yaz_log(log_level, " i=%d weight=%d g="ZINT_FORMAT, i,
+                     si->entries[i].rank_weight, g);
+            (si->no_rank_entries)++;
+        }
+        else
+            si->entries[i].rank_flag = 0;
+        si->entries[i].local_occur = 0;  /* FIXME */
+        si->entries[i].global_occur = g;
+        si->entries[i].global_inv = 32 - log2_int (g);
+        yaz_log(log_level, " global_inv = %d g = " ZINT_FORMAT,
+                (int) (32-log2_int (g)), g);
+        si->entries[i].term = terms[i];
+        si->entries[i].term_index=i;
+        terms[i]->rankpriv = &(si->entries[i]);
+    }
+    return si;
+}
+
+
+where g = rset_count(terms[i]->rset) is the count of all documents in this specific index hit list, and the IDF part then is
+
+ si->entries[i].global_inv = 32 - log2_int (g);
+   -->
+
    </para>
 
+
+    <para>
+    The <literal>rank-1</literal> algorithm
+    does not use the static rank 
+    information in the list keys, and will produce the same ordering
+    with or without static ranking enabled.
+    </para>
+ 
+    </sect3>
+
+    <!--
+    <sect3 id="administration-ranking-dynamic-rank1">
+     <title>Dynamically ranking PQF queries with the 'rank-static' 
+      algorithm</title>
+    <para>
+    The dummy <literal>rank-static</literal> reranking/scoring
+    function returns just 
+    <literal>score = max int - staticrank</literal>
+    in order to preserve the static ordering of hit sets that would
+    have been produced had it not been invoked.
+    Obviously, to combine static and dynamic ranking usefully,
+    it is necessary
+    to make a new ranking 
+    function; this is left
+    as an exercise for the reader. 
+   </para>
+    </sect3>
+    -->
+
+ 
    <warning>
      <para>
-      Notice that <literal>dynamic ranking</literal> is not compatible
+      <literal>Dynamic ranking</literal> is not compatible
       with <literal>estimated hit sizes</literal>, as all documents in
       a hit set must be acessed to compute the correct placing in a
       ranking sorted list. Therefore the use attribute setting
@@ -1086,58 +1320,46 @@
      </para>
    </warning>  
 
-   <para>
-     It is possible to apply dynamic ranking on only parts of the PQF query:
-     <screen>
-     @and @attr 2=102 @attr 1=1010 Utah @attr 1=1018 Springer
-     </screen>
-     searches for all documents which have the term 'Utah' on the
-     body of text, and which have the term 'Springer' in the publisher
-     field, and sort them in the order of the relvance ranking made on
-     the body-of-text index only. 
-   </para>
-    <para>
-     Ranking weights may be used to pass a value to a ranking
-     algorithm, using the non-standard BIB-1 attribute type 9.
-     This allows one branch of a query to use one value while
-     another branch uses a different one.  For example, we can search
-     for <literal>utah</literal> in the title index with weight 30, as
-     well as in the ``any'' index with weight 20:
-     <screen>
-     @attr 2=102 @or @attr 9=30 @attr 1=4 utah @attr 9=20 utah
-     </screen>
-    </para>
-    <warning>
+   <!--
+    we might want to add ranking like this:
+    UNPUBLISHED:
+    Simple BM25 Extension to Multiple Weighted Fields
+    Stephen Robertson, Hugo Zaragoza and Michael Taylor
+    Microsoft Research
+    ser@microsoft.com
+    hugoz@microsoft.com
+    mitaylor2microsoft.com
+   -->
+
+
+    <sect3 id="administration-ranking-dynamic-cql">
+     <title>Dynamically ranking CQL queries</title>
      <para>
-      The ranking-weight feature is experimental. It may change in future
-      releases of zebra, and is not production mature. 
+      Dynamic ranking can be enabled during sever side CQL
+      query expansion by adding <literal>@attr&nbsp;2=102</literal>
+      chunks to the CQL config file. For example
+      <screen>
+       relationModifier.relevant		= 2=102
+      </screen>
+      invokes dynamic ranking each time a CQL query of the form 
+      <screen>
+       Z> querytype cql
+       Z> f alvis.text =/relevant house
+      </screen>
+      is issued. Dynamic ranking can also be automatically used on
+      specific CQL indexes by (for example) setting
+      <screen>
+       index.alvis.text                        = 1=text 2=102
+      </screen>
+      which then invokes dynamic ranking each time a CQL query of the form 
+      <screen>
+       Z> querytype cql
+       Z> f alvis.text = house
+      </screen>
+      is issued.
      </para>
-    </warning>
-    
-   <para>
-     Notice that dynamic ranking can be enabled in sever side CQL
-     query expansion by adding <literal>@attr&nbsp;2=102</literal> to
-     the CQL config file. For example
-     <screen>
-      relationModifier.relevant		= 2=102
-     </screen>
-     invokes dynamic ranking each time a CQL query of the form 
-    <screen>
-     Z> querytype cql
-     Z> f alvis.text =/relevant house
-    </screen>
-     is issued. Dynamic ranking can also be automatically used on
-     specific CQL indexes by (for example) setting
-     <screen>
-      index.alvis.text                        = 1=text 2=102
-     </screen>
-     which then invokes dynamic ranking each time a CQL query of the form 
-    <screen>
-     Z> querytype cql
-     Z> f alvis.text = house
-    </screen>
-     is issued.
-   </para>
+     
+    </sect3>
 
     </sect2>
 
