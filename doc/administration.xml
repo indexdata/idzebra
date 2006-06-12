@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.36 2006-06-12 11:59:11 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.37 2006-06-12 12:07:53 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -1041,8 +1041,9 @@
     the Bib-1 relation attribute with
     value ``relevance'' to the PQF query (that is,
     <literal>@attr&nbsp;2=102</literal>, see also  
-    <ulink url="ftp://ftp.loc.gov/pub/z3950/defs/bib1.txt">
-     The BIB-1 Attribute Set Semantics</ulink>). 
+    <ulink url="http://www.loc.gov/z3950/agency/bib1.html">
+     The BIB-1 Attribute Set Semantics</ulink>, also in 
+      <ulink url="http://www.loc.gov/z3950/agency/defns/bib1.html">HTML</ulink>). 
     To find all articles with the word <literal>Eoraptor</literal> in
     the title, and present them relevance ranked, issue the PQF query:
     <screen>
