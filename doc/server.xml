@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.23 2006-06-13 09:27:01 marc Exp $ -->
+ <!-- $Id: server.xml,v 1.24 2006-06-13 13:45:08 marc Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -309,17 +309,7 @@
     </para>
     <para>
      The records in the explain database are of type 
-     <literal>grs.sgml</literal> and can be retrieved as
-     <literal>SUTRS</literal>, <literal>XML</literal>, 
-     <literal>GRS-1</literal> and  <literal>ASN.1</literal> Explain.
-    </para>
-    <para>
-     Classic Explain only defines retrieaval of Explain information
-     via ASN.1. Pratically no Z39.50 clients supports this. Fortunately
-     they don't have to - since Zebra allows retrieval of this information
-     in the other formats.
-    </para>
-    <para>
+     <literal>grs.sgml</literal>.
      The root element for the Explain grs.sgml records is 
      <literal>explain</literal>, thus 
      <filename>explain.abs</filename> is used for indexing.

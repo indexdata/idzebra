@@ -1,5 +1,5 @@
 <chapter id="querymodel">
- <!-- $Id: querymodel.xml,v 1.1 2006-06-13 09:27:01 marc Exp $ -->
+ <!-- $Id: querymodel.xml,v 1.2 2006-06-13 13:45:08 marc Exp $ -->
  <title>Query Model</title>
  
   <sect1 id="querymodel-overview">
@@ -8,8 +8,8 @@
    <para>
     Zebra is born as a networking Information Retrieval engine adhering
     to the international standards 
-    <ulink url="http://www.loc.gov/z3950/agency/">Z39.50</ulink> and
-    <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink>,
+    <ulink url="&url.z39.50;">Z39.50</ulink> and
+    <ulink url="&url.sru;">SRU</ulink>,
     and implement the query model defined there.
     Unfortunately, the Z39.50 query model has only defined a binary
     encoded representation, which is used as transport packaging in
@@ -29,7 +29,7 @@
    <para>
     In addition, Zebra can be configured to understand and map the 
     <literal>Common Query Language</literal>
-    (<ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>)
+    (<ulink url="&url.cql;">CQL</ulink>)
     to PQF. See an introduction on the mapping to the internal query
     representation in  
     <xref linkend="querymodel-cql-to-pqf"/>.
@@ -40,22 +40,281 @@
    <title>Prefix Query Format structure and syntax</title>
    <para>
     The 
-    <ulink url="http://indexdata.dk/yaz/doc/tools.tkl#PQF">PQF
-    grammer</ulink> is documented in the YAZ manual.
+    <ulink url="&url.yaz.pqf;">PQF
+    grammer</ulink> is documented in the YAZ manual, and shall not be
+    repeated here.
     This textual PQF representation
     is always during search mapped to the equivalent Zebra internal
     query parse tree. 
    </para>
 
+   <sect2 id="querymodel-pqf-tree">
+    <title>PQF tree structure</title>
    <para>
+    The PQF parse tree - or the equivalent textual representation -
+    may start with one specification of the 
+    <emphasis>attribute set</emphasis> used. Following is a query
+    tree, which 
+    consists of <emphasis>atomic query parts</emphasis>, eventually
+    paired by <emphasis>boolean binary operators</emphasis>, and 
+    finally  <emphasis>recursively combined </emphasis> into 
+     complex query trees.   
    </para>
+
+   <sect3 id="querymodel-attribute-sets">
+    <title>Attribute sets</title>
+    <para>
+      Attribute sets define the exact meaning and semantics of queries
+      issued. Zebra comes with some predefined attribute set
+      definitions, others can easily be defined and added to the
+      configuration.
+      <note>
+      The Zebra internal query procesing is modeled after 
+      the <literal>Bib1</literal> attribute set, and the non-use
+      attributes type 2-9 are hard-wired in. It is therefore essential
+      to be familiar with <xref linkend="querymodel-bib1"/>. 
+    </note>
+   </para>
+
+   <table id="querymodel-attribute-sets-table">
+    <caption>Attribute sets predefined in Zebra</caption>
+     <!--
+     <thead>
+      <tr><td>one</td><td>two</td></tr>
+     </thead>
+     -->
+     <tbody>
+      <tr>
+       <td><emphasis>exp-1</emphasis></td>
+       <td><literal>Explain</literal> attribute set</td>
+       <td>Special attribute set used on the special automagic
+       <literal>IR-Explain-1</literal> database to gain information on
+       server capabilities, database names, and database
+       and semantics.</td>
+      </tr>
+      <tr>
+       <td><emphasis>bib-1</emphasis></td>
+       <td><literal>Bib1</literal> attribute set</td>
+       <td>Standard PQF query language attribute set which defines the
+           semantics of Z39.50 searching. In addition, all of the
+       non-use attributes (type 2-9) define the Zebra internal query
+       processing</td>
+      </tr>
+      <tr>
+       <td><emphasis>gils</emphasis></td>
+       <td><literal>GILS</literal> attribute set</td>
+       <td>Extention to the <literal>Bib1</literal> attribute set.</td>
+      </tr>
+     </tbody>
+   </table>
+   </sect3>
+
+   <sect3 id="querymodel-boolean-operators">
+    <title>Boolean operators</title>
+    <para>
+      A pair of subquery trees, or of atomic queries, is combined
+      using the standard boolean operators into new query trees.
+    </para>
+
+   <table id="querymodel-boolean-operators-table">
+    <caption>Boolean operators</caption>
+     <!--
+     <thead>
+      <tr><td>one</td><td>two</td></tr>
+     </thead>
+     -->
+     <tbody>
+      <tr><td><emphasis>@and</emphasis></td>
+          <td>binary <literal>AND</literal> operator</td>
+          <td>Set intersection of two atomic queries hit sets</td>
+      </tr>
+      <tr><td><emphasis>@or</emphasis></td>
+          <td>binary <literal>OR</literal> operator</td>
+          <td>Set union of two atomic queries hit sets</td>
+      </tr>
+      <tr><td><emphasis>@not</emphasis></td>
+          <td>binary <literal>AND NOT</literal> operator</td>
+          <td>Set complement of two atomic queries hit sets</td>
+      </tr>
+      <tr><td><emphasis>@prox</emphasis></td>
+          <td>binary <literal>PROXIMY</literal> operator</td>
+          <td>Set intersection of two atomic queries hit sets. In 
+              addition, the intersection set is purged for all 
+              documents which do not satisfy the requested query 
+              term proximity. Usually a proper subset of the AND 
+              operation.</td>
+      </tr>
+     </tbody>
+   </table>
+
+   <para>
+      For example, we can combine the terms 
+      <emphasis>information</emphasis> and <emphasis>retrieval</emphasis> 
+      into different searches in the default index of the default
+      attribute set as follows.
+      Querying for the union of all documents containing the
+      terms <emphasis>information</emphasis> OR
+      <emphasis>retrieval</emphasis>: 
+     <screen>
+       @or information retrieval
+     </screen>
+   </para>
+   <para>
+      Querying for the intersection of all documents containing the
+      terms <emphasis>information</emphasis> AND
+      <emphasis>retrieval</emphasis>: 
+      The hit set is a subset of the coresponding
+      OR query.
+     <screen>
+       @and information retrieval
+     </screen>
+   </para>
+   <para>
+      Querying for the intersection of all documents containing the
+      terms <emphasis>information</emphasis> AND
+      <emphasis>retrieval</emphasis>, taking proximity into account:
+      The hit set is a subset of the coresponding
+      AND query.
+     <screen>
+       @prox information retrieval
+     </screen>
+   </para>
+   <para>
+      Querying for the intersection of all documents containing the
+      terms <emphasis>information</emphasis> AND
+      <emphasis>retrieval</emphasis>, in the same order and near each
+      other as described in the term list  
+      The hit set is a subset of the coresponding
+      PROXIMY query.
+    <screen>
+       "information retrieval"
+     </screen>
+   </para>
+  </sect3>
+   
+
+   <sect3 id="querymodel-atomic-queries">
+    <title>Atomic queries</title>
+    <para>
+      Atomic queries are the query parts which work on one acess point
+      only. These consist of <literal>an attribute list</literal>
+      followed by a <literal>single term</literal> or a
+      <literal>quoted term list</literal>.
+    </para>
+    <para>
+      Unsupplied non-use attributes type 2-9 are either inherited from
+      higher nodes in the query tree, or are set to Zebra's default values.
+      See <xref linkend="querymodel-bib1"/> for details. 
+    </para>
+
+   <table id="querymodel-atomic-queries-table">
+    <caption>Atomic queries</caption>
+     <!--
+     <thead>
+      <tr><td>one</td><td>two</td></tr>
+     </thead>
+     -->
+     <tbody>
+      <tr><td><emphasis>attribute list</emphasis></td>
+          <td>List of <literal>orthogonal</literal> attributes</td>
+          <td>Any of the orthogonal attribute types may be omitted,
+          these are inherited from higher query tree nodes, or if not
+          inherited, are set to the default Zebra configuration values.
+       </td>
+      </tr>
+      <tr><td><emphasis>term</emphasis></td>
+          <td>single <literal>term</literal> 
+        or <literal>quoted term list</literal>   </td>
+          <td>Here the search terms or list of search terms is added
+          to the query</td>
+      </tr>
+     </tbody>
+   </table>
+   <para>
+      Querying for the term <emphasis>information</emphasis> in the
+      default index using the default attribite set, the server choice
+      of access point/index, and the default non-use attributes.
+    <screen>
+       "information"
+     </screen>
+   </para>
+   <para>
+    Equivalent query fully specified:
+      <screen>
+       @attrset bib-1 @attr 1=1017 @attr 2=3 @attr 3=3 @attr 4=1 @attr 5=100 @attr 6=1 "information"
+      </screen>
+   </para>
+
+   <para>
+    Finding all documents which have empty titles. Notice that the
+    empty term must be quoted, but is otherwise legal.
+      <screen>
+       @attr 1=4 ""
+      </screen>
+   </para>
+
+  </sect3>
+
+    <sect3 id="querymodel-use-string">
+     <title>Zebra's special use attribute of type 'string'</title>
+     <para>
+      The numeric <literal>use (type 1)</literal> attribute is usually 
+        refered to from a given
+      attribute set. In addition, Zebra let you use 
+      <emphasis>any internal index
+      name defined in your configuration</emphasis> 
+        as use atribute value. This is a great feature for
+      debugging, and when you do
+      not need the complecity of defined use attribute values. It is
+      the preferred way of accessing Zebra indexes directly.  
+     </para>
+     <para>
+      Finding all documents which have the term list "information
+      retrieval" in an Zebra index, using it's internal full string name.
+      <screen>
+       @attr 1=sometext "information retrieval"
+      </screen>
+   </para>
+     <para>
+      Searching the bib-1 use attribute 54 using it's string name:
+      <screen>
+       @attr 1=Code-language eng
+      </screen>
+   </para>
+     <para>
+      Searching in any silly string index - if it's defined in your
+      indexation rules and can be parsed by the PQF parser. 
+      This is definitely not the recommended use of
+      this facility, as it might confuse your users with some very
+      unexpected results.
+      <screen>
+       @attr 1=silly/xpath/alike[@index]/name "information retrieval"
+      </screen>
+   </para>
+   <para>
+      See <xref linkend="querymodel-bib1-mapping"/> for details, and 
+       <xref linkend="server-sru"/>
+      for the SRU PQF query extention using string names as a fast
+       debugging facility.
+   </para>
+  </sect3>
+
+  </sect2>
 
   <sect2 id="querymodel-exp1">
    <title>Explain Attribute Set</title>
+    <para>
+     The Z39.50 standard defines the  
+     <ulink url="&url.z39.50.explain;">Explain</ulink>attribute set
+     <literal>exp-1</literal>, which is used to discover information 
+     about a server's search semantics and functional capabilities
+     Zebra exposes a  "classic" 
+     Explain database by base name <literal>IR-Explain-1</literal>, which
+     is populated with system internal information.  
+    </para>
    <para>
-     The attribute-set <literal>exp-1</literal> is defined for
-     searching an Explain <literal>IR-Explain-1</literal> database. 
-     It consists of a single <literal>Use (type 1)</literal> attribute. 
+     The attribute-set <literal>exp-1</literal> consists of a single 
+     <literal>Use (type 1)</literal> attribute. 
    </para>
    <para>
      In addition, the non-Use
@@ -63,7 +322,7 @@
      <literal>Relation</literal>, <literal>Position</literal>,
      <literal>Structure</literal>, <literal>Truncation</literal>, 
      and <literal>Completeness</literal> are imported from 
-     the <literal>bib-1</literal> attrubute set, and may be used
+     the <literal>bib-1</literal> attribute set, and may be used
      within any explain query. 
    </para>
     
@@ -90,6 +349,15 @@
     
     <sect3>
      <title>Explain searches with yaz-client</title>
+    <para>
+     Classic Explain only defines retrieval of Explain information
+     via ASN.1. Pratically no Z39.50 clients supports this. Fortunately
+     they don't have to - Zebra allows retrieval of this information
+     in other formats:
+     <literal>SUTRS</literal>, <literal>XML</literal>, 
+     <literal>GRS-1</literal> and  <literal>ASN.1</literal> Explain.
+    </para>
+
      <para>
       List supported categories to find out which explain commands are
       supported: 
@@ -173,10 +441,9 @@
     Most of the information contained in this section is an excerpt of
     the <literal>ATTRIBUTE SET BIB-1 (Z39.50-1995)
     SEMANTICS</literal>, found at  <ulink
-    url="http://www.loc.gov/z3950/agency/bib1.html">The BIB-1
+    url="&url.z39.50.attset.bib1.1995;">The BIB-1
     Attribute Set Semantics</ulink> from 1995, also in an updated 
-   <ulink
-    url="http://www.loc.gov/z3950/agency/defns/bib1.html">Bib-1
+   <ulink url="&url.z39.50.attset.bib1;">Bib-1
     Attribute Set</ulink> 
     version from 2003. Index Data is not the copyright holder of this
     information. 
@@ -188,21 +455,21 @@
    </sect3>
 
    <sect3 id="querymodel-bib1-relation">
-    <title>Relation Attributes     (type = 2)</title>
+    <title>Relation Attributes (type = 2)</title>
    </sect3>
    <para>
    </para>
 
    <sect3 id="querymodel-bib1-position">
-    <title>Position Attributes     (type = 3)</title>
+    <title>Position Attributes (type = 3)</title>
    </sect3>
 
    <sect3 id="querymodel-bib1-structure">
-    <title>Structure Attributes    (type = 4)</title>
+    <title>Structure Attributes (type = 4)</title>
    </sect3>
 
    <sect3 id="querymodel-bib1-truncation">
-    <title>Truncation Attributes   (type = 5)</title>
+    <title>Truncation Attributes (type = 5)</title>
    </sect3>
 
    <sect3 id="querymodel-bib1-completeness">
@@ -570,7 +837,7 @@
     Hosts option, one can configure
     the YAZ Frontend CQL-to-PQF
     converter, specifying the interpretation of various 
-    <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>
+    <ulink url="&url.cql;">CQL</ulink>
     indexes, relations, etc. in terms of Type-1 query attributes.
     <!-- The  yaz-client config file -->  
    </para>
@@ -639,10 +906,10 @@
 http://www.loc.gov/z3950/agency/document.html
 
     PQF and BIB-1 stuff to be explained
-    <ulink url="http://www.loc.gov/z3950/agency/defns/bib1.html">
+    <ulink url="&url.z39.50.attset.bib1;">
      http://www.loc.gov/z3950/agency/defns/bib1.html</ulink> 
 
-     <ulink url="http://www.loc.gov/z3950/agency/bib1.html">
+     <ulink url="&url.z39.50.attset.bib1.1995;">
      http://www.loc.gov/z3950/agency/bib1.html</ulink> 
 
      http://www.loc.gov/z3950/agency/markup/13.html

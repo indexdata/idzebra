@@ -1,5 +1,5 @@
  <chapter id="record-model-alvisxslt">
-  <!-- $Id: recordmodel-alvisxslt.xml,v 1.7 2006-04-25 12:26:26 marc Exp $ -->
+  <!-- $Id: recordmodel-alvisxslt.xml,v 1.8 2006-06-13 13:45:08 marc Exp $ -->
   <title>ALVIS XML Record Model and Filter Module</title>
   
 
@@ -58,7 +58,7 @@
     unique, these are the literal <literal>schema</literal> or 
     <literal>element set</literal> names used in 
       <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>,
-      <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink> and
+      <ulink url="&url.sru;">SRU</ulink> and
     Z39.50 protocol queries.
     The paths in the <literal>stylesheet</literal> attributes
     are relative to zebras working directory, or absolute to file
@@ -218,7 +218,7 @@
       the YAZ manual CQL section</ulink>
      for the details
      of the YAZ frontend server 
-     <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>
+     <ulink url="&url.cql;">CQL</ulink>
      configuration. 
     </para>
     <para>
@@ -491,7 +491,7 @@ c)  Main "alvis" XSLT filter config file:
   and so on.
 
 - in db/ a cql2pqf.txt yaz-client config file 
-  which is also used in the yaz-server <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF process
+  which is also used in the yaz-server <ulink url="&url.cql;">CQL</ulink>-to-PQF process
 
    see: http://www.indexdata.com/yaz/doc/tools.tkl#tools.cql.map
 

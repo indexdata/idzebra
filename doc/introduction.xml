@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.32 2006-04-25 12:26:26 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.33 2006-06-13 13:45:08 marc Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -443,14 +443,14 @@
         <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>-to-Z39.50 gateway, currently in beta test.
        -->
        Experimental support of the 
-       Search/Retrieve Via URL ( <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink>) 
-       <ulink url="http://www.loc.gov/standards/sru/"/>
+       Search/Retrieve Via URL ( <ulink url="&url.sru;">SRU</ulink>) 
+       <ulink url="&url.sru;"/>
        REST webservice, and the 
         Search/Retrieve Web Service ( <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>)
        <ulink url="http://www.loc.gov/standards/sru/srw/"/>
        SOAP Web Service have recently been added to the YAZ/Zebra
-       combo - including server side Common Query Language (<ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>)
-       <ulink url="http://www.loc.gov/standards/sru/cql/"/> parsing
+       combo - including server side Common Query Language (<ulink url="&url.cql;">CQL</ulink>)
+       <ulink url="&url.cql;"/> parsing
        and configuration. It remains to find a sponsor for further testing,
        documentation and packaging of this exiting component.
      </para>
