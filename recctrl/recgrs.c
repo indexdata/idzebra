@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.110 2006-05-19 13:49:35 adam Exp $
+/* $Id: recgrs.c,v 1.111 2006-06-13 12:02:15 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -529,10 +529,8 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
     int termlist_only = 1;
     data1_termlist *tl;
     int xpdone = 0;
-    yaz_log(YLOG_DEBUG, "index_xpath level=%d xpath_index=%s",
-	    level, xpath_index);
     if ((!n->root->u.root.absyn) ||
-	(n->root->u.root.absyn->enable_xpath_indexing)) {
+	(n->root->u.root.absyn->xpath_indexing == DATA1_XPATH_INDEXING_ENABLE)) {
 	termlist_only = 0;
     }
 

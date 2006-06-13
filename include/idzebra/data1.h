@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.14 2006-05-19 23:45:29 adam Exp $
+/* $Id: data1.h,v 1.15 2006-06-13 12:02:03 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -354,6 +354,11 @@ typedef struct data1_node
     struct data1_node *root;
 } data1_node;
 
+enum DATA1_XPATH_INDEXING {
+    DATA1_XPATH_INDEXING_DISABLE,
+    DATA1_XPATH_INDEXING_ENABLE
+};
+
 YAZ_EXPORT data1_handle data1_create (void);
 
 
@@ -367,8 +372,6 @@ YAZ_EXPORT data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 YAZ_EXPORT data1_node *data1_read_record(data1_handle dh, 
 					 int (*rf)(void *, char *, size_t),
 					 void *fh, NMEM m);
-YAZ_EXPORT data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
-                                         int file_must_exist);
 YAZ_EXPORT data1_tag *data1_gettagbynum(data1_handle dh,
 					data1_tagset *s,
 					int type, int value);
@@ -484,7 +487,8 @@ YAZ_EXPORT data1_node *data1_mk_tag_data_text_uni (data1_handle dh,
                                                    const char *str,
                                                    NMEM nmem);
 
-YAZ_EXPORT data1_absyn *data1_get_absyn (data1_handle dh, const char *name);
+YAZ_EXPORT data1_absyn *data1_get_absyn (data1_handle dh, const char *name,
+                                         enum DATA1_XPATH_INDEXING en);
 
 YAZ_EXPORT data1_node *data1_search_tag (data1_handle dh, data1_node *n,
                                          const char *tag);

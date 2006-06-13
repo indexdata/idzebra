@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.65 2006-05-19 23:20:24 adam Exp $
+/* $Id: zinfo.c,v 1.66 2006-06-13 12:02:12 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -114,7 +114,7 @@ struct zebraExplainInfo {
     struct zebDatabaseInfoB *curDatabaseInfo;
     zebAccessInfo accessInfo;
     char date[15]; /* YYYY MMDD HH MM SS */
-    int (*updateFunc)(void *handle, Record drec, data1_node *n);
+    ZebraExplainUpdateFunc *updateFunc;
     void *updateHandle;
 };
 
@@ -336,7 +336,7 @@ ZebraExplainInfo zebraExplain_open(
     Res res,
     int writeFlag,
     void *updateHandle,
-    int (*updateFunc)(void *handle, Record drec, data1_node *n))
+    ZebraExplainUpdateFunc *updateFunc)
 {
     Record trec;
     ZebraExplainInfo zei;
@@ -359,6 +359,9 @@ ZebraExplainInfo zebraExplain_open(
     zei->records = records;
     zei->nmem = nmem;
     zei->dh = dh;
+    
+    data1_get_absyn (zei->dh, "explain", DATA1_XPATH_INDEXING_DISABLE);
+
     zei->attsets = NULL;
     zei->res = res;
     zei->categoryList = (struct zebraCategoryListInfo *)

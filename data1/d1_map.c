@@ -1,4 +1,4 @@
-/* $Id: d1_map.c,v 1.10 2006-06-08 10:33:19 adam Exp $
+/* $Id: d1_map.c,v 1.11 2006-06-13 12:02:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -326,7 +326,8 @@ data1_node *data1_map_record (data1_handle dh, data1_node *n,
 
     res->which = DATA1N_root;
     res->u.root.type = map->target_absyn_name;
-    if (!(res->u.root.absyn = data1_get_absyn(dh, map->target_absyn_name)))
+    if (!(res->u.root.absyn = data1_get_absyn(dh, map->target_absyn_name,
+                                              DATA1_XPATH_INDEXING_ENABLE)))
     {
 	yaz_log(YLOG_WARN, "%s: Failed to load target absyn '%s'",
 		map->name, map->target_absyn_name);

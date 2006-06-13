@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.221 2006-06-12 09:39:18 marc Exp $
+/* $Id: zebraapi.c,v 1.222 2006-06-13 12:02:12 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -478,7 +478,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     {
 	reg->zei = zebraExplain_open(reg->records, reg->dh,
 				     res, rw, reg,
-				     explain_extract);
+				     zebra_extract_explain);
 	if (!reg->zei)
 	{
 	    yaz_log (YLOG_WARN, "Cannot obtain EXPLAIN information");
@@ -1398,15 +1398,15 @@ ZEBRA_RES zebra_admin_exchange_record(ZebraHandle zh,
 	}
 	action = 1;  /* make it an insert (if it's an update).. */
     }
-    res = buffer_extract_record (zh, rec_buf, rec_len,
-				 action == 3 ? 1 : 0 /* delete flag */,
-				 0, /* test mode */
-				 0, /* recordType */
-				 &sysno, 
-				 0, /* match */
-				 0, /* fname */
-				 0, /* force update */
-				 1  /* allow update */
+    res = zebra_buffer_extract_record(zh, rec_buf, rec_len,
+                                      action == 3 ? 1 : 0 /* delete flag */,
+                                      0, /* test mode */
+                                      0, /* recordType */
+                                      &sysno, 
+                                      0, /* match */
+                                      0, /* fname */
+                                      0, /* force update */
+                                      1  /* allow update */
 	);
     if (res == ZEBRA_FAIL)
     {
@@ -2220,14 +2220,14 @@ ZEBRA_RES zebra_insert_record(ZebraHandle zh,
 
     if (zebra_begin_trans(zh, 1) == ZEBRA_FAIL)
 	return ZEBRA_FAIL;
-    res = buffer_extract_record (zh, buf, buf_size, 
-				 0, /* delete_flag  */
-				 0, /* test_mode */
-				 recordType,
-				 sysno,   
-				 match, fname,
-				 0, 
-				 0); /* allow_update */
+    res = zebra_buffer_extract_record(zh, buf, buf_size, 
+                                      0, /* delete_flag  */
+                                      0, /* test_mode */
+                                      recordType,
+                                      sysno,   
+                                      match, fname,
+                                      0, 
+                                      0); /* allow_update */
     if (zebra_end_trans(zh) != ZEBRA_OK)
     {
 	yaz_log(YLOG_WARN, "zebra_end_trans failed");
@@ -2257,14 +2257,14 @@ ZEBRA_RES zebra_update_record (ZebraHandle zh,
 
     if (zebra_begin_trans(zh, 1) == ZEBRA_FAIL)
 	return ZEBRA_FAIL;
-    res = buffer_extract_record (zh, buf, buf_size, 
-				 0, /* delete_flag */
-				 0, /* test_mode */
-				 recordType,
-				 sysno,   
-				 match, fname,
-				 force_update, 
-				 1); /* allow_update */
+    res = zebra_buffer_extract_record(zh, buf, buf_size, 
+                                      0, /* delete_flag */
+                                      0, /* test_mode */
+                                      recordType,
+                                      sysno,   
+                                      match, fname,
+                                      force_update, 
+                                      1); /* allow_update */
     if (zebra_end_trans(zh) != ZEBRA_OK)
     {
 	yaz_log(YLOG_WARN, "zebra_end_trans failed");
@@ -2293,14 +2293,14 @@ ZEBRA_RES zebra_delete_record (ZebraHandle zh,
 
     if (zebra_begin_trans(zh, 1) == ZEBRA_FAIL)
 	return ZEBRA_FAIL;
-    res = buffer_extract_record (zh, buf, buf_size,
-				 1, /* delete_flag */
-				 0, /* test_mode */
-				 recordType,
-				 sysno,
-				 match,fname,
-				 force_update,
-				 1); /* allow_update */
+    res = zebra_buffer_extract_record(zh, buf, buf_size,
+                                      1, /* delete_flag */
+                                      0, /* test_mode */
+                                      recordType,
+                                      sysno,
+                                      match,fname,
+                                      force_update,
+                                      1); /* allow_update */
     if (zebra_end_trans(zh) != ZEBRA_OK)
     {
 	yaz_log(YLOG_WARN, "zebra_end_trans failed");

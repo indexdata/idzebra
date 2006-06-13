@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.18 2006-05-10 08:13:18 adam Exp $
+/* $Id: d1_read.c,v 1.19 2006-06-13 12:02:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -188,7 +188,7 @@ void data1_free_tree (data1_handle dh, data1_node *t)
 
 data1_node *data1_mk_root (data1_handle dh, NMEM nmem, const char *name)
 {
-    data1_absyn *absyn = data1_get_absyn (dh, name);
+    data1_absyn *absyn = data1_get_absyn(dh, name, 1);
     data1_node *res;
     if (!absyn)
     {
@@ -205,7 +205,8 @@ data1_node *data1_mk_root (data1_handle dh, NMEM nmem, const char *name)
 void data1_set_root(data1_handle dh, data1_node *res,
                     NMEM nmem, const char *name)
 {
-    data1_absyn *absyn = data1_get_absyn (dh, name);
+    data1_absyn *absyn = data1_get_absyn(
+        dh, name, DATA1_XPATH_INDEXING_ENABLE);
 
     res->u.root.type = data1_insert_string (dh, res, nmem, name);
     res->u.root.absyn = absyn;

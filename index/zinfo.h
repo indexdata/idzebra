@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.33 2006-05-19 23:20:24 adam Exp $
+/* $Id: zinfo.h,v 1.34 2006-06-13 12:02:13 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -37,15 +37,18 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 YAZ_BEGIN_CDECL
 
+typedef ZEBRA_RES ZebraExplainUpdateFunc(void *handle,
+                                         Record drec, 
+                                         data1_node *n);
+
 typedef struct zebraExplainInfo *ZebraExplainInfo;
 typedef struct zebDatabaseInfo ZebDatabaseInfo;
-ZebraExplainInfo zebraExplain_open (Records records, data1_handle dh,
-				    Res res,
-				    int writeFlag,
-				    void *updateHandle,
-				    int (*updateFunc)(void *handle,
-						      Record drec,
-						      data1_node *n));
+ZebraExplainInfo zebraExplain_open(Records records, data1_handle dh,
+                                   Res res,
+                                   int writeFlag,
+                                   void *updateHandle,
+                                   ZebraExplainUpdateFunc *);
+
 void zebraExplain_close (ZebraExplainInfo zei);
 int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database);
 int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,

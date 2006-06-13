@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.219 2006-06-07 10:14:40 adam Exp $
+/* $Id: extract.c,v 1.220 2006-06-13 12:02:06 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -50,19 +50,30 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define ENCODE_BUFLEN 768
 struct encode_info {
-#if 0
-    int  sysno;  /* previously written values for delta-compress */
-    int  seqno;
-    int  cmd;
-    int prevsys; /* buffer for skipping insert/delete pairs */
-    int prevseq;
-    int prevcmd;
-    int keylen; /* tells if we have an unwritten key in buf, and how long*/
-#endif
     void *encode_handle;
     void *decode_handle;
     char buf[ENCODE_BUFLEN];
 };
+
+static int log_level = 0;
+static int log_level_initialized = 1;
+
+static void zebra_init_log_level()
+{
+    if (!log_level_initialized)
+    {
+        log_level = yaz_log_module_level("extract");
+        log_level_initialized = 1;
+    }
+}
+
+static void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
+                                     int cmd, zebra_rec_keys_t reckeys,
+                                     zint staticrank);
+static void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
+                                   int cmd, zebra_rec_keys_t skp);
+static void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid);
+static void extract_token_add (RecWord *p);
 
 static void encode_key_init (struct encode_info *i);
 static void encode_key_write (char *k, struct encode_info *i, FILE *outf);
@@ -100,10 +111,10 @@ static void logRecord (ZebraHandle zh)
     ++zh->records_processed;
     if (!(zh->records_processed % 1000))
     {
-        yaz_log (YLOG_LOG, "Records: "ZINT_FORMAT" i/u/d "
-			ZINT_FORMAT"/"ZINT_FORMAT"/"ZINT_FORMAT, 
-              zh->records_processed, zh->records_inserted, zh->records_updated,
-              zh->records_deleted);
+        yaz_log(YLOG_LOG, "Records: "ZINT_FORMAT" i/u/d "
+                ZINT_FORMAT"/"ZINT_FORMAT"/"ZINT_FORMAT, 
+                zh->records_processed, zh->records_inserted, 
+                zh->records_updated, zh->records_deleted);
     }
 }
 
@@ -768,12 +779,14 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname,
     RecType recType;
     void *recTypeClientData;
 
+    zebra_init_log_level();
+
     if (!zh->m_group || !*zh->m_group)
         *gprefix = '\0';
     else
         sprintf (gprefix, "%s.", zh->m_group);
     
-    yaz_log (YLOG_DEBUG, "fileExtract %s", fname);
+    yaz_log(log_level, "zebra_extract_file %s", fname);
 
     /* determine file extension */
     *ext = '\0';
@@ -876,16 +889,16 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname,
   If not, and a record is provided, then sysno is got from there
   
  */
-ZEBRA_RES buffer_extract_record(ZebraHandle zh, 
-				const char *buf, size_t buf_size,
-				int delete_flag,
-				int test_mode, 
-				const char *recordType,
-				SYSNO *sysno,
-				const char *match_criteria,
-				const char *fname,
-				int force_update,
-				int allow_update)
+ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh, 
+                                      const char *buf, size_t buf_size,
+                                      int delete_flag,
+                                      int test_mode, 
+                                      const char *recordType,
+                                      SYSNO *sysno,
+                                      const char *match_criteria,
+                                      const char *fname,
+                                      int force_update,
+                                      int allow_update)
 {
     SYSNO sysno0 = 0;
     RecordAttr *recordAttr;
@@ -899,6 +912,8 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
     struct zebra_fetch_control fc;
     const char *pr_fname = fname;  /* filename to print .. */
     int show_progress = zh->records_processed < zh->m_file_verbose_limit ? 1:0;
+
+    zebra_init_log_level();
 
     if (!pr_fname)
 	pr_fname = "<no file>";  /* make it printable if file is omitted */
@@ -930,7 +945,7 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
     
     if (recordType && *recordType)
     {
-        yaz_log (YLOG_DEBUG, "Record type explicitly specified: %s", recordType);
+        yaz_log(log_level, "Record type explicitly specified: %s", recordType);
         recType = recType_byName (zh->reg->recTypes, zh->res, recordType,
                                   &clientData);
     } 
@@ -941,7 +956,8 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
             yaz_log (YLOG_WARN, "No such record type defined");
             return ZEBRA_FAIL;
         }
-        yaz_log (YLOG_DEBUG, "Get record type from rgroup: %s",zh->m_record_type);
+        yaz_log(log_level, "Get record type from rgroup: %s",
+                zh->m_record_type);
         recType = recType_byName (zh->reg->recTypes, zh->res,
 				  zh->m_record_type, &clientData);
         recordType = zh->m_record_type;
@@ -1092,16 +1108,16 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
             /* record going to be deleted */
             if (zebra_rec_keys_empty(delkeys))
             {
-		yaz_log (YLOG_LOG, "delete %s %s %ld", recordType,
-		     pr_fname, (long) recordOffset);
-		yaz_log (YLOG_WARN, "cannot delete file above, "
-			     "storeKeys false (3)");
+		yaz_log(YLOG_LOG, "delete %s %s %ld", recordType,
+                        pr_fname, (long) recordOffset);
+		yaz_log(YLOG_WARN, "cannot delete file above, "
+                        "storeKeys false (3)");
 	    }
             else
             {
 		if (show_progress)
-		    yaz_log (YLOG_LOG, "delete %s %s %ld", recordType,
-			     pr_fname, (long) recordOffset);
+		    yaz_log(YLOG_LOG, "delete %s %s %ld", recordType,
+                            pr_fname, (long) recordOffset);
                 zh->records_deleted++;
                 if (matchStr)
 		{
@@ -1117,8 +1133,8 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
         else
         {
 	    if (show_progress)
-		    yaz_log (YLOG_LOG, "update %s %s %ld", recordType,
-			     pr_fname, (long) recordOffset);
+		    yaz_log(YLOG_LOG, "update %s %s %ld", recordType,
+                            pr_fname, (long) recordOffset);
 	    recordAttr->staticrank = extractCtrl.staticrank;
             extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
             extract_flushRecordKeys (zh, *sysno, 1, zh->reg->keys, 
@@ -1211,7 +1227,7 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
     return ZEBRA_OK;
 }
 
-int explain_extract (void *handle, Record rec, data1_node *n)
+ZEBRA_RES zebra_extract_explain(void *handle, Record rec, data1_node *n)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     struct recExtractCtrl extractCtrl;
@@ -1277,8 +1293,7 @@ int explain_extract (void *handle, Record rec, data1_node *n)
     zebra_rec_keys_get_buf(zh->reg->sortKeys,
 			   &rec->info[recInfo_sortKeys],
 			   &rec->size[recInfo_sortKeys]);
-
-    return 0;
+    return ZEBRA_OK;
 }
 
 void extract_rec_keys_adjust(ZebraHandle zh, int is_insert,
@@ -1441,19 +1456,19 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
 #endif
     if (!zh->reg->key_buf || ptr_i <= 0)
     {
-        yaz_log (YLOG_DEBUG, "  nothing to flush section=%d buf=%p i=%d",
+        yaz_log(log_level, "  nothing to flush section=%d buf=%p i=%d",
                zh->reg->key_file_no, zh->reg->key_buf, ptr_i);
-        yaz_log (YLOG_DEBUG, "  buf=%p ",
+        yaz_log(log_level, "  buf=%p ",
                zh->reg->key_buf);
-        yaz_log (YLOG_DEBUG, "  ptr=%d ",zh->reg->ptr_i);
-        yaz_log (YLOG_DEBUG, "  reg=%p ",zh->reg);
+        yaz_log(log_level, "  ptr=%d ",zh->reg->ptr_i);
+        yaz_log(log_level, "  reg=%p ",zh->reg);
                
         return;
     }
 
     (zh->reg->key_file_no)++;
     yaz_log (YLOG_LOG, "sorting section %d", (zh->reg->key_file_no));
-    yaz_log (YLOG_DEBUG, "  sort_buff at %p n=%d",
+    yaz_log(log_level, "  sort_buff at %p n=%d",
                     zh->reg->key_buf + zh->reg->ptr_top - ptr_i,ptr_i);
 #if !SORT_EXTRA
     qsort (zh->reg->key_buf + zh->reg->ptr_top - ptr_i, ptr_i,
@@ -1623,7 +1638,7 @@ void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys)
     }
 }
 
-void extract_add_index_string(RecWord *p, const char *str, int length)
+static void extract_add_index_string(RecWord *p, const char *str, int length)
 {
     struct it_key key;
 
@@ -1703,7 +1718,7 @@ static void extract_add_sort_string(RecWord *p, const char *str, int length)
     zebra_rec_keys_write(zh->reg->sortKeys, str, length, &key);
 }
 
-void extract_add_string (RecWord *p, const char *string, int length)
+static void extract_add_string (RecWord *p, const char *string, int length)
 {
     assert (length > 0);
     if (zebra_maps_is_sort (p->zebra_maps, p->index_type))
@@ -1718,8 +1733,6 @@ static void extract_add_incomplete_field (RecWord *p)
     int remain = p->term_len;
     const char **map = 0;
     
-    yaz_log(YLOG_DEBUG, "Incomplete field, w='%.*s'", p->term_len, p->term_buf);
-
     if (remain > 0)
 	map = zebra_maps_input(p->zebra_maps, p->index_type, &b, remain, 0);
 
@@ -1767,9 +1780,6 @@ static void extract_add_complete_field (RecWord *p)
     const char **map = 0;
     int i = 0, remain = p->term_len;
 
-    yaz_log(YLOG_DEBUG, "Complete field, w='%.*s'",
-	    p->term_len, p->term_buf);
-
     if (remain > 0)
 	map = zebra_maps_input (p->zebra_maps, p->index_type, &b, remain, 1);
 
@@ -1804,7 +1814,6 @@ static void extract_add_complete_field (RecWord *p)
 	    {
 		if (i >= IT_MAX_WORD)
 		    break;
-		yaz_log(YLOG_DEBUG, "Adding string to index '%d'", **map);
 		while (i < IT_MAX_WORD && *cp)
 		    buf[i++] = *(cp++);
 	    }
@@ -1823,15 +1832,14 @@ static void extract_add_complete_field (RecWord *p)
     extract_add_string (p, buf, i);
 }
 
-void extract_token_add (RecWord *p)
+static void extract_token_add(RecWord *p)
 {
     WRBUF wrbuf;
-#if 0
-    yaz_log (YLOG_LOG, "token_add "
-	     "reg_type=%c attrSet=%d attrUse=%d seqno=%d s=%.*s",
-             p->reg_type, p->attrSet, p->attrUse, p->seqno, p->length,
-             p->string);
-#endif
+    if (log_level)
+        yaz_log(log_level, "extract_token_add "
+                "type=%c index=%s seqno=" ZINT_FORMAT " s=%.*s",
+                p->index_type, p->index_name, 
+                p->seqno, p->term_len, p->term_buf);
     if ((wrbuf = zebra_replace(p->zebra_maps, p->index_type, 0,
 			       p->term_buf, p->term_len)))
     {
@@ -1869,7 +1877,7 @@ static void extract_set_store_data_prepare(struct recExtractCtrl *p)
     p->setStoreData = extract_set_store_data_cb;
 }
 
-void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid)
+static void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid)
 {
     ZebraHandle zh = (ZebraHandle) p->handle;
     zebraExplain_addSchema (zh->reg->zei, oid);
@@ -1900,13 +1908,13 @@ void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
     }
 }
 
-void encode_key_init (struct encode_info *i)
+static void encode_key_init(struct encode_info *i)
 {
     i->encode_handle = iscz1_start();
     i->decode_handle = iscz1_start();
 }
 
-void encode_key_write (char *k, struct encode_info *i, FILE *outf)
+static void encode_key_write (char *k, struct encode_info *i, FILE *outf)
 {
     struct it_key key;
     char *bp = i->buf, *bp0;
@@ -1950,7 +1958,7 @@ void encode_key_write (char *k, struct encode_info *i, FILE *outf)
 #endif
 }
 
-void encode_key_flush (struct encode_info *i, FILE *outf)
+static void encode_key_flush (struct encode_info *i, FILE *outf)
 { 
     iscz1_stop(i->encode_handle);
     iscz1_stop(i->decode_handle);

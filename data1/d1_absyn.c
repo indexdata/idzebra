@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.26 2006-06-08 10:33:19 adam Exp $
+/* $Id: d1_absyn.c,v 1.27 2006-06-13 12:02:02 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -206,7 +206,11 @@ void data1_absyn_trav (data1_handle dh, void *handle,
     }
 }
 
-data1_absyn *data1_absyn_add (data1_handle dh, const char *name)
+static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
+                                     enum DATA1_XPATH_INDEXING en);
+
+static data1_absyn *data1_absyn_add(data1_handle dh, const char *name,
+                                    enum DATA1_XPATH_INDEXING en)
 {
     char fname[512];
     NMEM mem = data1_nmem_get (dh);
@@ -214,20 +218,21 @@ data1_absyn *data1_absyn_add (data1_handle dh, const char *name)
     data1_absyn_cache p = (data1_absyn_cache)nmem_malloc (mem, sizeof(*p));
     data1_absyn_cache *pp = data1_absyn_cache_get (dh);
 
-    sprintf(fname, "%s.abs", name);
-    p->absyn = data1_read_absyn (dh, fname, 0);
-    p->name = nmem_strdup (mem, name);
+    sprintf(fname, "%.500s.abs", name);
+    p->absyn = data1_read_absyn(dh, fname, en);
+    p->name = nmem_strdup(mem, name);
     p->next = *pp;
     *pp = p;
     return p->absyn;
 }
 
-data1_absyn *data1_get_absyn (data1_handle dh, const char *name)
+data1_absyn *data1_get_absyn (data1_handle dh, const char *name,
+                              enum DATA1_XPATH_INDEXING en)
 {
     data1_absyn *absyn;
 
     if (!(absyn = data1_absyn_search (dh, name)))
-	absyn = data1_absyn_add (dh, name);
+	absyn = data1_absyn_add (dh, name, en);
     return absyn;
 }
 
@@ -259,20 +264,10 @@ data1_attset *data1_attset_search_id (data1_handle dh, int id)
 
 data1_attset *data1_attset_add (data1_handle dh, const char *name)
 {
-    char fname[512], aname[512];
     NMEM mem = data1_nmem_get (dh);
     data1_attset *attset;
-
-    strcpy (aname, name);
-    sprintf(fname, "%s.att", name);
-    attset = data1_read_attset (dh, fname);
-    if (!attset)
-    {
-	char *cp;
-	attset = data1_read_attset (dh, name);
-	if (attset && (cp = strrchr (aname, '.')))
-	    *cp = '\0';
-    }
+    
+    attset = data1_read_attset (dh, name);
     if (!attset)
 	yaz_log (YLOG_WARN|YLOG_ERRNO, "Couldn't load attribute set %s", name);
     else
@@ -281,7 +276,7 @@ data1_attset *data1_attset_add (data1_handle dh, const char *name)
 	    nmem_malloc (mem, sizeof(*p));
 	data1_attset_cache *pp = data1_attset_cache_get (dh);
 	
-	attset->name = p->name = nmem_strdup (mem, aname);
+	attset->name = p->name = nmem_strdup(mem, name);
 	p->attset = attset;
 	p->next = *pp;
 	*pp = p;
@@ -691,8 +686,8 @@ YAZ_EXPORT data1_element *data1_absyn_getelements(data1_handle dh,
     return absyn->main_elements;
 }
 
-data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
-                               int file_must_exist)
+static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
+                                     enum DATA1_XPATH_INDEXING default_xpath)
 {
     data1_sub_elements *cur_elements = NULL;
     data1_xpelement *cur_xpelement = NULL;
@@ -713,18 +708,15 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
     int argc;
     char *argv[50], line[512];
 
-    if (!(f = data1_path_fopen(dh, file, "r")))
-    {
-        if (file_must_exist)
-            return 0;
-    }
+    f = data1_path_fopen(dh, file, "r");
     
     res = (data1_absyn *) nmem_malloc(data1_nmem_get(dh), sizeof(*res));
     res->name = 0;
     res->reference = VAL_NONE;
     res->tagset = 0;
     res->encoding = 0;
-    res->enable_xpath_indexing = (f ? 0 : 1);
+    res->xpath_indexing = 
+        (f ? DATA1_XPATH_INDEXING_DISABLE : default_xpath);
     res->systags = 0;
     systagsp = &res->systags;
     tagset_childp = &res->tagset;
@@ -977,9 +969,9 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 		continue;
             }
             if (!strcmp(argv[1], "enable"))
-                res->enable_xpath_indexing = 1;
+                res->xpath_indexing = DATA1_XPATH_INDEXING_ENABLE;
             else if (!strcmp (argv[1], "disable"))
-                res->enable_xpath_indexing = 0;
+                res->xpath_indexing = DATA1_XPATH_INDEXING_DISABLE;
             else
             {
 		yaz_log(YLOG_WARN, "%s:%d: Expecting disable/enable "

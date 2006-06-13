@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.166 2006-05-30 13:44:44 adam Exp $
+/* $Id: index.h,v 1.167 2006-06-13 12:02:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -349,16 +349,16 @@ void extract_get_fname_tmp (ZebraHandle zh, char *fname, int no);
 
 void zebra_index_merge (ZebraHandle zh);
 
-ZEBRA_RES buffer_extract_record (ZebraHandle zh, 
-				 const char *buf, size_t buf_size,
-				 int delete_flag,
-				 int test_mode, 
-				 const char *recordType,
-				 SYSNO *sysno,
-				 const char *match_criteria,
-				 const char *fname,
-				 int force_update,
-				 int allow_update);
+ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh, 
+                                      const char *buf, size_t buf_size,
+                                      int delete_flag,
+                                      int test_mode, 
+                                      const char *recordType,
+                                      SYSNO *sysno,
+                                      const char *match_criteria,
+                                      const char *fname,
+                                      int force_update,
+                                      int allow_update);
 
 #if 0
 int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
@@ -394,14 +394,7 @@ ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys,
 ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 				    zint sysno, zebra_snippets *snippets);
 
-void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
-                              int cmd, zebra_rec_keys_t reckeys,
-			      zint staticrank);
-void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
-                            int cmd, zebra_rec_keys_t skp);
-void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid);
-void extract_token_add (RecWord *p);
-int explain_extract (void *handle, Record rec, data1_node *n);
+ZEBRA_RES zebra_extract_explain(void *handle, Record rec, data1_node *n);
 
 ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname,
 			     int deleteFlag);
