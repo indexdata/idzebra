@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.23 2006-06-13 19:42:04 adam Exp $
+/* $Id: recctrl.h,v 1.24 2006-06-13 20:03:33 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -109,7 +109,7 @@ struct recRetrieveCtrl {
     /* response */
     oid_value  output_format;
     void       *rec_buf;
-    size_t     rec_len;
+    int        rec_len;
     int        diagnostic;
     char       *addinfo;
 };
