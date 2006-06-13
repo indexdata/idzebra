@@ -2,11 +2,11 @@
 # explain data. On request, records are mapped to the proper Explain ASN.1
 # before transmission.
 #
-# $Id: explain.abs,v 1.2 2004-01-19 12:10:20 adam Exp $
+# $Id: explain.abs,v 1.3 2006-06-13 11:45:07 adam Exp $
 
 name explain
 reference Explain-schema
-attset explain
+attset explain.att
 tagset explain.tag
 
 esetname B @
