@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.61 2006-05-10 08:13:30 adam Exp $
+/* $Id: regxread.c,v 1.62 2006-06-13 19:45:14 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -469,15 +469,20 @@ static int actionListMk (struct lexSpec *spec, const char *s,
             r = dfa_parse ((*ap)->u.pattern.dfa, &s);
             if (r || *s != '/')
             {
+                int pos = s - s0;
                 xfree (*ap);
                 *ap = NULL;
-                yaz_log (YLOG_WARN, "regular expression error '%.*s'", s-s0, s0);
+                yaz_log(YLOG_WARN, "regular expression error '%.*s'", pos, s0);
                 return -1;
             }
-	    if (debug_dfa_tran)
-		printf ("pattern: %.*s\n", s-s0, s0);
-            dfa_mkstate ((*ap)->u.pattern.dfa);
-            s++;
+            else
+            {
+                int pos = s - s0;
+                if (debug_dfa_tran)
+                    printf("pattern: %.*s\n", pos, s0);
+                dfa_mkstate((*ap)->u.pattern.dfa);
+                s++;
+            }
             break;
         case REGX_BEGIN:
             yaz_log (YLOG_WARN, "cannot use BEGIN here");
