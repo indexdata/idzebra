@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.111 2006-06-13 12:02:15 adam Exp $
+/* $Id: recgrs.c,v 1.112 2006-06-13 20:04:15 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1355,7 +1355,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 					  p->odr, &dummy)))
 	    p->diagnostic = 238; /* not available in requested syntax */
 	else
-	    p->rec_len = (size_t) (-1);
+	    p->rec_len = -1;
 	break;
     case VAL_EXPLAIN:
 	/* ensure our data1 tree is UTF-8 */
@@ -1365,7 +1365,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 					       p->odr)))
 	    p->diagnostic = 238;
 	else
-	    p->rec_len = (size_t) (-1);
+	    p->rec_len = -1;
 	break;
     case VAL_SUMMARY:
 	/* ensure our data1 tree is UTF-8 */
@@ -1374,7 +1374,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 					       p->odr)))
 	    p->diagnostic = 238;
 	else
-	    p->rec_len = (size_t) (-1);
+	    p->rec_len = -1;
 	break;
     case VAL_SUTRS:
 	if (p->encoding)
