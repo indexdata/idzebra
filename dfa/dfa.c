@@ -1,4 +1,4 @@
-/* $Id: dfa.c,v 1.35 2006-05-10 08:13:18 adam Exp $
+/* $Id: dfa.c,v 1.36 2006-06-13 19:43:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -876,11 +876,11 @@ static void pr_verbose (struct DFA_parse *parse_info, struct DFA_states *dfas)
 {
     long i, j;
     int k;
-    printf ("%d/%d tree nodes used, %d bytes each\n",
-        parse_info->use_Tnode, parse_info->max_Tnode, sizeof (struct Tnode));
+    printf ("%d/%d tree nodes used, %ld bytes each\n",
+        parse_info->use_Tnode, parse_info->max_Tnode, (long) sizeof (struct Tnode));
     k = inf_BSetHandle (parse_info->charset, &i, &j);
-    printf ("%ld/%ld character sets, %d bytes each\n",
-            i/k, j/k, k*sizeof(BSetWord));
+    printf ("%ld/%ld character sets, %ld bytes each\n",
+            i/k, j/k, (long) k*sizeof(BSetWord));
     k = inf_DFASetType (parse_info->poset, &i, &j);
     printf ("%ld/%ld poset items, %d bytes each\n", i, j, k);
     printf ("%d DFA states\n", dfas->no);
