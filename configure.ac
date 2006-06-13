@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.15 2006-06-13 12:03:58 adam Exp $
+dnl $Id: configure.ac,v 1.16 2006-06-13 14:11:20 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[1.4.1],[adam@indexdata.dk])
@@ -287,7 +287,7 @@ AC_DEFUN([ZEBRA_MODULE],[
 	   fi
         fi
 	m=`echo $1|tr .- __`
-	if test "$myen" = "no"; then
+	if test "$myen" = "no" -o "$myen" = "disabled"; then
 	   AC_MSG_RESULT([disabled])
 	elif test "$2" = "disabled"; then
 	   AC_MSG_RESULT([disabled])
@@ -295,7 +295,7 @@ AC_DEFUN([ZEBRA_MODULE],[
 	elif test "$myen" = "shared"; then
 	   AC_MSG_RESULT([shared])
 	   SHARED_MODULE_LA="${SHARED_MODULE_LA} mod-$1.la"
-	elif test "$myen" = "static" -o "$myen" = "yes"; then
+	elif test "$myen" = "static"; then
 	   AC_MSG_RESULT([static])
 	   STATIC_MODULE_OBJ="${STATIC_MODULE_OBJ} \$(mod_${m}_la_OBJECTS)"
 	   STATIC_MODULE_LADD="${STATIC_MODULE_LADD} \$(mod_${m}_la_LADD)"
