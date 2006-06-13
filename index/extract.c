@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.220 2006-06-13 12:02:06 adam Exp $
+/* $Id: extract.c,v 1.221 2006-06-13 19:40:18 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -35,18 +35,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "orddict.h"
 #include <direntz.h>
 #include <charmap.h>
-
-#ifdef WIN32
-#define PRINTF_OFF_T "%I64d"
-#else
-/* !WIN32 */
-#if SIZEOF_OFF_T == SIZEOF_LONG_LONG
-#define PRINTF_OFF_T "%lld"
-#else
-#define PRINTF_OFF_T "%ld"
-#endif
-
-#endif
 
 #define ENCODE_BUFLEN 768
 struct encode_info {
@@ -471,11 +459,11 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
 	init_extractCtrl(zh, &extractCtrl);
 
         if (!zh->m_flag_rw)
-            printf ("File: %s " PRINTF_OFF_T "\n", fname, recordOffset);
+            printf ("File: %s " ZINT_FORMAT "\n", fname, (zint)recordOffset);
         if (zh->m_flag_rw)
         {
             char msg[512];
-            sprintf (msg, "%s:" PRINTF_OFF_T , fname, recordOffset);
+            sprintf (msg, "%s:" ZINT_FORMAT , fname, (zint)recordOffset);
             yaz_log_init_prefix2 (msg);
         }
 
@@ -490,8 +478,9 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
             if (zh->m_flag_rw &&
 		zh->records_processed < zh->m_file_verbose_limit)
             {
-                yaz_log (YLOG_WARN, "fail %s %s " PRINTF_OFF_T, zh->m_record_type,
-                      fname, recordOffset);
+                yaz_log (YLOG_WARN, "fail %s %s " ZINT_FORMAT, 
+                         zh->m_record_type,
+                         fname, (zint) recordOffset);
             }
             return ZEBRA_FAIL;
         }
@@ -502,8 +491,8 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
 		zh->records_processed < zh->m_file_verbose_limit)
             {
                 yaz_log (YLOG_WARN, "no filter for %s %s " 
-                      PRINTF_OFF_T, zh->m_record_type,
-                      fname, recordOffset);
+                      ZINT_FORMAT, zh->m_record_type,
+                      fname, (zint) recordOffset);
             }
             return ZEBRA_FAIL;
         }
@@ -559,8 +548,8 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
              return ZEBRA_OK;
   
          if (zh->records_processed < zh->m_file_verbose_limit)
-	     yaz_log (YLOG_WARN, "empty %s %s " PRINTF_OFF_T, zh->m_record_type,
-	    fname, recordOffset);
+	     yaz_log(YLOG_WARN, "empty %s %s " ZINT_FORMAT, zh->m_record_type,
+                     fname, (zint)recordOffset);
          return ZEBRA_OK;
     }
 
@@ -569,9 +558,9 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
         /* new record */
         if (deleteFlag)
         {
-	    yaz_log (YLOG_LOG, "delete %s %s " PRINTF_OFF_T, zh->m_record_type,
-		  fname, recordOffset);
-            yaz_log (YLOG_WARN, "cannot delete record above (seems new)");
+	    yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, zh->m_record_type,
+                    fname, (zint)recordOffset);
+            yaz_log(YLOG_WARN, "cannot delete record above (seems new)");
             return ZEBRA_OK;
         }
 
@@ -581,10 +570,10 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
         
         if (zh->records_processed < zh->m_file_verbose_limit)
         {
-            yaz_log(YLOG_LOG, "add %s %s " PRINTF_OFF_T 
+            yaz_log(YLOG_LOG, "add %s %s " ZINT_FORMAT 
                     " " ZINT_FORMAT " %s" ,
                     zh->m_record_type,
-                    fname, recordOffset, *sysno, match_str_to_print);
+                    fname, (zint) recordOffset, *sysno, match_str_to_print);
         }
 	recordAttr = rec_init_attr (zh->reg->zei, rec);
 	recordAttr->staticrank = extractCtrl.staticrank;
@@ -631,19 +620,19 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
             /* record going to be deleted */
             if (zebra_rec_keys_empty(delkeys))
             {
-                yaz_log (YLOG_LOG, "delete %s %s " PRINTF_OFF_T 
-                         " " ZINT_FORMAT,
-			 zh->m_record_type, fname, recordOffset, *sysno);
-                yaz_log (YLOG_WARN, "cannot delete file above, storeKeys false (1)");
+                yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT 
+                        " " ZINT_FORMAT,
+                        zh->m_record_type, fname, (zint)recordOffset, *sysno);
+                yaz_log(YLOG_WARN, "cannot delete file above, storeKeys false (1)");
             }
             else
             {
                 if (zh->records_processed < zh->m_file_verbose_limit)
                 {
-                    yaz_log(YLOG_LOG, "delete %s %s " PRINTF_OFF_T 
+                    yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT 
                             " " ZINT_FORMAT " %s" ,
-                            zh->m_record_type,
-                            fname, recordOffset, *sysno, match_str_to_print);
+                            zh->m_record_type, fname, (zint) recordOffset,
+                            *sysno, match_str_to_print);
                 }
                 zh->records_deleted++;
                 if (matchStr)
@@ -662,10 +651,10 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
 	    /* flush new keys for sort&search etc */
             if (zh->records_processed < zh->m_file_verbose_limit)
             {
-                yaz_log(YLOG_LOG, "update %s %s " PRINTF_OFF_T 
+                yaz_log(YLOG_LOG, "update %s %s " ZINT_FORMAT 
                         " " ZINT_FORMAT " %s" ,
-                        zh->m_record_type,
-                        fname, recordOffset, *sysno, match_str_to_print);
+                        zh->m_record_type, fname, (zint) recordOffset, 
+                        *sysno, match_str_to_print);
             }
 	    recordAttr->staticrank = extractCtrl.staticrank;
             extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
@@ -735,8 +724,8 @@ static ZEBRA_RES file_extract_record(ZebraHandle zh,
 	    xmalloc (recordAttr->recordSize);
         if (lseek (fi->fd, recordOffset, SEEK_SET) < 0)
         {
-            yaz_log (YLOG_ERRNO|YLOG_FATAL, "seek to " PRINTF_OFF_T " in %s",
-                  recordOffset, fname);
+            yaz_log(YLOG_ERRNO|YLOG_FATAL, "seek to " ZINT_FORMAT " in %s",
+                    (zint)recordOffset, fname);
             exit (1);
         }
         if (read (fi->fd, rec->info[recInfo_storeData], recordAttr->recordSize)
@@ -1458,11 +1447,6 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
     {
         yaz_log(log_level, "  nothing to flush section=%d buf=%p i=%d",
                zh->reg->key_file_no, zh->reg->key_buf, ptr_i);
-        yaz_log(log_level, "  buf=%p ",
-               zh->reg->key_buf);
-        yaz_log(log_level, "  ptr=%d ",zh->reg->ptr_i);
-        yaz_log(log_level, "  reg=%p ",zh->reg);
-               
         return;
     }
 
