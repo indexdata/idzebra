@@ -1,8 +1,8 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.14 2006-06-12 23:46:21 adam Exp $
+dnl $Id: configure.ac,v 1.15 2006-06-13 12:03:58 adam Exp $
 dnl
 AC_PREREQ(2.59)
-AC_INIT([idzebra],[1.4.0],[adam@indexdata.dk])
+AC_INIT([idzebra],[1.4.1],[adam@indexdata.dk])
 AC_CONFIG_SRCDIR(configure.ac)
 AC_CONFIG_AUX_DIR(config)
 AM_INIT_AUTOMAKE([1.8])
