@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.8 2006-04-25 12:26:26 marc Exp $ -->
+  <!-- $Id: architecture.xml,v 1.9 2006-06-13 09:27:01 marc Exp $ -->
   <title>Overview of Zebra Architecture</title>
   
 
@@ -381,108 +381,6 @@
   </para>
   </sect1>
 
-
-<!--
-  <sect1 id="architecture-querylanguage">
-   <title>Query Languages</title>
-   
-   <para>
-
-http://www.loc.gov/z3950/agency/document.html
-
-    PQF and BIB-1 stuff to be explained
-    <ulink url="http://www.loc.gov/z3950/agency/defns/bib1.html">
-     http://www.loc.gov/z3950/agency/defns/bib1.html</ulink> 
-
-     <ulink url="http://www.loc.gov/z3950/agency/bib1.html">
-     http://www.loc.gov/z3950/agency/bib1.html</ulink> 
-
-     http://www.loc.gov/z3950/agency/markup/13.html
-    
-  </para>
-  </sect1>
-
-
-These attribute types are recognized regardless of attribute set. Some are recognized for search, others for scan.
-
-Search
-
-Type 	Name 	Version
-7 	Embedded Sort 	1.1
-8 	Term Set 	1.1
-9 	Rank weight 	1.1
-9 	Approx Limit 	1.4
-10 	Term Ref 	1.4
-
-Embedded Sort
-
-The embedded sort is a way to specify sort within a query - thus removing the need to send a Sort Request separately. It is both faster and does not require clients that deal with the Sort Facility.
-
-The value after attribute type 7 is 1=ascending, 2=descending.. The attributes+term (APT) node is separate from the rest and must be @or'ed. The term associated with APT is the level .. 0=primary sort, 1=secondary sort etc.. Example:
-
-Search for water, sort by title (ascending):
-
-  @or @attr 1=1016 water @attr 7=1 @attr 1=4 0
-
-Search for water, sort by title ascending, then date descending:
-
-  @or @or @attr 1=1016 water @attr 7=1 @attr 1=4 0 @attr 7=2 @attr 1=30 1
-
-Term Set
-
-The Term Set feature is a facility that allows a search to store hitting terms in a "pseudo" resultset; thus a search (as usual) + a scan-like facility. Requires a client that can do named result sets since the search generates two result sets. The value for attribute 8 is the name of a result set (string). The terms in term set are returned as SUTRS records.
-
-Seach for u in title, right truncated.. Store result in result set named uset.
-
-  @attr 5=1 @attr 1=4 @attr 8=uset u
-
-The model as one serious flaw.. We don't know the size of term set.
-
-Rank weight
-
-Rank weight is a way to pass a value to a ranking algorithm - so that one APT has one value - while another as a different one.
-
-Search for utah in title with weight 30 as well as any with weight 20.
-
-  @attr 2=102 @or @attr 9=30 @attr 1=4 utah @attr 9=20 utah
-
-Approx Limit
-
-Newer Zebra versions normally estemiates hit count for every APT (leaf) in the query tree. These hit counts are returned as part of the searchResult-1 facility.
-
-By setting a limit for the APT we can make Zebra turn into approximate hit count when a certain hit count limit is reached. A value of zero means exact hit count.
-
-We are intersted in exact hit count for a, but for b we allow estimates for 1000 and higher..
-
-  @and a @attr 9=1000 b
-
-This facility clashes with rank weight! Fortunately this is a Zebra 1.4 thing so we can change this without upsetting anybody!
-
-Term Ref
-
-Zebra supports the searchResult-1 facility.
-
-If attribute 10 is given, that specifies a subqueryId value returned as part of the search result. It is a way for a client to name an APT part of a query.
-
-Scan
-
-Type 	Name 	Version
-8 	Result set narrow 	1.3
-9 	Approx Limit 	1.4
-
-Result set narrow
-
-If attribute 8 is given for scan, the value is the name of a result set. Each hit count in scan is @and'ed with the result set given.
-
-Approx limit
-
-The approx (as for search) is a way to enable approx hit counts for scan hit counts. However, it does NOT appear to work at the moment.
-
-
- AdamDickmeiss - 19 Dec 2005
-
-
--->
 
 
  </chapter> 

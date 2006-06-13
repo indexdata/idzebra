@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.37 2006-06-12 12:07:53 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.38 2006-06-13 09:26:59 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -1592,74 +1592,6 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     Section "Virtual Hosts" in the YAZ manual.
     <filename>http://www.indexdata.dk/yaz/doc/server.vhosts.tkl</filename>
    </para>
- </sect1>
-
-
-  <sect1 id="administration-cql-to-pqf">
-   <title>Server Side CQL to PQF Query Translation</title>
-   <para>
-    Using the
-    <literal>&lt;cql2rpn&gt;l2rpn.txt&lt;/cql2rpn&gt;</literal>
-      YAZ Frontend Virtual
-    Hosts option, one can configure
-    the YAZ Frontend CQL-to-PQF
-    converter, specifying the interpretation of various 
-    <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>
-    indexes, relations, etc. in terms of Type-1 query attributes.
-    <!-- The  yaz-client config file -->  
-   </para>
-   <para>
-    For example, using server-side CQL-to-PQF conversion, one might
-    query a zebra server like this:
-    <screen>
-    <![CDATA[
-     yaz-client localhost:9999
-     Z> querytype cql
-     Z> find text=(plant and soil)
-     ]]>
-    </screen>
-     and - if properly configured - even static relevance ranking can
-     be performed using CQL query syntax:
-    <screen>
-    <![CDATA[
-     Z> find text = /relevant (plant and soil)
-     ]]>
-     </screen>
-   </para>
-
-   <para>
-    By the way, the same configuration can be used to 
-    search using client-side CQL-to-PQF conversion:
-    (the only difference is <literal>querytype cql2rpn</literal> 
-    instead of 
-    <literal>querytype cql</literal>, and the call specifying a local
-    conversion file)
-    <screen>
-    <![CDATA[
-     yaz-client -q local/cql2pqf.txt localhost:9999
-     Z> querytype cql2rpn
-     Z> find text=(plant and soil)
-     ]]>
-     </screen>
-   </para>
-
-   <para>
-    Exhaustive information can be found in the
-    Section "Specification of CQL to RPN mappings" in the YAZ manual.
-    <ulink url="http://www.indexdata.dk/yaz/doc/tools.tkl#tools.cql.map">
-     http://www.indexdata.dk/yaz/doc/tools.tkl#tools.cql.map</ulink>,
-   and shall therefore not be repeated here.
-   </para> 
-  <!-- 
-  <para>
-    See 
-      <ulink url="http://www.loc.gov/z3950/agency/zing/cql/dc-indexes.html">
-      http://www.loc.gov/z3950/agency/zing/cql/dc-indexes.html</ulink>
-    for the Maintenance Agency's work-in-progress mapping of Dublin Core
-    indexes to Attribute Architecture (util, XD and BIB-2)
-    attributes.
-   </para>
-   -->
  </sect1>
 
 

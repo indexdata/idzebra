@@ -1,30 +1,34 @@
-## $Id: Makefile.am,v 1.47 2006-06-12 09:39:17 marc Exp $
+## $Id: Makefile.am,v 1.48 2006-06-13 09:26:59 marc Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUBDIRS = common
 
-XMLFILES =  zebra.xml \
+XMLFILES =  \
    administration.xml \
    architecture.xml \
    examples.xml \
+   idzebra-config-man.xml \
    indexdata.xml \
    installation.xml \
    introduction.xml \
    license.xml \
    marc_indexing.xml \
+   querymodel.xml \
    quickstart.xml \
    recordmodel-alvisxslt.xml \
    recordmodel-grs.xml \
    server.xml \
+   zebra.xml \
    zebraidx-commands.xml \
+   zebraidx-man.xml \
    zebraidx-options.xml \
    zebraidx.xml \
+   zebrasrv-man.xml \
    zebrasrv-options.xml \
    zebrasrv-synopsis.xml \
    zebrasrv-virtual.xml
 
 HTMLFILES =  \
-   administration-cql-to-pqf.html \
    administration-extended-services.html \
    administration-ranking.html \
    administration.html \
@@ -43,6 +47,8 @@ HTMLFILES =  \
    gfs-config.html \
    grs-exchange-formats.html \
    grs-internal-representation.html \
+   htmlhelp.hhp \
+   index.html \
    indexdata.html \
    installation.debian.html \
    installation.html \
@@ -51,6 +57,9 @@ HTMLFILES =  \
    license.html \
    locating-records.html \
    protocol-support.html \
+   querymodel-cql-to-pqf.html \
+   querymodel-pqf.html \
+   querymodel.html \
    quick-start.html \
    record-model-alvisxslt-conf.html \
    record-model-alvisxslt.html \
@@ -63,8 +72,9 @@ HTMLFILES =  \
    shadow-registers.html \
    simple-indexing.html \
    support.html \
-   index.html \
+   toc.hhc \
    zebraidx.html
+
 
 PNGFILES=zebra.png
 EPSFILES=zebra.eps

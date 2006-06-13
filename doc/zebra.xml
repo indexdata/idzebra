@@ -9,7 +9,7 @@
      <!ENTITY % common  SYSTEM "common/common.ent">
      %common;
 ]>
-<!-- $Id: zebra.xml,v 1.5 2006-05-30 23:08:29 adam Exp $ -->
+<!-- $Id: zebra.xml,v 1.6 2006-06-13 09:27:01 marc Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
@@ -65,6 +65,7 @@
   &chap-quickstart;
   &chap-examples;
   &chap-architecture;
+  &chap-querymodel;
   &chap-administration;
   &chap-recordmodel-grs;
   &chap-recordmodel-alvisxslt;

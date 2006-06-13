@@ -1,10 +1,11 @@
-<!-- $Id: entities.ent,v 1.1 2006-05-24 19:12:46 adam Exp $ -->
+<!-- $Id: entities.ent,v 1.2 2006-06-13 09:27:01 marc Exp $ -->
 <!ENTITY chap-introduction SYSTEM "introduction.xml">
 <!ENTITY chap-installation SYSTEM "installation.xml">
 <!ENTITY chap-quickstart SYSTEM "quickstart.xml">
 <!ENTITY chap-examples SYSTEM "examples.xml">
 <!ENTITY chap-architecture SYSTEM "architecture.xml">
 <!ENTITY chap-administration SYSTEM "administration.xml">
+<!ENTITY chap-querymodel SYSTEM "querymodel.xml">
 <!ENTITY chap-zebraidx SYSTEM "zebraidx.xml">
 <!ENTITY chap-server SYSTEM "server.xml">
 <!ENTITY chap-recordmodel-grs SYSTEM "recordmodel-grs.xml">
