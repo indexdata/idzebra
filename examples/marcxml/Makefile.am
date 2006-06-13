@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.1 2006-06-12 09:12:13 marc Exp $
+# $Id: Makefile.am,v 1.2 2006-06-13 07:52:15 marc Exp $
 
 EXTRA_DIST = zebra.cfg\
    MARC21slim2INDEX.xsl\
@@ -15,7 +15,6 @@ EXTRA_DIST = zebra.cfg\
    collection-subjmrc.xml\
    filter_alvis_conf.xml\
    identity.xsl\
-   sandburg-1.xml\
    zebra.xsl
 
 
