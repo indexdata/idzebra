@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.17 2006-06-13 14:25:32 adam Exp $
+dnl $Id: configure.ac,v 1.18 2006-06-13 15:10:43 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[1.4.1],[adam@indexdata.dk])
@@ -401,4 +401,5 @@ echo \
 dnl Local Variables:
 dnl mode:shell-script
 dnl sh-indentation:2
+dnl sh-basic-offset: 4
 dnl End:
