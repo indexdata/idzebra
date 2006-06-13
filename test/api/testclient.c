@@ -1,5 +1,5 @@
 /*
- * $Id: testclient.c,v 1.3 2006-05-10 08:13:35 adam Exp $
+ * $Id: testclient.c,v 1.4 2006-06-13 20:04:38 adam Exp $
  *
  * Z39.50 client specifically for Zebra testing.
  */
@@ -98,11 +98,11 @@ int main(int argc, char **argv)
     }
     else
     {
-	printf ("Result count: %d\n", ZOOM_resultset_size(r));
+	printf ("Result count: %ld\n", (long) ZOOM_resultset_size(r));
 	if (check_count != -1 && check_count != ZOOM_resultset_size(r))
 	{
-	    printf("Wrong number of hits, expected %d, got %d\n",
-			    check_count, ZOOM_resultset_size(r) );
+	    printf("Wrong number of hits, expected %d, got %ld\n",
+			    check_count, (long) ZOOM_resultset_size(r) );
 	    exit(3);
 	}
     }
