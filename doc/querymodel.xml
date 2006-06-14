@@ -1,43 +1,85 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.4 2006-06-14 13:44:15 adam Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.5 2006-06-14 13:57:45 marc Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
    <title>Query Model Overview</title>
    
-   <para>
-    Zebra is born as a networking Information Retrieval engine adhering
-    to the international standards 
-    <ulink url="&url.z39.50;">Z39.50</ulink> and
-    <ulink url="&url.sru;">SRU</ulink>,
-    and implement the query model defined there.
-    Unfortunately, the Z39.50 query model has only defined a binary
-    encoded representation, which is used as transport packaging in
-    the Z39.50 protocol layer. This representation is not human
-    readable, nor defines any convenient way to specify queries. 
-   </para>
+
+   <sect2 id="querymodel-query-languages">
+    <title>Query Languages</title>
+ 
+    <para>
+     Zebra is born as a networking Information Retrieval engine adhering
+     to the international standards 
+     <ulink url="&url.z39.50;">Z39.50</ulink> and
+     <ulink url="&url.sru;">SRU</ulink>,
+     and implement the query model defined there.
+     Unfortunately, the Z39.50 query model has only defined a binary
+     encoded representation, which is used as transport packaging in
+     the Z39.50 protocol layer. This representation is not human
+     readable, nor defines any convenient way to specify queries. 
+    </para>
    <!-- tell about RPN - include link to YAZ 
         url.yaz.pqf -->
+
+   <sect3 id="querymodel-query-languages-pqf">
+    <title>Prefix Query Format (PQF)</title>
+
    <para>
-    Therefore, Index Data has defined a textual representation of the
-    RPN query: <literal>Prefix Query Format</literal>, short
-    <literal>PQF</literal>, which then has been adopted by other
-    parties developing Z39.50 software. It is also often referred to as
-    <literal>Prefix Query Notation</literal>, or in short 
-    <literal>PQN</literal>, and is thoroughly explained in       
-    <xref linkend="querymodel-pqf"/>. 
-   </para>
+     Index Data has defined a textual representaion in the 
+     <literal>Prefix Query Format</literal>, short
+     <literal>PQF</literal>, which then has been adopted by other
+     parties developing Z39.50 software. It is also often referred to as
+     <literal>Prefix Query Notation</literal>, or in short 
+     <literal>PQN</literal>, and is thoroughly explained in       
+     <xref linkend="querymodel-pqf"/>. 
+    </para>
+   </sect3>    
+
 
    <!-- PQF/RPN is natively supported. CQL is NOT . So we need a map -->
+   <sect3 id="querymodel-query-languages-cql">
+    <title>Common Query Language (CQL)</title>
    <para>
-    In addition, Zebra can be configured to understand and map the 
-    <literal>Common Query Language</literal>
-    (<ulink url="&url.cql;">CQL</ulink>)
-    to PQF. See an introduction on the mapping to the internal query
-    representation in  
-    <xref linkend="querymodel-cql-to-pqf"/>.
-   </para>
-  </sect1>
+     In addition, Zebra can be configured to understand and map the 
+     <literal>Common Query Language</literal>
+     (<ulink url="&url.cql;">CQL</ulink>)
+     to PQF. See an introduction on the mapping to the internal query
+     representation in  
+     <xref linkend="querymodel-cql-to-pqf"/>.
+    </para>
+   </sect3>    
+ 
+   </sect2>
+
+   <sect2 id="querymodel-query-types">
+    <title>Query types</title>
+    <para>
+    </para>
+
+    <sect3 id="querymodel-query-type-explain">
+     <title>Explain Queries</title>
+     <para>
+     </para>
+    </sect3>
+
+    <sect3 id="querymodel-query-type-search">
+     <title>Search Queries</title>
+     <para>
+     </para>
+    </sect3>
+
+    <sect3 id="querymodel-query-type-scan">
+     <title>Scan Queries</title>
+     <para>
+     </para>
+    </sect3>
+
+   </sect2>
+
+ </sect1>
+
   
   <sect1 id="querymodel-pqf">
    <title>Prefix Query Format structure and syntax</title>
@@ -72,7 +114,7 @@
       <note>
        The Zebra internal query procesing is modeled after 
        the <literal>Bib1</literal> attribute set, and the non-use
-       attributes type 2-9 are hard-wired in. It is therefore essential
+       attributes type 2-6 are hard-wired in. It is therefore essential
        to be familiar with <xref linkend="querymodel-bib1"/>. 
       </note>
      </para>
@@ -559,11 +601,16 @@
      </screen>
     </para>
 
+    <para>
+     See also <xref linkend="querymodel-use-string and  "/>
+     <xref linkend="querymodel-use-xpath"/> for
+     alternative acess to the Zebra internal index names and XPath queries.
+    </para> 
+
     
     <sect3 id="querymodel-bib1-relation">
      <title>Relation Attributes (type = 2)</title>
-    </sect3>
-    <para>
+       <para>
      Supported operations: = (default, of omitted), &lt; &gt; &lt;=, &gt;= .
      Unsupported: Not equal.
      
@@ -572,11 +619,9 @@
 
      All operations are based on a lexicographical ordering, 
      <emphasis>expect</emphasis> in the case for the
-     following structure attributes: numeric(109).
-
-    
+     following structure attributes: numeric(109). 
     </para>
-    
+
     <para>
      Ranked search for <emphasis>information retrieval</emphasis> in
      the title-register
@@ -585,7 +630,8 @@
       Z> find @attr 1=4 @attr 2=102 "information retrieval"
      </screen>
     </para>
-    
+    </sect3>
+
     <sect3 id="querymodel-bib1-position">
      <title>Position Attributes (type = 3)</title>
      <para>
@@ -593,6 +639,7 @@
       and first in subfield(2) are unsupported but using them
       does not trigger an error.
       <!-- It should -->
+      </para>
     </sect3>
     
     <sect3 id="querymodel-bib1-structure">
@@ -624,7 +671,7 @@
       Regexp-1(102) normal regular, Regexp-2(103) (regular with fuzzy),
       <!--
       Special 104, 105, 106 are deprecated and will be removed! -->
-      
+      </para>  
     </sect3>
     
     <sect3 id="querymodel-bib1-completeness">
@@ -637,6 +684,7 @@
       register type w.
       complete subfield(2) and complete field(3) both triggers
       search field type p.
+     </para>
     </sect3>
    </sect2>
     
