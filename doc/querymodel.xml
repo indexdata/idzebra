@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.3 2006-06-14 12:20:06 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.4 2006-06-14 13:44:15 adam Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -16,16 +16,19 @@
     the Z39.50 protocol layer. This representation is not human
     readable, nor defines any convenient way to specify queries. 
    </para>
+   <!-- tell about RPN - include link to YAZ 
+        url.yaz.pqf -->
    <para>
-    Therefore, Index Data has defined a textual representaion in the 
-    <literal>Prefix Query Format</literal>, short
+    Therefore, Index Data has defined a textual representation of the
+    RPN query: <literal>Prefix Query Format</literal>, short
     <literal>PQF</literal>, which then has been adopted by other
     parties developing Z39.50 software. It is also often referred to as
     <literal>Prefix Query Notation</literal>, or in short 
     <literal>PQN</literal>, and is thoroughly explained in       
     <xref linkend="querymodel-pqf"/>. 
    </para>
-   
+
+   <!-- PQF/RPN is natively supported. CQL is NOT . So we need a map -->
    <para>
     In addition, Zebra can be configured to understand and map the 
     <literal>Common Query Language</literal>
@@ -561,8 +564,19 @@
      <title>Relation Attributes (type = 2)</title>
     </sect3>
     <para>
-    </para>
+     Supported operations: = (default, of omitted), &lt; &gt; &lt;=, &gt;= .
+     Unsupported: Not equal.
+     
+     The following relation attributes are also supported: relevance (102).
+     <!-- always-matches (103) not supported for all indexes -->
 
+     All operations are based on a lexicographical ordering, 
+     <emphasis>expect</emphasis> in the case for the
+     following structure attributes: numeric(109).
+
+    
+    </para>
+    
     <para>
      Ranked search for <emphasis>information retrieval</emphasis> in
      the title-register
@@ -574,13 +588,18 @@
     
     <sect3 id="querymodel-bib1-position">
      <title>Position Attributes (type = 3)</title>
+     <para>
+      Only value of (any position(3) is supported. first in field(1),
+      and first in subfield(2) are unsupported but using them
+      does not trigger an error.
+      <!-- It should -->
     </sect3>
     
     <sect3 id="querymodel-bib1-structure">
      <title>Structure Attributes (type = 4)</title>
+     <!-- See tab/default.idx -->
     </sect3>
     
-
     <para>
      For example, in
      the GILS schema (<literal>gils.abs</literal>), the
@@ -596,10 +615,28 @@
 
     <sect3 id="querymodel-bib1-truncation">
      <title>Truncation Attributes (type = 5)</title>
+     <para>
+      Supported are: No truncation(100) which is the default,
+      Right trunation(1), Left truncation(2),
+      Left&amp;Right truncation(3), 
+      Process <literal>#</literal> in term(100) which maps
+      each # to <literal>.*</literal>,
+      Regexp-1(102) normal regular, Regexp-2(103) (regular with fuzzy),
+      <!--
+      Special 104, 105, 106 are deprecated and will be removed! -->
+      
     </sect3>
     
     <sect3 id="querymodel-bib1-completeness">
     <title>Completeness Attributes (type = 6)</title>
+     <para>
+      This attribute is ONLY used if structure w, p is to be
+      chosen. completeness is ignorned if not w, p is to be
+      used..
+      Incomplete field(1) is the default and makes Zebra use
+      register type w.
+      complete subfield(2) and complete field(3) both triggers
+      search field type p.
     </sect3>
    </sect2>
     
