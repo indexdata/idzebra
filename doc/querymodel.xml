@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.6 2006-06-15 13:41:49 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.7 2006-06-16 10:30:12 marc Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -22,6 +22,8 @@
     </para>
    <!-- tell about RPN - include link to YAZ 
         url.yaz.pqf -->
+
+
 
    <sect3 id="querymodel-query-languages-pqf">
     <title>Prefix Query Format (PQF)</title>
@@ -98,7 +100,7 @@
      may start with one specification of the 
      <emphasis>attribute set</emphasis> used. Following is a query
      tree, which 
-     consists of <emphasis>atomic query parts</emphasis>, eventually
+     consists of <emphasis>atomic query parts (APT)</emphasis>, eventually
      paired by <emphasis>boolean binary operators</emphasis>, and 
      finally  <emphasis>recursively combined </emphasis> into 
      complex query trees.   
@@ -119,7 +121,9 @@
       </note>
      </para>
      
-     <table id="querymodel-attribute-sets-table">
+     <table id="querymodel-attribute-sets-table"
+      frame="all" rowsep="1" colsep="1" align="center">
+
       <caption>Attribute sets predefined in Zebra</caption>
        <!--
        <thead>
@@ -128,7 +132,7 @@
        -->
        <tbody>
         <tr>
-         <td><emphasis>exp-1</emphasis></td>
+         <td><literal>exp-1</literal></td>
          <td><literal>Explain</literal> attribute set</td>
          <td>Special attribute set used on the special automagic
           <literal>IR-Explain-1</literal> database to gain information on
@@ -136,7 +140,7 @@
           and semantics.</td>
         </tr>
         <tr>
-         <td><emphasis>bib-1</emphasis></td>
+         <td><literal>bib-1</literal></td>
          <td><literal>Bib1</literal> attribute set</td>
          <td>Standard PQF query language attribute set which defines the
           semantics of Z39.50 searching. In addition, all of the
@@ -144,7 +148,7 @@
           processing</td>
         </tr>
         <tr>
-         <td><emphasis>gils</emphasis></td>
+         <td><literal>gils</literal></td>
          <td><literal>GILS</literal> attribute set</td>
          <td>Extention to the <literal>Bib1</literal> attribute set.</td>
         </tr>
@@ -159,7 +163,9 @@
       using the standard boolean operators into new query trees.
      </para>
      
-     <table id="querymodel-boolean-operators-table">
+     <table id="querymodel-boolean-operators-table"
+      frame="all" rowsep="1" colsep="1" align="center">
+
       <caption>Boolean operators</caption>
        <!--
        <thead>
@@ -167,19 +173,19 @@
       </thead>
        -->
        <tbody>
-        <tr><td><emphasis>@and</emphasis></td>
+        <tr><td><literal>@and</literal></td>
          <td>binary <literal>AND</literal> operator</td>
          <td>Set intersection of two atomic queries hit sets</td>
         </tr>
-        <tr><td><emphasis>@or</emphasis></td>
+        <tr><td><literal>@or</literal></td>
          <td>binary <literal>OR</literal> operator</td>
          <td>Set union of two atomic queries hit sets</td>
         </tr>
-        <tr><td><emphasis>@not</emphasis></td>
+        <tr><td><literal>@not</literal></td>
          <td>binary <literal>AND NOT</literal> operator</td>
          <td>Set complement of two atomic queries hit sets</td>
         </tr>
-        <tr><td><emphasis>@prox</emphasis></td>
+        <tr><td><literal>@prox</literal></td>
          <td>binary <literal>PROXIMY</literal> operator</td>
          <td>Set intersection of two atomic queries hit sets. In 
           addition, the intersection set is purged for all 
@@ -237,12 +243,13 @@
     
     
     <sect3 id="querymodel-atomic-queries">
-     <title>Atomic queries</title>
+     <title>Atomic queries (APT)</title>
      <para>
       Atomic queries are the query parts which work on one acess point
       only. These consist of <literal>an attribute list</literal>
       followed by a <literal>single term</literal> or a
-      <literal>quoted term list</literal>.
+      <literal>quoted term list</literal>, and are often called 
+      <emphasis>Attributes-Plus-Terms (APT)</emphasis> queries.
      </para>
      <para>
       Unsupplied non-use attributes type 2-9 are either inherited from
@@ -250,7 +257,9 @@
       See <xref linkend="querymodel-bib1"/> for details. 
      </para>
      
-     <table id="querymodel-atomic-queries-table">
+     <table id="querymodel-atomic-queries-table"
+      frame="all" rowsep="1" colsep="1" align="center">
+
       <caption>Atomic queries</caption>
        <!--
        <thead>
@@ -282,7 +291,7 @@
       </screen>
      </para>
      <para>
-      Equivalent query fully specified:
+      Equivalent query fully specified including all default values:
       <screen>
        Z> find @attrset bib-1 @attr 1=1017 @attr 2=3 @attr 3=3 @attr 4=1 @attr 5=100 @attr 6=1 "information"
       </screen>
@@ -611,7 +620,7 @@
      In addition, Zebra allows the acess of 
      <emphasis>internal index names</emphasis> and <emphasis>dynamic
      XPath</emphasis> as use attributes. 
-     See  <xref linkend="querymodel-use-string and  "/>
+     See  <xref linkend="querymodel-use-string"/> and 
      <xref linkend="querymodel-use-xpath"/> for
      alternative acess to the Zebra internal index names and XPath queries.
     </para> 
@@ -635,7 +644,9 @@
       side of the relation), e.g., Date-publication &lt;= 1975.
       </para>
 
-     <table id="querymodel-bib1-relation-table">
+     <table id="querymodel-bib1-relation-table"
+      frame="all" rowsep="1" colsep="1" align="center">
+
       <caption>Relation Attributes (type 2)</caption>
       <thead>
         <tr>
@@ -693,7 +704,7 @@
         <tr>
          <td>AlwaysMatches</td>
          <td>103</td>
-         <td>supported</td>
+         <td>unsupported</td>
         </tr>
        </tbody>
      </table>
@@ -708,15 +719,14 @@
     <para>
      All ordering operations are based on a lexicographical ordering, 
      <emphasis>expect</emphasis> when the 
-     structure attribute <literal>numeric (109)</literal> is used. In
+     <literal>structure attribute numeric (109)</literal> is used. In
      this case, ordering is numerical. See 
       <xref linkend="querymodel-bib1-structure"/>.
     </para>
 
      <para>
      Ranked search for <emphasis>information retrieval</emphasis> in
-     the title-register
-     (see <xref linkend="administration-ranking"/> for the glory details):
+     the title-register:
      <screen>
       Z> find @attr 1=4 @attr 2=102 "information retrieval"
      </screen>
@@ -731,7 +741,9 @@
       within the field or subfield in which it appears.
      </para>
 
-     <table id="querymodel-bib1-position-table">
+     <table id="querymodel-bib1-position-table"
+      frame="all" rowsep="1" colsep="1" align="center">
+
       <caption>Position Attributes (type 3)</caption>
       <thead>
         <tr>
@@ -786,7 +798,9 @@
       The default configuration is summerized in this table.
      </para>
 
-     <table id="querymodel-bib1-structure-table">
+     <table id="querymodel-bib1-structure-table"
+      frame="all" rowsep="1" colsep="1" align="center">
+
       <caption>Structure Attributes (type 4)</caption>
       <thead>
         <tr>
@@ -909,7 +923,9 @@
       document hit set of a search query.
      </para>
 
-     <table id="querymodel-bib1-truncation-table">
+     <table id="querymodel-bib1-truncation-table"
+      frame="all" rowsep="1" colsep="1" align="center">
+
       <caption>Truncation Attributes (type 5)</caption>
       <thead>
         <tr>
@@ -1006,7 +1022,9 @@
      set used in a <literal>search</literal> operation query.
     </para>
 
-     <table id="querymodel-zebra-attr-search-table">
+     <table id="querymodel-zebra-attr-search-table"
+      frame="all" rowsep="1" colsep="1" align="center">
+
       <caption>Zebra Search Attribute Extentions</caption>
        <thead>
         <tr>
@@ -1159,7 +1177,8 @@
      <title>Zebra Extention Term Reference Attribute (type 10)</title>
     </sect3>
     <para>
-     Zebra supports the searchResult-1 facility. If attribute 10 is
+     Zebra supports the <literal>searchResult-1</literal> facility. 
+     If the <literal>Term Reference Attribute (type 10)</literal> is
      given, that specifies a subqueryId value returned as part of the
      search result. It is a way for a client to name an APT part of a
      query. 
@@ -1185,36 +1204,42 @@
      recognized regardless of attribute 
      set used in a <literal>scan</literal> operation query.
     </para>
-     <table id="querymodel-zebra-attr-scan-table">
+     <table id="querymodel-zebra-attr-scan-table"
+      frame="all" rowsep="1" colsep="1" align="center">
+
       <caption>Zebra Scan Attribute Extentions</caption>
        <thead>
         <tr>
-         <td><emphasis>Name and Type</emphasis></td>
+         <td>Name</td>
+         <td>Type</td>
          <td>Operation</td>
          <td>Zebra version</td>
         </tr>
       </thead>
        <tbody>
         <tr>
-         <td><emphasis>Result Set Narrow (type 8)</emphasis></td>
+         <td>Result Set Narrow</td>
+         <td>8</td>
          <td>scan</td>
          <td>1.3</td>
         </tr>
         <tr>
-         <td><emphasis>Approximative Limit (type 9)</emphasis></td>
+         <td>Approximative Limit</td>
+         <td>9</td>
          <td>scan</td>
          <td>1.4</td>
         </tr>
        </tbody>
       </table>      
 
-    <sect3 id="querymodel-zebra-attr-xyz">
+    <sect3 id="querymodel-zebra-attr-narrow">
      <title>Zebra Extention Result Set Narrow (type 8)</title>
     </sect3>
     <para>
-     If attribute 8 is given for scan, the value is the name of a
-     result set. Each hit count in scan is @and'ed with the result set
-     given. 
+     If attribute <literal>Result Set Narrow (type 8)</literal> 
+     is given for <literal>scan</literal>, the value is the name of a
+     result set. Each hit count in <literal>scan</literal> is 
+     <literal>@and</literal>'ed with the result set given. 
     </para>
     <!--
     <para>
@@ -1226,12 +1251,14 @@
      Experimental and buggy. Definitely not to be used in production code.
     </warning>
 
-    <sect3 id="querymodel-zebra-attr-xyz">
+    <sect3 id="querymodel-zebra-attr-approx">
      <title>Zebra Extention Approximative Limit (type 9)</title>
     </sect3>
     <para>
-     The approximative limit (as for search) is a way to enable approx
-     hit counts for scan hit counts. 
+     The <literal>Zebra Extention Approximative Limit (type
+      9)</literal> is a way to enable approx
+     hit counts for <literal>scan</literal> hit counts, in the same
+     way as for <literal>search</literal> hit counts. 
     </para>
     <!--
     <para>
@@ -1434,7 +1461,9 @@
      Both query types follow the same syntax with the operands:
     </para>
 
-     <table id="querymodel-regular-operands-table">
+     <table id="querymodel-regular-operands-table"
+      frame="all" rowsep="1" colsep="1" align="center">
+
       <caption>Regular Expression Operands</caption>
        <!--
        <thead>
@@ -1443,15 +1472,15 @@
        -->
        <tbody>
         <tr>
-         <td><emphasis>x</emphasis></td>
-         <td>Matches the character <emphasis>x</emphasis>.</td>
+         <td><literal>x</literal></td>
+         <td>Matches the character <literal>x</literal>.</td>
         </tr>
         <tr>
-         <td><emphasis>.</emphasis></td>
+         <td><literal>.</literal></td>
          <td>Matches any character.</td>
         </tr>
         <tr>
-         <td><emphasis>[ .. ]</emphasis></td>
+         <td><literal>[ .. ]</literal></td>
          <td>Matches the set of characters specified;
          such as <literal>[abc]</literal> or <literal>[a-c]</literal>.</td>
         </tr>
@@ -1462,8 +1491,8 @@
      The above operands can be combined with the following operators:
     </para>
 
-    
-     <table id="querymodel-regular-operators-table">
+     <table id="querymodel-regular-operators-table"
+      frame="all" rowsep="1" colsep="1" align="center">
       <caption>Regular Expression Operators</caption>
        <!--
        <thead>
@@ -1472,39 +1501,39 @@
        -->
        <tbody>
         <tr>
-         <td><emphasis>x*</emphasis></td>
-         <td>Matches <emphasis>x</emphasis> zero or more times. 
+         <td><literal>x*</literal></td>
+         <td>Matches <literal>x</literal> zero or more times. 
           Priority: high.</td>
         </tr>
         <tr>
-         <td><emphasis>x+</emphasis></td>
-         <td>Matches <emphasis>x</emphasis> one or more times. 
+         <td><literal>x+</literal></td>
+         <td>Matches <literal>x</literal> one or more times. 
           Priority: high.</td>
         </tr>
         <tr>
-         <td><emphasis>x?</emphasis></td>
-         <td> Matches <emphasis>x</emphasis> zero or once. 
+         <td><literal>x?</literal></td>
+         <td> Matches <literal>x</literal> zero or once. 
           Priority: high.</td>
         </tr>
         <tr>
-         <td><emphasis>xy</emphasis></td>
-         <td> Matches <emphasis>x</emphasis>, then <emphasis>y</emphasis>.
+         <td><literal>xy</literal></td>
+         <td> Matches <literal>x</literal>, then <literal>y</literal>.
          Priority: medium.</td>
         </tr>
         <tr>
-         <td><emphasis>x|y</emphasis></td>
-         <td> Matches either <emphasis>x</emphasis> or <emphasis>y</emphasis>.
+         <td><literal>x|y</literal></td>
+         <td> Matches either <literal>x</literal> or <literal>y</literal>.
          Priority: low.</td>
         </tr>
         <tr>
-         <td><emphasis>( )</emphasis></td>
+         <td><literal>( )</literal></td>
          <td>The order of evaluation may be changed by using parentheses.</td>
         </tr>
        </tbody>
       </table>      
-    
+
     <para>
-     If the first character of the <emphasis>Regxp-2</emphasis> query
+     If the first character of the <literal>Regxp-2</literal> query
      is a plus character (<literal>+</literal>) it marks the
      beginning of a section with non-standard specifiers.
      The next plus character marks the end of the section.
@@ -1528,8 +1557,7 @@
 
     <para>
      Combinations with other attributes are possible. For example, a
-     ranked search with a regular expression 
-     (see <xref linkend="administration-ranking"/> for the glory details):
+     ranked search with a regular expression:
      <screen>
       Z> find @attr 1=4 @attr 5=102 @attr 2=102 "informat.* retrieval"
      </screen>
@@ -1544,7 +1572,7 @@
     process input records.
     Two basic types of processing are available - raw text and structured
     data. Raw text is just that, and it is selected by providing the
-    argument <emphasis>text</emphasis> to Zebra. Structured records are
+    argument <literal>text</literal> to Zebra. Structured records are
     all handled internally using the basic mechanisms described in the
     subsequent sections.
     Zebra can read structured records in many different formats.
