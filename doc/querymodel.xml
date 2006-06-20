@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.8 2006-06-16 12:54:55 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.9 2006-06-20 14:20:50 marc Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -165,7 +165,8 @@
      may start with one specification of the 
      <emphasis>attribute set</emphasis> used. Following is a query
      tree, which 
-     consists of <emphasis>atomic query parts (APT)</emphasis>, eventually
+     consists of <emphasis>atomic query parts (APT)</emphasis> or
+     <emphasis>named result sets</emphasis>, eventually
      paired by <emphasis>boolean binary operators</emphasis>, and 
      finally  <emphasis>recursively combined </emphasis> into 
      complex query trees.   
@@ -178,48 +179,77 @@
       issued. Zebra comes with some predefined attribute set
       definitions, others can easily be defined and added to the
       configuration.
-      <note>
-       The Zebra internal query procesing is modeled after 
-       the <literal>Bib1</literal> attribute set, and the non-use
-       attributes type 2-6 are hard-wired in. It is therefore essential
-       to be familiar with <xref linkend="querymodel-bib1"/>. 
-      </note>
      </para>
+
      
      <table id="querymodel-attribute-sets-table"
       frame="all" rowsep="1" colsep="1" align="center">
 
       <caption>Attribute sets predefined in Zebra</caption>
-       <!--
+       
        <thead>
-       <tr><td>one</td><td>two</td></tr>
+       <tr>
+         <td>Attribute set</td>
+         <td>Short hand</td>
+         <td>Status</td>
+         <td>Notes</td>
+        </tr>
       </thead>
-       -->
+      
        <tbody>
         <tr>
-         <td><literal>exp-1</literal></td>
          <td><literal>Explain</literal> attribute set</td>
+         <td><literal>exp-1</literal></td>
          <td>Special attribute set used on the special automagic
           <literal>IR-Explain-1</literal> database to gain information on
           server capabilities, database names, and database
           and semantics.</td>
+         <td>predefined</td>
         </tr>
         <tr>
-         <td><literal>bib-1</literal></td>
          <td><literal>Bib1</literal> attribute set</td>
+         <td><literal>bib-1</literal></td>
          <td>Standard PQF query language attribute set which defines the
           semantics of Z39.50 searching. In addition, all of the
-          non-use attributes (type 2-9) define the Zebra internal query
-          processing</td>
+          non-use attributes (type 2-9) define the hard-wired 
+          Zebra internal query
+          processing.</td>
+         <td>default</td>
         </tr>
         <tr>
-         <td><literal>gils</literal></td>
          <td><literal>GILS</literal> attribute set</td>
+         <td><literal>gils</literal></td>
          <td>Extention to the <literal>Bib1</literal> attribute set.</td>
+         <td>predefined</td>
         </tr>
+        <!--
+        <tr>
+         <td><literal>IDXPATH</literal> attribute set</td>
+         <td><literal>idxpath</literal></td>
+         <td>Hardwired XPATH like attribute set, only available for
+             indexing with the GRS record model</td>
+         <td>hardwired</td>
+        </tr>
+        -->
        </tbody>
      </table>
     </sect3>
+
+    <para>
+     The use attributes (type 1) of the predefined attribute sets can
+     be reconfigured by  tweaking the files
+     <filename>tab/*.att</filename>.
+     New attribute sets can be defined by adding similar files in the
+     configuration path of the server.  
+    </para>
+
+      <note>
+       The Zebra internal query processing is modeled after 
+       the <literal>Bib1</literal> attribute set, and the non-use
+       attributes type 2-6 are hard-wired in. It is therefore essential
+       to be familiar with <xref linkend="querymodel-bib1-nonuse"/>. 
+      </note>
+
     
     <sect3 id="querymodel-boolean-operators">
      <title>Boolean operators</title>
@@ -372,6 +402,51 @@
 
     </sect3>
     
+    
+    <sect3 id="querymodel-resultset">
+     <title>Named Result Sets</title>
+     <para>
+      Named result sets are supported in Zebra, and result sets can be
+      used as operands without limitations.
+     </para>
+     <para>      
+      After the execution of a search, the result set is available at
+      the server, such that the client can use it for subsequent
+      searches or retrieval requests. The Z30.50 standard actually
+      stresses the fact that result sets are voliatile. It may cease
+      to exist at any time point after search, and the server will
+      send a diagnostic to the effect that the requested
+      result set does not exist any more.
+     </para>
+     
+     <para>
+      Defining a named result set and re-using it in the next query,
+      using <literal>yaz-client</literal>. 
+      <screen>
+       Z> f @attr 1=4 mozart
+       ...
+       Number of hits: 43, setno 1
+       ...
+       Z> f @and @set 1 @attr 1=4 amadeus
+       ...
+       Number of hits: 14, setno 2
+       ...
+       Z> f @attr 1=1016 beethoven
+       ...
+       Number of hits: 26, setno 3
+       ...
+      </screen>
+     </para>
+     
+     <note>
+      Named result sets are only supported by the Z39.50 protocol.
+      The SRU web service is stateless, and therefore the notion of
+      named result sets does not exist when acessing a Zebra server by
+      the SRU protocol.
+     </note>
+    </sect3>
+
+
     <sect3 id="querymodel-use-string">
      <title>Zebra's special use attribute type 1 of form 'string'</title>
      <para>
@@ -509,6 +584,30 @@
       this facility when speed is essential, and the database content
       size is medium to large. 
      </warning>
+
+     <!--
+
+     Shall I document the special 'ixpath' attribute set ?? Marc
+      X-Path searching
+
+     Search for all documents with specific path.
+
+     For path /c1/c2/.../cn use @attr idxpath 1=1 @attr 4=3 cn/cn-1/../c1/ 
+     Specifically for /c, use @attr idxpath 1=1 @attr 4=3 c/
+
+     Search for CDATA in elememts
+
+     @attr idxpath 1=1016 text
+
+     Search for CDATA in attributes
+
+     @attr idxpath 1=1015 text
+
+     Search for all documents with given attribute type
+
+     @attr idxpath 1=3 @attr 4=3 type 
+     -->
+
     </sect3>
     
    </sect2>
@@ -648,9 +747,6 @@
    <sect2 id="querymodel-bib1">
     <title>Bib1 Attribute Set</title>
     <para>
-     Something about querying to be written ..
-    </para>
-    <para>
      Most of the information contained in this section is an excerpt of
      the <literal>ATTRIBUTE SET BIB-1 (Z39.50-1995)
       SEMANTICS</literal>, 
@@ -659,13 +755,13 @@
      <ulink url="&url.z39.50.attset.bib1;">Bib-1
       Attribute Set</ulink> 
      version from 2003. Index Data is not the copyright holder of this
-     information. 
+     information, except for the configuration details, the listing of
+     Zebra's capabilities, and the example queries. 
     </para>
     
     
    <sect3 id="querymodel-bib1-use">
      <title>Use Attributes (type 1)</title>
-    </sect3>
 
     <para>
      A use attribute specifies an access point for any atomic query.
@@ -697,7 +793,13 @@
       Z> find @attr 1=4 "information retrieval"
      </screen>
     </para>
+    </sect3>
 
+   </sect2>
+
+
+   <sect2 id="querymodel-bib1-nonuse">
+     <title>Zebra general Bib1 Non-Use Attributes (type 2-6)</title>
     
     <sect3 id="querymodel-bib1-relation">
      <title>Relation Attributes (type 2)</title>
@@ -1306,14 +1408,36 @@
      result set. Each hit count in <literal>scan</literal> is 
      <literal>@and</literal>'ed with the result set given. 
     </para>
-    <!--
     <para>
+     Consider for example 
+     the case of scanning all title fields around the
+     scanterm <emphasis>mozart</emphasis>, then refining the scan by
+     issuing a filtering query for <emphasis>amadeus</emphasis> to
+     restric the scan to the result set of the query:  
      <screen>
+      Z> scan @attr 1=4 mozart 
+      ...
+      * mozart (43)
+        mozartforskningen (1)
+        mozartiana (1)
+        mozarts (16)
+      ...
+      Z> f @attr 1=4 amadeus   
+      ...
+      Number of hits: 15, setno 2
+      ...
+      Z> scan @attr 1=4 @attr 8=2 mozart
+      ...
+      * mozart (14)
+        mozartforskningen (0)
+        mozartiana (0)
+        mozarts (1)
+      ...
      </screen>
     </para>
-    -->
+   
     <warning>
-     Experimental and buggy. Definitely not to be used in production code.
+     Experimental. Do not use in production code.
     </warning>
 
     <sect3 id="querymodel-zebra-attr-approx">
@@ -1332,7 +1456,7 @@
     </para>
     -->
     <warning>
-     Experimental. Do not use in production code.
+     Experimental and buggy. Definitely not to be used in production code.
     </warning>
 
 
