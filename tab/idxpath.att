@@ -1,0 +1,11 @@
+# The Zebra special IDXPATH Attribute Set
+#
+# $Id: idxpath.att,v 1.1 2006-06-21 13:14:26 marc Exp $
+name idxpath
+reference idxpath
+
+att 1           _XPATH_BEGIN
+att 2           _XPATH_END
+att 3           _XPATH_ATTR_NAME
+att 1015        _XPATH_ATTR_CDATA
+att 1016        _XPATH_CDATA
