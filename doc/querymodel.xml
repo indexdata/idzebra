@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.9 2006-06-20 14:20:50 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.10 2006-06-21 13:32:33 marc Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -198,7 +198,7 @@
       
        <tbody>
         <tr>
-         <td><literal>Explain</literal> attribute set</td>
+         <td><literal>Explain</literal></td>
          <td><literal>exp-1</literal></td>
          <td>Special attribute set used on the special automagic
           <literal>IR-Explain-1</literal> database to gain information on
@@ -207,7 +207,7 @@
          <td>predefined</td>
         </tr>
         <tr>
-         <td><literal>Bib1</literal> attribute set</td>
+         <td><literal>Bib1</literal></td>
          <td><literal>bib-1</literal></td>
          <td>Standard PQF query language attribute set which defines the
           semantics of Z39.50 searching. In addition, all of the
@@ -217,20 +217,18 @@
          <td>default</td>
         </tr>
         <tr>
-         <td><literal>GILS</literal> attribute set</td>
+         <td><literal>GILS</literal></td>
          <td><literal>gils</literal></td>
          <td>Extention to the <literal>Bib1</literal> attribute set.</td>
          <td>predefined</td>
         </tr>
-        <!--
         <tr>
-         <td><literal>IDXPATH</literal> attribute set</td>
+         <td><literal>IDXPATH</literal></td>
          <td><literal>idxpath</literal></td>
          <td>Hardwired XPATH like attribute set, only available for
              indexing with the GRS record model</td>
-         <td>hardwired</td>
+         <td>depreciated</td>
         </tr>
-        -->
        </tbody>
      </table>
     </sect3>
@@ -243,12 +241,12 @@
      configuration path of the server.  
     </para>
 
-      <note>
-       The Zebra internal query processing is modeled after 
-       the <literal>Bib1</literal> attribute set, and the non-use
-       attributes type 2-6 are hard-wired in. It is therefore essential
-       to be familiar with <xref linkend="querymodel-bib1-nonuse"/>. 
-      </note>
+    <note>
+     The Zebra internal query processing is modeled after 
+     the <literal>Bib1</literal> attribute set, and the non-use
+     attributes type 2-6 are hard-wired in. It is therefore essential
+     to be familiar with <xref linkend="querymodel-bib1-nonuse"/>. 
+    </note>
 
     
     <sect3 id="querymodel-boolean-operators">
@@ -584,29 +582,6 @@
       this facility when speed is essential, and the database content
       size is medium to large. 
      </warning>
-
-     <!--
-
-     Shall I document the special 'ixpath' attribute set ?? Marc
-      X-Path searching
-
-     Search for all documents with specific path.
-
-     For path /c1/c2/.../cn use @attr idxpath 1=1 @attr 4=3 cn/cn-1/../c1/ 
-     Specifically for /c, use @attr idxpath 1=1 @attr 4=3 c/
-
-     Search for CDATA in elememts
-
-     @attr idxpath 1=1016 text
-
-     Search for CDATA in attributes
-
-     @attr idxpath 1=1015 text
-
-     Search for all documents with given attribute type
-
-     @attr idxpath 1=3 @attr 4=3 type 
-     -->
 
     </sect3>
     
@@ -1461,7 +1436,145 @@
 
 
    </sect2>
-    
+   
+   
+   <sect2 id="querymodel-idxpath">
+    <title>Zebra special IDXPATH Attribute Set for GRS indexing</title>
+    <para>
+     The attribute-set <literal>idxpath</literal> consists of a single 
+     <literal>Use (type 1)</literal> attribute. All non-use attributes
+     behave as normal. 
+    </para>
+    <para>
+     This feature is enabled when defining the
+     <literal>xpath enable</literal> option in the GRS filter
+     <literal>*.abs</literal> configuration files. If one wants to use
+     the special <literal>idxpath</literal> numeric attribute set, the
+     main Zebra configuraiton file <filename>zebra.cfg</filename>
+     directive <literal>attset: idxpath.att</literal> must be enabled.
+    </para>
+    <warning>The <literal>idxpath</literal> is depreciated, may not be
+     supported in future Zebra versions, and should definitely
+     not be used in production code.
+    </warning>
+
+    <sect3 id="querymodel-idxpath-use">
+    <title>IDXPATH Use Attributes (type = 1)</title>
+     <para>
+      This attribute set allows one to search GRS filter indexed
+      records by XPATH like structured index names. It is enabled by
+      specifying the <literal></literal>
+     </para>
+
+
+     <warning>The <literal>idxpath</literal> option defines hard-coded
+      index names, which might clash with your own index names.
+     </warning>
+     
+     <table id="querymodel-idxpath-use-table"
+      frame="all" rowsep="1" colsep="1" align="center">
+
+      <caption>Zebra specific IDXPATH Use Attributes (type 1)</caption>
+      <thead>
+        <tr>
+         <td>IDXPATH</td>
+         <td>Value</td>
+         <td>String Index</td>
+         <td>Notes</td>
+        </tr>
+       </thead>
+       <tbody>
+        <tr>
+         <td>XPATH Begin</td>
+         <td>1</td>
+         <td>_XPATH_BEGIN</td>
+         <td>depreciated</td>
+        </tr>
+        <tr>
+         <td>XPATH End</td>
+         <td>2</td>
+         <td>_XPATH_END</td>
+         <td>depreciated</td>
+        </tr>
+        <tr>
+         <td>XPATH CData</td>
+         <td>1016</td>
+         <td>_XPATH_CDATA</td>
+         <td>depreciated</td>
+        </tr>
+        <tr>
+         <td>XPATH Attribute Name</td>
+         <td>3</td>
+         <td>_XPATH_ATTR_NAME</td>
+         <td>depreciated</td>
+        </tr>
+        <tr>
+         <td>XPATH Attribute CData</td>
+         <td>1015</td>
+         <td>_XPATH_ATTR_CDATA</td>
+         <td>depreciated</td>
+        </tr>
+       </tbody>
+     </table>
+
+
+     <para>
+      See <filename>tab/idxpath.att</filename> for more information.
+     </para>
+     <para>
+      Search for all documents starting with root element 
+      <literal>/root</literal> (either using the numeric or the string
+      use attributes):
+      <screen>
+       Z> find @attrset idxpath @attr 1=1 @attr 4=3 root/ 
+       Z> find @attr idxpath 1=1 @attr 4=3 root/ 
+       Z> find @attr 1=_XPATH_BEGIN @attr 4=3 root/ 
+      </screen>
+     </para>
+     <para>
+      Search for all documents where specific nested XPATH 
+      <literal>/c1/c2/../cn</literal> exists. Notice the very
+      counter-intuitive <emphasis>reverse</emphasis> notation!
+      <screen>
+       Z> find @attrset idxpath @attr 1=1 @attr 4=3 cn/cn-1/../c1/ 
+       Z> find @attr 1=_XPATH_BEGIN @attr 4=3 cn/cn-1/../c1/ 
+      </screen>
+     </para>
+     <para>
+      Search for CDATA string <emphasis>text</emphasis> in any  element
+      <screen>
+       Z> find @attrset idxpath @attr 1=1016 text
+       Z> find @attr 1=_XPATH_CDATA text
+      </screen>
+     </para>
+     <para>
+       Search for CDATA string <emphasis>anothertext</emphasis> in any
+       attribute: 
+      <screen> 
+       Z> find @attrset idxpath @attr 1=1015 anothertext
+       Z> find @attr 1=_XPATH_ATTR_CDATA anothertext
+      </screen>
+     </para>
+     <para>
+       Search for all documents with have an XML element node
+       including an XML  attribute named <emphasis>creator</emphasis> 
+      <screen> 
+       Z> find @attrset idxpath @attr 1=3 @attr 4=3 creator 
+       Z> find @attr 1=_XPATH_ATTR_NAME @attr 4=3 creator 
+      </screen>
+     </para>
+     <para>
+      Combining usual <literal>bib-1</literal> attribut set searches
+      with <literal>idxpath</literal> attribute set searches:
+      <screen>
+       Z> find @and @attr idxpath 1=1 @attr 4=3 link/ @attr 1=4 mozart
+       Z> find @and @attr 1=_XPATH_BEGIN @attr 4=3 link/ @attr 1=_XPATH_CDATA mozart
+      </screen>
+     </para>
+
+    </sect3>
+   </sect2>
+
 
    <sect2 id="querymodel-bib1-mapping">
     <title>Mapping from Bib1 Attributes to Zebra internal 
