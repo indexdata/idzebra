@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.53 2006-05-10 08:13:33 adam Exp $
+/* $Id: rset.c,v 1.54 2006-06-22 22:58:59 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -175,6 +175,7 @@ RSET rset_create_base(const struct rset_control *sel,
     rset->hits_limit = 0;
     rset->hits_round = 1000;
     rset->keycontrol = kcontrol;
+
     (*kcontrol->inc)(kcontrol);
     rset->scope = scope;
     rset->term = term;
@@ -243,7 +244,6 @@ RSET rset_dup (RSET rs)
     (rs->refcount)++;
     yaz_log(log_level, "rs_dup(%s), rs=%p, refcount=%d",
             rs->control->desc, rs, rs->refcount); 
-    (*rs->keycontrol->inc)(rs->keycontrol);
     return rs;
 }
 
