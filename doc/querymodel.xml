@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.10 2006-06-21 13:32:33 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.11 2006-06-22 14:01:55 marc Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -222,6 +222,7 @@
          <td>Extention to the <literal>Bib1</literal> attribute set.</td>
          <td>predefined</td>
         </tr>
+        <!--
         <tr>
          <td><literal>IDXPATH</literal></td>
          <td><literal>idxpath</literal></td>
@@ -229,6 +230,7 @@
              indexing with the GRS record model</td>
          <td>depreciated</td>
         </tr>
+        -->
        </tbody>
      </table>
     </sect3>
@@ -260,11 +262,13 @@
       frame="all" rowsep="1" colsep="1" align="center">
 
       <caption>Boolean operators</caption>
-       <!--
        <thead>
-       <tr><td>one</td><td>two</td></tr>
+        <tr>
+         <td>Keyword</td>
+         <td>Operator</td>
+         <td>Description</td>
+        </tr>
       </thead>
-       -->
        <tbody>
         <tr><td><literal>@and</literal></td>
          <td>binary <literal>AND</literal> operator</td>
@@ -318,8 +322,9 @@
       The hit set is a subset of the coresponding
       AND query.
       <screen>
-       Z> find @prox information retrieval
+       Z> find @prox 0 3 0 2 k 2 information retrieval
       </screen>
+       See  <ulink url="&url.yaz.pqf;">PQF grammer</ulink> for details.
      </para>
      <para>
       Querying for the intersection of all documents containing the
@@ -360,14 +365,16 @@
       </thead>
        -->
        <tbody>
-        <tr><td><emphasis>attribute list</emphasis></td>
+        <tr>
+         <td><emphasis>attribute list</emphasis></td>
          <td>List of <literal>orthogonal</literal> attributes</td>
          <td>Any of the orthogonal attribute types may be omitted,
           these are inherited from higher query tree nodes, or if not
           inherited, are set to the default Zebra configuration values.
          </td>
         </tr>
-        <tr><td><emphasis>term</emphasis></td>
+        <tr>
+         <td><emphasis>term</emphasis></td>
          <td>single <literal>term</literal> 
           or <literal>quoted term list</literal>   </td>
          <td>Here the search terms or list of search terms is added
@@ -460,19 +467,24 @@
      </para>
      <para>
       Finding all documents which have the term list "information
-      retrieval" in an Zebra index, using it's internal full string name.
+      retrieval" in an Zebra index, using it's internal full string
+      name. Scanning the same index.
       <screen>
        Z> find @attr 1=sometext "information retrieval"
+       Z> scan @attr 1=sometext aterm
       </screen>
      </para>
      <para>
-      Searching the bib-1 use attribute 54 using it's string name:
+      Searching or scanning
+      the bib-1 use attribute 54 using it's string name:
       <screen>
        Z> find @attr 1=Code-language eng
+       Z> scan @attr 1=Code-language ""
       </screen>
      </para>
      <para>
-      Searching in any silly string index - if it's defined in your
+      It is possible to search
+      in any silly string index - if it's defined in your
       indexation rules and can be parsed by the PQF parser. 
       This is definitely not the recommended use of
       this facility, as it might confuse your users with some very
@@ -482,7 +494,7 @@
       </screen>
      </para>
      <para>
-      See <xref linkend="querymodel-bib1-mapping"/> for details, and 
+      See also <xref linkend="querymodel-bib1-mapping"/> for details, and 
       <xref linkend="server-sru"/>
       for the SRU PQF query extention using string names as a fast
       debugging facility.
@@ -504,7 +516,7 @@
       XPath queries can entered at search time, and second, it might
       confuse users very much that an XPath-alike index name in fact
       gets populated from a possible entirely different XML element
-      than it pretends to acess. 
+      than it pretends to access. 
      </para>
      <para>
       When using the <literal>GRS Record Model</literal> 
@@ -546,15 +558,25 @@
       </screen>
      </para>
      
+     <para>
+      Searching inside attribute strings is possible:
+      <screen>
+       Z> find @attr 1=/link/@creator morten 
+      </screen>
+      </para>
+
      <para>     
       Filter the adressing XPath by a predicate working on exact
       string values in
       attributes (in the XML sense) can be done: return all those docs which
       have the term "english" contained in one of all text subnodes of
       the subtree defined by the XPath
-      <literal>/record/title[@lang='en']</literal> 
+      <literal>/record/title[@lang='en']</literal>. And similar
+      predicate filtering.
       <screen>
        Z> find @attr 1=/record/title[@lang='en'] english
+       Z> find @attr 1=/link[@creator='sisse'] sibelius
+       Z> find @attr 1=/link[@creator='sisse']/description[@xml:lang='da'] sibelius 
       </screen>
      </para>
      
@@ -571,8 +593,7 @@
       with <literal>'{ }'</literal> to prevent syntax errors:
       <screen>
        Z> find @attr {1=/root/first[@attr='danish']} content
-       Z> find @attr {1=/root/second[@attr='danish lake']} 
-       Z> find @attr {1=/root/third[@attr='dansk s\xc3\xb8']} 
+       Z> find @attr {1=/record/@set} oai
       </screen>
      </para>
      <warning>
@@ -755,17 +776,17 @@
     <para>
      In addition, Zebra allows the acess of 
      <emphasis>internal index names</emphasis> and <emphasis>dynamic
-     XPath</emphasis> as use attributes. 
-     See  <xref linkend="querymodel-use-string"/> and 
-     <xref linkend="querymodel-use-xpath"/> for
-     alternative acess to the Zebra internal index names and XPath queries.
+     XPath</emphasis> as use attributes; see
+      <xref linkend="querymodel-use-string"/> and 
+     <xref linkend="querymodel-use-xpath"/>.
     </para> 
 
     <para>
      Phrase search for <emphasis>information retrieval</emphasis> in
-     the title-register:
+     the title-register, scanning the same register afterwards:
      <screen>
       Z> find @attr 1=4 "information retrieval"
+      Z> scan @attr 1=4 information
      </screen>
     </para>
     </sect3>
@@ -935,7 +956,7 @@
      <para> 
       The possible values of the  
       <literal>structure attribute (type 4)</literal> can be defined
-      using the configuraiton file <filename>
+      using the configuration file <filename>
       tab/default.idx</filename>.
       The default configuration is summerized in this table.
      </para>
@@ -1034,16 +1055,56 @@
         </tr>
        </tbody>
      </table>
-    </sect3>
-    
-    <para>
-     The structure attribute value <literal>local-number
-      (107)</literal>
-     is supported, and maps always to the Zebra internal document ID.
-     </para>
+     
 
     <para>
-     For example, in
+     The structure attribute values 
+     <literal>Word list (6)</literal>
+     is supported, and maps to the boolean <literal>AND</literal>
+     combination of words supplied. The word list is useful when
+     google-like bag-of-word queries need to be translated from a GUI
+     query language to PQF.  For example, the following queries
+     are equivalent:
+     <screen>
+      Z> find @attr 1=Title @attr 4=6 "mozart amadeus"
+      Z> find @attr 1=Title  @and mozart amadeus
+     </screen>
+    </para>
+
+    <para>
+     The structure attribute value 
+     <literal>Free-form-text (105)</literal> and
+     <literal>Document-text (106)</literal>
+     are supported, and map both to the boolean <literal>OR</literal>
+     combination of words supplied. The following queries
+     are equivalent:
+     <screen>
+      Z> find @attr 1=Body-of-text @attr 4=105 "bach salieri teleman"
+      Z> find @attr 1=Body-of-text @attr 4=106 "bach salieri teleman"
+      Z> find @attr 1=Body-of-text @or bach @or salieri teleman 
+     </screen>
+     This <literal>OR</literal> list of terms is very usefull in
+     combination with relevance ranking:
+     <screen>
+      Z> find @attr 1=Body-of-text @attr 2=102 @attr 4=105 "bach salieri teleman"
+     </screen>
+    </para>
+    
+    <para>
+     The structure attribute value 
+     <literal>Local number (107)</literal>
+     is supported, and maps always to the Zebra internal document ID,
+     irrespectively which use attribute is specified. The following queries
+     have exactly the same unique record in the hit set:
+     <screen>
+      Z> find @attr 4=107 10
+      Z> find @attr 1=4 @attr 4=107 10
+      Z> find @attr 1=1010 @attr 4=107 10
+     </screen>
+    </para>
+
+    <para>
+     In
      the GILS schema (<literal>gils.abs</literal>), the
      west-bounding-coordinate is indexed as type <literal>n</literal>,
      and is therefore searched by specifying
@@ -1054,6 +1115,13 @@
       Z> find @attr 4=109 @attr 2=5 @attr gils 1=2038 -114
      </screen> 
     </para>
+     <note>
+      The exact mapping between PQF queries and Zebra internal indexes
+      and index types is explained in 
+       <xref linkend="querymodel-bib1-mapping"/>.
+      </note>
+
+   </sect3>
 
     <sect3 id="querymodel-bib1-truncation">
      <title>Truncation Attributes (type = 5)</title>
@@ -1116,44 +1184,161 @@
      </table>
 
      <para>
-      Truncation attribute value 
-      <literal>Process # in search term (100)</literal> is a
+      The truncation attribute values 1-3 perform the obvious way:
+      <screen>
+       Z> scan @attr 1=Body-of-text  schnittke
+       ...
+       * schnittke (81)
+       schnittkes (31)
+       schnittstelle (1)
+       ...
+       Z> find @attr 1=Body-of-text  @attr 5=1 schnittke
+       ...
+       Number of hits: 95, setno 7
+       ...
+       Z> find @attr 1=Body-of-text  @attr 5=2 schnittke
+       ...
+       Number of hits: 81, setno 6
+       ...
+       Z> find @attr 1=Body-of-text  @attr 5=3 schnittke
+       ...
+       Number of hits: 95, setno 8
+      </screen>
+      </para>
+
+     <para>
+      The truncation attribute value 
+      <literal>Process # in search term (101)</literal> is a
       poor-man's regular expression search. It maps
       each <literal>#</literal> to <literal>.*</literal>, and
       performes then a <literal>Regexp-1 (102)</literal> regular
-      expression search.
+      expression search. The following two queries are equivalent:
+      <screen>
+       Z> find @attr 1=Body-of-text  @attr 5=101 schnit#ke
+       Z> find @attr 1=Body-of-text  @attr 5=102 schnit.*ke
+       ...
+       Number of hits: 89, setno 10
+      </screen>
      </para>
+     
      <para>
-      Truncation attribute value 
+      The truncation attribute value 
        <literal>Regexp-1 (102)</literal> is a normal regular search,
-      see.
+      see <xref linkend="querymodel-regular"/> for details.
+      <screen>
+       Z> find @attr 1=Body-of-text  @attr 5=102 schnit+ke
+       Z> find @attr 1=Body-of-text  @attr 5=102 schni[a-t]+ke
+      </screen>
      </para>
+
      <para>
-       Truncation attribute value 
+       The truncation attribute value 
       <literal>Regexp-2 (103) </literal> is a Zebra specific extention
       which allows <emphasis>fuzzy</emphasis> matches. One single
       error in spelling of search terms is allowed, i.e., a document
       is hit if it includes a term which can be mapped to the used
       search term by one character substitution, addition, deletion or
       change of posiiton. 
+      <screen>
+       Z> find @attr 1=Body-of-text  @attr 5=100 schnittke
+       ...
+       Number of hits: 81, setno 14
+       ...
+       Z> find @attr 1=Body-of-text  @attr 5=103 schnittke
+       ...
+       Number of hits: 103, setno 15
+       ...
+      </screen>
       </para>  
-      <!--
-      Special 104, 105, 106 are deprecated and will be removed! -->
     </sect3>
     
     <sect3 id="querymodel-bib1-completeness">
     <title>Completeness Attributes (type = 6)</title>
+
+
      <para>
-      This attribute is ONLY used if structure w, p is to be
-      chosen. completeness is ignorned if not w, p is to be
-      used..
-      Incomplete field(1) is the default and makes Zebra use
-      register type w.
-      complete subfield(2) and complete field(3) both triggers
-      search field type p.
+      The <literal>Completeness Attributes (type = 6)</literal>
+      is used to specify that a given search term or term list is  either  
+      part of the terms of a given index/field 
+      (<literal>Incomplete subfield (1)</literal>), or is
+      what literally is found in the entire field's index
+      (<literal>Complete field (3)</literal>).
+      </para>
+
+     <table id="querymodel-bib1-completeness-table"
+      frame="all" rowsep="1" colsep="1" align="center">
+      <caption>Completeness Attributes (type = 6)</caption>
+      <thead>
+        <tr>
+         <td>Completeness</td>
+         <td>Value</td>
+         <td>Notes</td>
+        </tr>
+       </thead>
+       <tbody>
+        <tr>
+         <td>Incomplete subfield</td>
+         <td>1</td>
+         <td>default</td>
+        </tr>
+        <tr>
+         <td>Complete subfield</td>
+         <td>2</td>
+         <td>depreciated</td>
+        </tr>
+        <tr>
+         <td>Complete field</td>
+         <td>3</td>
+         <td>supported</td>
+        </tr>
+       </tbody>
+     </table>
+
+     <para>
+      The <literal>Completeness Attributes (type = 6)</literal>
+      is only partially and conditionally
+      supported in the sense that it is ignored if the hit index is
+      not of structure <literal>type="w"</literal> or 
+      <literal>type="p"</literal>.
+      </para>
+     <para>
+      <literal>Incomplete subfield (1)</literal> is the default, and
+      makes Zebra use 
+      register <literal>type="w"</literal>, whereas 
+      <literal>Complete field (3)</literal> triggers
+      search and scan in index <literal>type="p"</literal>.
      </para>
+     <para>
+      The <literal>Complete subfield (2)</literal> is a reminiscens
+      from the  happy <literal>MARC</literal>
+      binary format days. Zebra does not support it, but maps silently
+      to <literal>Complete field (3)</literal>.
+     </para>
+
+     <note>
+      The exact mapping between PQF queries and Zebra internal indexes
+      and index types is explained in 
+       <xref linkend="querymodel-bib1-mapping"/>.
+      </note>
     </sect3>
    </sect2>
+  
+   </sect1>
+
+
+  <sect1 id="querymodel-zebra">
+   <title>Advanced Zebra PQF Features</title>
+   <para>
+    The Zebra internal query engine has been extended to specific needs
+    not covered by the <literal>bib-1</literal> attribute set query
+    model. These extentions are <emphasis>non-standard</emphasis>
+    and <emphasis>non-portable</emphasis>: most functional extentions
+    are modeled over the <literal>bib-1</literal> attribute set,
+    defining type 7-9 attributes.
+    There are also the speciel 
+    <literal>string</literal> type index names for the
+    <literal>idxpath</literal> attribute set.  
+   </para>
     
 
    <sect2 id="querymodel-zebra-attr-search">
@@ -1462,10 +1647,8 @@
     <title>IDXPATH Use Attributes (type = 1)</title>
      <para>
       This attribute set allows one to search GRS filter indexed
-      records by XPATH like structured index names. It is enabled by
-      specifying the <literal></literal>
+      records by XPATH like structured index names. 
      </para>
-
 
      <warning>The <literal>idxpath</literal> option defines hard-coded
       index names, which might clash with your own index names.
@@ -1569,6 +1752,16 @@
       <screen>
        Z> find @and @attr idxpath 1=1 @attr 4=3 link/ @attr 1=4 mozart
        Z> find @and @attr 1=_XPATH_BEGIN @attr 4=3 link/ @attr 1=_XPATH_CDATA mozart
+      </screen>
+     </para>
+     <para>
+      Scanning is supportet on all <literal>idxpath</literal>
+      indexes, both specified as numeric use attributes, or as string
+      index names. 
+      <screen>
+       Z> scan  @attrset idxpath @attr 1=1016 text
+       Z> scan  @attr 1=_XPATH_ATTR_CDATA anothertext
+       Z> scan  @attrset idxpath @attr 1=3 @attr 4=3 ''
       </screen>
      </para>
 

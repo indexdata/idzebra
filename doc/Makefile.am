@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.48 2006-06-13 09:26:59 marc Exp $
+## $Id: Makefile.am,v 1.49 2006-06-22 14:01:55 marc Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUBDIRS = common
@@ -59,6 +59,7 @@ HTMLFILES =  \
    protocol-support.html \
    querymodel-cql-to-pqf.html \
    querymodel-pqf.html \
+   querymodel-zebra.html \
    querymodel.html \
    quick-start.html \
    record-model-alvisxslt-conf.html \
