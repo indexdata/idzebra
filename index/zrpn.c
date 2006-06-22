@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.218 2006-06-22 15:07:20 adam Exp $
+/* $Id: zrpn.c,v 1.219 2006-06-22 15:44:44 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1455,7 +1455,6 @@ static ZEBRA_RES always_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			     struct grep_info *grep_info,
 			     int reg_type, int complete_flag,
 			     int num_bases, char **basenames,
-			     char *term_dst,
                              const char *xpath_use,
 			     struct ord_list **ol)
 {
@@ -1534,7 +1533,7 @@ static ZEBRA_RES rpn_search_APT_alwaysmatches(ZebraHandle zh,
                                               RSET *rset,
                                               struct rset_key_control *kc)
 {
-    char term_dst[IT_MAX_WORD+1];
+    const char *term_dst = "always";
     struct grep_info grep_info;
     zint hits_limit_value;
     const char *term_ref_id_str = 0;
@@ -1550,7 +1549,7 @@ static ZEBRA_RES rpn_search_APT_alwaysmatches(ZebraHandle zh,
 
     res = always_term(zh, zapt, attributeSet, stream, &grep_info,
 		      reg_type, complete_flag, num_bases, basenames,
-		      term_dst, xpath_use, &ol);
+		      xpath_use, &ol);
     if (res == ZEBRA_OK)
     {
         *rset = rset_trunc(zh, grep_info.isam_p_buf,
@@ -2137,42 +2136,33 @@ ZEBRA_RES rpn_search_xpath(ZebraHandle zh,
         }
         while (--level >= 0)
         {
-            char xpath_rev[128];
-            int i, len;
+            WRBUF xpath_rev = wrbuf_alloc();
+            int i;
             RSET rset_start_tag = 0, rset_end_tag = 0, rset_attr = 0;
 
-            *xpath_rev = 0;
-            len = 0;
             for (i = level; i >= 1; --i)
             {
                 const char *cp = xpath[i].part;
                 if (*cp)
                 {
-                    for (;*cp; cp++)
+                    for (; *cp; cp++)
+                    {
                         if (*cp == '*')
-                        {
-                            memcpy (xpath_rev + len, "[^/]*", 5);
-                            len += 5;
-                        }
+                            wrbuf_puts(xpath_rev, "[^/]*");
                         else if (*cp == ' ')
-                        {
-
-                            xpath_rev[len++] = 1;
-                            xpath_rev[len++] = ' ';
-                        }
-
+                            wrbuf_puts(xpath_rev, "\001 ");
                         else
-                            xpath_rev[len++] = *cp;
-                    xpath_rev[len++] = '/';
+                            wrbuf_putc(xpath_rev, *cp);
+
+                        /* wrbuf_putc does not null-terminate , but
+                           wrbuf_puts below ensures it does.. so xpath_rev
+                           is OK iff length is > 0 */
+                    }
+                    wrbuf_puts(xpath_rev, "/");
                 }
                 else if (i == 1)  /* // case */
-                {
-                    xpath_rev[len++] = '.';
-                    xpath_rev[len++] = '*';
-                }
+                    wrbuf_puts(xpath_rev, ".*");
             }
-            xpath_rev[len] = 0;
-
             if (xpath[level].predicate &&
                 xpath[level].predicate->which == XPATH_PREDICATE_RELATION &&
                 xpath[level].predicate->u.relation.name[0])
@@ -2201,13 +2191,17 @@ ZEBRA_RES rpn_search_xpath(ZebraHandle zh,
             else 
             {
                 if (!first_path)
+                {
+                    wrbuf_free(xpath_rev, 1);
                     continue;
+                }
             }
-            yaz_log(log_level_rpn, "xpath_rev (%d) = %s", level, xpath_rev);
-            if (strlen(xpath_rev))
+            yaz_log(log_level_rpn, "xpath_rev (%d) = %.*s", level, 
+                    wrbuf_len(xpath_rev), wrbuf_buf(xpath_rev));
+            if (wrbuf_len(xpath_rev))
             {
                 rset_start_tag = xpath_trunc(zh, stream, '0', 
-                                             xpath_rev, 
+                                             wrbuf_buf(xpath_rev),
                                              ZEBRA_XPATH_ELM_BEGIN, 
                                              rset_nmem, kc);
                 if (always_matches)
@@ -2215,7 +2209,7 @@ ZEBRA_RES rpn_search_xpath(ZebraHandle zh,
                 else
                 {
                     rset_end_tag = xpath_trunc(zh, stream, '0', 
-                                               xpath_rev, 
+                                               wrbuf_buf(xpath_rev),
                                                ZEBRA_XPATH_ELM_END, 
                                                rset_nmem, kc);
                     
@@ -2224,6 +2218,7 @@ ZEBRA_RES rpn_search_xpath(ZebraHandle zh,
                                                rset_end_tag, rset_attr);
                 }
             }
+            wrbuf_free(xpath_rev, 1);
             first_path = 0;
         }
     }
