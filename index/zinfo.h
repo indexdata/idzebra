@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.34 2006-06-13 12:02:13 adam Exp $
+/* $Id: zinfo.h,v 1.35 2006-06-22 15:07:20 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -37,6 +37,13 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 YAZ_BEGIN_CDECL
 
+typedef enum {
+    zinfo_index_category_index,
+    zinfo_index_category_sort,
+    zinfo_index_category_alwaysmatches,
+    zinfo_index_category_anchor
+} zinfo_index_category_t;
+    
 typedef ZEBRA_RES ZebraExplainUpdateFunc(void *handle,
                                          Record drec, 
                                          data1_node *n);
@@ -55,9 +62,13 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
 			      int explain_database);
 int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
 			     int set, int use);
-int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, int index_type,
+int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, 
+                                 zinfo_index_category_t cat,
+                                 int index_type,
 				 const char *str);
-int zebraExplain_add_attr_str(ZebraExplainInfo zei, int index_type,
+int zebraExplain_add_attr_str(ZebraExplainInfo zei, 
+                              zinfo_index_category_t cat,
+                              int index_type,
 			      const char *str);
 void zebraExplain_addSchema (ZebraExplainInfo zei, Odr_oid *oid);
 void zebraExplain_recordCountIncrement (ZebraExplainInfo zei, int adjust_num);

@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.222 2006-06-22 09:48:08 adam Exp $
+/* $Id: extract.c,v 1.223 2006-06-22 15:07:20 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -106,7 +106,9 @@ static void logRecord (ZebraHandle zh)
     }
 }
 
-static void extract_add_index_string (RecWord *p, const char *str, int length);
+static void extract_add_index_string (RecWord *p, 
+                                      zinfo_index_category_t cat,
+                                      const char *str, int length);
 
 static void extract_set_store_data_prepare(struct recExtractCtrl *p);
 
@@ -128,16 +130,17 @@ static void searchRecordKey(ZebraHandle zh,
 {
     int i;
     int ch = -1;
+    zinfo_index_category_t cat = zinfo_index_category_index;
 
     for (i = 0; i<ws_length; i++)
         ws[i] = NULL;
 
     if (ch < 0)
-        ch = zebraExplain_lookup_attr_str(zh->reg->zei, '0', index_name);
+        ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, '0', index_name);
     if (ch < 0)
-        ch = zebraExplain_lookup_attr_str(zh->reg->zei, 'p', index_name);
+        ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, 'p', index_name);
     if (ch < 0)
-        ch = zebraExplain_lookup_attr_str(zh->reg->zei, 'w', index_name);
+        ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, 'w', index_name);
 
     if (ch < 0)
 	return ;
@@ -403,7 +406,8 @@ static void all_matches_add(struct recExtractCtrl *ctrl)
     word.index_name = "allrecords";
     word.index_type = 'w';
     word.seqno = 1;
-    extract_add_index_string (&word, "", 0);
+    extract_add_index_string (&word, zinfo_index_category_alwaysmatches,
+                              "", 0);
 }
 
 static ZEBRA_RES file_extract_record(ZebraHandle zh,
@@ -1622,7 +1626,8 @@ void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys)
     }
 }
 
-static void extract_add_index_string(RecWord *p, const char *str, int length)
+static void extract_add_index_string(RecWord *p, zinfo_index_category_t cat,
+                                     const char *str, int length)
 {
     struct it_key key;
 
@@ -1633,9 +1638,9 @@ static void extract_add_index_string(RecWord *p, const char *str, int length)
     if (!p->index_name)
         return;
 
-    ch = zebraExplain_lookup_attr_str(zei, p->index_type, p->index_name);
+    ch = zebraExplain_lookup_attr_str(zei, cat, p->index_type, p->index_name);
     if (ch < 0)
-        ch = zebraExplain_add_attr_str(zei, p->index_type, p->index_name);
+        ch = zebraExplain_add_attr_str(zei, cat, p->index_type, p->index_name);
 
     key.len = 4;
     key.mem[0] = ch;
@@ -1670,13 +1675,15 @@ static void extract_add_sort_string(RecWord *p, const char *str, int length)
     ZebraHandle zh = p->extractCtrl->handle;
     ZebraExplainInfo zei = zh->reg->zei;
     int ch;
+    zinfo_index_category_t cat = zinfo_index_category_sort;
+ 
 
     if (!p->index_name)
         return;
 
-    ch = zebraExplain_lookup_attr_str(zei, p->index_type, p->index_name);
+    ch = zebraExplain_lookup_attr_str(zei, cat, p->index_type, p->index_name);
     if (ch < 0)
-        ch = zebraExplain_add_attr_str(zei, p->index_type, p->index_name);
+        ch = zebraExplain_add_attr_str(zei, cat, p->index_type, p->index_name);
     key.len = 4;
     key.mem[0] = ch;
     key.mem[1] = p->record_id;
@@ -1709,14 +1716,16 @@ static void extract_add_string (RecWord *p, const char *string, int length)
 	extract_add_sort_string (p, string, length);
     else
     {
-	extract_add_index_string(p, string, length);
+	extract_add_index_string(p, zinfo_index_category_index,
+                                 string, length);
         if (zebra_maps_is_alwaysmatches(p->zebra_maps, p->index_type))
         {
             RecWord word;
             memcpy(&word, p, sizeof(word));
 
             word.seqno = 1;
-            extract_add_index_string (&word, "", 0);
+            extract_add_index_string(
+                &word, zinfo_index_category_alwaysmatches, "", 0);
         }
     }
 }

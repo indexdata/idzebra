@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.107 2006-06-07 10:14:42 adam Exp $
+/* $Id: zsets.c,v 1.108 2006-06-22 15:07:20 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -856,7 +856,9 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
 		    i+1);
             sort_criteria[i].numerical = 0;
             sort_criteria[i].ord = 
-                zebraExplain_lookup_attr_str(zh->reg->zei, 's',
+                zebraExplain_lookup_attr_str(zh->reg->zei,
+                                             zinfo_index_category_sort,
+                                             's',
                                              sk->u.sortField);
             if (sks->which != Z_SortKeySpec_null
                 && sort_criteria[i].ord == -1)

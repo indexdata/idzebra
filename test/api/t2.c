@@ -1,5 +1,5 @@
-/* $Id: t2.c,v 1.19 2006-05-10 08:13:35 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: t2.c,v 1.20 2006-06-22 15:07:20 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -34,7 +34,12 @@ void tst(int argc, char **argv)
     ZebraHandle  zh = zebra_open(zs, 0);
 
     YAZ_CHECK(tl_init_data(zh, myrec));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title my", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 my", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title nope", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 nope", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 2=103 dummy", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=103 dummy", 1));
 
     YAZ_CHECK(tl_close_down(zh, zs));
 }

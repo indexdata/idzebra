@@ -1,4 +1,4 @@
-/* $Id: xpath1.c,v 1.6 2006-05-10 08:13:41 adam Exp $
+/* $Id: xpath1.c,v 1.7 2006-06-22 15:07:21 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -31,8 +31,8 @@ static void tst(int argc, char **argv)
     const char *myrec[] = {
         "<sgml> \n"
         "  before \n"
-        "  <tag> \n"
-        "    inside \n"
+        "  <tag x='v'> \n"
+        "    inside it\n"
         "  </tag> \n"
         "  after \n"
         "</sgml> \n",
@@ -44,6 +44,7 @@ static void tst(int argc, char **argv)
 
     YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag before", 0));
     YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag inside", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag {inside it}", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag after", 0));
 
     YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/none after", 0));
@@ -52,6 +53,21 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=/sgml before", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=/sgml inside", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=/sgml after", 1));
+
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag/@x v", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag/@x no", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag/@y v", 0));
+
+    YAZ_CHECK(tl_query(zh, "@attr 1=_XPATH_BEGIN @attr 4=3 tag/sgml/", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=_XPATH_BEGIN @attr 4=3 sgml/", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=_XPATH_BEGIN @attr 4=3 tag/", 0));
+
+    /* bug #617 */
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag @attr 2=103 dummy", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml @attr 2=103 dummy", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/tag @attr 2=103 dummy", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag/@x @attr 2=103 dummy", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag/@y @attr 2=103 dummy", 0));
 
     YAZ_CHECK(tl_close_down(zh, zs));
 }

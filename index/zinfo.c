@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.66 2006-06-13 12:02:12 adam Exp $
+/* $Id: zinfo.c,v 1.67 2006-06-22 15:07:20 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -33,6 +33,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct zebSUInfo {
     int index_type;
+    zinfo_index_category_t cat;
 #define ZEB_SU_SET_USE 1
 #define ZEB_SU_STR 2
     int which;
@@ -593,6 +594,7 @@ static void zebraExplain_readAttributeDetails(ZebraExplainInfo zei,
 	data1_node *node_str = NULL;
 	data1_node *node_ordinal = NULL;
 	data1_node *node_type = NULL;
+	data1_node *node_cat = NULL;
         data1_node *node_doc_occurrences = NULL;
         data1_node *node_term_occurrences = NULL;
 	data1_node *np2;
@@ -610,6 +612,8 @@ static void zebraExplain_readAttributeDetails(ZebraExplainInfo zei,
 		node_ordinal = np2->child;
 	    else if (!strcmp(np2->u.tag.tag, "type"))
 		node_type = np2->child;
+	    else if (!strcmp(np2->u.tag.tag, "cat"))
+		node_cat = np2->child;
 	    else if (!strcmp(np2->u.tag.tag, "dococcurrences"))
 		node_doc_occurrences = np2->child;
 	    else if (!strcmp(np2->u.tag.tag, "termoccurrences"))
@@ -632,6 +636,31 @@ static void zebraExplain_readAttributeDetails(ZebraExplainInfo zei,
 	    yaz_log(YLOG_WARN, "Missing attribute 'type' in attribute info");
 	    (*zsuip)->info.index_type = 'w';
 	}
+        if (node_cat && node_cat->u.data.len > 0)
+        {
+            zinfo_index_category_t cat;
+
+            data1_node *np = node_cat;
+            if (!strncmp(np->u.data.data, "index", np->u.data.len))
+                cat = zinfo_index_category_index;
+            else if (!strncmp(np->u.data.data, "sort", np->u.data.len))
+                cat = zinfo_index_category_sort;
+            else if (!strncmp(np->u.data.data, "alwaysmatches", 
+                              np->u.data.len))
+                cat = zinfo_index_category_alwaysmatches;
+            else if (!strncmp(np->u.data.data, "anchor", 
+                              np->u.data.len))
+                cat = zinfo_index_category_anchor;
+            else
+            {
+                yaz_log(YLOG_WARN, "Bad index cateogry '%.*s'",
+                        np->u.data.len, np->u.data.data);
+                cat = zinfo_index_category_index;
+            }
+            (*zsuip)->info.cat = cat;
+        }
+        else
+            (*zsuip)->info.cat = zinfo_index_category_index;
 
         if (node_doc_occurrences)
         {
@@ -1067,6 +1096,21 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
                                 zsui->info.doc_occurrences, zei->nmem);
         data1_mk_tag_data_zint (zei->dh, node_attr, "termoccurrences",
                                 zsui->info.term_occurrences, zei->nmem);
+        switch(zsui->info.cat)
+        {
+        case zinfo_index_category_index:
+	    data1_mk_tag_data_text (zei->dh, node_attr, "cat",
+				    "index", zei->nmem); break;
+        case zinfo_index_category_sort:
+	    data1_mk_tag_data_text (zei->dh, node_attr, "cat",
+				    "sort", zei->nmem); break;
+        case zinfo_index_category_alwaysmatches:
+	    data1_mk_tag_data_text (zei->dh, node_attr, "cat",
+				    "alwaysmatches", zei->nmem); break;
+        case zinfo_index_category_anchor:
+	    data1_mk_tag_data_text (zei->dh, node_attr, "cat",
+				    "anchor", zei->nmem); break;
+        }
     }
     /* convert to "SGML" and write it */
 #if ZINFO_DEBUG
@@ -1306,7 +1350,9 @@ static void zebraExplain_writeTarget (ZebraExplainInfo zei, int key_flush)
     rec_put (zei->records, &trec);
 }
 
-int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, int index_type,
+int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, 
+                                 zinfo_index_category_t cat,
+                                 int index_type,
 				 const char *str)
 {
     struct zebSUInfoB **zsui;
@@ -1315,6 +1361,7 @@ int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, int index_type,
     for (zsui = &zei->curDatabaseInfo->attributeDetails->SUInfo;
 	 *zsui; zsui = &(*zsui)->next)
         if ((*zsui)->info.index_type == index_type
+            && (*zsui)->info.cat == cat
             && (*zsui)->info.which == ZEB_SU_STR 
             && !yaz_matchstr((*zsui)->info.u.str, str))
         {
@@ -1489,6 +1536,7 @@ void zebraExplain_addAttributeSet (ZebraExplainInfo zei, int set)
 }
 
 struct zebSUInfoB *zebraExplain_add_sui_info(ZebraExplainInfo zei,
+                                             zinfo_index_category_t cat,
                                              int index_type)
 {
     struct zebSUInfoB *zsui;
@@ -1500,16 +1548,19 @@ struct zebSUInfoB *zebraExplain_add_sui_info(ZebraExplainInfo zei,
     zei->curDatabaseInfo->attributeDetails->dirty = 1;
     zei->dirty = 1;
     zsui->info.index_type = index_type;
+    zsui->info.cat = cat;
     zsui->info.doc_occurrences = 0;
     zsui->info.term_occurrences = 0;
     zsui->info.ordinal = (zei->ordinalSU)++;
     return zsui;
 }
 
-int zebraExplain_add_attr_str(ZebraExplainInfo zei, int index_type,
+int zebraExplain_add_attr_str(ZebraExplainInfo zei, 
+                              zinfo_index_category_t cat,
+                              int index_type,
 			      const char *index_name)
 {
-    struct zebSUInfoB *zsui = zebraExplain_add_sui_info(zei, index_type);
+    struct zebSUInfoB *zsui = zebraExplain_add_sui_info(zei, cat, index_type);
 
     zsui->info.which = ZEB_SU_STR;
     zsui->info.u.str = nmem_strdup(zei->nmem, index_name);

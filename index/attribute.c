@@ -1,4 +1,4 @@
-/* $Id: attribute.c,v 1.23 2006-05-19 13:49:34 adam Exp $
+/* $Id: attribute.c,v 1.24 2006-06-22 15:07:20 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -67,6 +67,7 @@ static int att_getentbyatt(ZebraHandle zi, oid_value set, int att,
 
 ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
                                   Z_AttributeList *attr_list,
+                                  zinfo_index_category_t cat,
                                   int index_type,
                                   oid_value curAttributeSet,
                                   int *ord)
@@ -105,7 +106,8 @@ ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
         zebra_setError(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, 0);
         return ZEBRA_FAIL;
     }
-    *ord = zebraExplain_lookup_attr_str(zh->reg->zei, index_type, use_string);
+    *ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat, 
+                                        index_type, use_string);
     if (*ord == -1)
     {
         if (use_value < 0)
@@ -119,6 +121,7 @@ ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
 
 ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
                             Z_AttributesPlusTerm *zapt,
+                            zinfo_index_category_t cat,
                             int index_type,
                             const char *xpath_use,
                             oid_value curAttributeSet,
@@ -126,10 +129,10 @@ ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
 {
     if (!xpath_use)
         return zebra_attr_list_get_ord(zh, zapt->attributes,
-                                       index_type, curAttributeSet, ord);
+                                       cat, index_type, curAttributeSet, ord);
     else
     {
-        *ord = zebraExplain_lookup_attr_str(zh->reg->zei, index_type,
+        *ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat, index_type,
                                             xpath_use);
         if (*ord == -1)
         {
@@ -162,9 +165,11 @@ ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,
         *numerical = 1;
     
     if (zebra_attr_list_get_ord(zh, sortAttributes->list,
+                                zinfo_index_category_sort,
                                 's', VAL_BIB1, ord)== ZEBRA_OK)
         return ZEBRA_OK;
     if (zebra_attr_list_get_ord(zh, sortAttributes->list,
+                                zinfo_index_category_sort,
                                 'S', VAL_BIB1, ord)== ZEBRA_OK)
         return ZEBRA_OK;
     return ZEBRA_FAIL;
