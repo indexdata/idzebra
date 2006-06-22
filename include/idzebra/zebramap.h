@@ -1,5 +1,5 @@
-/* $Id: zebramap.h,v 1.6 2006-05-10 08:13:20 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: zebramap.h,v 1.7 2006-06-22 09:48:08 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -64,6 +64,9 @@ int zebra_maps_is_complete (ZebraMaps zms, unsigned reg_id);
 
 YAZ_EXPORT
 int zebra_maps_is_sort (ZebraMaps zms, unsigned reg_id);
+
+YAZ_EXPORT
+int zebra_maps_is_alwaysmatches (ZebraMaps zms, unsigned reg_id);
 
 YAZ_EXPORT
 int zebra_maps_is_positioned (ZebraMaps zms, unsigned reg_id);

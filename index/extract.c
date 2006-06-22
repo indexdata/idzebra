@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.221 2006-06-13 19:40:18 adam Exp $
+/* $Id: extract.c,v 1.222 2006-06-22 09:48:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1708,7 +1708,17 @@ static void extract_add_string (RecWord *p, const char *string, int length)
     if (zebra_maps_is_sort (p->zebra_maps, p->index_type))
 	extract_add_sort_string (p, string, length);
     else
-	extract_add_index_string (p, string, length);
+    {
+	extract_add_index_string(p, string, length);
+        if (zebra_maps_is_alwaysmatches(p->zebra_maps, p->index_type))
+        {
+            RecWord word;
+            memcpy(&word, p, sizeof(word));
+
+            word.seqno = 1;
+            extract_add_index_string (&word, "", 0);
+        }
+    }
 }
 
 static void extract_add_incomplete_field (RecWord *p)

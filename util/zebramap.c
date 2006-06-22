@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.49 2006-05-19 13:49:38 adam Exp $
+/* $Id: zebramap.c,v 1.50 2006-06-22 09:48:09 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -39,6 +39,7 @@ struct zebra_map {
     unsigned reg_id;
     int completeness;
     int positioned;
+    int alwaysmatches;
     int type;
     union {
         struct {
@@ -86,6 +87,7 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
     char *argv[10];
     int argc;
     int lineno = 0;
+    int failures = 0;
     struct zebra_map **zm = 0, *zp;
 
     if (!(f = yaz_fopen(zms->tabpath, fname, "r", zms->tabroot)))
@@ -95,7 +97,21 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
     }
     while ((argc = readconf_line(f, &lineno, line, 512, argv, 10)))
     {
-	if (!yaz_matchstr(argv[0], "index") && argc == 2)
+        if (argc == 1)
+        {
+            yaz_log(YLOG_WARN, "%s:%d: Missing arguments for '%s'",
+                    fname, lineno, argv[0]);
+            failures++;
+            break;
+        }
+        if (argc > 2)
+        {
+            yaz_log(YLOG_WARN, "%s:%d: Too many arguments for '%s'",
+                    fname, lineno, argv[0]);
+            failures++;
+            break;
+        }
+	if (!yaz_matchstr(argv[0], "index"))
 	{
 	    if (!zm)
 		zm = &zms->map_list;
@@ -108,9 +124,10 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
 	    (*zm)->type = ZEBRA_MAP_TYPE_INDEX;
 	    (*zm)->completeness = 0;
 	    (*zm)->positioned = 1;
+	    (*zm)->alwaysmatches = 0;
 	    zms->no_maps++;
 	}
-	else if (!yaz_matchstr(argv[0], "sort") && argc == 2)
+	else if (!yaz_matchstr(argv[0], "sort"))
 	{
 	    if (!zm)
 		zm = &zms->map_list;
@@ -124,24 +141,41 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
 	    (*zm)->maptab = NULL;
 	    (*zm)->completeness = 0;
 	    (*zm)->positioned = 0;
+	    (*zm)->alwaysmatches = 0;
 	    zms->no_maps++;
 	}
-	else if (zm && !yaz_matchstr(argv[0], "charmap") && argc == 2)
+        else if (!zm)
+        {
+            yaz_log(YLOG_WARN, "%s:%d: Missing sort/index before '%s'",  
+                    fname, lineno, argv[0]);
+            failures++;
+        }
+	else if (!yaz_matchstr(argv[0], "charmap") && argc == 2)
 	{
 	    (*zm)->maptab_name = nmem_strdup(zms->nmem, argv[1]);
 	}
-	else if (zm && !yaz_matchstr(argv[0], "completeness") && argc == 2)
+	else if (!yaz_matchstr(argv[0], "completeness") && argc == 2)
 	{
 	    (*zm)->completeness = atoi(argv[1]);
 	}
-	else if (zm && !yaz_matchstr(argv[0], "position") && argc == 2)
+	else if (!yaz_matchstr(argv[0], "position") && argc == 2)
 	{
 	    (*zm)->positioned = atoi(argv[1]);
 	}
-        else if (zm && !yaz_matchstr(argv[0], "entrysize") && argc == 2)
+	else if (!yaz_matchstr(argv[0], "alwaysmatches") && argc == 2)
+	{
+	    (*zm)->alwaysmatches = atoi(argv[1]);
+	}
+        else if (!yaz_matchstr(argv[0], "entrysize") && argc == 2)
         {
             if ((*zm)->type == ZEBRA_MAP_TYPE_SORT)
 		(*zm)->u.sort.entry_size = atoi(argv[1]);
+        }
+        else
+        {
+            yaz_log(YLOG_WARN, "%s:%d: Unrecognized directive '%s'",  
+                    fname, lineno, argv[0]);
+            failures++;
         }
     }
     if (zm)
@@ -151,6 +185,8 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
     for (zp = zms->map_list; zp; zp = zp->next)
 	zms->lookup_array[zp->reg_id] = zp;
 
+    if (failures)
+        return ZEBRA_FAIL;
     return ZEBRA_OK;
 }
 
@@ -276,7 +312,6 @@ const char *zebra_maps_output(ZebraMaps zms, unsigned reg_id,
 }
 
 
-
 /* ------------------------------------ */
 
 int zebra_maps_is_complete(ZebraMaps zms, unsigned reg_id)
@@ -300,6 +335,14 @@ int zebra_maps_is_sort(ZebraMaps zms, unsigned reg_id)
     struct zebra_map *zm = zebra_map_get(zms, reg_id);
     if (zm)
 	return zm->type == ZEBRA_MAP_TYPE_SORT;
+    return 0;
+}
+
+int zebra_maps_is_alwaysmatches(ZebraMaps zms, unsigned reg_id)
+{
+    struct zebra_map *zm = zebra_map_get(zms, reg_id);
+    if (zm)
+	return zm->alwaysmatches;
     return 0;
 }
 

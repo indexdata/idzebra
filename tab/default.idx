@@ -1,5 +1,5 @@
 # Zebra indexes as referred to from the *.abs-files.
-#  $Id: default.idx,v 1.12 2004-09-16 14:01:05 adam Exp $
+#  $Id: default.idx,v 1.13 2006-06-22 09:48:09 adam Exp $
 #
 
 # Traditional word index
@@ -8,6 +8,7 @@
 index w
 completeness 0
 position 1
+alwaysmatches 1
 charmap string.chr
 
 # Phrase index
