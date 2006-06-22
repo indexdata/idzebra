@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.219 2006-06-22 15:44:44 adam Exp $
+/* $Id: zrpn.c,v 1.220 2006-06-22 23:06:06 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1015,7 +1015,6 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     int j, r, base_no;
     AttrType truncation;
     int truncation_value;
-    oid_value curAttributeSet = attributeSet;
     const char *termp;
     struct rpn_char_map_info rcmi;
     int space_split = complete_flag ? 0 : 1;
@@ -1032,9 +1031,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     for (base_no = 0; base_no < num_bases; base_no++)
     {
 	int ord = -1;
-	int attr_ok = 0;
 	int regex_range = 0;
-	int init_pos = 0;
         int max_pos, prefix_len = 0;
 	int relation_error;
         char ord_buf[32];
@@ -1050,12 +1047,10 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
         
         if (zebra_apt_get_ord(zh, zapt, zinfo_index_category_index,
-                              reg_type, xpath_use, 
-                              curAttributeSet, &ord) 
-            != ZEBRA_OK)
-        {
-            break;
-        }
+                              reg_type, xpath_use,
+                              attributeSet, &ord) != ZEBRA_OK)
+            continue;
+
         *ol = ord_list_append(stream, *ol, ord);
         
         if (prefix_len)
@@ -1067,14 +1062,10 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         for (i = 0; i<ord_len; i++)
         {
             term_dict[prefix_len++] = 1;
-		term_dict[prefix_len++] = ord_buf[i];
+            term_dict[prefix_len++] = ord_buf[i];
         }
-        if (ord_len > init_pos)
-            init_pos = ord_len;
         
 	bases_ok++;
-        if (prefix_len)
-	    attr_ok = 1;
 
         term_dict[prefix_len++] = ')';
         term_dict[prefix_len] = '\0';
@@ -1195,21 +1186,19 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 				truncation_value);
 	    return ZEBRA_FAIL;
         }
-	if (attr_ok)
+	if (1)
 	{
 	    char buf[80];
 	    const char *input = term_dict + prefix_len;
 	    esc_str(buf, sizeof(buf), input, strlen(input));
 	}
-	if (attr_ok)
-	{
-	    yaz_log(log_level_rpn, "dict_lookup_grep: %s", term_dict+prefix_len);
-	    r = dict_lookup_grep(zh->reg->dict, term_dict, regex_range,
-				 grep_info, &max_pos, init_pos,
-				 grep_handle);
-	    if (r)
-		yaz_log(YLOG_WARN, "dict_lookup_grep fail %d", r);
-	}
+        yaz_log(log_level_rpn, "dict_lookup_grep: %s", term_dict+prefix_len);
+        r = dict_lookup_grep(zh->reg->dict, term_dict, regex_range,
+                             grep_info, &max_pos, 
+                             ord_len /* number of "exact" chars */,
+                             grep_handle);
+        if (r)
+            yaz_log(YLOG_WARN, "dict_lookup_grep fail %d", r);
     }
     if (!bases_ok)
         return ZEBRA_FAIL;
@@ -1472,7 +1461,6 @@ static ZEBRA_RES always_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     {
 	int ord = -1;
 	int regex_range = 0;
-	int init_pos = 0;
         int max_pos, prefix_len = 0;
         char ord_buf[32];
         int ord_len, i;
@@ -1487,8 +1475,8 @@ static ZEBRA_RES always_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         if (zebra_apt_get_ord(zh, zapt, zinfo_index_category_alwaysmatches,
                               reg_type, xpath_use, 
                               attributeSet, &ord) != ZEBRA_OK)
-            return ZEBRA_FAIL;
-        yaz_log(YLOG_LOG, "Got ordinal value: %d", ord);
+            continue;
+
         *ol = ord_list_append(stream, *ol, ord);
         
         if (prefix_len)
@@ -1502,21 +1490,19 @@ static ZEBRA_RES always_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             term_dict[prefix_len++] = 1;
             term_dict[prefix_len++] = ord_buf[i];
         }
-        if (ord_len > init_pos)
-            init_pos = ord_len;
         
-	bases_ok++;
-
         term_dict[prefix_len++] = ')';
         term_dict[prefix_len] = '\0';
+
+	bases_ok++;
         
         r = dict_lookup_grep(zh->reg->dict, term_dict, regex_range,
-                             grep_info, &max_pos, init_pos,
+                             grep_info, &max_pos, 
+                             ord_len /* number of "exact" chars */,
                              grep_handle);
     }
     if (!bases_ok)
         return ZEBRA_FAIL;
-    yaz_log(YLOG_LOG, "always_term: %d positions", grep_info->isam_p_indx);
     return ZEBRA_OK;
 }
 
@@ -1740,21 +1726,22 @@ static int numeric_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
 static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			      const char **term_sub, 
-			      oid_value attributeSet,
+			      oid_value attributeSet, NMEM stream,
 			      struct grep_info *grep_info,
 			      int reg_type, int complete_flag,
 			      int num_bases, char **basenames,
 			      char *term_dst, 
                               const char *xpath_use,
-                              NMEM stream)
+                              struct ord_list **ol)
 {
     char term_dict[2*IT_MAX_WORD+2];
     int base_no;
-    oid_value curAttributeSet = attributeSet;
     const char *termp;
     struct rpn_char_map_info rcmi;
 
     int bases_ok = 0;     /* no of databases with OK attribute */
+
+    *ol = ord_list_create(stream);
 
     rpn_char_map_prepare (zh->reg, reg_type, &rcmi);
 
@@ -1775,11 +1762,11 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
 
         if (zebra_apt_get_ord(zh, zapt, zinfo_index_category_index,
-                              reg_type, xpath_use, curAttributeSet, &ord) 
+                              reg_type, xpath_use, attributeSet, &ord) 
             != ZEBRA_OK)
-        {
-            break;
-        }
+            continue;
+
+        *ol = ord_list_append(stream, *ol, ord);
 
         if (prefix_len)
             term_dict[prefix_len++] = '|';
@@ -1790,11 +1777,11 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         for (i = 0; i < ord_len; i++)
         {
             term_dict[prefix_len++] = 1;
-		term_dict[prefix_len++] = ord_buf[i];
+            term_dict[prefix_len++] = ord_buf[i];
         }
-        bases_ok++;
         term_dict[prefix_len++] = ')';
         term_dict[prefix_len] = '\0';
+        bases_ok++;
         if (!numeric_relation(zh, zapt, &termp, term_dict,
 			      attributeSet, grep_info, &max_pos, reg_type,
 			      term_dst, &relation_error))
@@ -1846,6 +1833,7 @@ static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
         return ZEBRA_FAIL;
     while (1)
     { 
+        struct ord_list *ol;
 	if (alloc_sets == num_result_sets)
 	{
 	    int add = 10;
@@ -1858,10 +1846,9 @@ static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
 	}
         yaz_log(YLOG_DEBUG, "APT_numeric termp=%s", termp);
         grep_info.isam_p_indx = 0;
-        res = numeric_term(zh, zapt, &termp, attributeSet, &grep_info,
+        res = numeric_term(zh, zapt, &termp, attributeSet, stream, &grep_info,
 			   reg_type, complete_flag, num_bases, basenames,
-			   term_dst, xpath_use,
-			   stream);
+			   term_dst, xpath_use, &ol);
 	if (res == ZEBRA_FAIL || termp == 0)
 	    break;
         yaz_log(YLOG_DEBUG, "term: %s", term_dst);
@@ -1871,7 +1858,7 @@ static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
 		       strlen(term_dst), rank_type,
 		       0 /* preserve position */,
 		       zapt->term->which, rset_nmem, 
-		       kc, kc->scope, 0, reg_type,
+		       kc, kc->scope, ol, reg_type,
 		       hits_limit_value,
 		       term_ref_id_str);
 	if (!result_sets[num_result_sets])
@@ -2659,6 +2646,8 @@ static void count_set(ZebraHandle zh, RSET rset, zint *count)
     *count = rset->hits_count;
 }
 
+#define RPN_MAX_ORDS 32
+
 ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		   oid_value attributeset,
 		   int num_bases, char **basenames,
@@ -2674,12 +2663,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     char termz[IT_MAX_WORD+20];
     struct scan_info *scan_info_array;
     ZebraScanEntry *glist;
-    int ords[32], ord_no = 0;
-    int ptr[32];
-
-    int bases_ok = 0;     /* no of databases with OK attribute */
-    int errCode = 0;      /* err code (if any is not OK) */
-    char *errString = 0;  /* addinfo */
+    int ords[RPN_MAX_ORDS], ord_no = 0;
+    int ptr[RPN_MAX_ORDS];
 
     unsigned index_type;
     char *search_type = NULL;
@@ -2731,7 +2716,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	zebra_setError(zh, YAZ_BIB1_UNSUPP_ATTRIBUTE_TYPE, 0);
         return ZEBRA_FAIL;
     }
-    for (base_no = 0; base_no < num_bases && ord_no < 32; base_no++)
+    for (base_no = 0; base_no < num_bases && ord_no < RPN_MAX_ORDS; base_no++)
     {
 	int ord;
 
@@ -2742,20 +2727,11 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    *num_entries = 0;
 	    return ZEBRA_FAIL;
 	}
-
         if (zebra_apt_get_ord(zh, zapt, zinfo_index_category_index,
                               index_type, 0, attributeset, &ord) 
             != ZEBRA_OK)
-        {
-            break;
-        }
+            continue;
         ords[ord_no++] = ord;
-    }
-    if (!bases_ok && errCode)
-    {
-	zebra_setError(zh, errCode, errString);
-        *num_entries = 0;
-	return ZEBRA_FAIL;
     }
     if (ord_no == 0)
     {
