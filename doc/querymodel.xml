@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.12 2006-06-23 11:12:07 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.13 2006-06-23 12:40:33 marc Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -869,6 +869,38 @@
         </tr>
        </tbody>
      </table>
+
+     <para>
+      The relation attributes 
+      <literal>1-5</literal> are supported and work exactly as
+      expected.
+      All ordering operations are based on a lexicographical ordering, 
+      <emphasis>expect</emphasis> when the 
+      <literal>structure attribute numeric (109)</literal> is used. In
+      this case, ordering is numerical. See 
+      <xref linkend="querymodel-bib1-structure"/>.
+      <screen>
+       Z>  find @attr 1=Title @attr 2=1 music
+       ...
+       Number of hits: 11745, setno 1
+       ...
+       Z>  find @attr 1=Title @attr 2=2 music
+       ...
+       Number of hits: 11771, setno 2
+       ...
+       Z>  find @attr 1=Title @attr 2=3 music
+       ...
+       Number of hits: 532, setno 3
+       ...
+       Z>  find @attr 1=Title @attr 2=4 music
+       ...
+       Number of hits: 11463, setno 4
+       ...
+       Z>  find @attr 1=Title @attr 2=5 music
+       ...
+       Number of hits: 11419, setno 5
+      <screen>
+     </para>
 
      <para>
       The relation attribute 
