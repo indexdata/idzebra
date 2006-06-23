@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.11 2006-06-22 14:01:55 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.12 2006-06-23 11:12:07 marc Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -149,7 +149,7 @@
 
   
   <sect1 id="querymodel-pqf">
-   <title>Prefix Query Format structure and syntax</title>
+   <title>Prefix Query Format syntax and semantics</title>
    <para>
     The <ulink url="&url.yaz.pqf;">PQF grammer</ulink>
     is documented in the YAZ manual, and shall not be
@@ -236,11 +236,9 @@
     </sect3>
 
     <para>
-     The use attributes (type 1) of the predefined attribute sets can
-     be reconfigured by  tweaking the files
-     <filename>tab/*.att</filename>.
-     New attribute sets can be defined by adding similar files in the
-     configuration path of the server.  
+     The <literal>use attributes (type 1)</literal> mappings  the
+     predefined attribute sets are found in the
+     attribute set configuration files <filename>tab/*.att</filename>. 
     </para>
 
     <note>
@@ -387,21 +385,21 @@
       default index using the default attribite set, the server choice
       of access point/index, and the default non-use attributes.
       <screen>
-       Z> find "information"
+       Z> find information
       </screen>
      </para>
      <para>
       Equivalent query fully specified including all default values:
       <screen>
-       Z> find @attrset bib-1 @attr 1=1017 @attr 2=3 @attr 3=3 @attr 4=1 @attr 5=100 @attr 6=1 "information"
+       Z> find @attrset bib-1 @attr 1=1017 @attr 2=3 @attr 3=3 @attr 4=1 @attr 5=100 @attr 6=1 information
       </screen>
      </para>
      
      <para>
-      Finding all documents which have empty titles. Notice that the
-      empty term must be quoted, but is otherwise legal.
+      Finding all documents which have the term
+      <emphasis>debussy</emphasis> in the title field.
       <screen>
-       Z> find @attr 1=4 ""
+       Z> find @attr 1=4 debussy
       </screen>
      </para>
 
@@ -453,7 +451,7 @@
 
 
     <sect3 id="querymodel-use-string">
-     <title>Zebra's special use attribute type 1 of form 'string'</title>
+     <title>Zebra's special access point of type 'string'</title>
      <para>
       The numeric <literal>use (type 1)</literal> attribute is usually 
       refered to from a given
@@ -494,7 +492,7 @@
       </screen>
      </para>
      <para>
-      See also <xref linkend="querymodel-bib1-mapping"/> for details, and 
+      See also <xref linkend="querymodel-pqf-apt-mapping"/> for details, and 
       <xref linkend="server-sru"/>
       for the SRU PQF query extention using string names as a fast
       debugging facility.
@@ -502,7 +500,7 @@
     </sect3>
     
     <sect3 id="querymodel-use-xpath">
-     <title>Zebra's special use attribute type 1 of form 'XPath' 
+     <title>Zebra's special access point of type 'XPath' 
       for GRS filters</title>
      <para>
       As we have seen above, it is possible (albeit seldom a great
@@ -612,8 +610,8 @@
     <title>Explain Attribute Set</title>
     <para>
      The Z39.50 standard defines the  
-     <ulink url="&url.z39.50.explain;">Explain</ulink>attribute set
-     <literal>exp-1</literal>, which is used to discover information 
+     <ulink url="&url.z39.50.explain;">Explain</ulink> attribute set
+     <literal>Exp-1</literal>, which is used to discover information 
      about a server's search semantics and functional capabilities
      Zebra exposes a  "classic" 
      Explain database by base name <literal>IR-Explain-1</literal>, which
@@ -621,7 +619,7 @@
     </para>
    <para>
      The attribute-set <literal>exp-1</literal> consists of a single 
-     <literal>Use (type 1)</literal> attribute. 
+     <literal>use attribute (type 1)</literal>. 
     </para>
     <para>
      In addition, the non-Use
@@ -867,33 +865,49 @@
         <tr>
          <td>AlwaysMatches</td>
          <td>103</td>
-         <td>unsupported</td>
+         <td>supported</td>
         </tr>
        </tbody>
      </table>
 
      <para>
       The relation attribute 
-      <literal>relevance (102)</literal> is supported, see
+      <literal>Relevance (102)</literal> is supported, see
       <xref linkend="administration-ranking"/> for full information.
-      <!-- always-matches (103) not supported for all indexes -->
      </para>
      
-    <para>
-     All ordering operations are based on a lexicographical ordering, 
-     <emphasis>expect</emphasis> when the 
-     <literal>structure attribute numeric (109)</literal> is used. In
-     this case, ordering is numerical. See 
-      <xref linkend="querymodel-bib1-structure"/>.
-    </para>
+     <para>
+      Ranked search for <emphasis>information retrieval</emphasis> in
+      the title-register:
+      <screen>
+       Z> find @attr 1=4 @attr 2=102 "information retrieval"
+      </screen>
+     </para>
 
      <para>
-     Ranked search for <emphasis>information retrieval</emphasis> in
-     the title-register:
-     <screen>
-      Z> find @attr 1=4 @attr 2=102 "information retrieval"
-     </screen>
-    </para>
+      The relation attribute 
+      <literal>AlwaysMatches (103)</literal> is in the default
+      configuration
+      supported in conjecture with structure attribute 
+      <literal>Phrase (1)</literal> (which may be omitted by
+      default). 
+      It can be configured to work with other structure attributes,
+      see the configuration file 
+      <filename>tab/default.idx</filename> and 
+       <xref linkend="querymodel-pqf-apt-mapping"/>. 
+     </para>
+     <para>
+      <literal>AlwaysMatches (103)</literal> is a
+      great way to discover how many documents have been indexed in a
+      given field. The search term is ignored, but needed for correct
+      PQF syntax. An empty search term may be supplied.
+      <screen>
+       Z> find @attr 1=Title  @attr 2=103  ""
+       Z> find @attr 1=Title  @attr 2=103  @attr 4=1 ""
+      </screen>
+     </para>
+
+
     </sect3>
 
     <sect3 id="querymodel-bib1-position">
@@ -1118,7 +1132,7 @@
      <note>
       The exact mapping between PQF queries and Zebra internal indexes
       and index types is explained in 
-       <xref linkend="querymodel-bib1-mapping"/>.
+       <xref linkend="querymodel-pqf-apt-mapping"/>.
       </note>
 
    </sect3>
@@ -1318,7 +1332,7 @@
      <note>
       The exact mapping between PQF queries and Zebra internal indexes
       and index types is explained in 
-       <xref linkend="querymodel-bib1-mapping"/>.
+       <xref linkend="querymodel-pqf-apt-mapping"/>.
       </note>
     </sect3>
    </sect2>
@@ -1340,6 +1354,39 @@
     <literal>idxpath</literal> attribute set.  
    </para>
     
+   <sect2 id="querymodel-zebra-attr-allrecords">
+    <title>Zebra specific retrieval of all records</title>
+    <para>
+     Zebra defines a hardwired <literal>string</literal> index name
+     called <literal>_ALLRECORDS</literal>. It matches any record
+     contained in the database, if used in conjunction with 
+     the relation attribute 
+     <literal>AlwaysMatches (103)</literal>.
+     </para>
+    <para>
+     The <literal>_ALLRECORDS</literal> index name is used for total database
+     export. The search term is ignored, it may be empty.
+     <screen>
+      Z> find @attr 1=_ALLRECORDS @attr 2=103 ""
+     </screen>
+    </para>
+    <para>
+     Combination with other index types can be made. For example, to
+     find all records which are <emphasis>not</emphasis> indexed in
+     the <literal>Title</literal> register, issue one of the two
+     equivalent queries:
+     <screen>
+      Z> find @not @attr 1=_ALLRECORDS @attr 2=103 "" @attr 1=Title @attr 2=103 ""
+      Z> find @not @attr 1=_ALLRECORDS @attr 2=103 "" @attr 1=4 @attr 2=103 ""
+     </screen>
+    </para>
+    <warning>
+     The special string index <literal>_ALLRECORDS</literal> is
+     experimental, and the provided functionality and syntax may very
+     well change in future releases of Zebra.
+    </warning>
+    
+   </sect2>
 
    <sect2 id="querymodel-zebra-attr-search">
     <title>Zebra specific Search Extentions to all Attribute Sets</title>
@@ -1404,6 +1451,15 @@
      faster and does not require clients to deal with the Sort
      Facility. 
     </para>
+
+    <para>
+     All ordering operations are based on a lexicographical ordering, 
+     <emphasis>expect</emphasis> when the 
+     <literal>structure attribute numeric (109)</literal> is used. In
+     this case, ordering is numerical. See 
+      <xref linkend="querymodel-bib1-structure"/>.
+    </para>
+
     <para>
      The possible values after attribute <literal>type 7</literal> are
      <literal>1</literal> ascending and 
@@ -1769,14 +1825,154 @@
    </sect2>
 
 
-   <sect2 id="querymodel-bib1-mapping">
-    <title>Mapping from Bib1 Attributes to Zebra internal 
+   <sect2 id="querymodel-pqf-apt-mapping">
+    <title>Mapping from PQF atomic APT queries to Zebra internal 
      register indexes</title>
     <para>
-     TO-DO
+     The rules for PQF APT mapping are rather tricky to grasp in the
+     first place. We deal first with the rules for deciding which
+     internal register or string index to use, according to the use
+     attribute or access point specified in the query. Thereafter we
+     deal with the rules for tetermining the correct structure type of
+     the named register. 
+    </para>
+
+   <sect3 id="querymodel-pqf-apt-mapping-accesspoint">
+    <title>Mapping of PQF APT access points</title>
+    <para>
+      Zebra understands four fundamental different types of access
+      points, of which only the  
+      <emphasis>numeric use attribute</emphasis> type access points
+      are defined by the  <ulink url="&url.z39.50;">Z39.50</ulink>
+      standard.
+      All other access point types are Zebra specific, and non-portable.
+    </para>
+
+     <table id="querymodel-zebra-mapping-accesspoint-types"
+      frame="all" rowsep="1" colsep="1" align="center">
+
+      <caption>Acces point name</caption>
+       <thead>
+        <tr>
+         <td>Acess Point</td>
+         <td>Type</td>
+         <td>Grammar</td>
+         <td>Notes</td>
+        </tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td>Use attibute</td>
+        <td>numeric</td>
+        <td>[1-9][1-9]*</td>
+        <td>directly mapped to string index name</td>
+       </tr>
+       <tr>
+        <td>String index name</td>
+        <td>string</td>
+        <td>[a-zA-Z](\-?[a-zA-Z0-9])*</td>
+        <td>normalized name is used as internal string index name</td>
+       </tr>
+       <tr>
+        <td>Zebra internal index name</td>
+        <td>zebra</td>
+        <td>_[a-zA-Z](_?[a-zA-Z0-9])*</td>
+        <td>hardwired internal string index name</td>
+       </tr>
+       <tr>
+        <td>XPATH special index</td>
+        <td>XPath</td>
+        <td>/.*</td>
+        <td>special xpath search for GRS indexed records</td>
+       </tr>
+      </tbody>
+    </table>
+
+    <para>
+     <literal>Attribute set names</literal> and 
+     <literal>string index names</literal> are normalizes
+     according to the following rules: all <emphasis>single</emphasis>
+     hyphens <literal>'-'</literal> are stripped, and all upper case
+     letters are folded to lower case.</para>
+
+    <para>
+     <emphasis>Numeric use attributes</emphasis> are mapped 
+     to the Zebra internal
+     string index according to the attribute set defintion in use.
+     The default attribute set is <literal>Bib-1</literal>, and may be
+     omitted in the PQF query. According to normalization and numeric
+     use attribute mapping, it follows that the following
+     PQF queries are considered equivalent (assuming the default
+     configuration has not been altered):
+     <screen>
+      Z> find  @attr 1=Body-of-text serenade
+      Z> find  @attr 1=bodyoftext serenade
+      Z> find  @attr 1=BodyOfText serenade
+      Z> find  @attr 1=bO-d-Y-of-tE-x-t serenade
+      Z> find  @attr 1=1010 serenade
+      Z> find  @attrset Bib-1 @attr 1=1010 serenade
+      Z> find  @attrset bib1 @attr 1=1010 serenade
+      Z> find  @attrset Bib1 @attr 1=1010 serenade
+      Z> find  @attrset b-I-b-1 @attr 1=1010 serenade
+     </screen>
+    </para>
+
+    <para>
+      The <emphasis>numerical</emphasis>
+      <literal>use attributes (type 1)</literal>  
+      are interpreted according to the
+      attribute sets which have been loaded in the
+      <literal>zebra.cfg</literal> file, and are matched against specific
+      fields as specified in the <literal>.abs</literal> file which
+      describes the profile of the records which have been loaded.
+      If no use attribute is provided, a default of Bib-1 Any is
+      assumed.
+      The predefined <literal>use attribute sets</literal>
+      can be reconfigured by  tweaking the configuration files
+      <filename>tab/*.att</filename>, and 
+      new attribute sets can be defined by adding similar files in the
+      configuration path <literal>profilePath</literal> of the server.  
+    </para>
+
+     <para>
+      <literal>String indexes</literal> can be acessed directly,
+      independently which attribute set is in use. These are just
+      ignored. The above mentioned name normalization applies.
+      <literal>String index names</literal> are defined in the
+      used indexing  filter configuration files, for example in the
+      <literal>GRS</literal> 
+      <filename>*.abs</filename> configuration files, or in the
+      <literal>alvis</literal> filter XSLT indexing stylesheets.
+     </para>
+
+     <para>
+      <literal>Zebra internal indexes</literal> can be acessed directly,
+      according to the same rules as the user defined
+      <literal>string indexes</literal>. The only difference is that   
+      <literal>Zebra internal indexe names</literal> are hardwired,
+      all uppercase and
+      must start with the character <literal>'_'</literal>. 
+     </para>
+
+     <para>
+      Finally, <literal>XPATH</literal> access points are only
+      available using the <literal>GRS</literal> filter for indexing.
+      These acees point names must start with the character
+      <literal>'/'</literal>, they are <emphasis>not
+      normalized</emphasis>, but passed unaltered to the Zebra internal
+      XPATH engine. See <xref linkend="querymodel-use-xpath"/>.
+
      </para>
 
 
+    </sect3>
+
+
+   <sect3 id="querymodel-pqf-apt-mapping-structuretype">
+    <title>Mapping of PQF APT structure and type</title>
+    <para>
+     
+    </para>
      <!-- see in util/zebramap.c
       int zebra_maps_attr
 
@@ -1854,14 +2050,6 @@
      -->
 
     
-    <para>
-     <emphasis>Use</emphasis> attributes are interpreted according to the
-     attribute sets which have been loaded in the
-    <literal>zebra.cfg</literal> file, and are matched against specific
-     fields as specified in the <literal>.abs</literal> file which
-     describes the profile of the records which have been loaded.
-     If no Use attribute is provided, a default of Bib-1 Any is assumed.
-    </para>
     
     <para>
      If a <emphasis>Structure</emphasis> attribute of
@@ -1944,6 +2132,8 @@
      replacement) is accepted when terms are matched against the register
      contents.
     </para>
+
+     </sect3>
    </sect2>
 
    <sect2  id="querymodel-regular">
