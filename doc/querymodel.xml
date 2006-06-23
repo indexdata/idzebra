@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.13 2006-06-23 12:40:33 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.14 2006-06-23 12:41:14 marc Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -899,7 +899,7 @@
        Z>  find @attr 1=Title @attr 2=5 music
        ...
        Number of hits: 11419, setno 5
-      <screen>
+      </screen>
      </para>
 
      <para>
