@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.223 2006-06-22 15:07:20 adam Exp $
+/* $Id: extract.c,v 1.224 2006-06-23 11:21:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -403,7 +403,7 @@ static void all_matches_add(struct recExtractCtrl *ctrl)
 {
     RecWord word;
     extract_init(ctrl, &word);
-    word.index_name = "allrecords";
+    word.index_name = "_ALLRECORDS";
     word.index_type = 'w';
     word.seqno = 1;
     extract_add_index_string (&word, zinfo_index_category_alwaysmatches,

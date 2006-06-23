@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.50 2006-06-22 09:48:09 adam Exp $
+/* $Id: zebramap.c,v 1.51 2006-06-23 11:21:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -407,12 +407,6 @@ int zebra_maps_attr(ZebraMaps zms, Z_AttributesPlusTerm *zapt,
         if (weight_value == -1)
             weight_value = 34;
         sprintf(rank_type, "rank,w=%d,u=%d", weight_value, use_value);
-    }
-    if (relation_value == 103)
-    {
-        *search_type = "always";
-	*reg_id = 'w';
-        return 0;
     }
     if (*complete_flag)
 	*reg_id = 'p';

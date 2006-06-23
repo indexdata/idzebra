@@ -1,4 +1,4 @@
-/* $Id: attribute.c,v 1.24 2006-06-22 15:07:20 adam Exp $
+/* $Id: attribute.c,v 1.25 2006-06-23 11:21:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -121,15 +121,38 @@ ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
 
 ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
                             Z_AttributesPlusTerm *zapt,
-                            zinfo_index_category_t cat,
                             int index_type,
                             const char *xpath_use,
                             oid_value curAttributeSet,
                             int *ord)
 {
+    ZEBRA_RES res = ZEBRA_OK;
+    AttrType relation;
+    int relation_value;
+    zinfo_index_category_t cat = zinfo_index_category_index;
+
+    attr_init_APT(&relation, zapt, 2);
+    relation_value = attr_find(&relation, NULL);
+
+    if (relation_value == 103) /* always matches */
+        cat = zinfo_index_category_alwaysmatches;
+    
     if (!xpath_use)
-        return zebra_attr_list_get_ord(zh, zapt->attributes,
-                                       cat, index_type, curAttributeSet, ord);
+    {
+        res = zebra_attr_list_get_ord(zh, zapt->attributes,
+                                      cat, index_type,
+                                      curAttributeSet, ord);
+        /* use attribute not found. But it the relation is
+           always matches and the regulare index attribute is found
+           return a different diagnostic */
+        if (res != ZEBRA_OK && 
+            relation_value == 103
+            &&  zebra_attr_list_get_ord(
+                zh, zapt->attributes, 
+                zinfo_index_category_index, index_type,
+                curAttributeSet, ord) == ZEBRA_OK)
+            zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_RELATION_ATTRIBUTE, 103);
+    }
     else
     {
         *ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat, index_type,
@@ -139,15 +162,16 @@ ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
             yaz_log(YLOG_LOG, "zebra_apt_get_ord FAILED xpath=%s index_type=%c",
                     xpath_use, index_type);
             zebra_setError(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, 0);
-            return ZEBRA_FAIL;
+            res = ZEBRA_FAIL;
         }
         else
         {
             yaz_log(YLOG_LOG, "zebra_apt_get_ord OK xpath=%s index_type=%c",
                     xpath_use, index_type);
+            
         }
-        return ZEBRA_OK;
     }
+    return res;
 }
 
 ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,

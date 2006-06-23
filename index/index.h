@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.168 2006-06-22 15:07:20 adam Exp $
+/* $Id: index.h,v 1.169 2006-06-23 11:21:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -429,7 +429,6 @@ void zebra_term_untrans(ZebraHandle zh, int reg_type,
 
 ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
                             Z_AttributesPlusTerm *zapt,
-                            zinfo_index_category_t cat,
                             int index_type,
                             const char *xpath_use,
                             oid_value curAttributeSet,
