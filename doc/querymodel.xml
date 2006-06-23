@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.14 2006-06-23 12:41:14 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.15 2006-06-23 13:45:41 marc Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -1721,7 +1721,7 @@
     <para>
      This feature is enabled when defining the
      <literal>xpath enable</literal> option in the GRS filter
-     <literal>*.abs</literal> configuration files. If one wants to use
+     <filename>*.abs</filename> configuration files. If one wants to use
      the special <literal>idxpath</literal> numeric attribute set, the
      main Zebra configuraiton file <filename>zebra.cfg</filename>
      directive <literal>attset: idxpath.att</literal> must be enabled.
@@ -1865,7 +1865,7 @@
      first place. We deal first with the rules for deciding which
      internal register or string index to use, according to the use
      attribute or access point specified in the query. Thereafter we
-     deal with the rules for tetermining the correct structure type of
+     deal with the rules for determining the correct structure type of
      the named register. 
     </para>
 
@@ -1883,7 +1883,7 @@
      <table id="querymodel-zebra-mapping-accesspoint-types"
       frame="all" rowsep="1" colsep="1" align="center">
 
-      <caption>Acces point name</caption>
+      <caption>Acces point name mapping</caption>
        <thead>
         <tr>
          <td>Acess Point</td>
@@ -1925,18 +1925,23 @@
      <literal>string index names</literal> are normalizes
      according to the following rules: all <emphasis>single</emphasis>
      hyphens <literal>'-'</literal> are stripped, and all upper case
-     letters are folded to lower case.</para>
+     letters are folded to lower case.
+     </para>
 
-    <para>
-     <emphasis>Numeric use attributes</emphasis> are mapped 
-     to the Zebra internal
-     string index according to the attribute set defintion in use.
-     The default attribute set is <literal>Bib-1</literal>, and may be
-     omitted in the PQF query. According to normalization and numeric
-     use attribute mapping, it follows that the following
-     PQF queries are considered equivalent (assuming the default
-     configuration has not been altered):
-     <screen>
+     <para>
+      <emphasis>Numeric use attributes</emphasis> are mapped 
+      to the Zebra internal
+      string index according to the attribute set defintion in use.
+      The default attribute set is <literal>Bib-1</literal>, and may be
+      omitted in the PQF query.
+     </para>
+     
+     <para>
+      According to normalization and numeric
+      use attribute mapping, it follows that the following
+      PQF queries are considered equivalent (assuming the default
+      configuration has not been altered):
+      <screen>
       Z> find  @attr 1=Body-of-text serenade
       Z> find  @attr 1=bodyoftext serenade
       Z> find  @attr 1=BodyOfText serenade
@@ -1957,7 +1962,8 @@
       <literal>zebra.cfg</literal> file, and are matched against specific
       fields as specified in the <literal>.abs</literal> file which
       describes the profile of the records which have been loaded.
-      If no use attribute is provided, a default of Bib-1 Any is
+      If no use attribute is provided, a default of 
+      <literal>Bib-1 Use Any (1016)</literal> is
       assumed.
       The predefined <literal>use attribute sets</literal>
       can be reconfigured by  tweaking the configuration files
@@ -2001,88 +2007,99 @@
 
 
    <sect3 id="querymodel-pqf-apt-mapping-structuretype">
-    <title>Mapping of PQF APT structure and type</title>
+     <title>Mapping of PQF APT structure and completeness to 
+      register type</title>
     <para>
-     
-    </para>
-     <!-- see in util/zebramap.c
-      int zebra_maps_attr
+      Internally Zebra has in it's default configuration several
+     different types of registers or indexes, whose tokenization and
+      character normalization rules differ. This reflects the fact that 
+      serching fundamental different tokens like dates, numbers,
+      bitfields and string based text needs different rulesets. 
+     </para>
 
-  if (completeness_value == 2 || completeness_value == 3)
-        *complete_flag = 1;
-    else
-        *complete_flag = 0;
-    *reg_id = 0;
+     <table id="querymodel-zebra-mapping-structure-types"
+      frame="all" rowsep="1" colsep="1" align="center">
 
-    *sort_flag =(sort_relation_value > 0) ? 1 : 0;
-    *search_type = "phrase";
-    strcpy(rank_type, "void");
-    if (relation_value == 102)
-    {
-        if (weight_value == -1)
-            weight_value = 34;
-        sprintf(rank_type, "rank,w=%d,u=%d", weight_value, use_value);
-    }
-    if (relation_value == 103)
-    {
-        *search_type = "always";
-        *reg_id = 'w';
-        return 0;
-    }
-    if (*complete_flag)
-        *reg_id = 'p';
-    else
-        *reg_id = 'w';
-    switch (structure_value)
-    {
-    case 6:   /* word list */
-        *search_type = "and-list";
-        break;
-    case 105: /* free-form-text */
-        *search_type = "or-list";
-        break;
-    case 106: /* document-text */
-        *search_type = "or-list";
-        break;  
-    case -1:
-    case 1:   /* phrase */
-    case 2:   /* word */
-    case 108: /* string */ 
-        *search_type = "phrase";
-        break;
-   case 107: /* local-number */
-        *search_type = "local";
-        *reg_id = 0;
-        break;
-    case 109: /* numeric string */
-        *reg_id = 'n';
-        *search_type = "numeric";
-        break;
-    case 104: /* urx */
-        *reg_id = 'u';
-        *search_type = "phrase";
-        break;
-    case 3:   /* key */
-        *reg_id = '0';
-        *search_type = "phrase";
-        break;
-    case 4:  /* year */
-        *reg_id = 'y';
-        *search_type = "phrase";
-        break;
-    case 5:  /* date */
-        *reg_id = 'd';
-        *search_type = "phrase";
-        break;
-    default:
-        return -1;
-    }
-    return 0;
+      <caption>Structure and completeness mapping to register types</caption>
+       <thead>
+        <tr>
+         <td>Structure</td>
+         <td>Completeness</td>
+         <td>Register type</td>
+         <td>Notes</td>
+        </tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td>
+          phrase (@attr 4=1), word (@attr 4=2), 
+          word-list (@attr 4=6),
+          free-form-text  (@attr 4=105), or document-text (@attr 4=106)
+         </td>
+        <td>Incomplete field (@attr 6=1)</td>
+        <td>Word ('w')</td>
+        <td>Traditional tokenized and character normalized word index</td>
+       </tr>
+       <tr>
+        <td>
+          phrase (@attr 4=1), word (@attr 4=2), 
+          word-list (@attr 4=6),
+          free-form-text  (@attr 4=105), or document-text (@attr 4=106)
+         </td>
+        <td>complete field' (@attr 6=3)</td>
+        <td>Phrase ('p')</td>
+        <td>Character normalized, but not tokenized index for phrase
+          matches
+         </td>
+       </tr>
+       <tr>
+        <td>urx (@attr 4=104)</td>
+        <td>ignored</td>
+        <td>URX/URL ('u')</td>
+        <td>Special index for URL web adresses</td>
+       </tr>
+       <tr>
+        <td>numeric (@attr 4=109)</td>
+        <td>ignored</td>
+        <td>Numeric ('u')</td>
+        <td>Special index for digital numbers</td>
+       </tr>
+       <tr>
+        <td>key (@attr 4=3)</td>
+        <td>ignored</td>
+        <td>Null bitmap ('0')</td>
+        <td>Used for non-tokenizated and non-normalized bit sequences</td>
+       </tr>
+       <tr>
+        <td>year (@attr 4=4)</td>
+        <td>ignored</td>
+        <td>Year ('y')</td>
+        <td>Non-tokenizated and non-normalized 4 digit numbers</td>
+       </tr>
+       <tr>
+        <td>date (@attr 4=5)</td>
+        <td>ignored</td>
+        <td>Date ('d')</td>
+        <td>Non-tokenizated and non-normalized ISO date strings</td>
+       </tr>
+       <tr>
+        <td>ignored</td>
+        <td>ignored</td>
+        <td>Sort ('s')</td>
+        <td>Used with special sort attribute set (@attr 7=1, @attr 7=2)</td>
+       </tr>
+       <tr>
+        <td>overruled</td>
+        <td>overruled</td>
+        <td>special</td>
+        <td>Internal record ID register, used whenever 
+         Relation Always Matches (@attr 2=103) is specified</td>
+       </tr>
+      </tbody>
+    </table>
 
-     -->
-
-    
-    
+     <!-- see in util/zebramap.c -->
+        
     <para>
      If a <emphasis>Structure</emphasis> attribute of
      <emphasis>Phrase</emphasis> is used in conjunction with a
@@ -2091,9 +2108,23 @@
      against the contents of the phrase (long word) register, if one
      exists for the given <emphasis>Use</emphasis> attribute.
      A phrase register is created for those fields in the
-     <literal>.abs</literal> file that contains a
+     GRS <filename>*.abs</filename> file that contains a
      <literal>p</literal>-specifier.
-     <!-- ### whatever the hell _that_ is -->
+      <screen>
+       Z>  scan @attr 1=Title @attr 4=1 @attr 6=3 beethoven 
+       ...
+       bayreuther festspiele (1)
+       * beethoven bibliography database (1)
+       benny carter (1)
+       ...
+       Z> find @attr 1=Title @attr 4=1 @attr 6=3 "beethoven bibliography" 
+       ...
+       Number of hits: 0, setno 5
+       ...
+       Z> find @attr 1=Title @attr 4=1 @attr 6=3 "beethoven bibliography database" 
+       ...
+       Number of hits: 1, setno 6
+       </screen>
     </para>
 
     <para>
@@ -2104,7 +2135,23 @@
      contains multiple words, the term will only match if all of the words
      are found immediately adjacent, and in the given order.
      The word search is performed on those fields that are indexed as
-     type <literal>w</literal> in the <literal>.abs</literal> file.
+     type <literal>w</literal> in the GRS <filename>*.abs</filename> file.
+      <screen>
+       Z>  scan @attr 1=Title @attr 4=1 @attr 6=1 beethoven 
+       ...
+         beefheart (1)
+       * beethoven (18)
+         beethovens (7)
+       ...
+       Z> find @attr 1=Title @attr 4=1 @attr 6=1 beethoven 
+       ...
+       Number of hits: 18, setno 1
+       ...
+       Z> find @attr 1=Title @attr 4=1 @attr 6=1 "beethoven  bibliography"
+       ...
+       Number of hits: 2, setno 2
+       ...
+     </screen>
     </para>
 
     <para>
@@ -2115,21 +2162,22 @@
      natural-language, relevance-ranked query.
      This search type uses the word register, i.e. those fields
      that are indexed as type <literal>w</literal> in the
-     <literal>.abs</literal> file.
+     GRS <filename>*.abs</filename> file.
     </para>
 
     <para>
      If the <emphasis>Structure</emphasis> attribute is
      <emphasis>Numeric String</emphasis> the term is treated as an integer.
      The search is performed on those fields that are indexed
-     as type <literal>n</literal> in the <literal>.abs</literal> file.
+     as type <literal>n</literal> in the GRS 
+      <filename>*.abs</filename> file.
     </para>
 
     <para>
      If the <emphasis>Structure</emphasis> attribute is
      <emphasis>URx</emphasis> the term is treated as a URX (URL) entity.
      The search is performed on those fields that are indexed as type
-     <literal>u</literal> in the <literal>.abs</literal> file.
+     <literal>u</literal> in the <filename>*.abs</filename> file.
     </para>
 
     <para>
