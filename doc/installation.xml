@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.20 2006-06-25 21:04:49 marc Exp $ -->
+<!-- $Id: installation.xml,v 1.21 2006-06-25 21:08:14 marc Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -204,9 +204,10 @@
   </sect1>
 
   <sect1 id="installation.debian"><title>GNU/Debian</title>
-   <sect2 id="installation.debianlinux"><title>GNU/Debian Linux</title>
+   <sect2 id="installation.debianlinux"><title>GNU/Debian Linux on
+   i686 Platform</title>
     <para>
-     Index Data provides pre-compiled <literal>GNU/Debian
+     Index Data provides pre-compiled <literal>GNU/Debian i686
       Linux</literal> packages at our Debian package archive, both for
      the <literal>Sarge</literal> and the <literal>Etch</literal> release. 
     </para>
