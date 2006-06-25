@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.19 2006-04-25 12:26:26 marc Exp $ -->
+<!-- $Id: installation.xml,v 1.20 2006-06-25 21:04:49 marc Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -216,13 +216,13 @@
      <literal>/etc/apt/sources.list</literal> configuration file,
      either the <literal>Sarge</literal> sources found at
      <screen>
-      deb http://www.indexdata.dk/debian indexdata/sarge released
-      deb-src http://www.indexdata.dk/debian indexdata/sarge released
+      deb http://ftp.indexdata.dk/t/debian sarge main
+      deb-src http://ftp.indexdata.dk/t/debian sarge main
      </screen>
      or the <literal>Etch</literal> sources from 
      <screen>
-      deb http://www.indexdata.dk/debian indexdata/etch released
-      deb-src http://www.indexdata.dk/debian indexdata/etch released
+      deb http://ftp.indexdata.dk/t/debian etch main
+      deb-src http://ftp.indexdata.dk/t/debian etch main
      </screen>
      After refreshing the package cache with the command
      <screen>
@@ -249,11 +249,11 @@
      <literal>/etc/apt/sources.list</literal> configuration file,
      that is either the <literal>Sarge</literal> sources
      <screen>
-      deb-src http://www.indexdata.dk/debian indexdata/sarge released
+      deb-src http://ftp.indexdata.dk/t/debian sarge main
      </screen>
      or the <literal>Etch</literal> sources
      <screen>
-      deb-src http://www.indexdata.dk/debian indexdata/etch released
+      deb-src http://ftp.indexdata.dk/t/debian etch main
      </screen>
      After refreshing the package cache with the command
      <screen>
