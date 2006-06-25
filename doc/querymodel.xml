@@ -1,10 +1,9 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.15 2006-06-23 13:45:41 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.16 2006-06-25 21:54:03 marc Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
-   <title>Query Model Overview</title>
-   
+   <title>Query Model Overview</title>  
 
    <sect2 id="querymodel-query-languages">
     <title>Query Languages</title>
@@ -34,16 +33,16 @@
     <title>Prefix Query Format (PQF)</title>
 
    <para>
-     Index Data has defined a textual representaion in the 
+     Index Data has defined a textual representation in the 
      <literal>Prefix Query Format</literal>, short
-     <literal>PQF</literal>, which mappes 
+     <literal>PQF</literal>, which maps 
       <literal>one-to-one</literal> to binary encoded  
       <literal>type-1 RPN</literal> query packages.
       It has been adopted by other
       parties developing Z39.50 software, and is often referred to as
      <literal>Prefix Query Notation</literal>, or in short 
      <literal>PQN</literal>. See       
-     <xref linkend="querymodel-pqf"/> for further explanaitions and
+     <xref linkend="querymodel-pqf"/> for further explanations and
      descriptions of Zebra's capabilities.  
     </para>
    </sect3>    
@@ -92,15 +91,15 @@
       of the general query model are supported.      
      </para>
      <para>
-      The Z39.50 embeddes the <literal>explain</literal> operation
-      by perfoming a 
+      The Z39.50 embeds the <literal>explain</literal> operation
+      by performing a 
       <literal>search</literal> in the magic 
       <literal>IR-Explain-1</literal> database;
       see <xref linkend="querymodel-exp1"/>. 
      </para>
      <para>
-      In SRU, <literal>explain</literal> is an entirely  seperate
-      operation, which returns an  <literal>Zeerex
+      In SRU, <literal>explain</literal> is an entirely  separate
+      operation, which returns an  <literal>ZeeRex
       XML</literal> record according to the 
       structure defined by the protocol.
      </para>
@@ -134,9 +133,9 @@
      <para>
       It provides
       the means to investigate the content of specific indexes.
-      Scanning an index returns a handfull of terms actually fond in
+      Scanning an index returns a handful of terms actually fond in
       the indexes, and in addition the <literal>scan</literal>
-      operation returns th enumber of documents indexed by each term.
+      operation returns the number of documents indexed by each term.
       A search client can use this information to propose proper
       spelling of search terms, to auto-fill search boxes, or to 
       display  controlled vocabularies.
@@ -219,7 +218,7 @@
         <tr>
          <td><literal>GILS</literal></td>
          <td><literal>gils</literal></td>
-         <td>Extention to the <literal>Bib1</literal> attribute set.</td>
+         <td>Extension to the <literal>Bib1</literal> attribute set.</td>
          <td>predefined</td>
         </tr>
         <!--
@@ -254,6 +253,7 @@
      <para>
       A pair of subquery trees, or of atomic queries, is combined
       using the standard boolean operators into new query trees.
+      Thus, boolean operators are always internal nodes in the query tree.
      </para>
      
      <table id="querymodel-boolean-operators-table"
@@ -307,7 +307,7 @@
       Querying for the intersection of all documents containing the
       terms <emphasis>information</emphasis> AND
       <emphasis>retrieval</emphasis>: 
-      The hit set is a subset of the coresponding
+      The hit set is a subset of the corresponding
       OR query.
       <screen>
        Z> find @and information retrieval
@@ -317,19 +317,20 @@
       Querying for the intersection of all documents containing the
       terms <emphasis>information</emphasis> AND
       <emphasis>retrieval</emphasis>, taking proximity into account:
-      The hit set is a subset of the coresponding
-      AND query.
+      The hit set is a subset of the corresponding
+      AND query        
+      (see the <ulink url="&url.yaz.pqf;">PQF grammar</ulink> for
+      details on the proximity operator):
       <screen>
        Z> find @prox 0 3 0 2 k 2 information retrieval
       </screen>
-       See  <ulink url="&url.yaz.pqf;">PQF grammer</ulink> for details.
      </para>
      <para>
       Querying for the intersection of all documents containing the
       terms <emphasis>information</emphasis> AND
       <emphasis>retrieval</emphasis>, in the same order and near each
-      other as described in the term list  
-      The hit set is a subset of the coresponding
+      other as described in the term list.  
+      The hit set is a subset of the corresponding
       PROXIMY query.
       <screen>
        Z> find "information retrieval"
@@ -341,13 +342,14 @@
     <sect3 id="querymodel-atomic-queries">
      <title>Atomic queries (APT)</title>
      <para>
-      Atomic queries are the query parts which work on one acess point
+      Atomic queries are the query parts which work on one access point
       only. These consist of <literal>an attribute list</literal>
       followed by a <literal>single term</literal> or a
       <literal>quoted term list</literal>, and are often called 
       <emphasis>Attributes-Plus-Terms (APT)</emphasis> queries.
      </para>
      <para>
+      Atomic (APT) queries are always leaf nodes in the PQF query tree. 
       Unsupplied non-use attributes type 2-9 are either inherited from
       higher nodes in the query tree, or are set to Zebra's default values.
       See <xref linkend="querymodel-bib1"/> for details. 
@@ -356,12 +358,14 @@
      <table id="querymodel-atomic-queries-table"
       frame="all" rowsep="1" colsep="1" align="center">
 
-      <caption>Atomic queries</caption>
-       <!--
+      <caption>Atomic queries (APT)</caption>
        <thead>
-       <tr><td>one</td><td>two</td></tr>
+        <tr>
+         <td>Name</td>
+         <td>Type</td>
+         <td>Notes</td>
+        </tr>
       </thead>
-       -->
        <tbody>
         <tr>
          <td><emphasis>attribute list</emphasis></td>
@@ -382,7 +386,7 @@
      </table>
      <para>
       Querying for the term <emphasis>information</emphasis> in the
-      default index using the default attribite set, the server choice
+      default index using the default attribute set, the server choice
       of access point/index, and the default non-use attributes.
       <screen>
        Z> find information
@@ -394,7 +398,7 @@
        Z> find @attrset bib-1 @attr 1=1017 @attr 2=3 @attr 3=3 @attr 4=1 @attr 5=100 @attr 6=1 information
       </screen>
      </para>
-     
+
      <para>
       Finding all documents which have the term
       <emphasis>debussy</emphasis> in the title field.
@@ -403,6 +407,22 @@
       </screen>
      </para>
 
+     <para>
+      The <literal>scan</literal> operation is only supported with 
+      atomic APT queries, as it is bound to one access point at a
+      time. Boolean query trees are not allowed during
+      <literal>scan</literal>.
+      </para>
+     
+     <para>
+      For example, we migh want to scan the title index, starting with
+      the term 
+      <emphasis>debussy</emphasis>, and displaying this and the
+      following terms in lexicographic order:
+      <screen>
+       Z> scan @attr 1=4 debussy
+      </screen>
+     </para>
     </sect3>
     
     
@@ -410,13 +430,15 @@
      <title>Named Result Sets</title>
      <para>
       Named result sets are supported in Zebra, and result sets can be
-      used as operands without limitations.
+      used as operands without limitations. It follows that named
+      result sets are leaf nodes in the PQF query tree, exactly as
+      atomic APT queries are.
      </para>
      <para>      
       After the execution of a search, the result set is available at
       the server, such that the client can use it for subsequent
       searches or retrieval requests. The Z30.50 standard actually
-      stresses the fact that result sets are voliatile. It may cease
+      stresses the fact that result sets are volatile. It may cease
       to exist at any time point after search, and the server will
       send a diagnostic to the effect that the requested
       result set does not exist any more.
@@ -444,7 +466,7 @@
      <note>
       Named result sets are only supported by the Z39.50 protocol.
       The SRU web service is stateless, and therefore the notion of
-      named result sets does not exist when acessing a Zebra server by
+      named result sets does not exist when accessing a Zebra server by
       the SRU protocol.
      </note>
     </sect3>
@@ -454,13 +476,13 @@
      <title>Zebra's special access point of type 'string'</title>
      <para>
       The numeric <literal>use (type 1)</literal> attribute is usually 
-      refered to from a given
+      referred to from a given
       attribute set. In addition, Zebra let you use 
       <emphasis>any internal index
        name defined in your configuration</emphasis> 
-      as use atribute value. This is a great feature for
+      as use attribute value. This is a great feature for
       debugging, and when you do
-      not need the complecity of defined use attribute values. It is
+      not need the complexity of defined use attribute values. It is
       the preferred way of accessing Zebra indexes directly.  
      </para>
      <para>
@@ -494,7 +516,7 @@
      <para>
       See also <xref linkend="querymodel-pqf-apt-mapping"/> for details, and 
       <xref linkend="server-sru"/>
-      for the SRU PQF query extention using string names as a fast
+      for the SRU PQF query extension using string names as a fast
       debugging facility.
      </para>
     </sect3>
@@ -507,7 +529,7 @@
       idea) to emulate 
       <ulink url="http://www.w3.org/TR/xpath">XPath 1.0</ulink> based
       search by defining <literal>use (type 1)</literal> 
-      <emphasis>string</emphasis> attributes which in appearence 
+      <emphasis>string</emphasis> attributes which in appearance 
       <emphasis>resemble XPath queries</emphasis>. There are two
       problems with this approach: first, the XPath-look-alike has to
       be defined at indexation time, no new undefined
@@ -525,7 +547,7 @@
       <literal>use (type 1)</literal> <emphasis>xpath</emphasis>
       attributes. You must enable the 
       <literal>xpath enable</literal> directive in your 
-      <literal>.abs</literal> config files. 
+      <literal>.abs</literal> configuration files. 
      </para>
      <note>
       Only a <emphasis>very</emphasis> restricted subset of the 
@@ -538,14 +560,14 @@
       Finding all documents which have the term "content" 
       inside a text node found in a specific XML DOM
       <emphasis>subtree</emphasis>, whose starting element is 
-      adressed by XPath. 
+      addressed by XPath. 
       <screen>
        Z> find @attr 1=/root content 
        Z> find @attr 1=/root/first content
       </screen>
       <emphasis>Notice that the
        XPath must be absolute, i.e., must start with '/', and that the
-       XPath <literal>decendant-or-self</literal> axis followed by a
+       XPath <literal>descendant-or-self</literal> axis followed by a
        text node selection <literal>text()</literal> is implicitly
        appended to the stated XPath.
       </emphasis>
@@ -564,7 +586,7 @@
       </para>
 
      <para>     
-      Filter the adressing XPath by a predicate working on exact
+      Filter the addressing XPath by a predicate working on exact
       string values in
       attributes (in the XML sense) can be done: return all those docs which
       have the term "english" contained in one of all text subnodes of
@@ -596,7 +618,7 @@
      </para>
      <warning>
       It is worth mentioning that these dynamic performed XPath
-      queries are a performance bottelneck, as no optimized
+      queries are a performance bottleneck, as no optimized
       specialized indexes can be used. Therefore, avoid the use of
       this facility when speed is essential, and the database content
       size is medium to large. 
@@ -634,7 +656,7 @@
     <sect3 id="querymodel-exp1-use">
     <title>Use Attributes (type = 1)</title>
      <para>
-      The following Explain search atributes are supported:
+      The following Explain search attributes are supported:
       <literal>ExplainCategory</literal> (@attr 1=1), 
       <literal>DatabaseName</literal> (@attr 1=3), 
       <literal>DateAdded</literal> (@attr 1=9), 
@@ -657,7 +679,7 @@
      <title>Explain searches with yaz-client</title>
      <para>
       Classic Explain only defines retrieval of Explain information
-      via ASN.1. Pratically no Z39.50 clients supports this. Fortunately
+      via ASN.1. Practically no Z39.50 clients supports this. Fortunately
       they don't have to - Zebra allows retrieval of this information
       in other formats:
       <literal>SUTRS</literal>, <literal>XML</literal>, 
@@ -744,7 +766,7 @@
      Most of the information contained in this section is an excerpt of
      the <literal>ATTRIBUTE SET BIB-1 (Z39.50-1995)
       SEMANTICS</literal>, 
-     found at  <ulink url="&url.z39.50.attset.bib1.1995;">. The BIB-1
+     found at <ulink url="&url.z39.50.attset.bib1.1995;">. The BIB-1
       Attribute Set Semantics</ulink> from 1995, also in an updated 
      <ulink url="&url.z39.50.attset.bib1;">Bib-1
       Attribute Set</ulink> 
@@ -759,7 +781,7 @@
 
     <para>
      A use attribute specifies an access point for any atomic query.
-     These acess points are highly dependent on the attribute set used
+     These access points are highly dependent on the attribute set used
      in the query, and are user configurable using the following
      default configuration files:
      <filename>tab/bib1.att</filename>,
@@ -772,7 +794,7 @@
      </para>
 
     <para>
-     In addition, Zebra allows the acess of 
+     In addition, Zebra allows the access of 
      <emphasis>internal index names</emphasis> and <emphasis>dynamic
      XPath</emphasis> as use attributes; see
       <xref linkend="querymodel-use-string"/> and 
@@ -1004,7 +1026,7 @@
       <literal>structure attribute (type 4)</literal> can be defined
       using the configuration file <filename>
       tab/default.idx</filename>.
-      The default configuration is summerized in this table.
+      The default configuration is summarized in this table.
      </para>
 
      <table id="querymodel-bib1-structure-table"
@@ -1129,7 +1151,7 @@
       Z> find @attr 1=Body-of-text @attr 4=106 "bach salieri teleman"
       Z> find @attr 1=Body-of-text @or bach @or salieri teleman 
      </screen>
-     This <literal>OR</literal> list of terms is very usefull in
+     This <literal>OR</literal> list of terms is very useful in
      combination with relevance ranking:
      <screen>
       Z> find @attr 1=Body-of-text @attr 2=102 @attr 4=105 "bach salieri teleman"
@@ -1174,7 +1196,7 @@
 
      <para>
       The truncation attribute specifies whether variations of one or
-      more characters are allowed between serch term and hit terms, or
+      more characters are allowed between search term and hit terms, or
       not. Using non-default truncation attributes will broaden the
       document hit set of a search query.
      </para>
@@ -1257,7 +1279,7 @@
       <literal>Process # in search term (101)</literal> is a
       poor-man's regular expression search. It maps
       each <literal>#</literal> to <literal>.*</literal>, and
-      performes then a <literal>Regexp-1 (102)</literal> regular
+      performs then a <literal>Regexp-1 (102)</literal> regular
       expression search. The following two queries are equivalent:
       <screen>
        Z> find @attr 1=Body-of-text  @attr 5=101 schnit#ke
@@ -1279,12 +1301,12 @@
 
      <para>
        The truncation attribute value 
-      <literal>Regexp-2 (103) </literal> is a Zebra specific extention
+      <literal>Regexp-2 (103) </literal> is a Zebra specific extension
       which allows <emphasis>fuzzy</emphasis> matches. One single
       error in spelling of search terms is allowed, i.e., a document
       is hit if it includes a term which can be mapped to the used
       search term by one character substitution, addition, deletion or
-      change of posiiton. 
+      change of position. 
       <screen>
        Z> find @attr 1=Body-of-text  @attr 5=100 schnittke
        ...
@@ -1377,11 +1399,11 @@
    <para>
     The Zebra internal query engine has been extended to specific needs
     not covered by the <literal>bib-1</literal> attribute set query
-    model. These extentions are <emphasis>non-standard</emphasis>
-    and <emphasis>non-portable</emphasis>: most functional extentions
+    model. These extensions are <emphasis>non-standard</emphasis>
+    and <emphasis>non-portable</emphasis>: most functional extensions
     are modeled over the <literal>bib-1</literal> attribute set,
     defining type 7-9 attributes.
-    There are also the speciel 
+    There are also the special 
     <literal>string</literal> type index names for the
     <literal>idxpath</literal> attribute set.  
    </para>
@@ -1421,9 +1443,9 @@
    </sect2>
 
    <sect2 id="querymodel-zebra-attr-search">
-    <title>Zebra specific Search Extentions to all Attribute Sets</title>
+    <title>Zebra specific Search Extensions to all Attribute Sets</title>
     <para>
-     Zebra extends the Bib1 attribute types, and these extentions are
+     Zebra extends the Bib1 attribute types, and these extensions are
      recognized regardless of attribute 
      set used in a <literal>search</literal> operation query.
     </para>
@@ -1431,7 +1453,7 @@
      <table id="querymodel-zebra-attr-search-table"
       frame="all" rowsep="1" colsep="1" align="center">
 
-      <caption>Zebra Search Attribute Extentions</caption>
+      <caption>Zebra Search Attribute Extensions</caption>
        <thead>
         <tr>
          <td>Name</td>
@@ -1475,7 +1497,7 @@
       </table>      
 
     <sect3 id="querymodel-zebra-attr-sorting">
-     <title>Zebra Extention Embedded Sort Attribute (type 7)</title>
+     <title>Zebra Extension Embedded Sort Attribute (type 7)</title>
     </sect3>
     <para>
      The embedded sort is a way to specify sort within a query - thus
@@ -1517,7 +1539,7 @@
     </para>
     
     <sect3 id="querymodel-zebra-attr-estimation">
-     <title>Zebra Extention Term Set Attribute (type 8)</title>
+     <title>Zebra Extension Term Set Attribute (type 8)</title>
     </sect3>
     <para>
      The Term Set feature is a facility that allows a search to store
@@ -1540,7 +1562,7 @@
     </warning>
 
     <sect3 id="querymodel-zebra-attr-weight">
-     <title>Zebra Extention Rank Weight Attribute (type 9)</title>
+     <title>Zebra Extension Rank Weight Attribute (type 9)</title>
     </sect3>
     <para>
      Rank weight is a way to pass a value to a ranking algorithm - so
@@ -1556,10 +1578,10 @@
     </para>
 
     <sect3 id="querymodel-zebra-attr-limit">
-     <title>Zebra Extention Approximative Limit Attribute (type 9)</title>
+     <title>Zebra Extension Approximative Limit Attribute (type 9)</title>
     </sect3>
     <para>
-     Newer Zebra versions normally estemiates hit count for every APT
+     Newer Zebra versions normally estimate hit count for every APT
      (leaf) in the query tree. These hit counts are returned as part of
      the searchResult-1 facility in the binary encoded Z39.50 search
      response packages.
@@ -1570,14 +1592,14 @@
      reached. A value of zero means exact hit count.
     </para>
     <para>
-     For example, we might be intersted in exact hit count for a, but
+     For example, we might be interested in exact hit count for a, but
      for b we allow hit count estimates for 1000 and higher. 
      <screen>
       Z> find @and a @attr 9=1000 b
      </screen>
     </para>
     <note>
-     The estimated hit count fascility makes searches faster, as one
+     The estimated hit count facility makes searches faster, as one
      only needs to process large hit lists partially.
     </note>
     <warning>
@@ -1585,11 +1607,11 @@
      documents in the hit lists need to be examined for scoring and
      re-sorting.
      It is an experimental
-     extention. Do not use in production code.
+     extension. Do not use in production code.
     </warning>
 
     <sect3 id="querymodel-zebra-attr-termref">
-     <title>Zebra Extention Term Reference Attribute (type 10)</title>
+     <title>Zebra Extension Term Reference Attribute (type 10)</title>
     </sect3>
     <para>
      Zebra supports the <literal>searchResult-1</literal> facility. 
@@ -1613,16 +1635,16 @@
     
 
    <sect2 id="querymodel-zebra-attr-scan">
-    <title>Zebra specific Scan Extentions to all Attribute Sets</title>
+    <title>Zebra specific Scan Extensions to all Attribute Sets</title>
     <para>
-     Zebra extends the Bib1 attribute types, and these extentions are
+     Zebra extends the Bib1 attribute types, and these extensions are
      recognized regardless of attribute 
      set used in a <literal>scan</literal> operation query.
     </para>
      <table id="querymodel-zebra-attr-scan-table"
       frame="all" rowsep="1" colsep="1" align="center">
 
-      <caption>Zebra Scan Attribute Extentions</caption>
+      <caption>Zebra Scan Attribute Extensions</caption>
        <thead>
         <tr>
          <td>Name</td>
@@ -1648,7 +1670,7 @@
       </table>      
 
     <sect3 id="querymodel-zebra-attr-narrow">
-     <title>Zebra Extention Result Set Narrow (type 8)</title>
+     <title>Zebra Extension Result Set Narrow (type 8)</title>
     </sect3>
     <para>
      If attribute <literal>Result Set Narrow (type 8)</literal> 
@@ -1661,7 +1683,7 @@
      the case of scanning all title fields around the
      scanterm <emphasis>mozart</emphasis>, then refining the scan by
      issuing a filtering query for <emphasis>amadeus</emphasis> to
-     restric the scan to the result set of the query:  
+     restrict the scan to the result set of the query:  
      <screen>
       Z> scan @attr 1=4 mozart 
       ...
@@ -1689,11 +1711,11 @@
     </warning>
 
     <sect3 id="querymodel-zebra-attr-approx">
-     <title>Zebra Extention Approximative Limit (type 9)</title>
+     <title>Zebra Extension Approximative Limit (type 9)</title>
     </sect3>
     <para>
-     The <literal>Zebra Extention Approximative Limit (type
-      9)</literal> is a way to enable approx
+     The <literal>Zebra Extension Approximative Limit (type
+      9)</literal> is a way to enable approximate
      hit counts for <literal>scan</literal> hit counts, in the same
      way as for <literal>search</literal> hit counts. 
     </para>
@@ -1723,7 +1745,7 @@
      <literal>xpath enable</literal> option in the GRS filter
      <filename>*.abs</filename> configuration files. If one wants to use
      the special <literal>idxpath</literal> numeric attribute set, the
-     main Zebra configuraiton file <filename>zebra.cfg</filename>
+     main Zebra configuration file <filename>zebra.cfg</filename>
      directive <literal>attset: idxpath.att</literal> must be enabled.
     </para>
     <warning>The <literal>idxpath</literal> is depreciated, may not be
@@ -1835,7 +1857,7 @@
       </screen>
      </para>
      <para>
-      Combining usual <literal>bib-1</literal> attribut set searches
+      Combining usual <literal>bib-1</literal> attribute set searches
       with <literal>idxpath</literal> attribute set searches:
       <screen>
        Z> find @and @attr idxpath 1=1 @attr 4=3 link/ @attr 1=4 mozart
@@ -1843,7 +1865,7 @@
       </screen>
      </para>
      <para>
-      Scanning is supportet on all <literal>idxpath</literal>
+      Scanning is supported on all <literal>idxpath</literal>
       indexes, both specified as numeric use attributes, or as string
       index names. 
       <screen>
@@ -1883,10 +1905,10 @@
      <table id="querymodel-zebra-mapping-accesspoint-types"
       frame="all" rowsep="1" colsep="1" align="center">
 
-      <caption>Acces point name mapping</caption>
+      <caption>Access point name mapping</caption>
        <thead>
         <tr>
-         <td>Acess Point</td>
+         <td>Access Point</td>
          <td>Type</td>
          <td>Grammar</td>
          <td>Notes</td>
@@ -1894,7 +1916,7 @@
       </thead>
       <tbody>
        <tr>
-        <td>Use attibute</td>
+        <td>Use attribute</td>
         <td>numeric</td>
         <td>[1-9][1-9]*</td>
         <td>directly mapped to string index name</td>
@@ -1931,7 +1953,7 @@
      <para>
       <emphasis>Numeric use attributes</emphasis> are mapped 
       to the Zebra internal
-      string index according to the attribute set defintion in use.
+      string index according to the attribute set definition in use.
       The default attribute set is <literal>Bib-1</literal>, and may be
       omitted in the PQF query.
      </para>
@@ -1973,7 +1995,7 @@
     </para>
 
      <para>
-      <literal>String indexes</literal> can be acessed directly,
+      <literal>String indexes</literal> can be accessed directly,
       independently which attribute set is in use. These are just
       ignored. The above mentioned name normalization applies.
       <literal>String index names</literal> are defined in the
@@ -1984,10 +2006,10 @@
      </para>
 
      <para>
-      <literal>Zebra internal indexes</literal> can be acessed directly,
+      <literal>Zebra internal indexes</literal> can be accessed directly,
       according to the same rules as the user defined
       <literal>string indexes</literal>. The only difference is that   
-      <literal>Zebra internal indexe names</literal> are hardwired,
+      <literal>Zebra internal index names</literal> are hardwired,
       all uppercase and
       must start with the character <literal>'_'</literal>. 
      </para>
@@ -1995,7 +2017,7 @@
      <para>
       Finally, <literal>XPATH</literal> access points are only
       available using the <literal>GRS</literal> filter for indexing.
-      These acees point names must start with the character
+      These access point names must start with the character
       <literal>'/'</literal>, they are <emphasis>not
       normalized</emphasis>, but passed unaltered to the Zebra internal
       XPATH engine. See <xref linkend="querymodel-use-xpath"/>.
@@ -2013,7 +2035,7 @@
       Internally Zebra has in it's default configuration several
      different types of registers or indexes, whose tokenization and
       character normalization rules differ. This reflects the fact that 
-      serching fundamental different tokens like dates, numbers,
+      searching fundamental different tokens like dates, numbers,
       bitfields and string based text needs different rulesets. 
      </para>
 
@@ -2175,7 +2197,7 @@
 
     <para>
      If the <emphasis>Structure</emphasis> attribute is
-     <emphasis>URx</emphasis> the term is treated as a URX (URL) entity.
+     <emphasis>URX</emphasis> the term is treated as a URX (URL) entity.
      The search is performed on those fields that are indexed as type
      <literal>u</literal> in the <filename>*.abs</filename> file.
     </para>
