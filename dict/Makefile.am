@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.12 2006-04-27 20:40:41 marc Exp $
+## $Id: Makefile.am,v 1.13 2006-06-26 15:11:28 marc Exp $
 
 lib_LTLIBRARIES = libidzebra-dict.la
 noinst_PROGRAMS = dicttest dictext
@@ -14,6 +14,7 @@ LDADD = libidzebra-dict.la \
  ../util/libidzebra-util.la \
   $(YAZLALIB)
 
+libidzebra_dict_la_LDFLAGS=-version-info $(ZEBRALIBS_VERSION)
 libidzebra_dict_la_SOURCES = dopen.c dclose.c drdwr.c open.c close.c \
  insert.c lookup.c lookupec.c lookgrep.c delete.c scan.c dcompact.c \
  dict-p.h

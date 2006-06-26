@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.49 2006-06-22 14:01:55 marc Exp $
+## $Id: Makefile.am,v 1.50 2006-06-26 15:11:29 marc Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUBDIRS = common
@@ -47,7 +47,6 @@ HTMLFILES =  \
    gfs-config.html \
    grs-exchange-formats.html \
    grs-internal-representation.html \
-   htmlhelp.hhp \
    index.html \
    indexdata.html \
    installation.debian.html \
@@ -73,8 +72,9 @@ HTMLFILES =  \
    shadow-registers.html \
    simple-indexing.html \
    support.html \
-   toc.hhc \
-   zebraidx.html
+   zebraidx.html \
+   htmlhelp.hhp \
+   toc.hhc 
 
 
 PNGFILES=zebra.png

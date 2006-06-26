@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: idzebra1.4-common.init,v 1.1 2004-10-18 13:29:25 marc Exp $
+# $Id: idzebra2.0-common.init.test,v 1.1 2006-06-26 15:11:24 marc Exp $
 # Start and stop toolkit lite administered idzebra script for Debian.
 # change runlevels using update-rc.d 
 

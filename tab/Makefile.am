@@ -1,7 +1,7 @@
-## $Id: Makefile.am,v 1.7 2006-06-21 13:29:08 marc Exp $
+## $Id: Makefile.am,v 1.8 2006-06-26 15:11:42 marc Exp $
 
 tabdatadir = $(pkgdatadir)/tab
-tabdata_DATA = bib1.att dan1.att danbib.abs danmarc.abs danmarc.mar \
+tabdata_DATA = bib1.att dan1.att danmarc.abs danmarc.mar \
  default.idx explain.abs explain.att explain.tag generic.tag gils.abs \
  gils-a.est gils.att gils-b.est gils-f.est gils-g.est gils-summary.map \
  gils.tag gils-usmarc.map gils-variant.est hci.flt idxpath.att mail.flt \

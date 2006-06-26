@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.21 2006-06-02 13:55:55 marc Exp $
+## $Id: Makefile.am,v 1.22 2006-06-26 15:11:39 marc Exp $
 
 common_libs = libidzebra-recctrl.la \
  ../data1/libidzebra-data1.la \
@@ -61,7 +61,7 @@ EXTRA_LTLIBRARIES = \
 # The common library
 lib_LTLIBRARIES = libidzebra-recctrl.la
 libidzebra_recctrl_la_SOURCES = recctrl.c recgrs.c sgmlread.c rectext.c 
-libidzebra_recctrl_la_LDFLAGS = -export-dynamic
+libidzebra_recctrl_la_LDFLAGS = -export-dynamic -version-info $(ZEBRALIBS_VERSION)
 libidzebra_recctrl_la_LIBADD = $(STATIC_MODULE_OBJ) \
  ../data1/libidzebra-data1.la \
  ../dfa/libidzebra-dfa.la  \

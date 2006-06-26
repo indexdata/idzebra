@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.6 2004-09-30 08:16:48 adam Exp $
+## $Id: Makefile.am,v 1.7 2006-06-26 15:11:26 marc Exp $
 
 lib_LTLIBRARIES = libidzebra-dfa.la
 
@@ -13,5 +13,6 @@ lexer_SOURCES = lexer.c readfile.c
 
 grepper_SOURCES = grepper.c
 
+libidzebra_dfa_la_LDFLAGS=-version-info $(ZEBRALIBS_VERSION)
 libidzebra_dfa_la_SOURCES = dfa.c imalloc.c states.c set.c bset.c \
  dfap.h imalloc.h lexer.h

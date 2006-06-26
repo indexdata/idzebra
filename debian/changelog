@@ -1,9 +1,21 @@
+idzebra (2.0.0-1) unstable; urgency=low
+
+  * First production release of Zebra 2.0 series.
+  * String attributes used internally, mapping to numeric attributes
+    during search
+  * Documentation of architecture, querymodel and SRU server added
+  * Example configuration for Alvis filter indexed MARCXML and OAI records
+    added
+  * Bug closes: #124 #431 #447 #451 #454 #460 #461 #462 #465 #472 #529
+    #549 #576 #588 #594 #597 #602 #616 #617 
+
+ -- marc <marc@indexdata.dk>  Mon, 26 Jun 2006 12:00:31 +0200
+
 idzebra (1.4.0-2) unstable; urgency=low
 
   * Added Alvis XSLT filter debian package libidzebra1.4-mod-alvis.
 
  -- Marc Cromme <marc@indexdata.dk>  Mon, 12 Dec 2005 13:49:07 +0100
-
 
 idzebra (1.4.0-1) unstable; urgency=low
 

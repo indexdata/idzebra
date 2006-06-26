@@ -1,9 +1,11 @@
-## $Id: Makefile.am,v 1.41 2006-06-12 09:39:18 marc Exp $
+## $Id: Makefile.am,v 1.42 2006-06-26 15:11:33 marc Exp $
+
 
 noinst_PROGRAMS = apitest kdump
 
 lib_LTLIBRARIES = libidzebra-api.la
 
+libidzebra_api_la_LDFLAGS=-version-info $(ZEBRALIBS_VERSION)
 libidzebra_api_la_SOURCES = \
   api_swig.c attribute.c \
   compact.c \

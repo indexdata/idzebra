@@ -1,3 +1,5 @@
+Release candidate Zebra version 2.0.0 prepared.
+
 Zebra uses string attributes for indexing internally. Using set+numeric
 use attribute can still be used. But that is a search-only conversion which
 inspects .att-set files as indicated using attset-directives in zebra.cfg.

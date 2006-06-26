@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.8 2006-04-27 20:40:41 marc Exp $
+## $Id: Makefile.am,v 1.9 2006-06-26 15:11:34 marc Exp $
 
 lib_LTLIBRARIES = libidzebra-isamb.la
 
@@ -11,6 +11,7 @@ tstisamb_LDADD = libidzebra-isamb.la \
  ../bfile/libidzebra-bfile.la \
  ../util/libidzebra-util.la $(YAZLALIB)
 
+libidzebra_isamb_la_LDFLAGS=-version-info $(ZEBRALIBS_VERSION)
 libidzebra_isamb_la_SOURCES = isamb.c
 
 AM_CPPFLAGS=-I$(srcdir)/../include $(YAZINC)

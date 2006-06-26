@@ -11,17 +11,19 @@ boolean search expressions and relevance-ranked free-text queries.
 Documentation
 -------------
 You'll find documentation in subdirectory 'doc' in various
-formats (PDF, HTML, Docbook XML). You can also browse the
+formats (HTML, Docbook XML). You can also browse the
 documentation from the zebra home page.
 
 Installation
 ------------
-Install YAZ. Optional external packages: Tcl, iconv and EXPAT.
-Many Unices already have Tcl, iconv and EXPAT installed.
+Install YAZ. Optional external packages: Tcl, iconv, EXPAT, libxml2
+and libxslt1. 
+
 Quick compile and install:
   ./configure
   make
   make install
+
 For detailed instructions and Windows installation refer to
 the documentation.
 
@@ -31,10 +33,10 @@ Zebra is covered by the GNU GPL v2. See LICENSE.zebra.
 
 Support
 ------
-To get more information or assistance, send mail to zebra-help@indexdata.dk
+To get more information or assistance, send mail to info@indexdata.dk
 
 We maintain a mailing-list for the purpose of announcing new versions of
 the software, bug-reports, discussion etc. You can sign up at the URL
 http://www.indexdata.dk/mailman/listinfo/zebralist
 
-$Id: README,v 1.20 2006-06-13 14:50:39 adam Exp $
+$Id: README,v 1.21 2006-06-26 15:11:19 marc Exp $
