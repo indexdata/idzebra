@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.23 2006-06-27 12:37:43 marc Exp $ -->
+<!-- $Id: installation.xml,v 1.24 2006-06-27 13:42:20 marc Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -455,6 +455,8 @@
     <screen>
      att 1016            Any
     </screen>
+   </para>
+   <para>
     Similar behaviour can be expressed in the new release by defining
     a new index <literal>Any:w</literal> in all GRS
     <filename>*.abs</filename> record indexing configuration files.
@@ -470,6 +472,25 @@
      xelm /*/title        Any:w,Body-of-text:w,Title:s,Title:w
     </screen>
    </para>
+   <para>
+    It is also possible to map the numerical attribute value  
+    <literal>@attr 1=1016</literal> onto another already existing huge
+    index, in this example, one could for example use the mapping
+    <screen>
+     att 1016            Body-of-text
+    </screen>
+    with equivalent outcome without editing all  GRS
+    <filename>*.abs</filename> record indexing configuration files.
+   </para>
+
+   <para>
+    Server installations which use the special
+    <literal>IDXPATH</literal> attribute set must add the following
+    line to the <filename>zebra.cfg</filename> configuration file:
+    <screen>
+     attset: idxpath.att
+    </screen>
+    </para>
   </sect1>
   
  </chapter>
