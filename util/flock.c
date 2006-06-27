@@ -1,4 +1,4 @@
-/* $Id: flock.c,v 1.8 2006-06-27 11:56:29 adam Exp $
+/* $Id: flock.c,v 1.9 2006-06-27 12:24:14 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -114,15 +114,17 @@ char *zebra_mk_fname(const char *dir, const char *name)
 ZebraLockHandle zebra_lock_create(const char *dir, const char *name)
 {
     char *fname = zebra_mk_fname(dir, name);
-    struct zebra_lock_info *p;
+    struct zebra_lock_info *p = 0;
     ZebraLockHandle h = 0;
 
     assert(initialized);
 
     zebra_mutex_lock(&lock_list_mutex);
+#ifndef WIN32 
     for (p = lock_list; p ; p = p->next)
         if (!strcmp(p->fname, fname))
             break;
+#endif
     if (!p)
     {
         p = (struct zebra_lock_info *) xmalloc(sizeof(*p));
@@ -163,7 +165,9 @@ ZebraLockHandle zebra_lock_create(const char *dir, const char *name)
         p->ref_count++;
         h = (ZebraLockHandle) xmalloc(sizeof(*h));
         h->p = p;
+#ifndef WIN32
         h->write_flag = 0;
+#endif
     }
     zebra_mutex_unlock(&lock_list_mutex);
     xfree(fname); /* free it - if it's still there */
@@ -239,8 +243,8 @@ int zebra_lock_w(ZebraLockHandle h)
     zebra_mutex_unlock(&h->p->file_mutex);
 
     zebra_lock_rdwr_wlock(&h->p->rdwr_lock);
-#endif
     h->write_flag = 1;
+#endif
     return r;
 }
 
@@ -303,6 +307,7 @@ void zebra_flock_init()
         initialized = 1;
         zebra_mutex_init(&lock_list_mutex);
     }
+    yaz_log(log_level, "zebra_flock_init");
 }
 
 /*

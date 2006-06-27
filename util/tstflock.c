@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2006, Index Data ApS
  * See the file LICENSE for details.
  *
- * $Id: tstflock.c,v 1.7 2006-06-27 11:56:29 adam Exp $
+ * $Id: tstflock.c,v 1.8 2006-06-27 12:24:14 adam Exp $
  */
 
 #include <assert.h>
@@ -96,7 +96,7 @@ static void tst_win32(int num)
             &dwThreadId[i]);   /* returns the thread identifier */
     }
     /* join */
-    WaitForMultipleObjects(NUM_THREADS, handles, TRUE, INFINITE);
+    WaitForMultipleObjects(num, handles, TRUE, INFINITE);
 }
 #endif
 
