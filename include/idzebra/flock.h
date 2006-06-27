@@ -1,4 +1,4 @@
-/* $Id: flock.h,v 1.3 2006-05-10 08:13:20 adam Exp $
+/* $Id: flock.h,v 1.4 2006-06-27 11:56:28 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 YAZ_BEGIN_CDECL
 
-typedef struct zebra_lock_info *ZebraLockHandle;
+typedef struct zebra_lock_handle *ZebraLockHandle;
 
 YAZ_EXPORT
 ZebraLockHandle zebra_lock_create(const char *dir, const char *file);
@@ -44,6 +44,9 @@ YAZ_EXPORT
 int zebra_lock_w (ZebraLockHandle h);
 YAZ_EXPORT
 int zebra_lock_r (ZebraLockHandle h);
+
+YAZ_EXPORT 
+void zebra_flock_init(void);
 
 YAZ_END_CDECL
 

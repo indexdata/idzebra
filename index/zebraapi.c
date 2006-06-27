@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.222 2006-06-13 12:02:12 adam Exp $
+/* $Id: zebraapi.c,v 1.223 2006-06-27 11:56:28 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -180,6 +180,8 @@ ZebraService zebra_start (const char *configName)
 ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
 {
     Res res;
+
+    zebra_flock_init();
 
     if (!log_level_initialized)
     {
@@ -2019,7 +2021,7 @@ static ZEBRA_RES zebra_commit_ex(ZebraHandle zh, int clean_only)
 
 	zebra_lock_w(zh->lock_shadow);
         bf_commitClean (bfs, rval);
-	zebra_unlock (zh->lock_normal);
+	zebra_unlock (zh->lock_shadow);
     }
     else
     {
