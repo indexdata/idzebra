@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.22 2006-06-27 12:07:05 marc Exp $ -->
+<!-- $Id: installation.xml,v 1.23 2006-06-27 12:37:43 marc Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -442,7 +442,33 @@
     databases must be re-indexed after upgrade.
    </para>
    <para>
-    Apart from these two changes, no other incompabilities are known.
+    The attribute set defintion files may no longer contain
+    redirection to other fields. 
+    For example the following snippet of
+    a custom <filename>custom/bib1.att</filename> 
+    <literal>Bib-1</literal> attribute set definition file is no
+    longer supported:
+    <screen>
+     att 1016            Any 		1016,4,1005,62
+    </screen>
+    and should be changed to 
+    <screen>
+     att 1016            Any
+    </screen>
+    Similar behaviour can be expressed in the new release by defining
+    a new index <literal>Any:w</literal> in all GRS
+    <filename>*.abs</filename> record indexing configuration files.
+    The above example configuration needs to make the changes
+    from version 1.3.x indexing instructions
+    <screen>
+     xelm /*/alternative  Body-of-text:w,Title:s,Title:w
+     xelm /*/title        Body-of-text:w,Title:s,Title:w
+    </screen>
+    to version 2.0.0 indexing instructions
+    <screen>
+     xelm /*/alternative  Any:w,Body-of-text:w,Title:s,Title:w
+     xelm /*/title        Any:w,Body-of-text:w,Title:s,Title:w
+    </screen>
    </para>
   </sect1>
   
