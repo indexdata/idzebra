@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.44 2006-06-28 18:19:32 adam Exp $
+## $Id: Makefile.am,v 1.45 2006-06-28 21:45:06 adam Exp $
 
 
 noinst_PROGRAMS = apitest kdump zebrash
@@ -51,11 +51,13 @@ zebrash_LDADD= $(zebralibs) $(YAZLALIB) $(READLINE_LIBS)
 LDADD = $(zebralibs) $(YAZLALIB)
 
 install-exec-hook:
-	cd $(DESTDIR)$(bindir) && mv -f zebraidx zebraidx$(PACKAGE_SUFFIX)
-	cd $(DESTDIR)$(bindir) && ln -sf zebraidx$(PACKAGE_SUFFIX) zebraidx
-	cd $(DESTDIR)$(bindir) && mv -f zebrasrv zebrasrv$(PACKAGE_SUFFIX)
-	cd $(DESTDIR)$(bindir) && ln -sf zebrasrv$(PACKAGE_SUFFIX) zebrasrv
+	cd $(DESTDIR)$(bindir); for p in $(bin_PROGRAMS); do \
+		mv -f $$p $$p$(PACKAGE_SUFFIX); \
+		ln -sf $$p$(PACKAGE_SUFFIX) $$p; \
+	done
 
 uninstall-hook:
-	cd $(DESTDIR)$(bindir) && rm -f zebraidx$(PACKAGE_SUFFIX)
-	cd $(DESTDIR)$(bindir) && rm -f zebrasrv$(PACKAGE_SUFFIX)
+	cd $(DESTDIR)$(bindir) && for p in $(bin_PROGRAMS); do \
+		rm -f $$p$(PACKAGE_SUFFIX); \
+	done
+
