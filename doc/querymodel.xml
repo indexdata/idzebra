@@ -1,10 +1,10 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.16 2006-06-25 21:54:03 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.17 2006-06-28 22:50:50 adam Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
    <title>Query Model Overview</title>  
-
+   
    <sect2 id="querymodel-query-languages">
     <title>Query Languages</title>
  
@@ -26,41 +26,40 @@
      query structure has no direct, useful string
      representation, every origin application needs to provide some
      form of mapping from a local query notation or representation to it.
-     </para>
-
-
-   <sect3 id="querymodel-query-languages-pqf">
-    <title>Prefix Query Format (PQF)</title>
-
-   <para>
-     Index Data has defined a textual representation in the 
-     <literal>Prefix Query Format</literal>, short
-     <literal>PQF</literal>, which maps 
-      <literal>one-to-one</literal> to binary encoded  
-      <literal>type-1 RPN</literal> query packages.
-      It has been adopted by other
+    </para>
+    
+    
+    <sect3 id="querymodel-query-languages-pqf">
+     <title>Prefix Query Format (PQF)</title>
+     <para>
+      Index Data has defined a textual representation in the 
+      <ulink url="&url.yaz.pqf;">Prefix Query Format</ulink>, short
+      <emphasis>PQF</emphasis>, which maps 
+      one-to-one to binary encoded  
+      <emphasis>type-1 RPN</emphasis> queries.
+      PQF has been adopted by other
       parties developing Z39.50 software, and is often referred to as
-     <literal>Prefix Query Notation</literal>, or in short 
-     <literal>PQN</literal>. See       
-     <xref linkend="querymodel-pqf"/> for further explanations and
-     descriptions of Zebra's capabilities.  
-    </para>
-   </sect3>    
-
-   <sect3 id="querymodel-query-languages-cql">
-    <title>Common Query Language (CQL)</title>
+      <literal>Prefix Query Notation</literal>, or in short 
+      <literal>PQN</literal>. See       
+      <xref linkend="querymodel-pqf"/> for further explanations and
+      descriptions of Zebra's capabilities.  
+     </para>
+    </sect3>    
+    
+    <sect3 id="querymodel-query-languages-cql">
+     <title>Common Query Language (CQL)</title>
      <para>
-      The query model of the   <literal>type-1 RPN</literal>,
-      expressed in <literal>PQF/PQN</literal> is natively supported. 
-      On the other hand, the default <literal>SRU</literal>
-      webservices <literal>Common Query Language</literal>
-     <ulink url="&url.cql;">CQL</ulink> is not natively supported.
+      The query model of the type-1 RPN,
+      expressed in PQF/PQN is natively supported. 
+      On the other hand, the default SRU
+      web services <emphasis>Common Query Language</emphasis>
+      <ulink url="&url.cql;">CQL</ulink> is not natively supported.
      </para>
      <para>
-     Zebra can be configured to understand and map CQL to PQF. See
-     <xref linkend="querymodel-cql-to-pqf"/>.
-    </para>
-   </sect3>    
+      Zebra can be configured to understand and map CQL to PQF. See
+      <xref linkend="querymodel-cql-to-pqf"/>.
+     </para>
+    </sect3>    
  
    </sect2>
 
@@ -150,7 +149,7 @@
   <sect1 id="querymodel-pqf">
    <title>Prefix Query Format syntax and semantics</title>
    <para>
-    The <ulink url="&url.yaz.pqf;">PQF grammer</ulink>
+    The <ulink url="&url.yaz.pqf;">PQF grammar</ulink>
     is documented in the YAZ manual, and shall not be
     repeated here. This textual PQF representation
     is always during search mapped to the equivalent Zebra internal
@@ -251,7 +250,7 @@
     <sect3 id="querymodel-boolean-operators">
      <title>Boolean operators</title>
      <para>
-      A pair of subquery trees, or of atomic queries, is combined
+      A pair of sub query trees, or of atomic queries, is combined
       using the standard boolean operators into new query trees.
       Thus, boolean operators are always internal nodes in the query tree.
      </para>
@@ -281,7 +280,7 @@
          <td>Set complement of two atomic queries hit sets</td>
         </tr>
         <tr><td><literal>@prox</literal></td>
-         <td>binary <literal>PROXIMY</literal> operator</td>
+         <td>binary <literal>PROXIMITY</literal> operator</td>
          <td>Set intersection of two atomic queries hit sets. In 
           addition, the intersection set is purged for all 
           documents which do not satisfy the requested query 
@@ -331,7 +330,7 @@
       <emphasis>retrieval</emphasis>, in the same order and near each
       other as described in the term list.  
       The hit set is a subset of the corresponding
-      PROXIMY query.
+      PROXIMITY query.
       <screen>
        Z> find "information retrieval"
       </screen>
@@ -350,7 +349,7 @@
      </para>
      <para>
       Atomic (APT) queries are always leaf nodes in the PQF query tree. 
-      Unsupplied non-use attributes type 2-9 are either inherited from
+      UN-supplied non-use attributes type 2-9 are either inherited from
       higher nodes in the query tree, or are set to Zebra's default values.
       See <xref linkend="querymodel-bib1"/> for details. 
      </para>
@@ -415,7 +414,7 @@
       </para>
      
      <para>
-      For example, we migh want to scan the title index, starting with
+      For example, we might want to scan the title index, starting with
       the term 
       <emphasis>debussy</emphasis>, and displaying this and the
       following terms in lexicographic order:
@@ -589,7 +588,7 @@
       Filter the addressing XPath by a predicate working on exact
       string values in
       attributes (in the XML sense) can be done: return all those docs which
-      have the term "english" contained in one of all text subnodes of
+      have the term "english" contained in one of all text sub nodes of
       the subtree defined by the XPath
       <literal>/record/title[@lang='en']</literal>. And similar
       predicate filtering.
@@ -2036,7 +2035,7 @@
      different types of registers or indexes, whose tokenization and
       character normalization rules differ. This reflects the fact that 
       searching fundamental different tokens like dates, numbers,
-      bitfields and string based text needs different rulesets. 
+      bitfields and string based text needs different rule sets. 
      </para>
 
      <table id="querymodel-zebra-mapping-structure-types"
@@ -2078,7 +2077,7 @@
         <td>urx (@attr 4=104)</td>
         <td>ignored</td>
         <td>URX/URL ('u')</td>
-        <td>Special index for URL web adresses</td>
+        <td>Special index for URL web addresses</td>
        </tr>
        <tr>
         <td>numeric (@attr 4=109)</td>
