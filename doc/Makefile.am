@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.52 2006-06-28 13:26:13 adam Exp $
+## $Id: Makefile.am,v 1.53 2006-06-28 18:19:32 adam Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -134,7 +134,7 @@ clean-data-hook:
 	rm -f [0-9]* *.bak
 
 dist-hook:
-	for f in *.html; do \
+	if test -f index.html; then for f in *.html; do \
 		found=0; \
 		b=`basename $$f`; \
 		for h in $(HTMLFILES); do \
@@ -146,8 +146,8 @@ dist-hook:
 			echo "$$f not found in HTMLFILES"; \
 			exit 1; \
 		fi \
-	done
+	done; fi
 
 install-data-hook:
-	cd $(man1dir) && ln -sf zebraidx$(PACKAGE_SUFFIX).1 zebraidx.1
-	cd $(man8dir) && ln -sf zebrasrv$(PACKAGE_SUFFIX).8 zebrasrv.8
+	cd $(DESTDIR)$(man1dir) && ln -sf zebraidx$(PACKAGE_SUFFIX).1 zebraidx.1
+	cd $(DESTDIR)$(man8dir) && ln -sf zebrasrv$(PACKAGE_SUFFIX).8 zebrasrv.8
