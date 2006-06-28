@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.17 2006-05-19 13:49:35 adam Exp $
+/* $Id: t5.c,v 1.18 2006-06-28 09:39:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -37,6 +37,32 @@ static void tst(int argc, char **argv)
 
     YAZ_CHECK(tl_init_data(zh, myrec));
 
+    /* and searches */
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 notfound @attr 1=4 x", 0)); 
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 x @attr 1=4 notfound", 0)); 
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 notfound @attr 1=4 notfound", 0)); 
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 x @attr 1=4 x", 2)); 
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 x @attr 1=4 my", 2)); 
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 my @attr 1=4 x", 2)); 
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 my @attr 1=4 my", 3)); 
+
+    /* or searches */
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 notfound @attr 1=4 x", 2)); 
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 x @attr 1=4 notfound", 2)); 
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 notfound @attr 1=4 notfound", 0)); 
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 x @attr 1=4 x", 2)); 
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 x @attr 1=4 my", 3)); 
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 my @attr 1=4 x", 3)); 
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 my @attr 1=4 my", 3)); 
+
+    /* not searches */
+    /* bug 619 */
+    YAZ_CHECK(tl_query(zh, "@not @attr 1=4 notfound @attr 1=4 x", 0)); 
+    YAZ_CHECK(tl_query(zh, "@not @attr 1=4 x @attr 1=4 x", 0));
+    YAZ_CHECK(tl_query(zh, "@not @attr 1=4 my @attr 1=4 x", 1));
+    YAZ_CHECK(tl_query(zh, "@not @attr 1=4 my @attr 1=4 notfound", 3));
+    YAZ_CHECK(tl_query(zh, "@not @attr 1=4 notfound @attr 1=4 notfound", 0));
+    
     /* phrase searches */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 my", 3));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 {my x}", 1));
@@ -58,8 +84,6 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=105 {my my}", 3));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=105 {e x}", 2));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=106 {e x}", 2));
-
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 @and x title", 2));
 
     /* exl=0 distance=2 order=1 relation=2 (<=), known, unit=word */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @prox 0 2 1 2 k 2 my x", 2));
