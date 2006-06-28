@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.59 2006-06-06 21:01:30 adam Exp $
+/* $Id: rsbool.c,v 1.60 2006-06-28 09:40:17 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -176,14 +176,12 @@ static int r_read_not(RSFD rfd, void *buf, TERMID *term)
     struct rfd_private *p = (struct rfd_private *)rfd->priv;
     const struct rset_key_control *kctrl = rfd->rset->keycontrol;
 
-    while (p->more_l || p->more_r)
+    while (p->more_l)
     {
         int cmp;
 
-        if (p->more_l && p->more_r)
+        if (p->more_r)
             cmp = (*kctrl->cmp)(p->buf_l, p->buf_r);
-        else if (p->more_r)
-            cmp = rfd->rset->scope;
         else
             cmp = -rfd->rset->scope;
 
@@ -197,8 +195,10 @@ static int r_read_not(RSFD rfd, void *buf, TERMID *term)
             return 1;
         }
         else if (cmp >= rfd->rset->scope)   /* cmp >1 */
+        {
             p->more_r = rset_forward( p->rfd_r, p->buf_r, 
-                          &p->term_r, p->buf_l);
+                                      &p->term_r, p->buf_l);
+        }
         else
         { /* cmp== -1, 0, or 1 */
             memcpy (buf, p->buf_l, kctrl->key_size);
