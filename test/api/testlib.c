@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.32 2006-05-10 08:13:35 adam Exp $
+/* $Id: testlib.c,v 1.33 2006-06-28 09:38:17 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -176,6 +176,8 @@ int tl_query_x(ZebraHandle zh, const char *query, zint exphits, int experror)
     yaz_pqf_destroy(parser);
     if (!rpn)
     {
+        yaz_log(log_level, "could not parse pqf query %s\n", query);
+        printf("could not parse pqf query %s\n", query);
 	odr_destroy(odr);
 	return 0;
     }
