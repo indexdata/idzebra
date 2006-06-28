@@ -75,12 +75,6 @@ binary-arch: build install
 	dh_installchangelogs 
 	dh_installdocs
 	dh_installexamples
-
-#       moving files to correct dirs
-	mv debian/tmp/usr/share/doc/idzebra debian/tmp/usr/share/doc/idzebra2.0-doc
-	mv debian/tmp/usr/share/idzebra debian/tmp/usr/share/idzebra2.0
-	mv debian/tmp/usr/lib/idzebra debian/tmp/usr/lib/idzebra2.0
-
 	dh_install --sourcedir=debian/tmp
 #	dh_installmenu
 #	dh_installdebconf	

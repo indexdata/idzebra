@@ -3,4 +3,4 @@ usr/lib/libidzebra-*.so
 usr/lib/libidzebra-*.la
 usr/lib/libidzebra-*.a
 usr/share/aclocal
-usr/include/idzebra
+usr/include/idzebra-2.0
