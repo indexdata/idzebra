@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: idzebra-config.in,v 1.8 2006-06-13 15:10:43 adam Exp $
+# $Id: idzebra-config.in,v 1.9 2006-06-28 21:55:10 adam Exp $
 prefix=@prefix@
 idzebra_echo_cflags=no
 idzebra_echo_libs=no
@@ -9,6 +9,7 @@ idzebra_echo_source=yes
 idzebra_echo_lalibs=no
 idzebra_src_root=@IDZEBRA_SRC_ROOT@
 idzebra_build_root=@IDZEBRA_BUILD_ROOT@
+package_suffix=@PACKAGE_SUFFIX@
 
 extralibs="@YAZLIB@ @TCL_LIB@ @EXPAT_LIBS@ @XSLT_LIBS@ @LIBS@ "
 extralalibs="@YAZLALIB@ @TCL_LIB@ @EXPAT_LIBS@ @XSLT_LIBS@ @LIBS@"
@@ -107,11 +108,11 @@ if test "$idzebra_echo_source" = "yes"; then
 else
     if test "$prefix" != "/usr"; then
 	IDZEBRALIB="-L${prefix}/lib $IDZEBRALIB"
-	IDZEBRAINC="$IDZEBRAINC -I${prefix}/include"
     fi
     IDZEBRALIB="$IDZEBRALIB $extralibs"
     IDZEBRALALIB="$IDZEBRALIB"
-    IDZEBRATAB="@datarootdir@/idzebra/tab"
+    IDZEBRAINC="$IDZEBRAINC -I${prefix}/include/idzebra${package_suffix}"
+    IDZEBRATAB="@datarootdir@/idzebra${package_suffix}/tab"
 fi
 
 if test "$idzebra_echo_help" = "yes"; then
