@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.24 2006-06-07 07:50:58 adam Exp $
+## $Id: Makefile.am,v 1.25 2006-06-28 13:26:13 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -10,9 +10,9 @@ SUBDIRS=util bfile dfa dict isams isamb isamc rset data1 \
 aclocaldir=$(datadir)/aclocal
 aclocal_DATA = m4/idzebra.m4
 
-SPEC_FILE=$(PACKAGE).spec
+SPEC_FILE=idzebra.spec
 
-EXTRA_DIST= README NEWS $(SPEC_FILE) idzebra.spec.in \
+EXTRA_DIST= README NEWS $(SPEC_FILE) $(SPEC_FILE).in \
  idzebra-config.in m4/idzebra.m4 m4/yaz.m4 Doxyfile.in
 
 dist-hook:

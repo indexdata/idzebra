@@ -1,4 +1,6 @@
-## $Id: Makefile.am,v 1.22 2006-06-26 15:11:39 marc Exp $
+## $Id: Makefile.am,v 1.23 2006-06-28 13:26:17 adam Exp $
+
+zebralibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 common_libs = libidzebra-recctrl.la \
  ../data1/libidzebra-data1.la \
@@ -8,46 +10,46 @@ common_libs = libidzebra-recctrl.la \
 
 # The shared modules 
 mod_grs_regx_la_SOURCES = regxread.c
-mod_grs_regx_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
+mod_grs_regx_la_LDFLAGS = -rpath $(zebralibdir) -module -avoid-version
 mod_grs_regx_la_LADD = $(TCL_LIB)
 mod_grs_regx_la_LIBADD = $(common_libs) $(mod_grs_regx_la_LADD)
 
 mod_grs_xml_la_SOURCES = xmlread.c
-mod_grs_xml_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
+mod_grs_xml_la_LDFLAGS = -rpath $(zebralibdir) -module -avoid-version
 mod_grs_xml_la_LADD = $(EXPAT_LIBS)
 mod_grs_xml_la_LIBADD = $(common_libs) $(mod_grs_xml_la_LADD)
 
 mod_grs_marc_la_SOURCES = marcread.c marcomp.c marcomp.h inline.c inline.h
-mod_grs_marc_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
+mod_grs_marc_la_LDFLAGS = -rpath $(zebralibdir) -module -avoid-version
 mod_grs_marc_la_LADD =
 mod_grs_marc_la_LIBADD = $(common_libs) $(mod_grs_marc_la_LADD)
 
 #mod_grs_csv_la_SOURCES = csvread.c
-#mod_grs_csv_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
+#mod_grs_csv_la_LDFLAGS = -rpath $(zebralibdir) -module -avoid-version
 #mod_grs_csv_la_LADD =
 #mod_grs_csv_la_LIBADD = $(common_libs) $(mod_grs_csv_la_LADD)
 
 #mod_grs_danbib_la_SOURCES = danbibr.c
-#mod_grs_danbib_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
+#mod_grs_danbib_la_LDFLAGS = -rpath $(zebralibdir) -module -avoid-version
 #mod_grs_danbib_la_LADD =
 #mod_grs_danbib_la_LIBADD = $(common_libs) $(mod_grs_danbib_la_LADD)
 
 mod_safari_la_SOURCES = safari.c
-mod_safari_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
+mod_safari_la_LDFLAGS = -rpath $(zebralibdir) -module -avoid-version
 mod_safari_la_LADD =
 mod_safari_la_LIBADD = $(common_libs) $(mod_safari_la_LADD)
 
 mod_alvis_la_SOURCES = alvis.c
-mod_alvis_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
+mod_alvis_la_LDFLAGS = -rpath $(zebralibdir) -module -avoid-version
 mod_alvis_la_LADD = $(XSLT_LIBS)
 mod_alvis_la_LIBADD = $(common_libs) $(mod_alvis_la_LADD)
 
 #mod_xslt_la_SOURCES = xslt.c
-#mod_xslt_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
+#mod_xslt_la_LDFLAGS = -rpath $(zebralibdir) -module -avoid-version
 #mod_xslt_la_LADD = $(XSLT_LIBS)
 #mod_xslt_la_LIBADD = $(common_libs) $(mod_alvis_la_LADD)
 
-pkglib_LTLIBRARIES = $(SHARED_MODULE_LA) 
+zebralib_LTLIBRARIES = $(SHARED_MODULE_LA) 
 EXTRA_LTLIBRARIES = \
 	mod-grs-regx.la \
 	mod-grs-xml.la \

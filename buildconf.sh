@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: buildconf.sh,v 1.21 2006-06-12 23:44:39 adam Exp $
+# $Id: buildconf.sh,v 1.22 2006-06-28 13:26:13 adam Exp $
 if automake --version|head -1 |grep '1\.[4-7]'; then
     echo "automake 1.4-1.7 is active. You should use automake 1.8 or later"
     if test -f /etc/debian_version; then
@@ -41,7 +41,7 @@ esac
 
 if $enable_configure; then
     if test -n "$sh_flags"; then
-	CFLAGS="$sh_flags" ./configure $*
+	CFLAGS="$sh_flags" ./configure --disable-shared $*
     else
 	./configure $*
     fi

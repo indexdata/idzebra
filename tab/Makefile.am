@@ -1,6 +1,6 @@
-## $Id: Makefile.am,v 1.8 2006-06-26 15:11:42 marc Exp $
+## $Id: Makefile.am,v 1.9 2006-06-28 13:26:18 adam Exp $
 
-tabdatadir = $(pkgdatadir)/tab
+tabdatadir = $(datadir)/$(PACKAGE)$(PACKAGE_SUFFIX)/tab
 tabdata_DATA = bib1.att dan1.att danmarc.abs danmarc.mar \
  default.idx explain.abs explain.att explain.tag generic.tag gils.abs \
  gils-a.est gils.att gils-b.est gils-f.est gils-g.est gils-summary.map \

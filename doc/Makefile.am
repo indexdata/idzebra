@@ -1,5 +1,5 @@
-## $Id: Makefile.am,v 1.51 2006-06-27 12:07:05 marc Exp $
-docdir=$(datadir)/doc/@PACKAGE@
+## $Id: Makefile.am,v 1.52 2006-06-28 13:26:13 adam Exp $
+docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
 
@@ -81,7 +81,9 @@ HTMLFILES =  \
 PNGFILES=zebra.png
 EPSFILES=zebra.eps
 
-MANFILES=zebraidx.1 zebrasrv.8 idzebra-config.1
+MANFILES=zebraidx$(PACKAGE_SUFFIX).1 \
+	zebrasrv$(PACKAGE_SUFFIX).8 \
+	idzebra-config.1
 
 REFFILES=zebraidx-man.xml zebrasrv-man.xml idzebra-config-man.xml
 
@@ -92,12 +94,14 @@ EXTRA_DIST = $(XMLFILES) $(REFFILES) \
 	$(doc_DATA) $(EPSFILES) $(man_MANS) $(REFFILES) \
 	marc_indexing.xml entities.ent local.ent.in
 
-zebraidx.1: zebraidx-man.xml zebraidx-options.xml zebraidx-commands.xml
+zebraidx$(PACKAGE_SUFFIX).1: zebraidx-man.xml zebraidx-options.xml zebraidx-commands.xml
 	$(MAN_COMPILE) $(srcdir)/zebraidx-man.xml
+	mv zebraidx.1 zebraidx$(PACKAGE_SUFFIX).1
 
-zebrasrv.8: zebrasrv-man.xml  zebrasrv-options.xml \
+zebrasrv$(PACKAGE_SUFFIX).8: zebrasrv-man.xml  zebrasrv-options.xml \
             zebrasrv-synopsis.xml zebrasrv-virtual.xml
 	$(MAN_COMPILE) $(srcdir)/zebrasrv-man.xml
+	mv zebrasrv.8 zebrasrv$(PACKAGE_SUFFIX).8
 
 idzebra-config.1: idzebra-config-man.xml
 	$(MAN_COMPILE) $(srcdir)/idzebra-config-man.xml
@@ -143,3 +147,7 @@ dist-hook:
 			exit 1; \
 		fi \
 	done
+
+install-data-hook:
+	cd $(man1dir) && ln -sf zebraidx$(PACKAGE_SUFFIX).1 zebraidx.1
+	cd $(man8dir) && ln -sf zebrasrv$(PACKAGE_SUFFIX).8 zebrasrv.8

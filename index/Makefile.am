@@ -1,7 +1,7 @@
-## $Id: Makefile.am,v 1.42 2006-06-26 15:11:33 marc Exp $
+## $Id: Makefile.am,v 1.43 2006-06-28 13:26:16 adam Exp $
 
 
-noinst_PROGRAMS = apitest kdump
+noinst_PROGRAMS = apitest kdump zebrash
 
 lib_LTLIBRARIES = libidzebra-api.la
 
@@ -22,7 +22,7 @@ libidzebra_api_la_SOURCES = \
   zebraapi.c zinfo.c zinfo.h zserver.h zsets.c zrpn.c
 
 
-bin_PROGRAMS = zebraidx zebrasrv zebrash
+bin_PROGRAMS = zebraidx zebrasrv
 
 zebralibs = \
  libidzebra-api.la \
@@ -37,7 +37,6 @@ zebralibs = \
  ../dfa/libidzebra-dfa.la \
  ../util/libidzebra-util.la
 
-
 zebraidx_SOURCES = main.c
 zebrasrv_SOURCES = zserver.c
 zebrash_SOURCES = zebrash.c
@@ -51,3 +50,12 @@ zebrash_LDADD= $(zebralibs) $(YAZLALIB) $(READLINE_LIBS)
 
 LDADD = $(zebralibs) $(YAZLALIB)
 
+install-exec-hook:
+	cd $(bindir) && mv -f zebraidx zebraidx$(PACKAGE_SUFFIX)
+	cd $(bindir) && ln -sf zebraidx$(PACKAGE_SUFFIX) zebraidx
+	cd $(bindir) && mv -f zebrasrv zebrasrv$(PACKAGE_SUFFIX)
+	cd $(bindir) && ln -sf zebrasrv$(PACKAGE_SUFFIX) zebrasrv
+
+uninstall-hook:
+	cd $(bindir) && rm -f zebraidx$(PACKAGE_SUFFIX)
+	cd $(bindir) && rm -f zebrasrv$(PACKAGE_SUFFIX)
