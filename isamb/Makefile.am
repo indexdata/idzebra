@@ -1,8 +1,6 @@
-## $Id: Makefile.am,v 1.10 2006-06-29 09:10:38 adam Exp $
+## $Id: Makefile.am,v 1.11 2006-06-29 13:47:58 adam Exp $
 
-zebralibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)
-
-zebralib_LTLIBRARIES = libidzebra-isamb.la
+lib_LTLIBRARIES = libidzebra-isamb.la
 
 check_PROGRAMS = tstisamb
 

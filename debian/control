@@ -63,7 +63,7 @@ Section: devel
 Architecture: any
 Depends: libidzebra-2.0 (= ${Source-Version})
 Description: IDZebra development
- This package contains IDZebra development files, such as libraries
+ This package contains development files for IDZebra, such as libraries
  and header files.
  .
  IDZebra is a high-performance, general-purpose structured text indexing
@@ -74,7 +74,7 @@ Description: IDZebra development
 Package: libidzebra-2.0
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, idzebra-2.0-common
+Depends: ${shlibs:Depends}
 Conflicts: idzebra
 Description: IDZebra libraries
  This package contains all run-time libraries for IDZebra.

@@ -1,8 +1,6 @@
-## $Id: Makefile.am,v 1.4 2006-06-29 09:10:33 adam Exp $
+## $Id: Makefile.am,v 1.5 2006-06-29 13:47:52 adam Exp $
 
-zebralibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)
-
-zebralib_LTLIBRARIES=libidzebra-data1.la
+lib_LTLIBRARIES=libidzebra-data1.la
 
 libidzebra_data1_la_LDFLAGS=-version-info $(ZEBRALIBS_VERSION)
 libidzebra_data1_la_SOURCES = d1_handle.c d1_read.c d1_attset.c d1_tagset.c \

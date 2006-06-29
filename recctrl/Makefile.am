@@ -1,6 +1,4 @@
-## $Id: Makefile.am,v 1.25 2006-06-29 09:10:42 adam Exp $
-
-zebralibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)
+## $Id: Makefile.am,v 1.26 2006-06-29 13:48:04 adam Exp $
 
 modlibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)/modules
 
@@ -45,7 +43,7 @@ EXTRA_LTLIBRARIES = \
 	mod-alvis.la
 
 # The common library
-zebralib_LTLIBRARIES = libidzebra-recctrl.la
+lib_LTLIBRARIES = libidzebra-recctrl.la
 libidzebra_recctrl_la_SOURCES = recctrl.c recgrs.c sgmlread.c rectext.c 
 libidzebra_recctrl_la_LDFLAGS = -export-dynamic -version-info $(ZEBRALIBS_VERSION)
 libidzebra_recctrl_la_LIBADD = $(STATIC_MODULE_OBJ) \

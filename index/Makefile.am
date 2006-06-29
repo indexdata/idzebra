@@ -1,10 +1,8 @@
-## $Id: Makefile.am,v 1.46 2006-06-29 09:10:37 adam Exp $
-
-zebralibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)
+## $Id: Makefile.am,v 1.47 2006-06-29 13:47:57 adam Exp $
 
 noinst_PROGRAMS = apitest kdump zebrash
 
-zebralib_LTLIBRARIES = libidzebra-api.la
+lib_LTLIBRARIES = libidzebra-api.la
 
 libidzebra_api_la_LDFLAGS=-version-info $(ZEBRALIBS_VERSION)
 libidzebra_api_la_SOURCES = \
