@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.24 2006-06-27 13:42:20 marc Exp $ -->
+<!-- $Id: installation.xml,v 1.25 2006-06-29 14:02:07 marc Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -431,10 +431,10 @@
     must be changed to 
     <screen>
      # profilePath - where to look for config files
-     profilePath: some/local/path:/usr/share/idzebra2.0/tab
+     profilePath: some/local/path:/usr/share/idzebra-2.0/tab
 
      # modulePath - where to look for loadable zebra modules
-     modulePath: /usr/lib/idzebra2.0/
+     modulePath: /usr/lib/idzebra-2.0/
     </screen>
    </para>
    <para>
