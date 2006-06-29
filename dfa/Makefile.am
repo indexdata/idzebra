@@ -1,6 +1,8 @@
-## $Id: Makefile.am,v 1.7 2006-06-26 15:11:26 marc Exp $
+## $Id: Makefile.am,v 1.8 2006-06-29 09:10:34 adam Exp $
 
-lib_LTLIBRARIES = libidzebra-dfa.la
+zebralibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)
+
+zebralib_LTLIBRARIES = libidzebra-dfa.la
 
 noinst_PROGRAMS = agrep lexer grepper
 

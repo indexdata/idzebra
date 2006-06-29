@@ -1,6 +1,8 @@
-## $Id: Makefile.am,v 1.13 2006-06-26 15:11:28 marc Exp $
+## $Id: Makefile.am,v 1.14 2006-06-29 09:10:35 adam Exp $
 
-lib_LTLIBRARIES = libidzebra-dict.la
+zebralibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)
+
+zebralib_LTLIBRARIES = libidzebra-dict.la
 noinst_PROGRAMS = dicttest dictext
 check_PROGRAMS = scantest
 

@@ -1,6 +1,8 @@
-## $Id: Makefile.am,v 1.19 2006-06-26 15:11:43 marc Exp $
+## $Id: Makefile.am,v 1.20 2006-06-29 09:10:47 adam Exp $
 
-lib_LTLIBRARIES = libidzebra-util.la
+zebralibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)
+
+zebralib_LTLIBRARIES = libidzebra-util.la
 
 noinst_PROGRAMS = passtest
 

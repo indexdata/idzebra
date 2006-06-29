@@ -1,5 +1,8 @@
-## $Id: Makefile.am,v 1.6 2006-06-26 15:11:21 marc Exp $ Copyright (C) 1994-1998, Index Data ApS
-lib_LTLIBRARIES = libidzebra-bfile.la
+## $Id: Makefile.am,v 1.7 2006-06-29 09:10:29 adam Exp $ 
+
+zebralibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)
+
+zebralib_LTLIBRARIES = libidzebra-bfile.la
 
 check_PROGRAMS = tstbfile1
 
