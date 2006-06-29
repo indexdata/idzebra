@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.17 2006-06-28 22:50:50 adam Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.18 2006-06-29 16:02:12 heikki Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -84,7 +84,7 @@
       <literal>explain</literal> operation, which provides the means
       for learning which  
       <emphasis>fields</emphasis> (also called
-      <emphasis>indexes</emphasis> or <emphasis>access points</emphasis>
+      <emphasis>indexes</emphasis> or <emphasis>access points</emphasis>)
       are provided, which default parameter the server uses, which
       retrieve document formats are defined, and which specific parts
       of the general query model are supported.      
@@ -132,7 +132,7 @@
      <para>
       It provides
       the means to investigate the content of specific indexes.
-      Scanning an index returns a handful of terms actually fond in
+      Scanning an index returns a handful of terms actually found in
       the indexes, and in addition the <literal>scan</literal>
       operation returns the number of documents indexed by each term.
       A search client can use this information to propose proper
