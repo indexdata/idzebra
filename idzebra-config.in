@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: idzebra-config.in,v 1.10 2006-06-29 09:10:28 adam Exp $
+# $Id: idzebra-config.in,v 1.11 2006-06-29 14:10:33 adam Exp $
 version=@VERSION@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
@@ -111,7 +111,10 @@ if test "$echo_source" = "yes"; then
     IDZEBRATAB="${idzebra_src_root}/tab"
     IDZEBRAMOD="${idzebra_src_root}/recctrl"
 else
-    IDZEBRALIB="-L${libdir}/idzebra${package_suffix} $IDZEBRALIB $extralibs"
+    if test "$libdir" != "/usr/lib"; then
+        IDZEBRALIB="-L${libdir} $IDZEBRALIB"
+    fi
+    IDZEBRALIB="$IDZEBRALIB $extralibs"
     IDZEBRALALIB="$IDZEBRALIB"
     IDZEBRAINC="$IDZEBRAINC -I${prefix}/include/idzebra${package_suffix}"
     IDZEBRATAB="@datarootdir@/idzebra${package_suffix}/tab"
