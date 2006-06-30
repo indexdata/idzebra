@@ -2,13 +2,29 @@
  * Copyright (C) 1995-2006, Index Data ApS
  * See the file LICENSE for details.
  *
- * $Id: tstflock.c,v 1.10 2006-06-30 13:02:20 adam Exp $
+ * $Id: tstflock.c,v 1.11 2006-06-30 14:01:22 adam Exp $
  */
 
 #include <assert.h>
 #include <stdlib.h>
 #include <yaz/test.h>
 #include <yaz/log.h>
+
+#if HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#if HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
+
+#include <fcntl.h>
+
 #if YAZ_POSIX_THREADS
 #include <pthread.h>
 #endif
@@ -18,15 +34,14 @@
 #endif
 
 #include <idzebra/flock.h>
-#if HAVE_UNISTD_H
-#include <unistd.h>
-#endif
 #include <string.h>
 
 static char seq[1000];
 static char *seqp = 0;
 
 #define NUM_THREADS 100
+
+int test_fd = 0;
 
 static void small_sleep()
 {
@@ -45,30 +60,32 @@ void *run_func(void *arg)
     ZebraLockHandle lh = zebra_lock_create(0, "my.LCK");
     for (i = 0; i<2; i++)
     {
-        int write_lock;
+        int write_lock = use_write_lock;
 
-        if (use_write_lock == 2)
+        if (use_write_lock == 2) /* random lock */
             write_lock = (rand() & 3) == 3 ? 1 : 0;
-        else
-            write_lock = use_write_lock;
             
         if (write_lock)
         {
             zebra_lock_w(lh);
-            
+
+            write(test_fd, "L", 1);
             *seqp++ = 'L';
             small_sleep();
-            *seqp++ = 'U';
-            
+            *seqp++ = 'U';  
+            write(test_fd, "U", 1);
+          
             zebra_unlock(lh);
         }
         else
         {
             zebra_lock_r(lh);
             
+            write(test_fd, "l", 1);
             *seqp++ = 'l';
             small_sleep();
             *seqp++ = 'u';
+            write(test_fd, "u", 1);
             
             zebra_unlock(lh);
         }
@@ -135,6 +152,7 @@ static void tst_thread(int num, int write_flag)
 static void tst()
 {
     tst_thread(4, 1); /* write locks */
+    yaz_log(YLOG_LOG, "seq=%s", seq);
 #if 0
     printf("seq=%s\n", seq);
 #endif
@@ -159,15 +177,49 @@ static void tst()
 #endif
 }
 
+void fork_tst()
+{
+#if HAVE_SYS_WAIT_H
+    pid_t pid[2];
+    int i;
+
+    for (i = 0; i<2; i++)
+    {
+        pid[i] = fork();
+        if (!pid[i])
+        {
+            tst();
+            return;
+        }
+    }
+    for (i = 0; i<2; i++)
+    {
+        int status;
+        waitpid(pid[i], &status, 0);
+        YAZ_CHECK(status == 0);
+    }
+#else
+    tst();
+#endif
+}
+
+
 int main(int argc, char **argv)
 {
+    char logname[220];
     YAZ_CHECK_INIT(argc, argv);
+
+    sprintf(logname, "%.200s.log", argv[0]);
+    yaz_log_init_file(logname);
 
     yaz_log_time_format("%s:%!");
 
     zebra_flock_init();
 
-    tst();
+    test_fd = open("tstflock.out", (O_BINARY|O_CREAT|O_RDWR), 0666);
+    YAZ_CHECK(test_fd != -1);
+    if (test_fd != -1)
+        fork_tst();
 
     YAZ_CHECK_TERM;
 }

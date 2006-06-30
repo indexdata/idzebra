@@ -1,4 +1,4 @@
-/* $Id: flock.c,v 1.11 2006-06-30 13:02:20 adam Exp $
+/* $Id: flock.c,v 1.12 2006-06-30 14:01:22 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -50,7 +50,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ZEBRA_FLOCK_EXTRA_RDWR_LOCKS 1
 
 /** whether this module should debug */
-#define DEBUG_FLOCK 0
+#define DEBUG_FLOCK 1
 
 /** have this module (mutex) been initialized? */
 static int initialized = 0;
@@ -265,16 +265,20 @@ int zebra_lock_w(ZebraLockHandle h)
     int do_lock = ZEBRA_FLOCK_FILE_LOCK_ALWAYS;
     yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s begin", 
             h->p->fd, h, h->p->fname);
+
     
 #ifdef WIN32
     while ((r = _locking(h->p->fd, _LK_LOCK, 1)))
         ;
 #else
+#if ZEBRA_FLOCK_EXTRA_RDWR_LOCKS
+    zebra_lock_rdwr_wlock(&h->p->rdwr_lock);
+#endif
+
     zebra_mutex_lock(&h->p->file_mutex);
     if (h->p->no_file_write_lock == 0)
         do_lock = 1;
     h->p->no_file_write_lock++;
-    zebra_mutex_unlock(&h->p->file_mutex);
     if (do_lock)
     {
         yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s 2", 
@@ -282,12 +286,10 @@ int zebra_lock_w(ZebraLockHandle h)
         /* if there is already a read lock.. upgrade to write lock */
         r = unixLock(h->p->fd, F_WRLCK, F_SETLKW);
     }
+    zebra_mutex_unlock(&h->p->file_mutex);
     yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s 3", 
             h->p->fd, h, h->p->fname);
 
-#if ZEBRA_FLOCK_EXTRA_RDWR_LOCKS
-    zebra_lock_rdwr_wlock(&h->p->rdwr_lock);
-#endif
     h->write_flag = 1;
     yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s end", 
             h->p->fd, h, h->p->fname);
@@ -307,21 +309,21 @@ int zebra_lock_r(ZebraLockHandle h)
     while ((r = _locking(h->p->fd, _LK_LOCK, 1)))
         ;
 #else
+#if ZEBRA_FLOCK_EXTRA_RDWR_LOCKS
+    zebra_lock_rdwr_rlock(&h->p->rdwr_lock);
+#endif
+
     zebra_mutex_lock(&h->p->file_mutex);
     if (h->p->no_file_read_lock == 0 && h->p->no_file_write_lock == 0)
         do_lock = 1;
     h->p->no_file_read_lock++;
-    zebra_mutex_unlock(&h->p->file_mutex);
-    
     if (do_lock)
     {
         /* only read lock if no write locks already */
         r = unixLock(h->p->fd, F_RDLCK, F_SETLKW);
     }
-
-#if ZEBRA_FLOCK_EXTRA_RDWR_LOCKS
-    zebra_lock_rdwr_rlock(&h->p->rdwr_lock);
-#endif
+    zebra_mutex_unlock(&h->p->file_mutex);
+    
     h->write_flag = 0;
 #endif
     return r;
@@ -336,13 +338,6 @@ int zebra_unlock(ZebraLockHandle h)
 #ifdef WIN32
     r = _locking(h->p->fd, _LK_UNLCK, 1);
 #else
-#if ZEBRA_FLOCK_EXTRA_RDWR_LOCKS
-    if (h->write_flag)
-        zebra_lock_rdwr_wunlock(&h->p->rdwr_lock);
-    else
-        zebra_lock_rdwr_runlock(&h->p->rdwr_lock);
-#endif
-
     zebra_mutex_lock(&h->p->file_mutex);
     if (h->write_flag)
         h->p->no_file_write_lock--;
@@ -350,10 +345,17 @@ int zebra_unlock(ZebraLockHandle h)
         h->p->no_file_read_lock--;
     if (h->p->no_file_read_lock == 0 && h->p->no_file_write_lock == 0)
         do_unlock = 1;
-    zebra_mutex_unlock(&h->p->file_mutex);
-
     if (do_unlock)
         r = unixLock(h->p->fd, F_UNLCK, F_SETLKW);
+    zebra_mutex_unlock(&h->p->file_mutex);
+
+#if ZEBRA_FLOCK_EXTRA_RDWR_LOCKS
+    if (h->write_flag)
+        zebra_lock_rdwr_wunlock(&h->p->rdwr_lock);
+    else
+        zebra_lock_rdwr_runlock(&h->p->rdwr_lock);
+#endif
+
     yaz_log(log_level, "zebra_unlock fd=%d p=%p fname=%s end",
             h->p->fd, h, h->p->fname);
 #endif
