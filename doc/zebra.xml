@@ -9,7 +9,7 @@
      <!ENTITY % common  SYSTEM "common/common.ent">
      %common;
 ]>
-<!-- $Id: zebra.xml,v 1.6 2006-06-13 09:27:01 marc Exp $ -->
+<!-- $Id: zebra.xml,v 1.7 2006-06-30 12:31:22 marc Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
@@ -40,7 +40,7 @@
     boolean searching and relevance ranking.  Search-and-retrieve
     applications can be written using APIs in a wide variety of
     languages, communicating with the Zebra server using
-    industry-standard information-retrieval protocols.
+    industry-standard information-retrieval protocols or web services.
    </simpara>
    <simpara>
     This manual explains how to build and install Zebra, configure it
