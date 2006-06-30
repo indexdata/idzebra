@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.25 2006-06-29 14:02:07 marc Exp $ -->
+<!-- $Id: installation.xml,v 1.26 2006-06-30 10:45:09 marc Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -197,7 +197,7 @@
     By default this will install the Zebra executables in 
     <filename>/usr/local/bin</filename>,
     and the standard configuration files in 
-    <filename>/usr/local/share/idzebra</filename>
+    <filename>/usr/local/share/idzebra-2.0</filename>
     You can override this with the <literal>--prefix</literal> option
     to configure.
    </para>
@@ -233,13 +233,13 @@
      <ulink url="http://indexdata.dk/zebra/">Zebra</ulink> indexer is
      easily installed issuing
      <screen>
-      apt-get install idzebra idzebra-doc
+      apt-get install idzebra-2.0 idzebra-2.0-doc
      </screen>
     </para>
    </sect2>
    
    <sect2 id="installation.debianother">
-    <title>GNU/Debian On Other Platforms</title>
+    <title>GNU/Debian and Ubuntu/Debian On Other Platforms</title>
     <para>
      These <ulink url="http://indexdata.dk/zebra/">Zebra</ulink>
      packages are specifically compiled for
@@ -259,19 +259,19 @@
      After refreshing the package cache with the command
      <screen>
       apt-get update
+      apt-get build-dep idzebra-2.0
      </screen>
      as <literal>root</literal>, the 
      <ulink url="http://indexdata.dk/zebra/">Zebra</ulink> indexer is
      recompiled and installed issuing
      <screen>
-      apt-get build-dep idzebra
-      apt-get source --compile idzebra
+      apt-get source --compile idzebra-2.0
      </screen>
      as normal user.
      The compiled <literal>GNU/Debian</literal> packages can then be
      installed as <literal>root</literal> issuing
      <screen>
-      dpkg -i install idzebra*.deb idzebra-doc*.deb
+      dpkg -i install idzebra-2.0*.deb libidzebra-2.0*.deb
      </screen>
     </para>
    </sect2>
