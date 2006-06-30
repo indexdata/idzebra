@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.36 2006-06-30 14:00:34 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.37 2006-06-30 14:36:12 marc Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -295,6 +295,11 @@
      "We're taking the best from both worlds in our redesigned Koha
      3.0. 
      </para>
+     <para>
+     See also LibLime's newsletter article
+      <ulink url="http://www.liblime.com/newsletter/2006/01/features/koha-earns-its-stripes/">
+     Koha Earns its Stripes</ulink>.
+     </para>
    </sect2>
 
   <sect2>
@@ -525,7 +530,7 @@
  </sect1>
 
 
- <sect1 id="support">
+ <sect1 id="introduction-support">
   <title>Support</title>
   <para>
    You can get support for Zebra from at least three sources.

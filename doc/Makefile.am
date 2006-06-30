@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.53 2006-06-28 18:19:32 adam Exp $
+## $Id: Makefile.am,v 1.54 2006-06-30 14:36:12 marc Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -32,7 +32,6 @@ HTMLFILES =  \
    administration-extended-services.html \
    administration-ranking.html \
    administration.html \
-   apps.html \
    architecture-maincomponents.html \
    architecture-workflow.html \
    architecture.html \
@@ -49,10 +48,12 @@ HTMLFILES =  \
    grs-internal-representation.html \
    index.html \
    indexdata.html \
+   installation-upgrade.html \
    installation.debian.html \
    installation.html \
    installation.win32.html \
-   installation-upgrade.html \
+   introduction-apps.html \
+   introduction-support.html \
    introduction.html \
    license.html \
    locating-records.html \
@@ -72,7 +73,6 @@ HTMLFILES =  \
    server.html \
    shadow-registers.html \
    simple-indexing.html \
-   support.html \
    zebraidx.html \
    htmlhelp.hhp \
    toc.hhc 

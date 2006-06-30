@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.24 2006-06-13 13:45:08 marc Exp $ -->
+ <!-- $Id: server.xml,v 1.25 2006-06-30 14:36:12 marc Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -502,16 +502,16 @@
   <sect2>
    <title>Scan</title>
    <para>
-    Zebra does <emphasis>not</emphasis> support SRU's
+    Zebra supports SRU's
     <literal>scan</literal>
     operation, as described at
-    <ulink url="http://www.loc.gov/standards/sru/scan/"/>
+    <ulink url="http://www.loc.gov/standards/sru/scan/"/>.
+      Scanning using CQL syntax is the default, where the
+      standard <literal>scanClause</literal> parameter is used.
    </para>
    <para>
-    This is a rather embarrassing surprise as the pieces are all
-    there: Z39.50 scan is supported, and SRU scan requests are
-    recognised and diagnosed.  To add further to the embarrassment, a
-    mutant form of SRU scan <emphasis>is</emphasis> supported, using
+     In addition, a
+    mutant form of SRU scan is supported, using
     the non-standard <literal>x-pScanClause</literal> parameter in
     place of the standard <literal>scanClause</literal> to scan on a
     PQF query clause.

@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.18 2006-06-29 16:02:12 heikki Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.19 2006-06-30 14:36:12 marc Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -24,7 +24,7 @@
     <para>
      Since the <literal>type-1 (RPN)</literal> 
      query structure has no direct, useful string
-     representation, every origin application needs to provide some
+     representation, every client application needs to provide some
      form of mapping from a local query notation or representation to it.
     </para>
     
@@ -152,7 +152,8 @@
     The <ulink url="&url.yaz.pqf;">PQF grammar</ulink>
     is documented in the YAZ manual, and shall not be
     repeated here. This textual PQF representation
-    is always during search mapped to the equivalent Zebra internal
+    is not transmistted to Zebra during search, but it is in the
+    client mapped to the equivalent Z39.50 binary 
     query parse tree. 
    </para>
    
@@ -445,7 +446,9 @@
      
      <para>
       Defining a named result set and re-using it in the next query,
-      using <literal>yaz-client</literal>. 
+      using <literal>yaz-client</literal>. Notice that the client, not
+      the server, assigns the string <literal>'1'</literal> to the
+      named result set. 
       <screen>
        Z> f @attr 1=4 mozart
        ...
@@ -454,11 +457,6 @@
        Z> f @and @set 1 @attr 1=4 amadeus
        ...
        Number of hits: 14, setno 2
-       ...
-       Z> f @attr 1=1016 beethoven
-       ...
-       Number of hits: 26, setno 3
-       ...
       </screen>
      </para>
      
@@ -2325,6 +2323,8 @@
      The next plus character marks the end of the section.
      Currently Zebra only supports one specifier, the error tolerance,
      which consists one digit. 
+     <!-- TODO Nice thing, but what does
+     that error tolerance digit *mean*? Maybe an example would be nice? -->
     </para>
 
     <para>

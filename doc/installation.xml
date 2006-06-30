@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.26 2006-06-30 10:45:09 marc Exp $ -->
+<!-- $Id: installation.xml,v 1.27 2006-06-30 14:36:12 marc Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -239,7 +239,7 @@
    </sect2>
    
    <sect2 id="installation.debianother">
-    <title>GNU/Debian and Ubuntu/Debian On Other Platforms</title>
+    <title>Ubuntu/Debian and GNU/Debian on other platforms</title>
     <para>
      These <ulink url="http://indexdata.dk/zebra/">Zebra</ulink>
      packages are specifically compiled for

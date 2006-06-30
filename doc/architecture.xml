@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.10 2006-06-13 13:45:08 marc Exp $ -->
+  <!-- $Id: architecture.xml,v 1.11 2006-06-30 14:36:12 marc Exp $ -->
   <title>Overview of Zebra Architecture</title>
   
 
@@ -52,7 +52,7 @@
     same main components, which are presented here.
    </para>    
    <para>    
-    The virtual Debian package <literal>idzebra1.4</literal>
+    The virtual Debian package <literal>idzebra-2.0</literal>
     installs all the necessary packages to start
     working with Zebra - including utility programs, development libraries,
     documentation and modules. 
@@ -122,11 +122,11 @@
      </variablelist>
      </para>
     <para> 
-     The Debian package <literal>libidzebra1.4</literal> 
+     The Debian package <literal>libidzebra-2.0</literal> 
      contains all run-time libraries for Zebra, the 
      documentation in PDF and HTML is found in 
-     <literal>idzebra1.4-doc</literal>, and
-     <literal>idzebra1.4-common</literal>
+     <literal>idzebra-2.0-doc</literal>, and
+     <literal>idzebra-2.0-common</literal>
      includes common essential Zebra configuration files.
     </para>
    </sect2>
@@ -142,7 +142,7 @@
      indexes according to the rules defined in the filter modules.
     </para>    
     <para>    
-     The Debian  package <literal>idzebra1.4-utils</literal> contains
+     The Debian  package <literal>idzebra-2.0-utils</literal> contains
      the  <command>zebraidx</command> utility.
     </para>
    </sect2>
@@ -155,7 +155,7 @@
      great Information Retrieval server application. 
     </para>    
     <para>    
-     The Debian  package <literal>idzebra1.4-utils</literal> contains
+     The Debian  package <literal>idzebra-2.0-utils</literal> contains
      the  <command>zebrasrv</command> utility.
     </para>
    </sect2>
@@ -204,17 +204,15 @@
      </para>
      <para>
      The virtual Debian package
-     <literal>libidzebra1.4-modules</literal> installs all base filter
+     <literal>libidzebra-2.0-modules</literal> installs all base filter
      modules. 
     </para>
 
+   
    <sect3 id="componentmodulestext">
     <title>TEXT Record Model and Filter Module</title>
     <para>
       Plain ASCII text filter. TODO: add information here.
-     <!--
-     <literal>text module missing as deb file<literal>
-     -->
     </para>
    </sect3>
 
@@ -231,20 +229,12 @@
     to the <filename>*.abs</filename> configuration file suffix.
     </para>
     <para>
-     The <emphasis>grs.danbib</emphasis> filter is developed for 
-      DBC DanBib records.
-      DanBib is the Danish Union Catalogue hosted by DBC
-      (Danish Bibliographic Center). This filter is found in the
-      Debian package
-     <literal>libidzebra1.4-mod-grs-danbib</literal>.
-    </para>
-    <para>
       The <emphasis>grs.marc</emphasis> and 
       <emphasis>grs.marcxml</emphasis> filters are suited to parse and
       index binary and XML versions of traditional library MARC records 
       based on the ISO2709 standard. The Debian package for both
       filters is 
-     <literal>libidzebra1.4-mod-grs-marc</literal>.
+     <literal>libidzebra-2.0-mod-grs-marc</literal>.
     </para>
     <para>
       GRS TCL scriptable filters for extensive user configuration come
@@ -253,17 +243,17 @@
      a general scriptable TCL filter called 
      <emphasis>grs.tcl</emphasis>        
      are both included in the 
-     <literal>libidzebra1.4-mod-grs-regx</literal> Debian package.
+     <literal>libidzebra-2.0-mod-grs-regx</literal> Debian package.
     </para>
     <para>
       A general purpose SGML filter is called
      <emphasis>grs.sgml</emphasis>. This filter is not yet packaged,
      but planned to be in the  
-     <literal>libidzebra1.4-mod-grs-sgml</literal> Debian package.
+     <literal>libidzebra-2.0-mod-grs-sgml</literal> Debian package.
     </para>
     <para>
       The Debian  package 
-      <literal>libidzebra1.4-mod-grs-xml</literal> includes the 
+      <literal>libidzebra-2.0-mod-grs-xml</literal> includes the 
       <emphasis>grs.xml</emphasis> filter which uses <ulink
       url="http://expat.sourceforge.net/">Expat</ulink> to 
       parse records in XML and turn them into IDZebra's internal GRS node
@@ -309,20 +299,19 @@
       <xref linkend="record-model-alvisxslt"/>.
       </para>
      <para>
-      The Debian package <literal>libidzebra1.4-mod-alvis</literal>
+      The Debian package <literal>libidzebra-2.0-mod-alvis</literal>
       contains the Alvis filter module.
      </para>
     </sect3>
 
+    <!--
    <sect3 id="componentmodulessafari">
     <title>SAFARI Record Model and Filter Module</title>
     <para>
      SAFARI filter module TODO: add information here.
-     <!--
-     <literal>safari module missing as deb file<literal>
-     -->
     </para>
    </sect3>
+    -->
 
    </sect2>
 
