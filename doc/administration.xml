@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.40 2006-06-30 10:46:26 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.41 2006-06-30 10:58:41 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -356,7 +356,7 @@
        Specifies a file with description of user accounts for Zebra.
        File format is similar to that used by the passwd directive except
        that the password are encrypted. Use Apache's htpasswd or similar
-       for maintenanace.
+       for maintenance.
       </para>
      </listitem>
     </varlistentry>
@@ -370,7 +370,7 @@
        to access Zebra via the passwd system. There are two kinds
        of permissions currently: read (r) and write(w). By default
        users not listed in a permission directive are given the read
-       priviledge. To specify permissions for a user with no
+       privilege. To specify permissions for a user with no
        username, or Z39.50 anonymous style use
 	<literal>anonymous</literal>. The permstring consists of
        a sequence of characters. Include character <literal>w</literal>
@@ -1437,7 +1437,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
   <title>Extended Services: Remote Insert, Update and Delete</title>
   
    <note>
-     Extended services are only supported when acessing the Zebra
+     Extended services are only supported when accessing the Zebra
      server using the <ulink url="&url.z39.50;">Z39.50</ulink>
      protocol. The <ulink url="&url.sru;">SRU</ulink> protocol does
      not support extended services.
@@ -1457,7 +1457,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     </screen>
     And in the password file 
     <filename>passwordfile</filename>, you have to specify users and
-    encrypted passwords as colon seperated strings. 
+    encrypted passwords as colon separated strings. 
     Use a tool like <filename>htpasswd</filename> 
     to maintain the encrypted passwords. 
     <screen> 
@@ -1472,7 +1472,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     </screen>
     The general record type should be set to any record filter which
     is able to parse XML records, you may use any of the two
-    declarations (but not both simultaniously!)
+    declarations (but not both simultaneously!)
     <screen>    
      recordType: grs.xml
      # recordType: alvis.filter_alvis_config.xml
@@ -1486,7 +1486,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
    <note>It is not possible to carry information about record types or
     similar to Zebra when using extended services, due to
     limitations of the <ulink url="&url.z39.50;">Z39.50</ulink>
-    protocol. Therefore, indexing filters can not be choosen on a
+    protocol. Therefore, indexing filters can not be chosen on a
     per-record basis. One and only one general XML indexing filter
     must be defined.  
     <!-- but because it is represented as an OID, we would need some
@@ -1504,7 +1504,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     <title>Extended services in the Z39.50 protocol</title>
 
     <para>
-     The <ulink url="&url.z39.50;">Z39.50</ulink> standard allowes
+     The <ulink url="&url.z39.50;">Z39.50</ulink> standard allows
      servers to accept special binary <emphasis>extended services</emphasis>
      protocol packages, which may be used to insert, update and delete
      records into servers. These carry  control and update
