@@ -2,11 +2,13 @@
  * Copyright (C) 1995-2006, Index Data ApS
  * See the file LICENSE for details.
  *
- * $Id: tstflock.c,v 1.9 2006-06-30 11:10:17 adam Exp $
+ * $Id: tstflock.c,v 1.10 2006-06-30 13:02:20 adam Exp $
  */
 
 #include <assert.h>
+#include <stdlib.h>
 #include <yaz/test.h>
+#include <yaz/log.h>
 #if YAZ_POSIX_THREADS
 #include <pthread.h>
 #endif
@@ -21,10 +23,10 @@
 #endif
 #include <string.h>
 
-static char seq[40];
-static char *seqp = seq;
+static char seq[1000];
+static char *seqp = 0;
 
-#define NUM_THREADS 5
+#define NUM_THREADS 100
 
 static void small_sleep()
 {
@@ -43,7 +45,14 @@ void *run_func(void *arg)
     ZebraLockHandle lh = zebra_lock_create(0, "my.LCK");
     for (i = 0; i<2; i++)
     {
-        if (use_write_lock)
+        int write_lock;
+
+        if (use_write_lock == 2)
+            write_lock = (rand() & 3) == 3 ? 1 : 0;
+        else
+            write_lock = use_write_lock;
+            
+        if (write_lock)
         {
             zebra_lock_w(lh);
             
@@ -75,51 +84,80 @@ DWORD WINAPI ThreadProc(void *p)
     run_func(p);
     return 0;
 }
+#endif
 
-static void tst_win32(int num)
+static void tst_thread(int num, int write_flag)
 {
+#ifdef WIN32
     HANDLE handles[NUM_THREADS];
     DWORD dwThreadId[NUM_THREADS];
-    int i, id[NUM_THREADS];
-    
-    assert (num <= NUM_THREADS);
-    for (i = 0; i<num; i++)
-    {
-        void *pData = &id[i];
-        id[i] = i >= 2 ? 0 : 1; /* first two are writing.. rest is reading */
-        handles[i] = CreateThread(
-            NULL,              /* default security attributes */
-            0,                 /* use default stack size */
-            ThreadProc,        /* thread function */
-            pData,             /* argument to thread function */
-            0,                 /* use default creation flags */
-            &dwThreadId[i]);   /* returns the thread identifier */
-    }
-    /* join */
-    WaitForMultipleObjects(num, handles, TRUE, INFINITE);
-}
 #endif
-
 #if YAZ_POSIX_THREADS
-static void tst_pthread(int num)
-{
     pthread_t child_thread[NUM_THREADS];
+#endif
     int i, id[NUM_THREADS];
 
+    seqp = seq;
     assert (num <= NUM_THREADS);
-    for (i = 0; i<num; i++)
+    for (i = 0; i < num; i++)
     {
-        id[i] = i >= 2 ? 0 : 1; /* first two are writing.. rest is reading */
+        id[i] = write_flag;
+#if YAZ_POSIX_THREADS
         pthread_create(&child_thread[i], 0 /* attr */, run_func, &id[i]);
-    }
+#endif
+#ifdef WIN32
+        if (1)
+        {
+            void *pData = &id[i];
+            handles[i] = CreateThread(
+                NULL,              /* default security attributes */
+                0,                 /* use default stack size */
+                ThreadProc,        /* thread function */
+                pData,             /* argument to thread function */
+                0,                 /* use default creation flags */
+                &dwThreadId[i]);   /* returns the thread identifier */
+        }
 
+#endif
+    }
+#if YAZ_POSIX_THREADS
     for (i = 0; i<num; i++)
         pthread_join(child_thread[i], 0);
-
-    for (i = 0; i<num; i++)
-        YAZ_CHECK(id[i] == 123);
-}
 #endif
+#ifdef WIN32
+    WaitForMultipleObjects(num, handles, TRUE, INFINITE);
+#endif
+    for (i = 0; i < num; i++)
+        YAZ_CHECK(id[i] == 123);
+    *seqp++ = '\0';
+}
+
+static void tst()
+{
+    tst_thread(4, 1); /* write locks */
+#if 0
+    printf("seq=%s\n", seq);
+#endif
+    if (1)
+    {
+        int i = 0;
+        while (seq[i])
+        {
+            YAZ_CHECK_EQ(seq[i], 'L');
+            YAZ_CHECK_EQ(seq[i+1], 'U');
+            i = i + 2;
+        }
+    }
+
+#if 0
+    tst_thread(6, 0);  /* read locks */
+    printf("seq=%s\n", seq);
+#endif
+#if 0
+    tst_thread(20, 2); /* random locks */
+    printf("seq=%s\n", seq);
+#endif
+}
 
 int main(int argc, char **argv)
 {
@@ -128,21 +166,9 @@ int main(int argc, char **argv)
     yaz_log_time_format("%s:%!");
 
     zebra_flock_init();
-#ifdef WIN32
-    tst_win32(2);
-#endif
-#if YAZ_POSIX_THREADS
-    tst_pthread(2);
-#endif
 
-    *seqp++ = '\0';
-#if 0
-    printf("seq=%s\n", seq);
-#endif
-#if 1
-    /* does not pass.. for bug 529 */
-    YAZ_CHECK(strcmp(seq, "LULULULU") == 0); /* for tst_pthread when num=2 */
-#endif
+    tst();
+
     YAZ_CHECK_TERM;
 }
 
