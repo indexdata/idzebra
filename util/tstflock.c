@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2006, Index Data ApS
  * See the file LICENSE for details.
  *
- * $Id: tstflock.c,v 1.11 2006-06-30 14:01:22 adam Exp $
+ * $Id: tstflock.c,v 1.12 2006-06-30 15:10:29 adam Exp $
  */
 
 #include <assert.h>
@@ -147,15 +147,13 @@ static void tst_thread(int num, int write_flag)
     for (i = 0; i < num; i++)
         YAZ_CHECK(id[i] == 123);
     *seqp++ = '\0';
+    yaz_log(YLOG_LOG, "tst_thread(%d,%d) returns seq=%s", 
+            num, write_flag, seq);
 }
 
 static void tst()
 {
     tst_thread(4, 1); /* write locks */
-    yaz_log(YLOG_LOG, "seq=%s", seq);
-#if 0
-    printf("seq=%s\n", seq);
-#endif
     if (1)
     {
         int i = 0;
@@ -169,11 +167,9 @@ static void tst()
 
 #if 0
     tst_thread(6, 0);  /* read locks */
-    printf("seq=%s\n", seq);
 #endif
-#if 0
+#if 1
     tst_thread(20, 2); /* random locks */
-    printf("seq=%s\n", seq);
 #endif
 }
 
@@ -189,7 +185,7 @@ void fork_tst()
         if (!pid[i])
         {
             tst();
-            return;
+            exit(0);
         }
     }
     for (i = 0; i<2; i++)
@@ -219,8 +215,9 @@ int main(int argc, char **argv)
     test_fd = open("tstflock.out", (O_BINARY|O_CREAT|O_RDWR), 0666);
     YAZ_CHECK(test_fd != -1);
     if (test_fd != -1)
+    {
         fork_tst();
-
+    }
     YAZ_CHECK_TERM;
 }
 
