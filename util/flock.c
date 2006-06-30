@@ -1,4 +1,4 @@
-/* $Id: flock.c,v 1.12 2006-06-30 14:01:22 adam Exp $
+/* $Id: flock.c,v 1.13 2006-06-30 15:10:20 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -50,7 +50,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ZEBRA_FLOCK_EXTRA_RDWR_LOCKS 1
 
 /** whether this module should debug */
-#define DEBUG_FLOCK 1
+#define DEBUG_FLOCK 0
 
 /** have this module (mutex) been initialized? */
 static int initialized = 0;
@@ -266,7 +266,6 @@ int zebra_lock_w(ZebraLockHandle h)
     yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s begin", 
             h->p->fd, h, h->p->fname);
 
-    
 #ifdef WIN32
     while ((r = _locking(h->p->fd, _LK_LOCK, 1)))
         ;
@@ -281,14 +280,10 @@ int zebra_lock_w(ZebraLockHandle h)
     h->p->no_file_write_lock++;
     if (do_lock)
     {
-        yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s 2", 
-                h->p->fd, h, h->p->fname);
         /* if there is already a read lock.. upgrade to write lock */
         r = unixLock(h->p->fd, F_WRLCK, F_SETLKW);
     }
     zebra_mutex_unlock(&h->p->file_mutex);
-    yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s 3", 
-            h->p->fd, h, h->p->fname);
 
     h->write_flag = 1;
     yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s end", 
