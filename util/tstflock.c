@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2006, Index Data ApS
  * See the file LICENSE for details.
  *
- * $Id: tstflock.c,v 1.8 2006-06-27 12:24:14 adam Exp $
+ * $Id: tstflock.c,v 1.9 2006-06-30 11:10:17 adam Exp $
  */
 
 #include <assert.h>
@@ -124,6 +124,8 @@ static void tst_pthread(int num)
 int main(int argc, char **argv)
 {
     YAZ_CHECK_INIT(argc, argv);
+
+    yaz_log_time_format("%s:%!");
 
     zebra_flock_init();
 #ifdef WIN32
