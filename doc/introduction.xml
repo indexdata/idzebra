@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.35 2006-06-30 13:59:37 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.36 2006-06-30 14:00:34 marc Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -402,7 +402,7 @@
      manage huge collections of natural language processed and
      enhanced XML data, coming from a topic relevant web crawl.
      In this application, Zebra swallows and manages 37GB of XML data
-     in about 4 hours, resulting in search times of fraction of
+     in about 4 hours, resulting in search times of fractions of
      seconds. 
      </para>
    </sect2>
