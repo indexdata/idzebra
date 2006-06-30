@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.33 2006-06-13 13:45:08 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.34 2006-06-30 13:58:07 marc Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -126,7 +126,7 @@
   </para>
   
   <para>
-   Z39.50 protocol support:
+     <ulink url="&url.z39.50;">Z39.50</ulink> protocol support:
   </para>
   
   <para>   
@@ -137,15 +137,6 @@
       Segmentation (support for very large records), Delete, Scan
       (index browsing), Sort, Close and support for the ``update''
       Extended Service to add or replace an existing XML record.
-	<!-- Adam says:
-	     * Supported
-	     You can insert/delete/replace an XML record given an
-	     "external" ID.  Actually this way of doing ES Update was
-	     meant for an OAI application that Ian Ibbotson had in
-	     mind to implement. The "update" command in YAZ client
-	     implements this on the client side. My plan is to make
-	     this available in ZOOM "extended" soon..
-	-->
      </para>
     </listitem>
 
@@ -194,11 +185,53 @@
    </itemizedlist>
    
   </para>
+
+  
+  <para>
+    <ulink url="&url.sru;">SRU</ulink> Web Service support:
+  </para>
+  <para>   
+   <itemizedlist>
+    <listitem>
+     <para>
+       The protocol operations <literal>explain</literal>, 
+       <literal>searchRetrieve</literal> and <literal>scan</literal>
+       are supported. 
+     </para>
+    </listitem>
+    <listitem>
+     <para>
+       <ulink url="&url.cql;">CQL</ulink> to internal query model RPN 
+       conversion is supported. 
+     </para>
+    </listitem>
+    <listitem>
+     <para>
+       Multiple XML record formats
+      for data retrieval are supported, modelled over the  GRS-1, SUTRS,
+      MARC record formats. Records can be mapped between record
+       schemas on the fly. Arbitrarily complex XSLT transformations
+      can be applied during record retrieval if one uses the 
+       <literal>alvis</literal> filter module.
+     </para>
+    </listitem>
+    <listitem>
+     <para>
+       Additional PQF query syntax for
+       <literal>searchRetrieve</literal>
+       and <literal>scan</literal> operations is supported.
+     </para>
+    </listitem>
+
+   </itemizedlist>
+   
+  </para>
+
   
  </sect1>
  
-  <sect1 id="apps">
-  <title>Applications</title>
+  <sect1 id="introduction-apps">
+  <title>References and Zebra based Applications</title>
   <para>
    Zebra has been deployed in numerous applications, in both the
    academic and commercial worlds, in application domains as diverse
@@ -210,6 +243,102 @@
   <para>
    Notable applications include the following:
   </para>
+
+
+  <sect2>
+   <title>Koha free open-source ILS</title>
+   <para>
+     <ulink url="http://www.koha.org/">Koha</ulink> is a full-featured
+     open-source ILS, initially developed  in 
+     New Zealand by Katipo Communications Ltd, and first deployed in
+     January of 2000 for Horowhenua Library Trust. It is currently
+     maintained by a team of software providers and library technology
+     staff from around the globe. 
+    </para>
+    <para>
+     <ulink url="http://liblime.com/">LibLime</ulink>, 
+     a company that is marketing and supporting Koha, adds in
+     the new release of Koha 3.0 the Zebra
+     database server to drive its bibliographic database.
+    </para>
+    <para>
+     In early 2005, the Koha project development team began looking at
+     ways to improve MARC support and overcome scalability limitations
+     in the Koha 2.x series. After extensive evaluations of the best
+     of the Open Source textual database engines - including MySQL
+     full-text searching, PostgreSQL, Lucene and Plucene - the team
+     selected Zebra. 
+    </para>
+    <para>
+     "Zebra completely eliminates scalability limitations, because it
+     can support tens of millions of records." explained Joshua
+     Ferraro, LibLime's Technology President and Koha's Project
+     Release Manager. "Our performance tests showed search results in
+     under a second for databases with over 5 million records on a
+     modest i386 900Mhz test server." 
+    </para>
+    <para>
+     "Zebra also includes support for true boolean search expressions
+     and relevance-ranked free-text queries, both of which the Koha
+     2.x series lack. Zebra also supports incremental and safe
+     database updates, which allow on-the-fly record
+     management. Finally, since Zebra has at its heart the Z39.50
+     protocol, it greatly improves Koha's support for that critical
+     library standard." 
+    </para>
+    <para> 
+     Although the bibliographic database will be moved to Zebra, Koha
+     3.0 will continue to use a relational SQL-based database design
+     for the 'factual' database. "Relational database managers have
+     their strengths, in spite of their inability to handle large
+     numbers of bibliographic records efficiently," summed up Ferraro,
+     "We're taking the best from both worlds in our redesigned Koha
+     3.0. 
+     </para>
+   </sect2>
+
+  <sect2>
+   <title>Emilda open source ILS</title>
+   <para>
+     <ulink url="http://www.emilda.org/">Emilda</ulink> 
+     is a complete Integrated Library System, released under the 
+     GNU General Public License. It has a
+     full featured Web-OPAC, allowing comprehensive system management
+     from virtually any computer with an Internet connection, has
+     template based layout allowing anyone to alter the visual
+     appearance of Emilda, and is
+     XML based language for fast and easy portability to virtually any
+     language.
+     Currently, Emilda is used at three schools in Espoo, Finland.
+    </para>
+    <para>
+     As a surplus, 100% MARC compatibility has been achieved using the
+    Zebra Server from Index Data as backend server. 
+    </para> 
+   </sect2>
+
+  <sect2>
+   <title>ReIndex.Net web based ILS</title>
+    <para>
+     <ulink url="http://www.reindex.net/index.php?lang=en">Reindex.net</ulink>
+     is a netbased library service offering all
+     traditional functions on a very high level plus many new
+     services. Reindex.net is a comprehensive and powerful WEB system
+     based on standards such as XML and Z39.50.
+     updates. Reindex supports MARC21, danMARC eller Dublin Core with
+     UTF8-encoding.  
+    </para>
+    <para>
+     Reindex.net runs on GNU/Debian Linux with Zebra and Simpleserver
+     from Index 
+     Data for bibliographic data. The reational database system
+     Sybase 9 XML is used for
+     administrative data. 
+     Internally MARCXML is used for bibliographical records. Update
+     utilizes Z39.50 extended services. 
+    </para>
+   </sect2>
+
 
   <sect2>
    <title>DADS - the DTV Article Database Service</title>
@@ -256,34 +385,28 @@
   </sect2>
 
   <sect2>
-   <title>NLI-Z39.50 - a Natural Language Interface for Libraries</title>
+   <title>Alvis</title>
    <para>
-    Fernuniversit&#x00E4;t Hagen in Germany have developed a natural
-    language interface for access to library databases.
-    <!-- <ulink
-    url="http://ki212.fernuni-hagen.de/nli/NLIintro.html"/> -->
-    In order to evaluate this interface for recall and precision, they
-    chose Zebra as the basis for retrieval effectiveness.  The Zebra
-    server contains a copy of the GIRT database, consisting of more
-    than 76000 records in SGML format (bibliographic records from
-    social science), which are mapped to MARC for presentation.
-   </para>
-   <para>
-    (GIRT is the German Indexing and Retrieval Testdatabase.  It is a
-    standard German-language test database for intelligent indexing
-    and retrieval systems.  See
-    <ulink url="http://www.gesis.org/forschung/informationstechnologie/clef-delos.htm"/>)
-   </para>
-   <para>
-    Evaluation will take place as part of the TREC/CLEF campaign 2003 
-    <ulink url="http://clef.iei.pi.cnr.it"/>.
-    <!-- or <ulink url="http://www4.eurospider.ch/CLEF/"/> -->
-   </para>
-   <para>
-    For more information, contact Johannes Leveling
-    <email>Johannes.Leveling@FernUni-Hagen.De</email>
-   </para>
-  </sect2>
+     The <ulink url="http://www.alvis.info/alvis/">Alvis</ulink> EU
+     project run under the 6th Framework (IST-1-002068-STP)
+     is building a semantic-based peer-to-peer search engine. A
+     consortium of eleven partners from six different European
+     Community countries plus Switzerland and China contribute
+     expertise in a broad range of specialties including network
+     topologies, routing algorithms, linguistic analysis and
+     bioinformatics. 
+    </para>
+    <para>
+     The Zebra information retrieval indexing machine is used inside
+     the Alvis framework to
+     manage huge collections of natural language processed and
+     enhanced XML data, coming from a topic relevant web crawl.
+     In this application, Zebra swallows and manages 37GB of XML data
+     in about 4 hours, resulting in search timese of fraction of
+     seconds. 
+     </para>
+   </sect2>
+
 
   <sect2>
    <title>ULS (Union List of Serials)</title>
@@ -314,6 +437,36 @@
   </sect2>
 
   <sect2>
+   <title>NLI-Z39.50 - a Natural Language Interface for Libraries</title>
+   <para>
+    Fernuniversit&#x00E4;t Hagen in Germany have developed a natural
+    language interface for access to library databases.
+    <!-- <ulink
+    url="http://ki212.fernuni-hagen.de/nli/NLIintro.html"/> -->
+    In order to evaluate this interface for recall and precision, they
+    chose Zebra as the basis for retrieval effectiveness.  The Zebra
+    server contains a copy of the GIRT database, consisting of more
+    than 76000 records in SGML format (bibliographic records from
+    social science), which are mapped to MARC for presentation.
+   </para>
+   <para>
+    (GIRT is the German Indexing and Retrieval Testdatabase.  It is a
+    standard German-language test database for intelligent indexing
+    and retrieval systems.  See
+    <ulink url="http://www.gesis.org/forschung/informationstechnologie/clef-delos.htm"/>)
+   </para>
+   <para>
+    Evaluation will take place as part of the TREC/CLEF campaign 2003 
+    <ulink url="http://clef.iei.pi.cnr.it"/>.
+    <!-- or <ulink url="http://www4.eurospider.ch/CLEF/"/> -->
+   </para>
+   <para>
+    For more information, contact Johannes Leveling
+    <email>Johannes.Leveling@FernUni-Hagen.De</email>
+   </para>
+  </sect2>
+
+  <sect2>
    <title>Various web indexes</title>
    <para>
     Zebra has been used by a variety of institutions to construct
@@ -336,7 +489,6 @@
    </para>
    <para>
     Kang-Jin Lee
-    <email>lee@arco.de</email>,
     has recently modified the Harvest web indexer to use Zebra as
     its native repository engine.  His comments on the switch over
     from the old engine are revealing:
