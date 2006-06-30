@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.39 2006-06-13 13:45:08 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.40 2006-06-30 10:46:26 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -1436,26 +1436,212 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
  <sect1 id="administration-extended-services">
   <title>Extended Services: Remote Insert, Update and Delete</title>
   
+   <note>
+     Extended services are only supported when acessing the Zebra
+     server using the <ulink url="&url.z39.50;">Z39.50</ulink>
+     protocol. The <ulink url="&url.sru;">SRU</ulink> protocol does
+     not support extended services.
+    </note>
+
   <para>
     The extended services are not enabled by default in zebra - due to the
-    fact that they modify the system.
-    In order to allow anybody to update, use
-    <screen>
-    perm.anonymous: rw
-    </screen>
+    fact that they modify the system. Zebra can be configured
+    to allow anybody to
+    search, and to allow only updates for a particular admin user
     in the main zebra configuration file <filename>zebra.cfg</filename>.
-    Or, even better, allow only updates for a particular admin user. For
-    user <literal>admin</literal>, you could use:
+    For user <literal>admin</literal>, you could use:
     <screen>
+     perm.anonymous: r
      perm.admin: rw
      passwd: passwordfile
     </screen>
-    And in <filename>passwordfile</filename>, specify users and
-    passwords as colon seperated strings:
+    And in the password file 
+    <filename>passwordfile</filename>, you have to specify users and
+    encrypted passwords as colon seperated strings. 
+    Use a tool like <filename>htpasswd</filename> 
+    to maintain the encrypted passwords. 
     <screen> 
      admin:secret
-    </screen> 
+    </screen>
+    It is essential to configure  Zebra to store records internally, 
+    and to support
+    modifications and deletion of records:
+    <screen>
+     storeData: 1
+     storeKeys: 1
+    </screen>
+    The general record type should be set to any record filter which
+    is able to parse XML records, you may use any of the two
+    declarations (but not both simultaniously!)
+    <screen>    
+     recordType: grs.xml
+     # recordType: alvis.filter_alvis_config.xml
+    </screen>
+    To enable transaction safe shadow indexing,
+    which is extra important for this kind of operation, set
+    <screen>
+     shadow: directoryname: size (e.g. 1000M)
+    </screen>
    </para>
+   <note>It is not possible to carry information about record types or
+    similar to Zebra when using extended services, due to
+    limitations of the <ulink url="&url.z39.50;">Z39.50</ulink>
+    protocol. Therefore, indexing filters can not be choosen on a
+    per-record basis. One and only one general XML indexing filter
+    must be defined.  
+    <!-- but because it is represented as an OID, we would need some
+    form of proprietary mapping scheme between record type strings and
+    OIDs. -->
+    <!--
+    However, as a minimum, it would be extremely useful to enable
+    people to use MARC21, assuming grs.marcxml.marc21 as a record
+    type.  
+    -->
+   </note>
+
+
+   <sect2 id="administration-extended-services-z3950">
+    <title>Extended services in the Z39.50 protocol</title>
+
+    <para>
+     The <ulink url="&url.z39.50;">Z39.50</ulink> standard allowes
+     servers to accept special binary <emphasis>extended services</emphasis>
+     protocol packages, which may be used to insert, update and delete
+     records into servers. These carry  control and update
+     information to the servers, which are encoded in seven package fields: 
+    </para>
+
+
+     <table id="administration-extended-services-z3950-table"
+      frame="all" rowsep="1" colsep="1" align="center">
+
+      <caption>Extended services Z39.50 Package Fields</caption>
+       <thead>
+       <tr>
+         <td>Parameter</td>
+         <td>Value</td>
+         <td>Notes</td>
+        </tr>
+      </thead>
+       <tbody>
+        <tr>
+         <td><literal>type</literal></td>
+         <td><literal>'update'</literal></td>
+         <td>Must be set to trigger extended services</td>
+        </tr>
+        <tr>
+         <td><literal>action</literal></td>
+         <td><literal>string</literal></td>
+        <td>
+         Extended service action type with 
+         one of four possible values: <literal>recordInsert</literal>,
+         <literal>recordReplace</literal>,
+         <literal>recordDelete</literal>,
+         and <literal>specialUpdate</literal>
+        </td>
+        </tr>
+        <tr>
+         <td><literal>record</literal></td>
+         <td><literal>XML string</literal></td>
+         <td>An XML formatted string containing the record</td>
+        </tr>
+        <tr>
+         <td><literal>syntax</literal></td>
+         <td><literal>'xml'</literal></td>
+         <td>Only XML record syntax is supported</td>
+        </tr>
+        <tr>
+         <td><literal>recordIdOpaque</literal></td>
+         <td><literal>string</literal></td>
+         <td>
+         Optional  client-supplied, opaque record
+         identifier used under insert operations.
+        </td>
+        </tr>
+        <tr>
+         <td><literal>recordIdNumber </literal></td>
+         <td><literal>positive number</literal></td>
+         <td>Zebra's internal system number, only for update
+         actions.
+        </td>
+        </tr>
+        <tr>
+         <td><literal>databaseName</literal></td>
+         <td><literal>database identifier</literal></td>
+        <td>
+         The name of the database to which the extended services should be 
+         applied.
+        </td>
+        </tr>
+        </tbody>
+     </table>
+
+
+   <para>
+    The <literal>action</literal> parameter can be any of 
+    <literal>recordInsert</literal> (will fail if the record already exists),
+    <literal>recordReplace</literal> (will fail if the record does not exist),
+    <literal>recordDelete</literal> (will fail if the record does not
+       exist), and
+    <literal>specialUpdate</literal> (will insert or update the record
+       as needed).
+   </para>
+
+    <para>
+     During a  <literal>recordInsert</literal> action, the
+     usual rules for internal record ID generation apply, unless an
+     optional <literal>recordIdNumber</literal> Zebra internal ID or a
+    <literal>recordIdOpaque</literal> string identifier is assigned. 
+     The default ID generation is
+     configured using the <literal>recordId:</literal> from
+     <filename>zebra.cfg</filename>.     
+    </para>
+
+   <para>
+    The actions <literal>recordReplace</literal> or
+    <literal>recordDelete</literal> need specification of the additional 
+    <literal>recordIdNumber</literal> parameter, which must be an
+    existing Zebra internal system ID number, or the optional 
+     <literal>recordIdOpaque</literal> string parameter.
+    </para>
+
+    <para>
+     When retrieving existing
+     records indexed with GRS indexing filters, the Zebra internal 
+     ID number is returned in the field
+    <literal>/*/id:idzebra/localnumber</literal> in the namespace
+    <literal>xmlns:id="http://www.indexdata.dk/zebra/"</literal>,
+    where it can be picked up for later record updates or deletes. 
+    </para>
+    <para>
+     Records indexed with the <literal>alvis</literal> filter
+     have similar means to discover the internal Zebra ID.
+    </para>
+ 
+   <para>
+     The <literal>recordIdOpaque</literal> string parameter
+     is an client-supplied, opaque record
+     identifier, which may be  used under 
+     insert, update and delete operations. The
+     client software is responsible for assigning these to
+     records.      This identifier will
+     replace zebra's own automagic identifier generation with a unique
+     mapping from <literal>recordIdOpaque</literal> to the 
+     Zebra internal <literal>recordIdNumber</literal>.
+     <emphasis>The opaque <literal>recordIdOpaque</literal> string
+     identifiers
+      are not visible in retrieval records, nor are
+      searchable, so the value of this parameter is
+      questionable. It serves mostly as a convenient mapping from
+      application domain string identifiers to Zebra internal ID's.
+     </emphasis> 
+    </para>
+   </sect2>
+
+   
+ <sect2 id="administration-extended-services-yaz-client">
+  <title>Extended services from yaz-client</title>
+
    <para>
     We can now start a yaz-client admin session and create a database:
    <screen>
@@ -1469,14 +1655,11 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     from example/gils/records) and index it:
    <screen>  
     <![CDATA[
-     Z> update insert 1 esdd0006.grs
+     Z> update insert id1234 esdd0006.grs
      ]]>
    </screen>
-    The 3rd parameter - <literal>1</literal> here -
-      is the opaque record ID from <literal>Ext update</literal>.
-      It a record ID that <emphasis>we</emphasis> assign to the record
-    in question. If we do not 
-    assign one, the usual rules for match apply (recordId: from zebra.cfg).
+    The 3rd parameter - <literal>id1234</literal> here -
+      is the  <literal>recordIdOpaque</literal> package field.
    </para>
    <para>
     Actually, we should have a way to specify "no opaque record id" for
@@ -1498,10 +1681,11 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     </screen>
    </para>
    <para>
-    Let's delete the beast:
+     Let's delete the beast, using the same 
+     <literal>recordIdOpaque</literal> string parameter:
     <screen>
     <![CDATA[
-     Z> update delete 1
+     Z> update delete id1234
      No last record (update ignored)
      Z> update delete 1 esdd0006.grs
      Got extended services response
@@ -1530,8 +1714,14 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
      after each update session in order write your changes from the
      shadow to the life register space.
    </para>
+ </sect2>
+
+  
+ <sect2 id="administration-extended-services-yaz-php">
+  <title>Extended services from yaz-php</title>
+
    <para>
-    Extended services are also available from the YAZ client layer. An
+    Extended services are also available from the YAZ PHP client layer. An
     example of an YAZ-PHP extended service transaction is given here:
     <screen>
     <![CDATA[
@@ -1551,32 +1741,8 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
        echo "$error";
      ]]>
     </screen>  
-    The <literal>action</literal> parameter can be any of 
-    <literal>recordInsert</literal> (will fail if the record already exists),
-    <literal>recordReplace</literal> (will fail if the record does not exist),
-    <literal>recordDelete</literal> (will fail if the record does not
-       exist), and
-    <literal>specialUpdate</literal> (will insert or update the record
-       as needed).
-   </para>
-   <para>
-    If a record is inserted
-    using the action  <literal>recordInsert</literal> 
-    one can specify the optional
-    <literal>recordIdOpaque</literal> parameter, which is a
-    client-supplied, opaque record identifier. This identifier will
-    replace zebra's own automagic identifier generation.  
-   </para>
-   <para>
-    When using the action <literal>recordReplace</literal> or
-    <literal>recordDelete</literal>, one must specify the additional 
-    <literal>recordIdNumber</literal> parameter, which must be an
-    existing Zebra internal system ID number. When retrieving existing
-    records, the ID number is returned in the field
-    <literal>/*/id:idzebra/localnumber</literal> in the namespace
-    <literal>xmlns:id="http://www.indexdata.dk/zebra/"</literal>,
-    where it can be picked up for later record updates or deletes. 
-   </para>
+    </para>
+    </sect2>
  </sect1>
 
 
