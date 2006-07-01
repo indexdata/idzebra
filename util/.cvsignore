@@ -10,3 +10,4 @@ idzebra-config
 *.log
 tstflock
 my.LCK
+tstflock.out
