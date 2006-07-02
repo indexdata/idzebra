@@ -1,10 +1,10 @@
-## $Id: Makefile.am,v 1.21 2006-06-29 13:48:07 adam Exp $
+## $Id: Makefile.am,v 1.22 2006-07-02 21:22:17 adam Exp $
 
 lib_LTLIBRARIES = libidzebra-util.la
 
 noinst_PROGRAMS = passtest
 
-check_PROGRAMS = tstcharmap tstflock
+check_PROGRAMS = tstcharmap tstflock tstlockscope
 
 TESTS = $(check_PROGRAMS)
 
@@ -27,6 +27,7 @@ tstcharmap_SOURCES = tstcharmap.c
 
 tstflock_SOURCES = tstflock.c
 
+tstlockscope_SOURCES = tstlockscope.c
 
 clean-local:
 	-rm -rf *.LCK 

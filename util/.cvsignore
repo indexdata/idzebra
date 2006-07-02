@@ -8,6 +8,7 @@ idzebra-config
 *.lo
 *.la
 *.log
-tstflock
 my.LCK
+tstflock
 tstflock.out
+tstflockscope
