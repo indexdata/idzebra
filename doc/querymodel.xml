@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.21 2006-07-03 11:30:59 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.22 2006-07-03 11:45:01 marc Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -786,13 +786,35 @@
      <filename>tab/dan1.att</filename>,
      <filename>tab/explain.att</filename>, and
      <filename>tab/gils.att</filename>.
+     </para>
+    <para>
+      For example, some few  <literal>Bib-1</literal> use
+      attributes from the  <filename>tab/bib1.att</filename> are:
+      <screen>
+       att 1               Personal-name
+       att 2               Corporate-name
+       att 3               Conference-name
+       att 4               Title
+       ...
+       att 1009            Subject-name-personal
+       att 1010            Body-of-text
+       att 1011            Date/time-added-to-db
+       ...
+       att 1016            Any
+       att 1017            Server-choice
+       att 1018            Publisher
+       ...
+       att 1035            Anywhere
+       att 1036            Author-Title-Subject
+      </screen>
+     </para>
+    <para>
      New attribute sets can be added by adding new 
      <filename>tab/*.att</filename> configuration files, which need to
-     be sourced in the main configuration <filename>zebra.cfg</filename>.
+     be sourced in the main configuration <filename>zebra.cfg</filename>. 
      </para>
-
     <para>
-     In addition, Zebra allows the access of 
+      In addition, Zebra allows the access of 
      <emphasis>internal index names</emphasis> and <emphasis>dynamic
      XPath</emphasis> as use attributes; see
       <xref linkend="querymodel-use-string"/> and 
@@ -1551,7 +1573,6 @@
     <!--
     <sect3 id="querymodel-zebra-attr-estimation">
      <title>Zebra Extension Term Set Attribute (type 8)</title>
-    </sect3>
     <para>
      The Term Set feature is a facility that allows a search to store
      hitting terms in a "pseudo" resultset; thus a search (as usual) +
@@ -1571,6 +1592,7 @@
      The model has one serious flaw: we don't know the size of term
      set. Experimental. Do not use in production code.
     </warning>
+    </sect3>
     -->
 
 
@@ -1611,6 +1633,7 @@
     <para>
      Specifying a limit of <literal>0</literal> resuts in exact hit counts.
     </para>
+    <para>
      For example, we might be interested in exact hit count for a, but
      for b we allow hit count estimates for 1000 and higher. 
      <screen>
