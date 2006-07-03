@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.20 2006-06-30 14:48:04 heikki Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.21 2006-07-03 11:30:59 marc Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -227,7 +227,7 @@
          <td><literal>idxpath</literal></td>
          <td>Hardwired XPATH like attribute set, only available for
              indexing with the GRS record model</td>
-         <td>depreciated</td>
+         <td>deprecated</td>
         </tr>
         -->
        </tbody>
@@ -607,7 +607,8 @@
      </para>
      <para>
       Escaping PQF keywords and other non-parseable XPath constructs
-      with <literal>'{ }'</literal> to prevent syntax errors:
+      with <literal>'{ }'</literal> to prevent client-side PQF parsing
+      syntax errors:
       <screen>
        Z> find @attr {1=/root/first[@attr='danish']} content
        Z> find @attr {1=/record/@set} oai
@@ -994,7 +995,7 @@
         <tr>
          <td>Any position in field</td>
          <td>3</td>
-         <td>default</td>
+         <td>supported</td>
         </tr>
        </tbody>
      </table>
@@ -1002,9 +1003,9 @@
     <para>
       The position attribute values <literal>first in field (1)</literal>,
       and <literal>first in subfield(2)</literal> are unsupported.
-      Using them does not trigger an error, but silently defaults to 
-      <literal>any position in field (3)</literal>.
-      <!-- It should -->
+      Using them silently maps to 
+      <literal>any position in field (3)</literal>. A proper diagnostic
+      should have been issued.
       </para>
     </sect3>
     
@@ -1349,7 +1350,7 @@
         <tr>
          <td>Complete subfield</td>
          <td>2</td>
-         <td>depreciated</td>
+         <td>deprecated</td>
         </tr>
         <tr>
          <td>Complete field</td>
@@ -1535,6 +1536,19 @@
      </screen>
     </para>
     
+
+    <!--
+    Zebra Extension Term Set Attribute
+    From the manual text, I can not see what is the point with this feature.
+    I think it makes more sense when there are multiple terms in a query, or
+    something...
+    
+    We decided 2006-06-03 to disable this feature, as it is covered by
+    scan within a resultset. Better use ressources to upgrade this
+    feature for good performance.
+    -->
+
+    <!--
     <sect3 id="querymodel-zebra-attr-estimation">
      <title>Zebra Extension Term Set Attribute (type 8)</title>
     </sect3>
@@ -1557,6 +1571,8 @@
      The model has one serious flaw: we don't know the size of term
      set. Experimental. Do not use in production code.
     </warning>
+    -->
+
 
     <sect3 id="querymodel-zebra-attr-weight">
      <title>Zebra Extension Rank Weight Attribute (type 9)</title>
@@ -1578,17 +1594,23 @@
      <title>Zebra Extension Approximative Limit Attribute (type 9)</title>
     </sect3>
     <para>
-     Newer Zebra versions normally estimate hit count for every APT
+     Zebra  computes - unless otherwise configured -
+     the exact hit count for every APT
      (leaf) in the query tree. These hit counts are returned as part of
      the searchResult-1 facility in the binary encoded Z39.50 search
      response packages.
     </para>
     <para>
-     By setting a limit for the APT we can make Zebra turn into
-     approximate hit count when a certain hit count limit is
-     reached. A value of zero means exact hit count.
+     By setting an estimation limit size of the resultset of the APT
+     leaves, Zebra stoppes processing the result set when the limit
+     length is reached.
+     Hit counts under this limit are still precise, but hit counts over it
+     are estimated using the statistics gathered from the chopped
+     result set.
     </para>
     <para>
+     Specifying a limit of <literal>0</literal> resuts in exact hit counts.
+    </para>
      For example, we might be interested in exact hit count for a, but
      for b we allow hit count estimates for 1000 and higher. 
      <screen>
@@ -1598,7 +1620,15 @@
     <note>
      The estimated hit count facility makes searches faster, as one
      only needs to process large hit lists partially.
+     It is mostly used in huge databases, where you you want trade
+     exactness of hit counts against speed of execution. 
     </note>
+    <warning>
+     Do not use approximative hit count limits
+     in conjunction with relevance ranking, as re-sorting of the
+     result set obviosly only works when the entire result set has
+     been processed. 
+    </warning>
     <warning>
      This facility clashes with rank weight, because there all
      documents in the hit lists need to be examined for scoring and
@@ -1745,7 +1775,7 @@
      main Zebra configuration file <filename>zebra.cfg</filename>
      directive <literal>attset: idxpath.att</literal> must be enabled.
     </para>
-    <warning>The <literal>idxpath</literal> is depreciated, may not be
+    <warning>The <literal>idxpath</literal> is deprecated, may not be
      supported in future Zebra versions, and should definitely
      not be used in production code.
     </warning>
@@ -1778,31 +1808,31 @@
          <td>XPATH Begin</td>
          <td>1</td>
          <td>_XPATH_BEGIN</td>
-         <td>depreciated</td>
+         <td>deprecated</td>
         </tr>
         <tr>
          <td>XPATH End</td>
          <td>2</td>
          <td>_XPATH_END</td>
-         <td>depreciated</td>
+         <td>deprecated</td>
         </tr>
         <tr>
          <td>XPATH CData</td>
          <td>1016</td>
          <td>_XPATH_CDATA</td>
-         <td>depreciated</td>
+         <td>deprecated</td>
         </tr>
         <tr>
          <td>XPATH Attribute Name</td>
          <td>3</td>
          <td>_XPATH_ATTR_NAME</td>
-         <td>depreciated</td>
+         <td>deprecated</td>
         </tr>
         <tr>
          <td>XPATH Attribute CData</td>
          <td>1015</td>
          <td>_XPATH_ATTR_CDATA</td>
-         <td>depreciated</td>
+         <td>deprecated</td>
         </tr>
        </tbody>
      </table>
