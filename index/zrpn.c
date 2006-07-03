@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.222 2006-07-03 10:43:43 adam Exp $
+/* $Id: zrpn.c,v 1.223 2006-07-03 10:52:48 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -46,7 +46,7 @@ struct rpn_char_map_info
 static int log_level_set = 0;
 static int log_level_rpn = 0;
 
-
+#define TERMSET_DISABLE 1
 
 static const char **rpn_char_map_handler(void *vp, const char **from, int len)
 {
@@ -149,7 +149,6 @@ static void add_isam_p(const char *name, const char *info,
     assert(*info == sizeof(*p->isam_p_buf));
     memcpy(p->isam_p_buf + p->isam_p_indx, info+1, sizeof(*p->isam_p_buf));
 
-#if 1
     if (p->termset)
     {
         const char *db;
@@ -167,7 +166,6 @@ static void add_isam_p(const char *name, const char *info,
         resultSetAddTerm(p->zh, p->termset, name[len], db,
 			 index_name, term_tmp);
     }
-#endif
     (p->isam_p_indx)++;
 }
 
@@ -1325,7 +1323,6 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
     grep_info->zh = zh;
     grep_info->reg_type = reg_type;
     grep_info->termset = 0;
-
     if (!zapt)
         return ZEBRA_OK;
     attr_init_APT(&termset, zapt, 8);
@@ -1333,6 +1330,10 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
         attr_find_ex(&termset, NULL, &termset_value_string);
     if (termset_value_numeric != -1)
     {
+#if TERMSET_DISABLE
+        zebra_setError(zh, YAZ_BIB1_UNSUPP_SEARCH, "termset");
+        return ZEBRA_FAIL;
+#else
         char resname[32];
         const char *termset_name = 0;
         if (termset_value_numeric != -2)
@@ -1350,6 +1351,7 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
 	    zebra_setError(zh, YAZ_BIB1_ILLEGAL_RESULT_SET_NAME, termset_name);
             return ZEBRA_FAIL;
         }
+#endif
     }
     return ZEBRA_OK;
 }
