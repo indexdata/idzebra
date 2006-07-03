@@ -11,4 +11,4 @@ idzebra-config
 my.LCK
 tstflock
 tstflock.out
-tstflockscope
+tstlockscope
