@@ -1,4 +1,4 @@
-/* $Id: flock.c,v 1.14 2006-07-03 09:50:51 adam Exp $
+/* $Id: flock.c,v 1.15 2006-07-03 12:23:17 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -46,7 +46,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /** have this module (mutex) been initialized? */
 static int initialized = 0;
 
-/** whether fcntl locks are shared for all threads in a process */
+/** whether fcntl locks are shared for all threads in a process (POSIX) */
 static int posix_locks = 1;
 
 /** mutex for lock_list below */
@@ -361,23 +361,30 @@ int zebra_unlock(ZebraLockHandle h)
     return r;
 }
 
-#if HAVE_CONFSTR
-static int test_for_linuxthreads()
+/** \brief see if the fcntl locking is not POSIX 
+ *
+ * The default posix_locks=1 is assumed.. This function sets posix_locks
+ * to zero if linuxthreads is in use.
+ */
+static int check_for_linuxthreads()
 {
+#if __linux
+#ifdef _CS_GNU_LIBPTHREAD_VERSION
     char conf_buf[512];
-    size_t r;
-
-    r = confstr(_CS_GNU_LIBPTHREAD_VERSION, conf_buf, sizeof(conf_buf));
+    size_t r = confstr(_CS_GNU_LIBPTHREAD_VERSION, conf_buf, sizeof(conf_buf));
     if (r == 0)
     {
         yaz_log(YLOG_WARN|YLOG_ERRNO, "confstr failed");
         return -1;
     }
     if (strncmp(conf_buf, "linuxthreads", 12) == 0)
-        posix_locks = 0;
+        posix_locks = 0; /* Using linuxthreads.. */
+#else
+    posix_locks = 0; /* Old GLIBC on Linux. Assume linuxthreads */
+#endif
+#endif
     return 0;
 }
-#endif
 
 void zebra_flock_init()
 {
@@ -388,9 +395,7 @@ void zebra_flock_init()
 #if DEBUG_FLOCK
         log_level = YLOG_LOG|YLOG_FLUSH;
 #endif
-#if HAVE_CONFSTR
-        test_for_linuxthreads();
-#endif
+        check_for_linuxthreads();
         zebra_mutex_init(&lock_list_mutex);
         yaz_log(log_level, "posix_locks: %d", posix_locks);
     }
