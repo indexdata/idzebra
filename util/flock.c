@@ -1,4 +1,4 @@
-/* $Id: flock.c,v 1.15 2006-07-03 12:23:17 adam Exp $
+/* $Id: flock.c,v 1.16 2006-07-03 13:40:58 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -335,9 +335,15 @@ int zebra_unlock(ZebraLockHandle h)
 #else
     zebra_mutex_lock(&h->p->file_mutex);
     if (h->write_flag)
-        h->p->no_file_write_lock--;
+    {
+        if (h->p->no_file_write_lock > 0)
+            h->p->no_file_write_lock--;
+    }
     else
-        h->p->no_file_read_lock--;
+    {
+        if (h->p->no_file_read_lock > 0)
+            h->p->no_file_read_lock--;
+    }
     if (h->p->no_file_read_lock == 0 && h->p->no_file_write_lock == 0)
         do_unlock = 1;
     if (do_unlock)
