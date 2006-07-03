@@ -2,13 +2,15 @@
  * Copyright (C) 1995-2006, Index Data ApS
  * See the file LICENSE for details.
  *
- * $Id: tstflock.c,v 1.12 2006-06-30 15:10:29 adam Exp $
+ * $Id: tstflock.c,v 1.13 2006-07-03 21:19:13 adam Exp $
  */
 
 #include <assert.h>
 #include <stdlib.h>
 #include <yaz/test.h>
 #include <yaz/log.h>
+#include <sys/time.h>
+#include <time.h>
 
 #if HAVE_SYS_STAT_H
 #include <sys/stat.h>
@@ -41,6 +43,11 @@ static char *seqp = 0;
 
 #define NUM_THREADS 100
 
+#if YAZ_POSIX_THREADS
+pthread_cond_t sleep_cond = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t sleep_mutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
+
 int test_fd = 0;
 
 static void small_sleep()
@@ -48,7 +55,22 @@ static void small_sleep()
 #ifdef WIN32
     Sleep(50);
 #else
-    sleep(1);
+#if YAZ_POSIX_THREADS
+    struct timespec abstime;
+    struct timeval now;
+
+    gettimeofday(&now, 0);
+    abstime.tv_sec = now.tv_sec;
+    abstime.tv_nsec = 1000000 + now.tv_usec * 1000;
+    if (abstime.tv_nsec > 1000000000) /* 1s = 1e9 ns */
+    {
+        abstime.tv_nsec -= 1000000000;
+        abstime.tv_sec++;
+    }
+    pthread_mutex_lock(&sleep_mutex);
+    pthread_cond_timedwait(&sleep_cond, &sleep_mutex, &abstime);
+    pthread_mutex_unlock(&sleep_mutex);
+#endif
 #endif
 }
 
