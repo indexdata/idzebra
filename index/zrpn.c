@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.221 2006-06-23 11:21:38 adam Exp $
+/* $Id: zrpn.c,v 1.222 2006-07-03 10:43:43 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -45,6 +45,8 @@ struct rpn_char_map_info
 
 static int log_level_set = 0;
 static int log_level_rpn = 0;
+
+
 
 static const char **rpn_char_map_handler(void *vp, const char **from, int len)
 {
@@ -156,7 +158,7 @@ static void add_isam_p(const char *name, const char *info,
         const char *index_name;
         int len = key_SU_decode (&ord, (const unsigned char *) name);
         
-        zebra_term_untrans  (p->zh, p->reg_type, term_tmp, name+len+1);
+        zebra_term_untrans  (p->zh, p->reg_type, term_tmp, name+len);
         yaz_log(log_level_rpn, "grep: %d %c %s", ord, name[len], term_tmp);
         zebraExplain_lookup_ord(p->zh->reg->zei,
                                 ord, 0 /* index_type */, &db, &index_name);
