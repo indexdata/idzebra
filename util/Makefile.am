@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.23 2006-07-03 14:27:35 adam Exp $
+## $Id: Makefile.am,v 1.24 2006-07-03 15:14:06 marc Exp $
 
 noinst_LTLIBRARIES = libidzebra-util.la
 
@@ -33,3 +33,5 @@ clean-local:
 	-rm -rf *.LCK 
 	-rm -rf *.log 
 	-rm -rf *.mf 
+	-rm -rf tstflock.out
+
