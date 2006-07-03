@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.21 2006-04-25 12:26:26 marc Exp $ -->
+ <!-- $Id: examples.xml,v 1.22 2006-07-03 12:30:24 sondberg Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -175,7 +175,7 @@
    significantly because it ties searching semantics to the physical
    structure of the searched records.  You can't use the same search
    specification to search two databases if their internal
-   representations are different.  Consider an different taxonomy
+   representations are different.  Consider a different taxonomy
    database in which the records have taxon names specified
    inside a <literal>&lt;name&gt;</literal> element nested within a
    <literal>&lt;identification&gt;</literal> element
@@ -192,8 +192,8 @@
    said about implementation: in a given database, an access point
    might be implemented as an index, a path into physical records, an
    algorithm for interrogating relational tables or whatever works.
-   The only important thing point is that the semantics of an access
-   point are fixed and well defined.
+   The only important thing is that the semantics of an access
+   point is fixed and well defined.
   </para>
   <para>
    For convenience, access points are gathered into <firstterm>attribute
