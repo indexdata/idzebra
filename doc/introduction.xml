@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.37 2006-06-30 14:36:12 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.38 2006-07-03 12:00:03 sondberg Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -336,7 +336,7 @@
     <para>
      Reindex.net runs on GNU/Debian Linux with Zebra and Simpleserver
      from Index 
-     Data for bibliographic data. The reational database system
+     Data for bibliographic data. The relational database system
      Sybase 9 XML is used for
      administrative data. 
      Internally MARCXML is used for bibliographical records. Update
@@ -397,7 +397,7 @@
      is building a semantic-based peer-to-peer search engine. A
      consortium of eleven partners from six different European
      Community countries plus Switzerland and China contribute
-     expertise in a broad range of specialties including network
+     with expertise in a broad range of specialties including network
      topologies, routing algorithms, linguistic analysis and
      bioinformatics. 
     </para>
