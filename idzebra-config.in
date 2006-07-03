@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: idzebra-config.in,v 1.11 2006-06-29 14:10:33 adam Exp $
+# $Id: idzebra-config.in,v 1.12 2006-07-03 20:41:38 adam Exp $
 version=@VERSION@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
@@ -37,7 +37,6 @@ if test $# -eq 0; then
     echo_help=yes
 fi
 
-modules=""
 while test $# -gt 0; do
     case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
@@ -67,50 +66,33 @@ while test $# -gt 0; do
 	--tab)
 	    echo_tab=yes
 	    ;;
-	--modules)
-	    echo_modules=yes
-	    ;;
 	--lalibs)
 	    echo_lalibs=yes
 	    ;;
 	-*)
 	    echo_help=yes
 	    ;;
-	*)
-	    modules="$modules $1"
-	    ;;
+        *)
+            echo "$0: unsupported argument"
+            exit 1
+            ;;
+
     esac
     shift
 done
 
-IDZEBRALIB=""
-IDZEBRALALIB=""
 IDZEBRAINC="@YAZINC@"
 
-if test -z "$modules"; then
-    modules="api rset recctrl dict isams isamc isamb data1 bfile dfa util"
-fi
-
-for m in $modules; do
-    d=$m
-    if test "$m" = "api"; then
-        d="index"
-    fi
-    if test "$echo_source" = "yes"; then
-	IDZEBRALIB="$IDZEBRALIB -L${idzebra_build_root}/$d/.libs -lidzebra-$m"
-        IDZEBRALALIB="$IDZEBRALALIB ${idzebra_build_root}/$d/libidzebra-$m.la"
-    else
-	IDZEBRALIB="$IDZEBRALIB -lidzebra-$m"
-    fi
-done
-
 if test "$echo_source" = "yes"; then
+    IDZEBRALIB="-L${idzebra_build_root}/index/.libs -lidzebra${package_suffix}"
+    IDZEBRALALIB="${idzebra_build_root}/index/libidzebra${package_suffix}.la"
     IDZEBRALIB="$IDZEBRALIB $extralibs"
     IDZEBRALALIB="$IDZEBRALALIB $extralalibs"
     IDZEBRAINC="$IDZEBRAINC -I${idzebra_src_root}/include"
     IDZEBRATAB="${idzebra_src_root}/tab"
     IDZEBRAMOD="${idzebra_src_root}/recctrl"
 else
+    IDZEBRALIB="-lidzebra${package_suffix}"
     if test "$libdir" != "/usr/lib"; then
         IDZEBRALIB="-L${libdir} $IDZEBRALIB"
     fi
