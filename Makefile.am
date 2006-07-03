@@ -1,11 +1,11 @@
-## $Id: Makefile.am,v 1.25 2006-06-28 13:26:13 adam Exp $
+## $Id: Makefile.am,v 1.26 2006-07-03 14:27:00 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS=util bfile dfa dict isams isamb isamc rset data1 \
- recctrl tab index test examples include doc
+ tab index test examples include doc
 
 aclocaldir=$(datadir)/aclocal
 aclocal_DATA = m4/idzebra.m4

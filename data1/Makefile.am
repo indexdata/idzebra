@@ -1,6 +1,6 @@
-## $Id: Makefile.am,v 1.5 2006-06-29 13:47:52 adam Exp $
+## $Id: Makefile.am,v 1.6 2006-07-03 14:27:02 adam Exp $
 
-lib_LTLIBRARIES=libidzebra-data1.la
+noinst_LTLIBRARIES=libidzebra-data1.la
 
 libidzebra_data1_la_LDFLAGS=-version-info $(ZEBRALIBS_VERSION)
 libidzebra_data1_la_SOURCES = d1_handle.c d1_read.c d1_attset.c d1_tagset.c \

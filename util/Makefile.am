@@ -1,6 +1,6 @@
-## $Id: Makefile.am,v 1.22 2006-07-02 21:22:17 adam Exp $
+## $Id: Makefile.am,v 1.23 2006-07-03 14:27:35 adam Exp $
 
-lib_LTLIBRARIES = libidzebra-util.la
+noinst_LTLIBRARIES = libidzebra-util.la
 
 noinst_PROGRAMS = passtest
 

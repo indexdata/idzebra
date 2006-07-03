@@ -1,6 +1,6 @@
-## $Id: Makefile.am,v 1.15 2006-06-29 13:47:55 adam Exp $
+## $Id: Makefile.am,v 1.16 2006-07-03 14:27:04 adam Exp $
 
-lib_LTLIBRARIES = libidzebra-dict.la
+noinst_LTLIBRARIES = libidzebra-dict.la
 noinst_PROGRAMS = dicttest dictext
 check_PROGRAMS = scantest
 

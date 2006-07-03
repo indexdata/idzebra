@@ -1,6 +1,6 @@
-## $Id: Makefile.am,v 1.11 2006-06-29 13:47:58 adam Exp $
+## $Id: Makefile.am,v 1.12 2006-07-03 14:27:10 adam Exp $
 
-lib_LTLIBRARIES = libidzebra-isamb.la
+noinst_LTLIBRARIES = libidzebra-isamb.la
 
 check_PROGRAMS = tstisamb
 

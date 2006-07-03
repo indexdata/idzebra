@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.2 2006-04-27 20:40:42 marc Exp $
+# $Id: Makefile.am,v 1.3 2006-07-03 14:27:21 adam Exp $
 
 check_PROGRAMS = text grs.xml grs.marc
 
@@ -12,20 +12,7 @@ grs_marc_SOURCES = grs.marc.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 
-zebralibs = \
- ../../index/libidzebra-api.la \
- ../../rset/libidzebra-rset.la \
- ../../recctrl/libidzebra-recctrl.la \
- ../../dict/libidzebra-dict.la  \
- ../../isams/libidzebra-isams.la \
- ../../isamc/libidzebra-isamc.la \
- ../../isamb/libidzebra-isamb.la \
- ../../data1/libidzebra-data1.la \
- ../../bfile/libidzebra-bfile.la \
- ../../dfa/libidzebra-dfa.la \
- ../../util/libidzebra-util.la
-
-LDADD = ../api/libtestlib.a $(zebralibs) $(YAZLALIB)
+LDADD = ../api/libtestlib.a ../../$(main_zebralib) $(YAZLALIB)
 
 clean-local:
 	-rm -rf *.LCK 

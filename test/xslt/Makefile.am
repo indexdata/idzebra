@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.8 2006-04-27 20:40:44 marc Exp $
+# $Id: Makefile.am,v 1.9 2006-07-03 14:27:35 adam Exp $
 
 check_PROGRAMS = xslt1 xslt2 xslt3 xslt4
 TESTS = $(check_PROGRAMS)
@@ -14,18 +14,7 @@ xslt4_SOURCES = xslt4.c
 
 AM_CPPFLAGS = -I$(srcdir)/../api -I$(top_srcdir)/include $(YAZINC)
 
-zebralibs = \
- ../../index/libidzebra-api.la \
- ../../rset/libidzebra-rset.la \
- ../../recctrl/libidzebra-recctrl.la \
- ../../dict/libidzebra-dict.la  \
- ../../isams/libidzebra-isams.la \
- ../../isamc/libidzebra-isamc.la \
- ../../isamb/libidzebra-isamb.la \
- ../../data1/libidzebra-data1.la \
- ../../bfile/libidzebra-bfile.la \
- ../../dfa/libidzebra-dfa.la \
- ../../util/libidzebra-util.la
+zebralibs = ../../index/libidzebra-2.0.la 
 
 LDADD = ../api/libtestlib.a $(zebralibs) $(YAZLALIB)
 

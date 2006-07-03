@@ -1,4 +1,4 @@
-# $Id: usmarc.abs,v 1.1 2002-10-22 12:51:09 adam Exp $
+# $Id: usmarc.abs,v 1.2 2006-07-03 14:27:15 adam Exp $
 name usmarc
 reference USmarc
 attset bib1.att
@@ -8,6 +8,8 @@ marc usmarc.mar
 
 esetname B usmarc-b.est
 esetname F @
+
+all any
 
 # All 245 subfields mapped to title (word) and 
 # 245 subfield a mapped to tile (phrase).

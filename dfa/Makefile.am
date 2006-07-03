@@ -1,6 +1,6 @@
-## $Id: Makefile.am,v 1.9 2006-06-29 13:47:54 adam Exp $
+## $Id: Makefile.am,v 1.10 2006-07-03 14:27:03 adam Exp $
 
-lib_LTLIBRARIES = libidzebra-dfa.la
+noinst_LTLIBRARIES = libidzebra-dfa.la
 
 noinst_PROGRAMS = agrep lexer grepper
 

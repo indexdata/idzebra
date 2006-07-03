@@ -1,6 +1,6 @@
-## $Id: Makefile.am,v 1.6 2006-06-29 13:48:02 adam Exp $
+## $Id: Makefile.am,v 1.7 2006-07-03 14:27:12 adam Exp $
 
-lib_LTLIBRARIES = libidzebra-isams.la
+noinst_LTLIBRARIES = libidzebra-isams.la
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC)
 

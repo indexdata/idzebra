@@ -1,11 +1,75 @@
-## $Id: Makefile.am,v 1.47 2006-06-29 13:47:57 adam Exp $
+## $Id: Makefile.am,v 1.48 2006-07-03 14:27:09 adam Exp $
+
+aux_libs = \
+ ../rset/libidzebra-rset.la \
+ ../dict/libidzebra-dict.la  \
+ ../isams/libidzebra-isams.la \
+ ../isamc/libidzebra-isamc.la \
+ ../isamb/libidzebra-isamb.la \
+ ../data1/libidzebra-data1.la \
+ ../bfile/libidzebra-bfile.la \
+ ../dfa/libidzebra-dfa.la \
+ ../util/libidzebra-util.la
+
+# Should match the main_zebralib in configure.ac
+# Should also match the libidzebra_..._la lines..!
+zebralib = libidzebra-2.0.la
 
 noinst_PROGRAMS = apitest kdump zebrash
 
-lib_LTLIBRARIES = libidzebra-api.la
+modlibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)/modules
 
-libidzebra_api_la_LDFLAGS=-version-info $(ZEBRALIBS_VERSION)
-libidzebra_api_la_SOURCES = \
+# The shared modules 
+mod_grs_regx_la_SOURCES = regxread.c
+mod_grs_regx_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
+mod_grs_regx_la_LADD = $(TCL_LIB)
+mod_grs_regx_la_LIBADD = $(zebralib) $(mod_grs_regx_la_LADD)
+
+mod_grs_xml_la_SOURCES = xmlread.c
+mod_grs_xml_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
+mod_grs_xml_la_LADD = $(EXPAT_LIBS)
+mod_grs_xml_la_LIBADD = $(zebralib) $(mod_grs_xml_la_LADD)
+
+mod_grs_marc_la_SOURCES = marcread.c marcomp.c marcomp.h inline.c inline.h
+mod_grs_marc_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
+mod_grs_marc_la_LADD =
+mod_grs_marc_la_LIBADD = $(zebralib) $(mod_grs_marc_la_LADD)
+
+mod_safari_la_SOURCES = safari.c
+mod_safari_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
+mod_safari_la_LADD =
+mod_safari_la_LIBADD = $(zebralib) $(mod_safari_la_LADD)
+
+mod_alvis_la_SOURCES = alvis.c
+mod_alvis_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
+mod_alvis_la_LADD = $(XSLT_LIBS)
+mod_alvis_la_LIBADD = $(zebralib) $(mod_alvis_la_LADD)
+
+modlib_LTLIBRARIES = $(SHARED_MODULE_LA) 
+EXTRA_LTLIBRARIES = \
+	mod-grs-regx.la \
+	mod-grs-xml.la \
+	mod-grs-marc.la  \
+	mod-safari.la \
+	mod-alvis.la
+
+EXTRA_libidzebra_2_0_la_SOURCES = \
+ $(mod_grs_regx_la_SOURCES) \
+ $(mod_grs_xml_la_SOURCES) \
+ $(mod_grs_marc_la_SOURCES) \
+ $(mod_safari_la_SOURCES) \
+ $(mod_alvis_la_SOURCES)
+
+lib_LTLIBRARIES = $(zebralib)
+
+libidzebra_2_0_la_DEPENDENCIES = $(STATIC_MODULE_OBJ)
+libidzebra_2_0_la_LIBADD = $(STATIC_MODULE_OBJ)  $(aux_libs) $(STATIC_MODULE_LADD)
+libidzebra_2_0_la_LDFLAGS=-export-dynamic -version-info $(ZEBRALIBS_VERSION)
+libidzebra_2_0_la_SOURCES = \
+  recctrl.c \
+  recgrs.c \
+  sgmlread.c \
+  rectext.c \
   api_swig.c attribute.c \
   compact.c \
   dir.c dirs.c \
@@ -20,21 +84,7 @@ libidzebra_api_la_SOURCES = \
   update_path.c update_file.c trunc.c \
   zebraapi.c zinfo.c zinfo.h zserver.h zsets.c zrpn.c
 
-
 bin_PROGRAMS = zebraidx zebrasrv
-
-zebralibs = \
- libidzebra-api.la \
- ../rset/libidzebra-rset.la \
- ../recctrl/libidzebra-recctrl.la \
- ../dict/libidzebra-dict.la  \
- ../isams/libidzebra-isams.la \
- ../isamc/libidzebra-isamc.la \
- ../isamb/libidzebra-isamb.la \
- ../data1/libidzebra-data1.la \
- ../bfile/libidzebra-bfile.la \
- ../dfa/libidzebra-dfa.la \
- ../util/libidzebra-util.la
 
 zebraidx_SOURCES = main.c
 zebrasrv_SOURCES = zserver.c
@@ -43,11 +93,12 @@ apitest_SOURCES = apitest.c
 kdump_SOURCES = kdump.c
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) \
-  -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\"
+  -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\" \
+  $(TCL_INCLUDE) $(XSLT_FLAGS) $(XSLT_CFLAGS)
 
-zebrash_LDADD= $(zebralibs) $(YAZLALIB) $(READLINE_LIBS)
+LDADD = $(zebralib) $(YAZLALIB) 
 
-LDADD = $(zebralibs) $(YAZLALIB)
+zebrash_LDADD= $(LDADD) $(READLINE_LIBS)
 
 install-exec-hook:
 	cd $(DESTDIR)$(bindir); for p in $(bin_PROGRAMS); do \

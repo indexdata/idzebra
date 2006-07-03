@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.36 2006-05-19 13:49:35 adam Exp $
+# $Id: Makefile.am,v 1.37 2006-07-03 14:27:15 adam Exp $
 
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c 
@@ -34,18 +34,7 @@ safari1_SOURCES = safari1.c testlib.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 
-zebralibs = \
- ../../index/libidzebra-api.la \
- ../../rset/libidzebra-rset.la \
- ../../recctrl/libidzebra-recctrl.la \
- ../../dict/libidzebra-dict.la  \
- ../../isams/libidzebra-isams.la \
- ../../isamc/libidzebra-isamc.la \
- ../../isamb/libidzebra-isamb.la \
- ../../data1/libidzebra-data1.la \
- ../../bfile/libidzebra-bfile.la \
- ../../dfa/libidzebra-dfa.la \
- ../../util/libidzebra-util.la
+zebralibs = ../../$(main_zebralib)
 
 LDADD = libtestlib.a $(zebralibs) $(YAZLALIB)
 

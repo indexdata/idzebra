@@ -1,25 +1,11 @@
-# $Id: Makefile.am,v 1.5 2005-03-30 09:25:25 adam Exp $
+# $Id: Makefile.am,v 1.6 2006-07-03 14:27:18 adam Exp $
 
 check_PROGRAMS = tstcodec
 
 TESTS = $(check_PROGRAMS)
 
-zebralibs = \
- ../../index/libidzebra-api.la \
- ../../rset/libidzebra-rset.la \
- ../../recctrl/libidzebra-recctrl.la \
- ../../dict/libidzebra-dict.la  \
- ../../isams/libidzebra-isams.la \
- ../../isamc/libidzebra-isamc.la \
- ../../isamb/libidzebra-isamb.la \
- ../../data1/libidzebra-data1.la \
- ../../bfile/libidzebra-bfile.la \
- ../../dfa/libidzebra-dfa.la \
- ../../util/libidzebra-util.la
-
 tstcodec_SOURCES = tstcodec.c
-
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 
-LDADD = $(zebralibs) $(YAZLALIB)
+LDADD = ../../$(main_zebralib) $(YAZLALIB)
