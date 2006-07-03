@@ -1,12 +1,12 @@
 <chapter id="quick-start">
- <!-- $Id: quickstart.xml,v 1.10 2006-04-25 12:26:26 marc Exp $ -->
+ <!-- $Id: quickstart.xml,v 1.11 2006-07-03 12:16:31 sondberg Exp $ -->
  <title>Quick Start </title>
 
  <para>
   <!-- ### ulink to GILS profile: what's the URL? -->
   In this section, we will test the system by indexing a small set of
   sample GILS records that are included with the Zebra distribution,
-  running Zebra a server against the newly created database, and
+  running a Zebra server against the newly created database, and
   searching the indexes with a client that connects to that server.
  </para>
  <para>
