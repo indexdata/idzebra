@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.21 2006-06-06 21:01:31 adam Exp $
+/* $Id: rsmultiandor.c,v 1.22 2006-07-04 10:25:22 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -21,8 +21,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 
-/*
- * This module implements the rsmulti_or and rsmulti_and result sets
+/**
+ * \file rsmultiandor.c
+ * \brief This module implements the rsmulti_or and rsmulti_and result sets
  *
  * rsmultior is based on a heap, from which we find the next hit.
  *
@@ -164,8 +165,10 @@ static int heap_empty(HEAP h)
     return ( 0==h->heapnum );
 }
 
+/** \brief deletes the first item in the heap, and balances the rest 
+ */
 static void heap_delete (HEAP h)
-{ /* deletes the first item in the heap, and balances the rest */
+{
     int cur = 1, child = 2;
     h->heap[1] = 0; /* been deleted */
     heap_swap (h, 1, h->heapnum--);
@@ -183,9 +186,12 @@ static void heap_delete (HEAP h)
     }
 }
 
+/** \brief puts item into heap.
+    The heap root element has changed value (to bigger) 
+    Swap downwards until the heap is ordered again 
+*/
 static void heap_balance (HEAP h)
-{ /* The heap root element has changed value (to bigger) */
-  /* swap downwards until the heap is ordered again */
+{
     int cur = 1, child = 2;
     while (child <= h->heapnum) {
         if (child < h->heapnum && heap_cmp(h,child,1+child)>0 )
@@ -245,10 +251,12 @@ static void heap_destroy (HEAP h)
     /* nothing to delete, all is nmem'd, and will go away in due time */
 }
 
+/** \brief compare and items for quicksort
+    used in qsort to get the multi-and args in optimal order
+    that is, those with fewest occurrences first
+*/
 int compare_ands(const void *x, const void *y)
-{ /* used in qsort to get the multi-and args in optimal order */
-  /* that is, those with fewest occurrences first */
-    const struct heap_item *hx = x;
+{   const struct heap_item *hx = x;
     const struct heap_item *hy = y;
     double cur, totx, toty;
     rset_pos(hx->fd, &cur, &totx);
@@ -259,8 +267,6 @@ int compare_ands(const void *x, const void *y)
 	return -1;
     return 0;  /* return totx - toty, except for overflows and rounding */
 }
-
-/* Creating and deleting rsets ***********************/
 
 static RSET rsmulti_andor_create(NMEM nmem,
 				 struct rset_key_control *kcontrol, 
@@ -300,8 +306,6 @@ static void r_delete (RSET ct)
 {
 }
 
-/* Opening and closing fd's on them *********************/
-
 static RSFD r_open_andor (RSET ct, int flag, int is_and)
 {
     RSFD rfd;
@@ -322,7 +326,8 @@ static RSFD r_open_andor (RSET ct, int flag, int is_and)
         assert(p->items);
         /* all other pointers shouls already be allocated, in right sizes! */
     }
-    else {
+    else 
+    {
         p = (struct rfd_private *) nmem_malloc (ct->nmem,sizeof(*p));
         rfd->priv = p;
         p->h = 0;
@@ -352,7 +357,8 @@ static RSFD r_open_andor (RSET ct, int flag, int is_and)
             p->tailbits[i] = 0;
         }
         qsort(p->items, ct->no_children, sizeof(p->items[0]), compare_ands);
-    } else
+    } 
+    else
     { /* fill the heap for ORing */
         for (i = 0; i<ct->no_children; i++){
             p->items[i].fd = rset_open(ct->children[i],RSETF_READ);
@@ -386,8 +392,6 @@ static void r_close (RSFD rfd)
             rset_close(p->items[i].fd);
 }
 
-
-
 static int r_forward_or(RSFD rfd, void *buf, 
                         TERMID *term, const void *untilbuf)
 { /* while heap head behind untilbuf, forward it and rebalance heap */
@@ -412,6 +416,13 @@ static int r_forward_or(RSFD rfd, void *buf,
 }
 
 
+/** \brief reads one item key from an 'or' set
+    \param rfd set handle
+    \param buf resulting item buffer
+    \param term resulting term
+    \retval 0 EOF
+    \retval 1 item could be read
+*/
 static int r_read_or (RSFD rfd, void *buf, TERMID *term)
 {
     RSET rset = rfd->rset;
@@ -441,16 +452,24 @@ static int r_read_or (RSFD rfd, void *buf, TERMID *term)
 
 }
 
+/** \brief reads one item key from an 'and' set
+    \param rfd set handle
+    \param buf resulting item buffer
+    \param term resulting term
+    \retval 0 EOF
+    \retval 1 item could be read
+    
+    Has to return all hits where each item points to the
+    same sysno (scope), in order. Keep an extra key (hitkey)
+    as long as all records do not point to hitkey, forward
+    them, and update hitkey to be the highest seen so far.
+    (if any item eof's, mark eof, and return 0 thereafter)
+    Once a hit has been found, scan all items for the smallest
+    value. Mark all as being in the tail. Read next from that
+    item, and if not in the same record, clear its tail bit
+*/
 static int r_read_and (RSFD rfd, void *buf, TERMID *term)
-{ /* Has to return all hits where each item points to the */
-  /* same sysno (scope), in order. Keep an extra key (hitkey) */
-  /* as long as all records do not point to hitkey, forward */
-  /* them, and update hitkey to be the highest seen so far. */
-  /* (if any item eof's, mark eof, and return 0 thereafter) */
-  /* Once a hit has been found, scan all items for the smallest */
-  /* value. Mark all as being in the tail. Read next from that */
-  /* item, and if not in the same record, clear its tail bit */
-    struct rfd_private *p = rfd->priv;
+{   struct rfd_private *p = rfd->priv;
     RSET ct = rfd->rset;
     const struct rset_key_control *kctrl = ct->keycontrol;
     int i, mintail;
@@ -508,7 +527,8 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
                     return 0;
                 }
                 i = 0; /* start frowarding from scratch */
-            } else if (cmp>=rfd->rset->scope)
+            } 
+            else if (cmp>=rfd->rset->scope)
             { /* [0] was ahead, forward i */
                 if (!rset_forward(p->items[i].fd, p->items[i].buf, 
                                   &p->items[i].term, p->items[0].buf))
@@ -516,7 +536,8 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
                     p->eof = 1; /* game over */
                     return 0;
                 }
-            } else
+            } 
+            else
                 i++;
         } /* while i */
         /* if we get this far, all rsets are now within +- scope of [0] */

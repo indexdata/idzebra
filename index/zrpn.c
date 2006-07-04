@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.223 2006-07-03 10:52:48 adam Exp $
+/* $Id: zrpn.c,v 1.224 2006-07-04 10:25:21 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1359,6 +1359,7 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
 /**
   \brief Create result set(s) for list of terms
   \param zh Zebra Handle
+  \param zapt Attributes Plust Term (RPN leaf)
   \param termz term as used in query but converted to UTF-8
   \param attributeSet default attribute set
   \param stream memory for result
@@ -1368,9 +1369,9 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
   \param xpath_use use attribute for X-Path (-1 for no X-path)
   \param num_bases number of databases
   \param basenames array of databases
-  \param rset_mem memory for result sets
+  \param rset_nmem memory for result sets
   \param result_sets output result set for each term in list (output)
-  \param number number of output result sets
+  \param num_result_sets number of output result sets
   \param kc rset key control to be used for created result sets
 */
 static ZEBRA_RES term_list_trunc(ZebraHandle zh,
