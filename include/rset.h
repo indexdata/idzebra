@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.59 2006-06-06 21:01:30 adam Exp $
+/* $Id: rset.h,v 1.60 2006-07-04 14:10:28 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -133,6 +133,7 @@ struct rset_key_control {
     int (*cmp)(const void *p1, const void *p2);
     void (*key_logdump_txt) (int logmask, const void *p, const char *txt);
     zint (*getseq)(const void *p);
+    zint (*get_segment)(const void *p);
     int (*filter_func)(const void *p, void *data);
     void *filter_data;
     void (*inc)(struct rset_key_control *kc);

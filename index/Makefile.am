@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.48 2006-07-03 14:27:09 adam Exp $
+## $Id: Makefile.am,v 1.49 2006-07-04 14:10:29 adam Exp $
 
 aux_libs = \
  ../rset/libidzebra-rset.la \
@@ -62,7 +62,7 @@ EXTRA_libidzebra_2_0_la_SOURCES = \
 
 lib_LTLIBRARIES = $(zebralib)
 
-libidzebra_2_0_la_DEPENDENCIES = $(STATIC_MODULE_OBJ)
+libidzebra_2_0_la_DEPENDENCIES = $(STATIC_MODULE_OBJ) $(aux_libs)
 libidzebra_2_0_la_LIBADD = $(STATIC_MODULE_OBJ)  $(aux_libs) $(STATIC_MODULE_LADD)
 libidzebra_2_0_la_LDFLAGS=-export-dynamic -version-info $(ZEBRALIBS_VERSION)
 libidzebra_2_0_la_SOURCES = \

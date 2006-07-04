@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.11 2006-05-10 08:13:35 adam Exp $
+/* $Id: safari1.c,v 1.12 2006-07-04 14:10:32 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -30,28 +30,42 @@ const char *myrec[] =
     /* chunk owner seq idx term */
     "00024338 125060 1 any the\n"
     "00024338 125060 2 any art\n"
-    "00024338 125060 3 any mand\n",
-
+    "00024338 125060 3 any mand\n"
+    ,
     "5678\n"  /* other record - same owner id */
     "00024339 125060 1 any den\n"
     "00024339 125060 2 any gamle\n"
-    "00024339 125060 3 any mand\n",
-
+    "00024339 125060 3 any mand\n"
+    ,
     "5678\n"  /* same record chunk id as before .. */
     "00024339 125060 1 any the\n"
     "00024339 125060 2 any gamle\n"
-    "00024339 125060 3 any mand\n",
-
+    "00024339 125060 3 any mand\n"
+    ,
     "1000\n"  /* separate record */
     "00024339 125061 1 any the\n"
     "00024339 125061 2 any gamle\n"
-    "00024339 125061 3 any mand\n",
-    
+    "00024339 125061 3 any mand\n"
+    ,
     "1001\n"  /* separate record */
     "00024340 125062 1 any the\n"
     "00024340 125062 1 any the\n" /* DUP KEY, bug #432 */
     "00024340 125062 2 any old\n"
-    "00024340 125062 3 any mand\n",
+    "00024340 125062 3 any mand\n"
+    ,
+    "1002\n"  /* segment testing record */
+    "00024341 125062 1 title a\n"
+    "00024341 125062 2 title b\n"
+
+    "00024341 125062 1024 title b\n"
+    "00024341 125062 1025 title c\n"
+    "00024341 125062 1026 title d\n"
+    "00024341 125062 1027 title e\n"
+    "00024341 125062 1028 title f\n"
+
+    "00024341 125062 2048 title g\n"
+    "00024341 125062 2049 title c\n"
+    ,
 
     0
 };
@@ -106,6 +120,23 @@ static void tst(int argc, char **argv)
     /* no limit */
     zebra_set_limit(zh, 1, 0);
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any mand", 3));
+
+    /* test segments */
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title a", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title b", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title c", 1));
+
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and a b", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and a c", 1));
+    
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and c d", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and b f", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and f g", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and g f", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and d g", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and g c", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and c g", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and c c", 1));
 
     YAZ_CHECK(tl_close_down(zh, zs));
 }

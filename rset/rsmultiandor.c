@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.22 2006-07-04 10:25:22 adam Exp $
+/* $Id: rsmultiandor.c,v 1.23 2006-07-04 14:10:31 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -120,6 +120,8 @@ struct rfd_private {
     zint hits; /* returned so far */
     int eof; /* seen the end of it */
     int tailcount; /* how many items are tailing */
+    zint segment;
+    int skip;
     char *tailbits;
 };
 
@@ -472,22 +474,39 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
 {   struct rfd_private *p = rfd->priv;
     RSET ct = rfd->rset;
     const struct rset_key_control *kctrl = ct->keycontrol;
-    int i, mintail;
-    int cmp;
+    int i;
 
     while (1) {
         if (p->tailcount) 
         { /* we are tailing, find lowest tail and return it */
-            mintail = 0;
-            while ((mintail<ct->no_children) && !p->tailbits[mintail])
-                mintail++; /* first tail */
-            for (i = mintail+1; i<ct->no_children; i++)
+            int mintail = -1;
+            int cmp;
+                 
+            for (i = 0; i<ct->no_children; i++)
             {
                 if (p->tailbits[i])
                 {
-                    cmp=(*kctrl->cmp)(p->items[i].buf,p->items[mintail].buf);
-                    if (cmp<0) 
+                    if (mintail >= 0)
+                        cmp = (*kctrl->cmp)
+                            (p->items[i].buf, p->items[mintail].buf);
+                    else
+                        cmp = -1;
+                    if (cmp < 0)
                         mintail = i;
+
+                    if (kctrl->get_segment)
+                    {
+                        /* segments enabled */
+                        
+                        zint segment =  kctrl->get_segment(p->items[i].buf);
+                        /* store segment if not stored already */
+                        if (!p->segment && segment)
+                            p->segment = segment;
+                        
+                        /* skip rest entirely if segments don't match */
+                        if (p->segment && segment && p->segment != segment)
+                            p->skip = 1;
+                    }
                 }
             }
             /* return the lowest tail */
@@ -500,15 +519,19 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
                 p->eof = 1; /* game over, once tails have been returned */
                 p->tailbits[mintail] = 0; 
                 (p->tailcount)--;
-		(p->hits)++;
-                return 1;
             }
-            /* still a tail? */
-            cmp = (*kctrl->cmp)(p->items[mintail].buf,buf);
-            if (cmp >= rfd->rset->scope){
-                p->tailbits[mintail] = 0;
-                (p->tailcount)--;
+            else
+            {
+                /* still a tail? */
+                cmp = (*kctrl->cmp)(p->items[mintail].buf,buf);
+                if (cmp >= rfd->rset->scope)
+                {
+                    p->tailbits[mintail] = 0;
+                    (p->tailcount)--;
+                }
             }
+            if (p->skip)
+                continue;  /* skip again.. eventually tailcount will be 0 */
 	    (p->hits)++;
             return 1;
         } 
@@ -517,8 +540,9 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
         if (p->eof)
             return 0; /* nothing more to see */
         i = 1; /* assume items[0] is highest up */
-        while (i<ct->no_children) {
-            cmp = (*kctrl->cmp)(p->items[0].buf, p->items[i].buf);
+        while (i < ct->no_children) 
+        {
+            int cmp = (*kctrl->cmp)(p->items[0].buf, p->items[i].buf);
             if (cmp <= -rfd->rset->scope) { /* [0] was behind, forward it */
                 if (!rset_forward(p->items[0].fd, p->items[0].buf, 
                                   &p->items[0].term, p->items[i].buf))
@@ -526,7 +550,7 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
                     p->eof = 1; /* game over */
                     return 0;
                 }
-                i = 0; /* start frowarding from scratch */
+                i = 0; /* start forwarding from scratch */
             } 
             else if (cmp>=rfd->rset->scope)
             { /* [0] was ahead, forward i */
@@ -543,9 +567,11 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
         /* if we get this far, all rsets are now within +- scope of [0] */
         /* ergo, we have a hit. Mark them all as tailing, and let the */
         /* upper 'if' return the hits in right order */
-        for (i = 0; i<ct->no_children; i++)
+        for (i = 0; i < ct->no_children; i++)
             p->tailbits[i] = 1;
         p->tailcount = ct->no_children;
+        p->segment = 0;
+        p->skip = 0;
     } /* while 1 */
 }
 

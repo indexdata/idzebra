@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.169 2006-06-23 11:21:38 adam Exp $
+/* $Id: index.h,v 1.170 2006-07-04 14:10:29 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -104,6 +104,7 @@ int key_compare (const void *p1, const void *p2);
 void key_init(struct it_key *k);
 char *key_print_it (const void *p, char *buf);
 zint key_get_seq (const void *p);
+zint key_get_segment (const void *p);
 int key_compare_it (const void *p1, const void *p2);
 int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);

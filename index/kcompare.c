@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.58 2006-05-10 08:13:21 adam Exp $
+/* $Id: kcompare.c,v 1.59 2006-07-04 14:10:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -116,6 +116,13 @@ zint key_get_seq(const void *p)
     struct it_key k;
     memcpy (&k, p, sizeof(k));
     return k.mem[k.len-1];
+}
+
+zint key_get_segment(const void *p)
+{
+    struct it_key k;
+    memcpy (&k, p, sizeof(k));
+    return k.mem[k.len-1] / KEY_SEGMENT_SIZE;
 }
 
 int key_qsort_compare (const void *p1, const void *p2)

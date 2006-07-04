@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.24 2006-06-13 20:03:33 adam Exp $
+/* $Id: recctrl.h,v 1.25 2006-07-04 14:10:29 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -168,6 +168,8 @@ YAZ_EXPORT
 RecType recType_byName(RecTypes rts, Res res, const char *name,
 		       void **clientDataP);
 
+
+#define KEY_SEGMENT_SIZE 1024
 
 YAZ_END_CDECL
 

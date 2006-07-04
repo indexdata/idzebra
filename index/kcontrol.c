@@ -1,4 +1,4 @@
-/* $Id: kcontrol.c,v 1.2 2006-05-10 08:13:21 adam Exp $
+/* $Id: kcontrol.c,v 1.3 2006-07-04 14:10:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -53,8 +53,10 @@ static void my_dec(struct rset_key_control *kc)
     }
 }
 
+
 struct rset_key_control *zebra_key_control_create(ZebraHandle zh)
 {
+    const char *res_val;
     struct rset_key_control *kc = xmalloc(sizeof(*kc));
     struct context_control *cp = xmalloc(sizeof(*cp));
 
@@ -64,6 +66,12 @@ struct rset_key_control *zebra_key_control_create(ZebraHandle zh)
     kc->cmp = key_compare_it;
     kc->key_logdump_txt = key_logdump_txt;
     kc->getseq = key_get_seq;
+    res_val = zebra_get_resource(zh, "segment", 0);
+    kc->get_segment = 0;
+    if (res_val && atoi(res_val))
+    {
+        kc->get_segment = key_get_segment;
+    }
     zebra_limit_for_rset(zh->m_limit, 
 			 &kc->filter_func,
 			 &cp->filter_destroy,
