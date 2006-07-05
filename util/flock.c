@@ -1,4 +1,4 @@
-/* $Id: flock.c,v 1.16 2006-07-03 13:40:58 adam Exp $
+/* $Id: flock.c,v 1.17 2006-07-05 12:02:12 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -39,9 +39,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebra-lock.h>
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
-
-/** whether this module should debug */
-#define DEBUG_FLOCK 1
 
 /** have this module (mutex) been initialized? */
 static int initialized = 0;
@@ -327,7 +324,6 @@ int zebra_lock_r(ZebraLockHandle h)
 int zebra_unlock(ZebraLockHandle h)
 {
     int r = 0;
-    int do_unlock = 0;
     yaz_log(log_level, "zebra_unlock fd=%d p=%p fname=%s begin",
             h->p->fd, h, h->p->fname);
 #ifdef WIN32
@@ -345,13 +341,13 @@ int zebra_unlock(ZebraLockHandle h)
             h->p->no_file_read_lock--;
     }
     if (h->p->no_file_read_lock == 0 && h->p->no_file_write_lock == 0)
-        do_unlock = 1;
-    if (do_unlock)
         r = unixLock(h->p->fd, F_UNLCK, F_SETLKW);
     else
     {
+        r = 0;
         assert(posix_locks);
     }
+
     zebra_mutex_unlock(&h->p->file_mutex);
 
     if (posix_locks)
@@ -398,14 +394,11 @@ void zebra_flock_init()
     {
         initialized = 1;
         log_level = yaz_log_module_level("flock");
-#if DEBUG_FLOCK
-        log_level = YLOG_LOG|YLOG_FLUSH;
-#endif
+        yaz_log(log_level, "zebra_flock_init");
         check_for_linuxthreads();
         zebra_mutex_init(&lock_list_mutex);
         yaz_log(log_level, "posix_locks: %d", posix_locks);
     }
-    yaz_log(log_level, "zebra_flock_init");
 }
 
 /*

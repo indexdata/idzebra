@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2006, Index Data ApS
  * See the file LICENSE for details.
  *
- * $Id: tstflock.c,v 1.13 2006-07-03 21:19:13 adam Exp $
+ * $Id: tstflock.c,v 1.14 2006-07-05 12:02:12 adam Exp $
  */
 
 #include <assert.h>
@@ -187,12 +187,9 @@ static void tst()
         }
     }
 
-#if 0
     tst_thread(6, 0);  /* read locks */
-#endif
-#if 1
+
     tst_thread(20, 2); /* random locks */
-#endif
 }
 
 void fork_tst()
@@ -221,7 +218,6 @@ void fork_tst()
 #endif
 }
 
-
 int main(int argc, char **argv)
 {
     char logname[220];
@@ -231,6 +227,9 @@ int main(int argc, char **argv)
     yaz_log_init_file(logname);
 
     yaz_log_time_format("%s:%!");
+
+    /* ensure the flock system logs in our test */
+    yaz_log_init_level(yaz_log_mask_str("flock"));
 
     zebra_flock_init();
 
