@@ -2,14 +2,16 @@
  * Copyright (C) 1995-2006, Index Data ApS
  * See the file LICENSE for details.
  *
- * $Id: tstflock.c,v 1.14 2006-07-05 12:02:12 adam Exp $
+ * $Id: tstflock.c,v 1.15 2006-07-05 12:33:38 adam Exp $
  */
 
 #include <assert.h>
 #include <stdlib.h>
 #include <yaz/test.h>
 #include <yaz/log.h>
+#if HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
 #include <time.h>
 
 #if HAVE_SYS_STAT_H
@@ -26,6 +28,10 @@
 #endif
 
 #include <fcntl.h>
+
+#ifdef WIN32
+#include <io.h>
+#endif
 
 #if YAZ_POSIX_THREADS
 #include <pthread.h>
@@ -53,7 +59,7 @@ int test_fd = 0;
 static void small_sleep()
 {
 #ifdef WIN32
-    Sleep(50);
+    Sleep(2);
 #else
 #if YAZ_POSIX_THREADS
     struct timespec abstime;
@@ -226,7 +232,8 @@ int main(int argc, char **argv)
     sprintf(logname, "%.200s.log", argv[0]);
     yaz_log_init_file(logname);
 
-    yaz_log_time_format("%s:%!");
+    /* log time + thread id (%!) */
+    yaz_log_time_format("%c:%!");
 
     /* ensure the flock system logs in our test */
     yaz_log_init_level(yaz_log_mask_str("flock"));
