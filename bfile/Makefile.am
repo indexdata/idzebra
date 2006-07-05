@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.9 2006-07-03 14:27:01 adam Exp $ 
+## $Id: Makefile.am,v 1.10 2006-07-05 15:03:44 adam Exp $ 
 
 noinst_LTLIBRARIES = libidzebra-bfile.la
 
@@ -10,7 +10,6 @@ tstbfile1_SOURCES = tstbfile1.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 
-libidzebra_bfile_la_LDFLAGS=-version-info $(ZEBRALIBS_VERSION)
 libidzebra_bfile_la_SOURCES = bfile.c mfile.c cfile.c commit.c cfile.h mfile.h
 
 LDADD = libidzebra-bfile.la ../util/libidzebra-util.la $(YAZLALIB)
