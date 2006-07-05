@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.52 2006-06-13 20:09:54 adam Exp $
+# $Id: makefile,v 1.53 2006-07-05 13:19:15 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -31,11 +31,9 @@ ZLIB_DIR = c:\zlib-1.2.3.win32
 
 default: all
 
-all: dirs expat iconv libxml2 libxslt yaz dll zserver zindex 
+all: dirs expat iconv libxml2 libxslt yaz dll zserver zebraidx tstflock
 
-###########################################################
-############### Directories
-###########################################################
+# Directories
 # The current directory is supposed to be something like
 # ..../Zebra/Win, everything is relative to that
 ROOTDIR=..   # The home of zebra
@@ -80,14 +78,11 @@ BFILEDIR=$(SRCDIR)\BFILE
 DFADIR=$(SRCDIR)\DFA
 DICTDIR=$(SRCDIR)\DICT
 ISAMSDIR=$(SRCDIR)\ISAMS
-ISAMDIR=$(SRCDIR)\ISAM
 ISAMCDIR=$(SRCDIR)\ISAMC
 ISAMBDIR=$(SRCDIR)\ISAMB
-RECCTRLDIR=$(SRCDIR)\RECCTRL
 RSETDIR=$(SRCDIR)\RSET
 UTILDIR=$(SRCDIR)\UTIL
 DATA1DIR=$(SRCDIR)\DATA1
-APITESTDIR=$(SRCDIR)\APITEST
 
 # Force temp files in a local temp, easier to clean
 # when nmake crashes and leaves a lot of rubbish behind
@@ -107,9 +102,7 @@ dist:
 nsis:
 	$(NSIS) zebra.nsi
 
-###########################################################
-############### Targets - what to make
-###########################################################
+# Targets - what to make
 
 !if $(DEBUG)
 DLL=$(BINDIR)\idzebrad.dll
@@ -122,19 +115,16 @@ IMPLIB=$(LIBDIR)\idzebra.lib
 ZEBRA_RES=$(OBJDIR)\idzebra.res
 
 ZSERVER=$(BINDIR)\zebrasrv.exe
-ZINDEX=$(BINDIR)\zebraidx.exe
-APITEST=$(BINDIR)\apitest.exe
+ZEBRAIDX=$(BINDIR)\zebraidx.exe
 TSTFLOCK=$(BINDIR)\tstflock.exe
 
 # shortcut names defined here
-zindex: $(ZINDEX)
+zebraidx: $(ZEBRAIDX)
 zserver: $(ZSERVER)
-apitest: $(APITEST)
 tstflock: $(TSTFLOCK)
 dll: $(DLL) 
-###########################################################
-############### Compiler and linker options 
-###########################################################
+
+# External libs and modules (enabled or disabled)
 
 !if $(HAVE_EXPAT)
 EXPAT_DEF= /D HAVE_EXPAT_H=1 /I"$(EXPAT_DIR)\source\lib"
@@ -285,9 +275,7 @@ ZEBRALIB_LINK_OPTIONS= -lib
 
 DLL_LINK_OPTIONS= /dll  
 
-ZSERVER_LINK_OPTIONS= /subsystem:console  
-ZINDEX_LINK_OPTIONS= /subsystem:console  
-APITEST_LINK_OPTIONS= /subsystem:console  
+CLIENT_LINK_OPTIONS= /subsystem:console  
 
 # Final opt variables
 !if $(DEBUG)
@@ -303,10 +291,15 @@ RCOPT=  $(COMMON_RC_OPTIONS)  $(RELEASE_RC_OPTIONS)
 LNKOPT= $(COMMON_LNK_OPTIONS) $(RELEASE_LNK_OPTIONS) $(LNK_LIBS)
 !endif
 
-###########################################################
-###############  Source and object modules
-###########################################################
+LINK_PROGRAM= $(LINK) \
+		$(LNKOPT) \
+		$(CLIENT_LINK_OPTIONS) \
+		$(IMPLIB) \
+		$(YAZLIBS) \
+		$(BZIP2LIB) \
+		$(LINK_LIBS)
 
+# Source and object modules
 # Note: Ordinary source files are not specified here at 
 # all, make finds them in suitable dirs. The object modules
 # need to be specified, though
@@ -316,8 +309,6 @@ ZSERVER_OBJS= \
 
 ZEBRAIDX_OBJS= \
 	$(OBJDIR)\main.obj 
-APITEST_OBJS= \
-	$(OBJDIR)\apitest.obj
 TSTFLOCK_OBJS= \
 	$(OBJDIR)\tstflock.obj
 
@@ -426,26 +417,10 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\zrpn.obj \
 	$(OBJDIR)\zsets.obj
 
-ALL_OBJS=\
-  $(ZEBRALIB_OBJS) \
-  $(ZEBRAIDX_OBJS) \
-  $(APITEST_OBJS)  \
-  $(ZSERVER_OBJS)
-
-###########################################################
-############### Compiling 
-###########################################################
-
+# Compiling 
 # Note: This defines where to look for the necessary
 # source files. Funny way of doing it, but it works.
 
-{$(SRCDIR)}.cpp{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $<
-
-{$(SRCDIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $<
-
-# ZebraLib
 {$(INDEXDIR)}.c{$(OBJDIR)}.obj:
 	$(CPP) $(COPT) $< 
 
@@ -461,16 +436,10 @@ ALL_OBJS=\
 {$(ISAMSDIR)}.c{$(OBJDIR)}.obj:
 	$(CPP) $(COPT) $< 
 
-{$(ISAMDIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $< 
-
 {$(ISAMCDIR)}.c{$(OBJDIR)}.obj:
 	$(CPP) $(COPT) $< 
 
 {$(ISAMBDIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $< 
-
-{$(RECCTRLDIR)}.c{$(OBJDIR)}.obj:
 	$(CPP) $(COPT) $< 
 
 {$(RSETDIR)}.c{$(OBJDIR)}.obj:
@@ -482,91 +451,44 @@ ALL_OBJS=\
 {$(DATA1DIR)}.c{$(OBJDIR)}.obj:
 	$(CPP) $(COPT) $< 
 
-{$(APITESTDIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $< 
-
-###########################################################
-############### Linking
-###########################################################
+# Linking
 
 $(ZSERVER) : "$(BINDIR)" $(ZSERVER_OBJS) $(IMPLIB)
-	@echo Linking the server $(ZSERVER)
-	$(LINK) @<<
-		$(LNKOPT) 
-		$(ZSERVER_LINK_OPTIONS)
-		/out:$(ZSERVER) 
-		$(IMPLIB)
-		$(YAZLIBS)
-		$(BZIP2LIB)
-		$(LINK_LIBS) 
-		$(ZSERVER_OBJS) 
-<<
+	$(LINK_PROGRAM) \
+		$(ZSERVER_OBJS) \
+		/out:$(ZSERVER)
 
-$(ZINDEX) : "$(BINDIR)" $(ZEBRAIDX_OBJS)  $(IMPLIB)
-	@echo Linking the indexer $(ZINDEX)
-	$(LINK) @<<
-		$(LNKOPT) 
-		$(ZINDEX_LINK_OPTIONS)
-		/out:$(ZINDEX) 
-		$(IMPLIB)
-		$(YAZLIBS)
-		$(BZIP2LIB)
-		$(LINK_LIBS) 
-		$(ZEBRAIDX_OBJS) 
-<<
+$(ZEBRAIDX) : "$(BINDIR)" $(ZEBRAIDX_OBJS) $(IMPLIB)
+	$(LINK_PROGRAM) \
+		$(ZEBRAIDX_OBJS) \
+		/out:$(ZEBRAIDX)
 
-$(APITEST) : "$(BINDIR)" $(APITEST_OBJS) $(YAZLIBS)
-	@echo Linking the test program $(APITEST)
-	$(LINK) @<<
-		$(LNKOPT) 
-		$(APITEST_LINK_OPTIONS)
-		/out:$(APITEST) 
-		$(IMPLIB)
-		$(YAZLIBS)
-		$(BZIP2LIB)
-		$(LINK_LIBS) 
-		$(APITEST_OBJS)
-<<
-
-$(TSTFLOCK) : "$(BINDIR)" $(TSTFLOCK_OBJS)  $(IMPLIB)
-	@echo Linking $(TSTFLOCK)
-	$(LINK) @<<
-		$(LNKOPT) 
-		$(TSTFLOCK_LINK_OPTIONS)
+$(TSTFLOCK) : "$(BINDIR)" $(TSTFLOCK_OBJS) $(IMPLIB)
+	$(LINK_PROGRAM) \
+		$(TSTFLOCK_OBJS) \
 		/out:$(TSTFLOCK) 
-		$(IMPLIB)
-		$(YAZLIBS)
-		$(BZIP2LIB)
-		$(LINK_LIBS) 
-		$(TSTFLOCK_OBJS) 
-<<
-
 
 $(DLL) $(IMPLIB): "$(BINDIR)" $(ZEBRALIB_OBJS)
-	@echo Linking the dll  $(DLL)
-	$(LINK) @<<
-		$(LNKOPT) 
-		$(LINK_LIBS) 
-		$(DLL_LINK_OPTIONS)
-		$(ZEBRALIB_OBJS)
-		/out:$(DLL) 
-		$(YAZLIBS)
-		/implib:"$(IMPLIB)"
-		/map:"$(LIBDIR)\idzebra.map"  
-<<
+	$(LINK) \
+		$(LNKOPT) \
+		$(LINK_LIBS) \
+		$(DLL_LINK_OPTIONS) \
+		$(ZEBRALIB_OBJS) \
+		/out:$(DLL) \
+		$(YAZLIBS) \
+		/implib:"$(IMPLIB)" \
+		/map:"$(LIBDIR)\idzebra.map" \
 
-###########################################################
-############### Special operations
-###########################################################
+# Other rules
 
 clean:
 	-del $(OBJDIR)\*.obj
 	-del $(OBJDIR)\*.sbr
 	-del $(BINDIR)\*.exe
+	-del $(BINDIR)\*.dll
 	-del $(TMPDIR)\*.
 	-del $(LIBDIR)\*.lib
 
-########### check directories and create if needed
 dirs: $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR)
 
 $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR):
@@ -578,12 +500,4 @@ $(YAZ_DLL_TARGET) : $(YAZ_DLL_SOURCE)
 	copy $(YAZBINDIR)\*.dll.manifest $(BINDIR)
 	copy $(YAZBINDIR)\*.dll $(BINDIR)
 
-###########################################################
-############### Explicit dependencies
-###########################################################
 
-# $(ALL_OBJS): makefile
-
-# force recompilation of everything, if makefile changed
-
-###########################################################
