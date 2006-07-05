@@ -1,5 +1,5 @@
 /*
- * $Id: testclient.c,v 1.4 2006-06-13 20:04:38 adam Exp $
+ * $Id: testclient.c,v 1.5 2006-07-05 15:43:59 adam Exp $
  *
  * Z39.50 client specifically for Zebra testing.
  */
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
         }
     }
 
-    if (!target || !target)
+    if (!target || !query)
     {
         printf ("%s: missing target/query\n", prog);
         printf ("usage:\n%s [options] target query \n", prog);
