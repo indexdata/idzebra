@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.49 2006-05-10 08:13:46 adam Exp $
+/* $Id: res.c,v 1.50 2006-07-06 07:59:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -307,7 +307,8 @@ const char *res_get_def(Res r, const char *name, const char *def)
 
     if (!(t = res_get(r, name)))
     {
-    	yaz_log(YLOG_DEBUG, "CAUTION: Using default resource %s:%s", name, def);
+	if (def)
+    	    yaz_log(YLOG_DEBUG, "Using default resource %s:%s", name, def);
     	return def;
     }
     else
