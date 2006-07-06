@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.16 2006-07-06 11:40:24 adam Exp $
+/* $Id: data1.h,v 1.17 2006-07-06 12:42:22 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -371,6 +371,9 @@ YAZ_EXPORT data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 YAZ_EXPORT data1_node *data1_read_record(data1_handle dh, 
 					 int (*rf)(void *, char *, size_t),
 					 void *fh, NMEM m);
+
+YAZ_EXPORT void data1_remove_node (data1_handle dh, data1_node *n);
+YAZ_EXPORT void data1_remove_idzebra_subtree (data1_handle dh, data1_node *n);
 YAZ_EXPORT data1_tag *data1_gettagbynum(data1_handle dh,
 					data1_tagset *s,
 					int type, int value);

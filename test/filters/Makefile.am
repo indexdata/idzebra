@@ -1,13 +1,14 @@
-# $Id: Makefile.am,v 1.3 2006-07-03 14:27:21 adam Exp $
+# $Id: Makefile.am,v 1.4 2006-07-06 12:42:23 marc Exp $
 
-check_PROGRAMS = text grs.xml grs.marc
+check_PROGRAMS = text grs.xml grs.xml.idzebra grs.marc
 
 TESTS = $(check_PROGRAMS)
 
-EXTRA_DIST = zebra.cfg record.xml record.mrc
+EXTRA_DIST = zebra.cfg record.xml record-idzebra.xml record.mrc
 
 text_SOURCES = text.c
 grs_xml_SOURCES = grs.xml.c
+grs_xml_idzebra_SOURCES = grs.xml.idzebra.c
 grs_marc_SOURCES = grs.marc.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)

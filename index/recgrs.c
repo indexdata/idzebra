@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.2 2006-07-06 11:40:25 adam Exp $
+/* $Id: recgrs.c,v 1.3 2006-07-06 12:42:22 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -937,6 +937,8 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
     }
     (*p->init)(p, &wrd);
 
+    /* data1_pr_tree(p->dh, n, stdout); */ 
+
     return dumpkeys(n, p, &wrd);
 }
 
@@ -979,6 +981,9 @@ static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
 
     /* ensure our data1 tree is UTF-8 */
     data1_iconv (p->dh, mem, n, "UTF-8", data1_get_encoding(p->dh, n));
+
+
+    data1_remove_idzebra_subtree (p->dh, n);
 
 #if 0
     data1_pr_tree (p->dh, n, stdout);
@@ -1163,6 +1168,8 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	return 0;
     }
     data1_concat_text(p->dh, mem, node);
+
+    data1_remove_idzebra_subtree (p->dh, node);
 
 #if 0
     data1_pr_tree (p->dh, node, stdout);
