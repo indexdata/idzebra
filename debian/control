@@ -47,7 +47,7 @@ Package: idzebra-2.0-utils
 Section: text
 Architecture: any
 Depends: ${shlibs:Depends}
-Recommends: idzebra-2.0-mod-grs-xml, idzebra-2.0-mod-grs-regx, idzebra-2.0-mod-marc
+Recommends: libidzebra-2.0-mod-grs-xml, libidzebra-2.0-mod-grs-regx, libidzebra-2.0-mod-marc
 Conflicts: idzebra
 Description: IDZebra utility programs
  This package contains IDZebra utilities such as the zebraidx indexer
