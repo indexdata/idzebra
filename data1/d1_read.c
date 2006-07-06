@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.19 2006-06-13 12:02:02 adam Exp $
+/* $Id: d1_read.c,v 1.20 2006-07-06 11:40:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -125,7 +125,6 @@ data1_node *data1_append_node (data1_handle dh, NMEM m, int type,
 {
     data1_node *r = (data1_node *)nmem_malloc(m, sizeof(*r));
     r->next = r->child = r->last_child = 0;
-    r->destroy = 0;
 
     r->parent = parent;
     if (!parent)
@@ -154,7 +153,6 @@ data1_node *data1_insert_node (data1_handle dh, NMEM m, int type,
 {
     data1_node *r = (data1_node *)nmem_malloc(m, sizeof(*r));
     r->next = r->child = r->last_child = 0;
-    r->destroy = 0;
     
     if (!parent)
         r->root = r;
@@ -170,20 +168,6 @@ data1_node *data1_insert_node (data1_handle dh, NMEM m, int type,
     }
     data1_init_node(dh, r, type);
     return r;
-}
-
-void data1_free_tree (data1_handle dh, data1_node *t)
-{
-    data1_node *p = t->child, *pn;
-
-    while (p)
-    {
-	pn = p->next;
-	data1_free_tree (dh, p);
-	p = pn;
-    }
-    if (t->destroy)
-	(*t->destroy)(t);
 }
 
 data1_node *data1_mk_root (data1_handle dh, NMEM nmem, const char *name)

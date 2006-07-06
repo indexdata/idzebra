@@ -1,4 +1,4 @@
-/* $Id: d1_doespec.c,v 1.9 2006-05-10 08:13:18 adam Exp $
+/* $Id: d1_doespec.c,v 1.10 2006-07-06 11:40:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -138,7 +138,6 @@ static void match_triple (data1_handle dh, Z_Variant *vreq,
 	}
 	if (remove_flag)
 	{
-	    data1_free_tree (dh, *c);
 	    *c = (*c)->next;
 	}
 	else

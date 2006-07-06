@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.15 2006-06-13 12:02:03 adam Exp $
+/* $Id: data1.h,v 1.16 2006-07-06 11:40:24 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -344,7 +344,6 @@ typedef struct data1_node
         } preprocess;
     } u;
 
-    void (*destroy)(struct data1_node *n);
 #define DATA1_LOCALDATA 12
     char lbuf[DATA1_LOCALDATA]; /* small buffer for local data */
     struct data1_node *next;
@@ -388,7 +387,6 @@ YAZ_EXPORT Z_GenericRecord *data1_nodetogr(data1_handle dh, data1_node *n,
 					   int *len);
 YAZ_EXPORT data1_tag *data1_gettagbyname(data1_handle dh, data1_tagset *s,
 					 const char *name);
-YAZ_EXPORT void data1_free_tree(data1_handle dh, data1_node *t);
 YAZ_EXPORT char *data1_nodetobuf(data1_handle dh, data1_node *n,
 				 int select, int *len);
 YAZ_EXPORT data1_node *data1_mk_tag_data_wd(data1_handle dh,

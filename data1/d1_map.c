@@ -1,4 +1,4 @@
-/* $Id: d1_map.c,v 1.11 2006-06-13 12:02:02 adam Exp $
+/* $Id: d1_map.c,v 1.12 2006-07-06 11:40:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -344,7 +344,6 @@ data1_node *data1_map_record (data1_handle dh, data1_node *n,
 
     if (map_children(dh, n, map, res1, m) < 0)
     {
-	data1_free_tree(dh, res);
 	return 0;
     }
     return res;

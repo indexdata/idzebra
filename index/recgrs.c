@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.1 2006-07-03 14:27:09 adam Exp $
+/* $Id: recgrs.c,v 1.2 2006-07-06 11:40:25 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -987,10 +987,8 @@ static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
     (*p->init)(p, &wrd);
     if (dumpkeys(n, p, &wrd) < 0)
     {
-	data1_free_tree(p->dh, n);
 	return RECCTRL_EXTRACT_ERROR_GENERIC;
     }
-    data1_free_tree(p->dh, n);
     return RECCTRL_EXTRACT_OK;
 }
 
@@ -1313,9 +1311,6 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 				       p->odr)) > 0)
     {
 	p->diagnostic = res;
-	if (onode)
-	    data1_free_tree(p->dh, onode);
-	data1_free_tree(p->dh, node);
 	nmem_destroy(mem);
 	return 0;
     }
@@ -1432,10 +1427,6 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 		p->rec_buf = new_buf;
 	}
     }
-    if (node)
-	data1_free_tree(p->dh, node);
-    if (onode)
-	data1_free_tree(p->dh, onode);
     nmem_destroy(mem);
     return 0;
 }
