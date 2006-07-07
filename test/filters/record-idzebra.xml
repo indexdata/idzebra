@@ -1,0 +1,10 @@
+<elem>
+  <text>
+    some text $ text here.
+  </text>
+  <idzebra xmlns="http://www.indexdata.dk/zebra/">
+    <size>1198</size>
+    <localnumber>18</localnumber>
+    <filename>data/biblio/2/d/8/biblio-108.tkl</filename>
+  </idzebra>
+</elem>
