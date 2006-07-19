@@ -12,4 +12,5 @@ zebrasrv.pid
 .deps
 grs.marc
 grs.xml
+grs.xml.idzebra
 text
