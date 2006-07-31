@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.224 2006-07-04 10:25:21 adam Exp $
+/* $Id: zrpn.c,v 1.225 2006-07-31 12:26:56 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -927,7 +927,7 @@ static ZEBRA_RES term_limits_APT(ZebraHandle zh,
     AttrType hits_limit_attr;
     int term_ref_id_int;
  
-    attr_init_APT(&hits_limit_attr, zapt, 9);
+    attr_init_APT(&hits_limit_attr, zapt, 11);
     *hits_limit_value  = attr_find(&hits_limit_attr, NULL);
 
     attr_init_APT(&term_ref_id_attr, zapt, 10);

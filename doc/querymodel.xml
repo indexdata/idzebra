@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.22 2006-07-03 11:45:01 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.23 2006-07-31 12:26:55 adam Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -210,7 +210,7 @@
          <td><literal>bib-1</literal></td>
          <td>Standard PQF query language attribute set which defines the
           semantics of Z39.50 searching. In addition, all of the
-          non-use attributes (type 2-9) define the hard-wired 
+          non-use attributes (types 2-11) define the hard-wired 
           Zebra internal query
           processing.</td>
          <td>default</td>
@@ -350,7 +350,7 @@
      </para>
      <para>
       Atomic (APT) queries are always leaf nodes in the PQF query tree. 
-      UN-supplied non-use attributes type 2-9 are either inherited from
+      UN-supplied non-use attributes types 2-11 are either inherited from
       higher nodes in the query tree, or are set to Zebra's default values.
       See <xref linkend="querymodel-bib1"/> for details. 
      </para>
@@ -1613,7 +1613,7 @@
     </para>
 
     <sect3 id="querymodel-zebra-attr-limit">
-     <title>Zebra Extension Approximative Limit Attribute (type 9)</title>
+     <title>Zebra Extension Approximative Limit Attribute (type 11)</title>
     </sect3>
     <para>
      Zebra  computes - unless otherwise configured -
@@ -1637,7 +1637,7 @@
      For example, we might be interested in exact hit count for a, but
      for b we allow hit count estimates for 1000 and higher. 
      <screen>
-      Z> find @and a @attr 9=1000 b
+      Z> find @and a @attr 11=1000 b
      </screen>
     </para>
     <note>
@@ -1761,11 +1761,11 @@
     </warning>
 
     <sect3 id="querymodel-zebra-attr-approx">
-     <title>Zebra Extension Approximative Limit (type 9)</title>
+     <title>Zebra Extension Approximative Limit (type 11)</title>
     </sect3>
     <para>
      The <literal>Zebra Extension Approximative Limit (type
-      9)</literal> is a way to enable approximate
+      11)</literal> is a way to enable approximate
      hit counts for <literal>scan</literal> hit counts, in the same
      way as for <literal>search</literal> hit counts. 
     </para>
