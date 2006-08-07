@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.108 2006-06-22 15:07:20 adam Exp $
+/* $Id: zsets.c,v 1.109 2006-08-07 10:14:59 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -34,8 +34,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/diagbib1.h>
 #include <rset.h>
 
-#define SORT_IDX_ENTRYSIZE 64
-#define ZSET_SORT_MAX_LEVEL 3
+#define ZSET_SORT_MAX_LEVEL 10
 
 struct zebra_set_term_entry {
     int reg_type;
@@ -69,7 +68,6 @@ struct zebra_set {
 struct zset_sort_entry {
     zint sysno;
     int score;
-    char buf[ZSET_SORT_MAX_LEVEL][SORT_IDX_ENTRYSIZE];
 };
 
 struct zset_sort_info {
@@ -544,11 +542,11 @@ struct sortKeyInfo {
     int numerical;
 };
 
-void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
-                          struct sortKeyInfo *criteria, int num_criteria,
-                          zint sysno)
+void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
+                         struct sortKeyInfo *criteria, int num_criteria,
+                         zint sysno,
+                         char *cmp_buf[], char *tmp_cmp_buf[])
 {
-    struct zset_sort_entry this_entry;
     struct zset_sort_entry *new_entry = NULL;
     struct zset_sort_info *sort_info = sset->sort_info;
     int i, j;
@@ -556,11 +554,12 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
     sortIdx_sysno (zh->reg->sortIdx, sysno);
     for (i = 0; i<num_criteria; i++)
     {
-        memset(this_entry.buf[i], '\0', SORT_IDX_ENTRYSIZE);
+        char *this_entry_buf = tmp_cmp_buf[i];
+        memset(this_entry_buf, '\0', SORT_IDX_ENTRYSIZE);
         if (criteria[i].ord != -1)
         {
-            sortIdx_type (zh->reg->sortIdx, criteria[i].ord);
-            sortIdx_read (zh->reg->sortIdx, this_entry.buf[i]);
+            sortIdx_type(zh->reg->sortIdx, criteria[i].ord);
+            sortIdx_read(zh->reg->sortIdx, this_entry_buf);
         }
     }
     i = sort_info->num_entries;
@@ -569,10 +568,12 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
         int rel = 0;
         for (j = 0; j<num_criteria; j++)
         {
+            char *this_entry_buf = tmp_cmp_buf[j];
+            char *other_entry_buf = 
+                cmp_buf[j] + i * SORT_IDX_ENTRYSIZE;
             if (criteria[j].numerical)
             {
-                double diff = atof(this_entry.buf[j]) -
-                              atof(sort_info->entries[i]->buf[j]);
+                double diff = atof(this_entry_buf) - atof(other_entry_buf);
                 rel = 0;
                 if (diff > 0.0)
                     rel = 1;
@@ -581,8 +582,8 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
             }
             else
             {
-                rel = memcmp (this_entry.buf[j], sort_info->entries[i]->buf[j],
-                              SORT_IDX_ENTRYSIZE);
+                rel = memcmp(this_entry_buf, other_entry_buf,
+                             SORT_IDX_ENTRYSIZE);
             }
             if (rel)
                 break;
@@ -612,19 +613,30 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
     new_entry = sort_info->entries[j];
     while (j != i)
     {
+        int k;
+        for (k = 0; k<num_criteria; k++)
+        {
+            char *j_buf = cmp_buf[k] + j * SORT_IDX_ENTRYSIZE;
+            char *j_1_buf = cmp_buf[k] + (j-1) * SORT_IDX_ENTRYSIZE;
+            memcpy(j_buf, j_1_buf, SORT_IDX_ENTRYSIZE);
+        }
         sort_info->entries[j] = sort_info->entries[j-1];
         --j;
     }
     sort_info->entries[i] = new_entry;
     assert (new_entry);
     for (i = 0; i<num_criteria; i++)
-        memcpy (new_entry->buf[i], this_entry.buf[i], SORT_IDX_ENTRYSIZE);
+    {
+        char *new_entry_buf = cmp_buf[i] + j * SORT_IDX_ENTRYSIZE;
+        char *this_entry_buf = tmp_cmp_buf[i];
+        memcpy(new_entry_buf, this_entry_buf, SORT_IDX_ENTRYSIZE);
+    }
     new_entry->sysno = sysno;
     new_entry->score = -1;
 }
 
-void resultSetInsertRank (ZebraHandle zh, struct zset_sort_info *sort_info,
-                          zint sysno, int score, int relation)
+void resultSetInsertRank(ZebraHandle zh, struct zset_sort_info *sort_info,
+                         zint sysno, int score, int relation)
 {
     struct zset_sort_entry *new_entry = NULL;
     int i, j;
@@ -793,7 +805,9 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     zint kno = 0;
     zint psysno = 0;
     struct it_key key;
-    struct sortKeyInfo sort_criteria[3];
+    struct sortKeyInfo sort_criteria[ZSET_SORT_MAX_LEVEL];
+    char *cmp_buf[ZSET_SORT_MAX_LEVEL];
+    char *tmp_cmp_buf[ZSET_SORT_MAX_LEVEL];
     int num_criteria;
     RSFD rfd;
     TERMID termid;
@@ -813,8 +827,8 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
 
     sset->hits = 0;
     num_criteria = sort_sequence->num_specs;
-    if (num_criteria > 3)
-        num_criteria = 3;
+    if (num_criteria > ZSET_SORT_MAX_LEVEL)
+        num_criteria = ZSET_SORT_MAX_LEVEL;
     for (i = 0; i < num_criteria; i++)
     {
         Z_SortKeySpec *sks = sort_sequence->specs[i];
@@ -883,6 +897,13 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
             break;
         }
     }
+    /* allocate space for each cmpare buf + one extra for tmp comparison */
+    for (i = 0; i<num_criteria; i++)
+    {
+        cmp_buf[i] = xmalloc(sset->sort_info->max_entries
+                             * SORT_IDX_ENTRYSIZE);
+        tmp_cmp_buf[i] = xmalloc(SORT_IDX_ENTRYSIZE);
+    }
     rfd = rset_open (rset, RSETF_READ);
     while (rset_read (rfd, &key, &termid))
     {
@@ -894,11 +915,19 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
         {
             (sset->hits)++;
             psysno = this_sys;
-            resultSetInsertSort (zh, sset,
-                                 sort_criteria, num_criteria, psysno);
+            resultSetInsertSort(zh, sset,
+                                sort_criteria, num_criteria, psysno, cmp_buf,
+                                tmp_cmp_buf);
         }
     }
     rset_close (rfd);
+
+    for (i = 0; i<num_criteria; i++)
+    {
+        xfree(cmp_buf[i]);
+        xfree(tmp_cmp_buf[i]);
+    }
+
     yaz_log(log_level_sort, ZINT_FORMAT " keys, " ZINT_FORMAT " sysnos, sort",
 	    kno, sset->hits);   
     for (i = 0; i < numTerms; i++)
