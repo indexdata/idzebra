@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.33 2006-06-28 09:38:17 adam Exp $
+/* $Id: testlib.c,v 1.34 2006-08-09 13:22:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -76,8 +76,8 @@ ZebraService tl_start_up(char *cfgname, int argc, char **argv)
 #if HAVE_SYS_RESOURCE_H
 #if HAVE_SYS_TIME_H
     struct rlimit rlim;
-    rlim.rlim_cur = 20;
-    rlim.rlim_max = 20;
+    rlim.rlim_cur = 60;
+    rlim.rlim_max = 60;
     setrlimit(RLIMIT_CPU, &rlim);
 #endif
 #endif
