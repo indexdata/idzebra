@@ -33,7 +33,7 @@ build-stamp:  config.status
 	dh_testdir
 
 	# Add here commands to compile the package.
-	$(MAKE) -j8
+	$(MAKE) 
 
 	touch build-stamp
 
@@ -43,7 +43,7 @@ clean:
 	rm -f build-stamp 
 
 	# Add here commands to clean up after the build process.
-	-$(MAKE) -j8 distclean
+	-$(MAKE) distclean
 ifneq "$(wildcard /usr/share/misc/config.sub)" ""
 	if test ! -f config.sub; then cp -f /usr/share/misc/config.sub config.sub ; fi
 endif
@@ -60,7 +60,7 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/tmp
-	$(MAKE) -j8 install DESTDIR=$(CURDIR)/debian/tmp
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
 
 
 # Build architecture-independent files here.
