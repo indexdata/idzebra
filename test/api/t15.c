@@ -1,5 +1,5 @@
-/* $Id: t15.c,v 1.5 2006-05-30 13:06:35 adam Exp $
-   Copyright (C) 2004-2005
+/* $Id: t15.c,v 1.6 2006-08-10 08:44:45 adam Exp $
+   Copyright (C) 2004-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -126,7 +126,7 @@ static void tst(int argc, char **argv)
     }
 #endif
 #endif
-
+    YAZ_CHECK(tl_close_down(0, zs));
 }
 
 TL_MAIN
