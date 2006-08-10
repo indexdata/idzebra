@@ -8,7 +8,7 @@ Build-Depends: libyaz-dev (>= 2.1.22), libexpat1-dev, tcl8.4-dev, libbz2-dev, li
 Package: idzebra-2.0
 Section: text
 Architecture: any
-Provides: libidzebra-2.0-dev, idzebra-2.0-utils, libidzebra-2.0-modules, idzebra-2.0-doc
+Provides: idzebra-2.0-common, libidzebra-2.0-dev, idzebra-2.0-utils, libidzebra-2.0-modules, idzebra-2.0-doc
 Description: IDZebra virtual package (the works)
  This virtual package installs all the necessary packages to start
  working with IDZebra - including utility programs, development libraries,
@@ -22,7 +22,7 @@ Description: IDZebra virtual package (the works)
 Package: libidzebra-2.0-modules
 Section: libs
 Architecture: any
-Provides: libidzebra-2.0-mod-grs-xml, libidzebra-2.0-mod-grs-regx, libidzebra-2.0-mod-marc
+Provides: libidzebra-2.0-mod-grs-xml, libidzebra-2.0-mod-grs-regx, libidzebra-2.0-mod-marc, libidzebra-2.0-mod-alvis
 Description: IDZebra modules 
  This virtual package contains all base IDZebra filter modules.
  .
@@ -47,7 +47,8 @@ Package: idzebra-2.0-utils
 Section: text
 Architecture: any
 Depends: ${shlibs:Depends}
-Recommends: libidzebra-2.0-mod-grs-xml, libidzebra-2.0-mod-grs-regx, libidzebra-2.0-mod-marc
+Recommends: idzebra-2.0-common
+Suggests: libidzebra-2.0-modules
 Conflicts: idzebra
 Description: IDZebra utility programs
  This package contains IDZebra utilities such as the zebraidx indexer
