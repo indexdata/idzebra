@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.26 2006-07-03 14:27:00 adam Exp $
+## $Id: Makefile.am,v 1.27 2006-08-10 18:02:28 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -27,6 +27,8 @@ dist-hook:
 	mkdir $(distdir)/debian
 	cp $(srcdir)/debian/*.install $(distdir)/debian
 	cp $(srcdir)/debian/*.manpages $(distdir)/debian
+	cp $(srcdir)/debian/*.postinst $(distdir)/debian
+	cp $(srcdir)/debian/*.prerm $(distdir)/debian
 	cp $(srcdir)/debian/changelog $(distdir)/debian
 	cp $(srcdir)/debian/compat $(distdir)/debian
 	cp $(srcdir)/debian/control $(distdir)/debian
