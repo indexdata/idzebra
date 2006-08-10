@@ -11,6 +11,6 @@ update-alternatives --quiet --install /usr/bin/zebraidx zebraidx \
 
 update-alternatives --quiet --install /usr/bin/zebrasrv zebrasrv \
        /usr/bin/zebrasrv-2.0 50 \
-       --slave /usr/share/man/man1/zebrasrv.8.gz zebrasrv.8.gz \
+       --slave /usr/share/man/man8/zebrasrv.8.gz zebrasrv.8.gz \
        /usr/share/man/man1/zebrasrv-2.0.8.gz
 
