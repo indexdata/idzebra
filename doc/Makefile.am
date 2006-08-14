@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.23.2.1 2004-08-19 13:10:23 adam Exp $
+## $Id: Makefile.am,v 1.23.2.2 2006-08-14 13:37:18 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -34,7 +34,7 @@ HTMLFILES =  \
 PNGFILES=zebra.png
 EPSFILES=zebra.eps
 
-MANFILES=zebraidx.1 zebrasrv.8
+MANFILES=zebraidx$(PACKAGE_SUFFIX).1 zebrasrv$(PACKAGE_SUFFIX).8
 
 REFFILES=zebraidx-man.sgml zebrasrv-man.sgml
 
@@ -45,13 +45,15 @@ EXTRA_DIST = $(XMLFILES) $(SUPPORTFILES) $(REFFILES) \
 	$(doc_DATA) $(EPSFILES) $(man_MANS) $(REFFILES) \
 	zvrank.txt marc_indexing.xml
 
-zebraidx.1: zebraidx-man.sgml zebraidx-options.xml zebraidx-commands.xml
+zebraidx$(PACKAGE_SUFFIX).1: zebraidx-man.sgml zebraidx-options.xml zebraidx-commands.xml
 	if test ! -f zebraidx-options.xml ; then ln -s $(srcdir)/zebraidx-options.xml .; fi
 	if test ! -f zebraidx-commands.xml ; then ln -s $(srcdir)/zebraidx-commands.xml .; fi
 	docbook2man $(srcdir)/zebraidx-man.sgml
+	mv zebraidx.1 zebraidx$(PACKAGE_SUFFIX).1
 
-zebrasrv.8: zebrasrv-man.sgml
+zebrasrv$(PACKAGE_SUFFIX).8: zebrasrv-man.sgml
 	docbook2man $(srcdir)/zebrasrv-man.sgml
+	mv zebrasrv.8 zebrasrv$(PACKAGE_SUFFIX).8
 
 $(HTMLFILES): $(XMLFILES)
 	jade -E14 -D $(srcdir) -d zebrahtml.dsl -t sgml $(srcdir)/xml.dcl zebra.xml
@@ -98,4 +100,6 @@ dist-hook:
 		fi \
 	done
 
-
+install-data-hook:
+	cd $(DESTDIR)$(man1dir) && ln -sf zebraidx$(PACKAGE_SUFFIX).1 zebraidx.1
+	cd $(DESTDIR)$(man8dir) && ln -sf zebrasrv$(PACKAGE_SUFFIX).8 zebrasrv.8

@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.14.2.2 2006-06-07 07:43:47 adam Exp $
+## $Id: Makefile.am,v 1.14.2.3 2006-08-14 13:37:12 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -22,7 +22,8 @@ dist-hook:
 	cp $(srcdir)/debian/control $(distdir)/debian
 	cp $(srcdir)/debian/changelog $(distdir)/debian
 	cp $(srcdir)/debian/rules $(distdir)/debian
-	cp $(srcdir)/debian/postinst $(distdir)/debian
+	cp $(srcdir)/debian/*.postinst $(distdir)/debian
+	cp $(srcdir)/debian/*.prerm $(distdir)/debian
 	cp $(srcdir)/debian/copyright $(distdir)/debian
 	mkdir -p $(distdir)/perl
 	cd $(srcdir)/perl && ./doswig

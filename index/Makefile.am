@@ -1,6 +1,6 @@
-## $Id: Makefile.am,v 1.23.2.1 2006-03-24 13:47:29 adam Exp $
+## $Id: Makefile.am,v 1.23.2.2 2006-08-14 13:37:20 adam Exp $
 
-noinst_PROGRAMS = apitest kdump
+noinst_PROGRAMS = apitest kdump zebrash
 
 noinst_LIBRARIES = libzebra.a
 
@@ -17,7 +17,7 @@ libzebra_a_LIBADD = \
  ../recctrl/librecctrl.a ../data1/libdata1.a ../bfile/libbfile.a \
  ../dfa/libdfa.a ../util/libutil.a
 
-bin_PROGRAMS = zebraidx zebrasrv zebrash
+bin_PROGRAMS = zebraidx zebrasrv
 
 zebraidx_SOURCES = main.c
 zebrasrv_SOURCES = zserver.c
@@ -39,3 +39,14 @@ libzebra.a: $(libzebra_a_OBJECTS) $(libzebra_a_DEPENDENCIES)
 	ar cru libzebra.a $(libzebra_a_OBJECTS) atmp/*.o
 	-rm -fr atmp
 	$(RANLIB) libzebra.a
+
+install-exec-hook:
+	cd $(DESTDIR)$(bindir); for p in $(bin_PROGRAMS); do \
+		mv -f $$p $$p$(PACKAGE_SUFFIX); \
+		ln -sf $$p$(PACKAGE_SUFFIX) $$p; \
+	done
+
+uninstall-hook:
+	cd $(DESTDIR)$(bindir) && for p in $(bin_PROGRAMS); do \
+		rm -f $$p$(PACKAGE_SUFFIX); \
+	done
