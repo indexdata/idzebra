@@ -1,4 +1,4 @@
-/* $Id: rsisams.c,v 1.7 2004-08-04 09:59:03 heikki Exp $
+/* $Id: rsisams.c,v 1.6.2.1 2006-08-14 10:39:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -15,17 +15,17 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 
 
 #include <stdio.h>
 #include <assert.h>
-#include <zebrautl.h>
 #include <rsisams.h>
+#include <zebrautl.h>
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);

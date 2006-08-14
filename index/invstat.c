@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.36 2004-08-04 08:35:23 adam Exp $
+/* $Id: invstat.c,v 1.35.2.1 2006-08-14 10:38:58 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 
@@ -26,6 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 
 #include "index.h"
+#include "../isamc/isamd-p.h"
 
 struct inv_stat_info {
     ZebraHandle zh;
@@ -83,8 +84,11 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     stat_info->no_dict_entries++;
     stat_info->no_dict_bytes += strlen(name);
 
-    assert (*info == sizeof(ISAMS_P));
-    memcpy (&isam_p, info+1, sizeof(ISAMS_P));
+    if (!stat_info->zh->reg->isamd)
+    {
+        assert (*info == sizeof(ISAMS_P));
+        memcpy (&isam_p, info+1, sizeof(ISAMS_P));
+    }
 
     if (stat_info->zh->reg->isams)
     {
@@ -96,11 +100,9 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         occur = isams_pp_num (pp);
         while (isams_pp_read(pp, &key))
 	{
-            occurx++;
-#if IT_KEY_NEW
-#else
             stat_info->cksum = stat_info->cksum * 65509 + 
                 key.sysno + 11 * key.seqno;
+            occurx++;
             if (-1==firstsys)
             {
                 firstseq=key.seqno;
@@ -108,7 +110,6 @@ static int inv_stat_handle (char *name, const char *info, int pos,
             }
             lastsys=key.sysno;
             lastseq=key.seqno;
-#endif
 	}
         assert (occurx == occur);
 	stat_info->no_isam_entries[0] += occur;
@@ -133,11 +134,9 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         occur = isc_pp_num (pp);
         while (isc_pp_read(pp, &key))
 	{
-            occurx++;
-#if IT_KEY_NEW
-#else
             stat_info->cksum = stat_info->cksum * 65509 + 
                 key.sysno + 11 * key.seqno;
+            occurx++;
             if (-1==firstsys)
             {
                 firstseq=key.seqno;
@@ -145,11 +144,55 @@ static int inv_stat_handle (char *name, const char *info, int pos,
             }
             lastsys=key.sysno;
             lastseq=key.seqno;
-#endif
 	}
         assert (occurx == occur);
 	stat_info->no_isam_entries[isc_type(isam_p)] += occur;
         isc_pp_close (pp);
+    }
+    if (stat_info->zh->reg->isamd)
+    {
+        ISAMD_PP pp;
+        int occurx = 0;
+	struct it_key key;
+        /* printf("[%d: %d %d %d %d %d %d] ", */
+        /*    info[0], info[1], info[2], info[3], info[4], info[5], info[7]);*/
+        pp = isamd_pp_open (stat_info->zh->reg->isamd, info+1, info[0]);
+        
+        occur = isamd_pp_num (pp);
+        while (isamd_pp_read(pp, &key))
+	{
+            stat_info->cksum = stat_info->cksum * 65509 + 
+                key.sysno + 11 * key.seqno;
+            occurx++;
+            /* printf("%d.%d ", key.sysno, key.seqno); */ /*!*/
+            if (-1==firstsys)
+            {
+                firstseq=key.seqno;
+                firstsys=key.sysno;
+            }
+            lastsys=key.sysno;
+            lastseq=key.seqno;
+            if ( pp->is->method->debug >8 )
+	       logf (LOG_LOG,"sysno=%d seqno=%d (%x/%x) oc=%d/%d ofs=%d ",
+	           key.sysno, key.seqno,
+	           key.sysno, key.seqno,
+	           occur,occurx, pp->offset);
+	}
+        /* printf("\n"); */ /*!*/
+#ifdef SKIPTHIS
+        if ( pp->is->method->debug >7 )
+	   logf(LOG_LOG,"item %d=%d:%d says %d keys, counted %d",
+	      isam_p, isamd_type(isam_p), isamd_block(isam_p),
+	      occur, occurx); 
+#endif
+        if (occurx != occur) 
+          logf(LOG_LOG,"Count error!!! read %d, counted %d", occur, occurx);
+        assert (occurx == occur);
+        i = pp->cat;
+        if (info[1])
+            i=SINGLETON_TYPE;
+	stat_info->no_isam_entries[i] += occur;
+        isamd_pp_close (pp);
     }
     if (stat_info->zh->reg->isamb)
     {
@@ -164,11 +207,9 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 
         while (isamb_pp_read(pp, &key))
         {
-            occur++;
-#if IT_KEY_NEW
-#else
             stat_info->cksum = stat_info->cksum * 65509 + 
                 key.sysno + 11 * key.seqno;
+            occur++;
             if (-1==firstsys)
             {
                 firstseq=key.seqno;
@@ -176,7 +217,6 @@ static int inv_stat_handle (char *name, const char *info, int pos,
             }
             lastsys=key.sysno;
             lastseq=key.seqno;
-#endif
         }
         isamb_pp_close_x (pp, &size, &blocks);
         stat_info->isamb_blocks[cat] += blocks;
@@ -198,6 +238,9 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 
 int zebra_register_statistics (ZebraHandle zh, int dumpdict)
 {
+    int blocks;
+    int size;
+    int count;
     int i, prev;
     int before = 0;
     int occur;
@@ -260,7 +303,7 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
 	fprintf (stdout, "   Blocks    Occur  Size KB   Bytes/Entry\n");
 	for (i = 0; isc_block_used (zh->reg->isamc, i) >= 0; i++)
 	{
-	    fprintf (stdout, " %8" ZINT_FORMAT0 " %8d", isc_block_used (zh->reg->isamc, i),
+	    fprintf (stdout, " %8d %8d", isc_block_used (zh->reg->isamc, i),
 		     stat_info.no_isam_entries[i]);
 
 	    if (stat_info.no_isam_entries[i])
@@ -274,6 +317,39 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
 	    fprintf (stdout, "\n");
 	}
     }
+    if (zh->reg->isamd)
+    {
+	fprintf (stdout, "   Blocks   Occur      KB Bytes/Entry\n");
+	if (zh->reg->isamd->method->debug >0) 
+            logf(LOG_LOG,"   Blocks   Occur      KB Bytes/Entry");
+	for (i = 0; i<=SINGLETON_TYPE; i++)
+	{
+	    blocks= isamd_block_used(zh->reg->isamd,i);
+	    size= isamd_block_size(zh->reg->isamd,i);
+	    count=stat_info.no_isam_entries[i];
+	    if (i==SINGLETON_TYPE) 
+	        blocks=size=0;
+	    if (stat_info.no_isam_entries[i]) 
+	    {
+		fprintf (stdout, "%c %7d %7d %7d %5.2f\n",
+    		         (i==SINGLETON_TYPE)?('z'):('A'+i),
+    		         blocks,
+    		         count,
+    		    	 (int) ((1023.0 + (double) blocks * size)/1024),
+    			 ((double) blocks * size)/count);
+	        if (zh->reg->isamd->method->debug >0) 
+    		    logf(LOG_LOG, "%c %7d %7d %7d %5.2f",
+    		         (i==SINGLETON_TYPE)?('z'):('A'+i),
+    		         blocks,
+    		         count,
+    		    	 (int) ((1023.0 + (double) blocks * size)/1024),
+    			 ((double) blocks * size)/count);
+	    } /* entries */
+	} /* for */
+    } /* isamd */
+    if ( (zh->reg->isamd) && (zh->reg->isamd->method->debug>0))
+        fprintf (stdout, "\n%d words using %d bytes\n",
+             stat_info.no_dict_entries, stat_info.no_dict_bytes);
 
     if (zh->reg->isamb)
     {

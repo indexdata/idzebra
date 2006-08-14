@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.15 2004-08-04 08:35:23 adam Exp $
+/* $Id: rank1.c,v 1.14.2.1 2006-08-14 10:38:59 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 
@@ -168,7 +168,7 @@ static void add (void *set_handle, int seqno, int term_index)
  *  score should be between 0 and 1000. If score cannot be obtained
  *  -1 should be returned.
  */
-static int calc (void *set_handle, zint sysno)
+static int calc (void *set_handle, int sysno)
 {
     int i, lo, divisor, score = 0;
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
@@ -192,7 +192,7 @@ static int calc (void *set_handle, zint sysno)
     divisor = si->no_rank_entries * (8+log2_int (si->last_pos/si->no_entries));
     score = score / divisor;
 #if DEBUG_RANK
-    yaz_log (LOG_LOG, "sysno=" ZINT_FORMAT " score=%d", sysno, score);
+    yaz_log (LOG_LOG, "sysno=%d score=%d", sysno, score);
 #endif
     if (score > 1000)
 	score = 1000;

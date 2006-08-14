@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.24 2004-08-04 09:59:03 heikki Exp $
+/* $Id: rset.h,v 1.23.2.1 2006-08-14 10:38:56 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 
@@ -46,7 +46,8 @@ struct rset_control
     int (*f_forward)(RSET ct, RSFD rfd, void *buf,  int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2), 
                      const void *untilbuf);
-    void (*f_pos)(RSFD rfd, zint *current, zint *total);
+    void (*f_pos)(RSFD rfd, int *current, int *total);
+       /* FIXME - Should be 64-bit ints !*/
        /* returns -1,-1 if pos function not implemented for this type */
     int (*f_read)(RSFD rfd, void *buf, int *term_index);
     int (*f_write)(RSFD rfd, const void *buf);
@@ -55,7 +56,7 @@ struct rset_control
 int rset_default_forward(RSET ct, RSFD rfd, void *buf, int *term_index, 
                      int (*cmpfunc)(const void *p1, const void *p2), 
                      const void *untilbuf);
-void rset_default_pos(RSFD rfd, zint *current, zint *total);
+void rset_default_pos(RSFD rfd, int *current, int *total);
 
 struct rset_term {
     char *name;

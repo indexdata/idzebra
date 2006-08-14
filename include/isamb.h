@@ -1,4 +1,4 @@
-/* $Id: isamb.h,v 1.12 2004-08-04 09:59:03 heikki Exp $
+/* $Id: isamb.h,v 1.10.2.1 2006-08-14 10:38:56 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 #ifndef ISAMB_H
@@ -25,8 +25,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <bfile.h>
 #include <isamc.h>
-
-YAZ_BEGIN_CDECL
 
 typedef struct ISAMB_s *ISAMB;
 typedef struct ISAMB_PP_s *ISAMB_PP;
@@ -44,7 +42,7 @@ int isamb_pp_read (ISAMB_PP pp, void *buf);
 
 int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf);
 
-void isamb_pp_pos (ISAMB_PP pp, zint *current, zint *total);
+void isamb_pp_pos (ISAMB_PP pp, int *current, int *total);
 
 void isamb_pp_close (ISAMB_PP pp);
 
@@ -58,7 +56,5 @@ void isamb_pp_close_x (ISAMB_PP pp, int *size, int *blocks);
 int isamb_block_info (ISAMB isamb, int cat);
 
 void isamb_dump (ISAMB b, ISAMB_P pos, void (*pr)(const char *str));
-
-YAZ_END_CDECL
 
 #endif

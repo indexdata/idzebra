@@ -1,5 +1,5 @@
-/* $Id: isamc.c,v 1.25 2004-08-04 08:35:24 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: isamc.c,v 1.24.2.1 2006-08-14 10:39:10 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -15,10 +15,12 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
+
+
 
 /* 
  * TODO:
@@ -36,7 +38,7 @@ static void flush_block (ISAMC is, int cat);
 static void release_fc (ISAMC is, int cat);
 static void init_fc (ISAMC is, int cat);
 
-#define ISAMC_FREELIST_CHUNK 0
+#define ISAMC_FREELIST_CHUNK 1
 
 #define SMALL_TEST 0
 
@@ -48,7 +50,7 @@ void isc_getmethod (ISAMC_M *m)
         {    32,     28,      0,  3 },
 	{    64,     54,     30,  0 },
 #else
-        {    64,     56,     40,  5 },
+        {    32,     26,     20,  10 },
 	{   128,    120,    100,  10 },
         {   512,    490,    350,  10 },
         {  2048,   1900,   1700,  10 },
@@ -58,11 +60,10 @@ void isc_getmethod (ISAMC_M *m)
     };
     m->filecat = def_cat;
 
-    m->codec.start = NULL;
-    m->codec.decode  = NULL;
-    m->codec.encode = NULL;
-    m->codec.stop = NULL;
-    m->codec.reset = NULL;
+    m->code_start = NULL;
+    m->code_item = NULL;
+    m->code_stop = NULL;
+    m->code_reset = NULL;
 
     m->compare_item = NULL;
     m->log_item = NULL;
@@ -132,7 +133,7 @@ ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
         }
 	is->files[i].alloc_entries_num = 0;
 	is->files[i].alloc_entries_max =
-	    is->method->filecat[i].bsize / sizeof(zint) - 1;
+	    is->method->filecat[i].bsize / sizeof(int) - 1;
 	is->files[i].alloc_buf = (char *)
 	    xmalloc (is->method->filecat[i].bsize);
         is->files[i].no_writes = 0;
@@ -153,7 +154,7 @@ ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
     return is;
 }
 
-zint isc_block_used (ISAMC is, int type)
+int isc_block_used (ISAMC is, int type)
 {
     if (type < 0 || type >= is->no_files)
 	return -1;
@@ -216,30 +217,30 @@ int isc_close (ISAMC is)
     return 0;
 }
 
-int isc_read_block (ISAMC is, int cat, zint pos, char *dst)
+int isc_read_block (ISAMC is, int cat, int pos, char *dst)
 {
     ++(is->files[cat].no_reads);
     return bf_read (is->files[cat].bf, pos, 0, 0, dst);
 }
 
-int isc_write_block (ISAMC is, int cat, zint pos, char *src)
+int isc_write_block (ISAMC is, int cat, int pos, char *src)
 {
     ++(is->files[cat].no_writes);
     if (is->method->debug > 2)
-        logf (LOG_LOG, "isc: write_block %d " ZINT_FORMAT, cat, pos);
+        logf (LOG_LOG, "isc: write_block %d %d", cat, pos);
     return bf_write (is->files[cat].bf, pos, 0, 0, src);
 }
 
-int isc_write_dblock (ISAMC is, int cat, zint pos, char *src,
-                      zint nextpos, int offset)
+int isc_write_dblock (ISAMC is, int cat, int pos, char *src,
+                      int nextpos, int offset)
 {
     ISAMC_BLOCK_SIZE size = offset + ISAMC_BLOCK_OFFSET_N;
     if (is->method->debug > 2)
-        logf (LOG_LOG, "isc: write_dblock. size=%d nextpos=" ZINT_FORMAT,
+        logf (LOG_LOG, "isc: write_dblock. size=%d nextpos=%d",
               (int) size, nextpos);
     src -= ISAMC_BLOCK_OFFSET_N;
-    memcpy (src, &nextpos, sizeof(nextpos));
-    memcpy (src + sizeof(nextpos), &size, sizeof(size));
+    memcpy (src, &nextpos, sizeof(int));
+    memcpy (src + sizeof(int), &size, sizeof(size));
     return isc_write_block (is, cat, pos, src);
 }
 
@@ -247,19 +248,19 @@ int isc_write_dblock (ISAMC is, int cat, zint pos, char *src,
 static void flush_block (ISAMC is, int cat)
 {
     char *abuf = is->files[cat].alloc_buf;
-    zint block = is->files[cat].head.freelist;
+    int block = is->files[cat].head.freelist;
     if (block && is->files[cat].alloc_entries_num)
     {
-	memcpy (abuf, &is->files[cat].alloc_entries_num, sizeof(block));
+	memcpy (abuf, &is->files[cat].alloc_entries_num, sizeof(int));
 	bf_write (is->files[cat].bf, block, 0, 0, abuf);
 	is->files[cat].alloc_entries_num = 0;
     }
     xfree (abuf);
 }
 
-static zint alloc_block (ISAMC is, int cat)
+static int alloc_block (ISAMC is, int cat)
 {
-    zint block = is->files[cat].head.freelist;
+    int block = is->files[cat].head.freelist;
     char *abuf = is->files[cat].alloc_buf;
 
     (is->files[cat].no_allocated)++;
@@ -284,7 +285,7 @@ static zint alloc_block (ISAMC is, int cat)
 	if (!is->files[cat].alloc_entries_num)  /* last one in block? */
 	{
 	    memcpy (&is->files[cat].head.freelist, abuf + sizeof(int),
-		    sizeof(zint));
+		    sizeof(int));
 	    is->files[cat].head_is_dirty = 1;
 
 	    if (is->files[cat].head.freelist)
@@ -297,16 +298,16 @@ static zint alloc_block (ISAMC is, int cat)
 	    }
 	}
 	else
-	    memcpy (&block, abuf + sizeof(zint) + sizeof(int) *
-		    is->files[cat].alloc_entries_num, sizeof(zint));
+	    memcpy (&block, abuf + sizeof(int) + sizeof(int) *
+		    is->files[cat].alloc_entries_num, sizeof(int));
     }
     return block;
 }
 
-static void release_block (ISAMC is, int cat, zint pos)
+static void release_block (ISAMC is, int cat, int pos)
 {
     char *abuf = is->files[cat].alloc_buf;
-    zint block = is->files[cat].head.freelist;
+    int block = is->files[cat].head.freelist;
 
     (is->files[cat].no_released)++;
 
@@ -327,15 +328,15 @@ static void release_block (ISAMC is, int cat, zint pos)
     }
     if (!is->files[cat].alloc_entries_num) /* make new buffer? */
     {
-	memcpy (abuf + sizeof(int), &block, sizeof(zint));
+	memcpy (abuf + sizeof(int), &block, sizeof(int));
 	is->files[cat].head.freelist = pos;
 	is->files[cat].head_is_dirty = 1; 
     }
     else
     {
 	memcpy (abuf + sizeof(int) +
-		is->files[cat].alloc_entries_num*sizeof(zint),
-		&pos, sizeof(zint));
+		is->files[cat].alloc_entries_num*sizeof(int),
+		&pos, sizeof(int));
     }
     is->files[cat].alloc_entries_num++;
 }
@@ -346,43 +347,42 @@ static void flush_block (ISAMC is, int cat)
     xfree (abuf);
 }
 
-static zint alloc_block (ISAMC is, int cat)
+static int alloc_block (ISAMC is, int cat)
 {
-    zint block;
-    char buf[sizeof(zint)];
+    int block;
+    char buf[sizeof(int)];
 
     is->files[cat].head_is_dirty = 1;
     (is->files[cat].no_allocated)++;
     if ((block = is->files[cat].head.freelist))
     {
-        bf_read (is->files[cat].bf, block, 0, sizeof(zint), buf);
-        memcpy (&is->files[cat].head.freelist, buf, sizeof(zint));
+        bf_read (is->files[cat].bf, block, 0, sizeof(int), buf);
+        memcpy (&is->files[cat].head.freelist, buf, sizeof(int));
     }
     else
         block = (is->files[cat].head.lastblock)++;
     return block;
 }
 
-static void release_block (ISAMC is, int cat, zint pos)
+static void release_block (ISAMC is, int cat, int pos)
 {
-    char buf[sizeof(zint)];
+    char buf[sizeof(int)];
    
     (is->files[cat].no_released)++;
     is->files[cat].head_is_dirty = 1; 
-    memcpy (buf, &is->files[cat].head.freelist, sizeof(zint));
+    memcpy (buf, &is->files[cat].head.freelist, sizeof(int));
     is->files[cat].head.freelist = pos;
-    bf_write (is->files[cat].bf, pos, 0, sizeof(zint), buf);
+    bf_write (is->files[cat].bf, pos, 0, sizeof(int), buf);
 }
 #endif
 
-zint isc_alloc_block (ISAMC is, int cat)
+int isc_alloc_block (ISAMC is, int cat)
 {
-    zint block = 0;
+    int block = 0;
 
     if (is->files[cat].fc_list)
     {
-        int j;
-	zint nb;
+        int j, nb;
         for (j = 0; j < is->files[cat].fc_max; j++)
             if ((nb = is->files[cat].fc_list[j]) && (!block || nb < block))
             {
@@ -394,14 +394,14 @@ zint isc_alloc_block (ISAMC is, int cat)
     if (!block)
         block = alloc_block (is, cat);
     if (is->method->debug > 3)
-        logf (LOG_LOG, "isc: alloc_block in cat %d: " ZINT_FORMAT, cat, block);
+        logf (LOG_LOG, "isc: alloc_block in cat %d: %d", cat, block);
     return block;
 }
 
-void isc_release_block (ISAMC is, int cat, zint pos)
+void isc_release_block (ISAMC is, int cat, int pos)
 {
     if (is->method->debug > 3)
-        logf (LOG_LOG, "isc: release_block in cat %d:" ZINT_FORMAT, cat, pos);
+        logf (LOG_LOG, "isc: release_block in cat %d: %d", cat, pos);
     if (is->files[cat].fc_list)
     {
         int j;
@@ -442,7 +442,7 @@ void isc_pp_close (ISAMC_PP pp)
 {
     ISAMC is = pp->is;
 
-    (*is->method->codec.stop)(pp->decodeClientData);
+    (*is->method->code_stop)(ISAMC_DECODE, pp->decodeClientData);
     xfree (pp->buf);
     xfree (pp);
 }
@@ -461,7 +461,7 @@ ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P ipos)
     pp->size = 0;
     pp->offset = 0;
     pp->is = is;
-    pp->decodeClientData = (*is->method->codec.start)();
+    pp->decodeClientData = (*is->method->code_start)(ISAMC_DECODE);
     pp->deleteFlag = 0;
     pp->numKeys = 0;
 
@@ -475,17 +475,12 @@ ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P ipos)
         src += sizeof(pp->size);
         memcpy (&pp->numKeys, src, sizeof(pp->numKeys));
         src += sizeof(pp->numKeys);
-	if (pp->next == pp->pos)
-	{
-	    yaz_log(LOG_FATAL|LOG_LOG, "pp->next = " ZINT_FORMAT, pp->next);
-	    yaz_log(LOG_FATAL|LOG_LOG, "pp->pos = " ZINT_FORMAT, pp->pos);
-	    assert (pp->next != pp->pos);
-	}
+        assert (pp->next != pp->pos);
         pp->offset = src - pp->buf; 
         assert (pp->offset == ISAMC_BLOCK_OFFSET_1);
         if (is->method->debug > 2)
-            logf (LOG_LOG, "isc: read_block size=%d %d " ZINT_FORMAT " next="
-		  ZINT_FORMAT, pp->size, pp->cat, pp->pos, pp->next);
+            logf (LOG_LOG, "isc: read_block size=%d %d %d next=%d",
+                 pp->size, pp->cat, pp->pos, pp->next);
     }
     return pp;
 }
@@ -493,8 +488,7 @@ ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P ipos)
 /* returns non-zero if item could be read; 0 otherwise */
 int isc_pp_read (ISAMC_PP pp, void *buf)
 {
-    char *cp = buf;
-    return isc_read_item (pp, &cp);
+    return isc_read_item (pp, (char **) &buf);
 }
 
 /* read one item from file - decode and store it in *dst.
@@ -505,7 +499,7 @@ int isc_pp_read (ISAMC_PP pp, void *buf)
 int isc_read_item (ISAMC_PP pp, char **dst)
 {
     ISAMC is = pp->is;
-    const char *src = pp->buf + pp->offset;
+    char *src = pp->buf + pp->offset;
 
     if (pp->offset >= pp->size)
     {
@@ -538,36 +532,29 @@ int isc_read_item (ISAMC_PP pp, char **dst)
         pp->pos = pp->next;
         src = pp->buf;
 	/* read block and save 'next' and 'size' entry */
-        isc_read_block (is, pp->cat, pp->pos, pp->buf);
+        isc_read_block (is, pp->cat, pp->pos, src);
         memcpy (&pp->next, src, sizeof(pp->next));
         src += sizeof(pp->next);
         memcpy (&pp->size, src, sizeof(pp->size));
         src += sizeof(pp->size);
         /* assume block is non-empty */
         assert (src - pp->buf == ISAMC_BLOCK_OFFSET_N);
-
-	if (pp->next == pp->pos)
-	{
-	    yaz_log(LOG_FATAL|LOG_LOG, "pp->next = " ZINT_FORMAT, pp->next);
-	    yaz_log(LOG_FATAL|LOG_LOG, "pp->pos = " ZINT_FORMAT, pp->pos);
-	    assert (pp->next != pp->pos);
-	}
-
+        assert (pp->next != pp->pos);
         if (pp->deleteFlag)
             isc_release_block (is, pp->cat, pp->pos);
-        (*is->method->codec.decode)(pp->decodeClientData, dst, &src);
+        (*is->method->code_item)(ISAMC_DECODE, pp->decodeClientData, dst, &src);
         pp->offset = src - pp->buf; 
         if (is->method->debug > 2)
-            logf (LOG_LOG, "isc: read_block size=%d %d " ZINT_FORMAT " next="
-		  ZINT_FORMAT, pp->size, pp->cat, pp->pos, pp->next);
+            logf (LOG_LOG, "isc: read_block size=%d %d %d next=%d",
+                 pp->size, pp->cat, pp->pos, pp->next);
         return 2;
     }
-    (*is->method->codec.decode)(pp->decodeClientData, dst, &src);
+    (*is->method->code_item)(ISAMC_DECODE, pp->decodeClientData, dst, &src);
     pp->offset = src - pp->buf; 
     return 1;
 }
 
-zint isc_pp_num (ISAMC_PP pp)
+int isc_pp_num (ISAMC_PP pp)
 {
     return pp->numKeys;
 }

@@ -1,5 +1,5 @@
-/* $Id: recindxp.h,v 1.13 2004-08-04 08:35:23 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: recindxp.h,v 1.12.2.1 2006-08-14 10:38:59 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -15,10 +15,12 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
+
+
 
 #include "recindex.h"
 
@@ -28,7 +30,7 @@ YAZ_BEGIN_CDECL
 
 #define REC_BLOCK_TYPES 2
 #define REC_HEAD_MAGIC "recindex"
-#define REC_VERSION 5
+#define REC_VERSION 4
 
 struct records_info {
     int rw;
@@ -53,16 +55,16 @@ struct records_info {
     struct records_head {
         char magic[8];
 	char version[4];
-        zint block_size[REC_BLOCK_TYPES];
-        zint block_free[REC_BLOCK_TYPES];
-        zint block_last[REC_BLOCK_TYPES];
-        zint block_used[REC_BLOCK_TYPES];
-        zint block_move[REC_BLOCK_TYPES];
+        int block_size[REC_BLOCK_TYPES];
+        int block_free[REC_BLOCK_TYPES];
+        int block_last[REC_BLOCK_TYPES];
+        int block_used[REC_BLOCK_TYPES];
+        int block_move[REC_BLOCK_TYPES];
 
-        zint total_bytes;
-        zint index_last;
-        zint index_free;
-        zint no_records;
+        int total_bytes;
+        int index_last;
+        int index_free;
+        int no_records;
 
     } head;
 };
@@ -76,8 +78,8 @@ struct record_cache_entry {
 };
 
 struct record_index_entry {
-    zint next;         /* first block of record info / next free entry */
-    int size;          /* size of record or 0 if free entry */
+    int next;         /* first block of record info / next free entry */
+    int size;         /* size of record or 0 if free entry */
 };
 
 YAZ_END_CDECL

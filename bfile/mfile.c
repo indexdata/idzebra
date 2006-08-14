@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.53 2004-08-04 08:35:22 adam Exp $
+/* $Id: mfile.c,v 1.52.2.1 2006-08-14 10:38:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 
@@ -451,7 +451,7 @@ int mf_close(MFile mf)
 /*
  * Read one block from a metafile. Interface mirrors bfile.
  */
-int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf)
+int mf_read(MFile mf, int no, int offset, int nbytes, void *buf)
 {
     int rd, toread;
 
@@ -486,7 +486,7 @@ int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf)
 /*
  * Write.
  */
-int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
+int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
 {
     int ps, nblocks, towrite;
     mf_dir *dp;
@@ -554,7 +554,7 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 	    mf->files[mf->cur_file].blocks = 0;
 	    mf->files[mf->cur_file].bytes = 0;
 	    mf->files[mf->cur_file].fd = -1;
-	    sprintf(tmp, "%s/%s-" ZINT_FORMAT ".mf", dp->name, mf->name,
+	    sprintf(tmp, "%s/%s-%d.mf", dp->name, mf->name,
 		mf->files[mf->cur_file].number);
 	    mf->files[mf->cur_file].path = xstrdup(tmp);
 	    mf->no_files++;

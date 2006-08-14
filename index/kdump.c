@@ -1,4 +1,4 @@
-/* $Id: kdump.c,v 1.25 2004-08-04 08:35:23 adam Exp $
+/* $Id: kdump.c,v 1.24.2.1 2006-08-14 10:38:58 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -15,10 +15,11 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
+
 
 #include <stdio.h>
 #include <string.h>
@@ -35,12 +36,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 char *prog;
 
-#if IT_KEY_NEW
-int main(int argc, char **argv)
-{
-    exit(0);
-}
-#else
+
 int key_file_decode (FILE *f)
 {
     int c, d;
@@ -100,7 +96,6 @@ static int read_one (FILE *inf, char *name, char *key, struct it_key *prevk)
     memcpy (key+1, &itkey, sizeof(itkey));
     return 1;
 }
-
 
 int main (int argc, char **argv)
 {
@@ -189,6 +184,6 @@ int main (int argc, char **argv)
         logf (LOG_FATAL|LOG_ERRNO, "fclose %s", key_fname);
         exit (1);
     }
+    
     exit (0);
 }
-#endif    

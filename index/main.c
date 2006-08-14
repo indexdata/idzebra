@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.112.2.5 2006-02-23 14:30:03 adam Exp $
+/* $Id: main.c,v 1.112.2.6 2006-08-14 10:38:59 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 

@@ -1,4 +1,4 @@
-/* $Id: cfile.c,v 1.28 2004-08-04 08:35:22 adam Exp $
+/* $Id: cfile.c,v 1.27.2.1 2006-08-14 10:38:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 
@@ -328,8 +328,7 @@ static void cf_moveto_flat (CFile cf)
     int i, j;
 
     logf (LOG_DEBUG, "cf: Moving to flat shadow: %s", cf->rmf->name);
-    logf (LOG_DEBUG, "cf: hits=%d miss=%d bucket_in_memory=" ZINT_FORMAT " total="
-	  ZINT_FORMAT,
+    logf (LOG_DEBUG, "cf: hits=%d miss=%d bucket_in_memory=%d total=%d",
 	cf->no_hits, cf->no_miss, cf->bucket_in_memory, 
         cf->head.next_bucket - cf->head.first_bucket);
     assert (cf->head.state == 1);
@@ -448,7 +447,7 @@ int cf_new (CFile cf, int no)
 }
 
 
-int cf_read (CFile cf, zint no, int offset, int nbytes, void *buf)
+int cf_read (CFile cf, int no, int offset, int nbytes, void *buf)
 {
     int block;
     
@@ -462,13 +461,13 @@ int cf_read (CFile cf, zint no, int offset, int nbytes, void *buf)
     zebra_mutex_unlock (&cf->mutex);
     if (!mf_read (cf->block_mf, block, offset, nbytes, buf))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "cf_read no=" ZINT_FORMAT ", block=%d", no, block);
+        logf (LOG_FATAL|LOG_ERRNO, "cf_read no=%d, block=%d", no, block);
         exit (1);
     }
     return 1;
 }
 
-int cf_write (CFile cf, zint no, int offset, int nbytes, const void *buf)
+int cf_write (CFile cf, int no, int offset, int nbytes, const void *buf)
 {
     int block;
 
@@ -489,7 +488,7 @@ int cf_write (CFile cf, zint no, int offset, int nbytes, const void *buf)
     zebra_mutex_unlock (&cf->mutex);
     if (mf_write (cf->block_mf, block, offset, nbytes, buf))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "cf_write no=" ZINT_FORMAT ", block=%d", no, block);
+        logf (LOG_FATAL|LOG_ERRNO, "cf_write no=%d, block=%d", no, block);
         exit (1);
     }
     return 0;
@@ -497,8 +496,7 @@ int cf_write (CFile cf, zint no, int offset, int nbytes, const void *buf)
 
 int cf_close (CFile cf)
 {
-    logf (LOG_DEBUG, "cf: close hits=%d miss=%d bucket_in_memory=" ZINT_FORMAT
-	  " total=" ZINT_FORMAT,
+    logf (LOG_DEBUG, "cf: close hits=%d miss=%d bucket_in_memory=%d total=%d",
           cf->no_hits, cf->no_miss, cf->bucket_in_memory,
           cf->head.next_bucket - cf->head.first_bucket);
     flush_bucket (cf, -1);

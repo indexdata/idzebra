@@ -1,4 +1,4 @@
-/* $Id: isamd-p.h,v 1.13 2003-06-23 15:36:11 adam Exp $
+/* $Id: isamd-p.h,v 1.13.2.1 2006-08-14 10:39:10 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 
@@ -141,7 +141,10 @@ int singleton_encode(struct it_key *k);
 
 /*
  * $Log: isamd-p.h,v $
- * Revision 1.13  2003-06-23 15:36:11  adam
+ * Revision 1.13.2.1  2006-08-14 10:39:10  adam
+ * Update copyright year + FSF address
+ *
+ * Revision 1.13  2003/06/23 15:36:11  adam
  * Implemented isamb_unlink.
  *
  * Revision 1.12  2002/11/26 22:18:34  adam

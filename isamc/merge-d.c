@@ -1,4 +1,4 @@
-/* $Id: merge-d.c,v 1.30 2003-03-05 16:41:10 adam Exp $
+/* $Id: merge-d.c,v 1.30.2.1 2006-08-14 10:39:11 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 
@@ -1100,7 +1100,10 @@ int isamd_append (ISAMD is, char *dictentry, int dictlen, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.30  2003-03-05 16:41:10  adam
+ * Revision 1.30.2.1  2006-08-14 10:39:11  adam
+ * Update copyright year + FSF address
+ *
+ * Revision 1.30  2003/03/05 16:41:10  adam
  * Fix GCC warnings
  *
  * Revision 1.29  2002/11/26 22:18:34  adam

@@ -1,5 +1,5 @@
-/* $Id: mfile.h,v 1.22 2004-08-04 08:35:23 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: mfile.h,v 1.21.2.1 2006-08-14 10:38:56 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 
@@ -27,13 +27,19 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <stdio.h>
 #include <yaz/yconfig.h>
-#include <zebraver.h>
 
 #ifdef WIN32
 
+#if 0
+/* 32-bit access .. */
+typedef long mfile_off_t;
+#define mfile_seek lseek
+
+#else
 /* 64-bit access .. */
 typedef __int64 mfile_off_t;
 #define mfile_seek _lseeki64
+#endif
 
 #else
 #include <sys/types.h>
@@ -66,9 +72,9 @@ typedef struct mf_dir
 
 typedef struct part_file
 {
-    zint number;
-    zint top;
-    zint blocks;
+    int number;
+    int top;
+    int blocks;
     mfile_off_t bytes;
     mf_dir *dir;
     char *path;
@@ -127,12 +133,12 @@ int mf_close(MFile mf);
 /*
  * Read one block from a metafile. Interface mirrors bfile.
  */
-int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf);
+int mf_read(MFile mf, int no, int offset, int nbytes, void *buf);
 
 /*
  * Same.
  */
-int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf);
+int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf);
 
 /*
  * Destroy a metafile, unlinking component files. File must be open.

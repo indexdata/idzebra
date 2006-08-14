@@ -1,5 +1,5 @@
-/* $Id: recstat.c,v 1.9 2004-08-04 08:35:23 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: recstat.c,v 1.8.2.1 2006-08-14 10:38:59 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 
@@ -33,28 +33,26 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 void rec_prstat (Records records)
 {
     int i;
-    zint total_bytes = 0;
+    int total_bytes = 0;
     
     logf (LOG_LOG,
-          "Total records                        %8" ZINT_FORMAT0,
+          "Total records                        %8d",
           records->head.no_records);
 
     for (i = 0; i< REC_BLOCK_TYPES; i++)
     {
-        logf (LOG_LOG, "Record blocks of size " ZINT_FORMAT,
+        logf (LOG_LOG, "Record blocks of size %d",
               records->head.block_size[i]);
         logf (LOG_LOG,
-          " Used/Total/Bytes used            "
-	      ZINT_FORMAT "/" ZINT_FORMAT "/" ZINT_FORMAT,
+          " Used/Total/Bytes used            %d/%d/%d",
               records->head.block_used[i], records->head.block_last[i]-1,
               records->head.block_used[i] * records->head.block_size[i]);
         total_bytes +=
             records->head.block_used[i] * records->head.block_size[i];
     }
     logf (LOG_LOG,
-          "Total size of record index in bytes  %8" ZINT_FORMAT0,
+          "Total size of record index in bytes  %8d",
           records->head.total_bytes);
     logf (LOG_LOG,
-          "Total size with overhead             %8" ZINT_FORMAT0,
-	  total_bytes);
+          "Total size with overhead             %8d", total_bytes);
 }

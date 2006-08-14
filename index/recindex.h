@@ -1,5 +1,5 @@
-/* $Id: recindex.h,v 1.21 2004-08-04 08:35:23 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: recindex.h,v 1.20.2.1 2006-08-14 10:38:59 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -15,10 +15,12 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
+
+
 
 #ifndef RECINDEX_H
 #define RECINDEX_H
@@ -31,7 +33,7 @@ YAZ_BEGIN_CDECL
 #define REC_NO_INFO 8
 
 typedef struct record_info {
-    SYSNO sysno;
+    int sysno;
     int newFlag;
     char *info[REC_NO_INFO];
     size_t size[REC_NO_INFO];
@@ -47,7 +49,7 @@ void rec_del (Records p, Record *recpp);
 void rec_rm (Record *recpp);
 void rec_put (Records p, Record *recpp);
 Record rec_new (Records p);
-Record rec_get (Records p, SYSNO sysno);
+Record rec_get (Records p, int sysno);
 void rec_close (Records *p);
 Records rec_open (BFiles bfs, int rw, int compression_method);
 char *rec_strdup (const char *s, size_t *len);

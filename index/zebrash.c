@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.28 2004-08-04 08:35:23 adam Exp $
+/* $Id: zebrash.c,v 1.27.2.1 2006-08-14 10:39:00 adam Exp $
    Copyright (C) 2002,2003,2004
    Index Data Aps
 
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 /* 
@@ -347,7 +347,7 @@ static int cmd_end_trans( char *args[], WRBUF outbuff)
 
 static int cmd_record_insert( char *args[], WRBUF outbuff)
 {
-    SYSNO sysno=0;
+    int sysno=0;
     int rc;
     char *rec=restargs(args,1);
     

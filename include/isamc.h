@@ -1,4 +1,4 @@
-/* $Id: isamc.h,v 1.13 2004-08-04 08:35:23 adam Exp $
+/* $Id: isamc.h,v 1.12.2.1 2006-08-14 10:38:56 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -15,21 +15,24 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
+
+
 
 #ifndef ISAMC_H
 #define ISAMC_H
 
-#include <isam-codec.h>
 #include <bfile.h>
 
-YAZ_BEGIN_CDECL
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct ISAMC_s *ISAMC;
-typedef zint ISAMC_P;
+typedef int ISAMC_P;
 typedef struct ISAMC_PP_s *ISAMC_PP;
 
 typedef struct ISAMC_filecat_s {
@@ -45,7 +48,12 @@ typedef struct ISAMC_M_s {
     int (*compare_item)(const void *a, const void *b);
     void (*log_item)(int logmask, const void *p, const char *txt);
 
-    ISAM_CODEC codec;
+#define ISAMC_DECODE 0
+#define ISAMC_ENCODE 1
+    void *(*code_start)(int mode);
+    void (*code_stop)(int mode, void *p);
+    void (*code_item)(int mode, void *p, char **dst, char **src);
+    void (*code_reset)(void *p);
 
     int max_blocks_mem;
     int debug;
@@ -66,14 +74,16 @@ ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P pos);
 void isc_pp_close (ISAMC_PP pp);
 int isc_read_item (ISAMC_PP pp, char **dst);
 int isc_pp_read (ISAMC_PP pp, void *buf);
-zint isc_pp_num (ISAMC_PP pp);
+int isc_pp_num (ISAMC_PP pp);
 
-zint isc_block_used (ISAMC is, int type);
+int isc_block_used (ISAMC is, int type);
 int isc_block_size (ISAMC is, int type);
 
 #define isc_type(x) ((x) & 7)
 #define isc_block(x) ((x) >> 3)
 
-YAZ_END_CDECL
+#ifdef __cplusplus
+}
+#endif
 
 #endif

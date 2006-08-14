@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.22 2004-08-04 09:59:03 heikki Exp $
+/* $Id: rset.c,v 1.21.2.1 2006-08-14 10:39:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 
@@ -65,7 +65,7 @@ RSET rset_dup (RSET rs)
     return rs;
 }
 
-void rset_default_pos (RSFD rfd, zint *current, zint *total)
+void rset_default_pos (RSFD rfd, int *current, int *total)
 { /* FIXME - This function should not be needed, only while */
   /*         coding the pos functions. */
     assert(rfd);

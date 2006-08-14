@@ -1,5 +1,5 @@
-/* $Id: commit.c,v 1.17 2004-08-04 08:35:22 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: commit.c,v 1.16.2.1 2006-08-14 10:38:50 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 
@@ -180,10 +180,9 @@ static void cf_commit_hash (CFile cf)
 
 static void cf_commit_flat (CFile cf)
 {
-    zint *fp;
+    int *fp;
     int hno;
-    int i;
-    zint vno = 0;
+    int i, vno = 0;
 
 #if CF_OPTIMIZE_COMMIT
     struct map_cache *m_p;
@@ -193,7 +192,7 @@ static void cf_commit_flat (CFile cf)
 #if CF_OPTIMIZE_COMMIT
     m_p = map_cache_init (cf);
 #endif
-    fp = (zint *) xmalloc (HASH_BSIZE);
+    fp = (int *) xmalloc (HASH_BSIZE);
     for (hno = cf->head.next_bucket; hno < cf->head.flat_bucket; hno++)
     {
 	for (i = 0; i < (int) (HASH_BSIZE/sizeof(int)); i++)
@@ -201,7 +200,7 @@ static void cf_commit_flat (CFile cf)
         if (!mf_read (cf->hash_mf, hno, 0, 0, fp) &&
             hno != cf->head.flat_bucket-1)
         {
-            logf (LOG_FATAL, "read index block hno=%d (" ZINT_FORMAT "-" ZINT_FORMAT ") commit",
+            logf (LOG_FATAL, "read index block hno=%d (%d-%d) commit",
                   hno, cf->head.next_bucket, cf->head.flat_bucket-1);
         }
         for (i = 0; i < (int) (HASH_BSIZE/sizeof(int)); i++)
@@ -213,8 +212,8 @@ static void cf_commit_flat (CFile cf)
 #else
                 if (!mf_read (cf->block_mf, fp[i], 0, 0, cf->iobuf))
                 {
-                    logf (LOG_FATAL, "read data block hno=%d (" ZINT_FORMAT "-" ZINT_FORMAT ") "
-                                     "i=%d commit block at " ZINT_FORMAT " (->" ZINT_FORMAT")",
+                    logf (LOG_FATAL, "read data block hno=%d (%d-%d) "
+                                     "i=%d commit block at %d (->%d)",
                           hno, cf->head.next_bucket, cf->head.flat_bucket-1,
                           i, fp[i], vno);
                     exit (1);
