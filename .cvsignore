@@ -6,7 +6,7 @@ config.log
 config.status
 configure
 libtool
-idzebra-config
+idzebra-config-2.0
 idzebra.spec
 autom4te.cache
 Doxyfile
