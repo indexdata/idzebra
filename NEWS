@@ -1,13 +1,15 @@
 --- 2.0.0 2006/08/10
 
-New record filter (record type) alvis which uses XSLT to drive both
-indexing as well as retrieval. 
+New record filter (record type) 'alvis' which uses XSLT transformations
+to drive both indexing as well as retrieval. See example configuration in the
+'example/alvis-oai' directory.
 
-isamb is now the default ISAM system. In Zebra 1.3, the default ISAM was
-isamc. The type used can still be configured with the 'isam' setting
-in zebra.cfg.
+'isamb' is now the default ISAM system. In Zebra 1.3, the default ISAM was
+'isamc'. The type used can still be configured with the 'isam' setting
+in 'zebra.cfg'.
 
-Index structure is now 64-bit based. No more 2GB limits.
+Index structure is now 64-bit based, also on 32 bit systems. 
+There are no more 2GB register file limits.
 
 Extended search result tuning. Approximate limit for terms can be enabled
 and specified with attribute 11. The (approx or exact) hit count is returned
@@ -15,16 +17,21 @@ as part of the search response as in 1.3 series. The subqueryID of a search
 term hit count can be specified with attribute 10.
 
 Zebra uses string attributes for indexing internally. Using set+numeric
-use attribute can still be used. But that is a search-only conversion which
-inspects .att-set files as indicated using attset-directives in zebra.cfg.
-attset references are no longer required, but when used they deserve
-as "check" for that the index names used are also present in .att.
+use attribute can still be used. This is a search-only conversion which
+inspects '*.att'-set files as indicated using attset-directives in 'zebra.cfg'.
+'attset' references are no longer required, but when used they deserve
+as "check" for that the index names used are also present in '*.att'.
 
 Zebra record filters (record type handlers) may be built as loadable
 modules (.so's) on Unix. In particular the Zebra 2.0 Debian package uses
 separate packages for each of them. This also means that zebra programs
 such as zebraidx is no longer depending on Tcl/other..
 
-Documentation updates, especially on queries, SRU, XSLT support.
+Documentation updates, especially on query structure and syntax, SRU, 
+XSLT support, alvis filter module, and many added examples.
+
+Improved logging of the 'zebrasrv' and 'zebraidx' binaries.
+
+Improved debian package structure.
 
 --- 1.3.16 2004/08/16
