@@ -34,7 +34,6 @@ Description: IDZebra modules
 Package: idzebra-2.0-common
 Section: text
 Architecture: all
-Conflicts: idzebra
 Description: IDZebra common files
  This package includes common essential IDZebra configuration files.
  .
@@ -49,7 +48,7 @@ Architecture: any
 Depends: ${shlibs:Depends}
 Recommends: idzebra-2.0-common
 Suggests: libidzebra-2.0-modules
-Conflicts: idzebra
+Conflicts: idzebra (<= 1.3.36)
 Description: IDZebra utility programs
  This package contains IDZebra utilities such as the zebraidx indexer
  utility and the zebrasrv server.
@@ -76,7 +75,6 @@ Package: libidzebra-2.0
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}
-Conflicts: idzebra
 Description: IDZebra libraries
  This package contains all run-time libraries for IDZebra.
  .
@@ -139,7 +137,6 @@ Description: IDZebra filter grs.xml (XML filter)
 Package: idzebra-2.0-doc
 Section: doc
 Architecture: all
-Conflicts: idzebra
 Description: IDZebra documentation
  This package includes documentation for IDZebra in PDF and HTML.
  .
