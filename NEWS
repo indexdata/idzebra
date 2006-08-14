@@ -1,4 +1,4 @@
---- 2.0.0 2006/08/10
+--- 2.0.0 2006/08/14
 
 New record filter (record type) 'alvis' which uses XSLT transformations
 to drive both indexing as well as retrieval. See example configuration in the
