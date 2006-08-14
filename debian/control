@@ -45,10 +45,10 @@ Description: IDZebra common files
 Package: idzebra-2.0-utils
 Section: text
 Architecture: any
+Conflicts: idzebra (<= 1.3.36-2)
 Depends: ${shlibs:Depends}
 Recommends: idzebra-2.0-common
 Suggests: libidzebra-2.0-modules
-Conflicts: idzebra (<= 1.3.36)
 Description: IDZebra utility programs
  This package contains IDZebra utilities such as the zebraidx indexer
  utility and the zebrasrv server.
