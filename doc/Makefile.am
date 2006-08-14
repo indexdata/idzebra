@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.56 2006-08-14 17:43:31 adam Exp $
+## $Id: Makefile.am,v 1.57 2006-08-14 19:33:38 adam Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -110,7 +110,7 @@ idzebra-config$(PACKAGE_SUFFIX).1: idzebra-config-man.xml
 $(HTMLFILES): $(XMLFILES)
 	$(HTML_COMPILE) $(srcdir)/zebra.xml
 
-index.tkl: $(XMLFILES) common/tkl.xsl
+index.tkl: $(XMLFILES)
 	$(TKL_COMPILE) $(srcdir)/zebra.xml
 
 zebra.pdf: $(XMLFILES)
