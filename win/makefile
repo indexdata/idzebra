@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.25.2.7 2006-03-24 13:56:17 adam Exp $
+# $Id: makefile,v 1.25.2.8 2006-08-14 18:01:40 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -13,7 +13,7 @@ EXPAT_DIR=c:\Expat-1.95.8
 
 # iconv is optional
 HAVE_ICONV=1
-ICONV_DIR=c:\iconv-1.9.1.win32
+ICONV_DIR=c:\iconv-1.9.2.win32
 
 default: all
 
