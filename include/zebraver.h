@@ -1,4 +1,4 @@
-/* $Id: zebraver.h,v 1.38.2.14 2006-06-07 07:43:48 adam Exp $
+/* $Id: zebraver.h,v 1.38.2.15 2006-08-14 08:37:47 adam Exp $
    Copyright (C) 1995-2006
    Index Data Aps
 
@@ -21,9 +21,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 #ifndef ZEBRAVER
-#define ZEBRAVER "1.3.36"
+#define ZEBRAVER "1.3.37"
 #endif
 
 #ifndef ZEBRADATE
-#define ZEBRADATE "$Date: 2006-06-07 07:43:48 $"
+#define ZEBRADATE "$Date: 2006-08-14 08:37:47 $"
 #endif
