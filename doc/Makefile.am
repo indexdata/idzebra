@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.55 2006-08-14 12:18:48 adam Exp $
+## $Id: Makefile.am,v 1.56 2006-08-14 17:43:31 adam Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -152,3 +152,4 @@ dist-hook:
 install-data-hook:
 	cd $(DESTDIR)$(man1dir) && ln -sf zebraidx$(PACKAGE_SUFFIX).1 zebraidx.1
 	cd $(DESTDIR)$(man8dir) && ln -sf zebrasrv$(PACKAGE_SUFFIX).8 zebrasrv.8
+	cd $(DESTDIR)$(man1dir) && ln -sf idzebra-config$(PACKAGE_SUFFIX).1 idzebra-config.1
