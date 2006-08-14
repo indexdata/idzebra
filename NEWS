@@ -1,3 +1,10 @@
+--- 1.3.38 2006/08/14
+
+Updated Debian package to use sym links for zebraidx, zebrasrv.
+
+Fixed problem with file locking during commit phase. This error was
+present in 1.3.36.
+
 --- 1.3.36 2006/06/07
 
 Fixed bug #602: Any extra terms appended to a wordlist with a hitcount
