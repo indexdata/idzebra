@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.53 2006-07-05 13:19:15 adam Exp $
+# $Id: makefile,v 1.54 2006-08-14 18:12:35 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -13,15 +13,15 @@ EXPAT_DIR=c:\Expat-1.95.8
 
 # iconv is optional
 HAVE_ICONV=1
-ICONV_DIR=c:\iconv-1.9.1.win32
+ICONV_DIR=c:\iconv-1.9.2.win32
 
 # libxslt. For alvis
 HAVE_LIBXSLT=1
-LIBXSLT_DIR=c:\libxslt-1.1.14.win32
+LIBXSLT_DIR=c:\libxslt-1.1.17.win32
 
 # libxml2. Used by libxslt
 HAVE_LIBXML2=1
-LIBXML2_DIR=c:\libxml2-2.6.20.win32
+LIBXML2_DIR=c:\libxml2-2.6.26.win32
 
 # zlib compression.  Used by libxml2
 ZLIB_DIR = c:\zlib-1.2.3.win32
@@ -340,6 +340,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\d1_sumout.obj \
 	$(OBJDIR)\d1_sutrs.obj \
 	$(OBJDIR)\d1_tagset.obj \
+	$(OBJDIR)\d1_utils.obj \
 	$(OBJDIR)\d1_varset.obj \
 	$(OBJDIR)\d1_write.obj \
 	$(OBJDIR)\dclose.obj \
@@ -497,7 +498,7 @@ $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR):
 yaz: $(YAZ_DLL_TARGET)
 
 $(YAZ_DLL_TARGET) : $(YAZ_DLL_SOURCE)
-	copy $(YAZBINDIR)\*.dll.manifest $(BINDIR)
+#	copy $(YAZBINDIR)\*.dll.manifest $(BINDIR)
 	copy $(YAZBINDIR)\*.dll $(BINDIR)
 
 
