@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.47.2.5 2006-08-14 10:39:07 adam Exp $
+/* $Id: isamb.c,v 1.47.2.6 2006-08-14 17:14:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -565,6 +565,8 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
         if (p->size <= b->file[p->cat].head.block_max)
         {
             memcpy (startp, dst_buf, dst - dst_buf);
+
+	    close_block(b, sub_p2);
         }
         else
         {
@@ -572,6 +574,9 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             char *half;
             src = dst_buf;
             endp = dst;
+
+            p->dirty = 1;
+	    close_block(b, sub_p2);
 
             half = src + b->file[p->cat].head.block_size/2;
             decode_ptr (&src, &pos);
@@ -595,7 +600,6 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             p->size = p_new_size;
         }
         p->dirty = 1;
-        close_block (b, sub_p2);
     }
     close_block (b, sub_p1);
     return more;
