@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.23 2006-07-31 12:26:55 adam Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.24 2006-08-14 22:33:46 adam Exp $ -->
   <title>Query Model</title>
   
   <sect1 id="querymodel-overview">
@@ -14,7 +14,7 @@
      <ulink url="&url.z39.50;">Z39.50</ulink> and
      <ulink url="&url.sru;">SRU</ulink>,
      and implement the 
-     <literal>type-1 Reverse Polish Notation (RPN)</literal> query
+     type-1 Reverse Polish Notation (RPN) query
      model defined there.
      Unfortunately, this model has only defined a binary
      encoded representation, which is used as transport packaging in
@@ -22,7 +22,7 @@
      readable, nor defines any convenient way to specify queries. 
     </para>
     <para>
-     Since the <literal>type-1 (RPN)</literal> 
+     Since the type-1 (RPN)
      query structure has no direct, useful string
      representation, every client application needs to provide some
      form of mapping from a local query notation or representation to it.
@@ -39,8 +39,8 @@
       <emphasis>type-1 RPN</emphasis> queries.
       PQF has been adopted by other
       parties developing Z39.50 software, and is often referred to as
-      <literal>Prefix Query Notation</literal>, or in short 
-      <literal>PQN</literal>. See       
+      <emphasis>Prefix Query Notation</emphasis>, or in short 
+      PQN. See       
       <xref linkend="querymodel-pqf"/> for further explanations and
       descriptions of Zebra's capabilities.  
      </para>
@@ -67,9 +67,9 @@
     <title>Operation types</title>
     <para>
      Zebra supports all of the three different
-     <literal>Z39.50/SRU</literal> operations defined in the
-     standards: <literal>explain</literal>, <literal>search</literal>, 
-     and <literal>scan</literal>. A short description of the
+     Z39.50/SRU operations defined in the
+     standards: explain, search, 
+     and scan. A short description of the
      functionality and purpose of each is quite in order here. 
     </para>
 
@@ -81,8 +81,7 @@
       <emphasis>semantics</emphasis> - taking into account a
       particular servers functionalities and abilities - must be
       discovered from case to case. Enters the 
-      <literal>explain</literal> operation, which provides the means
-      for learning which  
+      explain operation, which provides the means for learning which  
       <emphasis>fields</emphasis> (also called
       <emphasis>indexes</emphasis> or <emphasis>access points</emphasis>)
       are provided, which default parameter the server uses, which
@@ -90,21 +89,20 @@
       of the general query model are supported.      
      </para>
      <para>
-      The Z39.50 embeds the <literal>explain</literal> operation
+      The Z39.50 embeds the explain operation
       by performing a 
-      <literal>search</literal> in the magic 
+      search in the magic 
       <literal>IR-Explain-1</literal> database;
       see <xref linkend="querymodel-exp1"/>. 
      </para>
      <para>
-      In SRU, <literal>explain</literal> is an entirely  separate
-      operation, which returns an  <literal>ZeeRex
-      XML</literal> record according to the 
+      In SRU, explain is an entirely  separate
+      operation, which returns an ZeeRex XML record according to the 
       structure defined by the protocol.
      </para>
      <para>
       In both cases, the information gathered through
-      <literal>explain</literal> operations can be used to
+      explain operations can be used to
       auto-configure a client user interface to the servers
       capabilities.  
      </para>
@@ -126,14 +124,14 @@
     <sect3 id="querymodel-operation-type-scan">
      <title>Scan Operation</title>
      <para>
-      The <literal>scan</literal> operation is a helper functionality,
+      The scan operation is a helper functionality,
        which operates on one index or access point a time. 
      </para>
      <para>
       It provides
       the means to investigate the content of specific indexes.
       Scanning an index returns a handful of terms actually found in
-      the indexes, and in addition the <literal>scan</literal>
+      the indexes, and in addition the scan
       operation returns the number of documents indexed by each term.
       A search client can use this information to propose proper
       spelling of search terms, to auto-fill search boxes, or to 
@@ -179,74 +177,74 @@
       definitions, others can easily be defined and added to the
       configuration.
      </para>
-
      
-     <table id="querymodel-attribute-sets-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Attribute sets predefined in Zebra</caption>
-       
+     <table id="querymodel-attribute-sets-table" frame="top">
+      <title>Attribute sets predefined in Zebra</title>
+      <tgroup cols="4">
        <thead>
-       <tr>
-         <td>Attribute set</td>
-         <td>Short hand</td>
-         <td>Status</td>
-         <td>Notes</td>
-        </tr>
-      </thead>
-      
+	<row>
+         <entry>Attribute set</entry>
+         <entry>Short hand</entry>
+         <entry>Status</entry>
+         <entry>Notes</entry>
+        </row>
+       </thead>
+       
        <tbody>
-        <tr>
-         <td><literal>Explain</literal></td>
-         <td><literal>exp-1</literal></td>
-         <td>Special attribute set used on the special automagic
+        <row>
+         <entry><literal>Explain</literal></entry>
+         <entry><literal>exp-1</literal></entry>
+         <entry>Special attribute set used on the special automagic
           <literal>IR-Explain-1</literal> database to gain information on
           server capabilities, database names, and database
-          and semantics.</td>
-         <td>predefined</td>
-        </tr>
-        <tr>
-         <td><literal>Bib1</literal></td>
-         <td><literal>bib-1</literal></td>
-         <td>Standard PQF query language attribute set which defines the
+          and semantics.</entry>
+         <entry>predefined</entry>
+        </row>
+        <row>
+         <entry><literal>Bib1</literal></entry>
+         <entry><literal>bib-1</literal></entry>
+         <entry>Standard PQF query language attribute set which defines the
           semantics of Z39.50 searching. In addition, all of the
           non-use attributes (types 2-11) define the hard-wired 
           Zebra internal query
-          processing.</td>
-         <td>default</td>
-        </tr>
-        <tr>
-         <td><literal>GILS</literal></td>
-         <td><literal>gils</literal></td>
-         <td>Extension to the <literal>Bib1</literal> attribute set.</td>
-         <td>predefined</td>
-        </tr>
+          processing.</entry>
+         <entry>default</entry>
+        </row>
+        <row>
+         <entry><literal>GILS</literal></entry>
+         <entry><literal>gils</literal></entry>
+         <entry>Extension to the <literal>Bib1</literal> attribute set.</entry>
+         <entry>predefined</entry>
+        </row>
         <!--
-        <tr>
-         <td><literal>IDXPATH</literal></td>
-         <td><literal>idxpath</literal></td>
-         <td>Hardwired XPATH like attribute set, only available for
-             indexing with the GRS record model</td>
-         <td>deprecated</td>
-        </tr>
+        <row>
+	<entry><literal>IDXPATH</literal></entry>
+	<entry><literal>idxpath</literal></entry>
+	<entry>Hardwired XPATH like attribute set, only available for
+	indexing with the GRS record model</entry>
+	<entry>deprecated</entry>
+       </row>
         -->
        </tbody>
+      </tgroup>
      </table>
+     
+     <para>
+      The use attributes (type 1) mappings  the
+      predefined attribute sets are found in the
+      attribute set configuration files <filename>tab/*.att</filename>. 
+     </para>
+     
+     <note>
+      <para>
+       The Zebra internal query processing is modeled after 
+       the <literal>Bib1</literal> attribute set, and the non-use
+       attributes type 2-6 are hard-wired in. It is therefore essential
+       to be familiar with <xref linkend="querymodel-bib1-nonuse"/>. 
+      </para>
+     </note>
+     
     </sect3>
-
-    <para>
-     The <literal>use attributes (type 1)</literal> mappings  the
-     predefined attribute sets are found in the
-     attribute set configuration files <filename>tab/*.att</filename>. 
-    </para>
-
-    <note>
-     The Zebra internal query processing is modeled after 
-     the <literal>Bib1</literal> attribute set, and the non-use
-     attributes type 2-6 are hard-wired in. It is therefore essential
-     to be familiar with <xref linkend="querymodel-bib1-nonuse"/>. 
-    </note>
-
     
     <sect3 id="querymodel-boolean-operators">
      <title>Boolean operators</title>
@@ -256,39 +254,39 @@
       Thus, boolean operators are always internal nodes in the query tree.
      </para>
      
-     <table id="querymodel-boolean-operators-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Boolean operators</caption>
+     <table id="querymodel-boolean-operators-table" frame="top">
+      <title>Boolean operators</title>
+      <tgroup cols="3">
        <thead>
-        <tr>
-         <td>Keyword</td>
-         <td>Operator</td>
-         <td>Description</td>
-        </tr>
-      </thead>
+	<row>
+	 <entry>Keyword</entry>
+	 <entry>Operator</entry>
+	 <entry>Description</entry>
+	</row>
+       </thead>
        <tbody>
-        <tr><td><literal>@and</literal></td>
-         <td>binary <literal>AND</literal> operator</td>
-         <td>Set intersection of two atomic queries hit sets</td>
-        </tr>
-        <tr><td><literal>@or</literal></td>
-         <td>binary <literal>OR</literal> operator</td>
-         <td>Set union of two atomic queries hit sets</td>
-        </tr>
-        <tr><td><literal>@not</literal></td>
-         <td>binary <literal>AND NOT</literal> operator</td>
-         <td>Set complement of two atomic queries hit sets</td>
-        </tr>
-        <tr><td><literal>@prox</literal></td>
-         <td>binary <literal>PROXIMITY</literal> operator</td>
-         <td>Set intersection of two atomic queries hit sets. In 
-          addition, the intersection set is purged for all 
-          documents which do not satisfy the requested query 
-          term proximity. Usually a proper subset of the AND 
-          operation.</td>
-        </tr>
+	<row><entry><literal>@and</literal></entry>
+	 <entry>binary <literal>AND</literal> operator</entry>
+	 <entry>Set intersection of two atomic queries hit sets</entry>
+	</row>
+	<row><entry><literal>@or</literal></entry>
+	 <entry>binary <literal>OR</literal> operator</entry>
+	 <entry>Set union of two atomic queries hit sets</entry>
+	</row>
+	<row><entry><literal>@not</literal></entry>
+	 <entry>binary <literal>AND NOT</literal> operator</entry>
+	 <entry>Set complement of two atomic queries hit sets</entry>
+	</row>
+	<row><entry><literal>@prox</literal></entry>
+	 <entry>binary <literal>PROXIMITY</literal> operator</entry>
+	 <entry>Set intersection of two atomic queries hit sets. In 
+	  addition, the intersection set is purged for all 
+	  documents which do not satisfy the requested query 
+	  term proximity. Usually a proper subset of the AND 
+	  operation.</entry>
+	</row>
        </tbody>
+      </tgroup>
      </table>
      
      <para>
@@ -355,34 +353,34 @@
       See <xref linkend="querymodel-bib1"/> for details. 
      </para>
      
-     <table id="querymodel-atomic-queries-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Atomic queries (APT)</caption>
+     <table id="querymodel-atomic-queries-table" frame="top">
+      <title>Atomic queries (APT)</title>
+      <tgroup cols="3">
        <thead>
-        <tr>
-         <td>Name</td>
-         <td>Type</td>
-         <td>Notes</td>
-        </tr>
+        <row>
+         <entry>Name</entry>
+         <entry>Type</entry>
+         <entry>Notes</entry>
+        </row>
       </thead>
        <tbody>
-        <tr>
-         <td><emphasis>attribute list</emphasis></td>
-         <td>List of <literal>orthogonal</literal> attributes</td>
-         <td>Any of the orthogonal attribute types may be omitted,
+        <row>
+         <entry><emphasis>attribute list</emphasis></entry>
+         <entry>List of <literal>orthogonal</literal> attributes</entry>
+         <entry>Any of the orthogonal attribute types may be omitted,
           these are inherited from higher query tree nodes, or if not
           inherited, are set to the default Zebra configuration values.
-         </td>
-        </tr>
-        <tr>
-         <td><emphasis>term</emphasis></td>
-         <td>single <literal>term</literal> 
-          or <literal>quoted term list</literal>   </td>
-         <td>Here the search terms or list of search terms is added
-          to the query</td>
-        </tr>
+         </entry>
+        </row>
+        <row>
+         <entry><emphasis>term</emphasis></entry>
+         <entry>single <literal>term</literal> 
+          or <literal>quoted term list</literal>   </entry>
+         <entry>Here the search terms or list of search terms is added
+          to the query</entry>
+        </row>
        </tbody>
+      </tgroup>
      </table>
      <para>
       Querying for the term <emphasis>information</emphasis> in the
@@ -461,14 +459,15 @@
      </para>
      
      <note>
-      Named result sets are only supported by the Z39.50 protocol.
-      The SRU web service is stateless, and therefore the notion of
-      named result sets does not exist when accessing a Zebra server by
-      the SRU protocol.
+      <para>
+       Named result sets are only supported by the Z39.50 protocol.
+       The SRU web service is stateless, and therefore the notion of
+       named result sets does not exist when accessing a Zebra server by
+       the SRU protocol.
+      </para>
      </note>
     </sect3>
-
-
+    
     <sect3 id="querymodel-use-string">
      <title>Zebra's special access point of type 'string'</title>
      <para>
@@ -547,11 +546,13 @@
       <literal>.abs</literal> configuration files. 
      </para>
      <note>
-      Only a <emphasis>very</emphasis> restricted subset of the 
-      <ulink url="http://www.w3.org/TR/xpath">XPath 1.0</ulink> 
-      standard is supported as the GRS record model is simpler than
-      a full XML DOM structure. See the following examples for 
-      possibilities.
+      <para>
+       Only a <emphasis>very</emphasis> restricted subset of the 
+       <ulink url="http://www.w3.org/TR/xpath">XPath 1.0</ulink> 
+       standard is supported as the GRS record model is simpler than
+       a full XML DOM structure. See the following examples for 
+       possibilities.
+      </para>
      </note>
      <para>
       Finding all documents which have the term "content" 
@@ -615,15 +616,15 @@
       </screen>
      </para>
      <warning>
-      It is worth mentioning that these dynamic performed XPath
-      queries are a performance bottleneck, as no optimized
-      specialized indexes can be used. Therefore, avoid the use of
-      this facility when speed is essential, and the database content
-      size is medium to large. 
+      <para>
+       It is worth mentioning that these dynamic performed XPath
+       queries are a performance bottleneck, as no optimized
+       specialized indexes can be used. Therefore, avoid the use of
+       this facility when speed is essential, and the database content
+       size is medium to large.
+      </para>
      </warning>
-
     </sect3>
-    
    </sect2>
    
    <sect2 id="querymodel-exp1">
@@ -847,74 +848,73 @@
       side of the relation), e.g., Date-publication &lt;= 1975.
       </para>
 
-     <table id="querymodel-bib1-relation-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Relation Attributes (type 2)</caption>
-      <thead>
-        <tr>
-         <td>Relation</td>
-         <td>Value</td>
-         <td>Notes</td>
-        </tr>
+     <table id="querymodel-bib1-relation-table" frame="top">
+      <title>Relation Attributes (type 2)</title>
+      <tgroup cols="3">
+       <thead>
+        <row>
+         <entry>Relation</entry>
+         <entry>Value</entry>
+         <entry>Notes</entry>
+        </row>
        </thead>
        <tbody>
-        <tr>
-         <td> Less than</td>
-         <td>1</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Less than or equal</td>
-         <td>2</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Equal</td>
-         <td>3</td>
-         <td>default</td>
-        </tr>
-        <tr>
-         <td>Greater or equal</td>
-         <td>4</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Greater than</td>
-         <td>5</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Not equal</td>
-         <td>6</td>
-         <td>unsupported</td>
-        </tr>
-        <tr>
-         <td>Phonetic</td>
-         <td>100</td>
-         <td>unsupported</td>
-        </tr>
-        <tr>
-         <td>Stem</td>
-         <td>101</td>
-         <td>unsupported</td>
-        </tr>
-        <tr>
-         <td>Relevance</td>
-         <td>102</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>AlwaysMatches</td>
-         <td>103</td>
-         <td>supported</td>
-        </tr>
+        <row>
+         <entry>Less than</entry>
+         <entry>1</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Less than or equal</entry>
+         <entry>2</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Equal</entry>
+         <entry>3</entry>
+         <entry>default</entry>
+        </row>
+        <row>
+         <entry>Greater or equal</entry>
+         <entry>4</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Greater than</entry>
+         <entry>5</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Not equal</entry>
+         <entry>6</entry>
+         <entry>unsupported</entry>
+        </row>
+        <row>
+         <entry>Phonetic</entry>
+         <entry>100</entry>
+         <entry>unsupported</entry>
+        </row>
+        <row>
+         <entry>Stem</entry>
+         <entry>101</entry>
+         <entry>unsupported</entry>
+        </row>
+        <row>
+         <entry>Relevance</entry>
+         <entry>102</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>AlwaysMatches</entry>
+         <entry>103</entry>
+         <entry>supported</entry>
+        </row>
        </tbody>
+      </tgroup>
      </table>
-
+     
      <para>
-      The relation attributes 
-      <literal>1-5</literal> are supported and work exactly as
+      The relation attributes 1-5 are supported and work exactly as
       expected.
       All ordering operations are based on a lexicographical ordering, 
       <emphasis>expect</emphasis> when the 
@@ -922,23 +922,23 @@
       this case, ordering is numerical. See 
       <xref linkend="querymodel-bib1-structure"/>.
       <screen>
-       Z>  find @attr 1=Title @attr 2=1 music
+       Z> find @attr 1=Title @attr 2=1 music
        ...
        Number of hits: 11745, setno 1
        ...
-       Z>  find @attr 1=Title @attr 2=2 music
+       Z> find @attr 1=Title @attr 2=2 music
        ...
        Number of hits: 11771, setno 2
        ...
-       Z>  find @attr 1=Title @attr 2=3 music
+       Z> find @attr 1=Title @attr 2=3 music
        ...
        Number of hits: 532, setno 3
        ...
-       Z>  find @attr 1=Title @attr 2=4 music
+       Z> find @attr 1=Title @attr 2=4 music
        ...
        Number of hits: 11463, setno 4
        ...
-       Z>  find @attr 1=Title @attr 2=5 music
+       Z> find @attr 1=Title @attr 2=5 music
        ...
        Number of hits: 11419, setno 5
       </screen>
@@ -992,34 +992,34 @@
       within the field or subfield in which it appears.
      </para>
 
-     <table id="querymodel-bib1-position-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Position Attributes (type 3)</caption>
-      <thead>
-        <tr>
-         <td>Position</td>
-         <td>Value</td>
-         <td>Notes</td>
-        </tr>
+     <table id="querymodel-bib1-position-table" frame="top">
+      <title>Position Attributes (type 3)</title>
+      <tgroup cols="3">
+       <thead>
+        <row>
+         <entry>Position</entry>
+         <entry>Value</entry>
+         <entry>Notes</entry>
+        </row>
        </thead>
        <tbody>
-        <tr>
-         <td>First in field </td>
-         <td>1</td>
-         <td>unsupported</td>
-        </tr>
-        <tr>
-         <td>First in subfield</td>
-         <td>2</td>
-         <td>unsupported</td>
-        </tr>
-        <tr>
-         <td>Any position in field</td>
-         <td>3</td>
-         <td>supported</td>
-        </tr>
+        <row>
+         <entry>First in field </entry>
+         <entry>1</entry>
+         <entry>unsupported</entry>
+        </row>
+        <row>
+         <entry>First in subfield</entry>
+         <entry>2</entry>
+         <entry>unsupported</entry>
+        </row>
+        <row>
+         <entry>Any position in field</entry>
+         <entry>3</entry>
+         <entry>supported</entry>
+        </row>
        </tbody>
+      </tgroup>
      </table>
  
     <para>
@@ -1049,102 +1049,101 @@
       The default configuration is summarized in this table.
      </para>
 
-     <table id="querymodel-bib1-structure-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Structure Attributes (type 4)</caption>
-      <thead>
-        <tr>
-         <td>Structure</td>
-         <td>Value</td>
-         <td>Notes</td>
-        </tr>
+     <table id="querymodel-bib1-structure-table" frame="top">
+      <title>Structure Attributes (type 4)</title>
+      <tgroup cols="3">
+       <thead>
+        <row>
+         <entry>Structure</entry>
+         <entry>Value</entry>
+         <entry>Notes</entry>
+        </row>
        </thead>
        <tbody>
-        <tr>
-         <td>Phrase </td>
-         <td>1</td>
-         <td>default</td>
-        </tr>
-        <tr>
-         <td>Word</td>
-         <td>2</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Key</td>
-         <td>3</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Year</td>
-         <td>4</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Date (normalized)</td>
-         <td>5</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Word list</td>
-         <td>6</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Date (un-normalized)</td>
-         <td>100</td>
-         <td>unsupported</td>
-        </tr>
-        <tr>
-         <td>Name (normalized) </td>
-         <td>101</td>
-         <td>unsupported</td>
-        </tr>
-        <tr>
-         <td>Name (un-normalized) </td>
-         <td>102</td>
-         <td>unsupported</td>
-        </tr>
-        <tr>
-         <td>Structure</td>
-         <td>103</td>
-         <td>unsupported</td>
-        </tr>
-        <tr>
-         <td>Urx</td>
-         <td>104</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Free-form-text</td>
-         <td>105</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Document-text</td>
-         <td>106</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Local-number</td>
-         <td>107</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>String</td>
-         <td>108</td>
-         <td>unsupported</td>
-        </tr>
-        <tr>
-         <td>Numeric string</td>
-         <td>109</td>
-         <td>supported</td>
-        </tr>
+        <row>
+         <entry>Phrase </entry>
+         <entry>1</entry>
+         <entry>default</entry>
+        </row>
+        <row>
+         <entry>Word</entry>
+         <entry>2</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Key</entry>
+         <entry>3</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Year</entry>
+         <entry>4</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Date (normalized)</entry>
+         <entry>5</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Word list</entry>
+         <entry>6</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Date (un-normalized)</entry>
+         <entry>100</entry>
+         <entry>unsupported</entry>
+        </row>
+        <row>
+         <entry>Name (normalized) </entry>
+         <entry>101</entry>
+         <entry>unsupported</entry>
+        </row>
+        <row>
+         <entry>Name (un-normalized) </entry>
+         <entry>102</entry>
+         <entry>unsupported</entry>
+        </row>
+        <row>
+         <entry>Structure</entry>
+         <entry>103</entry>
+         <entry>unsupported</entry>
+        </row>
+        <row>
+         <entry>Urx</entry>
+         <entry>104</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Free-form-text</entry>
+         <entry>105</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Document-text</entry>
+         <entry>106</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Local-number</entry>
+         <entry>107</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>String</entry>
+         <entry>108</entry>
+         <entry>unsupported</entry>
+        </row>
+        <row>
+         <entry>Numeric string</entry>
+         <entry>109</entry>
+         <entry>supported</entry>
+        </row>
        </tbody>
+      </tgroup>
      </table>
      
-
     <para>
      The structure attribute values 
      <literal>Word list (6)</literal>
@@ -1202,15 +1201,16 @@
      <screen>
       Z> find @attr 4=109 @attr 2=5 @attr gils 1=2038 -114
      </screen> 
-    </para>
+     </para>
      <note>
-      The exact mapping between PQF queries and Zebra internal indexes
-      and index types is explained in 
+      <para>
+       The exact mapping between PQF queries and Zebra internal indexes
+       and index types is explained in 
        <xref linkend="querymodel-pqf-apt-mapping"/>.
-      </note>
-
-   </sect3>
-
+      </para>
+     </note>
+    </sect3>
+    
     <sect3 id="querymodel-bib1-truncation">
      <title>Truncation Attributes (type = 5)</title>
 
@@ -1221,54 +1221,54 @@
       document hit set of a search query.
      </para>
 
-     <table id="querymodel-bib1-truncation-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Truncation Attributes (type 5)</caption>
-      <thead>
-        <tr>
-         <td>Truncation</td>
-         <td>Value</td>
-         <td>Notes</td>
-        </tr>
+     <table id="querymodel-bib1-truncation-table" frame="top">
+      <title>Truncation Attributes (type 5)</title>
+      <tgroup cols="3">
+       <thead>
+        <row>
+         <entry>Truncation</entry>
+         <entry>Value</entry>
+         <entry>Notes</entry>
+        </row>
        </thead>
        <tbody>
-        <tr>
-         <td>Right truncation </td>
-         <td>1</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Left truncation</td>
-         <td>2</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Left and right truncation</td>
-         <td>3</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>Do not truncate</td>
-         <td>100</td>
-         <td>default</td>
-        </tr>
-        <tr>
-         <td>Process # in search term</td>
-         <td>101</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>RegExpr-1 </td>
-         <td>102</td>
-         <td>supported</td>
-        </tr>
-        <tr>
-         <td>RegExpr-2</td>
-         <td>103</td>
-         <td>supported</td>
-        </tr>
+        <row>
+         <entry>Right truncation </entry>
+         <entry>1</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Left truncation</entry>
+         <entry>2</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Left and right truncation</entry>
+         <entry>3</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>Do not truncate</entry>
+         <entry>100</entry>
+         <entry>default</entry>
+        </row>
+        <row>
+         <entry>Process # in search term</entry>
+         <entry>101</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>RegExpr-1 </entry>
+         <entry>102</entry>
+         <entry>supported</entry>
+        </row>
+        <row>
+         <entry>RegExpr-2</entry>
+         <entry>103</entry>
+         <entry>supported</entry>
+        </row>
        </tbody>
+      </tgroup>
      </table>
 
      <para>
@@ -1353,33 +1353,34 @@
       (<literal>Complete field (3)</literal>).
       </para>
 
-     <table id="querymodel-bib1-completeness-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-      <caption>Completeness Attributes (type = 6)</caption>
-      <thead>
-        <tr>
-         <td>Completeness</td>
-         <td>Value</td>
-         <td>Notes</td>
-        </tr>
+     <table id="querymodel-bib1-completeness-table" frame="top">
+      <title>Completeness Attributes (type = 6)</title>
+      <tgroup cols="3">
+       <thead>
+        <row>
+         <entry>Completeness</entry>
+         <entry>Value</entry>
+         <entry>Notes</entry>
+        </row>
        </thead>
        <tbody>
-        <tr>
-         <td>Incomplete subfield</td>
-         <td>1</td>
-         <td>default</td>
-        </tr>
-        <tr>
-         <td>Complete subfield</td>
-         <td>2</td>
-         <td>deprecated</td>
-        </tr>
-        <tr>
-         <td>Complete field</td>
-         <td>3</td>
-         <td>supported</td>
-        </tr>
+        <row>
+         <entry>Incomplete subfield</entry>
+         <entry>1</entry>
+         <entry>default</entry>
+        </row>
+        <row>
+         <entry>Complete subfield</entry>
+         <entry>2</entry>
+         <entry>deprecated</entry>
+        </row>
+        <row>
+         <entry>Complete field</entry>
+         <entry>3</entry>
+         <entry>supported</entry>
+        </row>
        </tbody>
+      </tgroup>
      </table>
 
      <para>
@@ -1404,10 +1405,12 @@
      </para>
 
      <note>
-      The exact mapping between PQF queries and Zebra internal indexes
-      and index types is explained in 
+      <para>
+       The exact mapping between PQF queries and Zebra internal indexes
+       and index types is explained in 
        <xref linkend="querymodel-pqf-apt-mapping"/>.
-      </note>
+      </para>
+     </note>
     </sect3>
    </sect2>
   
@@ -1455,11 +1458,12 @@
      </screen>
     </para>
     <warning>
-     The special string index <literal>_ALLRECORDS</literal> is
-     experimental, and the provided functionality and syntax may very
-     well change in future releases of Zebra.
+     <para>
+      The special string index <literal>_ALLRECORDS</literal> is
+      experimental, and the provided functionality and syntax may very
+      well change in future releases of Zebra.
+     </para>
     </warning>
-    
    </sect2>
 
    <sect2 id="querymodel-zebra-attr-search">
@@ -1469,97 +1473,96 @@
      recognized regardless of attribute 
      set used in a <literal>search</literal> operation query.
     </para>
-
-     <table id="querymodel-zebra-attr-search-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Zebra Search Attribute Extensions</caption>
-       <thead>
-        <tr>
-         <td>Name</td>
-         <td>Value</td>
-         <td>Operation</td>
-         <td>Zebra version</td>
-        </tr>
+    
+    <table id="querymodel-zebra-attr-search-table" frame="top">
+     <title>Zebra Search Attribute Extensions</title>
+     <tgroup cols="4">
+      <thead>
+       <row>
+         <entry>Name</entry>
+	<entry>Value</entry>
+	<entry>Operation</entry>
+	<entry>Zebra version</entry>
+       </row>
       </thead>
-       <tbody>
-        <tr>
-         <td>Embedded Sort</td>
-         <td>7</td>
-         <td>search</td>
-         <td>1.1</td>
-        </tr>
-        <tr>
-         <td>Term Set</td>
-         <td>8</td>
-         <td>search</td>
-         <td>1.1</td>
-        </tr>
-        <tr>
-         <td>Rank Weight</td>
-         <td>9</td>
-         <td>search</td>
-         <td>1.1</td>
-        </tr>
-        <tr>
-         <td>Approx Limit</td>
-         <td>9</td>
-         <td>search</td>
-         <td>1.4</td>
-        </tr>
-        <tr>
-         <td>Term Reference</td>
-         <td>10</td>
-         <td>search</td>
-         <td>1.4</td>
-        </tr>
-       </tbody>
-      </table>      
-
+      <tbody>
+       <row>
+	<entry>Embedded Sort</entry>
+	<entry>7</entry>
+	<entry>search</entry>
+	<entry>1.1</entry>
+       </row>
+       <row>
+	<entry>Term Set</entry>
+	<entry>8</entry>
+	<entry>search</entry>
+	<entry>1.1</entry>
+       </row>
+       <row>
+	<entry>Rank Weight</entry>
+	<entry>9</entry>
+	<entry>search</entry>
+	<entry>1.1</entry>
+       </row>
+       <row>
+	<entry>Approx Limit</entry>
+	<entry>11</entry>
+	<entry>search</entry>
+	<entry>1.4</entry>
+       </row>
+       <row>
+	<entry>Term Reference</entry>
+	<entry>10</entry>
+	<entry>search</entry>
+	<entry>1.4</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>      
+    
     <sect3 id="querymodel-zebra-attr-sorting">
      <title>Zebra Extension Embedded Sort Attribute (type 7)</title>
-    </sect3>
-    <para>
-     The embedded sort is a way to specify sort within a query - thus
-     removing the need to send a Sort Request separately. It is both
-     faster and does not require clients to deal with the Sort
-     Facility. 
-    </para>
-
-    <para>
-     All ordering operations are based on a lexicographical ordering, 
-     <emphasis>expect</emphasis> when the 
-     <literal>structure attribute numeric (109)</literal> is used. In
-     this case, ordering is numerical. See 
+     <para>
+      The embedded sort is a way to specify sort within a query - thus
+      removing the need to send a Sort Request separately. It is both
+      faster and does not require clients to deal with the Sort
+      Facility. 
+     </para>
+     
+     <para>
+      All ordering operations are based on a lexicographical ordering, 
+      <emphasis>expect</emphasis> when the 
+      <literal>structure attribute numeric (109)</literal> is used. In
+      this case, ordering is numerical. See 
       <xref linkend="querymodel-bib1-structure"/>.
-    </para>
+     </para>
+     
+     <para>
+      The possible values after attribute <literal>type 7</literal> are
+      <literal>1</literal> ascending and 
+      <literal>2</literal> descending. 
+      The attributes+term (APT) node is separate from the
+      rest and must be <literal>@or</literal>'ed. 
+      The term associated with APT is the sorting level in integers,
+      where <literal>0</literal> means primary sort, 
+      <literal>1</literal> means secondary sort, and so forth.
+      See also <xref linkend="administration-ranking"/>.
+     </para>
+     <para>
+      For example, searching for water, sort by title (ascending) 
+      <screen>
+       Z> find @or @attr 1=1016 water @attr 7=1 @attr 1=4 0
+      </screen>
+     </para>
+     <para>
+      Or, searching for water, sort by title ascending, then date descending
+      <screen>
+       Z> find @or @or @attr 1=1016 water @attr 7=1 @attr 1=4 0 @attr 7=2 @attr 1=30 1
+      </screen>
+     </para>
+    </sect3>
 
-    <para>
-     The possible values after attribute <literal>type 7</literal> are
-     <literal>1</literal> ascending and 
-     <literal>2</literal> descending. 
-     The attributes+term (APT) node is separate from the
-     rest and must be <literal>@or</literal>'ed. 
-     The term associated with APT is the sorting level in integers,
-     where <literal>0</literal> means primary sort, 
-     <literal>1</literal> means secondary sort, and so forth.
-     See also <xref linkend="administration-ranking"/>.
-    </para>
-    <para>
-     For example, searching for water, sort by title (ascending) 
-     <screen>
-      Z> find @or @attr 1=1016 water @attr 7=1 @attr 1=4 0
-     </screen>
-    </para>
-    <para>
-     Or, searching for water, sort by title ascending, then date descending
-     <screen>
-      Z> find @or @or @attr 1=1016 water @attr 7=1 @attr 1=4 0 @attr 7=2 @attr 1=30 1
-     </screen>
-    </para>
-    
-
-    <!--
+     <!--
     Zebra Extension Term Set Attribute
     From the manual text, I can not see what is the point with this feature.
     I think it makes more sense when there are multiple terms in a query, or
@@ -1570,7 +1573,7 @@
     feature for good performance.
     -->
 
-    <!--
+     <!--
     <sect3 id="querymodel-zebra-attr-estimation">
      <title>Zebra Extension Term Set Attribute (type 8)</title>
     <para>
@@ -1598,89 +1601,96 @@
 
     <sect3 id="querymodel-zebra-attr-weight">
      <title>Zebra Extension Rank Weight Attribute (type 9)</title>
-    </sect3>
-    <para>
-     Rank weight is a way to pass a value to a ranking algorithm - so
-     that one APT has one value - while another as a different one. 
-     See also <xref linkend="administration-ranking"/>.
-    </para>
-    <para>
-     For example, searching  for utah in title with weight 30 as well
-     as any with weight 20: 
-     <screen>  
-      Z> find @attr 2=102 @or @attr 9=30 @attr 1=4 utah @attr 9=20 utah
-     </screen>
-    </para>
-
+     <para>
+      Rank weight is a way to pass a value to a ranking algorithm - so
+      that one APT has one value - while another as a different one. 
+      See also <xref linkend="administration-ranking"/>.
+     </para>
+     <para>
+      For example, searching  for utah in title with weight 30 as well
+      as any with weight 20: 
+      <screen>  
+       Z> find @attr 2=102 @or @attr 9=30 @attr 1=4 utah @attr 9=20 utah
+      </screen>
+     </para>
+     </sect3>
+     
     <sect3 id="querymodel-zebra-attr-limit">
      <title>Zebra Extension Approximative Limit Attribute (type 11)</title>
+     <para>
+      Zebra  computes - unless otherwise configured -
+      the exact hit count for every APT
+      (leaf) in the query tree. These hit counts are returned as part of
+      the searchResult-1 facility in the binary encoded Z39.50 search
+      response packages.
+     </para>
+     <para>
+      By setting an estimation limit size of the resultset of the APT
+      leaves, Zebra stoppes processing the result set when the limit
+      length is reached.
+      Hit counts under this limit are still precise, but hit counts over it
+      are estimated using the statistics gathered from the chopped
+      result set.
+     </para>
+     <para>
+      Specifying a limit of <literal>0</literal> resuts in exact hit counts.
+     </para>
+     <para>
+      For example, we might be interested in exact hit count for a, but
+      for b we allow hit count estimates for 1000 and higher. 
+      <screen>
+       Z> find @and a @attr 11=1000 b
+      </screen>
+     </para>
+     <note>
+      <para>
+       The estimated hit count facility makes searches faster, as one
+       only needs to process large hit lists partially.
+       It is mostly used in huge databases, where you you want trade
+       exactness of hit counts against speed of execution. 
+      </para>
+     </note>
+     <warning>
+      <para>
+       Do not use approximative hit count limits
+       in conjunction with relevance ranking, as re-sorting of the
+       result set obviosly only works when the entire result set has
+       been processed. 
+      </para>
+     </warning>
+     <warning>
+      <para>
+       This facility clashes with rank weight, because there all
+       documents in the hit lists need to be examined for scoring and
+       re-sorting.
+       It is an experimental
+       extension. Do not use in production code.
+      </para>
+     </warning>
     </sect3>
-    <para>
-     Zebra  computes - unless otherwise configured -
-     the exact hit count for every APT
-     (leaf) in the query tree. These hit counts are returned as part of
-     the searchResult-1 facility in the binary encoded Z39.50 search
-     response packages.
-    </para>
-    <para>
-     By setting an estimation limit size of the resultset of the APT
-     leaves, Zebra stoppes processing the result set when the limit
-     length is reached.
-     Hit counts under this limit are still precise, but hit counts over it
-     are estimated using the statistics gathered from the chopped
-     result set.
-    </para>
-    <para>
-     Specifying a limit of <literal>0</literal> resuts in exact hit counts.
-    </para>
-    <para>
-     For example, we might be interested in exact hit count for a, but
-     for b we allow hit count estimates for 1000 and higher. 
-     <screen>
-      Z> find @and a @attr 11=1000 b
-     </screen>
-    </para>
-    <note>
-     The estimated hit count facility makes searches faster, as one
-     only needs to process large hit lists partially.
-     It is mostly used in huge databases, where you you want trade
-     exactness of hit counts against speed of execution. 
-    </note>
-    <warning>
-     Do not use approximative hit count limits
-     in conjunction with relevance ranking, as re-sorting of the
-     result set obviosly only works when the entire result set has
-     been processed. 
-    </warning>
-    <warning>
-     This facility clashes with rank weight, because there all
-     documents in the hit lists need to be examined for scoring and
-     re-sorting.
-     It is an experimental
-     extension. Do not use in production code.
-    </warning>
 
     <sect3 id="querymodel-zebra-attr-termref">
      <title>Zebra Extension Term Reference Attribute (type 10)</title>
-    </sect3>
-    <para>
-     Zebra supports the <literal>searchResult-1</literal> facility. 
-     If the <literal>Term Reference Attribute (type 10)</literal> is
-     given, that specifies a subqueryId value returned as part of the
-     search result. It is a way for a client to name an APT part of a
-     query. 
-    </para>
-    <!--
-    <para>
+     <para>
+      Zebra supports the searchResult-1 facility. 
+      If the Term Reference Attribute (type 10) is
+      given, that specifies a subqueryId value returned as part of the
+      search result. It is a way for a client to name an APT part of a
+      query. 
+     </para>
+     <!--
+     <para>
      <screen>
-     </screen>
+    </screen>
     </para>
-    -->
-    <warning>
-     Experimental. Do not use in production code.
-    </warning>
-
-
+     -->
+     <warning>
+      <para>
+       Experimental. Do not use in production code.
+       </para>
+     </warning>
+     
+    </sect3>
    </sect2>
     
 
@@ -1689,52 +1699,51 @@
     <para>
      Zebra extends the Bib1 attribute types, and these extensions are
      recognized regardless of attribute 
-     set used in a <literal>scan</literal> operation query.
+     set used in a scan operation query.
     </para>
-     <table id="querymodel-zebra-attr-scan-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Zebra Scan Attribute Extensions</caption>
-       <thead>
-        <tr>
-         <td>Name</td>
-         <td>Type</td>
-         <td>Operation</td>
-         <td>Zebra version</td>
-        </tr>
+    <table id="querymodel-zebra-attr-scan-table" frame="top">
+     <title>Zebra Scan Attribute Extensions</title>
+     <tgroup cols="4">
+      <thead>
+       <row>
+	<entry>Name</entry>
+	<entry>Type</entry>
+	<entry>Operation</entry>
+	<entry>Zebra version</entry>
+       </row>
       </thead>
-       <tbody>
-        <tr>
-         <td>Result Set Narrow</td>
-         <td>8</td>
-         <td>scan</td>
-         <td>1.3</td>
-        </tr>
-        <tr>
-         <td>Approximative Limit</td>
-         <td>9</td>
-         <td>scan</td>
-         <td>1.4</td>
-        </tr>
-       </tbody>
-      </table>      
-
+      <tbody>
+       <row>
+	<entry>Result Set Narrow</entry>
+	<entry>8</entry>
+	<entry>scan</entry>
+	<entry>1.3</entry>
+       </row>
+       <row>
+	<entry>Approximative Limit</entry>
+	<entry>9</entry>
+	<entry>scan</entry>
+	<entry>1.4</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>      
+    
     <sect3 id="querymodel-zebra-attr-narrow">
      <title>Zebra Extension Result Set Narrow (type 8)</title>
-    </sect3>
-    <para>
-     If attribute <literal>Result Set Narrow (type 8)</literal> 
-     is given for <literal>scan</literal>, the value is the name of a
-     result set. Each hit count in <literal>scan</literal> is 
-     <literal>@and</literal>'ed with the result set given. 
-    </para>
-    <para>
-     Consider for example 
-     the case of scanning all title fields around the
-     scanterm <emphasis>mozart</emphasis>, then refining the scan by
-     issuing a filtering query for <emphasis>amadeus</emphasis> to
-     restrict the scan to the result set of the query:  
-     <screen>
+     <para>
+      If attribute Result Set Narrow (type 8)
+      is given for scan, the value is the name of a
+      result set. Each hit count in scan is 
+      <literal>@and</literal>'ed with the result set given. 
+     </para>
+     <para>
+      Consider for example 
+      the case of scanning all title fields around the
+      scanterm <emphasis>mozart</emphasis>, then refining the scan by
+      issuing a filtering query for <emphasis>amadeus</emphasis> to
+      restrict the scan to the result set of the query:  
+      <screen>
       Z> scan @attr 1=4 mozart 
       ...
       * mozart (43)
@@ -1753,42 +1762,42 @@
         mozartiana (0)
         mozarts (1)
       ...
-     </screen>
-    </para>
-   
+      </screen>
+     </para>
+     
     <warning>
-     Experimental. Do not use in production code.
-    </warning>
+      <para>
+       Experimental. Do not use in production code.
+      </para>
+     </warning>
+    </sect3>
 
     <sect3 id="querymodel-zebra-attr-approx">
      <title>Zebra Extension Approximative Limit (type 11)</title>
-    </sect3>
-    <para>
-     The <literal>Zebra Extension Approximative Limit (type
-      11)</literal> is a way to enable approximate
-     hit counts for <literal>scan</literal> hit counts, in the same
-     way as for <literal>search</literal> hit counts. 
-    </para>
-    <!--
-    <para>
+     <para>
+      The Zebra Extension Approximative Limit (type 11) is a way to
+      enable approximate hit counts for scan hit counts, in the same
+      way as for search hit counts. 
+     </para>
+     <!--
+     <para>
      <screen>
-     </screen>
+    </screen>
     </para>
-    -->
-    <warning>
-     Experimental and buggy. Definitely not to be used in production code.
-    </warning>
-
-
+     -->
+     <warning>
+      <para>
+       Experimental and buggy. Definitely not to be used in production code.
+      </para>
+     </warning>
+    </sect3>
    </sect2>
-   
    
    <sect2 id="querymodel-idxpath">
     <title>Zebra special IDXPATH Attribute Set for GRS indexing</title>
     <para>
      The attribute-set <literal>idxpath</literal> consists of a single 
-     <literal>Use (type 1)</literal> attribute. All non-use attributes
-     behave as normal. 
+     Use (type 1) attribute. All non-use attributes behave as normal. 
     </para>
     <para>
      This feature is enabled when defining the
@@ -1798,9 +1807,12 @@
      main Zebra configuration file <filename>zebra.cfg</filename>
      directive <literal>attset: idxpath.att</literal> must be enabled.
     </para>
-    <warning>The <literal>idxpath</literal> is deprecated, may not be
-     supported in future Zebra versions, and should definitely
-     not be used in production code.
+    <warning>
+     <para>
+      The <literal>idxpath</literal> is deprecated, may not be
+      supported in future Zebra versions, and should definitely
+      not be used in production code.
+     </para>
     </warning>
 
     <sect3 id="querymodel-idxpath-use">
@@ -1810,56 +1822,58 @@
       records by XPATH like structured index names. 
      </para>
 
-     <warning>The <literal>idxpath</literal> option defines hard-coded
-      index names, which might clash with your own index names.
+     <warning>
+      <para>
+       The <literal>idxpath</literal> option defines hard-coded
+       index names, which might clash with your own index names.
+      </para>
      </warning>
      
-     <table id="querymodel-idxpath-use-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Zebra specific IDXPATH Use Attributes (type 1)</caption>
-      <thead>
-        <tr>
-         <td>IDXPATH</td>
-         <td>Value</td>
-         <td>String Index</td>
-         <td>Notes</td>
-        </tr>
+     <table id="querymodel-idxpath-use-table" frame="top">
+      <title>Zebra specific IDXPATH Use Attributes (type 1)</title>
+      <tgroup cols="4">
+       <thead>
+        <row>
+         <entry>IDXPATH</entry>
+         <entry>Value</entry>
+         <entry>String Index</entry>
+         <entry>Notes</entry>
+        </row>
        </thead>
        <tbody>
-        <tr>
-         <td>XPATH Begin</td>
-         <td>1</td>
-         <td>_XPATH_BEGIN</td>
-         <td>deprecated</td>
-        </tr>
-        <tr>
-         <td>XPATH End</td>
-         <td>2</td>
-         <td>_XPATH_END</td>
-         <td>deprecated</td>
-        </tr>
-        <tr>
-         <td>XPATH CData</td>
-         <td>1016</td>
-         <td>_XPATH_CDATA</td>
-         <td>deprecated</td>
-        </tr>
-        <tr>
-         <td>XPATH Attribute Name</td>
-         <td>3</td>
-         <td>_XPATH_ATTR_NAME</td>
-         <td>deprecated</td>
-        </tr>
-        <tr>
-         <td>XPATH Attribute CData</td>
-         <td>1015</td>
-         <td>_XPATH_ATTR_CDATA</td>
-         <td>deprecated</td>
-        </tr>
+        <row>
+         <entry>XPATH Begin</entry>
+         <entry>1</entry>
+         <entry>_XPATH_BEGIN</entry>
+         <entry>deprecated</entry>
+        </row>
+        <row>
+         <entry>XPATH End</entry>
+         <entry>2</entry>
+         <entry>_XPATH_END</entry>
+         <entry>deprecated</entry>
+        </row>
+        <row>
+         <entry>XPATH CData</entry>
+         <entry>1016</entry>
+         <entry>_XPATH_CDATA</entry>
+         <entry>deprecated</entry>
+        </row>
+        <row>
+         <entry>XPATH Attribute Name</entry>
+         <entry>3</entry>
+         <entry>_XPATH_ATTR_NAME</entry>
+         <entry>deprecated</entry>
+        </row>
+        <row>
+         <entry>XPATH Attribute CData</entry>
+         <entry>1015</entry>
+         <entry>_XPATH_ATTR_CDATA</entry>
+         <entry>deprecated</entry>
+        </row>
        </tbody>
+      </tgroup>
      </table>
-
 
      <para>
       See <filename>tab/idxpath.att</filename> for more information.
@@ -1952,54 +1966,54 @@
       All other access point types are Zebra specific, and non-portable.
     </para>
 
-     <table id="querymodel-zebra-mapping-accesspoint-types"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Access point name mapping</caption>
+     <table id="querymodel-zebra-mapping-accesspoint-types" frame="top">
+      <title>Access point name mapping</title>
+      <tgroup cols="4">
        <thead>
-        <tr>
-         <td>Access Point</td>
-         <td>Type</td>
-         <td>Grammar</td>
-         <td>Notes</td>
-        </tr>
+        <row>
+         <entry>Access Point</entry>
+         <entry>Type</entry>
+         <entry>Grammar</entry>
+         <entry>Notes</entry>
+        </row>
       </thead>
       <tbody>
-       <tr>
-        <td>Use attribute</td>
-        <td>numeric</td>
-        <td>[1-9][1-9]*</td>
-        <td>directly mapped to string index name</td>
-       </tr>
-       <tr>
-        <td>String index name</td>
-        <td>string</td>
-        <td>[a-zA-Z](\-?[a-zA-Z0-9])*</td>
-        <td>normalized name is used as internal string index name</td>
-       </tr>
-       <tr>
-        <td>Zebra internal index name</td>
-        <td>zebra</td>
-        <td>_[a-zA-Z](_?[a-zA-Z0-9])*</td>
-        <td>hardwired internal string index name</td>
-       </tr>
-       <tr>
-        <td>XPATH special index</td>
-        <td>XPath</td>
-        <td>/.*</td>
-        <td>special xpath search for GRS indexed records</td>
-       </tr>
-      </tbody>
-    </table>
-
-    <para>
-     <literal>Attribute set names</literal> and 
-     <literal>string index names</literal> are normalizes
-     according to the following rules: all <emphasis>single</emphasis>
-     hyphens <literal>'-'</literal> are stripped, and all upper case
-     letters are folded to lower case.
+       <row>
+        <entry>Use attribute</entry>
+        <entry>numeric</entry>
+        <entry>[1-9][1-9]*</entry>
+        <entry>directly mapped to string index name</entry>
+       </row>
+       <row>
+        <entry>String index name</entry>
+        <entry>string</entry>
+        <entry>[a-zA-Z](\-?[a-zA-Z0-9])*</entry>
+        <entry>normalized name is used as internal string index name</entry>
+       </row>
+       <row>
+        <entry>Zebra internal index name</entry>
+        <entry>zebra</entry>
+        <entry>_[a-zA-Z](_?[a-zA-Z0-9])*</entry>
+        <entry>hardwired internal string index name</entry>
+       </row>
+       <row>
+        <entry>XPATH special index</entry>
+        <entry>XPath</entry>
+        <entry>/.*</entry>
+        <entry>special xpath search for GRS indexed records</entry>
+       </row>
+       </tbody>
+      </tgroup>
+     </table>
+     
+     <para>
+      <literal>Attribute set names</literal> and 
+      <literal>string index names</literal> are normalizes
+      according to the following rules: all <emphasis>single</emphasis>
+      hyphens <literal>'-'</literal> are stripped, and all upper case
+      letters are folded to lower case.
      </para>
-
+     
      <para>
       <emphasis>Numeric use attributes</emphasis> are mapped 
       to the Zebra internal
@@ -2035,9 +2049,8 @@
       fields as specified in the <literal>.abs</literal> file which
       describes the profile of the records which have been loaded.
       If no use attribute is provided, a default of 
-      <literal>Bib-1 Use Any (1016)</literal> is
-      assumed.
-      The predefined <literal>use attribute sets</literal>
+      Bib-1 Use Any (1016) is assumed.
+      The predefined use attribute sets
       can be reconfigured by  tweaking the configuration files
       <filename>tab/*.att</filename>, and 
       new attribute sets can be defined by adding similar files in the
@@ -2045,10 +2058,10 @@
     </para>
 
      <para>
-      <literal>String indexes</literal> can be accessed directly,
+      String indexes can be accessed directly,
       independently which attribute set is in use. These are just
       ignored. The above mentioned name normalization applies.
-      <literal>String index names</literal> are defined in the
+      String index names are defined in the
       used indexing  filter configuration files, for example in the
       <literal>GRS</literal> 
       <filename>*.abs</filename> configuration files, or in the
@@ -2056,10 +2069,10 @@
      </para>
 
      <para>
-      <literal>Zebra internal indexes</literal> can be accessed directly,
+      Zebra internal indexes can be accessed directly,
       according to the same rules as the user defined
-      <literal>string indexes</literal>. The only difference is that   
-      <literal>Zebra internal index names</literal> are hardwired,
+      string indexes. The only difference is that   
+      Zebra internal index names are hardwired,
       all uppercase and
       must start with the character <literal>'_'</literal>. 
      </para>
@@ -2089,87 +2102,87 @@
       bitfields and string based text needs different rule sets. 
      </para>
 
-     <table id="querymodel-zebra-mapping-structure-types"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Structure and completeness mapping to register types</caption>
+     <table id="querymodel-zebra-mapping-structure-types" frame="top">
+      <title>Structure and completeness mapping to register types</title>
+      <tgroup cols="4">
        <thead>
-        <tr>
-         <td>Structure</td>
-         <td>Completeness</td>
-         <td>Register type</td>
-         <td>Notes</td>
-        </tr>
-      </thead>
-      <tbody>
-       <tr>
-        <td>
+        <row>
+         <entry>Structure</entry>
+         <entry>Completeness</entry>
+         <entry>Register type</entry>
+         <entry>Notes</entry>
+        </row>
+       </thead>
+       <tbody>
+	<row>
+	 <entry>
           phrase (@attr 4=1), word (@attr 4=2), 
           word-list (@attr 4=6),
           free-form-text  (@attr 4=105), or document-text (@attr 4=106)
-         </td>
-        <td>Incomplete field (@attr 6=1)</td>
-        <td>Word ('w')</td>
-        <td>Traditional tokenized and character normalized word index</td>
-       </tr>
-       <tr>
-        <td>
+         </entry>
+	 <entry>Incomplete field (@attr 6=1)</entry>
+	 <entry>Word ('w')</entry>
+	 <entry>Traditional tokenized and character normalized word index</entry>
+	</row>
+	<row>
+	 <entry>
           phrase (@attr 4=1), word (@attr 4=2), 
           word-list (@attr 4=6),
           free-form-text  (@attr 4=105), or document-text (@attr 4=106)
-         </td>
-        <td>complete field' (@attr 6=3)</td>
-        <td>Phrase ('p')</td>
-        <td>Character normalized, but not tokenized index for phrase
+         </entry>
+	 <entry>complete field' (@attr 6=3)</entry>
+	 <entry>Phrase ('p')</entry>
+	 <entry>Character normalized, but not tokenized index for phrase
           matches
-         </td>
-       </tr>
-       <tr>
-        <td>urx (@attr 4=104)</td>
-        <td>ignored</td>
-        <td>URX/URL ('u')</td>
-        <td>Special index for URL web addresses</td>
-       </tr>
-       <tr>
-        <td>numeric (@attr 4=109)</td>
-        <td>ignored</td>
-        <td>Numeric ('u')</td>
-        <td>Special index for digital numbers</td>
-       </tr>
-       <tr>
-        <td>key (@attr 4=3)</td>
-        <td>ignored</td>
-        <td>Null bitmap ('0')</td>
-        <td>Used for non-tokenizated and non-normalized bit sequences</td>
-       </tr>
-       <tr>
-        <td>year (@attr 4=4)</td>
-        <td>ignored</td>
-        <td>Year ('y')</td>
-        <td>Non-tokenizated and non-normalized 4 digit numbers</td>
-       </tr>
-       <tr>
-        <td>date (@attr 4=5)</td>
-        <td>ignored</td>
-        <td>Date ('d')</td>
-        <td>Non-tokenizated and non-normalized ISO date strings</td>
-       </tr>
-       <tr>
-        <td>ignored</td>
-        <td>ignored</td>
-        <td>Sort ('s')</td>
-        <td>Used with special sort attribute set (@attr 7=1, @attr 7=2)</td>
-       </tr>
-       <tr>
-        <td>overruled</td>
-        <td>overruled</td>
-        <td>special</td>
-        <td>Internal record ID register, used whenever 
-         Relation Always Matches (@attr 2=103) is specified</td>
-       </tr>
-      </tbody>
-    </table>
-
+         </entry>
+	</row>
+	<row>
+	 <entry>urx (@attr 4=104)</entry>
+	 <entry>ignored</entry>
+	 <entry>URX/URL ('u')</entry>
+	 <entry>Special index for URL web addresses</entry>
+	</row>
+	<row>
+	 <entry>numeric (@attr 4=109)</entry>
+	 <entry>ignored</entry>
+	 <entry>Numeric ('u')</entry>
+	 <entry>Special index for digital numbers</entry>
+	</row>
+	<row>
+	 <entry>key (@attr 4=3)</entry>
+	 <entry>ignored</entry>
+	 <entry>Null bitmap ('0')</entry>
+	 <entry>Used for non-tokenizated and non-normalized bit sequences</entry>
+	</row>
+	<row>
+	 <entry>year (@attr 4=4)</entry>
+	 <entry>ignored</entry>
+	 <entry>Year ('y')</entry>
+	 <entry>Non-tokenizated and non-normalized 4 digit numbers</entry>
+	</row>
+	<row>
+	 <entry>date (@attr 4=5)</entry>
+	 <entry>ignored</entry>
+	 <entry>Date ('d')</entry>
+	 <entry>Non-tokenizated and non-normalized ISO date strings</entry>
+	</row>
+	<row>
+	 <entry>ignored</entry>
+	 <entry>ignored</entry>
+	 <entry>Sort ('s')</entry>
+	 <entry>Used with special sort attribute set (@attr 7=1, @attr 7=2)</entry>
+	</row>
+	<row>
+	 <entry>overruled</entry>
+	 <entry>overruled</entry>
+	 <entry>special</entry>
+	 <entry>Internal record ID register, used whenever 
+	  Relation Always Matches (@attr 2=103) is specified</entry>
+	</row>
+       </tbody>
+      </tgroup>
+     </table>
+     
      <!-- see in util/zebramap.c -->
         
     <para>
@@ -2183,7 +2196,7 @@
      GRS <filename>*.abs</filename> file that contains a
      <literal>p</literal>-specifier.
       <screen>
-       Z>  scan @attr 1=Title @attr 4=1 @attr 6=3 beethoven 
+       Z> scan @attr 1=Title @attr 4=1 @attr 6=3 beethoven 
        ...
        bayreuther festspiele (1)
        * beethoven bibliography database (1)
@@ -2209,7 +2222,7 @@
      The word search is performed on those fields that are indexed as
      type <literal>w</literal> in the GRS <filename>*.abs</filename> file.
       <screen>
-       Z>  scan @attr 1=Title @attr 4=1 @attr 6=1 beethoven 
+       Z> scan @attr 1=Title @attr 4=1 @attr 6=1 beethoven 
        ...
          beefheart (1)
        * beethoven (18)
@@ -2298,77 +2311,68 @@
      Both query types follow the same syntax with the operands:
     </para>
 
-     <table id="querymodel-regular-operands-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Regular Expression Operands</caption>
-       <!--
-       <thead>
-       <tr><td>one</td><td>two</td></tr>
-      </thead>
-       -->
-       <tbody>
-        <tr>
-         <td><literal>x</literal></td>
-         <td>Matches the character <literal>x</literal>.</td>
-        </tr>
-        <tr>
-         <td><literal>.</literal></td>
-         <td>Matches any character.</td>
-        </tr>
-        <tr>
-         <td><literal>[ .. ]</literal></td>
-         <td>Matches the set of characters specified;
-         such as <literal>[abc]</literal> or <literal>[a-c]</literal>.</td>
-        </tr>
-       </tbody>
-      </table>      
+    <table id="querymodel-regular-operands-table" frame="top">
+     <title>Regular Expression Operands</title>
+     <tgroup cols="2">
+      <tbody>
+       <row>
+	<entry><literal>x</literal></entry>
+	<entry>Matches the character <literal>x</literal>.</entry>
+       </row>
+       <row>
+	<entry><literal>.</literal></entry>
+	<entry>Matches any character.</entry>
+       </row>
+       <row>
+	<entry><literal>[ .. ]</literal></entry>
+	<entry>Matches the set of characters specified;
+         such as <literal>[abc]</literal> or <literal>[a-c]</literal>.</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>      
 
     <para>
      The above operands can be combined with the following operators:
     </para>
-
-     <table id="querymodel-regular-operators-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-      <caption>Regular Expression Operators</caption>
-       <!--
-       <thead>
-       <tr><td>one</td><td>two</td></tr>
-      </thead>
-       -->
-       <tbody>
-        <tr>
-         <td><literal>x*</literal></td>
-         <td>Matches <literal>x</literal> zero or more times. 
-          Priority: high.</td>
-        </tr>
-        <tr>
-         <td><literal>x+</literal></td>
-         <td>Matches <literal>x</literal> one or more times. 
-          Priority: high.</td>
-        </tr>
-        <tr>
-         <td><literal>x?</literal></td>
-         <td> Matches <literal>x</literal> zero or once. 
-          Priority: high.</td>
-        </tr>
-        <tr>
-         <td><literal>xy</literal></td>
-         <td> Matches <literal>x</literal>, then <literal>y</literal>.
-         Priority: medium.</td>
-        </tr>
-        <tr>
-         <td><literal>x|y</literal></td>
-         <td> Matches either <literal>x</literal> or <literal>y</literal>.
-         Priority: low.</td>
-        </tr>
-        <tr>
-         <td><literal>( )</literal></td>
-         <td>The order of evaluation may be changed by using parentheses.</td>
-        </tr>
-       </tbody>
-      </table>      
-
+    
+    <table id="querymodel-regular-operators-table" frame="top">
+     <title>Regular Expression Operators</title>
+     <tgroup cols="2">
+      <tbody>
+       <row>
+	<entry><literal>x*</literal></entry>
+	<entry>Matches <literal>x</literal> zero or more times. 
+	 Priority: high.</entry>
+       </row>
+       <row>
+	<entry><literal>x+</literal></entry>
+	<entry>Matches <literal>x</literal> one or more times. 
+	 Priority: high.</entry>
+       </row>
+       <row>
+	<entry><literal>x?</literal></entry>
+	<entry> Matches <literal>x</literal> zero or once. 
+	 Priority: high.</entry>
+       </row>
+       <row>
+	<entry><literal>xy</literal></entry>
+	<entry> Matches <literal>x</literal>, then <literal>y</literal>.
+         Priority: medium.</entry>
+       </row>
+       <row>
+	<entry><literal>x|y</literal></entry>
+	<entry> Matches either <literal>x</literal> or <literal>y</literal>.
+         Priority: low.</entry>
+       </row>
+       <row>
+	<entry><literal>( )</literal></entry>
+	<entry>The order of evaluation may be changed by using parentheses.</entry>
+       </row>
+      </tbody>
+      </tgroup>
+    </table>      
+    
     <para>
      If the first character of the <literal>Regxp-2</literal> query
      is a plus character (<literal>+</literal>) it marks the

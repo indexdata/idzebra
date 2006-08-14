@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.41 2006-06-30 10:58:41 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.42 2006-08-14 22:33:46 adam Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -1288,7 +1288,6 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     with or without static ranking enabled.
     </para>
  
-    </sect3>
 
     <!--
     <sect3 id="administration-ranking-dynamic-rank1">
@@ -1308,7 +1307,6 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
    </para>
     </sect3>
     -->
-
  
    <warning>
      <para>
@@ -1332,6 +1330,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     mitaylor2microsoft.com
    -->
 
+    </sect3>
 
     <sect3 id="administration-ranking-dynamic-cql">
      <title>Dynamically ranking CQL queries</title>
@@ -1437,12 +1436,14 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
   <title>Extended Services: Remote Insert, Update and Delete</title>
   
    <note>
+    <para>
      Extended services are only supported when accessing the Zebra
      server using the <ulink url="&url.z39.50;">Z39.50</ulink>
      protocol. The <ulink url="&url.sru;">SRU</ulink> protocol does
      not support extended services.
-    </note>
-
+    </para>
+   </note>
+   
   <para>
     The extended services are not enabled by default in zebra - due to the
     fact that they modify the system. Zebra can be configured
@@ -1483,20 +1484,23 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
      shadow: directoryname: size (e.g. 1000M)
     </screen>
    </para>
-   <note>It is not possible to carry information about record types or
-    similar to Zebra when using extended services, due to
-    limitations of the <ulink url="&url.z39.50;">Z39.50</ulink>
-    protocol. Therefore, indexing filters can not be chosen on a
-    per-record basis. One and only one general XML indexing filter
-    must be defined.  
-    <!-- but because it is represented as an OID, we would need some
-    form of proprietary mapping scheme between record type strings and
-    OIDs. -->
-    <!--
-    However, as a minimum, it would be extremely useful to enable
-    people to use MARC21, assuming grs.marcxml.marc21 as a record
-    type.  
-    -->
+   <note>
+    <para>
+     It is not possible to carry information about record types or
+     similar to Zebra when using extended services, due to
+     limitations of the <ulink url="&url.z39.50;">Z39.50</ulink>
+     protocol. Therefore, indexing filters can not be chosen on a
+     per-record basis. One and only one general XML indexing filter
+     must be defined.  
+     <!-- but because it is represented as an OID, we would need some
+     form of proprietary mapping scheme between record type strings and
+     OIDs. -->
+     <!--
+     However, as a minimum, it would be extremely useful to enable
+     people to use MARC21, assuming grs.marcxml.marc21 as a record
+     type.  
+     -->
+    </para>
    </note>
 
 
@@ -1511,69 +1515,68 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
      information to the servers, which are encoded in seven package fields: 
     </para>
 
-
-     <table id="administration-extended-services-z3950-table"
-      frame="all" rowsep="1" colsep="1" align="center">
-
-      <caption>Extended services Z39.50 Package Fields</caption>
+    <table id="administration-extended-services-z3950-table" frame="top">
+     <title>Extended services Z39.50 Package Fields</title>
+      <tgroup cols="3">
        <thead>
-       <tr>
-         <td>Parameter</td>
-         <td>Value</td>
-         <td>Notes</td>
-        </tr>
+       <row>
+         <entry>Parameter</entry>
+         <entry>Value</entry>
+         <entry>Notes</entry>
+        </row>
       </thead>
        <tbody>
-        <tr>
-         <td><literal>type</literal></td>
-         <td><literal>'update'</literal></td>
-         <td>Must be set to trigger extended services</td>
-        </tr>
-        <tr>
-         <td><literal>action</literal></td>
-         <td><literal>string</literal></td>
-        <td>
+        <row>
+         <entry><literal>type</literal></entry>
+         <entry><literal>'update'</literal></entry>
+         <entry>Must be set to trigger extended services</entry>
+        </row>
+        <row>
+         <entry><literal>action</literal></entry>
+         <entry><literal>string</literal></entry>
+        <entry>
          Extended service action type with 
          one of four possible values: <literal>recordInsert</literal>,
          <literal>recordReplace</literal>,
          <literal>recordDelete</literal>,
          and <literal>specialUpdate</literal>
-        </td>
-        </tr>
-        <tr>
-         <td><literal>record</literal></td>
-         <td><literal>XML string</literal></td>
-         <td>An XML formatted string containing the record</td>
-        </tr>
-        <tr>
-         <td><literal>syntax</literal></td>
-         <td><literal>'xml'</literal></td>
-         <td>Only XML record syntax is supported</td>
-        </tr>
-        <tr>
-         <td><literal>recordIdOpaque</literal></td>
-         <td><literal>string</literal></td>
-         <td>
+        </entry>
+        </row>
+        <row>
+         <entry><literal>record</literal></entry>
+         <entry><literal>XML string</literal></entry>
+         <entry>An XML formatted string containing the record</entry>
+        </row>
+        <row>
+         <entry><literal>syntax</literal></entry>
+         <entry><literal>'xml'</literal></entry>
+         <entry>Only XML record syntax is supported</entry>
+        </row>
+        <row>
+         <entry><literal>recordIdOpaque</literal></entry>
+         <entry><literal>string</literal></entry>
+         <entry>
          Optional  client-supplied, opaque record
          identifier used under insert operations.
-        </td>
-        </tr>
-        <tr>
-         <td><literal>recordIdNumber </literal></td>
-         <td><literal>positive number</literal></td>
-         <td>Zebra's internal system number, only for update
+        </entry>
+        </row>
+        <row>
+         <entry><literal>recordIdNumber </literal></entry>
+         <entry><literal>positive number</literal></entry>
+         <entry>Zebra's internal system number, only for update
          actions.
-        </td>
-        </tr>
-        <tr>
-         <td><literal>databaseName</literal></td>
-         <td><literal>database identifier</literal></td>
-        <td>
+        </entry>
+        </row>
+        <row>
+         <entry><literal>databaseName</literal></entry>
+         <entry><literal>database identifier</literal></entry>
+        <entry>
          The name of the database to which the extended services should be 
          applied.
-        </td>
-        </tr>
-        </tbody>
+        </entry>
+        </row>
+      </tbody>
+      </tgroup>
      </table>
 
 
