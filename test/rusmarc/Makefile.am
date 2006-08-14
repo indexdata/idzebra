@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.7 2006-07-03 14:27:27 adam Exp $
+# $Id: Makefile.am,v 1.8 2006-08-14 10:40:29 adam Exp $
 
 check_PROGRAMS = t1
 
@@ -9,8 +9,8 @@ EXTRA_DIST = zebra.cfg test.sh
 dist-hook:
 	mkdir -p $(distdir)/records
 	mkdir -p $(distdir)/tab
-	-cp -p $(srcdir)/records/* $(distdir)/records
-	-cp -p $(srcdir)/tab/* $(distdir)/tab
+	-cp $(srcdir)/records/simple-rusmarc $(distdir)/records
+	-cp $(srcdir)/tab/* $(distdir)/tab
 
 t1_SOURCES = t1.c
 

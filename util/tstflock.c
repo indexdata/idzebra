@@ -1,9 +1,24 @@
-/*
- * Copyright (C) 1995-2006, Index Data ApS
- * See the file LICENSE for details.
- *
- * $Id: tstflock.c,v 1.15 2006-07-05 12:33:38 adam Exp $
- */
+/* $Id: tstflock.c,v 1.16 2006-08-14 10:40:34 adam Exp $
+   Copyright (C) 1995-2006
+   Index Data ApS
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+*/
 
 #include <assert.h>
 #include <stdlib.h>

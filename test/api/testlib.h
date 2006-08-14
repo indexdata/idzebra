@@ -1,5 +1,5 @@
-/* $Id: testlib.h,v 1.19 2006-05-10 08:13:35 adam Exp $
-   Copyright (C) 1995-2005
+/* $Id: testlib.h,v 1.20 2006-08-14 10:40:22 adam Exp $
+   Copyright (C) 1995-2006
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 /** testlib - utilities for the api tests */

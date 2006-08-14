@@ -1,4 +1,4 @@
-/* $Id: d1_utils.c,v 1.1 2006-07-06 12:42:21 marc Exp $
+/* $Id: d1_utils.c,v 1.2 2006-08-14 10:40:06 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -15,9 +15,9 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 #include <stdio.h>
