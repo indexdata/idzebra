@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.27 2006-06-30 14:36:12 marc Exp $ -->
+<!-- $Id: installation.xml,v 1.28 2006-08-14 19:56:50 adam Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -114,7 +114,7 @@
 
   <sect1 id="installation.unix"><title>UNIX</title>
    <para>
-    On Unix, <literal>gcc</literal> works fine, but any native
+    On Unix, GCC works fine, but any native
     C compiler should be possible to use as long as it is 
     ANSI C compliant.
    </para>
@@ -207,23 +207,23 @@
    <sect2 id="installation.debianlinux"><title>GNU/Debian Linux on
    i686 Platform</title>
     <para>
-     Index Data provides pre-compiled <literal>GNU/Debian i686
-      Linux</literal> packages at our Debian package archive, both for
-     the <literal>Sarge</literal> and the <literal>Etch</literal> release. 
+     Index Data provides pre-compiled GNU/Debian i686 Linux packages
+     at our Debian package archive, both for
+     the Sarge and the Etch release. 
     </para>
     
     <para>
      To install these packages, you need to add two lines to your
-     <literal>/etc/apt/sources.list</literal> configuration file,
-     either the <literal>Sarge</literal> sources found at
+     <filename>/etc/apt/sources.list</filename> configuration file,
+     either the Sarge sources found at
      <screen>
-      deb http://ftp.indexdata.dk/t/debian sarge main
-      deb-src http://ftp.indexdata.dk/t/debian sarge main
+      deb http://ftp.indexdata.dk/debian sarge main
+      deb-src http://ftp.indexdata.dk/debian sarge main
      </screen>
-     or the <literal>Etch</literal> sources from 
+     or the Etch sources from 
      <screen>
-      deb http://ftp.indexdata.dk/t/debian etch main
-      deb-src http://ftp.indexdata.dk/t/debian etch main
+      deb http://ftp.indexdata.dk/debian etch main
+      deb-src http://ftp.indexdata.dk/debian etch main
      </screen>
      After refreshing the package cache with the command
      <screen>
@@ -243,18 +243,18 @@
     <para>
      These <ulink url="http://indexdata.dk/zebra/">Zebra</ulink>
      packages are specifically compiled for
-     <literal>GNU/Debian Linux</literal> systems. Installation on other 
-     <literal>GNU/Debian</literal> systems is possible by
+     GNU/Debian Linux systems. Installation on other 
+     GNU/Debian systems is possible by
      re-compilation the Debian way: you need to add only the 
      <literal>deb-src</literal> sources lines to the 
-     <literal>/etc/apt/sources.list</literal> configuration file,
-     that is either the <literal>Sarge</literal> sources
+     <filename>/etc/apt/sources.list</filename> configuration file,
+     that is either the Sarge sources
      <screen>
-      deb-src http://ftp.indexdata.dk/t/debian sarge main
+      deb-src http://ftp.indexdata.dk/debian sarge main
      </screen>
-     or the <literal>Etch</literal> sources
+     or the Etch sources
      <screen>
-      deb-src http://ftp.indexdata.dk/t/debian etch main
+      deb-src http://ftp.indexdata.dk/debian etch main
      </screen>
      After refreshing the package cache with the command
      <screen>
@@ -268,7 +268,7 @@
       apt-get source --compile idzebra-2.0
      </screen>
      as normal user.
-     The compiled <literal>GNU/Debian</literal> packages can then be
+     The compiled GNU/Debian packages can then be
      installed as <literal>root</literal> issuing
      <screen>
       dpkg -i install idzebra-2.0*.deb libidzebra-2.0*.deb
@@ -446,7 +446,7 @@
     redirection to other fields. 
     For example the following snippet of
     a custom <filename>custom/bib1.att</filename> 
-    <literal>Bib-1</literal> attribute set definition file is no
+    Bib-1 attribute set definition file is no
     longer supported:
     <screen>
      att 1016            Any 		1016,4,1005,62
