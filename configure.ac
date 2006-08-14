@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.25 2006-07-06 07:56:00 adam Exp $
+dnl $Id: configure.ac,v 1.26 2006-08-14 12:18:46 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.0],[adam@indexdata.dk])
@@ -374,9 +374,9 @@ AC_OUTPUT([
   examples/marc21/Makefile examples/marcxml/Makefile 
   examples/alvis-oai/Makefile
   idzebra.spec
-  idzebra-config
+  idzebra-config-2.0
   Doxyfile
-],[sed s%echo_source=yes%echo_source=no%g < idzebra-config > util/idzebra-config && chmod +x idzebra-config util/idzebra-config])
+],[sed s%echo_source=yes%echo_source=no%g < idzebra-config-2.0 > util/idzebra-config-2.0 && chmod +x idzebra-config-2.0 util/idzebra-config-2.0])
 
 echo \
 "------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-usr/bin/idzebra-config
+usr/bin/idzebra-config-2.0
 usr/lib/libidzebra-*.so
 usr/lib/libidzebra-*.la
 usr/lib/libidzebra-*.a

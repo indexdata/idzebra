@@ -1,7 +1,10 @@
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN"
  "http://www.oasis-open.org/docbook/xml/4.1/docbookx.dtd"
-[ ]>
-<!-- $Id: idzebra-config-man.xml,v 1.1 2006-05-24 19:12:46 adam Exp $ -->
+[
+     <!ENTITY % local SYSTEM "local.ent">
+     %local;
+]>
+<!-- $Id: idzebra-config-man.xml,v 1.2 2006-08-14 12:18:48 adam Exp $ -->
 <refentry id="idzebra-config">
  
  <refmeta>
@@ -22,7 +25,8 @@
    <arg choice="opt"><option>--libs</option></arg>
    <arg choice="opt"><option>--lalibs</option></arg>
    <arg choice="opt"><option>--cflags</option></arg>
-   <arg choice="opt"><option>--tabs</option></arg>
+   <arg choice="opt"><option>--tab</option></arg>
+   <arg choice="opt"><option>--modules</option></arg>
    <arg choice="opt" rep="repeat">libraries</arg>
   </cmdsynopsis>
  </refsynopsisdiv>
@@ -38,7 +42,7 @@
   </para>
 
   <para>
-   None (yet)
+   None
   </para>
   
  </refsect1>
@@ -83,9 +87,16 @@
    </varlistentry>
 
    <varlistentry>
-    <term>--tabs</term>
+    <term>--tab</term>
     <listitem><para>
       Return directory of idzebra tables.
+     </para></listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>--modules</term>
+    <listitem><para>
+      Return directory for Zebra modules.
      </para></listitem>
    </varlistentry>
 
@@ -94,13 +105,13 @@
  
  <refsect1><title>FILES</title>
   <para>
-   <filename><replaceable>prefix</replaceable>/bin/idzebra-config</filename>
+   <filename>&prefix;/bin/idzebra-config-2.0</filename>
   </para>
   <para>
-   <filename><replaceable>prefix</replaceable>/lib/libidzebra*.a</filename>
+   <filename>&prefix;/lib/libidzebra*2.0.a</filename>
   </para>
   <para>
-   <filename><replaceable>prefix</replaceable>/include/idzebra/*.h</filename>
+   <filename>&prefix;/include/idzebra-2.0/idzebra/*.h</filename>
   </para>
  </refsect1>
  <!--

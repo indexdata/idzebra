@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    remove|deconfigure)
+        update-alternatives --quiet --remove zebraidx /usr/bin/idzebra-config-2.0
+        ;;
+    *)
+esac

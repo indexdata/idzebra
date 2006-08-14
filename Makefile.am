@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.27 2006-08-10 18:02:28 adam Exp $
+## $Id: Makefile.am,v 1.28 2006-08-14 12:18:46 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -8,12 +8,12 @@ SUBDIRS=util bfile dfa dict isams isamb isamc rset data1 \
  tab index test examples include doc
 
 aclocaldir=$(datadir)/aclocal
-aclocal_DATA = m4/idzebra.m4
+aclocal_DATA = m4/idzebra-2.0.m4
 
 SPEC_FILE=idzebra.spec
 
 EXTRA_DIST= README NEWS $(SPEC_FILE) $(SPEC_FILE).in \
- idzebra-config.in m4/idzebra.m4 m4/yaz.m4 Doxyfile.in
+ idzebra-config-2.0.in m4/idzebra-2.0.m4 m4/yaz.m4 Doxyfile.in
 
 dist-hook:
 	if test -x /usr/bin/cvs2cl -a -d CVS; then cvs2cl ; fi

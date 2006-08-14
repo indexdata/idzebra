@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: idzebra-config.in,v 1.12 2006-07-03 20:41:38 adam Exp $
+# $Id: idzebra-config-2.0.in,v 1.1 2006-08-14 12:18:46 adam Exp $
 version=@VERSION@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
@@ -10,6 +10,7 @@ echo_help=no
 echo_tab=no
 echo_source=yes
 echo_lalibs=no
+echo_modules=no
 idzebra_src_root=@IDZEBRA_SRC_ROOT@
 idzebra_build_root=@IDZEBRA_BUILD_ROOT@
 package_suffix=@PACKAGE_SUFFIX@
@@ -68,6 +69,9 @@ while test $# -gt 0; do
 	    ;;
 	--lalibs)
 	    echo_lalibs=yes
+	    ;;
+	--modules)
+	    echo_modules=yes
 	    ;;
 	-*)
 	    echo_help=yes

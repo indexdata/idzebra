@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.25 2006-07-05 15:03:53 adam Exp $
+## $Id: Makefile.am,v 1.26 2006-08-14 12:18:50 adam Exp $
 
 noinst_LTLIBRARIES = libidzebra-util.la
 
@@ -8,11 +8,11 @@ check_PROGRAMS = tstcharmap tstflock tstlockscope
 
 TESTS = $(check_PROGRAMS)
 
-bin_SCRIPTS = idzebra-config
+bin_SCRIPTS = idzebra-config-2.0
 
 EXTRA_DIST = zebrasrv.rh tstcharmap.chr
 
-DISTCLEANFILES = idzebra-config
+DISTCLEANFILES = idzebra-config-2.0
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\"
 LDADD = libidzebra-util.la $(YAZLALIB)

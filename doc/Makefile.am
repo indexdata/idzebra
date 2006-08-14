@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.54 2006-06-30 14:36:12 marc Exp $
+## $Id: Makefile.am,v 1.55 2006-08-14 12:18:48 adam Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -83,7 +83,7 @@ EPSFILES=zebra.eps
 
 MANFILES=zebraidx$(PACKAGE_SUFFIX).1 \
 	zebrasrv$(PACKAGE_SUFFIX).8 \
-	idzebra-config.1
+	idzebra-config$(PACKAGE_SUFFIX).1
 
 REFFILES=zebraidx-man.xml zebrasrv-man.xml idzebra-config-man.xml
 
@@ -103,8 +103,9 @@ zebrasrv$(PACKAGE_SUFFIX).8: zebrasrv-man.xml  zebrasrv-options.xml \
 	$(MAN_COMPILE) $(srcdir)/zebrasrv-man.xml
 	mv zebrasrv.8 zebrasrv$(PACKAGE_SUFFIX).8
 
-idzebra-config.1: idzebra-config-man.xml
+idzebra-config$(PACKAGE_SUFFIX).1: idzebra-config-man.xml
 	$(MAN_COMPILE) $(srcdir)/idzebra-config-man.xml
+	mv idzebra-config.1 idzebra-config$(PACKAGE_SUFFIX).1
 
 $(HTMLFILES): $(XMLFILES)
 	$(HTML_COMPILE) $(srcdir)/zebra.xml

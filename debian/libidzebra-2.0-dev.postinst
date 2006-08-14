@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" != configure ]; then exit 0; fi
+
+update-alternatives --quiet --install /usr/bin/idzebra-config idzebra-config \
+       /usr/bin/idzebra-config-2.0 50 \
+       --slave /usr/share/man/man1/idzebra-config.1.gz idzebra-config.1.gz \
+       /usr/share/man/man1/idzebra-config-2.0.1.gz
+
