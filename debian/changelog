@@ -1,3 +1,9 @@
+idzebra (2.0.0-2) unstable; urgency=low
+
+  * Use Depends rather than Provides for idzebra-2.0 package.
+
+ -- Adam Dickmeiss <adam@indexdata.dk>  Tue, 15 Aug 2006 10:21:04 +0200
+
 idzebra (2.0.0-1) unstable; urgency=low
 
   * First production release of Zebra 2.0 series.

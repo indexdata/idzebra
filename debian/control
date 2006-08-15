@@ -8,7 +8,7 @@ Build-Depends: libyaz-dev (>= 2.1.22), libexpat1-dev, tcl8.4-dev, libbz2-dev, li
 Package: idzebra-2.0
 Section: text
 Architecture: any
-Provides: idzebra-2.0-common, libidzebra-2.0-dev, idzebra-2.0-utils, libidzebra-2.0-modules, idzebra-2.0-doc
+Depends: idzebra-2.0-common, libidzebra-2.0-dev, idzebra-2.0-utils, libidzebra-2.0-modules, idzebra-2.0-doc
 Description: IDZebra virtual package (the works)
  This virtual package installs all the necessary packages to start
  working with IDZebra - including utility programs, development libraries,
