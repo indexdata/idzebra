@@ -1,4 +1,4 @@
-/* $Id: zebramap.h,v 1.8 2006-08-14 10:40:14 adam Exp $
+/* $Id: zebramap.h,v 1.19 2006-08-15 14:28:32 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 

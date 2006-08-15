@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.51 2006-06-23 11:21:38 adam Exp $
+/* $Id: zebramap.c,v 1.52 2006-08-15 14:28:35 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -28,7 +28,7 @@
 #include <attrfind.h>
 #include <yaz/yaz-util.h>
 
-#include <idzebra/zebramap.h>
+#include <zebramap.h>
 
 #define ZEBRA_MAP_TYPE_SORT  1
 #define ZEBRA_MAP_TYPE_INDEX 2

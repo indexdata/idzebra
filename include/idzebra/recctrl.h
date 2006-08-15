@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.26 2006-08-14 10:40:14 adam Exp $
+/* $Id: recctrl.h,v 1.27 2006-08-15 14:28:33 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -30,7 +30,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <idzebra/res.h>
 #include <idzebra/data1.h>
 #include <idzebra/snippet.h>
-#include <idzebra/zebramap.h>
 
 YAZ_BEGIN_CDECL
 
@@ -58,7 +57,6 @@ typedef struct {
     zint seqno;
     zint record_id;
     zint section_id;
-    ZebraMaps zebra_maps;
     struct recExtractCtrl *extractCtrl;
 } RecWord;
 
@@ -74,7 +72,6 @@ struct recExtractCtrl {
     void      *clientData;
     void      (*tokenAdd)(RecWord *w);
     void      (*setStoreData)(struct recExtractCtrl *p, void *buf, size_t size);
-    ZebraMaps zebra_maps;
     int       first_record;
     int       flagShowRecords;
     int       seqno[256];

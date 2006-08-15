@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.171 2006-08-14 10:40:15 adam Exp $
+/* $Id: index.h,v 1.172 2006-08-15 14:28:34 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -46,6 +46,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "zinfo.h"
 #include <passwddb.h>
 #include <rset.h>
+#include <zebramap.h>
 
 YAZ_BEGIN_CDECL
 

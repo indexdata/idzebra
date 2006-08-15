@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.225 2006-08-14 10:40:15 adam Exp $
+/* $Id: extract.c,v 1.226 2006-08-15 14:28:33 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -114,7 +114,6 @@ static void extract_set_store_data_prepare(struct recExtractCtrl *p);
 
 static void extract_init (struct recExtractCtrl *p, RecWord *w)
 {
-    w->zebra_maps = p->zebra_maps;
     w->seqno = 1;
     w->index_name = "any";
     w->index_type = 'w';
@@ -395,7 +394,6 @@ static void init_extractCtrl(ZebraHandle zh, struct recExtractCtrl *ctrl)
 	else
 	    ctrl->seqno[i] = 0;
     }
-    ctrl->zebra_maps = zh->reg->zebra_maps;
     ctrl->flagShowRecords = !zh->m_flag_rw;
 }
 
@@ -1630,7 +1628,6 @@ static void extract_add_index_string(RecWord *p, zinfo_index_category_t cat,
                                      const char *str, int length)
 {
     struct it_key key;
-
     ZebraHandle zh = p->extractCtrl->handle;
     ZebraExplainInfo zei = zh->reg->zei;
     int ch;
@@ -1671,7 +1668,6 @@ static void extract_add_index_string(RecWord *p, zinfo_index_category_t cat,
 static void extract_add_sort_string(RecWord *p, const char *str, int length)
 {
     struct it_key key;
-
     ZebraHandle zh = p->extractCtrl->handle;
     ZebraExplainInfo zei = zh->reg->zei;
     int ch;
@@ -1711,14 +1707,15 @@ static void extract_add_sort_string(RecWord *p, const char *str, int length)
 
 static void extract_add_string (RecWord *p, const char *string, int length)
 {
+    ZebraHandle zh = p->extractCtrl->handle;
     assert (length > 0);
-    if (zebra_maps_is_sort (p->zebra_maps, p->index_type))
+    if (zebra_maps_is_sort (zh->reg->zebra_maps, p->index_type))
 	extract_add_sort_string (p, string, length);
     else
     {
 	extract_add_index_string(p, zinfo_index_category_index,
                                  string, length);
-        if (zebra_maps_is_alwaysmatches(p->zebra_maps, p->index_type))
+        if (zebra_maps_is_alwaysmatches(zh->reg->zebra_maps, p->index_type))
         {
             RecWord word;
             memcpy(&word, p, sizeof(word));
@@ -1732,12 +1729,13 @@ static void extract_add_string (RecWord *p, const char *string, int length)
 
 static void extract_add_incomplete_field (RecWord *p)
 {
+    ZebraHandle zh = p->extractCtrl->handle;
     const char *b = p->term_buf;
     int remain = p->term_len;
     const char **map = 0;
     
     if (remain > 0)
-	map = zebra_maps_input(p->zebra_maps, p->index_type, &b, remain, 0);
+	map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, 0);
 
     while (map)
     {
@@ -1749,7 +1747,7 @@ static void extract_add_incomplete_field (RecWord *p)
 	{
 	    remain = p->term_len - (b - p->term_buf);
 	    if (remain > 0)
-		map = zebra_maps_input(p->zebra_maps, p->index_type, &b,
+		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b,
 				       remain, 0);
 	    else
 		map = 0;
@@ -1765,7 +1763,7 @@ static void extract_add_incomplete_field (RecWord *p)
 		buf[i++] = *(cp++);
 	    remain = p->term_len - (b - p->term_buf);
 	    if (remain > 0)
-		map = zebra_maps_input(p->zebra_maps, p->index_type, &b, remain, 0);
+		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, 0);
 	    else
 		map = 0;
 	}
@@ -1778,13 +1776,14 @@ static void extract_add_incomplete_field (RecWord *p)
 
 static void extract_add_complete_field (RecWord *p)
 {
+    ZebraHandle zh = p->extractCtrl->handle;
     const char *b = p->term_buf;
     char buf[IT_MAX_WORD+1];
     const char **map = 0;
     int i = 0, remain = p->term_len;
 
     if (remain > 0)
-	map = zebra_maps_input (p->zebra_maps, p->index_type, &b, remain, 1);
+	map = zebra_maps_input (zh->reg->zebra_maps, p->index_type, &b, remain, 1);
 
     while (remain > 0 && i < IT_MAX_WORD)
     {
@@ -1795,7 +1794,7 @@ static void extract_add_complete_field (RecWord *p)
 	    if (remain > 0)
 	    {
 		int first = i ? 0 : 1;  /* first position */
-		map = zebra_maps_input(p->zebra_maps, p->index_type, &b, remain, first);
+		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, first);
 	    }
 	    else
 		map = 0;
@@ -1823,7 +1822,7 @@ static void extract_add_complete_field (RecWord *p)
 	    remain = p->term_len  - (b - p->term_buf);
 	    if (remain > 0)
 	    {
-		map = zebra_maps_input (p->zebra_maps, p->index_type, &b,
+		map = zebra_maps_input (zh->reg->zebra_maps, p->index_type, &b,
 					remain, 0);
 	    }
 	    else
@@ -1837,19 +1836,20 @@ static void extract_add_complete_field (RecWord *p)
 
 static void extract_token_add(RecWord *p)
 {
+    ZebraHandle zh = p->extractCtrl->handle;
     WRBUF wrbuf;
     if (log_level)
         yaz_log(log_level, "extract_token_add "
                 "type=%c index=%s seqno=" ZINT_FORMAT " s=%.*s",
                 p->index_type, p->index_name, 
                 p->seqno, p->term_len, p->term_buf);
-    if ((wrbuf = zebra_replace(p->zebra_maps, p->index_type, 0,
+    if ((wrbuf = zebra_replace(zh->reg->zebra_maps, p->index_type, 0,
 			       p->term_buf, p->term_len)))
     {
 	p->term_buf = wrbuf_buf(wrbuf);
 	p->term_len = wrbuf_len(wrbuf);
     }
-    if (zebra_maps_is_complete (p->zebra_maps, p->index_type))
+    if (zebra_maps_is_complete (zh->reg->zebra_maps, p->index_type))
 	extract_add_complete_field (p);
     else
 	extract_add_incomplete_field(p);
