@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.35 2006-08-14 10:40:22 adam Exp $
+/* $Id: testlib.c,v 1.36 2006-08-16 13:13:53 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -183,6 +183,7 @@ int tl_query_x(ZebraHandle zh, const char *query, zint exphits, int experror)
     }
 
     rc = zebra_search_RPN(zh, odr, rpn, setname, &hits);
+    odr_destroy(odr);
     if (experror)
     {
 	int code;
@@ -225,7 +226,6 @@ int tl_query_x(ZebraHandle zh, const char *query, zint exphits, int experror)
 	    return 0;
 	}
     }
-    odr_destroy(odr);
     return 1;
 }
 
@@ -315,10 +315,11 @@ int tl_ranking_query(ZebraHandle zh, char *query,
 		     int exphits, char *firstrec, int firstscore)
 {
     ZebraRetrievalRecord retrievalRecord[10];
-    ODR odr_output = odr_createmem (ODR_ENCODE);    
-    const char *setname="rsetname";
+    ODR odr_output = 0;
+    const char *setname = "rsetname";
     int rc;
     int i;
+    int ret = 1;
         
     if (!tl_query(zh, query, exphits))
 	return 0;
@@ -326,49 +327,49 @@ int tl_ranking_query(ZebraHandle zh, char *query,
     for (i = 0; i<10; i++)
         retrievalRecord[i].position = i+1;
 
-    rc = zebra_records_retrieve (zh, odr_output, setname, 0,
-				 VAL_TEXT_XML, exphits, retrievalRecord);
+    odr_output = odr_createmem(ODR_ENCODE);    
+    rc = zebra_records_retrieve(zh, odr_output, setname, 0,
+                                VAL_TEXT_XML, exphits, retrievalRecord);
     if (rc != ZEBRA_OK)
-	return 0;
-
-    if (!strstr(retrievalRecord[0].buf, firstrec))
+        ret = 0;
+    else if (!strstr(retrievalRecord[0].buf, firstrec))
     {
         printf("Error: Got the wrong record first\n");
         printf("Expected '%s' but got\n", firstrec);
         printf("%.*s\n", retrievalRecord[0].len, retrievalRecord[0].buf);
-	return 0;
+        ret = 0;
     }
-    
-    if (retrievalRecord[0].score != firstscore)
+    else if (retrievalRecord[0].score != firstscore)
     {
         printf("Error: first rec got score %d instead of %d\n",
 	       retrievalRecord[0].score, firstscore);
-	return 0;
+        ret = 0;
     }
     odr_destroy (odr_output);
-    return 1;
+    return ret;
 }
 
 int tl_meta_query(ZebraHandle zh, char *query, int exphits,
 		  zint *ids)
 {
     ZebraMetaRecord *meta;
-    ODR odr_output = odr_createmem (ODR_ENCODE);    
-    const char *setname="rsetname";
-    zint *positions = (zint *) malloc(1 + (exphits * sizeof(zint)));
-    int i;
+    const char *setname= "rsetname";
+    zint *positions = 0;
+    int i, ret = 1;
         
     if (!tl_query(zh, query, exphits))
 	return 0;
     
+    positions = (zint *) xmalloc(1 + (exphits * sizeof(zint)));
     for (i = 0; i<exphits; i++)
         positions[i] = i+1;
 
-    meta = zebra_meta_records_create (zh, setname,  exphits, positions);
+    meta = zebra_meta_records_create(zh, setname,  exphits, positions);
     
     if (!meta)
     {
         printf("Error: retrieve returned error\n%s\n", query);
+        xfree(positions);
 	return 0;
     }
 
@@ -378,13 +379,12 @@ int tl_meta_query(ZebraHandle zh, char *query, int exphits,
 	{
 	    printf("Expected id=" ZINT_FORMAT " but got id=" ZINT_FORMAT "\n",
 		   ids[i], meta[i].sysno);
-	    return 0;
+            ret = 0;
 	}
     }
     zebra_meta_records_destroy(zh, meta, exphits);
-    odr_destroy (odr_output);
-    free(positions);
-    return 1;
+    xfree(positions);
+    return ret;
 }
 
 int tl_sort(ZebraHandle zh, const char *query, zint hits, zint *exp)

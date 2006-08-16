@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.20 2006-08-14 10:40:22 adam Exp $
+/* $Id: testlib.h,v 1.21 2006-08-16 13:13:53 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -123,7 +123,7 @@ int tl_meta_query(ZebraHandle zh, char *query, int exphits,
 void tl_check_filter(ZebraService zs, const char *name);
 
 #define TL_MAIN int main(int argc, char **argv) { \
- YAZ_CHECK_INIT(argc, argv); tst(argc, argv); YAZ_CHECK_TERM; }
+ YAZ_CHECK_INIT(argc, argv); YAZ_CHECK_LOG(); tst(argc, argv); YAZ_CHECK_TERM; }
 /*
  * Local variables:
  * c-basic-offset: 4
