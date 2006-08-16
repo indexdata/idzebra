@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.24 2006-08-14 10:40:21 adam Exp $
+/* $Id: rsmultiandor.c,v 1.25 2006-08-16 13:14:55 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -495,9 +495,7 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
                         mintail = i;
 
                     if (kctrl->get_segment)
-                    {
-                        /* segments enabled */
-                        
+                    {   /* segments enabled */
                         zint segment =  kctrl->get_segment(p->items[i].buf);
                         /* store segment if not stored already */
                         if (!p->segment && segment)
@@ -535,7 +533,7 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
 	    (p->hits)++;
             return 1;
         } 
-        /* not tailing, forward until all reocrds match, and set up */
+        /* not tailing, forward until all records match, and set up */
         /* as tails. the earlier 'if' will then return the hits */
         if (p->eof)
             return 0; /* nothing more to see */
