@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.55 2006-08-14 10:40:21 adam Exp $
+/* $Id: rset.c,v 1.56 2006-08-16 13:14:45 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -358,8 +358,17 @@ int rset_default_read(RSFD rfd, void *buf, TERMID *term)
     int rc = (*rset->control->f_read)(rfd, buf, term);
     if (rc > 0)
     {
-	if (rfd->counted_items == 0 ||
-	    (rset->keycontrol->cmp)(buf, rfd->counted_buf) > rset->scope)
+        int got_scope;
+        if (rfd->counted_items == 0)
+            got_scope = rset->scope+1;
+        else
+            got_scope = rset->keycontrol->cmp(buf, rfd->counted_buf);
+       
+#if 0
+        key_logdump_txt(YLOG_LOG, buf, "rset_default_read");
+        yaz_log(YLOG_LOG, "rset_scope=%d got_scope=%d", rset->scope, got_scope);
+#endif
+        if (got_scope > rset->scope)
 	{
 	    memcpy(rfd->counted_buf, buf, rset->keycontrol->key_size);
 	    rfd->counted_items++;
