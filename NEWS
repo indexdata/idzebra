@@ -1,3 +1,6 @@
+Experimental segment facility (for matching of words within one
+field/segment).
+
 --- 2.0.0 2006/08/14
 
 New record filter (record type) 'alvis' which uses XSLT transformations

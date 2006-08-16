@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.60 2006-08-14 10:40:15 adam Exp $
+/* $Id: kcompare.c,v 1.61 2006-08-16 13:16:36 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -68,7 +68,7 @@ int key_compare_it (const void *p1, const void *p2)
     int i, l = ((struct it_key *) p1)->len;
     if (((struct it_key *) p2)->len > l)
 	l = ((struct it_key *) p2)->len;
-    assert (l <= 4 && l > 0);
+    assert (l <= IT_KEY_LEVEL_MAX && l > 0);
     for (i = 0; i < l; i++)
     {
 	if (((struct it_key *) p1)->mem[i] != ((struct it_key *) p2)->mem[i])
@@ -97,7 +97,7 @@ int key_compare (const void *p1, const void *p2)
     l = i1.len;
     if (i2.len > l)
 	l = i2.len;
-    assert (l <= 4 && l > 0);
+    assert (l <= IT_KEY_LEVEL_MAX && l > 0);
     for (i = 0; i < l; i++)
     {
 	if (i1.mem[i] != i2.mem[i])
@@ -122,7 +122,7 @@ zint key_get_segment(const void *p)
 {
     struct it_key k;
     memcpy (&k, p, sizeof(k));
-    return k.mem[k.len-1] / KEY_SEGMENT_SIZE;
+    return k.mem[k.len-2];
 }
 
 int key_qsort_compare (const void *p1, const void *p2)
@@ -156,7 +156,7 @@ void key_init(struct it_key *key)
 {
     int i;
     key->len = 0;
-    for (i = 0; i<IT_KEY_LEVEL_MAX; i++)
+    for (i = 0; i < IT_KEY_LEVEL_MAX; i++)
 	key->mem[i] = 0;
 }
 
@@ -165,7 +165,7 @@ void iscz1_reset (void *vp)
     struct iscz1_code_info *p = (struct iscz1_code_info *) vp;
     int i;
     p->key.len = 0;
-    for (i = 0; i< IT_KEY_LEVEL_MAX; i++)
+    for (i = 0; i < IT_KEY_LEVEL_MAX; i++)
 	p->key.mem[i] = 0;
 }
 
@@ -223,7 +223,7 @@ void iscz1_encode (void *vp, char **dst, const char **src)
 
     /* deal with leader + delta encoding .. */
     d = 0;
-    assert(tkey.len > 0 && tkey.len <= 4);
+    assert(tkey.len > 0 && tkey.len <= IT_KEY_LEVEL_MAX);
     for (i = 0; i < tkey.len; i++)
     {
 	d = tkey.mem[i] - p->key.mem[i];

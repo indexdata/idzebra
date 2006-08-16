@@ -1,4 +1,4 @@
-/* $Id: kcontrol.c,v 1.4 2006-08-14 10:40:15 adam Exp $
+/* $Id: kcontrol.c,v 1.5 2006-08-16 13:16:36 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -62,16 +62,21 @@ struct rset_key_control *zebra_key_control_create(ZebraHandle zh)
 
     kc->context = cp;
     kc->key_size = sizeof(struct it_key);
-    kc->scope = 2;
     kc->cmp = key_compare_it;
     kc->key_logdump_txt = key_logdump_txt;
     kc->getseq = key_get_seq;
-    res_val = zebra_get_resource(zh, "segment", 0);
-    kc->get_segment = 0;
-    if (res_val && atoi(res_val))
+
+    if (zh->m_segment_indexing)
     {
+        kc->scope = 3;  /* segment + seq is "same" record */
         kc->get_segment = key_get_segment;
     }
+    else
+    {
+        kc->scope = 2;  /* seq is "same" record */
+        kc->get_segment = 0;
+    }
+
     zebra_limit_for_rset(zh->m_limit, 
 			 &kc->filter_func,
 			 &cp->filter_destroy,

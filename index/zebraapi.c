@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.224 2006-08-14 10:40:15 adam Exp $
+/* $Id: zebraapi.c,v 1.225 2006-08-16 13:16:36 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -140,6 +140,7 @@ ZebraHandle zebra_open(ZebraService zs, Res res)
 
     zh->shadow_enable = 1;
     zh->m_staticrank = 0;
+    zh->m_segment_indexing = 0;
 
     default_encoding = res_get_def(zh->session_res, "encoding", "ISO-8859-1");
 
@@ -766,6 +767,13 @@ static void zebra_select_register (ZebraHandle zh, const char *new_reg)
     {
 	if (res_get_int(zh->res, "staticrank", &zh->m_staticrank) == ZEBRA_OK)
 	    yaz_log(YLOG_LOG, "static rank set and is %d", zh->m_staticrank);
+    }
+    if (zh->res)
+    {
+	if (res_get_int(zh->res, "segment", &zh->m_segment_indexing) == 
+            ZEBRA_OK)
+	    yaz_log(YLOG_LOG, "segment indexing set and is %d",
+                    zh->m_segment_indexing);
     }
 }
 

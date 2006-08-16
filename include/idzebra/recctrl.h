@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.27 2006-08-15 14:28:33 adam Exp $
+/* $Id: recctrl.h,v 1.28 2006-08-16 13:16:35 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -55,6 +55,7 @@ typedef struct {
     const char *term_buf;
     int  term_len;
     zint seqno;
+    zint segment;
     zint record_id;
     zint section_id;
     struct recExtractCtrl *extractCtrl;

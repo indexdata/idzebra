@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.172 2006-08-15 14:28:34 adam Exp $
+/* $Id: index.h,v 1.173 2006-08-16 13:16:36 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -243,6 +243,7 @@ struct zebra_session {
     int  shadow_enable;
 
     int m_staticrank;
+    int m_segment_indexing;
 
     zint records_inserted;
     zint records_updated;

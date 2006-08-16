@@ -1,4 +1,4 @@
-/* $Id: safari.c,v 1.2 2006-08-14 10:40:15 adam Exp $
+/* $Id: safari.c,v 1.3 2006-08-16 13:16:36 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -29,13 +29,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <idzebra/recctrl.h>
 
 struct filter_info {
-    char *sep;
+    int segments;
 };
 
-static void *filter_init (Res res, RecType recType)
+static void *filter_init(Res res, RecType recType)
 {
     struct filter_info *tinfo = (struct filter_info *) xmalloc(sizeof(*tinfo));
-    tinfo->sep = 0;
+    tinfo->segments = 0;
+    return tinfo;
+}
+
+static void *filter_init2(Res res, RecType recType)
+{
+    struct filter_info *tinfo = (struct filter_info *) xmalloc(sizeof(*tinfo));
+    tinfo->segments = 1;
     return tinfo;
 }
 
@@ -47,7 +54,6 @@ static ZEBRA_RES filter_config(void *clientData, Res res, const char *args)
 static void filter_destroy(void *clientData)
 {
     struct filter_info *tinfo = clientData;
-    xfree (tinfo->sep);
     xfree (tinfo);
 }
 
@@ -118,8 +124,6 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
     yaz_log(YLOG_LOG, "filter_extract off=%ld",
 	    (long) (*fi->p->tellf)(fi->p->fh));
 #endif
-    xfree(tinfo->sep);
-    tinfo->sep = 0;
     (*p->init)(p, &recWord);
 
     if (!fi_gets(fi, line, sizeof(line)-1))
@@ -135,13 +139,29 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 #if 0
 	yaz_log(YLOG_LOG, "safari line: %s", line);
 #endif
-	if (sscanf(line, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT " %39s %n",
-		   &recWord.record_id, &recWord.section_id, &recWord.seqno,
-		   field, &nor) < 4)
-	{
-	    yaz_log(YLOG_WARN, "Bad safari record line: %s", line);
-	    return RECCTRL_EXTRACT_ERROR_GENERIC;
-	}
+        if (tinfo->segments)
+        {
+            if (sscanf(line, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT 
+                       ZINT_FORMAT " %39s %n",
+                       &recWord.record_id, &recWord.section_id, 
+                       &recWord.segment,
+                       &recWord.seqno,
+                       field, &nor) < 5)
+            {
+                yaz_log(YLOG_WARN, "Bad safari record line: %s", line);
+                return RECCTRL_EXTRACT_ERROR_GENERIC;
+            }
+        }
+        else
+        {
+            if (sscanf(line, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT " %39s %n",
+                       &recWord.record_id, &recWord.section_id, &recWord.seqno,
+                       field, &nor) < 4)
+            {
+                yaz_log(YLOG_WARN, "Bad safari record line: %s", line);
+                return RECCTRL_EXTRACT_ERROR_GENERIC;
+            }
+        }
 	for (cp = line + nor; *cp == ' '; cp++)
 	    ;
 	recWord.index_name = field;
@@ -258,6 +278,16 @@ static struct recType filter_type = {
     filter_retrieve
 };
 
+static struct recType filter_type2 = {
+    0,
+    "safari2",
+    filter_init2,
+    filter_config,
+    filter_destroy,
+    filter_extract,
+    filter_retrieve
+};
+
 RecType
 #ifdef IDZEBRA_STATIC_SAFARI
 idzebra_filter_safari
@@ -267,6 +297,7 @@ idzebra_filter
 
 [] = {
     &filter_type,
+    &filter_type2,
     0,
 };
 /*

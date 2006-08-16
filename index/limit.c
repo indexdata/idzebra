@@ -1,4 +1,4 @@
-/* $Id: limit.c,v 1.8 2006-08-14 10:40:15 adam Exp $
+/* $Id: limit.c,v 1.9 2006-08-16 13:16:36 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -68,8 +68,6 @@ static int zebra_limit_filter_cb(const void *buf, void *data)
 #if ZEBRA_LIMIT_DEBUG
     yaz_log(YLOG_LOG, "zebra_limit_filter_cb zl=%p key->len=%d", zl, key->len);
 #endif
-    if (key->len != 3)
-	return 1;
     for (i = 0; zl->ids[i]; i++)
     {
 #if ZEBRA_LIMIT_DEBUG

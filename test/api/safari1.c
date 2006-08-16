@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.13 2006-08-14 10:40:22 adam Exp $
+/* $Id: safari1.c,v 1.14 2006-08-16 13:16:37 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -28,43 +28,43 @@ const char *myrec[] =
 {
     "1234\n"  /* ID first record */
     /* chunk owner seq idx term */
-    "00024338 125060 1 any the\n"
-    "00024338 125060 2 any art\n"
-    "00024338 125060 3 any mand\n"
+    "00024338 125060 0 1 any the\n"
+    "00024338 125060 0 2 any art\n"
+    "00024338 125060 0 3 any mand\n"
     ,
     "5678\n"  /* other record - same owner id */
-    "00024339 125060 1 any den\n"
-    "00024339 125060 2 any gamle\n"
-    "00024339 125060 3 any mand\n"
+    "00024339 125060 0 1 any den\n"
+    "00024339 125060 0 2 any gamle\n"
+    "00024339 125060 0 3 any mand\n"
     ,
     "5678\n"  /* same record chunk id as before .. */
-    "00024339 125060 1 any the\n"
-    "00024339 125060 2 any gamle\n"
-    "00024339 125060 3 any mand\n"
+    "00024339 125060 0 1 any the\n"
+    "00024339 125060 0 2 any gamle\n"
+    "00024339 125060 0 3 any mand\n"
     ,
     "1000\n"  /* separate record */
-    "00024339 125061 1 any the\n"
-    "00024339 125061 2 any gamle\n"
-    "00024339 125061 3 any mand\n"
+    "00024339 125061 0 1 any the\n"
+    "00024339 125061 0 2 any gamle\n"
+    "00024339 125061 0 3 any mand\n"
     ,
     "1001\n"  /* separate record */
-    "00024340 125062 1 any the\n"
-    "00024340 125062 1 any the\n" /* DUP KEY, bug #432 */
-    "00024340 125062 2 any old\n"
-    "00024340 125062 3 any mand\n"
+    "00024340 125062 0 1 any the\n"
+    "00024340 125062 0 1 any the\n" /* DUP KEY, bug #432 */
+    "00024340 125062 0 2 any old\n"
+    "00024340 125062 0 3 any mand\n"
     ,
     "1002\n"  /* segment testing record */
-    "00024341 125062 1 title a\n"
-    "00024341 125062 2 title b\n"
+    "00024341 125062 0 1 title a\n"
+    "00024341 125062 0 2 title b\n"
 
-    "00024341 125062 1024 title b\n"
-    "00024341 125062 1025 title c\n"
-    "00024341 125062 1026 title d\n"
-    "00024341 125062 1027 title e\n"
-    "00024341 125062 1028 title f\n"
+    "00024341 125062 1 1024 title b\n"
+    "00024341 125062 1 1025 title c\n"
+    "00024341 125062 1 1026 title d\n"
+    "00024341 125062 1 1027 title e\n"
+    "00024341 125062 1 1028 title f\n"
 
-    "00024341 125062 2048 title g\n"
-    "00024341 125062 2049 title c\n"
+    "00024341 125062 2 2048 title g\n"
+    "00024341 125062 2 2049 title c\n"
     ,
 
     0

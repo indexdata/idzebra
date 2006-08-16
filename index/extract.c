@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.226 2006-08-15 14:28:33 adam Exp $
+/* $Id: extract.c,v 1.227 2006-08-16 13:16:36 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -112,7 +112,7 @@ static void extract_add_index_string (RecWord *p,
 
 static void extract_set_store_data_prepare(struct recExtractCtrl *p);
 
-static void extract_init (struct recExtractCtrl *p, RecWord *w)
+static void extract_init(struct recExtractCtrl *p, RecWord *w)
 {
     w->seqno = 1;
     w->index_name = "any";
@@ -120,6 +120,7 @@ static void extract_init (struct recExtractCtrl *p, RecWord *w)
     w->extractCtrl = p;
     w->record_id = 0;
     w->section_id = 0;
+    w->segment = 0;
 }
 
 static void searchRecordKey(ZebraHandle zh,
@@ -153,7 +154,7 @@ static void searchRecordKey(ZebraHandle zh,
 	zint seqno;
 	while (zebra_rec_keys_read(reckeys, &str, &slen, &key))
 	{
-	    assert(key.len <= 4 && key.len > 2);
+	    assert(key.len <= IT_KEY_LEVEL_MAX && key.len > 2);
 
 	    seqno = key.mem[key.len-1];
 	    
@@ -1374,10 +1375,11 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 	while(zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
 	{
 	    int ch = 0;
+            int i, j = 0;
 	    struct it_key key_out;
-	    zint *keyp = key_out.mem;
 
-	    assert(key_in.len == 4);
+	    assert(key_in.len >= 2);
+            assert(key_in.len <= IT_KEY_LEVEL_MAX);
 	    
 	    /* check for buffer overflow */
 	    if (zh->reg->key_buf_used + 1024 > 
@@ -1388,6 +1390,9 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 	    assert(zh->reg->ptr_i > 0);
 	    (zh->reg->key_buf)[zh->reg->ptr_top - zh->reg->ptr_i] =
 		(char*)zh->reg->key_buf + zh->reg->key_buf_used;
+
+            /* key_in.mem[0] ord/ch */
+            /* key_in.mem[1] filter specified record ID */
 
 	    /* encode the ordinal value (field/use/attribute) .. */
 	    ch = CAST_ZINT_TO_INT(key_in.mem[0]);
@@ -1411,19 +1416,17 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 			    (long) staticrank);
 		    staticrank = 0;
 		}
-		*keyp++ = staticrank;
-		key_out.len = 4;
+                key_out.mem[j++] = staticrank;
 	    }
-	    else
-		key_out.len = 3;
 	    
 	    if (key_in.mem[1]) /* filter specified record ID */
-		*keyp++ = key_in.mem[1];
+		key_out.mem[j++] = key_in.mem[1];
 	    else
-		*keyp++ = sysno;
-	    *keyp++ = key_in.mem[2];  /* section_id */
-	    *keyp++ = key_in.mem[3];  /* sequence .. */
-	    
+		key_out.mem[j++] = sysno;
+            for (i = 2; i < key_in.len; i++)
+                key_out.mem[j++] = key_in.mem[i];
+	    key_out.len = j;
+
 	    memcpy((char*)zh->reg->key_buf + zh->reg->key_buf_used,
 		   &key_out, sizeof(key_out));
 	    (zh->reg->key_buf_used) += sizeof(key_out);
@@ -1578,7 +1581,7 @@ ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh,
             zint seqno;
 	    int index_type;
 
-	    assert(key.len <= 4 && key.len > 2);
+	    assert(key.len <= IT_KEY_LEVEL_MAX && key.len > 2);
 	    seqno = key.mem[key.len-1];
 	    ord = CAST_ZINT_TO_INT(key.mem[0]);
 	    
@@ -1610,7 +1613,7 @@ void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys)
 	    int index_type;
             int ord = CAST_ZINT_TO_INT(key.mem[0]);
 	    const char *db = 0;
-	    assert(key.len <= 4 && key.len > 2);
+	    assert(key.len <= IT_KEY_LEVEL_MAX && key.len > 2);
 
 	    zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db, 0);
 	    
@@ -1630,37 +1633,21 @@ static void extract_add_index_string(RecWord *p, zinfo_index_category_t cat,
     struct it_key key;
     ZebraHandle zh = p->extractCtrl->handle;
     ZebraExplainInfo zei = zh->reg->zei;
-    int ch;
-
-    if (!p->index_name)
-        return;
+    int ch, i;
 
     ch = zebraExplain_lookup_attr_str(zei, cat, p->index_type, p->index_name);
     if (ch < 0)
         ch = zebraExplain_add_attr_str(zei, cat, p->index_type, p->index_name);
 
-    key.len = 4;
-    key.mem[0] = ch;
-    key.mem[1] = p->record_id;
-    key.mem[2] = p->section_id;
-    key.mem[3] = p->seqno;
+    i = 0;
+    key.mem[i++] = ch;
+    key.mem[i++] = p->record_id;
+    key.mem[i++] = p->section_id;
 
-#if 0
-    if (1)
-    {
-	char strz[80];
-	int i;
-
-	strz[0] = 0;
-	for (i = 0; i<length && i < 20; i++)
-	    sprintf(strz+strlen(strz), "%02X", str[i] & 0xff);
-	/* just for debugging .. */
-	yaz_log(YLOG_LOG, "add: set=%d use=%d "
-		"record_id=%lld section_id=%lld seqno=%lld %s",
-		p->attrSet, p->attrUse, p->record_id, p->section_id, p->seqno,
-		strz);
-    }
-#endif
+    if (zh->m_segment_indexing)
+        key.mem[i++] = p->segment;
+    key.mem[i++] = p->seqno;
+    key.len = i;
 
     zebra_rec_keys_write(zh->reg->keys, str, length, &key);
 }
@@ -1672,45 +1659,27 @@ static void extract_add_sort_string(RecWord *p, const char *str, int length)
     ZebraExplainInfo zei = zh->reg->zei;
     int ch;
     zinfo_index_category_t cat = zinfo_index_category_sort;
- 
-
-    if (!p->index_name)
-        return;
 
     ch = zebraExplain_lookup_attr_str(zei, cat, p->index_type, p->index_name);
     if (ch < 0)
         ch = zebraExplain_add_attr_str(zei, cat, p->index_type, p->index_name);
-    key.len = 4;
+    key.len = 2;
     key.mem[0] = ch;
     key.mem[1] = p->record_id;
-    key.mem[2] = p->section_id;
-    key.mem[3] = p->seqno;
 
-#if 0
-    if (1)
-    {
-	char strz[80];
-	int i;
-
-	strz[0] = 0;
-	for (i = 0; i<length && i < 20; i++)
-	    sprintf(strz+strlen(strz), "%02X", str[i] & 0xff);
-	/* just for debugging .. */
-	yaz_log(YLOG_LOG, "add: set=%d use=%d "
-		"record_id=%lld section_id=%lld seqno=%lld %s",
-		p->attrSet, p->attrUse, p->record_id, p->section_id, p->seqno,
-		strz);
-    }
-#endif
     zebra_rec_keys_write(zh->reg->sortKeys, str, length, &key);
 }
 
-static void extract_add_string (RecWord *p, const char *string, int length)
+static void extract_add_string(RecWord *p, const char *string, int length)
 {
     ZebraHandle zh = p->extractCtrl->handle;
     assert (length > 0);
-    if (zebra_maps_is_sort (zh->reg->zebra_maps, p->index_type))
-	extract_add_sort_string (p, string, length);
+
+    if (!p->index_name)
+        return;
+
+    if (zebra_maps_is_sort(zh->reg->zebra_maps, p->index_type))
+	extract_add_sort_string(p, string, length);
     else
     {
 	extract_add_index_string(p, zinfo_index_category_index,
