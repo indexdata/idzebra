@@ -1,3 +1,9 @@
+idzebra (2.0.1-1) unstable; urgency=low
+
+  * Use Depends rather than Provides for libidzebra-2.0-modules.
+
+ -- Adam Dickmeiss <adam@indexdata.dk>  Wed, 16 Aug 2006 17:03:24 +0200
+
 idzebra (2.0.0-2) unstable; urgency=low
 
   * Use Depends rather than Provides for idzebra-2.0 package.
