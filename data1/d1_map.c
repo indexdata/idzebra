@@ -1,4 +1,4 @@
-/* $Id: d1_map.c,v 1.13 2006-08-14 10:40:06 adam Exp $
+/* $Id: d1_map.c,v 1.14 2006-08-22 10:21:53 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -332,20 +332,14 @@ data1_node *data1_map_record (data1_handle dh, data1_node *n,
 	yaz_log(YLOG_WARN, "%s: Failed to load target absyn '%s'",
 		map->name, map->target_absyn_name);
     }
-    if (data1_is_xmlmode(dh))
-    {
-        n = n->child;
-        if (!n)
-            return 0;
-        res1 = data1_mk_tag (dh, m, map->target_absyn_name, 0, res);
-    }
-    else
-        res1 = res;
-
+    n = n->child;
+    if (!n)
+        return 0;
+    res1 = data1_mk_tag (dh, m, map->target_absyn_name, 0, res);
+    while (n && n->which != DATA1N_tag)
+        n = n->next;
     if (map_children(dh, n, map, res1, m) < 0)
-    {
 	return 0;
-    }
     return res;
 }
 
