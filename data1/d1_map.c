@@ -1,4 +1,4 @@
-/* $Id: d1_map.c,v 1.3.2.1 2006-08-14 10:38:51 adam Exp $
+/* $Id: d1_map.c,v 1.3.2.2 2006-08-22 11:34:36 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -345,6 +345,8 @@ data1_node *data1_map_record (data1_handle dh, data1_node *n,
     else
         res1 = res;
 
+    while (n && n->which != DATA1N_tag)
+        n = n->next;
     if (map_children(dh, n, map, res1, m) < 0)
     {
 	data1_free_tree(dh, res);
