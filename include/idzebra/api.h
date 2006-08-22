@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.38 2006-08-14 10:40:14 adam Exp $
+/* $Id: api.h,v 1.39 2006-08-22 13:59:02 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -42,14 +42,19 @@ YAZ_BEGIN_CDECL
 /**
   expand GCC_ATTRIBUTE if GCC is in use. See :
   http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html
+
+  To see gcc pre-defines for c:
+  gcc -E -dM -x c /dev/null
 */
 
-#ifndef GCC_ATTRIBUTE
 #ifdef __GNUC__
-#define GCC_ATTRIBUTE(x) __attribute__ (x)
-#else
-#define GCC_ATTRIBUTE(x)
+#if __GNUC__ >= 4
+#define ZEBRA_GCC_ATTR(x) __attribute__ (x)
 #endif
+#endif
+
+#ifndef ZEBRA_GCC_ATTR
+#define ZEBRA_GCC_ATTR(x)
 #endif
 
 typedef struct {
@@ -97,7 +102,7 @@ typedef struct zebra_service *ZebraService;
 */
 YAZ_EXPORT
 ZebraService zebra_start(const char *configName
-    ) GCC_ATTRIBUTE((warn_unused_result));
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 /** \brief Creates a Zebra service with resources.
     \param configName name of configuration file
@@ -110,7 +115,7 @@ ZebraService zebra_start(const char *configName
 YAZ_EXPORT
 ZebraService zebra_start_res(const char *configName,
 			     Res def_res, Res over_res
-    ) GCC_ATTRIBUTE((warn_unused_result));
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 /** \brief stops a Zebra service.
     \param zs service handle
@@ -140,7 +145,7 @@ void zebra_filter_info(ZebraService zs, void *cd,
 */
 YAZ_EXPORT
 ZebraHandle zebra_open(ZebraService zs, Res res
-    ) GCC_ATTRIBUTE((warn_unused_result));
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 /** \brief Destroys Zebra session handle.
     \param zh zebra session handle.
@@ -369,11 +374,11 @@ ZEBRA_RES zebra_admin_exchange_record(ZebraHandle zh,
 
 YAZ_EXPORT 
 ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw
-    ) GCC_ATTRIBUTE((warn_unused_result));
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 YAZ_EXPORT
 ZEBRA_RES zebra_end_trans(ZebraHandle zh
-    ) GCC_ATTRIBUTE((warn_unused_result));
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 YAZ_EXPORT
 ZEBRA_RES zebra_end_transaction(ZebraHandle zh,
@@ -431,16 +436,16 @@ ZEBRA_RES zebra_sort(ZebraHandle zh, ODR stream,
 		     const char *output_setname,
 		     Z_SortKeySpecList *sort_sequence,
 		     int *sort_status
-    ) GCC_ATTRIBUTE((warn_unused_result));    
+    ) ZEBRA_GCC_ATTR((warn_unused_result));    
 
 YAZ_EXPORT
 ZEBRA_RES zebra_select_databases(ZebraHandle zh, int num_bases, 
 				 const char **basenames
-    ) GCC_ATTRIBUTE((warn_unused_result));
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 YAZ_EXPORT
 ZEBRA_RES zebra_select_database(ZebraHandle zh, const char *basename
-    ) GCC_ATTRIBUTE((warn_unused_result));
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 YAZ_EXPORT
 void zebra_shadow_enable(ZebraHandle zh, int value);
