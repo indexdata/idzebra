@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.9 2006-08-14 10:40:27 adam Exp $
+/* $Id: t1.c,v 1.10 2006-08-22 08:11:32 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -46,6 +46,9 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@and "
 	     "@attr 1=54 eng "
 	     "@and @attr 1=1003 jack @attr 1=4 computer", 2));
+
+    YAZ_CHECK(tl_query(zh, "@attr 1=leader 00366", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=leader2 nam", 2));
 
     YAZ_CHECK(tl_close_down(zh, zs));
 }
