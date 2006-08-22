@@ -1,4 +1,4 @@
-/* $Id: safari.c,v 1.3 2006-08-16 13:16:36 adam Exp $
+/* $Id: safari.c,v 1.4 2006-08-22 13:39:28 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -81,7 +81,7 @@ static int fi_getchar(struct fi_info *fi, char *dst)
     {
         if (fi->max <= 0)
             return 0;
-        fi->max = (*fi->p->readf)(fi->p->fh, fi->buf, 4096);
+        fi->max = fi->p->stream->readf(fi->p->stream, fi->buf, 4096);
         fi->offset = 0;
         if (fi->max <= 0)
             return 0;
@@ -236,7 +236,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
         }
 	if (!make_body)
 	    break;
-        r = (*p->readf)(p->fh, filter_buf + filter_ptr, 4096);
+        r = p->stream->readf(p->stream, filter_buf + filter_ptr, 4096);
         if (r <= 0)
             break;
         filter_ptr += r;

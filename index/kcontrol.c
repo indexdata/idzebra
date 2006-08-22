@@ -1,4 +1,4 @@
-/* $Id: kcontrol.c,v 1.5 2006-08-16 13:16:36 adam Exp $
+/* $Id: kcontrol.c,v 1.6 2006-08-22 13:39:27 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -56,7 +56,6 @@ static void my_dec(struct rset_key_control *kc)
 
 struct rset_key_control *zebra_key_control_create(ZebraHandle zh)
 {
-    const char *res_val;
     struct rset_key_control *kc = xmalloc(sizeof(*kc));
     struct context_control *cp = xmalloc(sizeof(*cp));
 

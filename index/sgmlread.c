@@ -1,4 +1,4 @@
-/* $Id: sgmlread.c,v 1.2 2006-08-14 10:40:15 adam Exp $
+/* $Id: sgmlread.c,v 1.3 2006-08-22 13:39:28 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -31,9 +31,8 @@ struct sgml_getc_info {
     int buf_size;
     int size;
     int off;
+    struct ZebraRecStream *stream;
     off_t moffset;
-    void *fh;
-    int (*readf)(void *, char *, size_t);
     WRBUF wrbuf;
 };
 
@@ -49,7 +48,7 @@ int sgml_getc (void *clientData)
     p->moffset += p->off;
     p->off = 0;
     p->size = 0;
-    res = (*p->readf)(p->fh, p->buf, p->buf_size);
+    res = p->stream->readf(p->stream, p->buf, p->buf_size);
     if (res > 0)
     {
 	p->size += res;
@@ -64,19 +63,21 @@ static data1_node *grs_read_sgml (struct grs_read_info *p)
     data1_node *node;
     int res;
     
-    sgi->moffset = p->offset;
-    sgi->fh = p->fh;
-    sgi->readf = p->readf;
+    sgi->moffset = p->stream->tellf(p->stream);
+    sgi->stream = p->stream;
     sgi->off = 0;
     sgi->size = 0;
-    res = (*sgi->readf)(sgi->fh, sgi->buf, sgi->buf_size);
+    res = sgi->stream->readf(sgi->stream, sgi->buf, sgi->buf_size);
     if (res > 0)
 	sgi->size += res;
     else
 	return 0;
-    node = data1_read_nodex (p->dh, p->mem, sgml_getc, sgi, sgi->wrbuf);
-    if (node && p->endf)
-	(*p->endf)(sgi->fh, sgi->moffset + sgi->off);
+    node = data1_read_nodex(p->dh, p->mem, sgml_getc, sgi, sgi->wrbuf);
+    if (node && p->stream->endf)
+    {
+        off_t end_offset = sgi->moffset + sgi->off;
+	p->stream->endf(sgi->stream, &end_offset);
+    }
     return node;
 }
 

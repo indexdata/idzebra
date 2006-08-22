@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.54 2006-08-14 18:12:35 adam Exp $
+# $Id: makefile,v 1.55 2006-08-22 13:39:28 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -353,6 +353,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\dopen.obj \
 	$(OBJDIR)\drdwr.obj \
 	$(OBJDIR)\extract.obj \
+	$(OBJDIR)\flock.obj \
 	$(OBJDIR)\imalloc.obj \
 	$(OBJDIR)\inline.obj \
 	$(OBJDIR)\insert.obj \
@@ -364,7 +365,6 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\kcontrol.obj \
 	$(OBJDIR)\kinput.obj \
 	$(OBJDIR)\limit.obj \
-	$(OBJDIR)\flock.obj \
 	$(OBJDIR)\lookgrep.obj \
 	$(OBJDIR)\lookup.obj \
 	$(OBJDIR)\lookupec.obj \
@@ -404,10 +404,11 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\snippet.obj \
 	$(OBJDIR)\sortidx.obj \
 	$(OBJDIR)\states.obj \
+	$(OBJDIR)\stream.obj \
 	$(OBJDIR)\symtab.obj \
+	$(OBJDIR)\trunc.obj \
 	$(OBJDIR)\update_path.obj \
 	$(OBJDIR)\update_file.obj \
-	$(OBJDIR)\trunc.obj \
 	$(OBJDIR)\xmlread.obj \
 	$(OBJDIR)\xpath.obj \
 	$(OBJDIR)\zebra-lock.obj \

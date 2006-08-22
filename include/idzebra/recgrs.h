@@ -1,4 +1,4 @@
-/* $Id: recgrs.h,v 1.5 2006-08-14 10:40:14 adam Exp $
+/* $Id: recgrs.h,v 1.6 2006-08-22 13:39:25 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -28,13 +28,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 YAZ_BEGIN_CDECL
 
 struct grs_read_info {
+    struct ZebraRecStream *stream;
     void *clientData;
-    int (*readf)(void *, char *, size_t);
-    off_t (*seekf)(void *, off_t);
-    off_t (*tellf)(void *);
-    void (*endf)(void *, off_t);
-    void *fh;
-    off_t offset;
     NMEM mem;
     data1_handle dh;
 };

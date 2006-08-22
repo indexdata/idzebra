@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.43 2006-08-14 10:40:15 adam Exp $
+/* $Id: retrieve.c,v 1.44 2006-08-22 13:39:27 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -35,56 +35,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "index.h"
 #include <direntz.h>
 
-int zebra_record_ext_read (void *fh, char *buf, size_t count)
-{
-    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
-    return read (fc->fd, buf, count);
-}
-
-off_t zebra_record_ext_seek (void *fh, off_t offset)
-{
-    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
-    return lseek (fc->fd, offset + fc->record_offset, SEEK_SET);
-}
-
-off_t zebra_record_ext_tell (void *fh)
-{
-    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
-    return lseek (fc->fd, 0, SEEK_CUR) - fc->record_offset;
-}
-
-off_t zebra_record_int_seek (void *fh, off_t offset)
-{
-    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
-    return (off_t) (fc->record_int_pos = offset);
-}
-
-off_t zebra_record_int_tell (void *fh)
-{
-    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
-    return (off_t) fc->record_int_pos;
-}
-
-int zebra_record_int_read (void *fh, char *buf, size_t count)
-{
-    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
-    int l = fc->record_int_len - fc->record_int_pos;
-    if (l <= 0)
-        return 0;
-    l = (l < (int) count) ? l : (int) count;
-    memcpy (buf, fc->record_int_buf + fc->record_int_pos, l);
-    fc->record_int_pos += l;
-    return l;
-}
-
-void zebra_record_int_end (void *fh, off_t off)
-{
-    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
-    fc->offset_end = off;
-}
-
 int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
-			zebra_snippets *hit_snippet, ODR stream,
+			zebra_snippets *hit_snippet, ODR odr,
 			oid_value input_format, Z_RecordComposition *comp,
 			oid_value *output_format, char **rec_bufp,
 			int *rec_lenp, char **basenamep,
@@ -94,7 +46,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
     char *fname, *file_type, *basename;
     RecType rt;
     struct recRetrieveCtrl retrieveCtrl;
-    struct zebra_fetch_control fc;
+    struct ZebraRecStream stream;
     RecordAttr *recordAttr;
     void *clientData;
     int raw_mode = 0;
@@ -109,7 +61,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
 	sprintf(rec_str, ZINT_FORMAT, sysno);
 	*output_format = VAL_SUTRS;
 	*rec_lenp = strlen(rec_str);
-	*rec_bufp = odr_strdup(stream, rec_str);
+	*rec_bufp = odr_strdup(odr, rec_str);
 	return 0;
     }
     rec = rec_get (zh->reg->records, sysno);
@@ -124,7 +76,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
     file_type = rec->info[recInfo_fileType];
     fname = rec->info[recInfo_filename];
     basename = rec->info[recInfo_databaseName];
-    *basenamep = (char *) odr_malloc (stream, strlen(basename)+1);
+    *basenamep = (char *) odr_malloc (odr, strlen(basename)+1);
     strcpy (*basenamep, basename);
 
     if (comp && comp->which == Z_RecordComp_simple &&
@@ -172,7 +124,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
 	}
 	*output_format = VAL_SUTRS;
 	*rec_lenp = wrbuf_len(wrbuf);
-	*rec_bufp = odr_malloc(stream, *rec_lenp);
+	*rec_bufp = odr_malloc(odr, *rec_lenp);
 	memcpy(*rec_bufp, wrbuf_buf(wrbuf), *rec_lenp);
 	wrbuf_free(wrbuf, 1);
 	zebra_rec_keys_close(keys);
@@ -191,31 +143,27 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
 	return 14;
     }
     yaz_log (YLOG_DEBUG, "retrieve localno=" ZINT_FORMAT " score=%d", sysno,score);
-    retrieveCtrl.fh = &fc;
-    fc.fd = -1;
+    retrieveCtrl.stream = &stream;
     retrieveCtrl.fname = fname;
     if (rec->size[recInfo_storeData] > 0)
     {
-        retrieveCtrl.readf = zebra_record_int_read;
-        retrieveCtrl.seekf = zebra_record_int_seek;
-        retrieveCtrl.tellf = zebra_record_int_tell;
-        fc.record_int_len = rec->size[recInfo_storeData];
-        fc.record_int_buf = rec->info[recInfo_storeData];
-        fc.record_int_pos = 0;
-        yaz_log (YLOG_DEBUG, "Internal retrieve. %d bytes", fc.record_int_len);
+        zebra_create_stream_mem(&stream, rec->info[recInfo_storeData],
+                                rec->size[recInfo_storeData]);
 	if (raw_mode)
 	{
             *output_format = VAL_SUTRS;
             *rec_lenp = rec->size[recInfo_storeData];
-       	    *rec_bufp = (char *) odr_malloc(stream, *rec_lenp);
+       	    *rec_bufp = (char *) odr_malloc(odr, *rec_lenp);
 	    memcpy(*rec_bufp, rec->info[recInfo_storeData], *rec_lenp);
             rec_rm (&rec);
+            stream.destroy(&stream);
 	    return 0;
 	}
     }
     else
     {
         char full_rep[1024];
+        int fd;
 
         if (zh->path_reg && !yaz_is_abspath (fname))
         {
@@ -226,36 +174,32 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
         else
             strcpy (full_rep, fname);
 
-        if ((fc.fd = open (full_rep, O_BINARY|O_RDONLY)) == -1)
+        if ((fd = open (full_rep, O_BINARY|O_RDONLY)) == -1)
         {
             yaz_log (YLOG_WARN|YLOG_ERRNO, "Retrieve fail; missing file: %s",
 		  full_rep);
             rec_rm (&rec);
+            stream.destroy(&stream);
             return 14;
         }
-	fc.record_offset = recordAttr->recordOffset;
 
-        retrieveCtrl.readf = zebra_record_ext_read;
-        retrieveCtrl.seekf = zebra_record_ext_seek;
-        retrieveCtrl.tellf = zebra_record_ext_tell;
-
-        zebra_record_ext_seek (retrieveCtrl.fh, 0);
+        zebra_create_stream_fd(&stream, fd, recordAttr->recordOffset);
 	if (raw_mode)
 	{
             *output_format = VAL_SUTRS;
             *rec_lenp = recordAttr->recordSize;
-       	    *rec_bufp = (char *) odr_malloc(stream, *rec_lenp);
-	    zebra_record_ext_read(&fc, *rec_bufp, *rec_lenp);
+       	    *rec_bufp = (char *) odr_malloc(odr, *rec_lenp);
+            stream.readf(&stream, *rec_bufp, *rec_lenp);
             rec_rm (&rec);
-            close (fc.fd);
-	    return 0;
+            stream.destroy(&stream);
+            return 0;
 	}
     }
     retrieveCtrl.localno = sysno;
     retrieveCtrl.staticrank = recordAttr->staticrank;
     retrieveCtrl.score = score;
     retrieveCtrl.recordSize = recordAttr->recordSize;
-    retrieveCtrl.odr = stream;
+    retrieveCtrl.odr = odr;
     retrieveCtrl.input_format = retrieveCtrl.output_format = input_format;
     retrieveCtrl.comp = comp;
     retrieveCtrl.encoding = zh->record_encoding;
@@ -312,13 +256,15 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
     *output_format = retrieveCtrl.output_format;
     *rec_bufp = (char *) retrieveCtrl.rec_buf;
     *rec_lenp = retrieveCtrl.rec_len;
-    if (fc.fd != -1)
-        close (fc.fd);
+
+    stream.destroy(&stream);
+
     rec_rm (&rec);
 
     *addinfo = retrieveCtrl.addinfo;
     return retrieveCtrl.diagnostic;
 }
+
 /*
  * Local variables:
  * c-basic-offset: 4

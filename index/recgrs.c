@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.4 2006-08-14 10:40:15 adam Exp $
+/* $Id: recgrs.c,v 1.5 2006-08-22 13:39:27 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -952,12 +952,7 @@ static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
     int oidtmp[OID_SIZE];
     RecWord wrd;
 
-    gri.readf = p->readf;
-    gri.seekf = p->seekf;
-    gri.tellf = p->tellf;
-    gri.endf = p->endf;
-    gri.fh = p->fh;
-    gri.offset = p->offset;
+    gri.stream = p->stream;
     gri.mem = mem;
     gri.dh = p->dh;
     gri.clientData = clientData;
@@ -1149,12 +1144,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     int dummy;
     
     mem = nmem_create();
-    gri.readf = p->readf;
-    gri.seekf = p->seekf;
-    gri.tellf = p->tellf;
-    gri.endf = NULL;
-    gri.fh = p->fh;
-    gri.offset = 0;
+    gri.stream = p->stream;
     gri.mem = mem;
     gri.dh = p->dh;
     gri.clientData = clientData;

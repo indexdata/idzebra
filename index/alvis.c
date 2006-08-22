@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.2 2006-08-14 10:40:15 adam Exp $
+/* $Id: alvis.c,v 1.3 2006-08-22 13:39:26 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -336,7 +336,7 @@ static void filter_destroy(void *clientData)
 static int ioread_ex(void *context, char *buffer, int len)
 {
     struct recExtractCtrl *p = context;
-    return (*p->readf)(p->fh, buffer, len);
+    return p->stream->readf(p->stream, buffer, len);
 }
 
 static int ioclose_ex(void *context)
@@ -555,7 +555,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 static int ioread_ret(void *context, char *buffer, int len)
 {
     struct recRetrieveCtrl *p = context;
-    return (*p->readf)(p->fh, buffer, len);
+    return p->stream->readf(p->stream, buffer, len);
 }
 
 static int ioclose_ret(void *context)

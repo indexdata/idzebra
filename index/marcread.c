@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.2 2006-08-14 10:40:15 adam Exp $
+/* $Id: marcread.c,v 1.3 2006-08-22 13:39:27 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -58,7 +58,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     char *absynName;
     data1_marctab *marctab;
 
-    if ((*p->readf)(p->fh, buf, 5) != 5)
+    if (p->stream->readf(p->stream, buf, 5) != 5)
         return NULL;
     while (*buf < '0' || *buf > '9')
     {
@@ -69,7 +69,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 	for (i = 0; i<4; i++)
 	    buf[i] = buf[i+1];
 
-	if ((*p->readf)(p->fh, buf+4, 1) != 1)
+	if (p->stream->readf(p->stream, buf+4, 1) != 1)
 	    return NULL;
     }
     record_length = atoi_n (buf, 5);
@@ -79,7 +79,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
         return NULL;
     }
     /* read remaining part - attempt to read one byte furhter... */
-    read_bytes = (*p->readf)(p->fh, buf+5, record_length-4);
+    read_bytes = p->stream->readf(p->stream, buf+5, record_length-4);
     if (read_bytes < record_length-5)
     {
         yaz_log (YLOG_WARN, "Couldn't read whole MARC record");
@@ -87,11 +87,14 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     }
     if (read_bytes == record_length - 4)
     {
-        off_t cur_offset = (*p->tellf)(p->fh);
+        off_t cur_offset = p->stream->tellf(p->stream);
 	if (cur_offset <= 27)
 	    return NULL;
-	if (p->endf)
-	    (*p->endf)(p->fh, cur_offset - 1);
+	if (p->stream->endf)
+        {
+            off_t end_offset = cur_offset - 1;
+	    p->stream->endf(p->stream, &end_offset);
+        }
     }
     absynName = mi->type;
     res_root = data1_mk_root (p->dh, p->mem, absynName);

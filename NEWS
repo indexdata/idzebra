@@ -1,3 +1,8 @@
+Common stream reader interface for record filters (struct ZebraRecStream).
+
+Debian package fix: packages idzebra-2.0 + libidzebra-2.0-modules did
+not depend properly on sub packages.
+
 Experimental segment facility (for matching of words within one
 field/segment).
 

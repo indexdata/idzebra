@@ -1,4 +1,4 @@
-/* $Id: rectext.c,v 1.2 2006-08-14 10:40:15 adam Exp $
+/* $Id: rectext.c,v 1.3 2006-08-22 13:39:27 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -80,7 +80,7 @@ static int buf_getchar (struct filter_info *tinfo, struct buf_info *fi, char *ds
     {
         if (fi->max <= 0)
             return 0;
-        fi->max = (*fi->p->readf)(fi->p->fh, fi->buf, 4096);
+        fi->max = fi->p->stream->readf(fi->p->stream, fi->buf, 4096);
         fi->offset = 0;
         if (fi->max <= 0)
             return 0;
@@ -88,8 +88,9 @@ static int buf_getchar (struct filter_info *tinfo, struct buf_info *fi, char *ds
     *dst = fi->buf[(fi->offset)++];
     if (tinfo->sep && *dst == *tinfo->sep)
     {
-	off_t off = (*fi->p->tellf)(fi->p->fh);
-	(*fi->p->endf)(fi->p->fh, off - (fi->max - fi->offset));
+	off_t off = fi->p->stream->tellf(fi->p->stream);
+        off_t end_offset = off - (fi->max - fi->offset);
+	fi->p->stream->endf(fi->p->stream, &end_offset);
 	return 0;
     }
     return 1;
@@ -202,7 +203,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
         }
 	if (!make_body)
 	    break;
-        r = (*p->readf)(p->fh, filter_buf + filter_ptr, 4096);
+        r = p->stream->readf(p->stream, filter_buf + filter_ptr, 4096);
         if (r <= 0)
             break;
         filter_ptr += r;

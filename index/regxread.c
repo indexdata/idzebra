@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.2 2006-08-14 10:40:15 adam Exp $
+/* $Id: regxread.c,v 1.3 2006-08-22 13:39:27 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -115,15 +115,15 @@ struct lexSpec {
 #if HAVE_TCL_H
     Tcl_Interp *tcl_interp;
 #endif
-    void *f_win_fh;
-    void (*f_win_ef)(void *, off_t);
+    struct ZebraRecStream *stream;
+    off_t (*f_win_ef)(struct ZebraRecStream *s, off_t *);
 
     int f_win_start;      /* first byte of buffer is this file offset */
     int f_win_end;        /* last byte of buffer is this offset - 1 */
     int f_win_size;       /* size of buffer */
     char *f_win_buf;      /* buffer itself */
-    int (*f_win_rf)(void *, char *, size_t);
-    off_t (*f_win_sf)(void *, off_t);
+    int (*f_win_rf)(struct ZebraRecStream *, char *, size_t);
+    off_t (*f_win_sf)(struct ZebraRecStream *, off_t);
 
     struct lexConcatBuf *concatBuf;
     int maxLevel;
@@ -154,12 +154,12 @@ static char *f_win_get (struct lexSpec *spec, off_t start_pos, off_t end_pos,
     }
     if (off < 0 || start_pos >= spec->f_win_end)
     {
-        (*spec->f_win_sf)(spec->f_win_fh, start_pos);
+        (*spec->f_win_sf)(spec->stream, start_pos);
         spec->f_win_start = start_pos;
 
         if (!spec->f_win_buf)
             spec->f_win_buf = (char *) xmalloc (spec->f_win_size);
-        *size = (*spec->f_win_rf)(spec->f_win_fh, spec->f_win_buf,
+        *size = (*spec->f_win_rf)(spec->stream, spec->f_win_buf,
                                   spec->f_win_size);
         spec->f_win_end = spec->f_win_start + *size;
 
@@ -169,7 +169,7 @@ static char *f_win_get (struct lexSpec *spec, off_t start_pos, off_t end_pos,
     }
     for (i = 0; i<spec->f_win_end - start_pos; i++)
         spec->f_win_buf[i] = spec->f_win_buf[i + off];
-    r = (*spec->f_win_rf)(spec->f_win_fh,
+    r = (*spec->f_win_rf)(spec->stream,
                           spec->f_win_buf + i,
                           spec->f_win_size - i);
     spec->f_win_start = start_pos;
@@ -1763,10 +1763,11 @@ data1_node *lexNode (struct lexSpec *spec, int *ptr)
                     {
                         if (spec->f_win_ef && *ptr != F_WIN_EOF)
 			{
+                            off_t end_offset = *ptr;
 #if REGX_DEBUG
 			    yaz_log (YLOG_LOG, "regx: endf ptr=%d", *ptr);
 #endif
-                            (*spec->f_win_ef)(spec->f_win_fh, *ptr);
+                            (*spec->f_win_ef)(spec->stream, &end_offset);
 			}
                         return NULL;
                     }
@@ -1884,6 +1885,7 @@ data1_node *grs_read_regx (struct grs_read_info *p)
     int res;
     struct lexSpecs *specs = (struct lexSpecs *) p->clientData;
     struct lexSpec **curLexSpec = &specs->spec;
+    off_t start_offset;
 
 #if REGX_DEBUG
     yaz_log (YLOG_LOG, "grs_read_regx");
@@ -1901,18 +1903,19 @@ data1_node *grs_read_regx (struct grs_read_info *p)
         }
     }
     (*curLexSpec)->dh = p->dh;
-    if (!p->offset)
+    start_offset = p->stream->tellf(p->stream);
+    if (start_offset == 0)
     {
         (*curLexSpec)->f_win_start = 0;
         (*curLexSpec)->f_win_end = 0;
-        (*curLexSpec)->f_win_rf = p->readf;
-        (*curLexSpec)->f_win_sf = p->seekf;
-        (*curLexSpec)->f_win_fh = p->fh;
-        (*curLexSpec)->f_win_ef = p->endf;
+        (*curLexSpec)->f_win_rf = p->stream->readf;
+        (*curLexSpec)->f_win_sf = p->stream->seekf;
+        (*curLexSpec)->stream = p->stream;
+        (*curLexSpec)->f_win_ef = p->stream->endf;
         (*curLexSpec)->f_win_size = 500000;
     }
     (*curLexSpec)->m = p->mem;
-    return lexRoot (*curLexSpec, p->offset, "main");
+    return lexRoot (*curLexSpec, start_offset, "main");
 }
 
 static int extract_regx(void *clientData, struct recExtractCtrl *ctrl)
@@ -1942,6 +1945,7 @@ data1_node *grs_read_tcl (struct grs_read_info *p)
     int res;
     struct lexSpecs *specs = (struct lexSpecs *) p->clientData;
     struct lexSpec **curLexSpec = &specs->spec;
+    off_t start_offset;
 
 #if REGX_DEBUG
     yaz_log (YLOG_LOG, "grs_read_tcl");
@@ -1968,18 +1972,19 @@ data1_node *grs_read_tcl (struct grs_read_info *p)
         }
     }
     (*curLexSpec)->dh = p->dh;
-    if (!p->offset)
+    start_offset = p->stream->tellf(p->stream);
+    if (start_offset == 0)
     {
         (*curLexSpec)->f_win_start = 0;
         (*curLexSpec)->f_win_end = 0;
-        (*curLexSpec)->f_win_rf = p->readf;
-        (*curLexSpec)->f_win_sf = p->seekf;
-        (*curLexSpec)->f_win_fh = p->fh;
-        (*curLexSpec)->f_win_ef = p->endf;
+        (*curLexSpec)->f_win_rf = p->stream->readf;
+        (*curLexSpec)->f_win_sf = p->stream->seekf;
+        (*curLexSpec)->stream = p->stream;
+        (*curLexSpec)->f_win_ef = p->stream->endf;
         (*curLexSpec)->f_win_size = 500000;
     }
     (*curLexSpec)->m = p->mem;
-    return lexRoot (*curLexSpec, p->offset, "main");
+    return lexRoot (*curLexSpec, start_offset, "main");
 }
 
 static int extract_tcl(void *clientData, struct recExtractCtrl *ctrl)

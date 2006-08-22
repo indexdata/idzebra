@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.173 2006-08-16 13:16:36 adam Exp $
+/* $Id: index.h,v 1.174 2006-08-22 13:39:27 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -363,6 +363,19 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
                                       int force_update,
                                       int allow_update);
 
+ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh, 
+                                      struct ZebraRecStream *stream,
+                                      int delete_flag,
+                                      int test_mode, 
+                                      const char *recordType,
+                                      SYSNO *sysno,
+                                      const char *match_criteria,
+                                      const char *fname,
+                                      int force_update,
+                                      int allow_update,
+                                      RecType recType,
+                                      void *recTypeClientData);
+
 #if 0
 int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
                         const char *buf, size_t buf_size,
@@ -373,23 +386,10 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
 #endif
 void extract_flushWriteKeys (ZebraHandle zh, int final);
 
-struct zebra_fetch_control {
-    off_t offset_end;
-    off_t record_offset;
-    off_t record_int_pos;
-    const char *record_int_buf;
-    int record_int_len;
-    int fd;
-};
-
-int zebra_record_ext_read (void *fh, char *buf, size_t count);
-off_t zebra_record_ext_seek (void *fh, off_t offset);
-off_t zebra_record_ext_tell (void *fh);
-off_t zebra_record_int_seek (void *fh, off_t offset);
-off_t zebra_record_int_tell (void *fh);
-int zebra_record_int_read (void *fh, char *buf, size_t count);
-void zebra_record_int_end (void *fh, off_t offset);
-
+YAZ_EXPORT void zebra_create_stream_mem(struct ZebraRecStream *stream,
+                                        const char *buf, size_t sz);
+YAZ_EXPORT void zebra_create_stream_fd(struct ZebraRecStream *stream,
+                                       int fd, off_t start_offset);
 void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys);
 
 ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys,

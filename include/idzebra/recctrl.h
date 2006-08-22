@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.28 2006-08-16 13:16:35 adam Exp $
+/* $Id: recctrl.h,v 1.29 2006-08-22 13:39:25 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -48,27 +48,46 @@ YAZ_BEGIN_CDECL
 /* 1015 */
 #define ZEBRA_XPATH_ATTR_CDATA      "_XPATH_ATTR_CDATA"
 
-/* single word entity */
+/** Indexing token */
 typedef struct {
+    /** index type ('w', 'p', .. */
     unsigned index_type;
+    /** index name, e.g. "title" */
     const char *index_name;
+    /** token char data */
     const char *term_buf;
+    /** length of term_buf */
     int  term_len;
+    /** sequence number */
     zint seqno;
+    /** segment number */
     zint segment;
+    /** record ID */
     zint record_id;
+    /** section ID */
     zint section_id;
     struct recExtractCtrl *extractCtrl;
 } RecWord;
 
-/* Extract record control */
+/** \brief record reader stream */
+struct ZebraRecStream {
+    /** client data */
+    void      *fh;    
+    /** \brief read function */
+    int       (*readf)(struct ZebraRecStream *s, char *buf, size_t count);
+    /** \brief seek function */
+    off_t     (*seekf)(struct ZebraRecStream *s, off_t offset);
+    /** \brief tell function */
+    off_t     (*tellf)(struct ZebraRecStream *s);              
+    /** \brief set and get of record position */
+    off_t     (*endf)(struct ZebraRecStream *s, off_t *offset);   
+    /** \brief close and destroy stream */
+    void      (*destroy)(struct ZebraRecStream *s);
+};
+
+/** \brief record extract for indexing */
 struct recExtractCtrl {
-    void      *fh;                    /* File handle and read function     */
-    int       (*readf)(void *fh, char *buf, size_t count);
-    off_t     (*seekf)(void *fh, off_t offset);  /* seek function          */
-    off_t     (*tellf)(void *fh);                /* tell function          */
-    void      (*endf)(void *fh, off_t offset);   /* end of record position */
-    off_t     offset;                            /* start offset           */
+    struct ZebraRecStream *stream;
     void      (*init)(struct recExtractCtrl *p, RecWord *w);
     void      *clientData;
     void      (*tokenAdd)(RecWord *w);
@@ -85,13 +104,10 @@ struct recExtractCtrl {
 
 /* Retrieve record control */
 struct recRetrieveCtrl {
+    struct ZebraRecStream *stream;
     /* Input parameters ... */
     Res       res;		      /* Resource pool                     */
     ODR       odr;                    /* ODR used to create response       */
-    void     *fh;                     /* File descriptor and read function */
-    int       (*readf)(void *fh, char *buf, size_t count);
-    off_t     (*seekf)(void *fh, off_t offset);
-    off_t     (*tellf)(void *fh);
     oid_value input_format;           /* Preferred record syntax           */
     Z_RecordComposition *comp;        /* formatting instructions           */
     char      *encoding;              /* preferred character encoding      */
@@ -165,9 +181,6 @@ void recTypes_default_handlers(RecTypes recTypes, Res res);
 YAZ_EXPORT
 RecType recType_byName(RecTypes rts, Res res, const char *name,
 		       void **clientDataP);
-
-
-#define KEY_SEGMENT_SIZE 1024
 
 YAZ_END_CDECL
 

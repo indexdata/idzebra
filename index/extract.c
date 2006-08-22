@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.227 2006-08-16 13:16:36 adam Exp $
+/* $Id: extract.c,v 1.228 2006-08-22 13:39:27 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -169,71 +169,6 @@ static void searchRecordKey(ZebraHandle zh,
 		    ws[woff] = str;
 	    }
 	}
-    }
-}
-
-struct file_read_info {
-    off_t file_max;	    /* maximum offset so far */
-    off_t file_offset;      /* current offset */
-    off_t file_moffset;     /* offset of rec/rec boundary */
-    int file_more;
-    int fd;
-};
-
-static struct file_read_info *file_read_start (int fd)
-{
-    struct file_read_info *fi = (struct file_read_info *)
-	xmalloc (sizeof(*fi));
-
-    fi->fd = fd;
-    fi->file_max = 0;
-    fi->file_moffset = 0;
-    fi->file_offset = 0;
-    fi->file_more = 0;
-    return fi;
-}
-
-static void file_read_stop (struct file_read_info *fi)
-{
-    xfree (fi);
-}
-
-static off_t file_seek (void *handle, off_t offset)
-{
-    struct file_read_info *p = (struct file_read_info *) handle;
-    p->file_offset = offset;
-    return lseek (p->fd, offset, SEEK_SET);
-}
-
-static off_t file_tell (void *handle)
-{
-    struct file_read_info *p = (struct file_read_info *) handle;
-    return p->file_offset;
-}
-
-static int file_read (void *handle, char *buf, size_t count)
-{
-    struct file_read_info *p = (struct file_read_info *) handle;
-    int fd = p->fd;
-    int r;
-    r = read (fd, buf, count);
-    if (r > 0)
-    {
-        p->file_offset += r;
-        if (p->file_offset > p->file_max)
-            p->file_max = p->file_offset;
-    }
-    return r;
-}
-
-static void file_end (void *handle, off_t offset)
-{
-    struct file_read_info *p = (struct file_read_info *) handle;
-
-    if (offset != p->file_moffset)
-    {
-	p->file_moffset = offset;
-	p->file_more = 1;
     }
 }
 
@@ -409,355 +344,6 @@ static void all_matches_add(struct recExtractCtrl *ctrl)
                               "", 0);
 }
 
-static ZEBRA_RES file_extract_record(ZebraHandle zh,
-				     SYSNO *sysno, const char *fname,
-				     int deleteFlag,
-				     struct file_read_info *fi,
-				     int force_update,
-				     RecType recType,
-				     void *recTypeClientData)
-{
-    const char *match_str_to_print = "";
-    RecordAttr *recordAttr;
-    int r;
-    const char *matchStr = 0;
-    SYSNO sysnotmp;
-    Record rec;
-    off_t recordOffset = 0;
-    struct recExtractCtrl extractCtrl;
-    
-    /* announce database */
-    if (zebraExplain_curDatabase (zh->reg->zei, zh->basenames[0]))
-    {
-        if (zebraExplain_newDatabase (zh->reg->zei, zh->basenames[0],
-				      zh->m_explain_database))
-	    return ZEBRA_FAIL;
-    }
-
-    if (fi->fd != -1)
-    {
-        /* we are going to read from a file, so prepare the extraction */
-	zebra_rec_keys_reset(zh->reg->keys);
-
-	zebra_rec_keys_reset(zh->reg->sortKeys);
-	recordOffset = fi->file_moffset;
-        extractCtrl.handle = zh;
-	extractCtrl.offset = fi->file_moffset;
-	extractCtrl.readf = file_read;
-	extractCtrl.seekf = file_seek;
-	extractCtrl.tellf = file_tell;
-	extractCtrl.endf = file_end;
-	extractCtrl.fh = fi;
-	extractCtrl.init = extract_init;
-	extractCtrl.tokenAdd = extract_token_add;
-	extractCtrl.schemaAdd = extract_schema_add;
-	extractCtrl.dh = zh->reg->dh;
-	extractCtrl.match_criteria[0] = '\0';
-	extractCtrl.staticrank = 0;
-	
-	extractCtrl.first_record = fi->file_offset ? 0 : 1;
-
-	extract_set_store_data_prepare(&extractCtrl);
-
-	init_extractCtrl(zh, &extractCtrl);
-
-        if (!zh->m_flag_rw)
-            printf ("File: %s " ZINT_FORMAT "\n", fname, (zint)recordOffset);
-        if (zh->m_flag_rw)
-        {
-            char msg[512];
-            sprintf (msg, "%s:" ZINT_FORMAT , fname, (zint)recordOffset);
-            yaz_log_init_prefix2 (msg);
-        }
-
-        r = (*recType->extract)(recTypeClientData, &extractCtrl);
-
-        yaz_log_init_prefix2 (0);
-	if (r == RECCTRL_EXTRACT_EOF)
-	    return ZEBRA_FAIL;
-	else if (r == RECCTRL_EXTRACT_ERROR_GENERIC)
-	{
-            /* error occured during extraction ... */
-            if (zh->m_flag_rw &&
-		zh->records_processed < zh->m_file_verbose_limit)
-            {
-                yaz_log (YLOG_WARN, "fail %s %s " ZINT_FORMAT, 
-                         zh->m_record_type,
-                         fname, (zint) recordOffset);
-            }
-            return ZEBRA_FAIL;
-        }
-	else if (r == RECCTRL_EXTRACT_ERROR_NO_SUCH_FILTER)
-	{
-            /* error occured during extraction ... */
-            if (zh->m_flag_rw &&
-		zh->records_processed < zh->m_file_verbose_limit)
-            {
-                yaz_log (YLOG_WARN, "no filter for %s %s " 
-                      ZINT_FORMAT, zh->m_record_type,
-                      fname, (zint) recordOffset);
-            }
-            return ZEBRA_FAIL;
-        }
-        all_matches_add(&extractCtrl);
-        if (extractCtrl.match_criteria[0])
-            matchStr = extractCtrl.match_criteria;
-    }
-
-    /* if matchStr is set now - we assume it's printable .
-       For internal matchStr (see below) we don't print */
-    if (matchStr)
-        match_str_to_print = matchStr;
-
-    /* perform internal match if sysno not known and if match criteria is
-       specified already */
-    if (!sysno) 
-    {
-        sysnotmp = 0;
-        sysno = &sysnotmp;
-
-        if (matchStr == 0 && zh->m_record_id && *zh->m_record_id)
-        {
-            matchStr = fileMatchStr (zh, zh->reg->keys, fname, 
-				     zh->m_record_id);
-	    if (!matchStr)
-	    {
-		yaz_log(YLOG_WARN, "Bad match criteria");
-
-                if (zebra_rec_keys_empty(zh->reg->keys))
-                {
-                    yaz_log(YLOG_WARN, "And no index keys");
-                }
-		return ZEBRA_FAIL;
-	    }
-	}
-	if (matchStr)
-	{
-	    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
-            char *rinfo = dict_lookup_ord(zh->reg->matchDict, db_ord,
-					  matchStr);
-	    if (rinfo)
-	    {
-		assert(*rinfo == sizeof(*sysno));
-		memcpy (sysno, rinfo+1, sizeof(*sysno));
-	    }
-	}
-    }
-    if (! *sysno && zebra_rec_keys_empty(zh->reg->keys)	)
-    {
-         /* the extraction process returned no information - the record
-            is probably empty - unless flagShowRecords is in use */
-         if (!zh->m_flag_rw)
-             return ZEBRA_OK;
-  
-         if (zh->records_processed < zh->m_file_verbose_limit)
-	     yaz_log(YLOG_WARN, "empty %s %s " ZINT_FORMAT, zh->m_record_type,
-                     fname, (zint)recordOffset);
-         return ZEBRA_OK;
-    }
-
-    if (! *sysno)
-    {
-        /* new record */
-        if (deleteFlag)
-        {
-	    yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, zh->m_record_type,
-                    fname, (zint)recordOffset);
-            yaz_log(YLOG_WARN, "cannot delete record above (seems new)");
-            return ZEBRA_OK;
-        }
-
-        rec = rec_new (zh->reg->records);
-        
-        *sysno = rec->sysno;
-        
-        if (zh->records_processed < zh->m_file_verbose_limit)
-        {
-            yaz_log(YLOG_LOG, "add %s %s " ZINT_FORMAT 
-                    " " ZINT_FORMAT " %s" ,
-                    zh->m_record_type,
-                    fname, (zint) recordOffset, *sysno, match_str_to_print);
-        }
-	recordAttr = rec_init_attr (zh->reg->zei, rec);
-	recordAttr->staticrank = extractCtrl.staticrank;
-
-        if (matchStr)
-        {
-	    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
-            dict_insert_ord(zh->reg->matchDict, db_ord, matchStr,
-			    sizeof(*sysno), sysno);
-        }
-
-
-	extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
-        extract_flushRecordKeys (zh, *sysno, 1, zh->reg->keys,
-				 recordAttr->staticrank);
-        zh->records_inserted++;
-    }
-    else
-    {
-        /* record already exists */
-	zebra_rec_keys_t delkeys = zebra_rec_keys_open();
-
-	zebra_rec_keys_t sortKeys = zebra_rec_keys_open();
-
-        rec = rec_get (zh->reg->records, *sysno);
-        assert (rec);
-	
-	recordAttr = rec_init_attr (zh->reg->zei, rec);
-
-	zebra_rec_keys_set_buf(delkeys,
-			       rec->info[recInfo_delKeys],
-			       rec->size[recInfo_delKeys],
-			       0);
-
-	zebra_rec_keys_set_buf(sortKeys,
-			       rec->info[recInfo_sortKeys],
-			       rec->size[recInfo_sortKeys],
-			       0);
-	extract_flushSortKeys (zh, *sysno, 0, sortKeys);
-        extract_flushRecordKeys (zh, *sysno, 0, delkeys,
-				 recordAttr->staticrank); /* old values */  
-        if (deleteFlag)
-        {
-            /* record going to be deleted */
-            if (zebra_rec_keys_empty(delkeys))
-            {
-                yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT 
-                        " " ZINT_FORMAT,
-                        zh->m_record_type, fname, (zint)recordOffset, *sysno);
-                yaz_log(YLOG_WARN, "cannot delete file above, storeKeys false (1)");
-            }
-            else
-            {
-                if (zh->records_processed < zh->m_file_verbose_limit)
-                {
-                    yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT 
-                            " " ZINT_FORMAT " %s" ,
-                            zh->m_record_type, fname, (zint) recordOffset,
-                            *sysno, match_str_to_print);
-                }
-                zh->records_deleted++;
-                if (matchStr)
-		{
-		    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
-                    dict_delete_ord(zh->reg->matchDict, db_ord, matchStr);
-		}
-                rec_del (zh->reg->records, &rec);
-            }
-	    rec_rm (&rec);
-            logRecord (zh);
-            return ZEBRA_OK;
-        }
-        else
-        {
-	    /* flush new keys for sort&search etc */
-            if (zh->records_processed < zh->m_file_verbose_limit)
-            {
-                yaz_log(YLOG_LOG, "update %s %s " ZINT_FORMAT 
-                        " " ZINT_FORMAT " %s" ,
-                        zh->m_record_type, fname, (zint) recordOffset, 
-                        *sysno, match_str_to_print);
-            }
-	    recordAttr->staticrank = extractCtrl.staticrank;
-            extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
-            extract_flushRecordKeys (zh, *sysno, 1, zh->reg->keys,
-					 recordAttr->staticrank);
-            zh->records_updated++;
-        }
-	zebra_rec_keys_close(delkeys);
-	zebra_rec_keys_close(sortKeys);
-    }
-    /* update file type */
-    xfree (rec->info[recInfo_fileType]);
-    rec->info[recInfo_fileType] =
-        rec_strdup (zh->m_record_type, &rec->size[recInfo_fileType]);
-
-    /* update filename */
-    xfree (rec->info[recInfo_filename]);
-    rec->info[recInfo_filename] =
-        rec_strdup (fname, &rec->size[recInfo_filename]);
-
-    /* update delete keys */
-    xfree (rec->info[recInfo_delKeys]);
-    if (!zebra_rec_keys_empty(zh->reg->keys) && zh->m_store_keys == 1)
-    {
-	zebra_rec_keys_get_buf(zh->reg->keys,
-			       &rec->info[recInfo_delKeys],
-			       &rec->size[recInfo_delKeys]);
-    }
-    else
-    {
-        rec->info[recInfo_delKeys] = NULL;
-        rec->size[recInfo_delKeys] = 0;
-    }
-
-    /* update sort keys */
-    xfree (rec->info[recInfo_sortKeys]);
-
-    zebra_rec_keys_get_buf(zh->reg->sortKeys,
-			   &rec->info[recInfo_sortKeys],
-			   &rec->size[recInfo_sortKeys]);
-
-    /* save file size of original record */
-    zebraExplain_recordBytesIncrement (zh->reg->zei,
-                                       - recordAttr->recordSize);
-    recordAttr->recordSize = fi->file_moffset - recordOffset;
-    if (!recordAttr->recordSize)
-	recordAttr->recordSize = fi->file_max - recordOffset;
-    zebraExplain_recordBytesIncrement (zh->reg->zei,
-                                       recordAttr->recordSize);
-
-    /* set run-number for this record */
-    recordAttr->runNumber = zebraExplain_runNumberIncrement (zh->reg->zei,
-                                                             0);
-
-    /* update store data */
-    xfree (rec->info[recInfo_storeData]);
-    if (zh->store_data_buf)
-    {
-        rec->size[recInfo_storeData] = zh->store_data_size;
-        rec->info[recInfo_storeData] = zh->store_data_buf;
-	zh->store_data_buf = 0;
-    }
-    else if (zh->m_store_data)
-    {
-        rec->size[recInfo_storeData] = recordAttr->recordSize;
-        rec->info[recInfo_storeData] = (char *)
-	    xmalloc (recordAttr->recordSize);
-        if (lseek (fi->fd, recordOffset, SEEK_SET) < 0)
-        {
-            yaz_log(YLOG_ERRNO|YLOG_FATAL, "seek to " ZINT_FORMAT " in %s",
-                    (zint)recordOffset, fname);
-            exit (1);
-        }
-        if (read (fi->fd, rec->info[recInfo_storeData], recordAttr->recordSize)
-	    < recordAttr->recordSize)
-        {
-            yaz_log (YLOG_ERRNO|YLOG_FATAL, "read %d bytes of %s",
-                  recordAttr->recordSize, fname);
-            exit (1);
-        }
-    }
-    else
-    {
-        rec->info[recInfo_storeData] = NULL;
-        rec->size[recInfo_storeData] = 0;
-    }
-    /* update database name */
-    xfree (rec->info[recInfo_databaseName]);
-    rec->info[recInfo_databaseName] =
-        rec_strdup (zh->basenames[0], &rec->size[recInfo_databaseName]); 
-
-    /* update offset */
-    recordAttr->recordOffset = recordOffset;
-    
-    /* commit this record */
-    rec_put (zh->reg->records, &rec);
-    logRecord (zh);
-    return ZEBRA_OK;
-}
-
 ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname, 
 			     int deleteFlag)
 {
@@ -766,10 +352,11 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname,
     char gprefix[128];
     char ext[128];
     char ext_res[128];
-    struct file_read_info *fi;
+    struct file_read_info *fi = 0;
     const char *original_record_type = 0;
     RecType recType;
     void *recTypeClientData;
+    struct ZebraRecStream stream, *streamp;
 
     zebra_init_log_level();
 
@@ -826,7 +413,10 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname,
 	yaz_log(YLOG_WARN, "Bad filter version: %s", zh->m_record_type);
     }
     if (sysno && deleteFlag)
-        fd = -1;
+    {
+        streamp = 0;
+        fi = 0;
+    }
     else
     {
         char full_rep[1024];
@@ -846,19 +436,21 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname,
 	    zh->m_record_type = original_record_type;
             return ZEBRA_FAIL;
         }
+        streamp = &stream;
+        zebra_create_stream_fd(streamp, fd, 0);
     }
-    fi = file_read_start (fd);
     while(1)
     {
-	fi->file_moffset = fi->file_offset;
-	fi->file_more = 0;  /* file_end not called (yet) */
-        r = file_extract_record (zh, sysno, fname, deleteFlag, fi, 1,
-				 recType, recTypeClientData);
-	if (fi->file_more)
-	{   /* file_end has been called so reset offset .. */
-	    fi->file_offset = fi->file_moffset;
-	    lseek(fi->fd, fi->file_moffset, SEEK_SET);
-	}
+        r = zebra_extract_record_stream(zh, streamp,
+                                        deleteFlag,
+                                        0, /* tst_mode */
+                                        zh->m_record_type,
+                                        sysno,
+                                        0, /*match_criteria */
+                                        fname,
+                                        1, /* force_update */
+                                        1, /* allow_update */
+                                        recType, recTypeClientData);
 	if (r != ZEBRA_OK)
 	{
 	    break;
@@ -868,9 +460,8 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname,
 	    break;
 	}
     }
-    file_read_stop (fi);
-    if (fd != -1)
-        close (fd);
+    if (streamp)
+        stream.destroy(streamp);
     zh->m_record_type = original_record_type;
     return r;
 }
@@ -881,6 +472,7 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname,
   If not, and a record is provided, then sysno is got from there
   
  */
+
 ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh, 
                                       const char *buf, size_t buf_size,
                                       int delete_flag,
@@ -892,49 +484,11 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
                                       int force_update,
                                       int allow_update)
 {
-    SYSNO sysno0 = 0;
-    RecordAttr *recordAttr;
-    struct recExtractCtrl extractCtrl;
-    int r;
-    const char *matchStr = 0;
-    RecType recType = NULL;
+    struct ZebraRecStream stream;
+    ZEBRA_RES res;
     void *clientData;
-    Record rec;
-    long recordOffset = 0;
-    struct zebra_fetch_control fc;
-    const char *pr_fname = fname;  /* filename to print .. */
-    int show_progress = zh->records_processed < zh->m_file_verbose_limit ? 1:0;
+    RecType recType = 0;
 
-    zebra_init_log_level();
-
-    if (!pr_fname)
-	pr_fname = "<no file>";  /* make it printable if file is omitted */
-
-    fc.fd = -1;
-    fc.record_int_buf = buf;
-    fc.record_int_len = buf_size;
-    fc.record_int_pos = 0;
-    fc.offset_end = 0;
-    fc.record_offset = 0;
-
-    extractCtrl.offset = 0;
-    extractCtrl.readf = zebra_record_int_read;
-    extractCtrl.seekf = zebra_record_int_seek;
-    extractCtrl.tellf = zebra_record_int_tell;
-    extractCtrl.endf = zebra_record_int_end;
-    extractCtrl.first_record = 1;
-    extractCtrl.fh = &fc;
-
-    zebra_rec_keys_reset(zh->reg->keys);
-    zebra_rec_keys_reset(zh->reg->sortKeys);
-
-    if (zebraExplain_curDatabase (zh->reg->zei, zh->basenames[0]))
-    {
-        if (zebraExplain_newDatabase (zh->reg->zei, zh->basenames[0], 
-				      zh->m_explain_database))
-            return ZEBRA_FAIL;
-    }
-    
     if (recordType && *recordType)
     {
         yaz_log(log_level, "Record type explicitly specified: %s", recordType);
@@ -960,41 +514,111 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
         yaz_log (YLOG_WARN, "No such record type: %s", recordType);
         return ZEBRA_FAIL;
     }
-    
-    extractCtrl.init = extract_init;
-    extractCtrl.tokenAdd = extract_token_add;
-    extractCtrl.schemaAdd = extract_schema_add;
-    extractCtrl.dh = zh->reg->dh;
-    extractCtrl.handle = zh;
-    extractCtrl.match_criteria[0] = '\0';
-    extractCtrl.staticrank = 0;
-    
-    init_extractCtrl(zh, &extractCtrl);
 
-    extract_set_store_data_prepare(&extractCtrl);
 
-    r = (*recType->extract)(clientData, &extractCtrl);
 
-    if (r == RECCTRL_EXTRACT_EOF)
-	return ZEBRA_FAIL;
-    else if (r == RECCTRL_EXTRACT_ERROR_GENERIC)
+    zebra_create_stream_mem(&stream, buf, buf_size);
+
+    res = zebra_extract_record_stream(zh, &stream,
+                                      delete_flag,
+                                      test_mode, 
+                                      recordType,
+                                      sysno,
+                                      match_criteria,
+                                      fname,
+                                      force_update,
+                                      allow_update,
+                                      recType, clientData);
+    stream.destroy(&stream);
+    return res;
+}
+
+
+ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh, 
+                                      struct ZebraRecStream *stream,
+                                      int delete_flag,
+                                      int test_mode, 
+                                      const char *recordType,
+                                      SYSNO *sysno,
+                                      const char *match_criteria,
+                                      const char *fname,
+                                      int force_update,
+                                      int allow_update,
+                                      RecType recType,
+                                      void *recTypeClientData)
+
+{
+    SYSNO sysno0 = 0;
+    RecordAttr *recordAttr;
+    struct recExtractCtrl extractCtrl;
+    int r;
+    const char *matchStr = 0;
+    Record rec;
+    off_t start_offset = 0;
+    const char *pr_fname = fname;  /* filename to print .. */
+    int show_progress = zh->records_processed < zh->m_file_verbose_limit ? 1:0;
+
+    zebra_init_log_level();
+
+    if (!pr_fname)
+	pr_fname = "<no file>";  /* make it printable if file is omitted */
+
+    zebra_rec_keys_reset(zh->reg->keys);
+    zebra_rec_keys_reset(zh->reg->sortKeys);
+
+    if (zebraExplain_curDatabase (zh->reg->zei, zh->basenames[0]))
     {
-	/* error occured during extraction ... */
-	yaz_log (YLOG_WARN, "extract error: generic");
-	return ZEBRA_FAIL;
-    }
-    else if (r == RECCTRL_EXTRACT_ERROR_NO_SUCH_FILTER)
-    {
-	/* error occured during extraction ... */
-	yaz_log (YLOG_WARN, "extract error: no such filter");
-	return ZEBRA_FAIL;
+        if (zebraExplain_newDatabase (zh->reg->zei, zh->basenames[0], 
+				      zh->m_explain_database))
+            return ZEBRA_FAIL;
     }
 
-    all_matches_add(&extractCtrl);
+    if (stream)
+    {
+        off_t null_offset = 0;
+        extractCtrl.stream = stream;
+
+        start_offset = stream->tellf(stream);
+
+        extractCtrl.first_record = start_offset ? 0 : 1;
         
-    if (extractCtrl.match_criteria[0])
-	match_criteria = extractCtrl.match_criteria;
+        stream->endf(stream, &null_offset);;
 
+        extractCtrl.init = extract_init;
+        extractCtrl.tokenAdd = extract_token_add;
+        extractCtrl.schemaAdd = extract_schema_add;
+        extractCtrl.dh = zh->reg->dh;
+        extractCtrl.handle = zh;
+        extractCtrl.match_criteria[0] = '\0';
+        extractCtrl.staticrank = 0;
+
+    
+        init_extractCtrl(zh, &extractCtrl);
+        
+        extract_set_store_data_prepare(&extractCtrl);
+        
+        r = (*recType->extract)(recTypeClientData, &extractCtrl);
+        
+        if (r == RECCTRL_EXTRACT_EOF)
+            return ZEBRA_FAIL;
+        else if (r == RECCTRL_EXTRACT_ERROR_GENERIC)
+        {
+            /* error occured during extraction ... */
+            yaz_log (YLOG_WARN, "extract error: generic");
+            return ZEBRA_FAIL;
+        }
+        else if (r == RECCTRL_EXTRACT_ERROR_NO_SUCH_FILTER)
+        {
+            /* error occured during extraction ... */
+            yaz_log (YLOG_WARN, "extract error: no such filter");
+            return ZEBRA_FAIL;
+        }
+        
+        all_matches_add(&extractCtrl);
+        
+        if (extractCtrl.match_criteria[0])
+            match_criteria = extractCtrl.match_criteria;
+    }
     if (!sysno) {
 
 	sysno = &sysno0;
@@ -1037,14 +661,14 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
         /* new record */
         if (delete_flag)
         {
-	    yaz_log (YLOG_LOG, "delete %s %s %ld", recordType,
-			 pr_fname, (long) recordOffset);
+	    yaz_log (YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
+			 pr_fname, (zint) start_offset);
             yaz_log (YLOG_WARN, "cannot delete record above (seems new)");
             return ZEBRA_FAIL;
         }
 	if (show_progress)
-	    yaz_log (YLOG_LOG, "add %s %s %ld", recordType, pr_fname,
-		     (long) recordOffset);
+	    yaz_log (YLOG_LOG, "add %s %s " ZINT_FORMAT, recordType, pr_fname,
+		     (zint) start_offset);
         rec = rec_new (zh->reg->records);
 
         *sysno = rec->sysno;
@@ -1072,8 +696,8 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
 	zebra_rec_keys_t sortKeys = zebra_rec_keys_open();
 	if (!allow_update)
 	{
-	    yaz_log (YLOG_LOG, "skipped %s %s %ld", 
-			 recordType, pr_fname, (long) recordOffset);
+	    yaz_log (YLOG_LOG, "skipped %s %s " ZINT_FORMAT, 
+			 recordType, pr_fname, (zint) start_offset);
 	    logRecord(zh);
 	    return ZEBRA_FAIL;
 	}
@@ -1100,16 +724,16 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
             /* record going to be deleted */
             if (zebra_rec_keys_empty(delkeys))
             {
-		yaz_log(YLOG_LOG, "delete %s %s %ld", recordType,
-                        pr_fname, (long) recordOffset);
+		yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
+                        pr_fname, (zint) start_offset);
 		yaz_log(YLOG_WARN, "cannot delete file above, "
                         "storeKeys false (3)");
 	    }
             else
             {
 		if (show_progress)
-		    yaz_log(YLOG_LOG, "delete %s %s %ld", recordType,
-                            pr_fname, (long) recordOffset);
+		    yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
+                            pr_fname, (zint) start_offset);
                 zh->records_deleted++;
                 if (matchStr)
 		{
@@ -1125,8 +749,8 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
         else
         {
 	    if (show_progress)
-		    yaz_log(YLOG_LOG, "update %s %s %ld", recordType,
-                            pr_fname, (long) recordOffset);
+		    yaz_log(YLOG_LOG, "update %s %s " ZINT_FORMAT, recordType,
+                            pr_fname, (zint) ZINT_FORMAT);
 	    recordAttr->staticrank = extractCtrl.staticrank;
             extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
             extract_flushRecordKeys (zh, *sysno, 1, zh->reg->keys, 
@@ -1169,15 +793,19 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
     /* save file size of original record */
     zebraExplain_recordBytesIncrement (zh->reg->zei,
 				       - recordAttr->recordSize);
-#if 0
-    recordAttr->recordSize = fi->file_moffset - recordOffset;
-    if (!recordAttr->recordSize)
-	recordAttr->recordSize = fi->file_max - recordOffset;
-#else
-    recordAttr->recordSize = buf_size;
-#endif
-    zebraExplain_recordBytesIncrement (zh->reg->zei,
-				       recordAttr->recordSize);
+    if (stream)
+    {
+        off_t end_offset = stream->endf(stream, 0);
+
+        if (!end_offset)
+            end_offset = stream->tellf(stream);
+        else
+            stream->seekf(stream, end_offset);
+
+        recordAttr->recordSize = end_offset - start_offset;
+        zebraExplain_recordBytesIncrement(zh->reg->zei,
+                                          recordAttr->recordSize);
+    }
 
     /* set run-number for this record */
     recordAttr->runNumber =
@@ -1195,10 +823,15 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
     }
     else if (zh->m_store_data)
     {
+        off_t cur_offset = stream->tellf(stream);
+
         rec->size[recInfo_storeData] = recordAttr->recordSize;
         rec->info[recInfo_storeData] = (char *)
 	    xmalloc (recordAttr->recordSize);
-        memcpy (rec->info[recInfo_storeData], buf, recordAttr->recordSize);
+        stream->seekf(stream, start_offset);
+        stream->readf(stream, rec->info[recInfo_storeData],
+                      recordAttr->recordSize);
+        stream->seekf(stream, cur_offset);
     }
     else
     {
@@ -1211,7 +844,7 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
         rec_strdup (zh->basenames[0], &rec->size[recInfo_databaseName]); 
 
     /* update offset */
-    recordAttr->recordOffset = recordOffset;
+    recordAttr->recordOffset = start_offset;
     
     /* commit this record */
     rec_put (zh->reg->records, &rec);

@@ -1,4 +1,4 @@
-/* $Id: xmlread.c,v 1.2 2006-08-14 10:40:15 adam Exp $
+/* $Id: xmlread.c,v 1.3 2006-08-22 13:39:28 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -156,11 +156,11 @@ static void cb_entity_decl (void *userData, const char *entityName,
     
 }
 
-static int cb_external_entity (XML_Parser pparser,
-                               const char *context,
-                               const char *base,
-                               const char *systemId,
-                               const char *publicId)
+static int cb_external_entity(XML_Parser pparser,
+                              const char *context,
+                              const char *base,
+                              const char *systemId,
+                              const char *publicId)
 {
     struct user_info *ui = (struct user_info*) XML_GetUserData(pparser);
     FILE *inf;
@@ -392,9 +392,10 @@ static void cb_ns_end(void *userData, const char *prefix)
     if (prefix)
 	yaz_log(ui->loglevel, "cb_ns_end %s", prefix);
 }
-data1_node *zebra_read_xml (data1_handle dh,
-                            int (*rf)(void *, char *, size_t), void *fh,
-                            NMEM m)
+
+data1_node *zebra_read_xml(data1_handle dh,
+                           struct ZebraRecStream *stream,
+                           NMEM m)
 {
     XML_Parser parser;
     struct user_info uinfo;
@@ -434,7 +435,7 @@ data1_node *zebra_read_xml (data1_handle dh,
             yaz_log (YLOG_WARN, "XML_GetBuffer fail");
             break;
         }
-        r = (*rf)(fh, buf, XML_CHUNK);
+        r = stream->readf(stream, buf, XML_CHUNK);
         if (r < 0)
         {
             /* error */
@@ -484,9 +485,9 @@ struct xml_info {
     XML_Expat_Version expat_version;
 };
 
-static data1_node *grs_read_xml (struct grs_read_info *p)
+static data1_node *grs_read_xml(struct grs_read_info *p)
 {
-    return zebra_read_xml (p->dh, p->readf, p->fh, p->mem);
+    return zebra_read_xml(p->dh, p->stream, p->mem);
 }
 
 static void *filter_init(Res res, RecType recType)
