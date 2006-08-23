@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.21 2006-08-16 13:13:53 adam Exp $
+/* $Id: testlib.h,v 1.22 2006-08-23 07:37:02 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -68,17 +68,17 @@ ZebraService tl_zebra_start(const char *cfgname);
  * returns the retcode, for use in return or exit in main()
  */
 int tl_close_down(ZebraHandle zh, ZebraService zs
-    ) GCC_ATTRIBUTE((warn_unused_result));    
+    ) ZEBRA_GCC_ATTR((warn_unused_result));    
 
 /** inits the database and inserts test data */
 int tl_init_data(ZebraHandle zh, const char **recs
-    ) GCC_ATTRIBUTE((warn_unused_result));    
+    ) ZEBRA_GCC_ATTR((warn_unused_result));    
 
 /**
  * tl_query does a simple query, and checks that the number of hits matches
  */
 int tl_query(ZebraHandle zh, const char *query, zint exphits
-    ) GCC_ATTRIBUTE((warn_unused_result));
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 
 /**
@@ -86,7 +86,7 @@ int tl_query(ZebraHandle zh, const char *query, zint exphits
  */
 int tl_query_x(ZebraHandle zh, const char *query, zint exphits,
 	       int experror
-    ) GCC_ATTRIBUTE((warn_unused_result));
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
     
 /**
  * tl_scan is a utility for scan testing 
@@ -95,10 +95,10 @@ int tl_scan(ZebraHandle zh, const char *query,
 	    int pos, int num,  /* input params */
 	    int exp_pos, int exp_num,  int exp_partial, /* expected result */
 	    const char **exp_entries  /* expected entries (or NULL) */
-    ) GCC_ATTRIBUTE((warn_unused_result));
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 int tl_sort(ZebraHandle zh, const char *query, zint hits, zint *exp
-    ) GCC_ATTRIBUTE((warn_unused_result));
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 /** 
  * ranking_query makes a query, checks number of hits, and for 
@@ -107,7 +107,7 @@ int tl_sort(ZebraHandle zh, const char *query, zint hits, zint *exp
  */
 int tl_ranking_query(ZebraHandle zh, char *query, 
 		     int exphits, char *firstrec, int firstscore
-    ) GCC_ATTRIBUTE((warn_unused_result));
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 /** 
  * meta_query makes a query, checks number of hits, and for 
@@ -115,7 +115,7 @@ int tl_ranking_query(ZebraHandle zh, char *query,
  */
 int tl_meta_query(ZebraHandle zh, char *query, int exphits,
 		  zint *ids
-    ) GCC_ATTRIBUTE((warn_unused_result));
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 /**
  * if filter given by name does not exist, exit nicely but warn in log 
