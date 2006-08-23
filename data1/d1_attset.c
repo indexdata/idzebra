@@ -1,4 +1,4 @@
-/* $Id: d1_attset.c,v 1.11 2006-08-14 10:40:06 adam Exp $
+/* $Id: d1_attset.c,v 1.12 2006-08-23 13:56:07 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -84,6 +84,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 	{
 	    int num;
 	    char *name;
+            char *endptr;
 	    data1_att *t;
 	    
 	    if (argc < 3)
@@ -96,7 +97,13 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 		yaz_log(YLOG_WARN, "%s:%d: Local attributes not supported",
                         file, lineno);
 	    }
-	    num = atoi (argv[1]);
+            num = strtol(argv[1], &endptr, 10);
+            if (*endptr != '\0')
+            {
+		yaz_log(YLOG_WARN, "%s:%d: Bad attribute integer %s",
+                        file, lineno, argv[1]);
+		continue;
+            }
 	    name = argv[2];
 	    
 	    t = *attp = (data1_att *)nmem_malloc(mem, sizeof(*t));
