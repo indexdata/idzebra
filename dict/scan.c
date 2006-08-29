@@ -1,4 +1,4 @@
-/* $Id: scan.c,v 1.21 2006-08-14 10:40:09 adam Exp $
+/* $Id: scan.c,v 1.22 2006-08-29 12:31:12 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -218,7 +218,7 @@ int dict_scan (Dict dict, char *str, int *before, int *after, void *client,
     yaz_log (YLOG_DEBUG, "dict_scan");
     for (i = 0; str[i]; i++)
     {
-	yaz_log (YLOG_DEBUG, " %3d  %c", str[i],
+	yaz_log (YLOG_DEBUG, "start_term pos %d %3d  %c", i, str[i],
 	      (str[i] > ' ' && str[i] < 127) ? str[i] : '?');
     }
     if (!dict->head.root)

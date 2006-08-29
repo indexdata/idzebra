@@ -1,4 +1,4 @@
-/* $Id: scantest.c,v 1.6 2006-08-14 10:40:09 adam Exp $
+/* $Id: scantest.c,v 1.7 2006-08-29 12:31:12 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 #include <string.h>
 #include <yaz/log.h>
-
+#include <yaz/test.h>
 #include <yaz/options.h>
 #include <idzebra/dict.h>
 
@@ -43,9 +43,7 @@ static int handler(char *name, const char *info, int pos, void *client)
     else
 	idx = -pos - 1;
 
-#if 0
-    printf ("pos=%d idx=%d name=%s\n", pos, idx, name);
-#endif
+    yaz_log(YLOG_DEBUG, "pos=%d idx=%d name=%s", pos, idx, name);
     if (idx < 0)
 	return 0;
 
@@ -54,8 +52,8 @@ static int handler(char *name, const char *info, int pos, void *client)
     return 0;
 }
 
-int tst(Dict dict, int before, int after, char *scan_term, char **cmp_strs,
-	int verbose)
+int do_scan(Dict dict, int before, int after, char *scan_term, char **cmp_strs,
+            int verbose)
 {
     struct handle_info hi;
     int i;
@@ -65,6 +63,8 @@ int tst(Dict dict, int before, int after, char *scan_term, char **cmp_strs,
     hi.ar = malloc(sizeof(char*) * (after+before+1));
     for (i = 0; i<after+before; i++)
 	hi.ar[i] = 0;
+    yaz_log(YLOG_DEBUG, "dict_scan before=%d after=%d term=%s",
+            before, after, scan_term);
     dict_scan (dict, scan_term, &before, &after, &hi, handler);
     for (i = 0; i<hi.a+hi.b; i++)
     {
@@ -105,16 +105,41 @@ int tst(Dict dict, int before, int after, char *scan_term, char **cmp_strs,
     return errors;
 }
 
+static void tst(Dict dict)
+{
+    char scan_term[1024];
+    {
+        char *cs[] = {
+            "4497",
+            "4498",
+            "4499",
+            "45"};
+        strcpy(scan_term, "4499");
+        YAZ_CHECK_EQ(do_scan(dict, 2, 2, scan_term, cs, 0), 0);
+    }
+    {
+        char *cs[] = {
+            "4498",
+            "4499",
+            "45",
+            "450"};
+        strcpy(scan_term, "45");
+        YAZ_CHECK_EQ(do_scan(dict, 2, 2, scan_term, cs, 0), 0);
+    }
+}
+
 int main(int argc, char **argv)
 {
-    BFiles bfs;
-    Dict dict;
+    BFiles bfs = 0;
+    Dict dict = 0;
     int i;
     int errors = 0;
     int ret;
     int before = 0, after = 0, number = 10000;
     char scan_term[1024];
     char *arg;
+
+    YAZ_CHECK_INIT(argc, argv);
 
     strcpy(scan_term, "1004");
     while ((ret = options("b:a:t:n:v:", argv, argc, &arg)) != -2)
@@ -130,7 +155,12 @@ int main(int argc, char **argv)
 	    after = atoi(arg);
 	    break;
 	case 't':
-	    strcpy(scan_term, arg);
+            if (strlen(arg) >= sizeof(scan_term)-1)
+            {
+                fprintf(stderr, "scan term too long\n");
+                exit(1);
+            }
+            strcpy(scan_term, arg);
 	    break;
 	case 'n':
 	    number = atoi(arg);
@@ -141,50 +171,33 @@ int main(int argc, char **argv)
     }
 
     bfs = bfs_create(".:100M", 0);
-    if (!bfs)
+    YAZ_CHECK(bfs);
+    if (bfs)
     {
-	fprintf(stderr, "bfs_create failed\n");
-	exit(1);
+        bf_reset(bfs);
+        dict = dict_open(bfs, "dict", 10, 1, 0, 0);
+        YAZ_CHECK(dict);
     }
-    dict = dict_open(bfs, "dict", 10, 1, 0, 0);
-    for (i = 10; i<number; i++)
+    if (dict)
     {
-	int r;
-	char w[32];
-	sprintf(w, "%d", i);
-	r = dict_insert (dict, w, sizeof(int), &i);
-    }
+        /* Insert "10", "11", "12", .. "99", "100", ... number */
+        for (i = 10; i<number; i++)
+        {
+            char w[32];
+            sprintf(w, "%d", i);
+            YAZ_CHECK_EQ(dict_insert (dict, w, sizeof(int), &i), 0);
+        }
+        
+        if (after > 0 || before > 0)
+            do_scan(dict, before, after, scan_term, 0, 1);
+        else
+            tst(dict);
 
-    if (after > 0 || before > 0)
-	tst(dict, before, after, scan_term, 0, 1);
-    else
-    {
-	if (argc <= 1)
-	{
-	    char *cs[] = {
-		"4497",
-		"4498",
-		"4499",
-		"45"};
-	    strcpy(scan_term, "4499");
-	    errors += tst(dict, 2, 2, scan_term, cs, 0);
-	}
-	if (argc <= 1)
-	{
-	    char *cs[] = {
-		"4498",
-		"4499",
-		"45",
-		"450"};
-	    strcpy(scan_term, "45");
-	    errors += tst(dict, 2, 2, scan_term, cs, 0);
-	}
+        dict_close(dict);
     }
-    dict_close(dict);
-    bfs_destroy(bfs);
-    if (errors)
-	exit(1);
-    exit(0);
+    if (bfs)
+        bfs_destroy(bfs);
+    YAZ_CHECK_TERM;
 }
 /*
  * Local variables:
