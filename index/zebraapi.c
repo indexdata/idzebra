@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.225 2006-08-16 13:16:36 adam Exp $
+/* $Id: zebraapi.c,v 1.226 2006-08-29 08:27:59 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -772,8 +772,10 @@ static void zebra_select_register (ZebraHandle zh, const char *new_reg)
     {
 	if (res_get_int(zh->res, "segment", &zh->m_segment_indexing) == 
             ZEBRA_OK)
-	    yaz_log(YLOG_LOG, "segment indexing set and is %d",
+        {
+	    yaz_log(YLOG_DEBUG, "segment indexing set and is %d",
                     zh->m_segment_indexing);
+        }
     }
 }
 
