@@ -1,4 +1,4 @@
-/* $Id: insert.c,v 1.27 2006-08-14 10:40:09 adam Exp $
+/* $Id: insert.c,v 1.28 2006-08-29 13:39:18 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -437,13 +437,14 @@ static int dict_ins (Dict dict, const Dict_char *str,
 
 int dict_insert (Dict dict, const char *str, int userlen, void *userinfo)
 {
+    if (!dict->rw)
+        return -1;
     if (!dict->head.root)
     {
 	void *p;
-	if (dict->rw)
-	    dict->head.root = new_page (dict, 0, &p);
+        dict->head.root = new_page (dict, 0, &p);
 	if (!dict->head.root)
-	    return 0;
+	    return -1;
     }
     return dict_ins (dict, (const Dict_char *) str, dict->head.root,
 		     userlen, userinfo);
