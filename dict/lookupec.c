@@ -1,4 +1,4 @@
-/* $Id: lookupec.c,v 1.14 2006-08-14 10:40:09 adam Exp $
+/* $Id: lookupec.c,v 1.15 2006-08-29 12:48:48 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -37,9 +36,10 @@ typedef struct {
 
 #define SH(x) (((x)<<1)+1)
 
-int dict_look_ec (Dict dict, Dict_ptr ptr, MatchInfo *mi, MatchWord *ri_base,
-                  int pos, int (*userfunc)(char *), int range,
-                  Dict_char *prefix)
+static int lookup_ec(Dict dict, Dict_ptr ptr,
+                     MatchInfo *mi, MatchWord *ri_base,
+                     int pos, int (*userfunc)(char *), int range,
+                     Dict_char *prefix)
 {
     int lo, hi;
     void *p;
@@ -65,7 +65,7 @@ int dict_look_ec (Dict dict, Dict_ptr ptr, MatchInfo *mi, MatchWord *ri_base,
             {
                 Dict_char ch;
 
-                memcpy (&ch, info+j*sizeof(Dict_char), sizeof(Dict_char));
+                memcpy(&ch, info+j*sizeof(Dict_char), sizeof(Dict_char));
                 prefix[pos+j] = ch;
                 if (ch == DICT_EOS)
                 {
@@ -114,12 +114,12 @@ int dict_look_ec (Dict dict, Dict_ptr ptr, MatchInfo *mi, MatchWord *ri_base,
                     prefix[pos+1] = DICT_EOS;
                     (*userfunc)((char*) prefix);
                 }
-                memcpy (&subptr, info, sizeof(Dict_ptr));
+                memcpy(&subptr, info, sizeof(Dict_ptr));
                 if (subptr)
                 {
-                    dict_look_ec (dict, subptr, mi, ri, pos+1,
-                                  userfunc, range, prefix);
-                    dict_bf_readp (dict->dbf, ptr, &p);
+                    lookup_ec(dict, subptr, mi, ri, pos+1,
+                              userfunc, range, prefix);
+                    dict_bf_readp(dict->dbf, ptr, &p);
                     indxp = (short*) ((char*) p + 
                                       DICT_bsize(p)-sizeof(short));
                 }
@@ -130,44 +130,44 @@ int dict_look_ec (Dict dict, Dict_ptr ptr, MatchInfo *mi, MatchWord *ri_base,
     return 0;
 }
 
-static MatchInfo *prepare_match (Dict_char *pattern)
+static MatchInfo *prepare_match(Dict_char *pattern)
 {
     int i;
     MatchWord *s;
     MatchInfo *mi;
 
-    mi = (MatchInfo *) xmalloc (sizeof(*mi));
+    mi = (MatchInfo *) xmalloc(sizeof(*mi));
     mi->m = dict_strlen (pattern);
-    mi->s = s = (MatchWord *) xmalloc (sizeof(*s)*256);  /* 256 !!! */
-    for (i=0; i<256; i++)
+    mi->s = s = (MatchWord *) xmalloc(sizeof(*s)*256);  /* 256 !!! */
+    for (i = 0; i < 256; i++)
         s[i] = 0;
-    for (i=0; pattern[i]; i++)
+    for (i = 0; pattern[i]; i++)
         s[pattern[i]&255] += 1<<i;
     return mi;
 }
 
-int dict_lookup_ec (Dict dict, char *pattern, int range,
-                    int (*userfunc)(char *name))
+int dict_lookup_ec(Dict dict, char *pattern, int range,
+                   int (*userfunc)(char *name))
 {
     MatchInfo *mi;
     MatchWord *ri;
-    int i;
+    int ret, i;
     Dict_char prefix[2048];
 
     if (!dict->head.root)
         return 0;
     
-    mi = prepare_match ((Dict_char*) pattern);
-
-    ri = (MatchWord *) xmalloc ((dict_strlen((Dict_char*) pattern)+range+2)
-				* (range+1)*sizeof(*ri));
-    for (i=0; i<=range; i++)
+    mi = prepare_match((Dict_char*) pattern);
+    
+    ri = (MatchWord *) xmalloc((dict_strlen((Dict_char*) pattern)+range+2)
+                               * (range+1)*sizeof(*ri));
+    for (i = 0; i <= range; i++)
         ri[i] = (2<<i)-1;
     
-    i = dict_look_ec (dict, dict->head.root, mi, ri, 0, userfunc,
-		      range, prefix);
-    xfree (ri);
-    return i;
+    ret = lookup_ec(dict, dict->head.root, mi, ri, 0, userfunc,
+                    range, prefix);
+    xfree(ri);
+    return ret;
 }
 
 /*
