@@ -1,4 +1,4 @@
-/* $Id: dict-p.h,v 1.5 2006-08-14 10:40:09 adam Exp $
+/* $Id: dict-p.h,v 1.6 2006-08-29 09:27:55 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -32,6 +32,8 @@ YAZ_BEGIN_CDECL
 #define DICT_MAGIC "dict01"
 
 #define DICT_DEFAULT_PAGESIZE 4096
+
+typedef unsigned char Dict_char;
 
 struct Dict_head {
     char magic_str[8];
@@ -85,6 +87,13 @@ Dict_BFile dict_bf_open (BFiles bfs, const char *name, int block_size,
 			 int cache, int rw);
 int        dict_bf_close (Dict_BFile dbf);
 void       dict_bf_compact (Dict_BFile dbf);
+
+int dict_strcmp (const Dict_char *s1, const Dict_char *s2);
+
+int dict_strncmp (const Dict_char *s1, const Dict_char *s2, size_t n);
+
+int dict_strlen (const Dict_char *s);
+
 
 #define DICT_EOS        0
 #define DICT_type(x)    0[(Dict_ptr*) x]

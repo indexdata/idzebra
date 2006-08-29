@@ -1,4 +1,4 @@
-/* $Id: dict.h,v 1.6 2006-08-14 10:40:14 adam Exp $
+/* $Id: dict.h,v 1.7 2006-08-29 09:27:56 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -44,7 +44,6 @@ YAZ_BEGIN_CDECL
 typedef struct Dict_struct *Dict;
 
 typedef unsigned Dict_ptr;
-typedef unsigned char Dict_char;
 
 YAZ_EXPORT 
 Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
@@ -72,15 +71,6 @@ YAZ_EXPORT
 int dict_lookup_grep (Dict dict, const char *p, int range, void *client,
 		      int *max_pos, int init_pos,
 		      int (*f)(char *name, const char *info, void *client));
-
-YAZ_EXPORT
-int dict_strcmp (const Dict_char *s1, const Dict_char *s2);
-
-YAZ_EXPORT
-int dict_strncmp (const Dict_char *s1, const Dict_char *s2, size_t n);
-
-YAZ_EXPORT
-int dict_strlen (const Dict_char *s);
 
 YAZ_EXPORT
 int dict_scan (Dict dict, char *str, 
