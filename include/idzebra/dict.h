@@ -1,4 +1,4 @@
-/* $Id: dict.h,v 1.9 2006-08-29 13:36:26 adam Exp $
+/* $Id: dict.h,v 1.10 2006-08-29 14:25:40 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -133,7 +133,7 @@ int dict_lookup_ec(Dict dict, char *p, int range, int (*f)(char *name));
     \param max_pos on return holds maximum number of chars that match (prefix)
     \param init_pos number of leading non-error corrected chars.
     \param f function be called for each match
-    \retval 0 Operation complete.
+    \retval 0 Operation complete. Function f returned zero value always
     \retval >0 Operation incomplete. Function f returned a non-zero value
     \retval -1 error (such as bad regular expression)
     
@@ -153,8 +153,8 @@ int dict_lookup_grep(Dict dict, const char *p, int range, void *client,
     \param after number of terms to be visited following str
     \param client client data pointer to be passed to match function f
     \param f function be called for each matching term
-    \retval 0 OK, and no terms visited
-    \retval 1 OK, and some terms have been visited
+    \retval 0 Operation complete. Function f returned zero value always
+    \retval 1 Operation incomplete. Function f returned a non-zero value
     \retval -1 error
 */
 YAZ_EXPORT
