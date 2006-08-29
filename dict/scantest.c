@@ -1,4 +1,4 @@
-/* $Id: scantest.c,v 1.7 2006-08-29 12:31:12 adam Exp $
+/* $Id: scantest.c,v 1.8 2006-08-29 13:39:48 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -105,9 +105,36 @@ int do_scan(Dict dict, int before, int after, char *scan_term, char **cmp_strs,
     return errors;
 }
 
-static void tst(Dict dict)
+static void tst(Dict dict, int start, int number)
 {
+    int i;
     char scan_term[1024];
+
+    /* insert again with original value again */
+    for (i = start; i < number; i += 100)
+    {
+        int v = i;
+        char w[32];
+        sprintf(w, "%d", i);
+        YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(v), &v), 2);
+    }
+    /* insert again with differnt value */
+    for (i = start; i < number; i += 100)
+    {
+        int v = i-1;
+        char w[32];
+        sprintf(w, "%d", i);
+        YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(v), &v), 1);
+    }
+    /* insert again with original value again */
+    for (i = start; i < number; i += 100)
+    {
+        int v = i;
+        char w[32];
+        sprintf(w, "%d", i);
+        YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(v), &v), 1);
+    }
+
     {
         char *cs[] = {
             "4497",
@@ -126,6 +153,7 @@ static void tst(Dict dict)
         strcpy(scan_term, "45");
         YAZ_CHECK_EQ(do_scan(dict, 2, 2, scan_term, cs, 0), 0);
     }
+    
 }
 
 int main(int argc, char **argv)
@@ -133,7 +161,6 @@ int main(int argc, char **argv)
     BFiles bfs = 0;
     Dict dict = 0;
     int i;
-    int errors = 0;
     int ret;
     int before = 0, after = 0, number = 10000;
     char scan_term[1024];
@@ -180,18 +207,19 @@ int main(int argc, char **argv)
     }
     if (dict)
     {
+        int start = 10;
         /* Insert "10", "11", "12", .. "99", "100", ... number */
-        for (i = 10; i<number; i++)
+        for (i = start; i<number; i++)
         {
             char w[32];
             sprintf(w, "%d", i);
-            YAZ_CHECK_EQ(dict_insert (dict, w, sizeof(int), &i), 0);
+            YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(int), &i), 0);
         }
-        
+
         if (after > 0 || before > 0)
             do_scan(dict, before, after, scan_term, 0, 1);
         else
-            tst(dict);
+            tst(dict, start, number);
 
         dict_close(dict);
     }
