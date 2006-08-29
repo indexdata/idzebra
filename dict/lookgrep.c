@@ -1,4 +1,4 @@
-/* $Id: lookgrep.c,v 1.32 2006-08-14 10:40:09 adam Exp $
+/* $Id: lookgrep.c,v 1.33 2006-08-29 13:36:26 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -226,7 +226,7 @@ static INLINE int move (MatchContext *mc, MatchWord *Rj1, MatchWord *Rj,
         
         shift (mc, Rtmp_2, Rtmp, dfa);
 
-        mask_shift (mc, Rtmp, Rj+mc->n, dfa, ch);      /* 1 */
+        mask_shift (mc, Rtmp, Rj+mc->n, dfa, ch);       /* 1 */
                 
         or (mc, Rtmp, Rtmp_2, Rtmp);                    /* 1,2,3*/
 
@@ -241,11 +241,11 @@ static INLINE int move (MatchContext *mc, MatchWord *Rj1, MatchWord *Rj,
 }
 
 
-static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
-                      MatchWord *Rj, int pos, void *client,
-                      int (*userfunc)(char *, const char *, void *),
-                      Dict_char *prefix, struct DFA *dfa,
-                      int *max_pos, int init_pos)
+static int grep(Dict dict, Dict_ptr ptr, MatchContext *mc,
+                MatchWord *Rj, int pos, void *client,
+                int (*userfunc)(char *, const char *, void *),
+                Dict_char *prefix, struct DFA *dfa,
+                int *max_pos, int init_pos)
 {
     int lo, hi, d;
     void *p;
@@ -275,16 +275,19 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                 MatchWord *Rj_tmp = Rj + (j+2)*mc->fact;
                 int range;
 
-                memcpy (&ch, info+j*sizeof(Dict_char), sizeof(Dict_char));
+                memcpy(&ch, info+j*sizeof(Dict_char), sizeof(Dict_char));
                 prefix[pos+j] = ch;
                 if (pos+j > *max_pos)
                     *max_pos = pos+j;
                 if (ch == DICT_EOS)
                 {
                     if (was_match)
-                        if ((*userfunc)((char*) prefix,
-                                        info+(j+1)*sizeof(Dict_char), client))
-                            return 1;
+                    {
+                        int ret = userfunc((char*) prefix, 
+                                       info+(j+1)*sizeof(Dict_char), client);
+                        if (ret)
+                            return ret;
+                    }
                     break;
                 }
                 if (pos+j >= init_pos)
@@ -339,21 +342,25 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                     for (d = mc->n; --d >= 0; )
                         if (Rj1[range*mc->n + d] & mc->match_mask[d])
                         {
+                            int ret;
                             prefix[pos+1] = DICT_EOS;
-                            if ((*userfunc)((char*) prefix,
-                                            info+sizeof(Dict_ptr)+
-                                            sizeof(Dict_char), client))
-                                return 1;
+                            ret = userfunc((char*) prefix,
+                                           info+sizeof(Dict_ptr)+
+                                           sizeof(Dict_char), client);
+                            if (ret)
+                                return ret;
                             break;
                         }
                 }
                 memcpy (&subptr, info, sizeof(Dict_ptr));
                 if (subptr)
                 {
-                    if (dict_grep (dict, subptr, mc, Rj1, pos+1,
+                    int ret = grep(dict, subptr, mc, Rj1, pos+1,
                                    client, userfunc, prefix, dfa, max_pos,
-                                   init_pos))
-                        return 1;
+                                   init_pos);
+                    if (ret)
+                        return ret;
+
                     dict_bf_readp (dict->dbf, ptr, &p);
                     indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
                 }
@@ -364,17 +371,17 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
     return 0;
 }
 
-int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
-                      int *max_pos, int init_pos,
-                      int (*userfunc)(char *name, const char *info,
-                                      void *client))
+int dict_lookup_grep(Dict dict, const char *pattern, int range, void *client,
+                     int *max_pos, int init_pos,
+                     int (*userfunc)(char *name, const char *info,
+                                     void *client))
 {
     MatchWord *Rj;
     Dict_char prefix[MAX_LENGTH+1];
     const char *this_pattern = pattern;
     MatchContext *mc;
     struct DFA *dfa = dfa_init();
-    int i, d;
+    int i, d, ret = 0;
 
 #if 0
     debug_dfa_trav = 1;
@@ -383,10 +390,10 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     dfa_verbose = 1;
 #endif
 
-    yaz_log (YLOG_DEBUG, "dict_lookup_grep range=%d", range);
+    yaz_log(YLOG_DEBUG, "dict_lookup_grep range=%d", range);
     for (i = 0; pattern[i]; i++)
     {
-	yaz_log (YLOG_DEBUG, " %3d  %c", pattern[i],
+	yaz_log(YLOG_DEBUG, " %2d %3d  %c", i, pattern[i],
 	      (pattern[i] > ' ' && pattern[i] < 127) ? pattern[i] : '?');
     }
    
@@ -395,7 +402,7 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     i = dfa_parse (dfa, &this_pattern);
     if (i || *this_pattern)
     {
-        yaz_log (YLOG_WARN, "dfa_parse fail=%d", i);
+        yaz_log(YLOG_WARN, "dfa_parse fail=%d", i);
         dfa_delete (&dfa);
         return -1;
     }
@@ -403,14 +410,14 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
 
     mc = mk_MatchContext (dfa, range);
 
-    Rj = (MatchWord *) xcalloc ((MAX_LENGTH+1) * mc->n, sizeof(*Rj));
+    Rj = (MatchWord *) xcalloc((MAX_LENGTH+1) * mc->n, sizeof(*Rj));
 
     set_bit (mc, Rj, 0, 0);
     for (d = 1; d<=mc->range; d++)
     {
         int s;
         memcpy (Rj + mc->n * d, Rj + mc->n * (d-1), mc->n * sizeof(*Rj));
-        for (s = 0; s<dfa->no_states; s++)
+        for (s = 0; s < dfa->no_states; s++)
         {
             if (get_bit (mc, Rj, d-1, s))
             {
@@ -423,16 +430,14 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     }
     *max_pos = 0;
     if (dict->head.root)
-        i = dict_grep (dict, dict->head.root, mc, Rj, 0, client,
-		       userfunc, prefix,
-                       dfa, max_pos, init_pos);
-    else
-        i = 0;
-    yaz_log (YLOG_DEBUG, "max_pos = %d", *max_pos);
-    dfa_delete (&dfa);
-    xfree (Rj);
+        ret = grep(dict, dict->head.root, mc, Rj, 0, client,
+                   userfunc, prefix,
+                   dfa, max_pos, init_pos);
+    yaz_log(YLOG_DEBUG, "max_pos = %d", *max_pos);
+    dfa_delete(&dfa);
+    xfree(Rj);
     rm_MatchContext (&mc);
-    return i;
+    return ret;
 }
 
 void dict_grep_cmap (Dict dict, void *vp,

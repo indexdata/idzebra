@@ -1,4 +1,4 @@
-/* $Id: dict.h,v 1.8 2006-08-29 11:28:44 adam Exp $
+/* $Id: dict.h,v 1.9 2006-08-29 13:36:26 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -101,9 +101,11 @@ char *dict_lookup(Dict dict, const char *p);
     \param p string-z with prefix
     \param client client data to be supplied to function f
     \param f function which gets called for each item in tree
-    \retval 0 OK (0 or  more entries deleted)
+    \retval 0 OK (0 or more entries deleted)
     \retval 1 OK (1 or more entries delete)
     \retval -1 ERROR
+
+    Function f is called for each item to be deleted.
 */
 YAZ_EXPORT
 int dict_delete_subtree(Dict dict, const char *p, void *client,
@@ -114,9 +116,11 @@ int dict_delete_subtree(Dict dict, const char *p, void *client,
     \param dict dictionary handle
     \param p string-z with lookup string
     \param range number of allowed errors(extra/substituted/missing char)
-    \param f function be called for each match
+    \param f function be called for each match (NULL for no call of f)
     \retval 0 OK
     \retval -1 error
+    
+    Function f is called for each item matched.
 */
 YAZ_EXPORT
 int dict_lookup_ec(Dict dict, char *p, int range, int (*f)(char *name));
@@ -129,9 +133,13 @@ int dict_lookup_ec(Dict dict, char *p, int range, int (*f)(char *name));
     \param max_pos on return holds maximum number of chars that match (prefix)
     \param init_pos number of leading non-error corrected chars.
     \param f function be called for each match
-    \retval 0 OK
-    \retval 1 OK
+    \retval 0 Operation complete.
+    \retval >0 Operation incomplete. Function f returned a non-zero value
     \retval -1 error (such as bad regular expression)
+    
+    The function f is called for each match. If function f returns
+    non-zero value the grep operation is stopped and the returned 
+    non-zero value is also returned by dict_lookup_ec.
 */
 YAZ_EXPORT
 int dict_lookup_grep(Dict dict, const char *p, int range, void *client,
@@ -168,6 +176,11 @@ void dict_grep_cmap(Dict dict, void *vp,
                     const char **(*cmap)(void *vp,
                                          const char **from, int len));
 
+/** \brief copies one dictionary to another
+    \param bfs block file handle
+    \param from source dictionary file
+    \param to destination dictionary file
+*/
 YAZ_EXPORT
 int dict_copy_compact(BFiles bfs, const char *from, const char *to);
 
