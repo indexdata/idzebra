@@ -1,4 +1,4 @@
-/* $Id: dict-p.h,v 1.6 2006-08-29 09:27:55 adam Exp $
+/* $Id: dict-p.h,v 1.7 2006-08-29 11:28:42 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -34,6 +34,7 @@ YAZ_BEGIN_CDECL
 #define DICT_DEFAULT_PAGESIZE 4096
 
 typedef unsigned char Dict_char;
+typedef unsigned Dict_ptr;
 
 struct Dict_head {
     char magic_str[8];
