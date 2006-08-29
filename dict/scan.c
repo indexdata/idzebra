@@ -1,4 +1,4 @@
-/* $Id: scan.c,v 1.22 2006-08-29 12:31:12 adam Exp $
+/* $Id: scan.c,v 1.23 2006-08-29 13:38:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -28,10 +28,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "dict-p.h"
 
-int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
-		    int start, int *count, void *client,
-                    int (*userfunc)(char *, const char *, int, void *),
-		    int dir)
+int dict_scan_trav(Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
+                   int start, int *count, void *client,
+                   int (*userfunc)(char *, const char *, int, void *),
+                   int dir)
 {
     int lo, hi, j;
     void *p;
@@ -179,14 +179,14 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                         }
                     }
                     if (*after && subptr)
-		        if (dict_scan_trav (dict, subptr, pos+1, str, -1, 
-                                            after, client, userfunc, 1))
+		        if (dict_scan_trav(dict, subptr, pos+1, str, -1, 
+                                           after, client, userfunc, 1))
                             return 1;
                 }
 		else if (subptr)
                 {
-                    if (dict_scan_r (dict, subptr, pos+1, str, before, after,
-                                     client, userfunc))
+                    if (dict_scan_r(dict, subptr, pos+1, str, before, after,
+                                    client, userfunc))
                         return 1;
                 }
                 break;
@@ -200,12 +200,12 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
     if (lo>hi && cmp < 0)
         ++mid;
     if (*after)
-        if (dict_scan_trav (dict, ptr, pos, str, cmp ? mid : mid+1, after,
-                            client, userfunc, 1))
+        if (dict_scan_trav(dict, ptr, pos, str, cmp ? mid : mid+1, after,
+                           client, userfunc, 1))
             return 1;
     if (*before && mid > 0)
-        if (dict_scan_trav (dict, ptr, pos, str, mid-1, before, 
-                            client, userfunc, -1))
+        if (dict_scan_trav(dict, ptr, pos, str, mid-1, before, 
+                           client, userfunc, -1))
             return 1;
     return 0;
 }
@@ -215,16 +215,16 @@ int dict_scan (Dict dict, char *str, int *before, int *after, void *client,
 {
     int i;
 
-    yaz_log (YLOG_DEBUG, "dict_scan");
+    yaz_log(YLOG_DEBUG, "dict_scan");
     for (i = 0; str[i]; i++)
     {
-	yaz_log (YLOG_DEBUG, "start_term pos %d %3d  %c", i, str[i],
-	      (str[i] > ' ' && str[i] < 127) ? str[i] : '?');
+	yaz_log(YLOG_DEBUG, "start_term pos %d %3d  %c", i, str[i],
+                (str[i] > ' ' && str[i] < 127) ? str[i] : '?');
     }
     if (!dict->head.root)
         return 0;
-    return dict_scan_r (dict, dict->head.root, 0, (Dict_char *) str,
-			before, after, client, f);
+    return dict_scan_r(dict, dict->head.root, 0, (Dict_char *) str,
+                       before, after, client, f);
 }
 /*
  * Local variables:
