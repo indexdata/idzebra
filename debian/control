@@ -22,7 +22,7 @@ Description: IDZebra virtual package (the works)
 Package: libidzebra-2.0-modules
 Section: libs
 Architecture: any
-Depends: libidzebra-2.0-mod-grs-xml, libidzebra-2.0-mod-grs-regx, libidzebra-2.0-mod-marc, libidzebra-2.0-mod-alvis
+Depends: libidzebra-2.0-mod-grs-xml, libidzebra-2.0-mod-grs-regx, libidzebra-2.0-mod-grs-marc, libidzebra-2.0-mod-alvis
 Description: IDZebra modules 
  This virtual package contains all base IDZebra filter modules.
  .
