@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.226 2006-08-14 10:40:15 adam Exp $
+/* $Id: zrpn.c,v 1.227 2006-08-31 08:35:48 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -2634,7 +2634,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     if (ord_no == 0)
     {
         *num_entries = 0;
-        return ZEBRA_OK;
+        return ZEBRA_FAIL;
     }
     /* prepare dictionary scanning */
     if (num < 1)
