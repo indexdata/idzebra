@@ -1,4 +1,4 @@
-/* $Id: t11.c,v 1.6 2006-08-14 10:40:22 adam Exp $
+/* $Id: t11.c,v 1.7 2006-08-31 08:36:53 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -38,6 +38,25 @@ static void tst(int argc, char **argv)
 
     YAZ_CHECK(tl_init_data(zh, myrec));
 
+    /*
+      int tl_scan(ZebraHandle zh, const char *query,
+      int pos, int num,
+      int exp_pos, int exp_num, int exp_partial,
+      const char **exp_entries)
+    */
+
+    if (1)
+    {
+	/* bad string use attrite, bug #647 */
+	const char *ent[] = { "a", 0 };
+	YAZ_CHECK(tl_scan(zh, "@attr 1=bad 0", 1, 1, 1, 1, 0, 0));
+    }
+    if (1)
+    {
+	/* bad numeric use attributes, bug #647 */
+	const char *ent[] = { "a", 0 };
+	YAZ_CHECK(tl_scan(zh, "@attr 1=1234 0", 1, 1, 1, 1, 0, 0));
+    }
     if (1)
     {
 	/* scan before. nothing must be returned */
@@ -47,7 +66,8 @@ static void tst(int argc, char **argv)
     if (1)
     {
 	/* scan after. nothing must be returned */
-	YAZ_CHECK(tl_scan(zh, "@attr 1=4 m", 1, 1, 1, 0, 1, 0));
+	const char *ent[] = { 0 };
+	YAZ_CHECK(tl_scan(zh, "@attr 1=4 m", 1, 1, 1, 0, 1, ent));
     }
     if (1)
     {
@@ -121,7 +141,8 @@ static void tst(int argc, char **argv)
     }
     if (1)
     {
-	YAZ_CHECK(tl_scan(zh, "@attr 1=4 z", -22, 10, -22, 0, 1, 0));
+	const char *ent[] = { 0 };
+	YAZ_CHECK(tl_scan(zh, "@attr 1=4 z", -22, 10, -22, 0, 1, ent));
     }
     YAZ_CHECK(tl_close_down(zh, zs));
 }

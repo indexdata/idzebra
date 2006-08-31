@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.36 2006-08-16 13:13:53 adam Exp $
+/* $Id: testlib.c,v 1.37 2006-08-31 08:36:53 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -240,6 +240,7 @@ int tl_scan(ZebraHandle zh, const char *query,
 	    int exp_pos, int exp_num, int exp_partial,
 	    const char **exp_entries)
 {
+    int ret = 1;
     ODR odr = odr_createmem(ODR_ENCODE);
     ZebraScanEntry *entries = 0;
     int partial = -123;
@@ -250,61 +251,71 @@ int tl_scan(ZebraHandle zh, const char *query,
 
     res = zebra_scan_PQF(zh, odr, query, &pos, &num, &entries, &partial, 
 			 0 /* setname */);
-    if (res != ZEBRA_OK)
+
+    if (partial == -123)
     {
-	printf("Error: scan returned %d (FAIL), but no error was expected\n"
-	       "%s\n",  res, query);
-	return 0;
+        printf("Error: scan returned OK, but partial was not set\n"
+               "%s\n", query);
+        ret = 0;
+    }
+    if (partial != exp_partial)
+    {
+        printf("Error: scan OK, with partial/expected %d/%d\n",
+               partial, exp_partial);
+        ret = 0;
+    }
+    if (res != ZEBRA_OK) /* failure */
+    {
+        if (exp_entries)
+        {
+            printf("Error: scan failed, but no error was expected\n");
+            ret = 0;
+        }
     }
     else
     {
-	int fails = 0;
-	if (partial == -123)
-	{
-	    printf("Error: scan returned OK, but partial was not set\n"
-		   "%s\n", query);
-	    fails++;
-	}
-	if (partial != exp_partial)
-	{
-	    printf("Error: scan returned OK, with partial/expected %d/%d\n"
-		   "%s\n", partial, exp_partial, query);
-	    fails++;
-	}
-	if (num != exp_num)
-	{
-	    printf("Error: scan returned OK, with num/expected %d/%d\n"
-		   "%s\n", num, exp_num, query);
-	    fails++;
-	}
-	if (pos != exp_pos)
-	{
-	    printf("Error: scan returned OK, with pos/expected %d/%d\n"
-		   "%s\n", pos, exp_pos, query);
-	    fails++;
-	}
-	if (fails)
-	    return 0;
-	fails = 0;
-	if (exp_entries)
-	{
-	    int i;
-	    for (i = 0; i<num; i++)
-	    {
-		if (strcmp(exp_entries[i], entries[i].term))
-		{
-		    printf("Error: scan OK, but entry %d term/exp %s/%s\n"
-			   "%s\n",
-			   i, entries[i].term, exp_entries[i], query);
-		    fails++;
-		}
-	    }
-	}
-	if (fails)
-	    return 0;
+        if (!exp_entries)
+        {
+            printf("Error: scan OK, but error was expected\n");
+            ret = 0;
+        }
+        else
+        {
+            int fails = 0;
+            if (num != exp_num)
+            {
+                printf("Error: scan OK, with num/expected %d/%d\n",
+                       num, exp_num);
+                fails++;
+            }
+            if (pos != exp_pos)
+            {
+                printf("Error: scan OK, with pos/expected %d/%d\n",
+                       pos, exp_pos);
+                fails++;
+            }
+            if (!fails)
+            {
+                if (exp_entries)
+                {
+                    int i;
+                    for (i = 0; i<num; i++)
+                    {
+                        if (strcmp(exp_entries[i], entries[i].term))
+                        {
+                            printf("Error: scan OK of %s, no %d got=%s exp=%s\n",
+                                   query, i, entries[i].term, exp_entries[i]);
+                            fails++;
+                        }
+                    }
+                }
+            }
+            if (fails)
+                ret = 0;
+        }
     }
     odr_destroy(odr);
-    return 1;
+    return ret;
 }
 
 /** 
