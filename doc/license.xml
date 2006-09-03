@@ -1,5 +1,5 @@
 <appendix id="license">
- <!-- $Id: license.xml,v 1.11 2006-08-14 10:40:12 adam Exp $ -->
+ <!-- $Id: license.xml,v 1.12 2006-09-03 21:37:26 adam Exp $ -->
  <title>License</title>
 
   <para>
@@ -28,7 +28,8 @@
    02111-1307, USA.
    </para>
   
-  <sect1><title>GNU General Public License</title>
+  <sect1 id="gpl">
+   <title>GNU General Public License</title>
    <screen>
                     GNU GENERAL PUBLIC LICENSE
                        Version 2, June 1991

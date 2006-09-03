@@ -1,8 +1,8 @@
-<chapter id="server">
- <!-- $Id: server.xml,v 1.25 2006-06-30 14:36:12 marc Exp $ -->
+<chapter id="zebrasrv">
+ <!-- $Id: server.xml,v 1.26 2006-09-03 21:37:27 adam Exp $ -->
  <title>The Z39.50 Server</title>
  
- <sect1 id="zebrasrv">
+ <sect1 id="zebrasrv-running">
   <title>Running the Z39.50 Server (zebrasrv)</title>
 
   <!--
@@ -16,7 +16,7 @@
    zebrasrv manpage -->
 
 
- <sect2><title>Description</title>
+ <sect2 id="zebrasrv-description"><title>Description</title>
     <para>Zebra is a high-performance, general-purpose structured text indexing
    and retrieval engine. It reads structured records in a variety of input
    formats (eg. email, XML, MARC) and allows access to them through exact
@@ -35,12 +35,12 @@
    </para>
   </sect2>
 
- <sect2>
+ <sect2 id="zebrasrv-synopsis">
    <title>Synopsis</title>
     &zebrasrv-synopsis;
  </sect2>
 
- <sect2>
+ <sect2 id="zebrasrv-options">
    <title>Options</title>
     
    <para>
@@ -53,12 +53,12 @@
   &zebrasrv-options;
   </sect2>
 
-  <sect2><title>Files</title>
+  <sect2 id="zebrasrv-files"><title>Files</title>
    <para>
     <filename>zebra.cfg</filename>
    </para>
   </sect2>
-  <sect2><title>See Also</title>
+  <sect2 id="zebrasrv-see-also"><title>See Also</title>
    <para>
     <citerefentry>
      <refentrytitle>zebraidx</refentrytitle>
@@ -205,7 +205,7 @@
  <sect1 id="protocol-support">
   <title>Z39.50 Protocol Support and Behavior</title>
 
-  <sect2>
+  <sect2 id="zebrasrv-initialization">
    <title>Initialization</title>
 
    <para>
@@ -244,7 +244,7 @@
 
    </sect2>
    
-  <sect2>
+  <sect2 id="zebrasrv-present">
    <title>Present</title>
    <para>
     The present facility is supported in a standard fashion. The requested
@@ -254,7 +254,7 @@
     provided by the relevant record profiles.
    </para>
   </sect2>
-  <sect2>
+  <sect2 id="zebrasrv-scan">
    <title>Scan</title>
    <para>
     The attribute combinations provided with the termListAndStartPoint are
@@ -263,7 +263,7 @@
     the termInfo structure.
    </para>
   </sect2>
-  <sect2>
+  <sect2 id="zebrasrv-sort">
    <title>Sort</title>
 
    <para>
@@ -283,7 +283,7 @@
     be the same as the output result set.
    </para>
   </sect2>
-  <sect2>
+  <sect2 id="zebrasrv-close">
    <title>Close</title>
    <para>
     If a Close PDU is received, the server will respond with a Close PDU
@@ -298,7 +298,7 @@
    </para>
   </sect2>
    
-   <sect2>
+   <sect2 id="zebrasrv-explain">
     <title>Explain</title>
     <para>
      Zebra maintains a "classic" 
@@ -327,7 +327,7 @@
 </chapter>
 
 
-<chapter id="server-sru">
+<chapter id="zebrasrv-sru">
  <title>The SRU/SRW Server</title>
  <para>
   In addition to Z39.50, Zebra supports the more recent and
@@ -370,7 +370,7 @@
   the protocol packets and Zebra's support for them is equivalent.
  </para>
 
- <sect1 id="server-sru-run">
+ <sect1 id="zebrasrv-sru-run">
   <title>Running the SRU Server (zebrasrv)</title>
   <para>
    Because Zebra supports all three protocols on one port, it would
@@ -467,7 +467,7 @@
   </screen>
  </sect1>
 
- <sect1 id="server-sru-support">
+ <sect1 id="zebrasrv-sru-support">
   <title>SRU and SRW Protocol Support and Behavior</title>
   <para>
    Zebra running as an SRU server supports SRU version 1.1, including
@@ -475,7 +475,7 @@
    following elements of the protocol.
   </para>
 
-  <sect2>
+  <sect2 id="zebrasrvr-search-and-retrieval">
    <title>Search and Retrieval</title>
    <para>
     Zebra fully supports SRU's core
@@ -499,7 +499,7 @@
    </para>
   </sect2>
 
-  <sect2>
+  <sect2 id="zebrasrv-scan">
    <title>Scan</title>
    <para>
     Zebra supports SRU's
@@ -518,7 +518,7 @@
    </para>
   </sect2>
 
-  <sect2>
+  <sect2 id="zebrasrv-explain">
    <title>Explain</title>
    <para>
     Zebra fully supports SRU's core
@@ -552,7 +552,7 @@
      </para>
   </sect2>
 
-  <sect2>
+  <sect2 id="zebrasrv-sru-examples">
    <title>Some SRU Examples</title>
     <para>
      Surf into <literal>http://localhost:9999</literal>
@@ -596,7 +596,7 @@
     </para>
   </sect2>
 
-  <sect2>
+  <sect2 id="zebrasrv-non-sru-ops">
    <title>Initialization, Present, Sort, Close</title>
    <para>
     In the Z39.50 protocol, Initialization, Present, Sort and Close

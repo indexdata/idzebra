@@ -1,8 +1,8 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.38 2006-07-03 12:00:03 sondberg Exp $ -->
+ <!-- $Id: introduction.xml,v 1.39 2006-09-03 21:37:26 adam Exp $ -->
  <title>Introduction</title>
  
- <sect1>
+ <section id="overview">
   <title>Overview</title>
   
   <para>
@@ -34,9 +34,9 @@
    and how to configure the server to give you the
    functionality that you need.
   </para>
- </sect1>
+ </section>
  
- <sect1 id="features">
+ <section id="features">
   <title>Features</title>
   
   <para>
@@ -228,9 +228,9 @@
   </para>
 
   
- </sect1>
+ </section>
  
-  <sect1 id="introduction-apps">
+  <section id="introduction-apps">
   <title>References and Zebra based Applications</title>
   <para>
    Zebra has been deployed in numerous applications, in both the
@@ -245,7 +245,7 @@
   </para>
 
 
-  <sect2>
+  <section id="koha-ils">
    <title>Koha free open-source ILS</title>
    <para>
      <ulink url="http://www.koha.org/">Koha</ulink> is a full-featured
@@ -300,9 +300,9 @@
       <ulink url="http://www.liblime.com/newsletter/2006/01/features/koha-earns-its-stripes/">
      Koha Earns its Stripes</ulink>.
      </para>
-   </sect2>
+   </section>
 
-  <sect2>
+  <section id="emilda-ils">
    <title>Emilda open source ILS</title>
    <para>
      <ulink url="http://www.emilda.org/">Emilda</ulink> 
@@ -320,9 +320,9 @@
      As a surplus, 100% MARC compatibility has been achieved using the
     Zebra Server from Index Data as backend server. 
     </para> 
-   </sect2>
+   </section>
 
-  <sect2>
+  <section id="reindex-ils">
    <title>ReIndex.Net web based ILS</title>
     <para>
      <ulink url="http://www.reindex.net/index.php?lang=en">Reindex.net</ulink>
@@ -342,12 +342,12 @@
      Internally MARCXML is used for bibliographical records. Update
      utilizes Z39.50 extended services. 
     </para>
-   </sect2>
+   </section>
 
-
-  <sect2>
-   <title>DADS - the DTV Article Database Service</title>
-   <para>
+   <section id="dads-article-database">
+    <title>DADS - the DTV Article Database
+     Service</title>
+    <para>
     DADS is a huge database of more than ten million records, totalling
     over ten gigabytes of data.  The records are metadata about academic
     journal articles, primarily scientific; about 10% of these
@@ -368,9 +368,9 @@
     <ulink url="http://www.dtv.dk/"/> and
     <ulink url="http://dads.dtv.dk"/>
    </para>
-  </sect2>
+  </section>
 
-  <sect2>
+  <section id="infonet-eprints">
    <title>Infonet Eprints</title>
    <para>
      The InfoNet Eprints service from the 
@@ -387,9 +387,9 @@
     The online search facility is found at
     <ulink url="http://preprints.cvt.dk"/>.
    </para>
-  </sect2>
+  </section>
 
-  <sect2>
+  <section id="alvis-project">
    <title>Alvis</title>
    <para>
      The <ulink url="http://www.alvis.info/alvis/">Alvis</ulink> EU
@@ -410,10 +410,10 @@
      in about 4 hours, resulting in search times of fractions of
      seconds. 
      </para>
-   </sect2>
+   </section>
 
 
-  <sect2>
+  <section id="uls">
    <title>ULS (Union List of Serials)</title>
    <para>
     The M25 Systems Team
@@ -439,9 +439,9 @@
     More information can be found at
     <ulink url="http://www.m25lib.ac.uk/ULS/"/>
    </para>
-  </sect2>
+  </section>
 
-  <sect2>
+  <section id="nli">
    <title>NLI-Z39.50 - a Natural Language Interface for Libraries</title>
    <para>
     Fernuniversit&#x00E4;t Hagen in Germany have developed a natural
@@ -469,9 +469,9 @@
     For more information, contact Johannes Leveling
     <email>Johannes.Leveling@FernUni-Hagen.De</email>
    </para>
-  </sect2>
+  </section>
 
-  <sect2>
+  <section id="various-web-indexes">
    <title>Various web indexes</title>
    <para>
     Zebra has been used by a variety of institutions to construct
@@ -526,11 +526,11 @@
      </para>
     </blockquote>
    </para>
-  </sect2>
- </sect1>
+  </section>
+ </section>
 
 
- <sect1 id="introduction-support">
+ <section id="introduction-support">
   <title>Support</title>
   <para>
    You can get support for Zebra from at least three sources.
@@ -558,10 +558,10 @@
    <ulink url="http://indexdata.dk/support/"/>
    for details.
   </para>
- </sect1>  
+ </section>  
 
 
- <sect1 id="future">
+ <section id="future">
   <title>Future Directions</title>
   
   <para>
@@ -658,7 +658,7 @@
    or check the contact info at the end of this manual.
   </para>
   
- </sect1>
+ </section>
 </chapter>
  <!-- Keep this comment at the end of the file
  Local variables:

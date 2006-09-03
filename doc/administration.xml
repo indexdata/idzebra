@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.42 2006-08-14 22:33:46 adam Exp $ -->
+ <!-- $Id: administration.xml,v 1.43 2006-09-03 21:37:26 adam Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -94,7 +94,7 @@
   
  </sect1>
  
- <sect1 id="configuration-file">
+ <sect1 id="zebra-cfg">
   <title>The Zebra Configuration File</title>
   
   <para>
@@ -669,7 +669,7 @@
   </para>
   
   <para>
-   (see <xref linkend="record-model-grs"/>
+   (see <xref linkend="grs"/>
     for details of how the mapping between elements of your records and
     searchable attributes is established).
   </para>
@@ -757,7 +757,7 @@
  <sect1 id="shadow-registers">
   <title>Safe Updating - Using Shadow Registers</title>
   
-  <sect2>
+  <sect2 id="shadow-registers-description">
    <title>Description</title>
    
    <para>
@@ -811,7 +811,7 @@
    
   </sect2>
   
-  <sect2>
+  <sect2 id="shadow-registers-how-to-use">
    <title>How to Use Shadow Register Files</title>
    
    <para>
@@ -925,7 +925,7 @@
  <sect1 id="administration-ranking">
   <title>Relevance Ranking and Sorting of Result Sets</title>
 
-  <sect2>
+  <sect2 id="administration-overview">
    <title>Overview</title>
    <para>
     The default ordering of a result set is left up to the server,

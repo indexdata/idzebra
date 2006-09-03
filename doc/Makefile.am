@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.57 2006-08-14 19:33:38 adam Exp $
+## $Id: Makefile.am,v 1.58 2006-09-03 21:37:26 adam Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -7,6 +7,7 @@ XMLFILES =  \
    administration.xml \
    architecture.xml \
    examples.xml \
+   field-structure.xml \
    idzebra-config-man.xml \
    indexdata.xml \
    installation.xml \
@@ -28,55 +29,7 @@ XMLFILES =  \
    zebrasrv-synopsis.xml \
    zebrasrv-virtual.xml
 
-HTMLFILES =  \
-   administration-extended-services.html \
-   administration-ranking.html \
-   administration.html \
-   architecture-maincomponents.html \
-   architecture-workflow.html \
-   architecture.html \
-   configuration-file.html \
-   example1.html \
-   example2.html \
-   examples.html \
-   features.html \
-   file-ids.html \
-   future.html \
-   generic-ids.html \
-   gfs-config.html \
-   grs-exchange-formats.html \
-   grs-internal-representation.html \
-   index.html \
-   indexdata.html \
-   installation-upgrade.html \
-   installation.debian.html \
-   installation.html \
-   installation.win32.html \
-   introduction-apps.html \
-   introduction-support.html \
-   introduction.html \
-   license.html \
-   locating-records.html \
-   protocol-support.html \
-   querymodel-cql-to-pqf.html \
-   querymodel-pqf.html \
-   querymodel-zebra.html \
-   querymodel.html \
-   quick-start.html \
-   record-model-alvisxslt-conf.html \
-   record-model-alvisxslt.html \
-   record-model-grs-conf.html \
-   record-model-grs.html \
-   register-location.html \
-   server-sru-support.html \
-   server-sru.html \
-   server.html \
-   shadow-registers.html \
-   simple-indexing.html \
-   zebraidx.html \
-   htmlhelp.hhp \
-   toc.hhc 
-
+HTMLFILES =  index.html
 
 PNGFILES=zebra.png
 EPSFILES=zebra.eps
@@ -108,6 +61,7 @@ idzebra-config$(PACKAGE_SUFFIX).1: idzebra-config-man.xml
 	mv idzebra-config.1 idzebra-config$(PACKAGE_SUFFIX).1
 
 $(HTMLFILES): $(XMLFILES)
+	rm -f *.html
 	$(HTML_COMPILE) $(srcdir)/zebra.xml
 
 index.tkl: $(XMLFILES)
@@ -135,21 +89,16 @@ clean-data-hook:
 	rm -f [0-9]* *.bak
 
 dist-hook:
-	if test -f index.html; then for f in *.html; do \
-		found=0; \
-		b=`basename $$f`; \
-		for h in $(HTMLFILES); do \
-			if test "$$h" = "$$b"; then \
-				found=1; \
-			fi \
-		done; \
-		if test "$$found" = "0"; then \
-			echo "$$f not found in HTMLFILES"; \
-			exit 1; \
-		fi \
-	done; fi
+	if test -d index.html; then d=.; else d="$(srcdir)"; fi; \
+	for p in $$d/*.html; do \
+		cp $$p $(distdir); \
+	done
 
 install-data-hook:
 	cd $(DESTDIR)$(man1dir) && ln -sf zebraidx$(PACKAGE_SUFFIX).1 zebraidx.1
 	cd $(DESTDIR)$(man8dir) && ln -sf zebrasrv$(PACKAGE_SUFFIX).8 zebrasrv.8
 	cd $(DESTDIR)$(man1dir) && ln -sf idzebra-config$(PACKAGE_SUFFIX).1 idzebra-config.1
+	if test -d index.html; then d=.; else d="$(srcdir)"; fi; \
+	for p in $$d/*.html; \
+		do $(docDATA_INSTALL) $$p $(DESTDIR)/$(docdir); \
+	done

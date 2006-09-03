@@ -1,8 +1,8 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.22 2006-07-03 12:30:24 sondberg Exp $ -->
+ <!-- $Id: examples.xml,v 1.23 2006-09-03 21:37:26 adam Exp $ -->
  <title>Example Configurations</title>
 
- <sect1>
+ <sect1 id="examples-overview">
   <title>Overview</title>
 
   <para>

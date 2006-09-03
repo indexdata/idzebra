@@ -1,5 +1,5 @@
  <chapter id="record-model-alvisxslt">
-  <!-- $Id: recordmodel-alvisxslt.xml,v 1.8 2006-06-13 13:45:08 marc Exp $ -->
+  <!-- $Id: recordmodel-alvisxslt.xml,v 1.9 2006-09-03 21:37:27 adam Exp $ -->
   <title>ALVIS XML Record Model and Filter Module</title>
   
 
@@ -19,7 +19,7 @@
   </para>
   
   
-  <sect1 id="record-model-alvisxslt-filter">
+  <section id="record-model-alvisxslt-filter">
    <title>ALVIS Record Filter</title>
    <para>
     The experimental, loadable  Alvis XML/XSLT filter module
@@ -76,7 +76,7 @@
     <literal>identifier="http://indexdata.dk/zebra/xslt/1"</literal>.
    </para>
 
-   <sect2 id="record-model-alvisxslt-internal">
+   <section id="record-model-alvisxslt-internal">
     <title>ALVIS Internal Record Representation</title>   
     <para>When indexing, an XML Reader is invoked to split the input
     files into suitable record XML pieces. Each record piece is then
@@ -89,9 +89,9 @@
     you can use this functionality inside the Alvis
     filter configuration XSLT stylesheets.
     </para>
-   </sect2>
+   </section>
 
-   <sect2 id="record-model-alvisxslt-canonical">
+   <section id="record-model-alvisxslt-canonical">
     <title>ALVIS Canonical Indexing Format</title>   
     <para>The output of the indexing XSLT stylesheets must contain
     certain elements in the magic 
@@ -212,7 +212,7 @@
       http://localhost:9999/?version=1.1&operation=scan&x-pScanClause=@attr+1=dc:date+@attr+4=2+a
       ]]>
      </screen>
-     See <xref linkend="server-sru"/> for more information on SRU/SRW
+     See <xref linkend="zebrasrv-sru"/> for more information on SRU/SRW
      configuration, and <xref linkend="gfs-config"/> or 
      <ulink url="http://www.indexdata.dk/yaz/doc/tools.tkl#tools.cql">
       the YAZ manual CQL section</ulink>
@@ -227,15 +227,15 @@
      filter configuration files involves in this process, and that the
      literal index names are used during search and retrieval.
     </para>
-   </sect2>
-  </sect1>
+   </section>
+  </section>
 
 
-  <sect1 id="record-model-alvisxslt-conf">
+  <section id="record-model-alvisxslt-conf">
    <title>ALVIS Record Model Configuration</title>
 
 
-  <sect2 id="record-model-alvisxslt-index">
+  <section id="record-model-alvisxslt-index">
    <title>ALVIS Indexing Configuration</title>
     <para>
      As mentioned above, there can be only one indexing
@@ -373,9 +373,9 @@
      to suffering and pain, and universal
      disentigration of your project schedule.
     </para>
-  </sect2>
+  </section>
 
-  <sect2 id="record-model-alvisxslt-elementset">
+  <section id="record-model-alvisxslt-elementset">
    <title>ALVIS Exchange Formats</title>
    <para>
      An exchange format can be anything which can be the outcome of an
@@ -422,9 +422,9 @@
      </screen>
     </para>
 
-  </sect2>
+  </section>
 
-  <sect2 id="record-model-alvisxslt-example">
+  <section id="record-model-alvisxslt-example">
    <title>ALVIS Filter OAI Indexing Example</title>
    <para>
      The sourcecode tarball contains a working Alvis filter example in
@@ -444,9 +444,9 @@
      <ulink url="http://www.oaforum.org/tutorial/">
       http://www.oaforum.org/tutorial/</ulink>.
     </para>
-   </sect2>
+   </section>
 
-  </sect1>
+  </section>
 
   
  </chapter>

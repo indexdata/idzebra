@@ -1,11 +1,11 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.24 2006-08-14 22:33:46 adam Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.25 2006-09-03 21:37:26 adam Exp $ -->
   <title>Query Model</title>
   
-  <sect1 id="querymodel-overview">
+  <section id="querymodel-overview">
    <title>Query Model Overview</title>  
    
-   <sect2 id="querymodel-query-languages">
+   <section id="querymodel-query-languages">
     <title>Query Languages</title>
  
     <para>
@@ -29,7 +29,7 @@
     </para>
     
     
-    <sect3 id="querymodel-query-languages-pqf">
+    <section id="querymodel-query-languages-pqf">
      <title>Prefix Query Format (PQF)</title>
      <para>
       Index Data has defined a textual representation in the 
@@ -44,9 +44,9 @@
       <xref linkend="querymodel-pqf"/> for further explanations and
       descriptions of Zebra's capabilities.  
      </para>
-    </sect3>    
+    </section>    
     
-    <sect3 id="querymodel-query-languages-cql">
+    <section id="querymodel-query-languages-cql">
      <title>Common Query Language (CQL)</title>
      <para>
       The query model of the type-1 RPN,
@@ -59,11 +59,11 @@
       Zebra can be configured to understand and map CQL to PQF. See
       <xref linkend="querymodel-cql-to-pqf"/>.
      </para>
-    </sect3>    
+    </section>    
  
-   </sect2>
+   </section>
 
-   <sect2 id="querymodel-operation-types">
+   <section id="querymodel-operation-types">
     <title>Operation types</title>
     <para>
      Zebra supports all of the three different
@@ -73,7 +73,7 @@
      functionality and purpose of each is quite in order here. 
     </para>
 
-    <sect3 id="querymodel-operation-type-explain">
+    <section id="querymodel-operation-type-explain">
      <title>Explain Operation</title>
      <para>
       The <emphasis>syntax</emphasis> of Z39.50/SRU queries is
@@ -106,9 +106,9 @@
       auto-configure a client user interface to the servers
       capabilities.  
      </para>
-    </sect3>
+    </section>
 
-    <sect3 id="querymodel-operation-type-search">
+    <section id="querymodel-operation-type-search">
      <title>Search Operation</title>
      <para>
       Search and retrieve interactions are the raison d'être. 
@@ -119,9 +119,9 @@
       query semantic specifications. Search interactions are the heart
       and soul of Z39.50/SRU servers.
      </para>
-    </sect3>
+    </section>
 
-    <sect3 id="querymodel-operation-type-scan">
+    <section id="querymodel-operation-type-scan">
      <title>Scan Operation</title>
      <para>
       The scan operation is a helper functionality,
@@ -137,14 +137,14 @@
       spelling of search terms, to auto-fill search boxes, or to 
       display  controlled vocabularies.
      </para>
-    </sect3>
+    </section>
 
-   </sect2>
+   </section>
 
- </sect1>
+ </section>
 
   
-  <sect1 id="querymodel-pqf">
+  <section id="querymodel-pqf">
    <title>Prefix Query Format syntax and semantics</title>
    <para>
     The <ulink url="&url.yaz.pqf;">PQF grammar</ulink>
@@ -155,7 +155,7 @@
     query parse tree. 
    </para>
    
-   <sect2 id="querymodel-pqf-tree">
+   <section id="querymodel-pqf-tree">
     <title>PQF tree structure</title>
     <para>
      The PQF parse tree - or the equivalent textual representation -
@@ -169,7 +169,7 @@
      complex query trees.   
     </para>
     
-    <sect3 id="querymodel-attribute-sets">
+    <section id="querymodel-attribute-sets">
      <title>Attribute sets</title>
      <para>
       Attribute sets define the exact meaning and semantics of queries
@@ -244,9 +244,9 @@
       </para>
      </note>
      
-    </sect3>
+    </section>
     
-    <sect3 id="querymodel-boolean-operators">
+    <section id="querymodel-boolean-operators">
      <title>Boolean operators</title>
      <para>
       A pair of sub query trees, or of atomic queries, is combined
@@ -334,10 +334,10 @@
        Z> find "information retrieval"
       </screen>
      </para>
-    </sect3>
+    </section>
     
     
-    <sect3 id="querymodel-atomic-queries">
+    <section id="querymodel-atomic-queries">
      <title>Atomic queries (APT)</title>
      <para>
       Atomic queries are the query parts which work on one access point
@@ -421,10 +421,10 @@
        Z> scan @attr 1=4 debussy
       </screen>
      </para>
-    </sect3>
+    </section>
     
     
-    <sect3 id="querymodel-resultset">
+    <section id="querymodel-resultset">
      <title>Named Result Sets</title>
      <para>
       Named result sets are supported in Zebra, and result sets can be
@@ -466,9 +466,9 @@
        the SRU protocol.
       </para>
      </note>
-    </sect3>
+    </section>
     
-    <sect3 id="querymodel-use-string">
+    <section id="querymodel-use-string">
      <title>Zebra's special access point of type 'string'</title>
      <para>
       The numeric <literal>use (type 1)</literal> attribute is usually 
@@ -511,13 +511,13 @@
      </para>
      <para>
       See also <xref linkend="querymodel-pqf-apt-mapping"/> for details, and 
-      <xref linkend="server-sru"/>
+      <xref linkend="zebrasrv-sru"/>
       for the SRU PQF query extension using string names as a fast
       debugging facility.
      </para>
-    </sect3>
+    </section>
     
-    <sect3 id="querymodel-use-xpath">
+    <section id="querymodel-use-xpath">
      <title>Zebra's special access point of type 'XPath' 
       for GRS filters</title>
      <para>
@@ -536,7 +536,7 @@
      </para>
      <para>
       When using the <literal>GRS Record Model</literal> 
-      (see  <xref linkend="record-model-grs"/>), we have the
+      (see  <xref linkend="grs"/>), we have the
       possibility to embed <emphasis>life</emphasis> 
       XPath expressions
       in the PQF queries, which are here called
@@ -624,10 +624,10 @@
        size is medium to large.
       </para>
      </warning>
-    </sect3>
-   </sect2>
+    </section>
+   </section>
    
-   <sect2 id="querymodel-exp1">
+   <section id="querymodel-exp1">
     <title>Explain Attribute Set</title>
     <para>
      The Z39.50 standard defines the  
@@ -652,7 +652,7 @@
      within any explain query. 
     </para>
     
-    <sect3 id="querymodel-exp1-use">
+    <section id="querymodel-exp1-use">
     <title>Use Attributes (type = 1)</title>
      <para>
       The following Explain search attributes are supported:
@@ -672,9 +672,9 @@
       <ulink url="&url.z39.50;">Z39.50</ulink> standard
       for more information.
      </para>
-    </sect3>
+    </section>
     
-    <sect3>
+    <section id="querymodel-examples">
      <title>Explain searches with yaz-client</title>
      <para>
       Classic Explain only defines retrieval of Explain information
@@ -755,11 +755,11 @@
        Z> find @attrset exp1 @and @attr 1=1 attributedetails @attr 1=3 Default
       </screen>
      </para>
-    </sect3>
+    </section>
     
-   </sect2>
+   </section>
    
-   <sect2 id="querymodel-bib1">
+   <section id="querymodel-bib1">
     <title>Bib1 Attribute Set</title>
     <para>
      Most of the information contained in this section is an excerpt of
@@ -775,7 +775,7 @@
     </para>
     
     
-   <sect3 id="querymodel-bib1-use">
+   <section id="querymodel-bib1-use">
      <title>Use Attributes (type 1)</title>
 
     <para>
@@ -830,15 +830,15 @@
       Z> scan @attr 1=4 information
      </screen>
     </para>
-    </sect3>
+    </section>
 
-   </sect2>
+   </section>
 
 
-   <sect2 id="querymodel-bib1-nonuse">
+   <section id="querymodel-bib1-nonuse">
      <title>Zebra general Bib1 Non-Use Attributes (type 2-6)</title>
     
-    <sect3 id="querymodel-bib1-relation">
+    <section id="querymodel-bib1-relation">
      <title>Relation Attributes (type 2)</title>
      
      <para>
@@ -982,9 +982,9 @@
      </para>
 
 
-    </sect3>
+    </section>
 
-    <sect3 id="querymodel-bib1-position">
+    <section id="querymodel-bib1-position">
      <title>Position Attributes (type 3)</title>
  
      <para>
@@ -1029,9 +1029,9 @@
       <literal>any position in field (3)</literal>. A proper diagnostic
       should have been issued.
       </para>
-    </sect3>
+    </section>
     
-    <sect3 id="querymodel-bib1-structure">
+    <section id="querymodel-bib1-structure">
      <title>Structure Attributes (type 4)</title>
    
      <para>
@@ -1209,9 +1209,9 @@
        <xref linkend="querymodel-pqf-apt-mapping"/>.
       </para>
      </note>
-    </sect3>
+    </section>
     
-    <sect3 id="querymodel-bib1-truncation">
+    <section id="querymodel-bib1-truncation">
      <title>Truncation Attributes (type = 5)</title>
 
      <para>
@@ -1338,9 +1338,9 @@
        ...
       </screen>
       </para>  
-    </sect3>
+    </section>
     
-    <sect3 id="querymodel-bib1-completeness">
+    <section id="querymodel-bib1-completeness">
     <title>Completeness Attributes (type = 6)</title>
 
 
@@ -1411,13 +1411,13 @@
        <xref linkend="querymodel-pqf-apt-mapping"/>.
       </para>
      </note>
-    </sect3>
-   </sect2>
+    </section>
+   </section>
   
-   </sect1>
+   </section>
 
 
-  <sect1 id="querymodel-zebra">
+  <section id="querymodel-zebra">
    <title>Advanced Zebra PQF Features</title>
    <para>
     The Zebra internal query engine has been extended to specific needs
@@ -1431,7 +1431,7 @@
     <literal>idxpath</literal> attribute set.  
    </para>
     
-   <sect2 id="querymodel-zebra-attr-allrecords">
+   <section id="querymodel-zebra-attr-allrecords">
     <title>Zebra specific retrieval of all records</title>
     <para>
      Zebra defines a hardwired <literal>string</literal> index name
@@ -1464,9 +1464,9 @@
       well change in future releases of Zebra.
      </para>
     </warning>
-   </sect2>
+   </section>
 
-   <sect2 id="querymodel-zebra-attr-search">
+   <section id="querymodel-zebra-attr-search">
     <title>Zebra specific Search Extensions to all Attribute Sets</title>
     <para>
      Zebra extends the Bib1 attribute types, and these extensions are
@@ -1520,7 +1520,7 @@
      </tgroup>
     </table>      
     
-    <sect3 id="querymodel-zebra-attr-sorting">
+    <section id="querymodel-zebra-attr-sorting">
      <title>Zebra Extension Embedded Sort Attribute (type 7)</title>
      <para>
       The embedded sort is a way to specify sort within a query - thus
@@ -1560,7 +1560,7 @@
        Z> find @or @or @attr 1=1016 water @attr 7=1 @attr 1=4 0 @attr 7=2 @attr 1=30 1
       </screen>
      </para>
-    </sect3>
+    </section>
 
      <!--
     Zebra Extension Term Set Attribute
@@ -1574,7 +1574,7 @@
     -->
 
      <!--
-    <sect3 id="querymodel-zebra-attr-estimation">
+    <section id="querymodel-zebra-attr-estimation">
      <title>Zebra Extension Term Set Attribute (type 8)</title>
     <para>
      The Term Set feature is a facility that allows a search to store
@@ -1595,11 +1595,11 @@
      The model has one serious flaw: we don't know the size of term
      set. Experimental. Do not use in production code.
     </warning>
-    </sect3>
+    </section>
     -->
 
 
-    <sect3 id="querymodel-zebra-attr-weight">
+    <section id="querymodel-zebra-attr-weight">
      <title>Zebra Extension Rank Weight Attribute (type 9)</title>
      <para>
       Rank weight is a way to pass a value to a ranking algorithm - so
@@ -1613,9 +1613,9 @@
        Z> find @attr 2=102 @or @attr 9=30 @attr 1=4 utah @attr 9=20 utah
       </screen>
      </para>
-     </sect3>
+     </section>
      
-    <sect3 id="querymodel-zebra-attr-limit">
+    <section id="querymodel-zebra-attr-limit">
      <title>Zebra Extension Approximative Limit Attribute (type 11)</title>
      <para>
       Zebra  computes - unless otherwise configured -
@@ -1667,9 +1667,9 @@
        extension. Do not use in production code.
       </para>
      </warning>
-    </sect3>
+    </section>
 
-    <sect3 id="querymodel-zebra-attr-termref">
+    <section id="querymodel-zebra-attr-termref">
      <title>Zebra Extension Term Reference Attribute (type 10)</title>
      <para>
       Zebra supports the searchResult-1 facility. 
@@ -1690,11 +1690,11 @@
        </para>
      </warning>
      
-    </sect3>
-   </sect2>
+    </section>
+   </section>
     
 
-   <sect2 id="querymodel-zebra-attr-scan">
+   <section id="querymodel-zebra-attr-scan">
     <title>Zebra specific Scan Extensions to all Attribute Sets</title>
     <para>
      Zebra extends the Bib1 attribute types, and these extensions are
@@ -1729,7 +1729,7 @@
      </tgroup>
     </table>      
     
-    <sect3 id="querymodel-zebra-attr-narrow">
+    <section id="querymodel-zebra-attr-narrow">
      <title>Zebra Extension Result Set Narrow (type 8)</title>
      <para>
       If attribute Result Set Narrow (type 8)
@@ -1770,9 +1770,9 @@
        Experimental. Do not use in production code.
       </para>
      </warning>
-    </sect3>
+    </section>
 
-    <sect3 id="querymodel-zebra-attr-approx">
+    <section id="querymodel-zebra-attr-approx">
      <title>Zebra Extension Approximative Limit (type 11)</title>
      <para>
       The Zebra Extension Approximative Limit (type 11) is a way to
@@ -1790,10 +1790,10 @@
        Experimental and buggy. Definitely not to be used in production code.
       </para>
      </warning>
-    </sect3>
-   </sect2>
+    </section>
+   </section>
    
-   <sect2 id="querymodel-idxpath">
+   <section id="querymodel-idxpath">
     <title>Zebra special IDXPATH Attribute Set for GRS indexing</title>
     <para>
      The attribute-set <literal>idxpath</literal> consists of a single 
@@ -1815,7 +1815,7 @@
      </para>
     </warning>
 
-    <sect3 id="querymodel-idxpath-use">
+    <section id="querymodel-idxpath-use">
     <title>IDXPATH Use Attributes (type = 1)</title>
      <para>
       This attribute set allows one to search GRS filter indexed
@@ -1939,11 +1939,11 @@
       </screen>
      </para>
 
-    </sect3>
-   </sect2>
+    </section>
+   </section>
 
 
-   <sect2 id="querymodel-pqf-apt-mapping">
+   <section id="querymodel-pqf-apt-mapping">
     <title>Mapping from PQF atomic APT queries to Zebra internal 
      register indexes</title>
     <para>
@@ -1955,7 +1955,7 @@
      the named register. 
     </para>
 
-   <sect3 id="querymodel-pqf-apt-mapping-accesspoint">
+   <section id="querymodel-pqf-apt-mapping-accesspoint">
     <title>Mapping of PQF APT access points</title>
     <para>
       Zebra understands four fundamental different types of access
@@ -2088,10 +2088,10 @@
      </para>
 
 
-    </sect3>
+    </section>
 
 
-   <sect3 id="querymodel-pqf-apt-mapping-structuretype">
+   <section id="querymodel-pqf-apt-mapping-structuretype">
      <title>Mapping of PQF APT structure and completeness to 
       register type</title>
     <para>
@@ -2298,10 +2298,10 @@
      contents.
     </para>
 
-     </sect3>
-   </sect2>
+     </section>
+   </section>
 
-   <sect2  id="querymodel-regular">
+   <section  id="querymodel-regular">
     <title>Zebra Regular Expressions in Truncation Attribute (type = 5)</title>
     
     <para>
@@ -2405,7 +2405,7 @@
       Z> find @attr 1=4 @attr 5=102 @attr 2=102 "informat.* retrieval"
      </screen>
     </para>
-   </sect2>
+   </section>
 
   
    <!--
@@ -2421,10 +2421,10 @@
     Zebra can read structured records in many different formats.
    </para>
    -->
-  </sect1>
+  </section>
 
 
-  <sect1 id="querymodel-cql-to-pqf">
+  <section id="querymodel-cql-to-pqf">
    <title>Server Side CQL to PQF Query Translation</title>
    <para>
     Using the
@@ -2489,9 +2489,7 @@
     attributes.
    </para>
    -->
- </sect1>
-
-
+ </section>
 
 </chapter>
 

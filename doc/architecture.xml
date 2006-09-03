@@ -1,11 +1,11 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.11 2006-06-30 14:36:12 marc Exp $ -->
+  <!-- $Id: architecture.xml,v 1.12 2006-09-03 21:37:26 adam Exp $ -->
   <title>Overview of Zebra Architecture</title>
   
 
-  <sect1 id="architecture-representation">
+  <section id="architecture-representation">
    <title>Local Representation</title>
-
+   
    <para>
     As mentioned earlier, Zebra places few restrictions on the type of
     data that you can index and manage. Generally, whatever the form of
@@ -30,9 +30,9 @@
     "grs" keyword, separated by "." characters.
     -->
    </para>
-  </sect1>
+  </section>
 
-  <sect1 id="architecture-maincomponents">
+  <section id="architecture-maincomponents">
    <title>Main Components</title>
    <para>
     The Zebra system is designed to support a wide range of data management
@@ -58,7 +58,7 @@
     documentation and modules. 
   </para>    
    
-   <sect2 id="componentcore">
+   <section id="componentcore">
     <title>Core Zebra Libraries Containing Common Functionality</title>
     <para>
      The core Zebra module is the meat of the <command>zebraidx</command>
@@ -129,10 +129,10 @@
      <literal>idzebra-2.0-common</literal>
      includes common essential Zebra configuration files.
     </para>
-   </sect2>
+   </section>
    
 
-   <sect2 id="componentindexer">
+   <section id="componentindexer">
     <title>Zebra Indexer</title>
     <para>
      The  <command>zebraidx</command>
@@ -145,9 +145,9 @@
      The Debian  package <literal>idzebra-2.0-utils</literal> contains
      the  <command>zebraidx</command> utility.
     </para>
-   </sect2>
+   </section>
 
-   <sect2 id="componentsearcher">
+   <section id="componentsearcher">
     <title>Zebra Searcher/Retriever</title>
     <para>
      This is the executable which runs the Z39.50/SRU/SRW server and
@@ -158,9 +158,9 @@
      The Debian  package <literal>idzebra-2.0-utils</literal> contains
      the  <command>zebrasrv</command> utility.
     </para>
-   </sect2>
+   </section>
 
-   <sect2 id="componentyazserver">
+   <section id="componentyazserver">
     <title>YAZ Server Frontend</title>
     <para>
      The YAZ server frontend is 
@@ -190,9 +190,9 @@
      It is packaged in the Debian packages     
      <literal>yaz</literal> and <literal>libyaz</literal>.
     </para>
-   </sect2>
+   </section>
    
-   <sect2 id="componentmodules">
+   <section id="componentmodules">
     <title>Record Models and Filter Modules</title>
     <para>
      The hard work of knowing <emphasis>what</emphasis> to index, 
@@ -209,18 +209,18 @@
     </para>
 
    
-   <sect3 id="componentmodulestext">
+   <section id="componentmodulestext">
     <title>TEXT Record Model and Filter Module</title>
     <para>
       Plain ASCII text filter. TODO: add information here.
     </para>
-   </sect3>
+   </section>
 
-   <sect3 id="componentmodulesgrs">
+   <section id="componentmodulesgrs">
     <title>GRS Record Model and Filter Modules</title>
     <para>
     The GRS filter modules described in 
-    <xref linkend="record-model-grs"/>
+    <xref linkend="grs"/>
     are all based on the Z39.50 specifications, and it is absolutely
     mandatory to have the reference pages on BIB-1 attribute sets on
     you hand when configuring GRS filters. The GRS filters come in
@@ -260,9 +260,9 @@
       trees. Have also a look at the Alvis XML/XSLT filter described in
       the next session.
     </para>
-   </sect3>
+   </section>
 
-   <sect3 id="componentmodulesalvis">
+   <section id="componentmodulesalvis">
     <title>ALVIS Record Model and Filter Module</title>
      <para>
       The Alvis filter for XML files is an XSLT based input
@@ -302,23 +302,23 @@
       The Debian package <literal>libidzebra-2.0-mod-alvis</literal>
       contains the Alvis filter module.
      </para>
-    </sect3>
+    </section>
 
     <!--
-   <sect3 id="componentmodulessafari">
+   <section id="componentmodulessafari">
     <title>SAFARI Record Model and Filter Module</title>
     <para>
      SAFARI filter module TODO: add information here.
     </para>
-   </sect3>
+   </section>
     -->
 
-   </sect2>
+   </section>
 
-  </sect1>
+  </section>
 
 
-  <sect1 id="architecture-workflow">
+  <section id="architecture-workflow">
    <title>Indexing and Retrieval Workflow</title>
 
   <para>
@@ -368,9 +368,7 @@
    </itemizedlist>
 
   </para>
-  </sect1>
-
-
+  </section>
 
  </chapter> 
 
