@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.58 2006-09-03 21:37:26 adam Exp $
+## $Id: Makefile.am,v 1.59 2006-09-04 12:11:40 adam Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -65,6 +65,7 @@ $(HTMLFILES): $(XMLFILES)
 	$(HTML_COMPILE) $(srcdir)/zebra.xml
 
 index.tkl: $(XMLFILES)
+	rm -f *.tkl
 	$(TKL_COMPILE) $(srcdir)/zebra.xml
 
 zebra.pdf: $(XMLFILES)
@@ -99,6 +100,6 @@ install-data-hook:
 	cd $(DESTDIR)$(man8dir) && ln -sf zebrasrv$(PACKAGE_SUFFIX).8 zebrasrv.8
 	cd $(DESTDIR)$(man1dir) && ln -sf idzebra-config$(PACKAGE_SUFFIX).1 idzebra-config.1
 	if test -d index.html; then d=.; else d="$(srcdir)"; fi; \
-	for p in $$d/*.html; \
-		do $(docDATA_INSTALL) $$p $(DESTDIR)/$(docdir); \
+	for p in $$d/*.html; do \
+		$(docDATA_INSTALL) $$p $(DESTDIR)/$(docdir); \
 	done
