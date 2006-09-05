@@ -1,4 +1,4 @@
-/* $Id: scantest.c,v 1.8 2006-08-29 13:39:48 adam Exp $
+/* $Id: scantest.c,v 1.9 2006-09-05 12:50:56 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -31,6 +31,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 struct handle_info {
     int b;
     int a;
+    int start_cut;
+    int end_cut;
     char **ar;
 };
 
@@ -46,18 +48,30 @@ static int handler(char *name, const char *info, int pos, void *client)
     yaz_log(YLOG_DEBUG, "pos=%d idx=%d name=%s", pos, idx, name);
     if (idx < 0)
 	return 0;
+    if (idx < hi->start_cut || idx >= hi->end_cut)
+    {
+        return 1;
+    }
 
     hi->ar[idx] = malloc(strlen(name)+1);
     strcpy(hi->ar[idx], name);
+
     return 0;
 }
 
-int do_scan(Dict dict, int before, int after, char *scan_term, char **cmp_strs,
-            int verbose)
+int do_scan(Dict dict, int before, int after, const char *sterm,
+            char **cmp_strs,
+            int verbose, int start_cut, int end_cut)
 {
     struct handle_info hi;
+    char scan_term[1024];
+
     int i;
     int errors = 0;
+
+    strcpy(scan_term, sterm);
+    hi.start_cut = start_cut;
+    hi.end_cut = end_cut;
     hi.a = after;
     hi.b = before;
     hi.ar = malloc(sizeof(char*) * (after+before+1));
@@ -66,25 +80,55 @@ int do_scan(Dict dict, int before, int after, char *scan_term, char **cmp_strs,
     yaz_log(YLOG_DEBUG, "dict_scan before=%d after=%d term=%s",
             before, after, scan_term);
     dict_scan (dict, scan_term, &before, &after, &hi, handler);
-    for (i = 0; i<hi.a+hi.b; i++)
+    for (i = 0; i < hi.a+hi.b; i++)
     {
-	if (cmp_strs)
+        if (!cmp_strs)
+        {
+            if (i >= start_cut &&  i < end_cut)
+            {
+                if (!hi.ar[i])
+                {
+                    printf ("--> FAIL i=%d hi.ar[i] == NULL\n", i);
+                    errors++;
+                }
+            }
+            else
+            {
+                if (hi.ar[i])
+                {
+                    printf ("--> FAIL i=%d hi.ar[i] = %s\n", i, hi.ar[i]);
+                    errors++;
+                }
+            }
+        }
+        else
 	{
-	    if (!cmp_strs[i])
-	    {
-		printf ("--> FAIL cmp_strs == NULL\n");
-		errors++;
-	    }
-	    else if (!hi.ar[i])
-	    {
-		printf ("--> FAIL strs == NULL\n");
-		errors++;
-	    }
-	    else if (strcmp(cmp_strs[i], hi.ar[i]))
-	    {
-		printf ("--> FAIL expected %s\n", cmp_strs[i]);
-		errors++;
-	    }
+            if (i >= start_cut && i < end_cut)
+            {
+                if (!hi.ar[i])
+                {
+                    printf ("--> FAIL i=%d strs == NULL\n", i);
+                    errors++;
+                }
+                else if (!cmp_strs[i])
+                {
+                    printf ("--> FAIL i=%d cmp_strs == NULL\n", i);
+                    errors++;
+                }
+                else if (strcmp(cmp_strs[i], hi.ar[i]))
+                {
+                    printf ("--> FAIL i=%d expected %s\n", i, cmp_strs[i]);
+                    errors++;
+                }
+            }
+            else
+            {
+                if (hi.ar[i])
+                {
+                    printf ("--> FAIL i=%d hi.ar[i] != NULL\n", i);
+                    errors++;
+                }
+            }
 	}
 	if (verbose || errors)
 	{
@@ -108,7 +152,6 @@ int do_scan(Dict dict, int before, int after, char *scan_term, char **cmp_strs,
 static void tst(Dict dict, int start, int number)
 {
     int i;
-    char scan_term[1024];
 
     /* insert again with original value again */
     for (i = start; i < number; i += 100)
@@ -118,7 +161,7 @@ static void tst(Dict dict, int start, int number)
         sprintf(w, "%d", i);
         YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(v), &v), 2);
     }
-    /* insert again with differnt value */
+    /* insert again with different value */
     for (i = start; i < number; i += 100)
     {
         int v = i-1;
@@ -141,8 +184,7 @@ static void tst(Dict dict, int start, int number)
             "4498",
             "4499",
             "45"};
-        strcpy(scan_term, "4499");
-        YAZ_CHECK_EQ(do_scan(dict, 2, 2, scan_term, cs, 0), 0);
+        YAZ_CHECK_EQ(do_scan(dict, 2, 2, "4499", cs, 0, 0, 3), 0);
     }
     {
         char *cs[] = {
@@ -150,10 +192,11 @@ static void tst(Dict dict, int start, int number)
             "4499",
             "45",
             "450"};
-        strcpy(scan_term, "45");
-        YAZ_CHECK_EQ(do_scan(dict, 2, 2, scan_term, cs, 0), 0);
+        YAZ_CHECK_EQ(do_scan(dict, 2, 2, "45", cs, 0, 0, 3), 0);
     }
-    
+
+    for (i = 0; i < 20; i++)
+        YAZ_CHECK_EQ(do_scan(dict, 20, 20, "45", 0, 0, 20-i, 20+i), 0);
 }
 
 int main(int argc, char **argv)
@@ -217,7 +260,7 @@ int main(int argc, char **argv)
         }
 
         if (after > 0 || before > 0)
-            do_scan(dict, before, after, scan_term, 0, 1);
+            do_scan(dict, before, after, scan_term, 0, 1, 0, after+1);
         else
             tst(dict, start, number);
 

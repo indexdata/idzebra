@@ -1,4 +1,4 @@
-/* $Id: dict.h,v 1.10 2006-08-29 14:25:40 adam Exp $
+/* $Id: dict.h,v 1.11 2006-09-05 12:50:56 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -153,9 +153,12 @@ int dict_lookup_grep(Dict dict, const char *p, int range, void *client,
     \param after number of terms to be visited following str
     \param client client data pointer to be passed to match function f
     \param f function be called for each matching term
-    \retval 0 Operation complete. Function f returned zero value always
-    \retval 1 Operation incomplete. Function f returned a non-zero value
+    \retval 0 Successful
     \retval -1 error
+
+    If the callback function f returns 0 the scan operation visits
+    all terms in range (before to after); if the function returns non-zero
+    the scan operation is cancelled.
 */
 YAZ_EXPORT
 int dict_scan(Dict dict, char *str, 

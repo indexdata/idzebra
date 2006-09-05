@@ -1,4 +1,4 @@
-/* $Id: scan.c,v 1.23 2006-08-29 13:38:38 adam Exp $
+/* $Id: scan.c,v 1.24 2006-09-05 12:50:56 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -28,10 +28,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "dict-p.h"
 
-int dict_scan_trav(Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
-                   int start, int *count, void *client,
-                   int (*userfunc)(char *, const char *, int, void *),
-                   int dir)
+static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
+                           int start, int *count, void *client,
+                           int (*userfunc)(char *, const char *, int, void *),
+                           int dir)
 {
     int lo, hi, j;
     void *p;
@@ -63,9 +63,13 @@ int dict_scan_trav(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             for (j = 0; info[j] != DICT_EOS; j++)
 		str[pos+j] = info[j];
             str[pos+j] = DICT_EOS;
-            (*userfunc)((char*) str, info+(j+1)*sizeof(Dict_char),
-                            *count * dir, client);
-            --(*count);
+            if ((*userfunc)((char*) str, info+(j+1)*sizeof(Dict_char),
+                            *count * dir, client))
+            {
+                *count = 0;
+            }
+            else
+                --(*count);
         }
         else
         {
@@ -87,12 +91,15 @@ int dict_scan_trav(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                  if ((*userfunc)((char*) str,
                                  info+sizeof(Dict_ptr)+sizeof(Dict_char),
                                  *count * dir, client))
-                     return 1;
-                 --(*count);
+                 {
+                     *count = 0;
+                 }
+                 else
+                     --(*count);
             }
             if (*count>0 && subptr)
             {
-	        dict_scan_trav (dict, subptr, pos+1, str, -1, count, 
+	        scan_direction (dict, subptr, pos+1, str, -1, count, 
                                 client, userfunc, dir);
                 dict_bf_readp (dict->dbf, ptr, &p);
                 indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short)); 
@@ -103,16 +110,18 @@ int dict_scan_trav(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                  if ((*userfunc)((char*) str,
                                  info+sizeof(Dict_ptr)+sizeof(Dict_char),
                                  *count * dir, client))
-                     return 1;
-                 --(*count);
+                 {
+                     *count = 0;
+                 }
+                 else
+                     --(*count);
             }
         }
         lo += dir;
     }
-    return 0;
 }
 
-int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
+void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
 		 int *before, int *after, void *client,
                  int (*userfunc)(char *, const char *, int, void *))
 {
@@ -123,7 +132,7 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 
     dict_bf_readp (dict->dbf, ptr, &p);
     if (!p)
-        return 0;
+        return;
     mid = lo = 0;
     hi = DICT_nodir(p)-1;
     indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
@@ -141,11 +150,15 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             {
                 if (*after)
                 {
-                    (*userfunc)((char *) str, info+
-                                (dict_strlen((Dict_char*) info)+1)
-                                *sizeof(Dict_char), 
-                                *after, client);
-                    --(*after);
+                    if ((*userfunc)((char *) str, info+
+                                    (dict_strlen((Dict_char*) info)+1)
+                                    *sizeof(Dict_char), 
+                                    *after, client))
+                    {
+                        *after = 0;
+                    }
+                    else
+                        --(*after);
                 }
                 break;
             }
@@ -171,23 +184,25 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                     {
                         if (*after)
                         {
-                            (*userfunc)((char*) str,
-                                        info+sizeof(Dict_ptr)+
-                                        sizeof(Dict_char),
-                                        *after, client);
-                            --(*after);
+                            if ((*userfunc)((char*) str,
+                                            info+sizeof(Dict_ptr)+
+                                            sizeof(Dict_char),
+                                            *after, client))
+                            {
+                                *after = 0;
+                            }
+                            else
+                                --(*after);
                         }
                     }
                     if (*after && subptr)
-		        if (dict_scan_trav(dict, subptr, pos+1, str, -1, 
-                                           after, client, userfunc, 1))
-                            return 1;
+		        scan_direction(dict, subptr, pos+1, str, -1, 
+                                       after, client, userfunc, 1);
                 }
 		else if (subptr)
                 {
-                    if (dict_scan_r(dict, subptr, pos+1, str, before, after,
-                                    client, userfunc))
-                        return 1;
+                    dict_scan_r(dict, subptr, pos+1, str, before, after,
+                                client, userfunc);
                 }
                 break;
             }
@@ -200,18 +215,15 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
     if (lo>hi && cmp < 0)
         ++mid;
     if (*after)
-        if (dict_scan_trav(dict, ptr, pos, str, cmp ? mid : mid+1, after,
-                           client, userfunc, 1))
-            return 1;
+        scan_direction(dict, ptr, pos, str, cmp ? mid : mid+1, after,
+                       client, userfunc, 1);
     if (*before && mid > 0)
-        if (dict_scan_trav(dict, ptr, pos, str, mid-1, before, 
-                           client, userfunc, -1))
-            return 1;
-    return 0;
+        scan_direction(dict, ptr, pos, str, mid-1, before, 
+                       client, userfunc, -1);
 }
 
-int dict_scan (Dict dict, char *str, int *before, int *after, void *client,
-               int (*f)(char *name, const char *info, int pos, void *client))
+int dict_scan(Dict dict, char *str, int *before, int *after, void *client,
+              int (*f)(char *name, const char *info, int pos, void *client))
 {
     int i;
 
@@ -223,8 +235,9 @@ int dict_scan (Dict dict, char *str, int *before, int *after, void *client,
     }
     if (!dict->head.root)
         return 0;
-    return dict_scan_r(dict, dict->head.root, 0, (Dict_char *) str,
-                       before, after, client, f);
+    dict_scan_r(dict, dict->head.root, 0, (Dict_char *) str,
+                before, after, client, f);
+    return 0;
 }
 /*
  * Local variables:
