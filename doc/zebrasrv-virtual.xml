@@ -1,5 +1,5 @@
 <!-- 
-   $Id: zebrasrv-virtual.xml,v 1.7 2006-06-13 13:45:08 marc Exp $
+   $Id: zebrasrv-virtual.xml,v 1.8 2006-09-05 12:01:31 adam Exp $
    Description of the virtual host mechanism in YAZ GFS
    Included in both manual and man page for yaz-ztest
 -->
@@ -12,9 +12,9 @@
 <para>
  A backend can be configured to execute in a particular working
  directory. Or the YAZ frontend may perform <ulink url="&url.cql;">CQL</ulink> to RPN conversion, thus
- allowing traditional Z39.50 backends to be offered as a  <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/ <ulink url="&url.sru;">SRU</ulink>
- service.  <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/ <ulink url="&url.sru;">SRU</ulink> Explain information for a particular backend may also
- be specified.
+ allowing traditional Z39.50 backends to be offered as a  
+<ulink url="&url.sru;">SRU</ulink> service. 
+ SRU Explain information for a particular backend may also be specified.
 </para>
 <para>
  For the HTTP protocol, the virtual host is specified in the Host header.
@@ -138,15 +138,15 @@
   <varlistentry><term>element <literal>explain</literal> (optional)</term>
    <listitem>
     <para>
-     Specifies  <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/ <ulink url="&url.sru;">SRU</ulink> ZeeRex content for this server. Copied verbatim
-     to the client. As things are now, some of the Explain content
-     seems redundant because host information, etc. is also stored
-     elsewhere.
+     Specifies <ulink url="&url.sru;">SRU</ulink> ZeeRex content for this
+     server - copied verbatim to the client.
+     As things are now, some of the Explain content seems redundant
+     because host information, etc. is also stored elsewhere.
     </para>
     <para>
      The format of the Explain record is described in detail, with
-     examples, on the file ZeeRex web-site,
-     <ulink url="http://explain.z3950.org/"></ulink>.
+     examples, on the file at the
+     <ulink url="&url.zeerex.explain;">ZeeRex</ulink> web-site.
     </para>
    </listitem>
   </varlistentry>
@@ -218,7 +218,7 @@ sgml-minimize-attributes:nil
 sgml-always-quote-attributes:t
 sgml-indent-step:1
 sgml-indent-data:t
-sgml-parent-document: "yaz.xml"
+sgml-parent-document: "zebrasrv.xml"
 sgml-local-catalogs: nil
 sgml-namecase-general:t
 End:

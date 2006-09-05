@@ -4,12 +4,14 @@
 [
      <!ENTITY % local SYSTEM "local.ent">
      %local;
-     <!ENTITY % entities  SYSTEM "entities.ent">
+     <!ENTITY % entities SYSTEM "entities.ent">
      %entities;
-     <!ENTITY % common  SYSTEM "common/common.ent">
+     <!ENTITY % common SYSTEM "common/common.ent">
      %common;
+
+     <!ENTITY test SYSTEM "test.xml">
 ]>
-<!-- $Id: zebra.xml,v 1.8 2006-09-03 21:37:27 adam Exp $ -->
+<!-- $Id: zebra.xml,v 1.9 2006-09-05 12:01:31 adam Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
@@ -70,10 +72,14 @@
   &chap-recordmodel-grs;
   &chap-recordmodel-alvisxslt;
   &chap-field-structure;
-  &chap-zebraidx;
-  &chap-server;
-  &app-license;
-  &app-indexdata;
+ 
+ <reference>
+  <title>Reference</title>
+  &manref;
+ </reference>
+ 
+ &app-license;
+ &app-indexdata;
  
 </book>
 <!-- Keep this comment at the end of the file

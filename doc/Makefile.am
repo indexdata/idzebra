@@ -1,14 +1,15 @@
-## $Id: Makefile.am,v 1.59 2006-09-04 12:11:40 adam Exp $
+## $Id: Makefile.am,v 1.60 2006-09-05 12:01:31 adam Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
+
+XMLMAN = zebraidx.xml zebrasrv.xml idzebra-config.xml
 
 XMLFILES =  \
    administration.xml \
    architecture.xml \
    examples.xml \
    field-structure.xml \
-   idzebra-config-man.xml \
    indexdata.xml \
    installation.xml \
    introduction.xml \
@@ -18,16 +19,11 @@ XMLFILES =  \
    quickstart.xml \
    recordmodel-alvisxslt.xml \
    recordmodel-grs.xml \
-   server.xml \
+   manref.xml \
    zebra.xml \
-   zebraidx-commands.xml \
-   zebraidx-man.xml \
-   zebraidx-options.xml \
-   zebraidx.xml \
-   zebrasrv-man.xml \
    zebrasrv-options.xml \
    zebrasrv-synopsis.xml \
-   zebrasrv-virtual.xml
+   zebrasrv-virtual.xml 
 
 HTMLFILES =  index.html
 
@@ -38,26 +34,24 @@ MANFILES=zebraidx$(PACKAGE_SUFFIX).1 \
 	zebrasrv$(PACKAGE_SUFFIX).8 \
 	idzebra-config$(PACKAGE_SUFFIX).1
 
-REFFILES=zebraidx-man.xml zebrasrv-man.xml idzebra-config-man.xml
-
 doc_DATA = $(HTMLFILES) $(PNGFILES)
 man_MANS = $(MANFILES)
 
-EXTRA_DIST = $(XMLFILES) $(REFFILES) \
-	$(doc_DATA) $(EPSFILES) $(man_MANS) $(REFFILES) \
+EXTRA_DIST = $(XMLFILES) $(XMLMAN) \
+	$(doc_DATA) $(EPSFILES) $(man_MANS) \
 	marc_indexing.xml entities.ent local.ent.in
 
-zebraidx$(PACKAGE_SUFFIX).1: zebraidx-man.xml zebraidx-options.xml zebraidx-commands.xml
-	$(MAN_COMPILE) $(srcdir)/zebraidx-man.xml
+zebraidx$(PACKAGE_SUFFIX).1: zebraidx.xml
+	$(MAN_COMPILE) $(srcdir)/zebraidx.xml
 	mv zebraidx.1 zebraidx$(PACKAGE_SUFFIX).1
 
-zebrasrv$(PACKAGE_SUFFIX).8: zebrasrv-man.xml  zebrasrv-options.xml \
+zebrasrv$(PACKAGE_SUFFIX).8: zebrasrv.xml  zebrasrv-options.xml \
             zebrasrv-synopsis.xml zebrasrv-virtual.xml
-	$(MAN_COMPILE) $(srcdir)/zebrasrv-man.xml
+	$(MAN_COMPILE) $(srcdir)/zebrasrv.xml
 	mv zebrasrv.8 zebrasrv$(PACKAGE_SUFFIX).8
 
-idzebra-config$(PACKAGE_SUFFIX).1: idzebra-config-man.xml
-	$(MAN_COMPILE) $(srcdir)/idzebra-config-man.xml
+idzebra-config$(PACKAGE_SUFFIX).1: idzebra-config.xml
+	$(MAN_COMPILE) $(srcdir)/idzebra-config.xml
 	mv idzebra-config.1 idzebra-config$(PACKAGE_SUFFIX).1
 
 $(HTMLFILES): $(XMLFILES)
@@ -76,6 +70,13 @@ zebra.pdf: $(XMLFILES)
 	pdfjadetex zebra.tex >/dev/null
 	pdfjadetex zebra.tex >/dev/null
 	pdfjadetex zebra.tex >/dev/null
+
+
+manref.xml: $(XMLMAN) $(srcdir)/common/ref2dbinc.xsl
+	rm -f manref.xml
+	for i in $(XMLMAN); do \
+		xsltproc $(srcdir)/common/stripref.xsl $(srcdir)/$$i | sed 1d >> manref.xml; \
+	done
 
 gils.txt: gils.sgml
 	sgml2txt -f gils.sgml

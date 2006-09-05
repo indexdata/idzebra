@@ -3,9 +3,17 @@
 [
      <!ENTITY % local SYSTEM "local.ent">
      %local;
+     <!ENTITY % entities  SYSTEM "entities.ent">
+     %entities;
+     <!ENTITY % common  SYSTEM "common/common.ent">
+     %common;
 ]>
-<!-- $Id: idzebra-config-man.xml,v 1.2 2006-08-14 12:18:48 adam Exp $ -->
+<!-- $Id: idzebra-config.xml,v 1.1 2006-09-05 12:01:31 adam Exp $ -->
 <refentry id="idzebra-config">
+ <refentryinfo>
+  <productname>ZEBRA</productname>
+  <productnumber>&version;</productnumber>
+ </refentryinfo>
  
  <refmeta>
   <refentrytitle>idzebra-config</refentrytitle>
@@ -114,16 +122,7 @@
    <filename>&prefix;/include/idzebra-2.0/idzebra/*.h</filename>
   </para>
  </refsect1>
- <!--
- <refsect1><title>SEE ALSO</title>
- <para>
- yaz(7)
-  </para>
- <para>
- Section "How to make apps using YAZ on UNIX" in the YAZ manual.
-  </para>
- </refsect1>
- -->
+
 </refentry>
 
 <!-- Keep this comment at the end of the file
