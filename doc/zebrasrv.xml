@@ -8,7 +8,7 @@
      <!ENTITY % common  SYSTEM "common/common.ent">
      %common;
 ]>
- <!-- $Id: zebrasrv.xml,v 1.1 2006-09-05 12:01:31 adam Exp $ -->
+ <!-- $Id: zebrasrv.xml,v 1.2 2006-09-06 14:31:59 mike Exp $ -->
 <refentry id="zebrasrv">
  <refentryinfo>
   <productname>ZEBRA</productname>
@@ -325,7 +325,10 @@
     in which case the
     <literal>query</literal>
     parameter must be omitted, which makes the request not valid SRU.
-    Please don't do this.
+    Please feel free to use this facility within your own
+    applications; but be aware that it is not only non-standard SRU
+    but not even syntactically valid, since it omits the mandatory
+    <literal>query</literal> parameter.
    </para>
   </refsect2>
   
@@ -460,7 +463,7 @@
    </para>
    <para>
     Even search using PQF queries using the <emphasis>extended naughty 
-     verb</emphasis> <literal>x-pquery</literal>
+     parameter</emphasis> <literal>x-pquery</literal>
     <screen><![CDATA[
       http://localhost:9999/?version=1.1&operation=searchRetrieve
                        &x-pquery=@attr%201=text%20@and%20plant%20soil
@@ -468,7 +471,7 @@
    </para>
    <para>
     Or scan indexes using the <emphasis>extended extremely naughty 
-     verb</emphasis> <literal>x-pScanClause</literal>
+     parameter</emphasis> <literal>x-pScanClause</literal>
     <screen><![CDATA[
       http://localhost:9999/?version=1.1&operation=scan
                        &x-pScanClause=@attr%201=text%20something
