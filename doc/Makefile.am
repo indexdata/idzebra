@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.60 2006-09-05 12:01:31 adam Exp $
+## $Id: Makefile.am,v 1.61 2006-09-07 10:02:29 adam Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -91,7 +91,7 @@ clean-data-hook:
 	rm -f [0-9]* *.bak
 
 dist-hook:
-	if test -d index.html; then d=.; else d="$(srcdir)"; fi; \
+	if test -f index.html; then d=.; else d="$(srcdir)"; fi; \
 	for p in $$d/*.html; do \
 		cp $$p $(distdir); \
 	done
@@ -100,7 +100,7 @@ install-data-hook:
 	cd $(DESTDIR)$(man1dir) && ln -sf zebraidx$(PACKAGE_SUFFIX).1 zebraidx.1
 	cd $(DESTDIR)$(man8dir) && ln -sf zebrasrv$(PACKAGE_SUFFIX).8 zebrasrv.8
 	cd $(DESTDIR)$(man1dir) && ln -sf idzebra-config$(PACKAGE_SUFFIX).1 idzebra-config.1
-	if test -d index.html; then d=.; else d="$(srcdir)"; fi; \
+	if test -f index.html; then d=.; else d="$(srcdir)"; fi; \
 	for p in $$d/*.html; do \
 		$(docDATA_INSTALL) $$p $(DESTDIR)/$(docdir); \
 	done
