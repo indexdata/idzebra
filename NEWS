@@ -1,8 +1,7 @@
 Honor position attribute, i.e. allow first-in-field search. To
 enable this, "firstinfield 1" must be given for an index in
 default.idx. Enabled in tab/default.idx for w. At this stage
-first-in field is only supported for phrase searches (including
-simple words).
+first-in field is supported for phrase/and-list/or-list searches
 
 Common stream reader interface for record filters (struct ZebraRecStream).
 
