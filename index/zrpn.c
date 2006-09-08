@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.228 2006-09-08 14:40:53 adam Exp $
+/* $Id: zrpn.c,v 1.229 2006-09-08 18:24:53 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1475,7 +1475,7 @@ static ZEBRA_RES rpn_search_APT_position(ZebraHandle zh,
         return ZEBRA_FAIL;
     }
 
-    if (!zh->reg->isamb)
+    if (!zh->reg->isamb && !zh->reg->isamc)
     {
         zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_POSITION_ATTRIBUTE,
                             position_value);
@@ -1511,9 +1511,13 @@ static ZEBRA_RES rpn_search_APT_position(ZebraHandle zh,
         assert(*val == sizeof(ISAM_P));
         memcpy(&isam_p, val+1, sizeof(isam_p));
         
-        f_set[num_sets++] = rsisamb_create(rset_nmem, kc, kc->scope,
-                                           zh->reg->isamb, isam_p, 0);
-        
+
+        if (zh->reg->isamb)
+            f_set[num_sets++] = rsisamb_create(rset_nmem, kc, kc->scope,
+                                               zh->reg->isamb, isam_p, 0);
+        else if (zh->reg->isamc)
+            f_set[num_sets++] = rsisamc_create(rset_nmem, kc, kc->scope,
+                                               zh->reg->isamc, isam_p, 0);
     }
     if (num_sets)
     {
@@ -1599,6 +1603,7 @@ static ZEBRA_RES rpn_search_APT_or_list(ZebraHandle zh,
 {
     RSET *result_sets = 0;
     int num_result_sets = 0;
+    int i;
     ZEBRA_RES res =
 	term_list_trunc(zh, zapt, termz_org, attributeSet,
 			stream, reg_type, complete_flag,
@@ -1608,6 +1613,36 @@ static ZEBRA_RES rpn_search_APT_or_list(ZebraHandle zh,
 			&result_sets, &num_result_sets, kc);
     if (res != ZEBRA_OK)
 	return res;
+
+    for (i = 0; i<num_result_sets; i++)
+    {
+        RSET first_set = 0;
+        res = rpn_search_APT_position(zh, zapt, attributeSet, 
+                                      reg_type,
+                                      num_bases, basenames,
+                                      rset_nmem, &first_set,
+                                      kc);
+        if (res != ZEBRA_OK)
+        {
+            for (i = 0; i<num_result_sets; i++)
+                rset_delete(result_sets[i]);
+            return res;
+        }
+
+        if (first_set)
+        {
+            RSET tmp_set[2];
+
+            tmp_set[0] = first_set;
+            tmp_set[1] = result_sets[i];
+            
+            result_sets[i] = rset_create_prox(
+                rset_nmem, kc, kc->scope,
+                2, tmp_set,
+                1 /* ordered */, 0 /* exclusion */,
+                3 /* relation */, 1 /* distance */);
+        }
+    }
     if (num_result_sets == 0)
 	*rset = rset_create_null(rset_nmem, kc, 0); 
     else if (num_result_sets == 1)
@@ -1635,6 +1670,7 @@ static ZEBRA_RES rpn_search_APT_and_list(ZebraHandle zh,
 {
     RSET *result_sets = 0;
     int num_result_sets = 0;
+    int i;
     ZEBRA_RES res =
 	term_list_trunc(zh, zapt, termz_org, attributeSet,
 			stream, reg_type, complete_flag,
@@ -1645,6 +1681,37 @@ static ZEBRA_RES rpn_search_APT_and_list(ZebraHandle zh,
 			kc);
     if (res != ZEBRA_OK)
 	return res;
+    for (i = 0; i<num_result_sets; i++)
+    {
+        RSET first_set = 0;
+        res = rpn_search_APT_position(zh, zapt, attributeSet, 
+                                      reg_type,
+                                      num_bases, basenames,
+                                      rset_nmem, &first_set,
+                                      kc);
+        if (res != ZEBRA_OK)
+        {
+            for (i = 0; i<num_result_sets; i++)
+                rset_delete(result_sets[i]);
+            return res;
+        }
+
+        if (first_set)
+        {
+            RSET tmp_set[2];
+
+            tmp_set[0] = first_set;
+            tmp_set[1] = result_sets[i];
+            
+            result_sets[i] = rset_create_prox(
+                rset_nmem, kc, kc->scope,
+                2, tmp_set,
+                1 /* ordered */, 0 /* exclusion */,
+                3 /* relation */, 1 /* distance */);
+        }
+    }
+
+
     if (num_result_sets == 0)
 	*rset = rset_create_null(rset_nmem, kc, 0); 
     else if (num_result_sets == 1)
