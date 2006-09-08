@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.228 2006-08-22 13:39:27 adam Exp $
+/* $Id: extract.c,v 1.229 2006-09-08 14:40:52 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -44,7 +44,7 @@ struct encode_info {
 };
 
 static int log_level = 0;
-static int log_level_initialized = 1;
+static int log_level_initialized = 0;
 
 static void zebra_init_log_level()
 {
@@ -1329,7 +1329,7 @@ static void extract_add_string(RecWord *p, const char *string, int length)
     }
 }
 
-static void extract_add_incomplete_field (RecWord *p)
+static void extract_add_incomplete_field(RecWord *p)
 {
     ZebraHandle zh = p->extractCtrl->handle;
     const char *b = p->term_buf;
@@ -1339,6 +1339,15 @@ static void extract_add_incomplete_field (RecWord *p)
     if (remain > 0)
 	map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, 0);
 
+    if (map)
+    {   
+        if (zebra_maps_is_first_in_field(zh->reg->zebra_maps, p->index_type))
+        {
+             /* first in field marker */
+            extract_add_string(p, FIRST_IN_FIELD_STR, FIRST_IN_FIELD_LEN);
+            p->seqno++;
+        }
+    }
     while (map)
     {
 	char buf[IT_MAX_WORD+1];
@@ -1440,11 +1449,14 @@ static void extract_token_add(RecWord *p)
 {
     ZebraHandle zh = p->extractCtrl->handle;
     WRBUF wrbuf;
+
     if (log_level)
+    {
         yaz_log(log_level, "extract_token_add "
                 "type=%c index=%s seqno=" ZINT_FORMAT " s=%.*s",
                 p->index_type, p->index_name, 
                 p->seqno, p->term_len, p->term_buf);
+    }
     if ((wrbuf = zebra_replace(zh->reg->zebra_maps, p->index_type, 0,
 			       p->term_buf, p->term_len)))
     {

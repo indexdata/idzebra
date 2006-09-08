@@ -1,4 +1,4 @@
-/* $Id: t9.c,v 1.11 2006-08-14 10:40:22 adam Exp $
+/* $Id: t9.c,v 1.12 2006-09-08 14:40:57 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -34,15 +34,10 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_init_data(zh, recs));
     
     YAZ_CHECK(tl_ranking_query(zh, "@attr 1=4 @attr 2=102 the",
-			       3, "first title", 1000 ));
+			       3, "first title", 936 ));
     
     YAZ_CHECK(tl_ranking_query(zh, "@attr 1=62 @attr 2=102 foo",
 			       3, "second title", 850 ));
-    
-    /* get the record with the most significant hit, that is the 'bar' */
-    /* as that is the rarest of my search words */
-    YAZ_CHECK(tl_ranking_query(zh, "@attr 1=1016 @attr 2=102 @or @or the foo bar",
-			       3, "third title", 813 ));
     
     YAZ_CHECK(tl_close_down(zh, zs));
 }

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.174 2006-08-22 13:39:27 adam Exp $
+/* $Id: index.h,v 1.175 2006-09-08 14:40:52 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -452,6 +452,9 @@ ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,
 ZEBRA_RES zebra_update_file_match(ZebraHandle zh, const char *path);
 ZEBRA_RES zebra_update_from_path(ZebraHandle zh, const char *path);
 ZEBRA_RES zebra_delete_from_path(ZebraHandle zh, const char *path);
+
+#define FIRST_IN_FIELD_STR "\001^"
+#define FIRST_IN_FIELD_LEN 2
 
 YAZ_END_CDECL
 

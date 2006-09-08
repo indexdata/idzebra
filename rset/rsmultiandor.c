@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.25 2006-08-16 13:14:55 adam Exp $
+/* $Id: rsmultiandor.c,v 1.26 2006-09-08 14:40:55 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -442,7 +442,6 @@ static int r_read_or (RSFD rfd, void *buf, TERMID *term)
 	    *term = rset->term;
 	else
 	    *term = it->term;
-	assert(*term);
     }
     (mrfd->hits)++;
     rdres = rset_read(it->fd, it->buf, &it->term);

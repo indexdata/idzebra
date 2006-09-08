@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.52 2006-08-15 14:28:35 adam Exp $
+/* $Id: zebramap.c,v 1.53 2006-09-08 14:41:00 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -40,6 +40,7 @@ struct zebra_map {
     int completeness;
     int positioned;
     int alwaysmatches;
+    int first_in_field;
     int type;
     union {
         struct {
@@ -125,6 +126,7 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
 	    (*zm)->completeness = 0;
 	    (*zm)->positioned = 1;
 	    (*zm)->alwaysmatches = 0;
+	    (*zm)->first_in_field = 0;
 	    zms->no_maps++;
 	}
 	else if (!yaz_matchstr(argv[0], "sort"))
@@ -142,6 +144,7 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
 	    (*zm)->completeness = 0;
 	    (*zm)->positioned = 0;
 	    (*zm)->alwaysmatches = 0;
+	    (*zm)->first_in_field = 0;
 	    zms->no_maps++;
 	}
         else if (!zm)
@@ -165,6 +168,10 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
 	else if (!yaz_matchstr(argv[0], "alwaysmatches") && argc == 2)
 	{
 	    (*zm)->alwaysmatches = atoi(argv[1]);
+	}
+	else if (!yaz_matchstr(argv[0], "firstinfield") && argc == 2)
+	{
+	    (*zm)->first_in_field = atoi(argv[1]);
 	}
         else if (!yaz_matchstr(argv[0], "entrysize") && argc == 2)
         {
@@ -343,6 +350,14 @@ int zebra_maps_is_alwaysmatches(ZebraMaps zms, unsigned reg_id)
     struct zebra_map *zm = zebra_map_get(zms, reg_id);
     if (zm)
 	return zm->alwaysmatches;
+    return 0;
+}
+
+int zebra_maps_is_first_in_field(ZebraMaps zms, unsigned reg_id)
+{
+    struct zebra_map *zm = zebra_map_get(zms, reg_id);
+    if (zm)
+	return zm->first_in_field;
     return 0;
 }
 

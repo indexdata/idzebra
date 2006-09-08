@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.227 2006-08-31 08:35:48 adam Exp $
+/* $Id: zrpn.c,v 1.228 2006-09-08 14:40:53 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1437,6 +1437,93 @@ static ZEBRA_RES term_list_trunc(ZebraHandle zh,
     return ZEBRA_OK;
 }
 
+static ZEBRA_RES rpn_search_APT_position(ZebraHandle zh,
+                                         Z_AttributesPlusTerm *zapt,
+                                         oid_value attributeSet,
+                                         int reg_type,
+                                         int num_bases, char **basenames,
+                                         NMEM rset_nmem,
+                                         RSET *rset,
+                                         struct rset_key_control *kc)
+{
+    RSET *f_set;
+    int base_no;
+    int position_value;
+    int num_sets = 0;
+    AttrType position;
+
+    attr_init_APT(&position, zapt, 3);
+    position_value = attr_find(&position, NULL);
+    switch(position_value)
+    {
+    case 3:
+    case -1:
+        return ZEBRA_OK;
+    case 1:
+    case 2:
+        break;
+    default:
+        zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_POSITION_ATTRIBUTE,
+                            position_value);
+        return ZEBRA_FAIL;
+    }
+
+    if (!zebra_maps_is_first_in_field(zh->reg->zebra_maps, reg_type))
+    {
+        zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_POSITION_ATTRIBUTE,
+                            position_value);
+        return ZEBRA_FAIL;
+    }
+
+    if (!zh->reg->isamb)
+    {
+        zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_POSITION_ATTRIBUTE,
+                            position_value);
+        return ZEBRA_FAIL;
+    }
+    f_set = xmalloc(sizeof(RSET) * num_bases);
+    for (base_no = 0; base_no < num_bases; base_no++)
+    {
+	int ord = -1;
+        char ord_buf[32];
+        char term_dict[100];
+        int ord_len;
+        char *val;
+        ISAM_P isam_p;
+
+        if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
+        {
+	    zebra_setError(zh, YAZ_BIB1_DATABASE_UNAVAILABLE,
+			   basenames[base_no]);
+            return ZEBRA_FAIL;
+        }
+        
+        if (zebra_apt_get_ord(zh, zapt, reg_type, 0,
+                              attributeSet, &ord) != ZEBRA_OK)
+            continue;
+
+        ord_len = key_SU_encode (ord, ord_buf);
+        memcpy(term_dict, ord_buf, ord_len);
+        strcpy(term_dict+ord_len, FIRST_IN_FIELD_STR);
+        val = dict_lookup(zh->reg->dict, term_dict);
+        if (!val)
+            continue;
+        assert(*val == sizeof(ISAM_P));
+        memcpy(&isam_p, val+1, sizeof(isam_p));
+        
+        f_set[num_sets++] = rsisamb_create(rset_nmem, kc, kc->scope,
+                                           zh->reg->isamb, isam_p, 0);
+        
+    }
+    if (num_sets)
+    {
+        *rset = rset_create_or(rset_nmem, kc, kc->scope,
+                               0 /* termid */, num_sets, f_set);
+    }
+    xfree(f_set);
+    return ZEBRA_OK;
+}
+                                         
 static ZEBRA_RES rpn_search_APT_phrase(ZebraHandle zh,
 				       Z_AttributesPlusTerm *zapt,
 				       const char *termz_org,
@@ -1459,8 +1546,30 @@ static ZEBRA_RES rpn_search_APT_phrase(ZebraHandle zh,
 			num_bases, basenames,
 			rset_nmem,
 			&result_sets, &num_result_sets, kc);
+
     if (res != ZEBRA_OK)
 	return res;
+
+    if (num_result_sets > 0)
+    {
+        RSET first_set = 0;
+        res = rpn_search_APT_position(zh, zapt, attributeSet, 
+                                      reg_type,
+                                      num_bases, basenames,
+                                      rset_nmem, &first_set,
+                                      kc);
+        if (res != ZEBRA_OK)
+            return res;
+        if (first_set)
+        {
+            RSET *nsets = nmem_malloc(stream,
+                                      sizeof(RSET) * (num_result_sets+1));
+            nsets[0] = first_set;
+            memcpy(nsets+1, result_sets, sizeof(RSET) * num_result_sets);
+            result_sets = nsets;
+            num_result_sets++;
+        }
+    }
     if (num_result_sets == 0)
 	*rset = rset_create_null(rset_nmem, kc, 0); 
     else if (num_result_sets == 1)
@@ -2477,6 +2586,10 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
 	idx = scan_info->after - pos + scan_info->before;
     else
         idx = - pos - 1;
+
+    /* skip special terms.. of no interest */
+    if (name[len_prefix] < 4)
+        return 1;
 
     if (idx < 0)
 	return 0;

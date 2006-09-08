@@ -1,3 +1,9 @@
+Honor position attribute, i.e. allow first-in-field search. To
+enable this, "firstinfield 1" must be given for an index in
+default.idx. Enabled in tab/default.idx for w. At this stage
+first-in field is only supported for phrase searches (including
+simple words).
+
 Common stream reader interface for record filters (struct ZebraRecStream).
 
 Debian package fix: packages idzebra-2.0 + libidzebra-2.0-modules did

@@ -1,4 +1,4 @@
-/* $Id: zebramap.h,v 1.19 2006-08-15 14:28:32 adam Exp $
+/* $Id: zebramap.h,v 1.20 2006-09-08 14:40:51 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -70,6 +70,9 @@ int zebra_maps_is_alwaysmatches (ZebraMaps zms, unsigned reg_id);
 
 YAZ_EXPORT
 int zebra_maps_is_positioned (ZebraMaps zms, unsigned reg_id);
+
+YAZ_EXPORT
+int zebra_maps_is_first_in_field (ZebraMaps zms, unsigned reg_id);
 
 YAZ_EXPORT
 WRBUF zebra_replace(ZebraMaps zms, unsigned reg_id, const char *ex_list,
