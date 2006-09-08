@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.37 2006-08-31 08:36:53 adam Exp $
+/* $Id: testlib.c,v 1.38 2006-09-08 09:56:40 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -44,7 +44,6 @@ int log_level=0; /* not static, t*.c may use it */
 
 void tl_start_log(int argc, char **argv)
 {
-    int cmd_level = 0;
     char logname[2048];
     if (!argv) 
         return;
@@ -59,7 +58,8 @@ void tl_start_log(int argc, char **argv)
 	log_level = yaz_log_mask_str_x(argv[1], 0);
     if (argc >= 3)
 	yaz_log_time_format(argv[2]);
-    yaz_log_init_level(YLOG_DEFAULT_LEVEL | log_level | cmd_level);
+    if (log_level)
+        yaz_log_init_level(log_level);
     yaz_log(log_level, "starting %s", argv[0]);
 }
 
