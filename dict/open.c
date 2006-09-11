@@ -1,4 +1,4 @@
-/* $Id: open.c,v 1.26 2006-08-14 10:40:09 adam Exp $
+/* $Id: open.c,v 1.27 2006-09-11 22:57:54 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -27,6 +27,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 
 #include "dict-p.h"
+
+void dict_clean(Dict dict)
+{
+    int page_size = dict->head.page_size;
+    void *head_buf;
+    int compact_flag = dict->head.compact_flag;
+
+    memset (dict->head.magic_str, 0, sizeof(dict->head.magic_str));
+    strcpy (dict->head.magic_str, DICT_MAGIC);
+    dict->head.last = 1;
+    dict->head.root = 0;
+    dict->head.freelist = 0;
+    dict->head.page_size = page_size;
+    dict->head.compact_flag = compact_flag;
+    
+    /* create header with information (page 0) */
+    if (dict->rw) 
+        dict_bf_newp (dict->dbf, 0, &head_buf, page_size);
+}
 
 Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
 		int compact_flag, int page_size)
@@ -58,17 +77,9 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
     }
     if (dict_bf_readp (dict->dbf, 0, &head_buf) <= 0)
     {
-	memset (dict->head.magic_str, 0, sizeof(dict->head.magic_str));
-	strcpy (dict->head.magic_str, DICT_MAGIC);
-	dict->head.last = 1;
-	dict->head.root = 0;
-	dict->head.freelist = 0;
 	dict->head.page_size = page_size;
-	dict->head.compact_flag = compact_flag;
-	
-	/* create header with information (page 0) */
-        if (rw) 
-            dict_bf_newp (dict->dbf, 0, &head_buf, page_size);
+        dict->head.compact_flag = compact_flag;
+        dict_clean(dict);
     }
     else /* header was there, check magic and page size */
     {

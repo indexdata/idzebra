@@ -1,4 +1,4 @@
-/* $Id: update_file.c,v 1.2 2006-08-14 10:40:15 adam Exp $
+/* $Id: update_file.c,v 1.3 2006-09-11 22:57:54 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -297,15 +297,47 @@ static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
     }
 }
 
+static ZEBRA_RES zebra_open_fmatch(ZebraHandle zh, Dict *dictp)
+{
+    char fmatch_fname[1024];
+    int ord;
+
+    ord = zebraExplain_get_database_ord(zh->reg->zei);
+    sprintf(fmatch_fname, FMATCH_DICT, ord);
+    if (!(*dictp = dict_open_res (zh->reg->bfs, fmatch_fname, 50,
+                                zh->m_flag_rw, 0, zh->res)))
+    {
+        yaz_log (YLOG_FATAL, "dict_open fail of %s", fmatch_fname);
+        return ZEBRA_FAIL;
+    }
+    return ZEBRA_OK;
+}
+
+ZEBRA_RES zebra_remove_file_match(ZebraHandle zh)
+{
+    Dict dict;
+    
+    if (zebra_open_fmatch(zh, &dict) != ZEBRA_OK)
+        return ZEBRA_FAIL;
+
+    dict_clean(dict);
+    dict_close(dict);
+
+    return ZEBRA_OK;
+}
+
 ZEBRA_RES zebra_update_file_match(ZebraHandle zh, const char *path)
 {
     Dict dict;
-    if (!(dict = dict_open_res (zh->reg->bfs, FMATCH_DICT, 50,
-                                zh->m_flag_rw, 0, zh->res)))
+
+    if (zebraExplain_curDatabase (zh->reg->zei, zh->basenames[0]))
     {
-        yaz_log (YLOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
-        return ZEBRA_FAIL;
+        if (zebraExplain_newDatabase(zh->reg->zei, zh->basenames[0], 0))
+            return ZEBRA_FAIL;
     }
+    if (zebra_open_fmatch(zh, &dict) != ZEBRA_OK)
+        return ZEBRA_FAIL;
+    
     if (!strcmp(path, "") || !strcmp(path, "-"))
     {
         char src[1024];

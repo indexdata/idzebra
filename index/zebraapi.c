@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.226 2006-08-29 08:27:59 adam Exp $
+/* $Id: zebraapi.c,v 1.227 2006-09-11 22:57:54 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1485,12 +1485,20 @@ ZEBRA_RES zebra_drop_database(ZebraHandle zh, const char *db)
     if (zh->reg->isamb)
     {
 	int db_ord;
-	zebraExplain_curDatabase (zh->reg->zei, db);
-	db_ord = zebraExplain_get_database_ord(zh->reg->zei);
-	dict_delete_subtree_ord(zh->reg->matchDict, db_ord,
-				0 /* handle */, 0 /* func */);
-	zebraExplain_trav_ord(zh->reg->zei, zh, delete_SU_handle);
-	zebraExplain_removeDatabase(zh->reg->zei, zh);
+	if (zebraExplain_curDatabase (zh->reg->zei, db))
+        {
+            zebra_setError(zh, YAZ_BIB1_DATABASE_DOES_NOT_EXIST, db);
+            ret = ZEBRA_FAIL;
+        }
+        else
+        {
+            db_ord = zebraExplain_get_database_ord(zh->reg->zei);
+            dict_delete_subtree_ord(zh->reg->matchDict, db_ord,
+                                    0 /* handle */, 0 /* func */);
+            zebraExplain_trav_ord(zh->reg->zei, zh, delete_SU_handle);
+            zebraExplain_removeDatabase(zh->reg->zei, zh);
+            zebra_remove_file_match(zh);
+        }
     }
     else
     {

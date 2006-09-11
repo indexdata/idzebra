@@ -1,4 +1,4 @@
-/* $Id: dict.h,v 1.11 2006-09-05 12:50:56 adam Exp $
+/* $Id: dict.h,v 1.12 2006-09-11 22:57:54 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -186,6 +186,13 @@ void dict_grep_cmap(Dict dict, void *vp,
 */
 YAZ_EXPORT
 int dict_copy_compact(BFiles bfs, const char *from, const char *to);
+
+/** \brief reset Dictionary (makes it empty)
+    \param dict dictionary handle
+*/
+YAZ_EXPORT
+void dict_clean(Dict dict);
+
 
 YAZ_END_CDECL
    

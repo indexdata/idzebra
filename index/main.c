@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.130 2006-08-14 10:40:15 adam Exp $
+/* $Id: main.c,v 1.131 2006-09-11 22:57:54 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -231,7 +231,17 @@ int main (int argc, char **argv)
                 }
 		if (res != ZEBRA_OK)
 		{
-		    yaz_log(YLOG_WARN, "Operation failed");
+                    const char *add = zebra_errAdd(zh);
+		    yaz_log(YLOG_FATAL, "Operation failed: %s %s",
+                            zebra_errString(zh), add ? add : "");
+                    
+                    if (trans_started)
+                        if (zebra_end_trans (zh) != ZEBRA_OK)
+                            yaz_log (YLOG_WARN, "zebra_end_trans failed");
+
+
+                    zebra_close (zh);
+                    zebra_stop (zs);
 		    exit(1);
 		}
                 log_event_end (NULL, NULL);

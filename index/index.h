@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.175 2006-09-08 14:40:52 adam Exp $
+/* $Id: index.h,v 1.176 2006-09-11 22:57:54 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -127,7 +127,7 @@ int key_SU_code (int ch, char *out);
 #define FNAME_CONFIG "zebra.cfg"
 
 #define GMATCH_DICT "gmatch"
-#define FMATCH_DICT "fmatch"
+#define FMATCH_DICT "fmatch%d"
 
 struct strtab *strtab_mk (void);
 int strtab_src (struct strtab *t, const char *name, void ***infop);
@@ -452,6 +452,8 @@ ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,
 ZEBRA_RES zebra_update_file_match(ZebraHandle zh, const char *path);
 ZEBRA_RES zebra_update_from_path(ZebraHandle zh, const char *path);
 ZEBRA_RES zebra_delete_from_path(ZebraHandle zh, const char *path);
+ZEBRA_RES zebra_remove_file_match(ZebraHandle zh);
+
 
 #define FIRST_IN_FIELD_STR "\001^"
 #define FIRST_IN_FIELD_LEN 2
