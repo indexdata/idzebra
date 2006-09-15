@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.29 2006-09-03 21:37:26 adam Exp $ -->
+<!-- $Id: installation.xml,v 1.30 2006-09-15 09:21:52 adam Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -416,13 +416,15 @@
      profilePath: some/local/path:/usr/share/idzebra-2.0/tab
 
      # modulePath - where to look for loadable zebra modules
-     modulePath: /usr/lib/idzebra-2.0/
+     modulePath: /usr/lib/idzebra-2.0/modules
     </screen>
    </para>
-   <para>
-    The internal binary register structures have changed; all Zebra
-    databases must be re-indexed after upgrade.
-   </para>
+   <note>
+    <para>
+     The internal binary register structures have changed; all Zebra
+     databases must be re-indexed after upgrade.
+    </para>
+   </note>
    <para>
     The attribute set defintion files may no longer contain
     redirection to other fields. 
