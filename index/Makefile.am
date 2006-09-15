@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.51 2006-08-22 13:39:26 adam Exp $
+## $Id: Makefile.am,v 1.52 2006-09-15 10:07:10 adam Exp $
 
 aux_libs = \
  ../rset/libidzebra-rset.la \
@@ -70,7 +70,7 @@ libidzebra_2_0_la_SOURCES = \
   recgrs.c \
   sgmlread.c \
   rectext.c \
-  api_swig.c attribute.c \
+  attribute.c \
   compact.c \
   dir.c dirs.c \
   extract.c \
