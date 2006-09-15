@@ -1,4 +1,4 @@
-/* $Id: recindex.h,v 1.28 2006-08-14 10:40:15 adam Exp $
+/* $Id: recindex.h,v 1.29 2006-09-15 10:45:13 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -43,20 +43,57 @@ typedef struct record_info {
 
 typedef struct records_info *Records;
 
-Record rec_cp(Record rec);
+/** \brief marks record for deletion (on file storage)
+    \param p records handle
+    \param recpp record pointer
+    \returns ZEBRA_OK / ZEBRA_FAIL
+*/
 ZEBRA_RES rec_del(Records p, Record *recpp);
-void rec_rm(Record *recpp);
+
+/** \brief frees record (from memory)
+    \param recpp record pointer
+*/
+void rec_free(Record *recpp);
+
+/** \brief puts record (writes into file storage)
+    \param p records handle
+    \param recpp record pointer
+    \returns ZEBRA_OK / ZEBRA_FAIL
+*/
 ZEBRA_RES rec_put(Records p, Record *recpp);
+
+/** \brief creates new record (to be written to file storage)
+    \param p records handle
+    \returns record pointer (or NULL on error)
+*/
 Record rec_new(Records p);
+/** \brief gets record - with given system number
+    \param p records handle
+    \param sysno system ID (external number)
+    \returns record pointer (or NULL on error)
+*/
 Record rec_get(Records p, SYSNO sysno);
+
+/** \brief gets root record
+    \param p records handle
+    \returns record pointer (or NULL on error)
+*/
 Record rec_get_root(Records p);
 ZEBRA_RES rec_close (Records *p);
+
+/** \brief opens records system
+    \param bfs block file storage
+    \param rw read-write flag(0=read only, 1=write)
+    \param compression_method REC_COMPRESS_ type 
+*/
 Records rec_open(BFiles bfs, int rw, int compression_method);
+
 char *rec_strdup(const char *s, size_t *len);
 void rec_prstat(Records p);
 
 SYSNO rec_sysno_to_int(SYSNO sysno);
 
+/** \brief compression types */
 #define REC_COMPRESS_NONE   0
 #define REC_COMPRESS_BZIP2  1
 

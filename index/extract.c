@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.229 2006-09-08 14:40:52 adam Exp $
+/* $Id: extract.c,v 1.230 2006-09-15 10:45:12 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -742,7 +742,7 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 		}
                 rec_del (zh->reg->records, &rec);
             }
-	    rec_rm (&rec);
+	    rec_free(&rec);
             logRecord(zh);
             return ZEBRA_OK;
         }

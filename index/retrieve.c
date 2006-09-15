@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.44 2006-08-22 13:39:27 adam Exp $
+/* $Id: retrieve.c,v 1.45 2006-09-15 10:45:13 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -155,7 +155,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
             *rec_lenp = rec->size[recInfo_storeData];
        	    *rec_bufp = (char *) odr_malloc(odr, *rec_lenp);
 	    memcpy(*rec_bufp, rec->info[recInfo_storeData], *rec_lenp);
-            rec_rm (&rec);
+            rec_free(&rec);
             stream.destroy(&stream);
 	    return 0;
 	}
@@ -178,7 +178,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
         {
             yaz_log (YLOG_WARN|YLOG_ERRNO, "Retrieve fail; missing file: %s",
 		  full_rep);
-            rec_rm (&rec);
+            rec_free(&rec);
             stream.destroy(&stream);
             return 14;
         }
@@ -190,7 +190,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
             *rec_lenp = recordAttr->recordSize;
        	    *rec_bufp = (char *) odr_malloc(odr, *rec_lenp);
             stream.readf(&stream, *rec_bufp, *rec_lenp);
-            rec_rm (&rec);
+            rec_free(&rec);
             stream.destroy(&stream);
             return 0;
 	}
@@ -259,7 +259,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
 
     stream.destroy(&stream);
 
-    rec_rm (&rec);
+    rec_free(&rec);
 
     *addinfo = retrieveCtrl.addinfo;
     return retrieveCtrl.diagnostic;

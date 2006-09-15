@@ -1,4 +1,4 @@
-/* $Id: recindxp.h,v 1.19 2006-08-14 10:40:15 adam Exp $
+/* $Id: recindxp.h,v 1.20 2006-09-15 10:45:13 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -79,6 +79,8 @@ struct record_index_entry {
     zint next;         /* first block of record info / next free entry */
     int size;          /* size of record or 0 if free entry */
 };
+
+Record rec_cp(Record rec);
 
 YAZ_END_CDECL
 /*

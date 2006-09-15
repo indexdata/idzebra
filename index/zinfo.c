@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.68 2006-08-14 10:40:15 adam Exp $
+/* $Id: zinfo.c,v 1.69 2006-09-15 10:45:13 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -491,7 +491,7 @@ ZebraExplainInfo zebraExplain_open(
             yaz_log(YLOG_DEBUG, "read runnumber=" ZINT_FORMAT, zei->runNumber);
 	    *zdip = NULL;
 	}
-	rec_rm(&trec);
+	rec_free(&trec);
     }
     else  /* create initial targetInfo */
     {
@@ -543,7 +543,7 @@ ZebraExplainInfo zebraExplain_open(
 	    trec->size[recInfo_storeData] = sgml_len;
 		
 	    rec_put(records, &trec);
-	    rec_rm(&trec);
+	    rec_free(&trec);
 	}
 	
 	zebraExplain_newDatabase(zei, "IR-Explain-1", 0);
@@ -693,7 +693,7 @@ static void zebraExplain_readAttributeDetails(ZebraExplainInfo zei,
     }
     *zsuip = NULL;
     zad->readFlag = 0;
-    rec_rm (&rec);
+    rec_free(&rec);
 }
 
 static void zebraExplain_readDatabase (ZebraExplainInfo zei,
@@ -738,7 +738,7 @@ static void zebraExplain_readDatabase (ZebraExplainInfo zei,
 				    np->child->u.data.len);
     }
     zdi->readFlag = 0;
-    rec_rm (&rec);
+    rec_free(&rec);
 }
 
 int zebraExplain_removeDatabase(ZebraExplainInfo zei, void *update_handle)
@@ -762,12 +762,12 @@ int zebraExplain_removeDatabase(ZebraExplainInfo zei, void *update_handle)
 		
 		rec = rec_get(zei->records, zad->sysno);
 		(*zei->updateFunc)(zei->updateHandle, rec, 0);
-		rec_rm(&rec);
+		rec_free(&rec);
 	    }
 	    /* remove database record keys and delete it */
 	    rec = rec_get (zei->records, zdi->sysno);
 	    (*zei->updateFunc)(zei->updateHandle, rec, 0);
-	    rec_rm(&rec);
+	    rec_free(&rec);
 
 	    /* remove from list */
 	    *zdip = zdi->next;

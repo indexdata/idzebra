@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.51 2006-08-14 10:40:15 adam Exp $
+/* $Id: recindex.c,v 1.52 2006-09-15 10:45:13 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -591,7 +591,7 @@ static ZEBRA_RES rec_cache_flush(Records p, int saveCount)
     for (i = 0; i<p->cache_cur - saveCount; i++)
     {
         struct record_cache_entry *e = p->record_cache + i;
-        rec_rm(&e->rec);
+        rec_free(&e->rec);
     } 
     /* i still being used ... */
     for (j = 0; j<saveCount; j++, i++)
@@ -894,13 +894,13 @@ ZEBRA_RES rec_del(Records p, Record *recpp)
     (p->head.no_records)--;
     if ((recp = rec_cache_lookup(p, (*recpp)->sysno, recordFlagDelete)))
     {
-        rec_rm(recp);
+        rec_free(recp);
         *recp = *recpp;
     }
     else
     {
         ret = rec_cache_insert(p, *recpp, recordFlagDelete);
-        rec_rm(recpp);
+        rec_free(recpp);
     }
     zebra_mutex_unlock(&p->mutex);
     *recpp = NULL;
@@ -915,20 +915,20 @@ ZEBRA_RES rec_put(Records p, Record *recpp)
     zebra_mutex_lock(&p->mutex);
     if ((recp = rec_cache_lookup(p, (*recpp)->sysno, recordFlagWrite)))
     {
-        rec_rm(recp);
+        rec_free(recp);
         *recp = *recpp;
     }
     else
     {
         ret = rec_cache_insert(p, *recpp, recordFlagWrite);
-        rec_rm(recpp);
+        rec_free(recpp);
     }
     zebra_mutex_unlock(&p->mutex);
     *recpp = NULL;
     return ret;
 }
 
-void rec_rm(Record *recpp)
+void rec_free(Record *recpp)
 {
     int i;
 
