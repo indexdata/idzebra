@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.27 2006-08-16 13:16:35 adam Exp $
+dnl $Id: configure.ac,v 1.28 2006-09-19 14:22:54 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.1],[adam@indexdata.dk])
@@ -250,9 +250,8 @@ int main(int argc, char **argv)
 	if (sizeof(off_t) != 8) 
 		exit (1);
 	o = 2000000000;
-	sprintf (tmp_str, "%Ld", o+o+o);
-	if (strcmp (tmp_str, "6000000000"))
-		exit (1);
+	if ((o+o+o) / 3 != o)
+		exit(1);
 	fd = creat ("config.tmp", 0644);
 	if (fd < 0)
 		exit (1);
