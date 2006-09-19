@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2006
-dnl $Id: configure.in,v 1.91.2.26 2006-08-14 17:17:18 adam Exp $
+dnl $Id: configure.in,v 1.91.2.27 2006-09-19 19:16:34 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AM_INIT_AUTOMAKE(idzebra,1.3.38)
@@ -290,9 +290,8 @@ int main(int argc, char **argv)
 	if (sizeof(off_t) != 8) 
 		exit (1);
 	o = 2000000000;
-	sprintf (tmp_str, "%Ld", o+o+o);
-	if (strcmp (tmp_str, "6000000000"))
-		exit (1);
+	if ((o+o+o) / 3 != o)
+		exit(1);
 	fd = creat ("config.tmp", 0644);
 	if (fd < 0)
 		exit (1);
