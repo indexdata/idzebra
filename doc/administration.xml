@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.44 2006-09-05 12:01:31 adam Exp $ -->
+ <!-- $Id: administration.xml,v 1.45 2006-09-20 15:19:38 mike Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -374,7 +374,8 @@
        username, or Z39.50 anonymous style use
 	<literal>anonymous</literal>. The permstring consists of
        a sequence of characters. Include character <literal>w</literal>
-       for write/update access, <literal>r</literal> for read access.
+       for write/update access, <literal>r</literal> for read access and
+       <literal>a</literal> to allow anonymous access through this account.
       </para>
      </listitem>
     </varlistentry>
