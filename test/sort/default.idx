@@ -1,5 +1,5 @@
 # Zebra indexes as referred to from the *.abs-files.
-#  $Id: default.idx,v 1.3 2005-05-04 10:50:09 adam Exp $
+#  $Id: default.idx,v 1.4 2006-09-20 10:51:25 adam Exp $
 #
 
 # Traditional word index
@@ -56,4 +56,4 @@ charmap string-hat.chr
 # Sort register with no map
 sort S
 completeness 1
-charmap @
+charmap string.chr

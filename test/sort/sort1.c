@@ -1,4 +1,4 @@
-/* $Id: sort1.c,v 1.10 2006-08-14 10:40:30 adam Exp $
+/* $Id: sort1.c,v 1.11 2006-09-20 10:51:25 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -48,18 +48,21 @@ static void tst(int argc, char **argv)
     ids[2] = 4;
     ids[3] = 5;
     YAZ_CHECK(tl_sort(zh, "@or @attr 1=4 computer @attr 7=1 @attr 1=30 0", 4, ids));
+    YAZ_CHECK(tl_sort(zh, "@or @attr 1=4 computer @attr 7=1 @attr 1=Date 0", 4, ids));
 
     ids[0] = 5;
     ids[1] = 4;
     ids[2] = 2;
     ids[3] = 3;
     YAZ_CHECK(tl_sort(zh, "@or @attr 1=4 computer @attr 7=1 @attr 1=1021 0", 4, ids));
+    YAZ_CHECK(tl_sort(zh, "@or @attr 1=4 computer @attr 7=1 @attr 1=Bib-Level 0", 4, ids));
 
     ids[0] = 2;
     ids[1] = 5;
     ids[2] = 4;
     ids[3] = 3;
     YAZ_CHECK(tl_sort(zh, "@or @attr 1=4 computer @attr 7=1 @attr 1=1021 @attr 4=109 0", 4, ids));
+    YAZ_CHECK(tl_sort(zh, "@or @attr 1=4 computer @attr 7=1 @attr 1=Bib-Level @attr 4=109 0", 4, ids));
 
     YAZ_CHECK(tl_close_down(zh, zs));
 }

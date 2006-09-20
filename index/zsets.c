@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.110 2006-08-14 10:40:15 adam Exp $
+/* $Id: zsets.c,v 1.111 2006-09-20 10:51:25 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -534,12 +534,9 @@ void zebra_meta_records_destroy (ZebraHandle zh, ZebraMetaRecord *records,
 
 struct sortKeyInfo {
     int relation;
-#if 0
-    int attrUse;
-#else
     int ord;
-#endif
     int numerical;
+    int index_type;
 };
 
 void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
@@ -573,12 +570,22 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
                 cmp_buf[j] + i * SORT_IDX_ENTRYSIZE;
             if (criteria[j].numerical)
             {
-                double diff = atof(this_entry_buf) - atof(other_entry_buf);
-                rel = 0;
+                char this_entry_org[1024];
+                char other_entry_org[1024];
+                double diff;
+                int index_type = criteria[j].index_type;
+                zebra_term_untrans(zh, index_type, this_entry_org,
+                                   this_entry_buf);
+                zebra_term_untrans(zh, index_type, other_entry_org,
+                                   other_entry_buf);
+                diff = atof(this_entry_org) - atof(other_entry_org);
+                
                 if (diff > 0.0)
                     rel = 1;
                 else if (diff < 0.0)
                     rel = -1;
+                else
+                    rel = 0;
             }
             else
             {
@@ -872,8 +879,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
             sort_criteria[i].ord = 
                 zebraExplain_lookup_attr_str(zh->reg->zei,
                                              zinfo_index_category_sort,
-                                             's',
-                                             sk->u.sortField);
+                                             -1, sk->u.sortField);
             if (sks->which != Z_SortKeySpec_null
                 && sort_criteria[i].ord == -1)
             {
@@ -890,11 +896,19 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
         case Z_SortKey_sortAttributes:
             yaz_log(log_level_sort, "key %d is of type sortAttributes", i+1);
             res = zebra_sort_get_ord(zh, sk->u.sortAttributes,
+
                                      &sort_criteria[i].ord,
                                      &sort_criteria[i].numerical);
             if (sks->which != Z_SortKeySpec_null && res != ZEBRA_OK)
                 return ZEBRA_FAIL;
             break;
+        }
+        if (zebraExplain_lookup_ord(zh->reg->zei, sort_criteria[i].ord,
+                                    &sort_criteria[i].index_type,
+                                    0, 0))
+        {
+            zebra_setError(zh, YAZ_BIB1_CANNOT_SORT_ACCORDING_TO_SEQUENCE, 0);
+            return ZEBRA_FAIL;
         }
     }
     /* allocate space for each cmpare buf + one extra for tmp comparison */

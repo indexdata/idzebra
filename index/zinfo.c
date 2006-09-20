@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.69 2006-09-15 10:45:13 adam Exp $
+/* $Id: zinfo.c,v 1.70 2006-09-20 10:51:25 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1360,10 +1360,10 @@ int zebraExplain_lookup_attr_str(ZebraExplainInfo zei,
     assert (zei->curDatabaseInfo);
     for (zsui = &zei->curDatabaseInfo->attributeDetails->SUInfo;
 	 *zsui; zsui = &(*zsui)->next)
-        if ((*zsui)->info.index_type == index_type
-            && (*zsui)->info.cat == cat
-            && (*zsui)->info.which == ZEB_SU_STR 
-            && !yaz_matchstr((*zsui)->info.u.str, str))
+        if ( (index_type == -1 || (*zsui)->info.index_type == index_type)
+             && (*zsui)->info.cat == cat
+             && (*zsui)->info.which == ZEB_SU_STR 
+             && !yaz_matchstr((*zsui)->info.u.str, str))
         {
             struct zebSUInfoB *zsui_this = *zsui;
 

@@ -1,4 +1,4 @@
-/* $Id: attribute.c,v 1.26 2006-08-14 10:40:15 adam Exp $
+/* $Id: attribute.c,v 1.27 2006-09-20 10:51:25 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -190,11 +190,7 @@ ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,
     
     if (zebra_attr_list_get_ord(zh, sortAttributes->list,
                                 zinfo_index_category_sort,
-                                's', VAL_BIB1, ord)== ZEBRA_OK)
-        return ZEBRA_OK;
-    if (zebra_attr_list_get_ord(zh, sortAttributes->list,
-                                zinfo_index_category_sort,
-                                'S', VAL_BIB1, ord)== ZEBRA_OK)
+                                -1 /* any index */, VAL_BIB1, ord)== ZEBRA_OK)
         return ZEBRA_OK;
     return ZEBRA_FAIL;
 }
