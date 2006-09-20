@@ -1,4 +1,4 @@
-/* $Id: t15.c,v 1.7 2006-08-14 10:40:22 adam Exp $
+/* $Id: t15.c,v 1.8 2006-09-20 19:29:25 adam Exp $
    Copyright (C) 2004-2006
    Index Data ApS
 
@@ -42,7 +42,6 @@ static void update_process(ZebraService zs, int iter)
     {
 	const char *rec = "<gils><title>some</title></gils>";
 	ZebraHandle zh = zebra_open(zs, 0);
-	// printf("update_record i=%d\n", i);
 	zebra_add_record(zh, rec, strlen(rec));
 	if ((i % 30) == 0 || i == iter-1)
 	    zebra_commit(zh);
