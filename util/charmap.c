@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.41 2006-08-14 10:40:34 adam Exp $
+/* $Id: charmap.c,v 1.42 2006-09-21 20:22:35 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -46,7 +46,7 @@ const unsigned char CHR_FIELD_BEGIN = '^';
 const char *CHR_UNKNOWN = "\001";
 const char *CHR_SPACE   = "\002";
 const char *CHR_CUT     = "\003";
-const char *CHR_BASE    = "\005";
+const char *CHR_BASE    = "\005"; /* CHECK CHR_BASE_CHAR as well */
 
 struct chrmaptab_info
 {

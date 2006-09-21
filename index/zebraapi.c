@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.227 2006-09-11 22:57:54 adam Exp $
+/* $Id: zebraapi.c,v 1.228 2006-09-21 20:22:34 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1177,10 +1177,10 @@ ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    return ZEBRA_FAIL;
 	}
     }
-    res = rpn_scan (zh, stream, zapt, attributeset,
-		    zh->num_basenames, zh->basenames, position,
-		    num_entries, entries, is_partial, limit_rset, 0);
-    zebra_end_read (zh);
+    res = rpn_scan(zh, stream, zapt, attributeset,
+                   zh->num_basenames, zh->basenames, position,
+                   num_entries, entries, is_partial, limit_rset);
+    zebra_end_read(zh);
     return res;
 }
 

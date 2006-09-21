@@ -1,4 +1,4 @@
-/* $Id: charmap.h,v 1.16 2006-08-14 10:40:12 adam Exp $
+/* $Id: charmap.h,v 1.17 2006-09-21 20:22:33 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -31,6 +31,9 @@ YAZ_EXPORT extern const char *CHR_UNKNOWN;
 YAZ_EXPORT extern const char *CHR_SPACE;
 YAZ_EXPORT extern const char *CHR_CUT;
 YAZ_EXPORT extern const char *CHR_BASE;
+
+/* defines first char we map to (0, 1, .. are specials) */
+#define CHR_BASE_CHAR  5
 
 struct chr_t_entry;
 typedef struct chr_t_entry chr_t_entry;
