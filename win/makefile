@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.55 2006-08-22 13:39:28 adam Exp $
+# $Id: makefile,v 1.56 2006-09-21 08:59:32 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -387,6 +387,8 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\regxread.obj \
 	$(OBJDIR)\res.obj \
 	$(OBJDIR)\retrieve.obj \
+	$(OBJDIR)\rpnscan.obj \
+	$(OBJDIR)\rpnsearch.obj \
 	$(OBJDIR)\rsbetween.obj \
 	$(OBJDIR)\rsbool.obj \
 	$(OBJDIR)\rset.obj \
@@ -407,16 +409,17 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\stream.obj \
 	$(OBJDIR)\symtab.obj \
 	$(OBJDIR)\trunc.obj \
+	$(OBJDIR)\untrans.obj \
 	$(OBJDIR)\update_path.obj \
 	$(OBJDIR)\update_file.obj \
 	$(OBJDIR)\xmlread.obj \
 	$(OBJDIR)\xpath.obj \
+	$(OBJDIR)\zaptterm.obj \
 	$(OBJDIR)\zebra-lock.obj \
 	$(OBJDIR)\zebraapi.obj \
 	$(OBJDIR)\zebramap.obj \
 	$(OBJDIR)\zinfo.obj \
 	$(OBJDIR)\zint.obj \
-	$(OBJDIR)\zrpn.obj \
 	$(OBJDIR)\zsets.obj
 
 # Compiling 
