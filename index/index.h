@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.176 2006-09-11 22:57:54 adam Exp $
+/* $Id: index.h,v 1.177 2006-09-21 08:39:14 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -453,6 +453,19 @@ ZEBRA_RES zebra_update_file_match(ZebraHandle zh, const char *path);
 ZEBRA_RES zebra_update_from_path(ZebraHandle zh, const char *path);
 ZEBRA_RES zebra_delete_from_path(ZebraHandle zh, const char *path);
 ZEBRA_RES zebra_remove_file_match(ZebraHandle zh);
+
+
+struct rpn_char_map_info
+{
+    ZebraMaps zm;
+    int reg_type;
+};
+
+void rpn_char_map_prepare(struct zebra_register *reg, int reg_type,
+                          struct rpn_char_map_info *map_info);
+
+ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
+			    char *termz);
 
 
 #define FIRST_IN_FIELD_STR "\001^"
