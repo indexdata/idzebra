@@ -1,4 +1,4 @@
-/* $Id: scan.c,v 1.1 2006-09-21 08:39:14 adam Exp $
+/* $Id: rpnscan.c,v 1.1 2006-09-21 08:56:52 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
