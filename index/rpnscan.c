@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.1 2006-09-21 08:56:52 adam Exp $
+/* $Id: rpnscan.c,v 1.2 2006-09-21 10:10:07 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -142,101 +142,26 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
 
 #define RPN_MAX_ORDS 32
 
-ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
-		   oid_value attributeset,
-		   int num_bases, char **basenames,
-		   int *position, int *num_entries, ZebraScanEntry **list,
-		   int *is_partial, RSET limit_set, int return_zero)
+static ZEBRA_RES rpn_scan_ver1(ZebraHandle zh, ODR stream, 
+                               Z_AttributesPlusTerm *zapt,
+                               int *position, int *num_entries, 
+                               ZebraScanEntry **list,
+                               int *is_partial, RSET limit_set,
+                               int return_zero,
+                               int index_type, int ord_no, int *ords)
 {
-    int i;
     int pos = *position;
     int num = *num_entries;
     int before;
     int after;
-    int base_no;
-    char termz[IT_MAX_WORD+20];
+    int i;
     struct scan_info *scan_info_array;
+    char termz[IT_MAX_WORD+20];
     ZebraScanEntry *glist;
-    int ords[RPN_MAX_ORDS], ord_no = 0;
+    NMEM rset_nmem = 0;
+    struct rset_key_control *kc = 0;
     int ptr[RPN_MAX_ORDS];
 
-    unsigned index_type;
-    char *search_type = NULL;
-    char rank_type[128];
-    int complete_flag;
-    int sort_flag;
-    NMEM rset_nmem = NULL; 
-    struct rset_key_control *kc = 0;
-
-    *list = 0;
-    *is_partial = 0;
-
-    if (attributeset == VAL_NONE)
-        attributeset = VAL_BIB1;
-
-    if (!limit_set)
-    {
-        AttrType termset;
-        int termset_value_numeric;
-        const char *termset_value_string;
-        attr_init_APT(&termset, zapt, 8);
-        termset_value_numeric =
-            attr_find_ex(&termset, NULL, &termset_value_string);
-        if (termset_value_numeric != -1)
-        {
-            char resname[32];
-            const char *termset_name = 0;
-            
-            if (termset_value_numeric != -2)
-            {
-                
-                sprintf(resname, "%d", termset_value_numeric);
-                termset_name = resname;
-            }
-            else
-                termset_name = termset_value_string;
-            
-            limit_set = resultSetRef (zh, termset_name);
-        }
-    }
-        
-    yaz_log(YLOG_DEBUG, "position = %d, num = %d set=%d",
-	    pos, num, attributeset);
-        
-    if (zebra_maps_attr(zh->reg->zebra_maps, zapt, &index_type, &search_type,
-			rank_type, &complete_flag, &sort_flag))
-    {
-        *num_entries = 0;
-	zebra_setError(zh, YAZ_BIB1_UNSUPP_ATTRIBUTE_TYPE, 0);
-        return ZEBRA_FAIL;
-    }
-    for (base_no = 0; base_no < num_bases && ord_no < RPN_MAX_ORDS; base_no++)
-    {
-	int ord;
-
-	if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
-	{
-	    zebra_setError(zh, YAZ_BIB1_DATABASE_UNAVAILABLE,
-			   basenames[base_no]);
-	    *num_entries = 0;
-	    return ZEBRA_FAIL;
-	}
-        if (zebra_apt_get_ord(zh, zapt, index_type, 0, attributeset, &ord) 
-            != ZEBRA_OK)
-            continue;
-        ords[ord_no++] = ord;
-    }
-    if (ord_no == 0)
-    {
-        *num_entries = 0;
-        return ZEBRA_FAIL;
-    }
-    /* prepare dictionary scanning */
-    if (num < 1)
-    {
-	*num_entries = 0;
-	return ZEBRA_OK;
-    }
     before = pos-1;
     if (before < 0)
 	before = 0;
@@ -473,6 +398,103 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     yaz_log(YLOG_DEBUG, "position = %d, num_entries = %d",
 	    *position, *num_entries);
     return ZEBRA_OK;
+}
+
+
+ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
+		   oid_value attributeset,
+		   int num_bases, char **basenames,
+		   int *position, int *num_entries, ZebraScanEntry **list,
+		   int *is_partial, RSET limit_set, int return_zero)
+{
+    int base_no;
+    int ords[RPN_MAX_ORDS], ord_no = 0;
+
+    unsigned index_type;
+    char *search_type = NULL;
+    char rank_type[128];
+    int complete_flag;
+    int sort_flag;
+
+    *list = 0;
+    *is_partial = 0;
+
+    if (attributeset == VAL_NONE)
+        attributeset = VAL_BIB1;
+
+    if (!limit_set) /* no limit set given already */
+    {
+        /* see if there is a @attr 8=set */
+        AttrType termset;
+        int termset_value_numeric;
+        const char *termset_value_string;
+        attr_init_APT(&termset, zapt, 8);
+        termset_value_numeric =
+            attr_find_ex(&termset, NULL, &termset_value_string);
+        if (termset_value_numeric != -1)
+        {
+            char resname[32];
+            const char *termset_name = 0;
+            
+            if (termset_value_numeric != -2)
+            {
+                
+                sprintf(resname, "%d", termset_value_numeric);
+                termset_name = resname;
+            }
+            else
+                termset_name = termset_value_string;
+            
+            limit_set = resultSetRef (zh, termset_name);
+        }
+    }
+        
+    yaz_log(YLOG_DEBUG, "position = %d, num = %d set=%d",
+	    *position, *num_entries, attributeset);
+        
+    if (zebra_maps_attr(zh->reg->zebra_maps, zapt, &index_type, &search_type,
+			rank_type, &complete_flag, &sort_flag))
+    {
+        *num_entries = 0;
+	zebra_setError(zh, YAZ_BIB1_UNSUPP_ATTRIBUTE_TYPE, 0);
+        return ZEBRA_FAIL;
+    }
+    if (num_bases > RPN_MAX_ORDS)
+    {
+	zebra_setError(zh, YAZ_BIB1_TOO_MANY_DATABASES_SPECIFIED, 0);
+        return ZEBRA_FAIL;
+    }
+
+    for (base_no = 0; base_no < num_bases; base_no++)
+    {
+	int ord;
+
+	if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
+	{
+	    zebra_setError(zh, YAZ_BIB1_DATABASE_UNAVAILABLE,
+			   basenames[base_no]);
+	    *num_entries = 0;
+	    return ZEBRA_FAIL;
+	}
+        if (zebra_apt_get_ord(zh, zapt, index_type, 0, attributeset, &ord) 
+            != ZEBRA_OK)
+            continue;
+        ords[ord_no++] = ord;
+    }
+    if (ord_no == 0)
+    {
+        *num_entries = 0; /* zebra_apt_get_ord should set error reason */
+        return ZEBRA_FAIL;
+    }
+    /* prepare dictionary scanning */
+    if (*num_entries < 1)
+    {
+	*num_entries = 0;
+	return ZEBRA_OK;
+    }
+    return rpn_scan_ver1(zh, stream, zapt, position, num_entries, list,
+                         is_partial, limit_set, return_zero,
+                         index_type, ord_no, ords);
 }
 
 /*
