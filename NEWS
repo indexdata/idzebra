@@ -1,3 +1,5 @@
+--- 2.0.2 2006/09/22
+
 Bug fixes: #638, #647, #657, #669.
 
 Implement skip of 0 hit counts in scan. Useful for scan operations
