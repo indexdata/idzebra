@@ -1,3 +1,8 @@
+Bug fixes: #638, #647, #657, #669.
+
+Implement skip of 0 hit counts in scan. Useful for scan operations
+limited by a result set.
+
 Honor position attribute, i.e. allow first-in-field search. To
 enable this, "firstinfield 1" must be given for an index in
 default.idx. Enabled in tab/default.idx for w. At this stage
@@ -7,9 +12,6 @@ Common stream reader interface for record filters (struct ZebraRecStream).
 
 Debian package fix: packages idzebra-2.0 + libidzebra-2.0-modules did
 not depend properly on sub packages.
-
-Experimental segment facility (for matching of words within one
-field/segment).
 
 --- 2.0.0 2006/08/14
 
