@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.12 2006-09-03 21:37:26 adam Exp $ -->
+  <!-- $Id: architecture.xml,v 1.13 2006-09-22 12:34:45 adam Exp $ -->
   <title>Overview of Zebra Architecture</title>
   
 
@@ -171,19 +171,19 @@
     <para>
      In addition to Z39.50 requests, the YAZ server frontend acts
      as HTTP server, honoring
-      <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink> 
-     SOAP requests, and  
-     <ulink url="&url.sru;">SRU</ulink> 
-     REST requests. Moreover, it can
+      <ulink url="&url.srw;">SRU SOAP</ulink> 
+     requests, and  
+     <ulink url="&url.sru;">SRU REST</ulink> 
+     requests. Moreover, it can
      translate incoming 
      <ulink url="&url.cql;">CQL</ulink>
      queries to
-     <ulink url="http://indexdata.com/yaz/doc/tools.tkl#PQF">PQF</ulink>
+     <ulink url="&url.yaz.pqf;">PQF</ulink>
       queries, if
      correctly configured. 
     </para>
     <para>
-     <ulink url="http://www.indexdata.com/yaz">YAZ</ulink>
+     <ulink url="&url.yaz;">YAZ</ulink>
      is an Open Source  
      toolkit that allows you to develop software using the
      ANSI Z39.50/ISO23950 standard for information retrieval.
@@ -255,7 +255,7 @@
       The Debian  package 
       <literal>libidzebra-2.0-mod-grs-xml</literal> includes the 
       <emphasis>grs.xml</emphasis> filter which uses <ulink
-      url="http://expat.sourceforge.net/">Expat</ulink> to 
+      url="&url.expat;">Expat</ulink> to 
       parse records in XML and turn them into IDZebra's internal GRS node
       trees. Have also a look at the Alvis XML/XSLT filter described in
       the next session.

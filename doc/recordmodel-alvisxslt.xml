@@ -1,5 +1,5 @@
  <chapter id="record-model-alvisxslt">
-  <!-- $Id: recordmodel-alvisxslt.xml,v 1.9 2006-09-03 21:37:27 adam Exp $ -->
+  <!-- $Id: recordmodel-alvisxslt.xml,v 1.10 2006-09-22 12:34:45 adam Exp $ -->
   <title>ALVIS XML Record Model and Filter Module</title>
   
 
@@ -213,13 +213,9 @@
       ]]>
      </screen>
      See <xref linkend="zebrasrv-sru"/> for more information on SRU/SRW
-     configuration, and <xref linkend="gfs-config"/> or 
-     <ulink url="http://www.indexdata.dk/yaz/doc/tools.tkl#tools.cql">
-      the YAZ manual CQL section</ulink>
-     for the details
-     of the YAZ frontend server 
-     <ulink url="&url.cql;">CQL</ulink>
-     configuration. 
+     configuration, and <xref linkend="gfs-config"/> or the YAZ
+     <ulink url="&url.yaz.cql;">CQL section</ulink>
+     for the details or the YAZ frontend server.
     </para>
     <para>
      Notice that there are no <filename>*.abs</filename>,

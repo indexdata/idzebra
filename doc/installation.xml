@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.30 2006-09-15 09:21:52 adam Exp $ -->
+<!-- $Id: installation.xml,v 1.31 2006-09-22 12:34:45 adam Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -15,7 +15,7 @@
    <ulink url="&url.suse;">SuSE Linux</ulink>,
    <ulink url="&url.freebsd;">FreeBSD (i386)</ulink>,
    <ulink url="&url.macosx;">MAC OSX</ulink>,
-   <ulink url="&url.solaris;">SunOS 5.8
+   <ulink url="&url.solaris;">SunOS 5.9
     (sparc)</ulink>,
    <ulink url="&url.windows2000;">Windows 2000</ulink>.
   </para>
@@ -91,8 +91,8 @@
       <para>
        These tools are only required if you're writing
        documentation for Zebra. You need the following
-       Debian packages: jadetex, docbook, docbook-dsssl,
-       docbook-xml, docbook-utils.
+       Debian packages: docbook, docbook-xml, docbook-xsl,
+       docbook-utils, xsltproc.
       </para>
      </listitem>
     </varlistentry>
@@ -267,7 +267,7 @@
   <section id="installation-win32"><title>WIN32</title>
    <para>The easiest way to install Zebra on Windows is by downloading
     an installer from 
-    <ulink url="http://ftp.indexdata.dk/pub/zebra/win32/">here</ulink>.
+    <ulink url="&url.idzebra.download.win32;">here</ulink>.
     The installer comes with source too - in case you wish to
     compile Zebra with different Compiler options.
    </para>

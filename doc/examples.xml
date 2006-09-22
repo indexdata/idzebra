@@ -1,12 +1,13 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.23 2006-09-03 21:37:26 adam Exp $ -->
+ <!-- $Id: examples.xml,v 1.24 2006-09-22 12:34:45 adam Exp $ -->
  <title>Example Configurations</title>
 
  <sect1 id="examples-overview">
   <title>Overview</title>
 
   <para>
-   <literal>zebraidx</literal> and <literal>zebrasrv</literal> are both
+   <command>zebraidx</command> and 
+   <command>zebrasrv</command> are both
    driven by a master configuration file, which may refer to other
    subsidiary configuration files.  By default, they try to use
    <filename>zebra.cfg</filename> in the working directory as the
@@ -65,9 +66,9 @@
   <para>
    This example shows how Zebra can be used with absolutely minimal
    configuration to index a body of
-   <ulink url="http://www.w3.org/XML/">XML</ulink>
+   <ulink url="&url.xml;">XML</ulink>
    documents, and search them using
-   <ulink url="http://www.w3.org/TR/xpath">XPath</ulink>
+   <ulink url="&url.xpath;">XPath</ulink>
    expressions to specify access points.
   </para>
   <para>
@@ -89,11 +90,11 @@
   <para>
    Now we need to create a Zebra database to hold and index the XML
    records.  We do this with the
-   Zebra indexer, <literal>zebraidx</literal>, which is
+   Zebra indexer, <command>zebraidx</command>, which is
    driven by the <literal>zebra.cfg</literal> configuration file.
    For our purposes, we don't need any
    special behaviour - we can use the defaults - so we can start with a
-   minimal file that just tells <literal>zebraidx</literal> where to
+   minimal file that just tells <command>zebraidx</command> where to
    find the default indexing rules, and how to parse the records:
    <screen>
     profilePath: .:../../tab
@@ -217,9 +218,9 @@
    In the BIB-1 attribute set, a taxon name is probably best
    interpreted as a title - that is, a phrase that identifies the item
    in question.  BIB-1 represents title searches by
-   access point 4.  (See
-   <ulink url="ftp://ftp.loc.gov/pub/z3950/defs/bib1.txt"
-	>The BIB-1 Attribute Set Semantics</ulink>)
+   access point 4.  (See 
+   <ulink url="&url.z39.50.bib1.semantics;">The BIB-1 Attribute
+    Set Semantics</ulink>)
    So we need to configure our dinosaur database so that searches for
    BIB-1 access point 4 look in the 
    <literal>&lt;termName&gt;</literal> element,

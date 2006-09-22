@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.39 2006-09-03 21:37:26 adam Exp $ -->
+ <!-- $Id: introduction.xml,v 1.40 2006-09-22 12:34:45 adam Exp $ -->
  <title>Introduction</title>
  
  <section id="overview">
@@ -23,8 +23,8 @@
    programs and toolkits, both commercial and free, which understand
    this protocol.  Application libraries are available to allow
    bespoke clients to be written in Perl, C, C++, Java, Tcl, Visual
-   Basic, Python, PHP and more - see
-   <ulink url="http://zoom.z3950.org/">the ZOOM web site</ulink>
+   Basic, Python, PHP and more - see the
+   <ulink url="&url.zoom;">ZOOM web site</ulink>
    for more information on some of these client toolkits.
   </para>
 
@@ -106,9 +106,9 @@
     <listitem>
      <para>
       Zebra is written in portable C, so it runs on most Unix-like systems 
-      as well as Windows NT.  A binary distribution for Windows NT is
-      available at
-      <ulink url="http://ftp.indexdata.dk/pub/zebra/win32/"/>,
+      as well as Windows (NT/2000/2003).  A binary distribution for Windows 
+      is available at
+      <ulink url="&url.idzebra.download.win32;"/>,
       and pre-built packages are available for 
       <!--- some Linux
       distributions:
@@ -117,7 +117,7 @@
       and Debian packages at
       -->
       <literal>GNU/Debian Linux</literal> at 
-      <ulink url="http://ftp.indexdata.dk/pub/zebra/debian/"/>.
+      <ulink url="&url.idzebra.download.debian;"/>.
      </para>
     </listitem>
     
@@ -215,13 +215,12 @@
        <literal>alvis</literal> filter module.
      </para>
     </listitem>
-    <listitem>
-     <para>
-       Additional PQF query syntax for
-       <literal>searchRetrieve</literal>
-       and <literal>scan</literal> operations is supported.
+     <listitem>
+      <para>
+       Extended RPN queries for search/retrieve and scan are supported,
+       for controlling approximate hit counts, etc.
      </para>
-    </listitem>
+     </listitem>
 
    </itemizedlist>
    
@@ -528,37 +527,37 @@
    </para>
   </section>
  </section>
-
-
- <section id="introduction-support">
-  <title>Support</title>
-  <para>
-   You can get support for Zebra from at least three sources.
-  </para>
-  <para>
-   First, there's the Zebra web site at
-   <ulink url="http://indexdata.dk/zebra/"/>,
-   which always has the most recent version available for download.
-   If you have a problem with Zebra, the first thing to do is see
-   whether it's fixed in the current release.
-  </para>
-  <para>
-   Second, there's the Zebra mailing list.  Its home page at
-   <ulink url="http://lists.indexdata.dk/cgi-bin/mailman/listinfo/zebralist"/>
-   includes a complete archive of all messages that have ever been
-   posted on the list.  The Zebra mailing list is used both for
-   announcements from the authors (new
-   releases, bug fixes, etc.) and general discussion.  You are welcome
-   to seek support there.  Join by filling the form on the list home page.
-  </para>
-  <para>
-   Third, it's possible to buy a commercial support contract, with
-   well defined service levels and response times, from Index Data.
-   See
-   <ulink url="http://indexdata.dk/support/"/>
-   for details.
-  </para>
- </section>  
+  
+  
+  <section id="introduction-support">
+   <title>Support</title>
+   <para>
+    You can get support for Zebra from at least three sources.
+   </para>
+   <para>
+    First, there's the Zebra web site at
+    <ulink url="&url.idzebra;"/>,
+     which always has the most recent version available for download.
+     If you have a problem with Zebra, the first thing to do is see
+     whether it's fixed in the current release.
+   </para>
+   <para>
+    Second, there's the Zebra mailing list.  Its home page at
+    <ulink url="&url.idzebra.mailinglist;"/>
+     includes a complete archive of all messages that have ever been
+     posted on the list.  The Zebra mailing list is used both for
+     announcements from the authors (new
+     releases, bug fixes, etc.) and general discussion.  You are welcome
+     to seek support there.  Join by filling the form on the list home page.
+   </para>
+   <para>
+    Third, it's possible to buy a commercial support contract, with
+    well defined service levels and response times, from Index Data.
+    See
+    <ulink url="&url.indexdata.support;"/>
+     for details.
+   </para>
+  </section>  
 
 
  <section id="future">
@@ -586,30 +585,8 @@
        XSLT transformations during indexing and record retrieval. Work
        on this filter has been sponsored by the ALVIS EU project
        <ulink url="http://www.alvis.info/alvis/"/>. We expect this filter to
-       mature soon, as it is planned to be included in the version 1.4
+       mature soon, as it is planned to be included in the version 2.0
        release of Zebra. 
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
-       Access to the search engine through SOAP/RPC API to allow the
-       construction of applications without requiring Z39.50 tools.
-       <!-- 
-      This will shortly be available by means of Index Data's
-        <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>-to-Z39.50 gateway, currently in beta test.
-       -->
-       Experimental support of the 
-       Search/Retrieve Via URL ( <ulink url="&url.sru;">SRU</ulink>) 
-       <ulink url="&url.sru;"/>
-       REST webservice, and the 
-        Search/Retrieve Web Service ( <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>)
-       <ulink url="http://www.loc.gov/standards/sru/srw/"/>
-       SOAP Web Service have recently been added to the YAZ/Zebra
-       combo - including server side Common Query Language (<ulink url="&url.cql;">CQL</ulink>)
-       <ulink url="&url.cql;"/> parsing
-       and configuration. It remains to find a sponsor for further testing,
-       documentation and packaging of this exiting component.
      </para>
     </listitem>
 
@@ -619,17 +596,6 @@
        API, allowing updates, database management and other functions
        not readily expressed in Z39.50.  We will also consider
        exposing the API through SOAP.
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
-       Support for the use of Perl both for access to the Zebra API
-       and for building extension ``plug-ins'' such as input filters.
-       The code for this has been contributed to the source tree by
-       Peter Popovics
-       <email>pop@technomat.hu</email>,
-       and is in the process of being integrated and tested.
      </para>
     </listitem>
 

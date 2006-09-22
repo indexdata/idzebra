@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.25 2006-09-03 21:37:26 adam Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.26 2006-09-22 12:34:45 adam Exp $ -->
   <title>Query Model</title>
   
   <section id="querymodel-overview">
@@ -41,7 +41,7 @@
       parties developing Z39.50 software, and is often referred to as
       <emphasis>Prefix Query Notation</emphasis>, or in short 
       PQN. See       
-      <xref linkend="querymodel-pqf"/> for further explanations and
+      <xref linkend="querymodel-rpn"/> for further explanations and
       descriptions of Zebra's capabilities.  
      </para>
     </section>    
@@ -144,8 +144,8 @@
  </section>
 
   
-  <section id="querymodel-pqf">
-   <title>Prefix Query Format syntax and semantics</title>
+  <section id="querymodel-rpn">
+   <title>RPN queries and semantics</title>
    <para>
     The <ulink url="&url.yaz.pqf;">PQF grammar</ulink>
     is documented in the YAZ manual, and shall not be
@@ -155,10 +155,10 @@
     query parse tree. 
    </para>
    
-   <section id="querymodel-pqf-tree">
-    <title>PQF tree structure</title>
+   <section id="querymodel-rpn-tree">
+    <title>RPN tree structure</title>
     <para>
-     The PQF parse tree - or the equivalent textual representation -
+     The RPN parse tree - or the equivalent textual representation in PQF -
      may start with one specification of the 
      <emphasis>attribute set</emphasis> used. Following is a query
      tree, which 
@@ -184,7 +184,7 @@
        <thead>
 	<row>
          <entry>Attribute set</entry>
-         <entry>Short hand</entry>
+         <entry>PQF notation (Short hand)</entry>
          <entry>Status</entry>
          <entry>Notes</entry>
         </row>
@@ -192,7 +192,7 @@
        
        <tbody>
         <row>
-         <entry><literal>Explain</literal></entry>
+         <entry>Explain</entry>
          <entry><literal>exp-1</literal></entry>
          <entry>Special attribute set used on the special automagic
           <literal>IR-Explain-1</literal> database to gain information on
@@ -201,7 +201,7 @@
          <entry>predefined</entry>
         </row>
         <row>
-         <entry><literal>Bib1</literal></entry>
+         <entry>Bib-1</entry>
          <entry><literal>bib-1</literal></entry>
          <entry>Standard PQF query language attribute set which defines the
           semantics of Z39.50 searching. In addition, all of the
@@ -211,14 +211,14 @@
          <entry>default</entry>
         </row>
         <row>
-         <entry><literal>GILS</literal></entry>
+         <entry>GILS</entry>
          <entry><literal>gils</literal></entry>
-         <entry>Extension to the <literal>Bib1</literal> attribute set.</entry>
+         <entry>Extension to the Bib-1 attribute set.</entry>
          <entry>predefined</entry>
         </row>
         <!--
         <row>
-	<entry><literal>IDXPATH</literal></entry>
+	<entry>IDXPATH</entry>
 	<entry><literal>idxpath</literal></entry>
 	<entry>Hardwired XPATH like attribute set, only available for
 	indexing with the GRS record model</entry>
@@ -238,7 +238,7 @@
      <note>
       <para>
        The Zebra internal query processing is modeled after 
-       the <literal>Bib1</literal> attribute set, and the non-use
+       the Bib-1 attribute set, and the non-use
        attributes type 2-6 are hard-wired in. It is therefore essential
        to be familiar with <xref linkend="querymodel-bib1-nonuse"/>. 
       </para>
@@ -266,19 +266,19 @@
        </thead>
        <tbody>
 	<row><entry><literal>@and</literal></entry>
-	 <entry>binary <literal>AND</literal> operator</entry>
+	 <entry>binary AND operator</entry>
 	 <entry>Set intersection of two atomic queries hit sets</entry>
 	</row>
 	<row><entry><literal>@or</literal></entry>
-	 <entry>binary <literal>OR</literal> operator</entry>
+	 <entry>binary OR operator</entry>
 	 <entry>Set union of two atomic queries hit sets</entry>
 	</row>
 	<row><entry><literal>@not</literal></entry>
-	 <entry>binary <literal>AND NOT</literal> operator</entry>
+	 <entry>binary AND NOT operator</entry>
 	 <entry>Set complement of two atomic queries hit sets</entry>
 	</row>
 	<row><entry><literal>@prox</literal></entry>
-	 <entry>binary <literal>PROXIMITY</literal> operator</entry>
+	 <entry>binary PROXIMITY operator</entry>
 	 <entry>Set intersection of two atomic queries hit sets. In 
 	  addition, the intersection set is purged for all 
 	  documents which do not satisfy the requested query 
@@ -341,9 +341,9 @@
      <title>Atomic queries (APT)</title>
      <para>
       Atomic queries are the query parts which work on one access point
-      only. These consist of <literal>an attribute list</literal>
-      followed by a <literal>single term</literal> or a
-      <literal>quoted term list</literal>, and are often called 
+      only. These consist of <emphasis>an attribute list</emphasis>
+      followed by a <emphasis>single term</emphasis> or a
+      <emphasis>quoted term list</emphasis>, and are often called 
       <emphasis>Attributes-Plus-Terms (APT)</emphasis> queries.
      </para>
      <para>
@@ -366,7 +366,7 @@
        <tbody>
         <row>
          <entry><emphasis>attribute list</emphasis></entry>
-         <entry>List of <literal>orthogonal</literal> attributes</entry>
+         <entry>List of <emphasis>orthogonal</emphasis> attributes</entry>
          <entry>Any of the orthogonal attribute types may be omitted,
           these are inherited from higher query tree nodes, or if not
           inherited, are set to the default Zebra configuration values.
@@ -374,8 +374,8 @@
         </row>
         <row>
          <entry><emphasis>term</emphasis></entry>
-         <entry>single <literal>term</literal> 
-          or <literal>quoted term list</literal>   </entry>
+         <entry>single <emphasis>term</emphasis> 
+          or <emphasis>quoted term list</emphasis>   </entry>
          <entry>Here the search terms or list of search terms is added
           to the query</entry>
         </row>
@@ -406,10 +406,10 @@
      </para>
 
      <para>
-      The <literal>scan</literal> operation is only supported with 
+      The <emphasis>scan</emphasis> operation is only supported with 
       atomic APT queries, as it is bound to one access point at a
       time. Boolean query trees are not allowed during
-      <literal>scan</literal>.
+      <emphasis>scan</emphasis>.
       </para>
      
      <para>
@@ -444,8 +444,8 @@
      
      <para>
       Defining a named result set and re-using it in the next query,
-      using <literal>yaz-client</literal>. Notice that the client, not
-      the server, assigns the string <literal>'1'</literal> to the
+      using <application>yaz-client</application>. Notice that the client, not
+      the server, assigns the string '1' to the
       named result set. 
       <screen>
        Z> f @attr 1=4 mozart
@@ -471,7 +471,7 @@
     <section id="querymodel-use-string">
      <title>Zebra's special access point of type 'string'</title>
      <para>
-      The numeric <literal>use (type 1)</literal> attribute is usually 
+      The numeric <emphasis>use (type 1)</emphasis> attribute is usually 
       referred to from a given
       attribute set. In addition, Zebra let you use 
       <emphasis>any internal index
@@ -524,7 +524,7 @@
       As we have seen above, it is possible (albeit seldom a great
       idea) to emulate 
       <ulink url="http://www.w3.org/TR/xpath">XPath 1.0</ulink> based
-      search by defining <literal>use (type 1)</literal> 
+      search by defining <emphasis>use (type 1)</emphasis>
       <emphasis>string</emphasis> attributes which in appearance 
       <emphasis>resemble XPath queries</emphasis>. There are two
       problems with this approach: first, the XPath-look-alike has to
@@ -535,12 +535,12 @@
       than it pretends to access. 
      </para>
      <para>
-      When using the <literal>GRS Record Model</literal> 
+      When using the GRS Record Model
       (see  <xref linkend="grs"/>), we have the
       possibility to embed <emphasis>life</emphasis> 
       XPath expressions
       in the PQF queries, which are here called
-      <literal>use (type 1)</literal> <emphasis>xpath</emphasis>
+      <emphasis>use (type 1)</emphasis> <emphasis>xpath</emphasis>
       attributes. You must enable the 
       <literal>xpath enable</literal> directive in your 
       <literal>.abs</literal> configuration files. 
@@ -632,7 +632,7 @@
     <para>
      The Z39.50 standard defines the  
      <ulink url="&url.z39.50.explain;">Explain</ulink> attribute set
-     <literal>Exp-1</literal>, which is used to discover information 
+     Exp-1, which is used to discover information 
      about a server's search semantics and functional capabilities
      Zebra exposes a  "classic" 
      Explain database by base name <literal>IR-Explain-1</literal>, which
@@ -640,15 +640,15 @@
     </para>
    <para>
      The attribute-set <literal>exp-1</literal> consists of a single 
-     <literal>use attribute (type 1)</literal>. 
+     use attribute (type 1). 
     </para>
     <para>
      In addition, the non-Use
-     <literal>bib-1</literal> attributes, that is, the types 
-     <literal>Relation</literal>, <literal>Position</literal>,
-     <literal>Structure</literal>, <literal>Truncation</literal>, 
-     and <literal>Completeness</literal> are imported from 
-     the <literal>bib-1</literal> attribute set, and may be used
+     Bib-1 attributes, that is, the types 
+     <emphasis>Relation</emphasis>, <emphasis>Position</emphasis>,
+     <emphasis>Structure</emphasis>, <emphasis>Truncation</emphasis>, 
+     and <emphasis>Completeness</emphasis> are imported from 
+     the Bib-1 attribute set, and may be used
      within any explain query. 
     </para>
     
@@ -760,12 +760,11 @@
    </section>
    
    <section id="querymodel-bib1">
-    <title>Bib1 Attribute Set</title>
+    <title>Bib-1 Attribute Set</title>
     <para>
      Most of the information contained in this section is an excerpt of
-     the <literal>ATTRIBUTE SET BIB-1 (Z39.50-1995)
-      SEMANTICS</literal>, 
-     found at <ulink url="&url.z39.50.attset.bib1.1995;">. The BIB-1
+     the ATTRIBUTE SET BIB-1 (Z39.50-1995) SEMANTICS
+     found at <ulink url="&url.z39.50.attset.bib1.1995;">. The Bib-1
       Attribute Set Semantics</ulink> from 1995, also in an updated 
      <ulink url="&url.z39.50.attset.bib1;">Bib-1
       Attribute Set</ulink> 
@@ -789,7 +788,7 @@
      <filename>tab/gils.att</filename>.
      </para>
     <para>
-      For example, some few  <literal>Bib-1</literal> use
+      For example, some few Bib-1 use
       attributes from the  <filename>tab/bib1.att</filename> are:
       <screen>
        att 1               Personal-name
@@ -907,18 +906,24 @@
         <row>
          <entry>AlwaysMatches</entry>
          <entry>103</entry>
-         <entry>supported</entry>
+         <entry>supported *</entry>
         </row>
        </tbody>
       </tgroup>
      </table>
+     <note>
+      <para>
+       AlwaysMatches searches are only supported if alwaysmatches indexing
+       has been enabled. See <xref linkend="default-idx-file"/>
+      </para>
+      </note>
      
      <para>
       The relation attributes 1-5 are supported and work exactly as
       expected.
       All ordering operations are based on a lexicographical ordering, 
       <emphasis>expect</emphasis> when the 
-      <literal>structure attribute numeric (109)</literal> is used. In
+      structure attribute numeric (109) is used. In
       this case, ordering is numerical. See 
       <xref linkend="querymodel-bib1-structure"/>.
       <screen>
@@ -946,7 +951,7 @@
 
      <para>
       The relation attribute 
-      <literal>Relevance (102)</literal> is supported, see
+      <emphasis>Relevance (102)</emphasis> is supported, see
       <xref linkend="administration-ranking"/> for full information.
      </para>
      
@@ -960,10 +965,10 @@
 
      <para>
       The relation attribute 
-      <literal>AlwaysMatches (103)</literal> is in the default
+      <emphasis>AlwaysMatches (103)</emphasis> is in the default
       configuration
       supported in conjecture with structure attribute 
-      <literal>Phrase (1)</literal> (which may be omitted by
+      <emphasis>Phrase (1)</emphasis> (which may be omitted by
       default). 
       It can be configured to work with other structure attributes,
       see the configuration file 
@@ -971,7 +976,7 @@
        <xref linkend="querymodel-pqf-apt-mapping"/>. 
      </para>
      <para>
-      <literal>AlwaysMatches (103)</literal> is a
+      <emphasis>AlwaysMatches (103)</emphasis> is a
       great way to discover how many documents have been indexed in a
       given field. The search term is ignored, but needed for correct
       PQF syntax. An empty search term may be supplied.
@@ -1006,29 +1011,33 @@
         <row>
          <entry>First in field </entry>
          <entry>1</entry>
-         <entry>unsupported</entry>
+         <entry>supported *</entry>
         </row>
         <row>
          <entry>First in subfield</entry>
          <entry>2</entry>
-         <entry>unsupported</entry>
+         <entry>supported *</entry>
         </row>
         <row>
          <entry>Any position in field</entry>
          <entry>3</entry>
-         <entry>supported</entry>
+         <entry>default</entry>
         </row>
        </tbody>
       </tgroup>
      </table>
- 
-    <para>
-      The position attribute values <literal>first in field (1)</literal>,
-      and <literal>first in subfield(2)</literal> are unsupported.
-      Using them silently maps to 
-      <literal>any position in field (3)</literal>. A proper diagnostic
-      should have been issued.
+
+     <note>
+      <para>
+       Zebra only supports first-in-field seaches if the
+       <literal>firstinfield</literal> is enabled for the index
+       Refer to <xref linkend="default-idx-file"/>.
+       Zebra does not distinguish between first in field and
+       first in subfield. They result in the same hit count.
+       Searching for first position in (sub)field in only supported in Zebra
+       2.0.2 and later.
       </para>
+     </note>
     </section>
     
     <section id="querymodel-bib1-structure">
@@ -1418,7 +1427,7 @@
 
 
   <section id="querymodel-zebra">
-   <title>Advanced Zebra PQF Features</title>
+   <title>Extended Zebra RPN Features</title>
    <para>
     The Zebra internal query engine has been extended to specific needs
     not covered by the <literal>bib-1</literal> attribute set query
@@ -1469,7 +1478,7 @@
    <section id="querymodel-zebra-attr-search">
     <title>Zebra specific Search Extensions to all Attribute Sets</title>
     <para>
-     Zebra extends the Bib1 attribute types, and these extensions are
+     Zebra extends the Bib-1 attribute types, and these extensions are
      recognized regardless of attribute 
      set used in a <literal>search</literal> operation query.
     </para>
@@ -1765,11 +1774,12 @@
       </screen>
      </para>
      
-    <warning>
-      <para>
-       Experimental. Do not use in production code.
-      </para>
-     </warning>
+     <para>
+      Zebra 2.0.2 and later is able to skip 0 hit counts. This, however,
+      is known not to scale if the number of terms to skip is high.
+      This most likely will happen if the result set is small (and
+      result in many 0 hits).
+     </para>
     </section>
 
     <section id="querymodel-zebra-attr-approx">
@@ -1779,17 +1789,6 @@
       enable approximate hit counts for scan hit counts, in the same
       way as for search hit counts. 
      </para>
-     <!--
-     <para>
-     <screen>
-    </screen>
-    </para>
-     -->
-     <warning>
-      <para>
-       Experimental and buggy. Definitely not to be used in production code.
-      </para>
-     </warning>
     </section>
    </section>
    
@@ -2475,19 +2474,17 @@
    <para>
     Exhaustive information can be found in the
     Section "Specification of CQL to RPN mappings" in the YAZ manual.
-    <ulink url="http://www.indexdata.dk/yaz/doc/tools.tkl#tools.cql.map">
-     http://www.indexdata.dk/yaz/doc/tools.tkl#tools.cql.map</ulink>,
-   and shall therefore not be repeated here.
+    <ulink url="&url.yaz.cql2pqf;"/>,
+     and shall therefore not be repeated here.
    </para> 
   <!-- 
   <para>
     See 
-      <ulink url="http://www.loc.gov/z3950/agency/zing/cql/dc-indexes.html">
-      http://www.loc.gov/z3950/agency/zing/cql/dc-indexes.html</ulink>
-    for the Maintenance Agency's work-in-progress mapping of Dublin Core
+   <ulink url="http://www.loc.gov/z3950/agency/zing/cql/dc-indexes.html"/>
+   for the Maintenance Agency's work-in-progress mapping of Dublin Core
     indexes to Attribute Architecture (util, XD and BIB-2)
-    attributes.
-   </para>
+   attributes.
+  </para>
    -->
  </section>
 
