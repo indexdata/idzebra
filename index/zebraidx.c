@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.131 2006-09-11 22:57:54 adam Exp $
+/* $Id: zebraidx.c,v 1.1 2006-09-22 10:18:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 

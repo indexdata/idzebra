@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.56 2006-09-21 08:59:32 adam Exp $
+# $Id: makefile,v 1.57 2006-09-22 10:18:06 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -305,10 +305,10 @@ LINK_PROGRAM= $(LINK) \
 # need to be specified, though
 
 ZSERVER_OBJS= \
-	$(OBJDIR)\zserver.obj 
+	$(OBJDIR)\zebrasrv.obj 
 
 ZEBRAIDX_OBJS= \
-	$(OBJDIR)\main.obj 
+	$(OBJDIR)\zebraidx.obj 
 TSTFLOCK_OBJS= \
 	$(OBJDIR)\tstflock.obj
 

@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.149 2006-08-14 10:40:15 adam Exp $
+/* $Id: zebrasrv.c,v 1.1 2006-09-22 10:18:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -41,7 +41,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <sys/types.h>
 
-#include "zserver.h"
+#include <yaz/backend.h>
+#include <yaz/charneg.h>
+#include <idzebra/api.h>
 
 static int bend_sort (void *handle, bend_sort_rr *rr);
 static int bend_delete (void *handle, bend_delete_rr *rr);
