@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.83 2006-08-14 10:40:17 adam Exp $
+/* $Id: isamb.c,v 1.84 2006-09-26 12:56:33 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -157,14 +157,13 @@ static void encode_ptr(char **dst, zint pos)
 
 #define decode_item_len decode_ptr
 #if ISAMB_PTR_CODEC
-static void decode_ptr(const char **src1, zint *pos)
+static void decode_ptr(const char **src, zint *pos)
 {
-    const unsigned char **src = (const unsigned char **) src1;
     zint d = 0;
     unsigned char c;
     unsigned r = 0;
 
-    while (((c = *(*src)++) & 128))
+    while (((c = *(const unsigned char *)((*src)++)) & 128))
     {
         d += ((zint) (c & 127) << r);
 	r += 7;
