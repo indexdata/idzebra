@@ -1,4 +1,4 @@
-# $Id: record.abs,v 1.8 2006-08-22 08:11:32 adam Exp $
+# $Id: record.abs,v 1.9 2006-09-28 08:47:10 adam Exp $
 
 name marcxml
 attset bib1.att
@@ -11,9 +11,56 @@ marc usmarc.mar
 xpath disable
 
 xelm /record/leader				leader:w:range(data,0,5),leader2:w:range(data,5,3)
-xelm /record/controlfield[@tag="001"]		Identifier-Standard:w
-xelm /record/controlfield[@tag="008"]		Code-Language:w
-xelm /record/datafield[@tag="100"]/subfield[@code="a"]	author:w,author:s
-xelm /record/datafield[@tag="245"]/subfield		title:w
-xelm /record/datafield[@tag="650"]		subject-heading:w,subject-heading:p
+melm 001		Identifier-Standard:w
+melm 008		Code-Language:w
+melm 017                Number-legal-deposit,Identifier-standard
+melm 018                Identifier-standard
+melm 020$a      ISBN:w,Identifier-standard:w
+melm 020                ISBN,Identifier-standard
+melm 022$a      ISSN:w,ISBN:w
+melm 022                ISSN,Identifier-standard
+melm 023                Identifier-standard
+melm 024                Identifier-standard
+melm 025                Identifier-standard
+melm 027                Report-number,Identifier-standard
+melm 028                Number-music-publisher,Identifier-standard
+melm 030                CODEN,Identifier-standard
+melm 033                Date
+melm 034        Map-scale
+melm 035               Local-number,Identifier-standard
+melm 037                Identifier-standard,Stock-number
+melm 040        Code-institution,Record-source
+melm 041        ln
+melm 043        Code-geographic
+melm 046               pubdate
+melm 050$b              LC-call-number:w, LC-call-number:p, LC-call-number:s
+melm 050                LC-call-number:w, LC-call-number:p, LC-call-number:s
+melm 052                Geographic-class
+melm 060                NLM-call-number
+melm 070                NAL-call-number
+melm 080                UDC-classification
+melm 082        Dewey-classification:w,Dewey-classification:s
+melm 086        Number-govt-pub
+melm 100$a	author:w,author:s
+melm 245		title:w
+melm 650		subject-heading:w,subject-heading:p
 xelm /record/datafield[@tag="710"]/subfield		Server-choice:p:range(data,first(data,'.'))
+melm 700$9              Cross-Reference
+melm 700$a      Author,Author:p
+melm 700$n              Thematic-number
+melm 700$r              Music-key
+melm 700$t             author,Author-title,Name-and-title,Title,Title-uniform
+melm 700$t      Author-title,Name-and-title,Title,Title-uniform
+melm 700        Author,Author-name-corporate,Author-name-personal,Name,Editor,Personal-name
+melm 710                Author,Corporate-name
+melm 710$t             author,Author-title,Name-and-title,Title,Title-uniform
+melm 710$t      Author-title,Name-and-title,Title,Title-uniform
+melm 710               author,Name
+melm 710        Author,Name
+melm 711$a              Name-and-title
+melm 711$t      Author-title,Title,Title-uniform
+melm 711               author,Author-name-corporate,Name,Conference-name
+melm 711        Author-name-corporate,Name,Conference-name
+melm 730$n              Thematic-number
+melm 730$r              Music-key
+melm 730                Title,Title-uniform
