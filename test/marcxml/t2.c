@@ -1,4 +1,4 @@
-/* $Id: t2.c,v 1.9 2006-08-22 08:11:32 adam Exp $
+/* $Id: t2.c,v 1.10 2006-09-28 08:47:21 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -41,10 +41,19 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);
 
-    YAZ_CHECK(tl_query(zh, "@and @attr 1=1003 jack @attr 1=4 computer", 2));
+
+    YAZ_CHECK(tl_query(zh, "@and "
+	     "@attr 1=54 eng "
+	     "@and @attr 1=1003 jack @attr 1=4 computer", 2));
 
     YAZ_CHECK(tl_query(zh, "@attr 1=leader 00366", 2));
     YAZ_CHECK(tl_query(zh, "@attr 1=leader2 nam", 12));
+    YAZ_CHECK(tl_query(zh, "@attr 1=1003 jack", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=1003 jack", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=1003 collins", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=1003 @attr 3=1 collins", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 3=1 program", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 3=1 to", 0));
 
     YAZ_CHECK(tl_close_down(zh, zs));
 }
