@@ -1,4 +1,4 @@
-/* $Id: dfa.c,v 1.37 2006-08-14 10:40:08 adam Exp $
+/* $Id: dfa.c,v 1.38 2006-09-28 18:38:45 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1095,6 +1095,11 @@ void dfa_set_cmap (struct DFA *dfa, void *vp,
 {
     dfa->parse_info->cmap = cmap;
     dfa->parse_info->cmap_data = vp;
+}
+
+int dfa_get_last_rule (struct DFA *dfa)
+{
+    return dfa->parse_info->rule;
 }
 
 int dfa_parse (struct DFA *dfa, const char **pattern)

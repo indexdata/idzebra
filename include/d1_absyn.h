@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.h,v 1.6 2006-08-14 10:40:12 adam Exp $
+/* $Id: d1_absyn.h,v 1.7 2006-09-28 18:38:46 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define D1_ABSYN_H 1
 
 #define ENHANCED_XELM 1
+#define OPTIMIZE_MELM 1
 
 #include <zebra_xpath.h>
 #include <idzebra/data1.h>
@@ -39,6 +40,10 @@ typedef struct data1_xpelement
     struct DFA *dfa;  
     data1_termlist *termlists;
     struct data1_xpelement *next;
+#if OPTIMIZE_MELM
+    const char *regexp;
+#endif
+    int match_state;
 } data1_xpelement;
 
 struct data1_absyn

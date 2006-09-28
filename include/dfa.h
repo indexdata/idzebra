@@ -1,4 +1,4 @@
-/* $Id: dfa.h,v 1.14 2006-08-14 10:40:12 adam Exp $
+/* $Id: dfa.h,v 1.15 2006-09-28 18:38:46 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -66,6 +66,7 @@ void dfa_set_cmap (struct DFA *dfa, void *vp,
 int dfa_parse (struct DFA *, const char **);
 void dfa_mkstate (struct DFA *);
 void dfa_delete (struct DFA **);
+int dfa_get_last_rule (struct DFA *);
 
 void dfa_parse_cmap_clean (struct DFA *d);
 void dfa_parse_cmap_new (struct DFA *d, const int *cmap);

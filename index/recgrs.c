@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.5 2006-08-22 13:39:27 adam Exp $
+/* $Id: recgrs.c,v 1.6 2006-09-28 18:38:47 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -392,20 +392,40 @@ pop, 2003-01-17
 data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 {
     data1_absyn *abs = n->root->u.root.absyn;
-    data1_xpelement *xpe = abs->xp_elements;
+
+    data1_xpelement *xpe = 0;
     data1_node *nn;
 #ifdef ENHANCED_XELM 
     struct xpath_location_step *xp;
 #endif
     char *pexpr = xmalloc(strlen(tagpath)+5);
-    int ok = 0;
     
     sprintf (pexpr, "/%s\n", tagpath);
-    for (; xpe; xpe = xpe->next)
+
+    for (xpe = abs->xp_elements; xpe; xpe = xpe->next)
+        xpe->match_state = -1; /* don't know if it matches yet */
+
+    for (xpe = abs->xp_elements; xpe; xpe = xpe->next)
     {
 	int i;
-	ok = dfa_match_first(xpe->dfa->states, pexpr);
+        int ok = xpe->match_state;
+        if (ok == -1)
+        {   /* don't know whether there is a match yet */
+            data1_xpelement *xpe1;
 
+            assert(xpe->dfa);
+            ok = dfa_match_first(xpe->dfa->states, pexpr);
+
+#if OPTIMIZE_MELM
+            /* mark this and following ones with same regexp */
+            for (xpe1 = xpe; xpe1; xpe1 = xpe1->next)
+            {
+                if (!strcmp(xpe1->regexp, xpe->regexp))
+                    xpe1->match_state = ok;
+            }
+#endif
+        }
+        assert (ok == 0 || ok == 1);
         if (ok) {
 #ifdef ENHANCED_XELM 
             /* we have to check the perdicates up to the root node */
@@ -440,7 +460,7 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
     
     xfree(pexpr);
     
-    if (ok) {
+    if (xpe) {
 	yaz_log(YLOG_DEBUG, "Got it");
         return xpe->termlists;
     } else {

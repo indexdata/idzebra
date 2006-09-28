@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.28 2006-08-14 10:40:06 adam Exp $
+/* $Id: d1_absyn.c,v 1.29 2006-09-28 18:38:44 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -185,9 +185,10 @@ void data1_absyn_destroy (data1_handle dh)
 	    data1_xpelement *xpe = abs->xp_elements;
 	    while (xpe) {
 		yaz_log (YLOG_DEBUG,"Destroy xp element %s",xpe->xpath_expr);
-		if (xpe->dfa) {  dfa_delete (&xpe->dfa); }
+		if (xpe->dfa) 
+                    dfa_delete (&xpe->dfa);
 		xpe = xpe->next;
-	    } 
+	    }
 	}
         p = p->next;
     }
@@ -307,37 +308,6 @@ data1_esetname *data1_getesetbyname(data1_handle dh, data1_absyn *a,
 /* we have multiple versions of data1_getelementbyname */
 #define DATA1_GETELEMENTBYTAGNAME_VERSION 1
 
-#if DATA1_GETELEMENTBYTAGNAME_VERSION==0
-/* straight linear search */
-data1_element *data1_getelementbytagname (data1_handle dh, data1_absyn *abs,
-					  data1_element *parent,
-					  const char *tagname)
-{
-    data1_element *r;
-
-    /* It's now possible to have a data1 tree with no abstract syntax */
-    if ( !abs )
-        return 0;
-
-    if (!parent)
-        r = abs->main_elements;
-    else
-	r = parent->children;
-
-    for (; r; r = r->next)
-    {
-	data1_name *n;
-
-	for (n = r->tag->names; n; n = n->next)
-	    if (!data1_matchstr(tagname, n->name))
-		return r;
-    }
-    return 0;
-}
-#endif
-
-#if DATA1_GETELEMENTBYTAGNAME_VERSION==1
-/* using hash search */
 data1_element *data1_getelementbytagname (data1_handle dh, data1_absyn *abs,
 					  data1_element *parent,
 					  const char *tagname)
@@ -354,12 +324,15 @@ data1_element *data1_getelementbytagname (data1_handle dh, data1_absyn *abs,
     else
 	r = parent->children;
 
+#if DATA1_GETELEMENTBYTAGNAME_VERSION==1
+    /* using hash search */
     if (!r)
 	return 0;
 
     ht = r->hash;
     if (!ht)
     {
+        /* build hash table (the first time) */
 	ht = r->hash = data1_hash_open(29, data1_nmem_get(dh));
 	for (; r; r = r->next)
 	{
@@ -370,8 +343,19 @@ data1_element *data1_getelementbytagname (data1_handle dh, data1_absyn *abs,
 	}
     }
     return data1_hash_lookup(ht, tagname);
-}
+#else
+    /* using linear search */
+    for (; r; r = r->next)
+    {
+	data1_name *n;
+
+	for (n = r->tag->names; n; n = n->next)
+	    if (!data1_matchstr(tagname, n->name))
+		return r;
+    }
+    return 0;
 #endif
+}
 
 data1_element *data1_getelementbyname (data1_handle dh, data1_absyn *absyn,
 				       const char *name)
@@ -869,9 +853,10 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 	    int i;
 	    char *p, *xpath_expr, *termlists;
 	    const char *regexp;
-	    struct DFA *dfa = dfa = dfa_init();
+	    struct DFA *dfa = 0;
 	    data1_termlist **tp;
 	    char melm_xpath[128];
+            data1_xpelement *xp_old = 0;
             
 	    if (argc < 3)
 	    {
@@ -888,13 +873,24 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 	    }
 	    termlists = argv[2];
 	    regexp = mk_xpath_regexp(dh, xpath_expr);
-	    i = dfa_parse (dfa, &regexp);
-	    if (i || *regexp) {
-                yaz_log(YLOG_WARN, "%s:%d: Bad xpath to xelm", file, lineno);
-                dfa_delete (&dfa);
-                continue;
-	    }
-            
+
+#if OPTIMIZE_MELM
+            for (xp_old = res->xp_elements; xp_old; xp_old = xp_old->next)
+                if (!strcmp(xp_old->regexp, regexp))
+                    break;
+#endif
+            if (!xp_old)
+            {
+                const char *regexp_ptr = regexp;
+
+                dfa = dfa_init();
+                i = dfa_parse (dfa, &regexp_ptr);
+                if (i || *regexp_ptr) {
+                    yaz_log(YLOG_WARN, "%s:%d: Bad xpath to xelm", file, lineno);
+                    dfa_delete (&dfa);
+                    continue;
+                }
+            }
 	    if (!cur_xpelement)
 	    {
                 cur_xpelement = (data1_xpelement *)
@@ -905,12 +901,16 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                     nmem_malloc(data1_nmem_get(dh), sizeof(*cur_xpelement));
                 cur_xpelement = cur_xpelement->next;
 	    }
+#if OPTIMIZE_MELM
+            cur_xpelement->regexp = regexp;
+#endif
 	    cur_xpelement->next = NULL;
 	    cur_xpelement->xpath_expr = nmem_strdup(data1_nmem_get (dh), 
 						    xpath_expr); 
 	    
-	    dfa_mkstate (dfa);
-	    cur_xpelement->dfa = dfa;
+            if (dfa)
+                dfa_mkstate (dfa);
+            cur_xpelement->dfa = dfa;
 
 #ifdef ENHANCED_XELM 
             cur_xpelement->xpath_len =
