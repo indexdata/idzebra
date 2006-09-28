@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.9.2.8 2006-08-14 10:38:51 adam Exp $
+/* $Id: d1_absyn.c,v 1.9.2.9 2006-09-28 18:38:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -733,10 +733,11 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 
 	    int i;
 	    char *p, *xpath_expr, *termlists;
-	    const char *regexp;
-	    struct DFA *dfa = dfa = dfa_init();
+	    const char *regexp = 0;
+	    struct DFA *dfa = 0;
 	    data1_termlist **tp;
 	    char melm_xpath[128];
+	    data1_xpelement *xp_old = 0;
             
 	    if (argc < 3)
 	    {
@@ -752,14 +753,24 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 		xpath_expr = argv[1];
 	    }
 	    termlists = argv[2];
-	    regexp = mk_xpath_regexp(dh, xpath_expr);
-	    i = dfa_parse (dfa, &regexp);
-	    if (i || *regexp) {
-                yaz_log(LOG_WARN, "%s:%d: Bad xpath to xelm", file, lineno);
-                dfa_delete (&dfa);
-                continue;
-	    }
-            
+            regexp = mk_xpath_regexp(dh, xpath_expr);
+#if OPTIMIZE_MELM
+            for (xp_old = res->xp_elements; xp_old; xp_old = xp_old->next)
+                if (!strcmp(xp_old->regexp, regexp))
+                    break;
+#endif
+            if (!xp_old)
+            {
+		const char *regexp_ptr = regexp;
+                dfa = dfa_init();
+
+                i = dfa_parse (dfa, &regexp_ptr);
+                if (i || *regexp_ptr) {
+                    yaz_log(YLOG_WARN, "%s:%d: Bad xpath to xelm", file, lineno);
+                    dfa_delete (&dfa);
+                    continue;
+                }
+	    }		
 	    if (!cur_xpelement)
 	    {
                 cur_xpelement = (data1_xpelement *)
@@ -770,13 +781,15 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
                     nmem_malloc(data1_nmem_get(dh), sizeof(*cur_xpelement));
                 cur_xpelement = cur_xpelement->next;
 	    }
+#if OPTIMIZE_MELM
+            cur_xpelement->regexp = regexp;
+#endif
 	    cur_xpelement->next = NULL;
 	    cur_xpelement->xpath_expr = nmem_strdup(data1_nmem_get (dh), 
 						    xpath_expr); 
-	    
-	    dfa_mkstate (dfa);
+	    if (dfa)
+		dfa_mkstate (dfa);
 	    cur_xpelement->dfa = dfa;
-
 #ifdef ENHANCED_XELM 
             cur_xpelement->xpath_len =
                 zebra_parse_xpath_str(xpath_expr, 

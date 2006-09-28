@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.9.2.2 2006-08-14 10:38:55 adam Exp $
+/* $Id: data1.h,v 1.9.2.3 2006-09-28 18:38:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define DATA1_H
 
 #define ENHANCED_XELM 1
+#define OPTIMIZE_MELM 1
 
 #include <stdio.h>
 
@@ -203,6 +204,10 @@ typedef struct data1_xpelement
     struct DFA *dfa;  
     data1_termlist *termlists;
     struct data1_xpelement *next;
+#if OPTIMIZE_MELM
+    const char *regexp;
+#endif
+    int match_state;
 } data1_xpelement;
 
 typedef struct data1_xattr {
@@ -212,9 +217,6 @@ typedef struct data1_xattr {
     unsigned short what;  /* DATA1I_text, .. see data1_node.u.data */
 } data1_xattr;
 
-#if 0
-typedef struct data1_absyn data1_absyn;
-#else
 typedef struct data1_absyn
 {
     char *name;
@@ -232,7 +234,7 @@ typedef struct data1_absyn
     char *encoding;
     int  enable_xpath_indexing;
 } data1_absyn;
-#endif
+
 /*
  * record data node (tag/data/variant)
  */
