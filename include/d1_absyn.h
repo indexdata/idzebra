@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.h,v 1.7 2006-09-28 18:38:46 adam Exp $
+/* $Id: d1_absyn.h,v 1.8 2006-09-29 10:02:46 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -44,6 +44,7 @@ typedef struct data1_xpelement
     const char *regexp;
 #endif
     int match_state;
+    struct data1_xpelement *match_next;
 } data1_xpelement;
 
 struct data1_absyn

@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.6 2006-09-28 18:38:47 adam Exp $
+/* $Id: recgrs.c,v 1.7 2006-09-29 10:02:47 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -418,11 +418,8 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 
 #if OPTIMIZE_MELM
             /* mark this and following ones with same regexp */
-            for (xpe1 = xpe; xpe1; xpe1 = xpe1->next)
-            {
-                if (!strcmp(xpe1->regexp, xpe->regexp))
-                    xpe1->match_state = ok;
-            }
+            for (xpe1 = xpe; xpe1; xpe1 = xpe1->match_next)
+                xpe1->match_state = ok;
 #endif
         }
         assert (ok == 0 || ok == 1);
