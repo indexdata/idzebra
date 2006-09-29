@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.228 2006-09-21 20:22:34 adam Exp $
+/* $Id: zebraapi.c,v 1.229 2006-09-29 07:05:44 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -2027,9 +2027,6 @@ static ZEBRA_RES zebra_commit_ex(ZebraHandle zh, int clean_only)
             
             yaz_log (YLOG_DEBUG, "commit start");
             bf_commitExec (bfs);
-#ifndef WIN32
-            sync ();
-#endif
         }
         seqno++;
         zebra_set_state (zh, 'o', seqno);
