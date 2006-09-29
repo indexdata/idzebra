@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.9.2.9 2006-09-28 18:38:41 adam Exp $
+/* $Id: d1_absyn.c,v 1.9.2.10 2006-09-29 10:02:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -543,7 +543,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
                                int file_must_exist)
 {
     data1_sub_elements *cur_elements = NULL;
-    data1_xpelement *cur_xpelement = NULL;
+    data1_xpelement **cur_xpelement = NULL;
 
     data1_absyn *res = 0;
     FILE *f;
@@ -590,6 +590,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
     res->sub_elements = NULL;
     res->main_elements = NULL;
     res->xp_elements = NULL;
+    cur_xpelement = &res->xp_elements;
     
     while (f && (argc = read_absyn_line(f, &lineno, line, 512, argv, 50)))
     {
@@ -737,7 +738,9 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    struct DFA *dfa = 0;
 	    data1_termlist **tp;
 	    char melm_xpath[128];
-	    data1_xpelement *xp_old = 0;
+            data1_xpelement *xp_ele = 0;
+            data1_xpelement *last_match = 0;
+
             
 	    if (argc < 3)
 	    {
@@ -755,11 +758,12 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    termlists = argv[2];
             regexp = mk_xpath_regexp(dh, xpath_expr);
 #if OPTIMIZE_MELM
-            for (xp_old = res->xp_elements; xp_old; xp_old = xp_old->next)
-                if (!strcmp(xp_old->regexp, regexp))
-                    break;
+            /* get last of existing regulars with same regexp */
+            for (xp_ele = res->xp_elements; xp_ele; xp_ele = xp_ele->next)
+                if (!strcmp(xp_ele->regexp, regexp))
+                    last_match = xp_ele;
 #endif
-            if (!xp_old)
+            if (!last_match)
             {
 		const char *regexp_ptr = regexp;
                 dfa = dfa_init();
@@ -771,37 +775,30 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
                     continue;
                 }
 	    }		
-	    if (!cur_xpelement)
-	    {
-                cur_xpelement = (data1_xpelement *)
-		    nmem_malloc(data1_nmem_get(dh), sizeof(*cur_xpelement));
-		res->xp_elements = cur_xpelement;
-            } else {
-                cur_xpelement->next = (data1_xpelement *)
-                    nmem_malloc(data1_nmem_get(dh), sizeof(*cur_xpelement));
-                cur_xpelement = cur_xpelement->next;
-	    }
+            *cur_xpelement = (data1_xpelement *)
+                nmem_malloc(data1_nmem_get(dh), sizeof(**cur_xpelement));
+            (*cur_xpelement)->next = 0;
+            (*cur_xpelement)->match_next = 0;
+            if (last_match)
+                last_match->match_next = *cur_xpelement;
 #if OPTIMIZE_MELM
-            cur_xpelement->regexp = regexp;
+            (*cur_xpelement)->regexp = regexp;
 #endif
-	    cur_xpelement->next = NULL;
-	    cur_xpelement->xpath_expr = nmem_strdup(data1_nmem_get (dh), 
+	    (*cur_xpelement)->next = NULL;
+	    (*cur_xpelement)->xpath_expr = nmem_strdup(data1_nmem_get (dh), 
 						    xpath_expr); 
 	    if (dfa)
 		dfa_mkstate (dfa);
-	    cur_xpelement->dfa = dfa;
+	    (*cur_xpelement)->dfa = dfa;
 #ifdef ENHANCED_XELM 
-            cur_xpelement->xpath_len =
+            (*cur_xpelement)->xpath_len =
                 zebra_parse_xpath_str(xpath_expr, 
-                                      cur_xpelement->xpath, XPATH_STEP_COUNT,
+                                      (*cur_xpelement)->xpath, XPATH_STEP_COUNT,
                                       data1_nmem_get(dh));
             
-	    /*
-	    dump_xp_steps(cur_xpelement->xpath,cur_xpelement->xpath_len);
-	    */
 #endif
-	    cur_xpelement->termlists = 0;
-	    tp = &cur_xpelement->termlists;
+	    (*cur_xpelement)->termlists = 0;
+	    tp = &(*cur_xpelement)->termlists;
             
 	    /* parse termList definitions */
 	    p = termlists;
@@ -817,6 +814,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 		}
 	        *tp = all; /* append any ALL entries to the list */
 	    }
+            cur_xpelement = &(*cur_xpelement)->next;
 	}
  	else if (!strcmp(cmd, "section"))
 	{

@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.9.2.3 2006-09-28 18:38:42 adam Exp $
+/* $Id: data1.h,v 1.9.2.4 2006-09-29 10:02:43 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -208,6 +208,7 @@ typedef struct data1_xpelement
     const char *regexp;
 #endif
     int match_state;
+    struct data1_xpelement *match_next;
 } data1_xpelement;
 
 typedef struct data1_xattr {
