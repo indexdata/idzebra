@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.14 2006-08-14 10:39:00 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.15 2006-09-29 07:05:44 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1735,9 +1735,6 @@ static int zebra_commit_ex (ZebraHandle zh, int clean_only)
             
             logf (LOG_LOG, "commit start");
             bf_commitExec (bfs);
-#ifndef WIN32
-            sync ();
-#endif
         }
         seqno++;
         zebra_set_state (zh, 'o', seqno);
