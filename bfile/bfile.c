@@ -1,4 +1,4 @@
-/* $Id: bfile.c,v 1.35.2.1 2006-08-14 10:38:50 adam Exp $
+/* $Id: bfile.c,v 1.35.2.2 2006-10-04 09:07:19 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -199,8 +199,8 @@ void bf_reset (BFiles bfs)
 {
     if (!bfs)
 	return;
-    mf_reset (bfs->commit_area);
-    mf_reset (bfs->register_area);
+    mf_reset(bfs->commit_area, 1);
+    mf_reset(bfs->register_area, 1);
 }
 
 void bf_commitExec (BFiles bfs)
@@ -247,17 +247,8 @@ void bf_commitClean (BFiles bfs, const char *spec)
         mustDisable = 1;
     }
 
-    if (!(inf = open_cache (bfs, "rb")))
-        return ;
-    while (fscanf (inf, "%s %d", path, &block_size) == 2)
-    {
-        mf = mf_open (bfs->register_area, path, block_size, 0);
-        cf = cf_open (mf, bfs->commit_area, path, block_size, 1, &firstTime);
-        cf_unlink (cf);
-        cf_close (cf);
-        mf_close (mf);
-    }
-    fclose (inf);
+    mf_reset(bfs->commit_area, 1);
+
     unlink_cache (bfs);
     if (mustDisable)
         bf_cache (bfs, 0);

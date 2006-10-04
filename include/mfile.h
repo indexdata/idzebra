@@ -1,4 +1,4 @@
-/* $Id: mfile.h,v 1.21.2.1 2006-08-14 10:38:56 adam Exp $
+/* $Id: mfile.h,v 1.21.2.2 2006-10-04 09:07:19 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -91,7 +91,6 @@ typedef struct meta_file
     int no_files;
     int cur_file;
     int open;                          /* is this file open? */
-    int unlink_flag;
     int blocksize;
     mfile_off_t min_bytes_creat;  /* minimum bytes required to enter directory */
     MFile_area ma;
@@ -141,15 +140,9 @@ int mf_read(MFile mf, int no, int offset, int nbytes, void *buf);
 int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf);
 
 /*
- * Destroy a metafile, unlinking component files. File must be open.
- */
-int mf_unlink(MFile mf);
-
-
-/*
  * Destroy all metafiles. No files may be opened.
  */
-void mf_reset(MFile_area ma);
+void mf_reset(MFile_area ma, int unlink_flag);
 
 /*
  * Unlink the file by name, rather than MFile-handle.
