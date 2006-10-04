@@ -1,3 +1,9 @@
+--- 1.3.40 2006/10/04
+
+Optimized melm performance.
+
+Do not use sync(2) during commit (but rely on sync'd individual files).
+
 --- 1.3.38 2006/08/14
 
 Updated Debian package to use sym links for zebraidx, zebrasrv.
