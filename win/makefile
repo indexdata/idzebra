@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.57 2006-09-22 10:18:06 adam Exp $
+# $Id: makefile,v 1.58 2006-10-05 13:19:10 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -39,18 +39,19 @@ all: dirs expat iconv libxml2 libxslt yaz dll zserver zebraidx tstflock
 ROOTDIR=..   # The home of zebra
 
 # YAZ include files, libraries, etc.
-YAZDIR=$(ROOTDIR)\..\YAZ
+YAZDIR=$(ROOTDIR)\..\yaz  # or \program files\yaz
+
 YAZINCL=$(YAZDIR)\include
 YAZLIBS=$(YAZLIB)
 YAZBINDIR=$(YAZDIR)\bin
 !if $(DEBUG)
-YAZLIB=$(YAZDIR)\lib\yazd.lib
-YAZ_DLL_SOURCE=$(YAZBINDIR)\yazd.dll
-YAZ_DLL_TARGET=$(BINDIR)\yazd.dll
+YAZLIB="$(YAZDIR)\lib\yazd.lib"
+YAZ_DLL_SOURCE="$(YAZBINDIR)\yazd.dll"
+YAZ_DLL_TARGET="$(BINDIR)\yazd.dll"
 !else
-YAZLIB=$(YAZDIR)\lib\yaz.lib
-YAZ_DLL_SOURCE=$(YAZBINDIR)\yaz.dll
-YAZ_DLL_TARGET=$(BINDIR)\yaz.dll
+YAZLIB="$(YAZDIR)\lib\yaz.lib"
+YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz.dll"
+YAZ_DLL_TARGET="$(BINDIR)\yaz.dll"
 !endif
 
 # BZIP2 settings. Uncomment and specify if you wish to use LIBBZIP2.
@@ -129,12 +130,12 @@ dll: $(DLL)
 !if $(HAVE_EXPAT)
 EXPAT_DEF= /D HAVE_EXPAT_H=1 /I"$(EXPAT_DIR)\source\lib"
 EXPAT_LIB= "$(EXPAT_DIR)\libs\libexpat.lib"
-EXPAT_DLL_SOURCE= "$(EXPAT_DIR)\libs\libexpat.dll"
-EXPAT_DLL_TARGET="$(BINDIR)\libexpat.dll"
+EXPAT_DLL_SOURCE= $(EXPAT_DIR)\libs\libexpat.dll
+EXPAT_DLL_TARGET=$(BINDIR)\libexpat.dll
 expat: $(EXPAT_DLL_TARGET)
 
-$(EXPAT_DLL_TARGET) : $(EXPAT_DLL_SOURCE)
-	copy $(EXPAT_DLL_SOURCE) $(EXPAT_DLL_TARGET)
+$(EXPAT_DLL_TARGET) : "$(EXPAT_DLL_SOURCE)"
+	copy "$(EXPAT_DLL_SOURCE)" "$(EXPAT_DLL_TARGET)"
 !else
 EXPAT_DEF= /D HAVE_EXPAT_H=0
 EXPAT_LIB=
@@ -502,7 +503,7 @@ $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR):
 yaz: $(YAZ_DLL_TARGET)
 
 $(YAZ_DLL_TARGET) : $(YAZ_DLL_SOURCE)
-#	copy $(YAZBINDIR)\*.dll.manifest $(BINDIR)
-	copy $(YAZBINDIR)\*.dll $(BINDIR)
+#	copy "$(YAZBINDIR)\*.dll.manifest" $(BINDIR)
+	copy "$(YAZBINDIR)\*.dll" $(BINDIR)
 
 
