@@ -1,4 +1,4 @@
-/* $Id: commit.c,v 1.28 2006-08-14 10:40:05 adam Exp $
+/* $Id: commit.c,v 1.29 2006-10-09 22:10:00 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -30,20 +30,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cfile.h"
 
 #define CF_OPTIMIZE_COMMIT 0
-
-void cf_unlink(CFile cf)
-{
-    if (cf->bucket_in_memory)
-    {
-        yaz_log (YLOG_FATAL, "Cannot unlink potential dirty cache");
-        exit (1);
-    }
-    cf->head.state = 0;
-    cf->dirty = 1;
-    mf_unlink (cf->block_mf);
-    mf_unlink (cf->hash_mf);
-}
-
 
 #if CF_OPTIMIZE_COMMIT
 struct map_cache_entity {

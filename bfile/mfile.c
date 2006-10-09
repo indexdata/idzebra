@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.67 2006-08-14 10:40:05 adam Exp $
+/* $Id: mfile.c,v 1.68 2006-10-09 22:10:00 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -252,7 +252,6 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
 	    	meta_f->next = ma->mfiles;
 	    	meta_f->open = 0;
 	    	meta_f->cur_file = -1;
-                meta_f->unlink_flag = 0;
 	    	ma->mfiles = meta_f;
 	    	strcpy(meta_f->name, metaname);
 	    	part_f = &meta_f->files[0];
@@ -309,24 +308,11 @@ void mf_destroy(MFile_area ma)
 	dp = dp->next;
 	xfree (d);
     }
-    meta_f = ma->mfiles;
-    while (meta_f)
-    {
-	int i;
-	meta_file *m = meta_f;
-	
-	for (i = 0; i<m->no_files; i++)
-	{
-	    xfree (m->files[i].path);
-	}
-	zebra_mutex_destroy (&meta_f->mutex);
-	meta_f = meta_f->next;
-	xfree (m);
-    }
+    mf_reset(ma, 0);
     xfree (ma);
 }
 
-void mf_reset(MFile_area ma)
+void mf_reset(MFile_area ma, int unlink_flag)
 {
     meta_file *meta_f;
 
@@ -338,13 +324,16 @@ void mf_reset(MFile_area ma)
 	int i;
 	meta_file *m = meta_f;
 
+	meta_f = meta_f->next;
+
 	assert (!m->open);
 	for (i = 0; i<m->no_files; i++)
 	{
-	    unlink (m->files[i].path);
+            if (unlink_flag)
+                unlink (m->files[i].path);
 	    xfree (m->files[i].path);
 	}
-	meta_f = meta_f->next;
+	zebra_mutex_destroy (&m->mutex);
 	xfree (m);
     }
     ma->mfiles = 0;
@@ -352,7 +341,6 @@ void mf_reset(MFile_area ma)
 
 /*
  * Open a metafile.
- * If !ma, Use MF_DEFAULT_AREA.
  */
 MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 {
@@ -384,7 +372,6 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     	mnew->files[0].top = -1;
     	mnew->files[0].number = 0;
     	mnew->files[0].fd = -1;
-        mnew->unlink_flag = 0;
     	mnew->min_bytes_creat = MF_MIN_BLOCKS_CREAT * block_size;
     	for (dp = ma->dirs; dp && dp->max_bytes >= 0 && dp->avail_bytes <
 	    mnew->min_bytes_creat; dp = dp->next);
@@ -437,7 +424,7 @@ int mf_close(MFile mf)
 {
     int i;
 
-    yaz_log (YLOG_DEBUG, "mf_close(%s) unlink=%d", mf->name, mf->unlink_flag);
+    yaz_log (YLOG_DEBUG, "mf_close(%s)", mf->name);
     assert(mf->open);
     for (i = 0; i < mf->no_files; i++)
     {
@@ -449,8 +436,6 @@ int mf_close(MFile mf)
     	    close(mf->files[i].fd);
     	    mf->files[i].fd = -1;
 	}
-        if (mf->unlink_flag)
-            unlink(mf->files[i].path);
     }
     mf->open = 0;
     return 0;
@@ -595,24 +580,6 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
     	exit(1);
     }
     zebra_mutex_unlock (&mf->mutex);
-    return 0;
-}
-
-/*
- * Destroy a metafile, unlinking component files. File must be open.
- */
-int mf_unlink(MFile mf)
-{
-    if (mf->open)
-    {
-        mf->unlink_flag = 1;
-    }
-    else
-    {
-        int i;
-        for (i = 0; i<mf->no_files; i++)
-            unlink(mf->files[i].path);
-    }
     return 0;
 }
 
