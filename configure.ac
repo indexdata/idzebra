@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.30 2006-09-29 13:03:06 adam Exp $
+dnl $Id: configure.ac,v 1.31 2006-10-09 22:13:06 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.3],[adam@indexdata.dk])
@@ -117,8 +117,12 @@ if test -r ${tclconfig}/tclConfig.sh; then
     SHLIB_SUFFIX=$TCL_SHLIB_SUFFIX
     SHLIB_VERSION=$TCL_SHLIB_VERSION
     AC_MSG_RESULT($TCL_VERSION)
-    AC_DEFINE(HAVE_TCL_H,1)
-    
+
+    old_CPPFLAGS=$CPPFLAGS
+    CPPFLAGS="${TCL_INCLUDE} $CPPFLAGS"
+    AC_CHECK_HEADERS(tcl.h)
+    CPPFLAGS=${old_CPPFLAGS}
+
     # The Mac OSX -framework causes problems with Libtool
     # and dependancy libs.. so apply Tcl libs everywhere bug #461
     case $host in
