@@ -1,4 +1,4 @@
-/* $Id: bfile.c,v 1.49 2006-10-09 22:10:00 adam Exp $
+/* $Id: bfile.c,v 1.50 2006-10-10 10:19:28 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -363,13 +363,7 @@ void bf_commitExec (BFiles bfs)
 
 void bf_commitClean (BFiles bfs, const char *spec)
 {
-    FILE *inf;
-    int block_size;
-    char path[256];
-    MFile mf;
-    CFile cf;
     int mustDisable = 0;
-    int firstTime;
 
     if (!bfs->commit_area)
     {
