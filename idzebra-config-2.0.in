@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: idzebra-config-2.0.in,v 1.1 2006-08-14 12:18:46 adam Exp $
+# $Id: idzebra-config-2.0.in,v 1.2 2006-10-10 14:45:42 adam Exp $
 version=@VERSION@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
@@ -85,7 +85,7 @@ while test $# -gt 0; do
     shift
 done
 
-IDZEBRAINC="@YAZINC@"
+IDZEBRAINC="@ZEBRA_CFLAGS@ @YAZINC@"
 
 if test "$echo_source" = "yes"; then
     IDZEBRALIB="-L${idzebra_build_root}/index/.libs -lidzebra${package_suffix}"

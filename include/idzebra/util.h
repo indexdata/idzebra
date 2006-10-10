@@ -1,4 +1,4 @@
-/* $Id: util.h,v 1.8 2006-08-14 10:40:14 adam Exp $
+/* $Id: util.h,v 1.9 2006-10-10 14:45:42 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -42,21 +42,26 @@ YAZ_BEGIN_CDECL
  * number of occurrences etc. It is a "large" integer and is usually
  * 64-bit on newer architectures.
  */
-#ifdef __GNUC__
-typedef long long int zint;
-#define ZINT_FORMAT "%lld"
-#define ZINT_FORMAT0 "lld"
-#else
 #ifdef WIN32
 typedef __int64 zint;
-#define ZINT_FORMAT "%I64d"
 #define ZINT_FORMAT0 "I64d"
 #else
+
+#ifndef ZEBRA_ZINT
+#error ZEBRA_ZINT undefined. idzebra-config not in use?
+#endif
+
+#if ZEBRA_ZINT > 0
+typedef long long int zint;
+#define ZINT_FORMAT0 "lld"
+#else
 typedef long zint;
-#define ZINT_FORMAT "%ld"
 #define ZINT_FORMAT0 "ld"
 #endif
+
 #endif
+
+#define ZINT_FORMAT "%" ZINT_FORMAT0
 
 /** \var typedef ZEBRA_RES
  * \brief Common return type for Zebra API

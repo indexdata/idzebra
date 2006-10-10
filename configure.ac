@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.31 2006-10-09 22:13:06 adam Exp $
+dnl $Id: configure.ac,v 1.32 2006-10-10 14:45:41 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.3],[adam@indexdata.dk])
@@ -17,6 +17,7 @@ dnl ------ Substitutions
 AC_SUBST(TCL_INCLUDE)
 AC_SUBST(TCL_LIB)
 AC_SUBST(READLINE_LIBS)
+AC_SUBST(ZEBRA_CFLAGS)
 dnl
 dnl ------ Checking programs
 AC_PROG_CC
@@ -278,7 +279,8 @@ else
 fi
 AC_CHECK_SIZEOF([off_t])
 AC_CHECK_SIZEOF([long long])
-AC_CHECK_SIZEOF([long])
+ZEBRA_CFLAGS="-DZEBRA_ZINT=${ac_cv_sizeof_long_long}"
+AC_DEFINE_UNQUOTED(ZEBRA_ZINT,${ac_cv_sizeof_long_long})
 dnl ------ Modules
 AC_SUBST(SHARED_MODULE_LA)
 SHARED_MODULE_LA=""
