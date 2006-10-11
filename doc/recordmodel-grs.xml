@@ -1,5 +1,5 @@
  <chapter id="grs">
-  <!-- $Id: recordmodel-grs.xml,v 1.4 2006-09-03 21:37:27 adam Exp $ -->
+  <!-- $Id: recordmodel-grs.xml,v 1.5 2006-10-11 12:37:23 adam Exp $ -->
   <title>GRS Record Model and Filter Modules</title>
 
   <para>
@@ -369,7 +369,7 @@
      <variablelist>
 
       <varlistentry>
-       <term>INIT</term>
+       <term><literal>INIT</literal></term>
        <listitem>
         <para>
          The action associated with this expression is evaluated
@@ -381,7 +381,7 @@
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>BEGIN</term>
+       <term><literal>BEGIN</literal></term>
        <listitem>
         <para>
          Matches the beginning of the record. It can be used to
@@ -392,7 +392,7 @@
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>END</term>
+       <term><literal>END</literal></term>
        <listitem>
         <para>
          Matches the end of the record - when all of the contents
@@ -401,15 +401,20 @@
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>/pattern/</term>
+       <term>
+	<literal>/</literal><replaceable>reg</replaceable><literal>/</literal>
+       </term>
        <listitem>
         <para>
-         Matches a string of characters from the input record.
+	 Matches regular expression pattern <replaceable>reg</replaceable>
+	 from the input record. The operators supported are the same
+	 as for regular expression queries. Refer to 
+	 <xref linkend="querymodel-regular"/>.
         </para>
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>BODY</term>
+       <term><literal>BODY</literal></term>
        <listitem>
         <para>
          This keyword may only be used between two patterns.
@@ -418,7 +423,7 @@
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>FINISH</term>
+       <term><literal>FINISH</literal></term>
        <listitem>
         <para>
          The expression associated with this pattern is evaluated
