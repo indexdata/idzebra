@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.32 2006-10-10 14:45:41 adam Exp $
+dnl $Id: configure.ac,v 1.33 2006-10-11 08:55:52 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.3],[adam@indexdata.dk])
@@ -41,7 +41,7 @@ else
 fi
 dnl
 dnl ------ YAZ
-YAZ_INIT($yazflag,2.1.20)
+YAZ_INIT($yazflag,2.1.35)
 if test "$YAZVERSION" = "NONE"; then
     AC_MSG_ERROR([YAZ development libraries required])
 fi

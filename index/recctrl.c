@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.2 2006-08-14 10:40:15 adam Exp $
+/* $Id: recctrl.c,v 1.3 2006-10-11 08:55:52 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -121,56 +121,71 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     return rts;
 }
 
+static void load_from_dir(RecTypeClass *rts, NMEM nmem, const char *dirname)
+{
+#if HAVE_DLFCN_H
+    DIR *dir = opendir(dirname);
+    if (dir)
+    {
+        struct dirent *de;
+        
+        while ((de = readdir(dir)))
+        {
+            size_t dlen = strlen(de->d_name);
+            if (dlen >= 5 &&
+                !memcmp(de->d_name, "mod-", 4) &&
+                !strcmp(de->d_name + dlen - 3, ".so"))
+            {
+                void *mod_p, *fl;
+                char fname[FILENAME_MAX*2+1];
+                sprintf(fname, "%.*s/%.*s",
+                        FILENAME_MAX, dirname,
+                        FILENAME_MAX, de->d_name);
+                mod_p = dlopen(fname, RTLD_NOW|RTLD_GLOBAL);
+                if (mod_p && (fl = dlsym(mod_p, "idzebra_filter")))
+                {
+                    yaz_log(YLOG_LOG, "Loaded filter module %s", fname);
+                    recTypeClass_add(rts, fl, nmem, mod_p);
+                }
+                else if (mod_p)
+                {
+                    const char *err = dlerror();
+                    yaz_log(YLOG_WARN, "dlsym failed %s %s",
+                            fname, err ? err : "none");
+                    dlclose(mod_p);
+                }
+                else
+                {
+                    const char *err = dlerror();
+                    yaz_log(YLOG_WARN, "dlopen failed %s %s",
+                            fname, err ? err : "none");
+                    
+                }
+            }
+        }
+        closedir(dir);
+    }
+#endif
+}
+
 void recTypeClass_load_modules(RecTypeClass *rts, NMEM nmem,
 			       const char *module_path)
 {
-#if HAVE_DLFCN_H
-    if (module_path)
+    while (module_path)
     {
-	DIR *dir = opendir(module_path);
-	yaz_log(YLOG_LOG, "searching filters in %s", module_path);
-	if (dir)
-	{
-	    struct dirent *de;
+        const char *comp_ptr;
+        char comp[FILENAME_MAX+1];
+        size_t len;
+        
+        len = yaz_filepath_comp(&module_path, &comp_ptr);
+        if (!len || len >= FILENAME_MAX)
+            break;
+        
+        memcpy(comp, comp_ptr, len);
+        comp[len] = '\0';
 
-	    while ((de = readdir(dir)))
-	    {
-		size_t dlen = strlen(de->d_name);
-		if (dlen >= 5 &&
-		    !memcmp(de->d_name, "mod-", 4) &&
-		    !strcmp(de->d_name + dlen - 3, ".so"))
-		{
-		    void *mod_p, *fl;
-		    char fname[FILENAME_MAX*2+1];
-		    sprintf(fname, "%.*s/%.*s",
-			    FILENAME_MAX, module_path,
-			    FILENAME_MAX, de->d_name);
-		    mod_p = dlopen(fname, RTLD_NOW|RTLD_GLOBAL);
-		    if (mod_p && (fl = dlsym(mod_p, "idzebra_filter")))
-		    {
-			yaz_log(YLOG_LOG, "Loaded filter module %s", fname);
-			recTypeClass_add(rts, fl, nmem, mod_p);
-		    }
-		    else if (mod_p)
-		    {
-			const char *err = dlerror();
-			yaz_log(YLOG_WARN, "dlsym failed %s %s",
-				fname, err ? err : "none");
-			dlclose(mod_p);
-		    }
-		    else
-		    {
-			const char *err = dlerror();
-			yaz_log(YLOG_WARN, "dlopen failed %s %s",
-				fname, err ? err : "none");
-			
-		    }
-		}
-	    }
-	    closedir(dir);
-	}
+        load_from_dir(rts, nmem, comp);
     }
-#endif
 }
 
 static void recTypeClass_add(struct recTypeClass **rts, RecType *rt,
@@ -184,7 +199,6 @@ static void recTypeClass_add(struct recTypeClass **rts, RecType *rt,
 	r->next = *rts;
 	*rts = r;
 
-	yaz_log(YLOG_LOG, "Adding filter %s", (*rt)->name);
 	r->module_handle = module_handle;
 	module_handle = 0; /* so that we only store module_handle once */
 	r->recType = *rt;
