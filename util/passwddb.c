@@ -1,4 +1,4 @@
-/* $Id: passwddb.c,v 1.14 2006-08-14 10:40:34 adam Exp $
+/* $Id: passwddb.c,v 1.15 2006-10-11 20:18:47 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -135,15 +135,19 @@ int passwd_db_auth(Passwd_db db, const char *user, const char *pass)
     if (pe->encrypt_flag)
     {
 #if HAVE_CRYPT_H
-	char salt[3];
 	const char *des_try;
 	if (strlen (pe->des) < 3)
 	    return -3;
 	if (!pass)
 	    return -2;
-	memcpy (salt, pe->des, 2);
-	salt[2] = '\0';	
-	des_try = crypt (pass, salt);
+
+        if (pe->des[0] != '$') /* Not MD5? (assume DES) */
+        {
+            if (strlen(pass) > 8) /* maximum key length is 8 */
+                return -2;
+        }
+	des_try = crypt (pass, pe->des);
+
 	if (strcmp (des_try, pe->des))
 	    return -2;
 #else
