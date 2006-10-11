@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.45 2006-09-20 15:19:38 mike Exp $ -->
+ <!-- $Id: administration.xml,v 1.46 2006-10-11 12:23:24 adam Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -281,20 +281,67 @@
       <para>
        Specifies a path of profile specification files. 
        The path is composed of one or more directories separated by
-       colon. Similar to PATH for UNIX systems.
+       colon. Similar to <literal>PATH</literal> for UNIX systems.
       </para>
      </listitem>
     </varlistentry>
+
+     <varlistentry>
+      <term>modulePath: <replaceable>path</replaceable></term>
+      <listitem>
+       <para>
+	Specifies a path of record filter modules.
+	The path is composed of one or more directories separated by
+	colon. Similar to <literal>PATH</literal> for UNIX systems.
+	The 'make install' procedure typically puts modules in
+	<filename>/usr/local/lib/idzebra-2.0/modules</filename>.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term>staticrank: <replaceable>integer</replaceable></term>
+      <listitem>
+       <para>
+	Enables whether static ranking is to be enabled (1) or
+	disabled (0). If omitted, it is disabled - corresponding
+	to a value of 0.
+	Refer to <xref linkend="administration-ranking-static"/> .
+       </para>
+      </listitem>
+     </varlistentry>
+
+
+     <varlistentry>
+      <term>estimatehits:: <replaceable>integer</replaceable></term>
+      <listitem>
+       <para>
+	Controls whether Zebra should calculate approximite hit counts and
+	at which hit count it is to be enabled.
+	A value of 0 disables approximiate hit counts.
+	For a positive value approximaite hit count is enabled
+	if it is known to be larger than <replaceable>integer</replaceable>.
+       </para>
+       <para>
+	Approximate hit counts can also be triggered by a particular
+	attribute in a query.
+	Refer to <xref linkend="querymodel-zebra-attr-approx"/>.
+       </para>
+      </listitem>
+     </varlistentry>
+
     <varlistentry>
      <term>attset: <replaceable>filename</replaceable></term>
      <listitem>
       <para>
-       Specifies the filename(s) of attribute set files for use in
-       searching. At least the Bib-1 set should be loaded
-       (<literal>bib1.att</literal>).
-       The <literal>profilePath</literal> setting is used to look for
-       the specified files.
-       See <xref linkend="attset-files"/>
+	Specifies the filename(s) of attribute set files for use in
+	searching. In many configurations <filename>bib1.att</filename>
+	is used, but that is not required. If Classic Explain
+	attributes is to be used for searching,
+	<filename>explain.att</filename> must be given.
+	The path to att-files in general can be given using 
+	<literal>profilePath</literal> setting.
+	See also <xref linkend="attset-files"/>.
       </para>
      </listitem>
     </varlistentry>
