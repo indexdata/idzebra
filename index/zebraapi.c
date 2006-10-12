@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.15 2006-09-29 07:05:44 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.16 2006-10-12 13:05:59 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1722,6 +1722,12 @@ static int zebra_commit_ex (ZebraHandle zh, int clean_only)
     bfs = bfs_create (res_get (zh->res, "register"), zh->path_reg);
 
     zebra_get_state (zh, &val, &seqno);
+
+    if (val == 'd')
+    {
+        logf(LOG_WARN, "previous transaction didn't reach commit");
+        clean_only = 1;
+    }
 
     if (rval && *rval)
         bf_cache (bfs, rval);
