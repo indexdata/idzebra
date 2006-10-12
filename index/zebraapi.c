@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.229 2006-09-29 07:05:44 adam Exp $
+/* $Id: zebraapi.c,v 1.230 2006-10-12 13:06:00 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -2014,6 +2014,12 @@ static ZEBRA_RES zebra_commit_ex(ZebraHandle zh, int clean_only)
         return ZEBRA_FAIL;
     }
     zebra_get_state (zh, &val, &seqno);
+
+    if (val == 'd')
+    {
+        yaz_log(YLOG_WARN, "previous transaction didn't reach commit");
+        clean_only = 1;
+    }
 
     if (rval && *rval)
         bf_cache (bfs, rval);
