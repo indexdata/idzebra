@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.24.2.4 2006-08-14 10:39:16 adam Exp $
+/* $Id: marcread.c,v 1.24.2.5 2006-10-12 10:13:33 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -735,9 +735,12 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
 	logf(LOG_LOG,"parse_data1_tree(): try LEADER from {%d} to {%d} positions",
 	    pf->interval.start, pf->interval.end);
 #endif	
-	new = data1_mk_tag_n(p->dh, p->mem, mc_stmnt, strlen(mc_stmnt), 0, top);
-	data1_mk_text_n(p->dh, p->mem, marctab->leader+pf->interval.start,
-	    pf->interval.end-pf->interval.start+1, new);
+	if (marctab)
+	{
+	    new = data1_mk_tag_n(p->dh, p->mem, mc_stmnt, strlen(mc_stmnt), 0, top);
+	    data1_mk_text_n(p->dh, p->mem, marctab->leader+pf->interval.start,
+			    pf->interval.end-pf->interval.start+1, new);
+	}
     }
     else
     {
