@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.1 2006-09-21 08:56:52 adam Exp $
+/* $Id: rpnsearch.c,v 1.2 2006-10-12 12:28:42 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -734,6 +734,10 @@ static int string_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             *term_tmp++ = '[';
 
             *term_tmp++ = '^';
+
+            *term_tmp++ = 1;
+            *term_tmp++ = FIRST_IN_FIELD_CHAR;
+
             string_rel_add_char(&term_tmp, term_component, &i);
             *term_tmp++ = '-';
 
@@ -746,6 +750,7 @@ static int string_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
         *term_tmp++ = ')';
         *term_tmp = '\0';
+        yaz_log(YLOG_LOG, "term_dict=%s", term_dict);
         break;
     case 2:
         if (!term_100(zh->reg->zebra_maps, reg_type,
@@ -764,6 +769,10 @@ static int string_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             *term_tmp++ = '[';
 
             *term_tmp++ = '^';
+
+            *term_tmp++ = 1;
+            *term_tmp++ = FIRST_IN_FIELD_CHAR;
+
             string_rel_add_char(&term_tmp, term_component, &i);
             *term_tmp++ = '-';
 

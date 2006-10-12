@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.178 2006-09-21 20:22:34 adam Exp $
+/* $Id: index.h,v 1.179 2006-10-12 12:28:42 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -469,6 +469,7 @@ ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
 
 #define FIRST_IN_FIELD_STR "\001^"
+#define FIRST_IN_FIELD_CHAR 1
 #define FIRST_IN_FIELD_LEN 2
 
 YAZ_END_CDECL
