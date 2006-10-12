@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.3 2006-08-22 13:39:27 adam Exp $
+/* $Id: marcread.c,v 1.4 2006-10-12 10:13:33 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -736,9 +736,12 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
 	yaz_log(YLOG_LOG,"parse_data1_tree(): try LEADER from {%d} to {%d} positions",
 	    pf->interval.start, pf->interval.end);
 #endif	
-	new = data1_mk_tag_n(p->dh, p->mem, mc_stmnt, strlen(mc_stmnt), 0, top);
-	data1_mk_text_n(p->dh, p->mem, marctab->leader+pf->interval.start,
-	    pf->interval.end-pf->interval.start+1, new);
+        if (marctab)
+        {
+            new = data1_mk_tag_n(p->dh, p->mem, mc_stmnt, strlen(mc_stmnt), 0, top);
+            data1_mk_text_n(p->dh, p->mem, marctab->leader+pf->interval.start,
+                            pf->interval.end-pf->interval.start+1, new);
+        }
     }
     else
     {
