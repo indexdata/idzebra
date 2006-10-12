@@ -1,4 +1,4 @@
-/* $Id: dfa.c,v 1.38 2006-09-28 18:38:45 adam Exp $
+/* $Id: dfa.c,v 1.39 2006-10-12 12:27:28 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -31,8 +31,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <idzebra/util.h>
 #include "dfap.h"
 #include "imalloc.h"
-
-#define DFA_OPEN_RANGE 1
 
 #define CAT     16000
 #define OR      16001
@@ -357,7 +355,7 @@ static int nextchar_set (struct DFA_parse *parse_info, int *esc)
 
 static int read_charset (struct DFA_parse *parse_info)
 {
-    int i, ch0, ch1, esc0, esc1, cc = 0;
+    int i, ch0, esc0, cc = 0;
     parse_info->look_chars = mk_BSet (&parse_info->charset);
     res_BSet (parse_info->charset, parse_info->look_chars);
 
@@ -367,8 +365,13 @@ static int read_charset (struct DFA_parse *parse_info)
         cc = 1;
         ch0 = nextchar_set (parse_info, &esc0);
     }
+    /**
+       ch0 is last met character 
+       ch1 is "next" char 
+    */
     while (ch0 != 0)
     {
+        int ch1, esc1;
         if (!esc0 && ch0 == ']')
             break;
 	if (!esc0 && ch0 == '-')
@@ -380,16 +383,23 @@ static int read_charset (struct DFA_parse *parse_info)
 	}
 	else
 	{
-	    if (parse_info->cmap)
-	    {
-		const char **mapto;
-		char mapfrom[2];
-		const char *mcp = mapfrom;
-		mapfrom[0] = ch0;
-		mapto = (*parse_info->cmap)(parse_info->cmap_data, &mcp, 1);
-		assert (mapto);
-		ch0 = mapto[0][0];
-	    }
+            if (ch0 == 1)
+            {
+                ch0 = nextchar(parse_info, &esc0);
+            }
+            else
+            {
+                if (parse_info->cmap)
+                {
+                    const char **mapto;
+                    char mapfrom[2];
+                    const char *mcp = mapfrom;
+                    mapfrom[0] = ch0;
+                    mapto = parse_info->cmap(parse_info->cmap_data, &mcp, 1);
+                    assert (mapto);
+                    ch0 = mapto[0][0];
+                }
+            }
 	    add_BSet (parse_info->charset, parse_info->look_chars, ch0);
 	    ch1 = nextchar_set (parse_info, &esc1);
 	}
@@ -398,20 +408,16 @@ static int read_charset (struct DFA_parse *parse_info)
             int open_range = 0;
             if ((ch1 = nextchar_set (parse_info, &esc1)) == 0)
                 break;
-#if DFA_OPEN_RANGE
             if (!esc1 && ch1 == ']')
             {
                 ch1 = 255;
                 open_range = 1;
             }
-#else
-            if (!esc1 && ch1 == ']')
+            else if (ch1 == 1)
             {
-                add_BSet (parse_info->charset, parse_info->look_chars, '-');
-                break;
+                ch1 = nextchar(parse_info, &esc1);
             }
-#endif
-            if (!open_range && parse_info->cmap)
+            else if (parse_info->cmap)
             {
                 const char **mapto;
 		char mapfrom[2];
@@ -421,12 +427,12 @@ static int read_charset (struct DFA_parse *parse_info)
                 assert (mapto);
                 ch1 = mapto[0][0];
             }
-            for (i=ch0; ++i<=ch1;)
+            for (i = ch0; ++i <= ch1;)
                 add_BSet (parse_info->charset, parse_info->look_chars, i);
-            if (!open_range)
-                ch0 = nextchar_set (parse_info, &esc0);
-            else
+
+            if (open_range)
                 break;
+            ch0 = nextchar_set (parse_info, &esc0);
         }
         else
         {
