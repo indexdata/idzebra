@@ -1,11 +1,18 @@
 
+Fixed bug #47: Commit needs to check for roll-back.
+
+Fixed bug #672: Trailing characters in password are ignored
+
+Added extra presence check for tcl.h, because some systems have
+tclConfig.sh installed even though Tcl C headers are missing.
+
 Optimized melm performance.
 
 Do not use sync(2) during commit (but rely on sync'd individual files).
 
 Fixed bug in ISAMB's utility function decode_ptr. With gcc -O3 on some
-platforms the src argument was not updated. Reason was optimization due
-to strict aliasing rules.
+platforms the src argument was not updated. Problem was compiler
+optimization due to strict aliasing rules.
 
 --- 2.0.2 2006/09/22
 
