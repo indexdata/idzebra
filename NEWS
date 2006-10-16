@@ -1,3 +1,4 @@
+--- 2.0.4 2006/10/16
 
 Fixed bug #47: Commit needs to check for roll-back.
 
