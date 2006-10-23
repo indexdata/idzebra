@@ -1,8 +1,8 @@
 Compilation for Zebra on WIN32.
- $Id: readme.txt,v 1.2 2002-08-20 12:01:00 adam Exp $
+ $Id: readme.txt,v 1.2.2.1 2006-10-23 12:00:23 adam Exp $
 
-This software is shipped with MS nmake files. It has been tested
-on Visual C++ 6, but should work with Visual C++ 5 as well.
+This software is shipped with MS nmake files. It has been tested with
+on Visual 2003 and C++ 6 but should work with Visual C++ 5 as well.
 
 Prerequesties:
    yaz    - untar it at the same location as zebra.
