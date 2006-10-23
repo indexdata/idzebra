@@ -1,0 +1,13 @@
+# This is the abstract syntax (and most of the top-level profile info)
+# for GILS version 2.
+#
+# $Id: t10.abs,v 1.1 2006-10-23 09:31:48 adam Exp $
+
+name t10
+attset t10.att
+
+esetname F @
+
+systag sysno none
+
+elm title			title		title:w,extra_title:w
