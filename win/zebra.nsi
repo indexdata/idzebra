@@ -1,6 +1,6 @@
-; $Id: zebra.nsi,v 1.20.2.22 2006-10-16 11:02:10 adam Exp $
+; $Id: zebra.nsi,v 1.20.2.23 2006-10-23 12:01:59 adam Exp $
 
-!define VERSION "1.3.42"
+!define VERSION "1.3.44"
 !define VS_RUNTIME_LOCATION "c:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\Bin"
 
 !include "MUI.nsh"
