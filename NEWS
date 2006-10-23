@@ -1,3 +1,6 @@
+Fixed bug #529: multiple simultaneous updates by extended services trashes
+register files.
+
 --- 1.3.42 2006/10/16
 
 Fixed bug #47: Commit needs to check for roll-back.

@@ -2,3 +2,7 @@
 Makefile
 Makefile.in
 passtest
+*.log
+my.LCK
+tstflock
+tstflock.out

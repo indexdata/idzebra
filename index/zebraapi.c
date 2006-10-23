@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.16 2006-10-12 13:05:59 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.17 2006-10-23 11:37:11 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -151,6 +151,8 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
     Res res;
 
     yaz_log(LOG_LOG,"zebra_start %s %s", configName, ZEBRAVER);
+
+    zebra_flock_init();
 
     if ((res = res_open (configName, def_res, over_res)))
     {

@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2006
-dnl $Id: configure.in,v 1.91.2.30 2006-10-16 11:02:09 adam Exp $
+dnl $Id: configure.in,v 1.91.2.31 2006-10-23 11:37:10 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AM_INIT_AUTOMAKE(idzebra,1.3.42)
@@ -85,7 +85,7 @@ else
 fi
 dnl
 dnl ------ times
-AC_CHECK_HEADERS(sys/times.h)
+AC_CHECK_HEADERS(sys/times.h sys/time.h)
 dnl
 dnl ------ crypt
 AC_CHECK_LIB(crypt, crypt)
