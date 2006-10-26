@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.17 2006-10-23 11:37:11 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.18 2006-10-26 23:46:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1672,7 +1672,6 @@ int zebra_repository_update (ZebraHandle zh, const char *path)
 {
     ASSERTZH;
     zh->errCode=0;
-    logf (LOG_LOG|LOG_API, "updating %s", path);
     repositoryUpdate (zh, path);
     return zh->errCode;
 }
@@ -1681,7 +1680,6 @@ int zebra_repository_delete (ZebraHandle zh, const char *path)
 {
     ASSERTZH;
     zh->errCode=0;
-    logf (LOG_LOG|LOG_API, "deleting %s", path);
     repositoryDelete (zh, path);
     return zh->errCode;
 }
@@ -1689,7 +1687,6 @@ int zebra_repository_delete (ZebraHandle zh, const char *path)
 int zebra_repository_show (ZebraHandle zh, const char *path)
 {
     ASSERTZH;
-    yaz_log(LOG_API,"zebra_repository_show");
     zh->errCode=0;
     repositoryShow (zh, path);
     return zh->errCode;
