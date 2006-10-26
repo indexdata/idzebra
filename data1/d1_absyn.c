@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.30 2006-09-29 10:02:45 adam Exp $
+/* $Id: d1_absyn.c,v 1.31 2006-10-26 23:49:14 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -659,15 +659,19 @@ int read_absyn_line(FILE *f, int *lineno, char *line, int len,
     return argc;
 }
 
-data1_marctab *data1_absyn_getmarctab(data1_handle dh, data1_absyn *absyn)
+data1_marctab *data1_absyn_getmarctab(data1_handle dh, data1_node *root)
 {
-    return absyn->marc;
+    if (root->u.root.absyn)
+        return root->u.root.absyn->marc;
+    return 0;
 }
 
-YAZ_EXPORT data1_element *data1_absyn_getelements(data1_handle dh,
-						  data1_absyn *absyn)
+data1_element *data1_absyn_getelements(data1_handle dh,
+                                       data1_node *root)
 {
-    return absyn->main_elements;
+    if (root->u.root.absyn)
+        return root->u.root.absyn->main_elements;
+    return 0;
 }
 
 static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,

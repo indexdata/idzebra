@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.18 2006-08-14 10:40:14 adam Exp $
+/* $Id: data1.h,v 1.19 2006-10-26 23:49:14 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -502,9 +502,9 @@ YAZ_EXPORT data1_node *data1_map_record(data1_handle dh, data1_node *n,
 YAZ_EXPORT data1_marctab *data1_read_marctab (data1_handle dh,
 					      const char *file);
 YAZ_EXPORT data1_marctab *data1_absyn_getmarctab(data1_handle dh,
-						 data1_absyn *absyn);
+						 data1_node *root);
 YAZ_EXPORT data1_element *data1_absyn_getelements(data1_handle dh,
-						 data1_absyn *absyn);
+						 data1_node *root);
 YAZ_EXPORT char *data1_nodetomarc(data1_handle dh, data1_marctab *p,
 				  data1_node *n, int selected, int *len);
 YAZ_EXPORT char *data1_nodetoidsgml(data1_handle dh, data1_node *n,

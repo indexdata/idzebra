@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.4 2006-10-12 10:13:33 adam Exp $
+/* $Id: marcread.c,v 1.5 2006-10-26 23:49:14 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -116,7 +116,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     else
 	res_top = data1_mk_tag (p->dh, p->mem, absynName, 0, res_root);
 
-    if ((marctab = data1_absyn_getmarctab(p->dh, res_root->u.root.absyn)))
+    if ((marctab = data1_absyn_getmarctab(p->dh, res_root)))
     {
 	memcpy(marctab->leader, buf, 24);
         memcpy(marctab->implementation_codes, buf+6, 4);
@@ -706,7 +706,7 @@ static int is_empty(char *s)
 static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
 			     data1_node *root)
 {
-    data1_marctab *marctab = data1_absyn_getmarctab(p->dh, root->u.root.absyn);
+    data1_marctab *marctab = data1_absyn_getmarctab(p->dh, root);
     data1_node *top = root->child;
     data1_node *field;
     mc_context *c;
@@ -790,7 +790,7 @@ data1_node *grs_read_marcxml(struct grs_read_info *p)
     if (!root)
 	return 0;
 	
-    for (e = data1_absyn_getelements(p->dh, root->u.root.absyn); e; e=e->next)
+    for (e = data1_absyn_getelements(p->dh, root); e; e=e->next)
     {
 	data1_tag *tag = e->tag;
 	
@@ -809,7 +809,7 @@ data1_node *grs_read_marc(struct grs_read_info *p)
     if (!root)
 	return 0;
 	
-    for (e = data1_absyn_getelements(p->dh, root->u.root.absyn); e; e=e->next)
+    for (e = data1_absyn_getelements(p->dh, root); e; e=e->next)
     {
 	data1_tag *tag = e->tag;
 	
