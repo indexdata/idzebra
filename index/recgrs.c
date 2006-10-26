@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.7 2006-09-29 10:02:47 adam Exp $
+/* $Id: recgrs.c,v 1.8 2006-10-26 23:45:46 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -564,6 +564,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
 	if (n->root->u.root.absyn && 
 	    (tl = xpath_termlist_by_tagpath(tag_path_full, n)))
 	{
+            zint max_seqno = 0;
 	    for (; tl; tl = tl->next)
 	    {
 		/* need to copy recword because it may be changed */
@@ -611,7 +612,12 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
 		    else
 			(*p->tokenAdd)(&wrd_tl);
 		}
+                if (wrd_tl.seqno > max_seqno)
+                    max_seqno = wrd_tl.seqno;
 	    }
+            if (max_seqno)
+                wrd->seqno = max_seqno;
+                
 	}
 	/* xpath indexing is done, if there was no termlist given, 
 	   or no ! in the termlist, and default indexing is enabled... */
