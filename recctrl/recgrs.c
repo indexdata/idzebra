@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.86.2.12 2006-09-29 10:02:44 adam Exp $
+/* $Id: recgrs.c,v 1.86.2.13 2006-10-26 23:40:33 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -606,6 +606,8 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
 	if (n->root->u.root.absyn && 
 	    (tl = xpath_termlist_by_tagpath(tag_path_full, n)))
 	{
+	    int max_seqno = 0;
+
 	    for (; tl; tl = tl->next)
 	    {
 		/* need to copy recword because it may be changed */
@@ -658,7 +660,11 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
 		    else
 			(*p->tokenAdd)(&wrd_tl);
 		}
+		if (wrd_tl.seqno > max_seqno)
+		     max_seqno = wrd_tl.seqno;
 	    }
+	    if (max_seqno)
+	        wrd->seqno = max_seqno;
 	}
 	/* xpath indexing is done, if there was no termlist given, 
 	   or no ! in the termlist, and default indexing is enabled... */
@@ -1457,21 +1463,21 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 					  p->odr, &dummy)))
 	    p->diagnostic = 238; /* not available in requested syntax */
 	else
-	    p->rec_len = (size_t) (-1);
+	    p->rec_len = -1;
 	break;
     case VAL_EXPLAIN:
 	if (!(p->rec_buf = data1_nodetoexplain(p->dh, node, selected,
 					       p->odr)))
 	    p->diagnostic = 238;
 	else
-	    p->rec_len = (size_t) (-1);
+	    p->rec_len = -1;
 	break;
     case VAL_SUMMARY:
 	if (!(p->rec_buf = data1_nodetosummary(p->dh, node, selected,
 					       p->odr)))
 	    p->diagnostic = 238;
 	else
-	    p->rec_len = (size_t) (-1);
+	    p->rec_len = -1;
 	break;
     case VAL_SUTRS:
         if (p->encoding)
