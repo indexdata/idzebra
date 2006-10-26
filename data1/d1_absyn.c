@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.9.2.10 2006-09-29 10:02:42 adam Exp $
+/* $Id: d1_absyn.c,v 1.9.2.11 2006-10-26 23:46:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -538,6 +538,20 @@ int read_absyn_line(FILE *f, int *lineno, char *line, int len,
     return argc;
 }
 
+data1_marctab *data1_absyn_getmarctab(data1_handle dh, data1_node *root)
+{
+    if (root->u.root.absyn)
+        return root->u.root.absyn->marc;
+    return 0;
+}
+
+data1_element *data1_absyn_getelements(data1_handle dh,
+                                       data1_node *root)
+{
+    if (root->u.root.absyn)
+        return root->u.root.absyn->main_elements;
+    return 0;
+}
 
 data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
                                int file_must_exist)

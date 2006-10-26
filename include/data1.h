@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.9.2.4 2006-09-29 10:02:43 adam Exp $
+/* $Id: data1.h,v 1.9.2.5 2006-10-26 23:46:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -444,6 +444,13 @@ YAZ_EXPORT data1_node *data1_mk_tag_data_text_uni (data1_handle dh,
                                                    NMEM nmem);
 
 YAZ_EXPORT data1_absyn *data1_get_absyn (data1_handle dh, const char *name);
+
+YAZ_EXPORT
+data1_marctab *data1_absyn_getmarctab(data1_handle dh, data1_node *root);
+
+YAZ_EXPORT
+data1_element *data1_absyn_getelements(data1_handle dh,
+				       data1_node *root);
 
 YAZ_EXPORT data1_node *data1_search_tag (data1_handle dh, data1_node *n,
                                          const char *tag);
