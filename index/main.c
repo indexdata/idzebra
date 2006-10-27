@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.112.2.6 2006-08-14 10:38:59 adam Exp $
+/* $Id: main.c,v 1.112.2.7 2006-10-27 11:06:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -44,7 +44,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <expat.h>
 #endif
 
-#include <data1.h>
+#include <yaz/options.h>
 #include "zebraapi.h"
 
 char *prog;

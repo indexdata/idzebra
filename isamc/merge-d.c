@@ -1,4 +1,4 @@
-/* $Id: merge-d.c,v 1.30.2.1 2006-08-14 10:39:11 adam Exp $
+/* $Id: merge-d.c,v 1.30.2.2 2006-10-27 11:06:47 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -388,7 +388,7 @@ static void getDiffInfo(ISAMD_PP pp )
       if (pp->is->method->debug > 5)
         logf(LOG_LOG,"isamd_getDiff[%d]:%d-%d %s",
           i,diffidx-sizeof(int),pp->diffinfo[i].maxidx,
-          hexdump((char *)&pp->diffbuf[diffidx-4],8,0) );
+          hexdump((unsigned char *)&pp->diffbuf[diffidx-4],8,0) );
       diffidx=pp->diffinfo[i].maxidx;
       if ( diffidx > pp->is->method->filecat[pp->cat].bsize )
         return; /* whole block done */
@@ -450,7 +450,7 @@ static ISAMD_PP  append_main_item(ISAMD_PP firstpp,
    assert ( (codelen<128) && (codelen>0));
    if (pp->is->method->debug >7)
       logf(LOG_LOG,"isamd:build: coded %s nk=%d,ofs=%d-%d",
-          hexdump(codebuff, c_ptr-codebuff,hexbuff), firstpp->numKeys+1,
+          hexdump((unsigned char *) codebuff, c_ptr-codebuff,hexbuff), firstpp->numKeys+1,
           pp->offset, pp->offset+codelen);
 
    if (pp->offset + codelen > maxsize )
@@ -466,7 +466,7 @@ static ISAMD_PP  append_main_item(ISAMD_PP firstpp,
       assert ( (codelen<128) && (codelen>0));
       if (pp->is->method->debug >7)
          logf(LOG_LOG,"isamd:build: recoded into %s  (nk=%d)",
-             hexdump(codebuff, c_ptr-codebuff,hexbuff), firstpp->numKeys+1);
+             hexdump((unsigned char *) codebuff, c_ptr-codebuff,hexbuff), firstpp->numKeys+1);
    } /* block full */    
 
    assert (pp->offset + codelen <= maxsize );
@@ -562,7 +562,7 @@ int isamd_read_item_merge (
               if (pp->is->method->debug > 9)
                 logf(LOG_LOG,"isamd_read_item: dif[%d] at %d-%d: %s",
                   i,oldoffs, pp->diffinfo[i].diffidx,
-                  hexdump(pp->buf+oldoffs, pp->diffinfo[i].diffidx-oldoffs,0));
+                  hexdump((unsigned char *) pp->buf+oldoffs, pp->diffinfo[i].diffidx-oldoffs,0));
               if (pp->is->method->debug > 7)
                 logf(LOG_LOG,"isamd_read_item: rd dif[%d] %d.%d (%x.%x)",
                   i,
@@ -862,7 +862,7 @@ static int append_diffs(
    char *i_item = (char *) &i_key;  /* same as chars */
    char *i_ptr=i_item;
    int i_more =1;
-   int i_mode;     /* 0 for delete, 1 for insert */ 
+   int i_mode = 1;     /* 0 for delete, 1 for insert */ 
 
    ISAMD_PP firstpp;
    char hexbuff[64];
@@ -929,7 +929,7 @@ static int append_diffs(
       assert ( (codelen<128) && (codelen>0));
       if (is->method->debug >7)
          logf(LOG_LOG,"isamd_appd: coded %d: %s (nk=%d) (ix=%d)",
-             codelen, hexdump(codebuff, codelen,hexbuff), 
+             codelen, hexdump((unsigned char *) codebuff, codelen,hexbuff), 
              firstpp->numKeys,diffidx);
 
       if (diffidx + codelen > maxsize )
@@ -1100,7 +1100,10 @@ int isamd_append (ISAMD is, char *dictentry, int dictlen, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.30.2.1  2006-08-14 10:39:11  adam
+ * Revision 1.30.2.2  2006-10-27 11:06:47  adam
+ * Fixed several compilation warnings. (gcc 4.1.2, -O3 -g -Wall)
+ *
+ * Revision 1.30.2.1  2006/08/14 10:39:11  adam
  * Update copyright year + FSF address
  *
  * Revision 1.30  2003/03/05 16:41:10  adam

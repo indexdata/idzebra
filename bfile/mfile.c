@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.52.2.2 2006-10-04 09:07:19 adam Exp $
+/* $Id: mfile.c,v 1.52.2.3 2006-10-27 11:06:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -289,7 +289,6 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
 void mf_destroy(MFile_area ma)
 {
     mf_dir *dp;
-    meta_file *meta_f;
 
     if (!ma)
 	return;

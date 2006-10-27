@@ -1,4 +1,4 @@
-/* $Id: isamd.c,v 1.27.2.1 2006-08-14 10:39:10 adam Exp $
+/* $Id: isamd.c,v 1.27.2.2 2006-10-27 11:06:47 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -707,8 +707,8 @@ void isamd_buildlaterblock(ISAMD_PP pp){
 /* returns non-zero if item could be read; 0 otherwise */
 int isamd_pp_read (ISAMD_PP pp, void *buf)
 {
-
-    return isamd_read_item (pp, (char **) &buf);
+    char *cp = buf;
+    return isamd_read_item (pp, &cp);
        /* note: isamd_read_item is in merge-d.c, because it is so */
        /* convoluted with the merge process */
 }

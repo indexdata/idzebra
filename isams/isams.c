@@ -1,4 +1,4 @@
-/* $Id: isams.c,v 1.5.2.1 2006-08-14 10:39:15 adam Exp $
+/* $Id: isams.c,v 1.5.2.2 2006-10-27 11:06:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -224,7 +224,8 @@ int isams_pp_num (ISAMS_PP pp)
 
 int isams_pp_read (ISAMS_PP pp, void *buf)
 {
-    return isams_read_item (pp, (char **) &buf);
+    char *buf_cp = buf;
+    return isams_read_item (pp, &buf_cp);
 }
 
 int isams_read_item (ISAMS_PP pp, char **dst)

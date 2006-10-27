@@ -1,4 +1,4 @@
-/* $Id: flock.c,v 1.4.2.4 2006-10-23 11:37:11 adam Exp $
+/* $Id: flock.c,v 1.4.2.5 2006-10-27 11:06:48 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -250,7 +250,7 @@ static int unixLock(int fd, int type, int cmd)
 
 int zebra_lock_w(ZebraLockHandle h)
 {
-    int r;
+    int r = 0;
     int do_lock = 0;
     logf(log_level, "zebra_lock_w fd=%d p=%p fname=%s begin", 
             h->p->fd, h, h->p->fname);
@@ -287,7 +287,7 @@ int zebra_lock_w(ZebraLockHandle h)
 
 int zebra_lock_r(ZebraLockHandle h)
 {
-    int r;
+    int r = 0;
     int do_lock = 0;
 
     logf(log_level, "zebra_lock_r fd=%d p=%p fname=%s begin", 

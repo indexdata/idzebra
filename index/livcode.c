@@ -11,7 +11,7 @@ rights reserved.
 Licensed under the Academic Free License version 1.1.
 http://opensource.org/licenses/academic.php
 
-$Id: livcode.c,v 1.2 2004-08-04 08:35:23 adam Exp $
+$Id: livcode.c,v 1.1.2.1 2006-10-27 11:06:46 adam Exp $
 
 */
 
@@ -291,8 +291,9 @@ Z_Operand *set_operand( Z_Operand *thisop, int newattr )
     general->len  = thisop->u.attributesPlusTerm->term->u.general->len ;
     general->size = thisop->u.attributesPlusTerm->term->u.general->size ;
     general->buf  = malloc( general->size ) ;
-    strcpy( general->buf,
-            thisop->u.attributesPlusTerm->term->u.general->buf ) ;
+    strcpy( (char *) general->buf,
+            (const char *) 
+	    thisop->u.attributesPlusTerm->term->u.general->buf ) ;
 
     return operand ;
 }
@@ -649,12 +650,12 @@ static void add (void *set_handle, int seqno, int term_index)
  *  score should be between 0 and 1000. If score cannot be obtained
  *  -1 should be returned.
  */
-static int calc (void *set_handle, zint sysno)
+static int calc (void *set_handle, int sysno)
 {
     int i, lo, divisor, score = 0;
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
 
-    logf (LOG_DEBUG, "livrank calc sysno=" ZINT_FORMAT, sysno);
+    logf (LOG_DEBUG, "livrank calc sysno=%d", sysno);
 
     if (!si->no_rank_entries)
 	return -1;

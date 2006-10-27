@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.117.2.6 2006-08-14 10:39:01 adam Exp $
+/* $Id: zserver.c,v 1.117.2.7 2006-10-27 11:06:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -622,9 +622,10 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 			{
                             int r = zebra_admin_exchange_record (
                                 zh,
-                                rec->u.octet_aligned->buf,
+                                (const char *) rec->u.octet_aligned->buf,
                                 rec->u.octet_aligned->len,
-                                opaque_recid->buf, opaque_recid->len,
+                                (const char *) opaque_recid->buf,
+				opaque_recid->len,
                                 action);
                             if (r)
                             {
@@ -644,7 +645,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    &sysno,
 				    0, /* match */
 				    0, /* fname */
-				    rec->u.octet_aligned->buf,
+				    (const char *) rec->u.octet_aligned->buf,
 				    rec->u.octet_aligned->len,
 				    0);
 				if (r)
@@ -662,7 +663,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    &sysno,
 				    0, /* match */
 				    0, /* fname */
-				    rec->u.octet_aligned->buf,
+				    (const char *) rec->u.octet_aligned->buf,
 				    rec->u.octet_aligned->len,
 				    1);
 				if (r)
@@ -680,7 +681,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    &sysno,
 				    0, /* match */
 				    0, /* fname */
-				    rec->u.octet_aligned->buf,
+				    (const char *) rec->u.octet_aligned->buf,
 				    rec->u.octet_aligned->len,
 				    0);
 				if (r)

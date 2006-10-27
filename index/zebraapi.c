@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.18 2006-10-26 23:46:25 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.19 2006-10-27 11:06:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1104,7 +1104,7 @@ int zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
 				    &sysno,
 				    0, /* match */
 				    0, /* fname */
-				    oct->buf, oct->len,
+				    (char *) oct->buf, oct->len,
 				    0);
 	    }
 	}

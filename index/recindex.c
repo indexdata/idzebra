@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.34.2.3 2006-08-14 10:38:59 adam Exp $
+/* $Id: recindex.c,v 1.34.2.4 2006-10-27 11:06:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -309,7 +309,7 @@ Records rec_open (BFiles bfs, int rw, int compression_method)
     return p;
 }
 
-static void rec_encode_unsigned (unsigned n, unsigned char *buf, int *len)
+static void rec_encode_unsigned (unsigned n, char *buf, int *len)
 {
     (*len) = 0;
     while (n > 127)
@@ -322,19 +322,20 @@ static void rec_encode_unsigned (unsigned n, unsigned char *buf, int *len)
     (*len)++;
 }
 
-static void rec_decode_unsigned(unsigned *np, unsigned char *buf, int *len)
+static void rec_decode_unsigned(unsigned *np, char *buf, int *len)
 {
+    unsigned char *cp = (unsigned char *) buf;
     unsigned n = 0;
     unsigned w = 1;
     (*len) = 0;
 
-    while (buf[*len] > 127)
+    while (cp[*len] > 127)
     {
-	n += w*(buf[*len] & 127);
+	n += w*(cp[*len] & 127);
 	w = w << 7;
 	(*len)++;
     }
-    n += w * buf[*len];
+    n += w * cp[*len];
     (*len)++;
     *np = n;
 }
@@ -430,7 +431,7 @@ static void rec_write_multiple (Records p, int saveCount)
     *sysnop = -1;
     if (ref_count)
     {
-	int csize = 0;  /* indicate compression "not performed yet" */
+	unsigned int csize = 0;  /* indicate compression "not performed yet" */
 	compression_method = p->compression_method;
 	switch (compression_method)
 	{
@@ -581,7 +582,7 @@ static Record rec_get_int (Records p, int sysno)
     char *in_buf = 0;
     char *bz_buf = 0;
 #if HAVE_BZLIB_H
-    int bz_size;
+    unsigned int bz_size;
 #endif
     char compression_method;
 
@@ -668,14 +669,14 @@ static Record rec_get_int (Records p, int sysno)
     nptr = in_buf;                /* skip ref count */
     while (nptr < in_buf + in_size)
     {
-	int this_sysno;
+	unsigned int this_sysno;
 	int len;
 	rec_decode_unsigned (&this_sysno, nptr, &len);
 	nptr += len;
 
 	for (i = 0; i < REC_NO_INFO; i++)
 	{
-	    int this_size;
+	    unsigned int this_size;
 	    rec_decode_unsigned (&this_size, nptr, &len);
 	    nptr += len;
 

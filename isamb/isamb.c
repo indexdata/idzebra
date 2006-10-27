@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.47.2.6 2006-08-14 17:14:08 adam Exp $
+/* $Id: isamb.c,v 1.47.2.7 2006-10-27 11:06:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -234,8 +234,9 @@ static void flush_blocks (ISAMB b, int cat)
     }
 }
 
-static int get_block (ISAMB b, ISAMC_P pos, char *userbuf, int wr)
+static int get_block (ISAMB b, ISAMC_P pos, unsigned char *ub, int wr)
 {
+    char *userbuf = (char *) ub;
     int cat = pos&CAT_MASK;
     int off = ((pos/CAT_MAX) & 
                (ISAMB_CACHE_ENTRY_SIZE / b->file[cat].head.block_size - 1))
@@ -351,7 +352,7 @@ static struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
             abort();
         }
     }
-    p->bytes = p->buf + ISAMB_DATA_OFFSET;
+    p->bytes = (char *) p->buf + ISAMB_DATA_OFFSET;
     p->leaf = p->buf[0];
     p->size = (p->buf[1] + 256 * p->buf[2]) - ISAMB_DATA_OFFSET;
     if (p->size < 0)
@@ -401,7 +402,7 @@ struct ISAMB_block *new_block (ISAMB b, int leaf, int cat)
     p->cat = cat;
     b->file[cat].head_dirty = 1;
     memset (p->buf, 0, b->file[cat].head.block_size);
-    p->bytes = p->buf + ISAMB_DATA_OFFSET;
+    p->bytes = (char *) p->buf + ISAMB_DATA_OFFSET;
     p->leaf = leaf;
     p->size = 0;
     p->dirty = 1;

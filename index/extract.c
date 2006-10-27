@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.157.2.4 2006-08-14 10:38:57 adam Exp $
+/* $Id: extract.c,v 1.157.2.5 2006-10-27 11:06:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1563,9 +1563,9 @@ static void extract_add_sort_string (RecWord *p, const char *string,
     {
         int set, use, slen;
 
-        off += key_SU_decode(&set, sk->buf + off);
-        off += key_SU_decode(&use, sk->buf + off);
-        off += key_SU_decode(&slen, sk->buf + off);
+        off += key_SU_decode(&set, (const unsigned char *) sk->buf + off);
+        off += key_SU_decode(&use,  (const unsigned char *) sk->buf + off);
+        off += key_SU_decode(&slen,  (const unsigned char *) sk->buf + off);
         off += slen;
         if (p->attrSet == set && p->attrUse == use)
             return;
@@ -1742,9 +1742,9 @@ void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
     {
         int set, use, slen;
         
-        off += key_SU_decode(&set, sk->buf + off);
-        off += key_SU_decode(&use, sk->buf + off);
-        off += key_SU_decode(&slen, sk->buf + off);
+        off += key_SU_decode(&set,  (const unsigned char *) sk->buf + off);
+        off += key_SU_decode(&use,  (const unsigned char *) sk->buf + off);
+        off += key_SU_decode(&slen,  (const unsigned char *) sk->buf + off);
         
         sortIdx_type(sortIdx, use);
         if (cmd == 1)
