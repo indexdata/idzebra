@@ -1,4 +1,4 @@
-/* $Id: tstcodec.c,v 1.10 2006-08-14 10:40:24 adam Exp $
+/* $Id: tstcodec.c,v 1.11 2006-10-29 18:01:26 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -109,7 +109,7 @@ int tst_encode(int num)
     return 0;
 }
 
-void tstcodec1()
+void tstcodec1(void)
 {
     char buf[100];
     char *dst = buf;

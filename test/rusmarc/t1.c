@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.7 2006-08-14 10:40:29 adam Exp $
+/* $Id: t1.c,v 1.8 2006-10-29 18:01:26 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "../api/testlib.h"
 
-void check_koi8r()
+void check_koi8r(void)
 {
     yaz_iconv_t cd = yaz_iconv_open("koi8-r", "utf-8");
     if (!cd)
