@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.22 2006-08-23 07:37:02 adam Exp $
+/* $Id: testlib.h,v 1.23 2006-10-29 17:20:01 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -43,7 +43,7 @@ ZebraService tl_start_up(char *cfgname, int argc, char **argv);
  * get_srcdir : returns the source dir. Most often ".", but when
  * making distcheck, some other dir 
  */
-const char *tl_get_srcdir();
+const char *tl_get_srcdir(void);
 
 /** 
  * start_log: open a log file 

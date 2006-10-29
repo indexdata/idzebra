@@ -1,4 +1,4 @@
-/* $Id: snippet.c,v 1.10 2006-08-14 10:40:34 adam Exp $
+/* $Id: snippet.c,v 1.11 2006-10-29 17:20:02 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -31,7 +31,7 @@ struct zebra_snippets {
     zebra_snippet_word *tail;
 };
 
-zebra_snippets *zebra_snippets_create()
+zebra_snippets *zebra_snippets_create(void)
 {
     NMEM nmem = nmem_create();
     zebra_snippets *l = nmem_malloc(nmem, sizeof(*l));

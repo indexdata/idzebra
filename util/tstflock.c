@@ -1,4 +1,4 @@
-/* $Id: tstflock.c,v 1.16 2006-08-14 10:40:34 adam Exp $
+/* $Id: tstflock.c,v 1.17 2006-10-29 17:20:02 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -71,7 +71,7 @@ pthread_mutex_t sleep_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int test_fd = 0;
 
-static void small_sleep()
+static void small_sleep(void)
 {
 #ifdef WIN32
     Sleep(2);
@@ -194,7 +194,7 @@ static void tst_thread(int num, int write_flag)
             num, write_flag, seq);
 }
 
-static void tst()
+static void tst(void)
 {
     tst_thread(4, 1); /* write locks */
     if (1)
@@ -213,7 +213,7 @@ static void tst()
     tst_thread(20, 2); /* random locks */
 }
 
-void fork_tst()
+void fork_tst(void)
 {
 #if HAVE_SYS_WAIT_H
     pid_t pid[2];

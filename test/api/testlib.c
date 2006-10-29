@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.38 2006-09-08 09:56:40 adam Exp $
+/* $Id: testlib.c,v 1.39 2006-10-29 17:20:01 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -89,7 +89,7 @@ ZebraService tl_start_up(char *cfgname, int argc, char **argv)
 /**
  * get_srcdir: return env srcdir or . (if does does not exist)
  */
-const char *tl_get_srcdir()
+const char *tl_get_srcdir(void)
 {
     const char *srcdir = getenv("srcdir");
     if (!srcdir || ! *srcdir)

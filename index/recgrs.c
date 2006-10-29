@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.8 2006-10-26 23:45:46 adam Exp $
+/* $Id: recgrs.c,v 1.9 2006-10-29 17:20:01 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -245,7 +245,7 @@ static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
     return 1;
 }
 
-static struct source_parser *source_parser_create()
+static struct source_parser *source_parser_create(void)
 {
     struct source_parser *sp = xmalloc(sizeof(*sp));
 

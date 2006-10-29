@@ -1,4 +1,4 @@
-/* $Id: reckeys.h,v 1.5 2006-08-14 10:40:15 adam Exp $
+/* $Id: reckeys.h,v 1.6 2006-10-29 17:20:01 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 typedef struct zebra_rec_keys_t_ *zebra_rec_keys_t;
 
-zebra_rec_keys_t zebra_rec_keys_open();
+zebra_rec_keys_t zebra_rec_keys_open(void);
 
 void zebra_rec_keys_close(zebra_rec_keys_t p);
 

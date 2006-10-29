@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.179 2006-10-12 12:28:42 adam Exp $
+/* $Id: index.h,v 1.180 2006-10-29 17:20:01 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -410,7 +410,7 @@ int zebra_file_stat (const char *file_name, struct stat *buf,
 
 void zebra_livcode_transform(ZebraHandle zh, Z_RPNQuery *query);
 
-void *iscz1_start ();
+void *iscz1_start (void);
 void iscz1_reset (void *vp);
 void iscz1_stop (void *p);
 void iscz1_decode (void *vp, char **dst, const char **src);

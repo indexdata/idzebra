@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.111 2006-09-20 10:51:25 adam Exp $
+/* $Id: zsets.c,v 1.112 2006-10-29 17:20:01 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -83,7 +83,7 @@ static int log_level_searchhits=0;
 static int log_level_searchterms=0;
 static int log_level_resultsets=0;
 
-static void loglevels()
+static void loglevels(void)
 {
     if (log_level_set)
         return;

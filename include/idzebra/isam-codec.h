@@ -1,4 +1,4 @@
-/* $Id: isam-codec.h,v 1.4 2006-08-14 10:40:14 adam Exp $
+/* $Id: isam-codec.h,v 1.5 2006-10-29 17:20:00 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define ISAM_CODEC_H
 
 typedef struct {
-    void *(*start)();
+    void *(*start)(void);
     void (*stop)(void *p);
     void (*decode)(void *p, char **dst, const char **src);
     void (*encode)(void *p, char **dst, const char **src);

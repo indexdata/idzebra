@@ -1,4 +1,4 @@
-/* $Id: agrep.c,v 1.18 2006-08-14 10:40:08 adam Exp $
+/* $Id: agrep.c,v 1.19 2006-10-29 17:20:00 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -60,9 +60,7 @@ void error (const char *format, ...)
 
 static int show_lines = 0;
 
-int agrep_options (argc, argv)
-int argc;
-char **argv;
+int agrep_options (int argc, char **argv)
 {
     while (--argc > 0)
         if (**++argv == '-')
@@ -112,8 +110,7 @@ static char *inf_buf;
 static char *inf_ptr, *inf_flsh;
 static int inf_eof, line_no;
 
-static int inf_flush (fd)
-int fd;
+static int inf_flush (int fd)
 {
     char *p;
     unsigned b, r;
@@ -143,8 +140,7 @@ int fd;
     return 0;
 }
 
-static char *prline (p)
-char *p;
+static char *prline (char *p)
 {
     char *p0;
 
@@ -163,9 +159,7 @@ char *p;
     return p;
 }
 
-static int go (fd, dfaar)
-int fd;
-struct DFA_state **dfaar;
+static int go (int fd, struct DFA_state **dfaar)
 {
     struct DFA_state *s = dfaar[0];
     struct DFA_tran *t;
@@ -220,9 +214,7 @@ struct DFA_state **dfaar;
     return 0;
 }
 
-int agrep (dfas, fd)
-struct DFA_state **dfas;
-int fd;
+int agrep (struct DFA_state **dfas, int fd)
 {
     inf_buf = imalloc (sizeof(char)*INF_BUF_SIZE);
     inf_eof = 0;
@@ -237,9 +229,7 @@ int fd;
 }
 
 
-int main (argc, argv)
-int argc;
-char **argv;
+int main (int argc, char **argv)
 {
     const char *pattern = NULL;
     char outbuf[BUFSIZ];

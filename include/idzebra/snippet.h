@@ -1,4 +1,4 @@
-/* $Id: snippet.h,v 1.6 2006-08-14 10:40:14 adam Exp $
+/* $Id: snippet.h,v 1.7 2006-10-29 17:20:00 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -39,7 +39,7 @@ typedef struct zebra_snippets zebra_snippets;
 typedef struct zebra_snippet_word zebra_snippet_word;
 
 YAZ_EXPORT
-zebra_snippets *zebra_snippets_create();
+zebra_snippets *zebra_snippets_create(void);
 
 YAZ_EXPORT
 void zebra_snippets_destroy(zebra_snippets *l);

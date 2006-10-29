@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.230 2006-09-15 10:45:12 adam Exp $
+/* $Id: extract.c,v 1.231 2006-10-29 17:20:01 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -46,7 +46,7 @@ struct encode_info {
 static int log_level = 0;
 static int log_level_initialized = 0;
 
-static void zebra_init_log_level()
+static void zebra_init_log_level(void)
 {
     if (!log_level_initialized)
     {

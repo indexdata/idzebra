@@ -1,4 +1,4 @@
-/* $Id: flock.c,v 1.19 2006-10-27 11:05:14 adam Exp $
+/* $Id: flock.c,v 1.20 2006-10-29 17:20:02 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -368,7 +368,7 @@ int zebra_unlock(ZebraLockHandle h)
  * The default posix_locks=1 is assumed.. This function sets posix_locks
  * to zero if linuxthreads is in use.
  */
-static int check_for_linuxthreads()
+static int check_for_linuxthreads(void)
 {
 #if __linux
 #ifdef _CS_GNU_LIBPTHREAD_VERSION

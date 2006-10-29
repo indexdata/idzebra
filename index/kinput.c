@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.76 2006-08-14 10:40:15 adam Exp $
+/* $Id: kinput.c,v 1.77 2006-10-29 17:20:01 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -258,7 +258,7 @@ struct heap_info {
     int no_iterations;
 };
 
-static struct heap_info *key_heap_malloc()
+static struct heap_info *key_heap_malloc(void)
 {  /* malloc and clear it */
     struct heap_info *hi;
     hi = (struct heap_info *) xmalloc (sizeof(*hi));

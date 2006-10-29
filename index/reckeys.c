@@ -1,4 +1,4 @@
-/* $Id: reckeys.c,v 1.7 2006-08-14 10:40:15 adam Exp $
+/* $Id: reckeys.c,v 1.8 2006-10-29 17:20:01 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -79,7 +79,7 @@ static void init_hash(zebra_rec_keys_t p)
     }
 }
 
-zebra_rec_keys_t zebra_rec_keys_open()
+zebra_rec_keys_t zebra_rec_keys_open(void)
 {
     zebra_rec_keys_t p = xmalloc(sizeof(*p));
     p->buf_used = 0;

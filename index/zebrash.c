@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.39 2006-08-14 10:40:15 adam Exp $
+/* $Id: zebrash.c,v 1.40 2006-10-29 17:20:01 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -764,7 +764,7 @@ static void Zerrors (WRBUF outbuff)
  * The shell
  */
  
-void shell()
+void shell(void)
 {
     int rc=0;
     WRBUF outbuff=wrbuf_alloc();
@@ -827,7 +827,7 @@ void shell()
 } /* shell() */
 
 
-static void usage()
+static void usage(void)
 {
     printf ("usage:\n");
     printf ("zebrash [-c config]\n");
