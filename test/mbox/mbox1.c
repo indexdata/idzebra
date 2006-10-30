@@ -1,4 +1,4 @@
-/* $Id: mbox1.c,v 1.5 2006-08-14 10:40:28 adam Exp $
+/* $Id: mbox1.c,v 1.6 2006-10-30 14:05:31 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -41,9 +41,9 @@ static void tst(int argc, char **argv)
     sprintf(path, "%.200s/mail3.mbx", tl_get_srcdir());
     zebra_repository_update(zh, path);
 
-#if 0
+#if 1
     /* bug #234 */
-    sprintf(path, "%.200s/invalid.mbx", get_srcdir());
+    sprintf(path, "%.200s/invalid.mbx", tl_get_srcdir());
     zebra_repository_update(zh, path);
 #endif
 

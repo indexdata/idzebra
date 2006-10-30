@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.4 2006-10-30 11:18:26 adam Exp $
+/* $Id: regxread.c,v 1.5 2006-10-30 14:05:30 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1692,7 +1692,7 @@ static int execRule (struct lexSpec *spec, struct lexContext *context,
                        start_ptr, pptr);
 }
 
-data1_node *lexNode (struct lexSpec *spec, int *ptr)
+int lexNode (struct lexSpec *spec, int *ptr)
 {
     struct lexContext *context = spec->context_stack[spec->context_stack_top];
     struct DFA_state *state = context->dfa->states[0];
@@ -1704,6 +1704,7 @@ data1_node *lexNode (struct lexSpec *spec, int *ptr)
     int last_ptr = *ptr;      /* last char of match */
     int start_ptr = *ptr;     /* first char of match */
     int skip_ptr = *ptr;      /* first char of run */
+    int more = 0;
 
     while (1)
     {
@@ -1726,7 +1727,7 @@ data1_node *lexNode (struct lexSpec *spec, int *ptr)
                 *ptr = last_ptr;
 		/* execute rule */
                 if (!execRule (spec, context, last_rule, start_ptr, ptr))
-		    break;
+                    return more;
 		/* restore skip pointer */
                 skip_ptr = *ptr;
                 last_rule = 0;
@@ -1739,8 +1740,9 @@ data1_node *lexNode (struct lexSpec *spec, int *ptr)
                 buf = f_win_get (spec, skip_ptr, *ptr, &size);
                 execDataP (spec, buf, size, 0);
             }
+            state = context->dfa->states[0];
             if (*ptr == F_WIN_EOF)
-                break;
+                return more;
         }
         t = state->trans;
         i = state->tran_no;
@@ -1769,7 +1771,7 @@ data1_node *lexNode (struct lexSpec *spec, int *ptr)
 #endif
                             (*spec->f_win_ef)(spec->stream, &end_offset);
 			}
-                        return NULL;
+                        return more;
                     }
 		    context = spec->context_stack[spec->context_stack_top];
                     skip_ptr = *ptr;
@@ -1804,13 +1806,14 @@ data1_node *lexNode (struct lexSpec *spec, int *ptr)
                         last_rule = state->rule_nno;
                         last_ptr = *ptr;
                     }
+                    more = 1;
                 }
                 break;
             }
             else
                 t++;
     }
-    return NULL;
+    return more;
 }
 
 static data1_node *lexRoot (struct lexSpec *spec, off_t offset,
@@ -1818,6 +1821,7 @@ static data1_node *lexRoot (struct lexSpec *spec, off_t offset,
 {
     struct lexContext *lt = spec->context;
     int ptr = offset;
+    int ret;
 
     spec->stop_flag = 0;
     spec->d1_level = 0;
@@ -1844,17 +1848,14 @@ static data1_node *lexRoot (struct lexSpec *spec, off_t offset,
 #endif
     execAction (spec, lt->beginActionList, ptr, &ptr);
 
-    lexNode (spec, &ptr);
+    ret = lexNode (spec, &ptr);
     while (spec->d1_level)
     {
 	tagDataRelease (spec);
 	(spec->d1_level)--;
     }
-    /* return here if no 'end record' was issued and we're dealing
-       with non-first record in stream */
-    if (spec->stop_flag == 0 && offset)
+    if (!ret)
         return 0;
-    
     execAction (spec, lt->endActionList, ptr, &ptr);
     return spec->d1_stack[0];
 }
