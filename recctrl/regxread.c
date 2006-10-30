@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.50.2.3 2006-08-14 10:39:16 adam Exp $
+/* $Id: regxread.c,v 1.50.2.4 2006-10-30 14:14:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -469,13 +469,17 @@ static int actionListMk (struct lexSpec *spec, const char *s,
             r = dfa_parse ((*ap)->u.pattern.dfa, &s);
             if (r || *s != '/')
             {
+	        int sz = s - s0;
                 xfree (*ap);
                 *ap = NULL;
-                logf (LOG_WARN, "regular expression error '%.*s'", s-s0, s0);
+                logf (LOG_WARN, "regular expression error '%.*s'", sz, s0);
                 return -1;
             }
 	    if (debug_dfa_tran)
-		printf ("pattern: %.*s\n", s-s0, s0);
+	    {
+	        int sz = s - s0;
+		printf ("pattern: %.*s\n", sz, s0);
+	    }
             dfa_mkstate ((*ap)->u.pattern.dfa);
             s++;
             break;
@@ -1734,6 +1738,7 @@ data1_node *lexNode (struct lexSpec *spec, int *ptr)
                 buf = f_win_get (spec, skip_ptr, *ptr, &size);
                 execDataP (spec, buf, size, 0);
             }
+            state = context->dfa->states[0];
             if (*ptr == F_WIN_EOF)
                 break;
         }
