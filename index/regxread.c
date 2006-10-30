@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.3 2006-08-22 13:39:27 adam Exp $
+/* $Id: regxread.c,v 1.4 2006-10-30 11:18:26 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1843,12 +1843,18 @@ static data1_node *lexRoot (struct lexSpec *spec, off_t offset,
     }
 #endif
     execAction (spec, lt->beginActionList, ptr, &ptr);
+
     lexNode (spec, &ptr);
     while (spec->d1_level)
     {
 	tagDataRelease (spec);
 	(spec->d1_level)--;
     }
+    /* return here if no 'end record' was issued and we're dealing
+       with non-first record in stream */
+    if (spec->stop_flag == 0 && offset)
+        return 0;
+    
     execAction (spec, lt->endActionList, ptr, &ptr);
     return spec->d1_stack[0];
 }

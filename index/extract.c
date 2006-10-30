@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.232 2006-10-29 20:35:58 adam Exp $
+/* $Id: extract.c,v 1.233 2006-10-30 11:18:26 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -441,8 +441,6 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname,
     }
     while(1)
     {
-        off_t prev_off = streamp->tellf(streamp);
-
         r = zebra_extract_record_stream(zh, streamp,
                                         deleteFlag,
                                         0, /* tst_mode */
@@ -461,8 +459,6 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname,
 	{
 	    break;
 	}
-        if (prev_off == streamp->tellf(streamp))
-            break;
     }
     if (streamp)
         stream.destroy(streamp);
