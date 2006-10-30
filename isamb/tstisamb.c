@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.24 2006-08-14 10:40:17 adam Exp $
+/* $Id: tstisamb.c,v 1.25 2006-10-30 16:21:29 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -52,7 +52,7 @@ int compare_item(const void *a, const void *b)
    return 0;
 }
 
-void *code_start()
+void *code_start(void)
 {
     return 0;
 }
