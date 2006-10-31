@@ -1,3 +1,5 @@
+--- 1.3.46 2006/10/31
+
 Fixed several compilation warnings. (gcc 4.1.2, -O3 -g -Wall)
 
 Fixed bug #710: Duplicate keys for CDATA in xelm/melm rules.
