@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.3 2006-08-22 13:39:26 adam Exp $
+/* $Id: alvis.c,v 1.4 2006-11-03 23:17:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -34,6 +34,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <libxml/xmlreader.h>
 #include <libxslt/transform.h>
 #include <libxslt/xsltutils.h>
+
+#if YAZ_HAVE_EXSLT
+#include <libexslt/exslt.h>
+#endif
 
 #include <idzebra/util.h>
 #include <idzebra/recctrl.h>
@@ -139,6 +143,10 @@ static void *filter_init(Res res, RecType recType)
     tinfo->odr = odr_createmem(ODR_ENCODE);
     tinfo->doc = 0;
     tinfo->schemas = 0;
+
+#if YAZ_HAVE_EXSLT
+    exsltRegisterAll(); 
+#endif
 
 #if ENABLE_INPUT_CALLBACK
     xmlRegisterDefaultInputCallbacks();

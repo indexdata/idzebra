@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.34 2006-10-16 11:03:47 adam Exp $
+dnl $Id: configure.ac,v 1.35 2006-11-03 23:17:08 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.4],[adam@indexdata.dk])
@@ -46,37 +46,6 @@ if test "$YAZVERSION" = "NONE"; then
     AC_MSG_ERROR([YAZ development libraries required])
 fi
 YAZ_DOC
-dnl ----- libXSLT
-AC_SUBST(XSLT_LIBS)
-AC_SUBST(XSLT_CFLAGS)
-xsltdir=yes
-AC_ARG_WITH(xslt,[[  --with-xslt[=PREFIX]    use libxslt in PREFIX]],xsltdir=$withval)
-if test "$xsltdir" = "yes"; then
-    for d in /usr /usr/local; do
-	if test -x $d/bin/xslt-config; then
-	    xsltdir=$d
-	fi
-    done
-fi
-if test "$xsltdir" != "no"; then
-    AC_MSG_CHECKING(for libXSLT)
-    
-    if test -x $xsltdir/bin/xslt-config; then
-	XSLT_VER=`$xsltdir/bin/xslt-config --version`
-	AC_MSG_RESULT($XSLT_VER)
-	have_xslt_version=`echo "$XSLT_VER" | awk 'BEGIN { FS = "."; } { printf "%d", ([$]1 * 1000 + [$]2) * 1000 + [$]3;}'`
-	if test $have_xslt_version -lt 1001011; then
-	    AC_MSG_WARN([libXSLT too old. Use 1.1.11 or later.])
-	    XSLT_VER=""
-	else
-	    XSLT_LIBS=`$xsltdir/bin/xslt-config --libs`
-	    XSLT_CFLAGS=`$xsltdir/bin/xslt-config --cflags`
-	    AC_DEFINE(HAVE_XSLT)
-	fi
-    else
-	AC_MSG_RESULT(Not found)
-    fi
-fi
 dnl ------ Look for Tcl
 dnl See if user has specified location of tclConfig.sh; otherwise
 dnl see if tclConfig.sh exists in same prefix lcoation as tclsh; otherwise
@@ -331,11 +300,20 @@ else
     def="disabled"
 fi
 ZEBRA_MODULE(grs-xml,[$def], [  --enable-mod-grs-xml    XML filter (Expat based)])
-if test "$XSLT_VER"; then
-    def="shared"
-else
-    def="disabled"
-fi
+oldCPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $YAZINC"
+AC_PREPROC_IFELSE(
+   [AC_LANG_PROGRAM([[#include <stdio.h>]],
+                    [[
+#if YAZ_HAVE_XSLT
+#else
+#error no xslt
+#endif
+]])],
+   [def="shared"],
+   [def="disabled"])
+CPPFLAGS=$oldCPPFLAGS
+
 ZEBRA_MODULE(alvis,[$def],   [  --enable-mod-alvis      ALVIS filter (Requires libxslt)])
 dnl ------ ANSI C Header files
 AC_STDC_HEADERS

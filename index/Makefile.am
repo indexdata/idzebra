@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.55 2006-09-22 10:18:08 adam Exp $
+## $Id: Makefile.am,v 1.56 2006-11-03 23:17:08 adam Exp $
 
 aux_libs = \
  ../rset/libidzebra-rset.la \
@@ -42,7 +42,7 @@ mod_safari_la_LIBADD = $(zebralib) $(mod_safari_la_LADD)
 
 mod_alvis_la_SOURCES = alvis.c
 mod_alvis_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
-mod_alvis_la_LADD = $(XSLT_LIBS)
+mod_alvis_la_LADD =
 mod_alvis_la_LIBADD = $(zebralib) $(mod_alvis_la_LADD)
 
 modlib_LTLIBRARIES = $(SHARED_MODULE_LA) 
@@ -94,7 +94,7 @@ kdump_SOURCES = kdump.c
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) \
   -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\" \
-  $(TCL_INCLUDE) $(XSLT_FLAGS) $(XSLT_CFLAGS)
+  $(TCL_INCLUDE)
 
 LDADD = $(zebralib) $(YAZLALIB) 
 
