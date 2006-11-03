@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.86.2.13 2006-10-26 23:40:33 adam Exp $
+/* $Id: recgrs.c,v 1.86.2.14 2006-11-03 10:11:37 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -675,8 +675,6 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
 	    wrd->reg_type = 'w';
 	    (*p->tokenAdd)(wrd);
 	}
-	else
-	    wrd->seqno++;
         break;
     case DATA1N_tag:
         flen = 0;
