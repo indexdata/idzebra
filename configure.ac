@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.35 2006-11-03 23:17:08 adam Exp $
+dnl $Id: configure.ac,v 1.36 2006-11-05 19:57:40 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.4],[adam@indexdata.dk])
@@ -303,11 +303,20 @@ ZEBRA_MODULE(grs-xml,[$def], [  --enable-mod-grs-xml    XML filter (Expat based)
 oldCPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS $YAZINC"
 AC_PREPROC_IFELSE(
-   [AC_LANG_PROGRAM([[#include <stdio.h>]],
-                    [[
-#if YAZ_HAVE_XSLT
+   [AC_LANG_PROGRAM([[
+#if YAZ_HAVE_XML2
+#include <libxml/xmlversion.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+#include <libxml/xmlIO.h>
+#include <libxslt/transform.h>
+#include <libxslt/xsltutils.h>
 #else
-#error no xslt
+#error Libxml2 not available
+#endif
+]],[[
+#if LIBXML_VERSION < 20615
+#error Libxml2 version < 2.6.15. xmlreader not reliable/present
 #endif
 ]])],
    [def="shared"],
