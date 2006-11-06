@@ -22,7 +22,7 @@ Description: IDZebra virtual package (the works)
 Package: libidzebra-2.0-modules
 Section: libs
 Architecture: any
-Depends: libidzebra-2.0-mod-grs-xml, libidzebra-2.0-mod-grs-regx, libidzebra-2.0-mod-grs-marc, libidzebra-2.0-mod-alvis
+Depends: libidzebra-2.0-mod-grs-xml, libidzebra-2.0-mod-grs-regx, libidzebra-2.0-mod-grs-marc, libidzebra-2.0-mod-alvis, libidzebra-2.0-mod-text
 Description: IDZebra modules 
  This virtual package contains all base IDZebra filter modules.
  .
@@ -90,6 +90,19 @@ Depends: ${shlibs:Depends}
 Description: IDZebra filter alvis (XSLT filter for XML)
  This package includes the alvis filter which uses libxslt1 to
  transform XML records by XSLT into XML indexable records.
+ .
+ IDZebra is a high-performance, general-purpose structured text indexing
+ and retrieval engine. It reads structured records in a variety of input
+ formats (eg. email, XML, MARC) and allows access to them through exact
+ boolean search expressions and relevance-ranked free-text queries.
+
+Package: libidzebra-2.0-mod-text
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: IDZebra filter text
+ This package includes the a very simple text filter which indexes
+ all tokens in simple text.
  .
  IDZebra is a high-performance, general-purpose structured text indexing
  and retrieval engine. It reads structured records in a variety of input

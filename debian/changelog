@@ -1,5 +1,11 @@
 idzebra (2.0.4-1) unstable; urgency=low
 
+  * Internal.
+
+ -- Adam Dickmeiss <adam@indexdata.dk>  Mon,  6 Nov 2006 21:46:17 +0100
+
+idzebra (2.0.4-1) unstable; urgency=low
+
   * Upstream.
 
  -- Adam Dickmeiss <adam@indexdata.dk>  Mon, 16 Oct 2006 13:02:45 +0200

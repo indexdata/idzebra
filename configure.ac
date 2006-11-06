@@ -1,8 +1,8 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.36 2006-11-05 19:57:40 adam Exp $
+dnl $Id: configure.ac,v 1.37 2006-11-06 20:48:42 adam Exp $
 dnl
 AC_PREREQ(2.59)
-AC_INIT([idzebra],[2.0.4],[adam@indexdata.dk])
+AC_INIT([idzebra],[2.0.5],[adam@indexdata.dk])
 AC_CONFIG_SRCDIR(configure.ac)
 AC_CONFIG_AUX_DIR(config)
 AM_INIT_AUTOMAKE([1.8])
@@ -289,8 +289,8 @@ AC_DEFUN([ZEBRA_MODULE],[
 	fi
 	])
 
-ZEBRA_MODULE(text,static,    [  --enable-mod-text       Text filter])
-ZEBRA_MODULE(grs-sgml,static,[  --enable-mod-grs-sgml   Simple SGML/XML filter])
+AC_DEFINE(IDZEBRA_STATIC_GRS_SGML)
+ZEBRA_MODULE(text,shared,    [  --enable-mod-text       Text filter])
 ZEBRA_MODULE(grs-regx,shared,[  --enable-mod-grs-regx   REGX/TCL filter])
 ZEBRA_MODULE(grs-marc,shared,[  --enable-mod-grs-marc   MARC filter])
 ZEBRA_MODULE(safari,shared,  [  --enable-mod-safari Safari filter (DBC)])

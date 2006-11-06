@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.56 2006-11-03 23:17:08 adam Exp $
+## $Id: Makefile.am,v 1.57 2006-11-06 20:48:43 adam Exp $
 
 aux_libs = \
  ../rset/libidzebra-rset.la \
@@ -45,20 +45,27 @@ mod_alvis_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
 mod_alvis_la_LADD =
 mod_alvis_la_LIBADD = $(zebralib) $(mod_alvis_la_LADD)
 
+mod_text_la_SOURCES = rectext.c
+mod_text_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
+mod_text_la_LADD =
+mod_text_la_LIBADD = $(zebralib) $(mod_text_la_LADD)
+
 modlib_LTLIBRARIES = $(SHARED_MODULE_LA) 
 EXTRA_LTLIBRARIES = \
 	mod-grs-regx.la \
 	mod-grs-xml.la \
 	mod-grs-marc.la  \
 	mod-safari.la \
-	mod-alvis.la
+	mod-alvis.la \
+	mod-text.la
 
 EXTRA_libidzebra_2_0_la_SOURCES = \
  $(mod_grs_regx_la_SOURCES) \
  $(mod_grs_xml_la_SOURCES) \
  $(mod_grs_marc_la_SOURCES) \
  $(mod_safari_la_SOURCES) \
- $(mod_alvis_la_SOURCES)
+ $(mod_alvis_la_SOURCES) \
+ $(mod_text_la_SOURCES)
 
 lib_LTLIBRARIES = $(zebralib)
 
@@ -69,7 +76,6 @@ libidzebra_2_0_la_SOURCES = \
   recctrl.c \
   recgrs.c \
   sgmlread.c \
-  rectext.c \
   attribute.c \
   compact.c \
   dir.c dirs.c \
