@@ -1,4 +1,4 @@
-/* $Id: bfile.h,v 1.10 2006-08-14 10:40:14 adam Exp $
+/* $Id: bfile.h,v 1.11 2006-11-08 22:08:26 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -101,7 +101,7 @@ BFile bf_xopen(BFiles bfs, const char *name, int block_size, int wflag,
 	       const char *magic, int *read_version,
 	       const char **more_info);
 
-/** \brief read from block file
+/** \brief read from block file (may call exit)
     \param bf block file handle
     \param no block no (first block is 0, second is 1..)
     \param offset offset within block to be read
@@ -111,7 +111,36 @@ BFile bf_xopen(BFiles bfs, const char *name, int block_size, int wflag,
     \retval 0 whole block could not be read
  */
 YAZ_EXPORT
-int bf_read (BFile bf, zint no, int offset, int nbytes, void *buf);
+int bf_read(BFile bf, zint no, int offset, int nbytes, void *buf);
+
+/** \brief read from block file
+    \param bf block file handle
+    \param no block no (first block is 0, second is 1..)
+    \param offset offset within block to be read
+    \param nbytes number of bytes to read (0 for whole block)
+    \param buf raw bytes with content (at least nbytes of size)
+    \retval 1 whole block could be read
+    \retval 0 whole block could not be read
+    \retval -1 error
+ */
+YAZ_EXPORT
+int bf_read2(BFile bf, zint no, int offset, int nbytes, void *buf);
+
+
+/** \brief writes block of bytes to file (may call exit)
+    \param bf block file handle
+    \param no block no
+    \param offset within block
+    \param nbytes number of bytes to write
+    \param buf buffer to write
+    \retval 0 success (block could be written)
+
+    This function can not return a failure. System calls exit(1)
+    if write failed.
+ */
+YAZ_EXPORT
+int bf_write(BFile bf, zint no, int offset, int nbytes, const void *buf);
+
 
 /** \brief writes block of bytes to file
     \param bf block file handle
@@ -119,13 +148,15 @@ int bf_read (BFile bf, zint no, int offset, int nbytes, void *buf);
     \param offset within block
     \param nbytes number of bytes to write
     \param buf buffer to write
-    \retval 0 succes (block could be written)
+    \retval 0 success (block written)
+    \retval -1 error
 
     This function can not return a failure. System calls exit(1)
     if write failed.
  */
 YAZ_EXPORT
-int bf_write (BFile bf, zint no, int offset, int nbytes, const void *buf);
+int bf_write2(BFile bf, zint no, int offset, int nbytes, const void *buf);
+
 
 /** \brief enables or disables shadow for block files
     \param bfs block files

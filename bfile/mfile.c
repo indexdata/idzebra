@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.69 2006-10-10 10:19:28 adam Exp $
+/* $Id: mfile.c,v 1.70 2006-11-08 22:08:27 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -19,14 +19,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
-
-
-
-
- /*
-  * TODO: The size estimates in init may not be accurate due to
-  * only partially written final blocks.
-  */
 
 #include <sys/types.h>
 #include <fcntl.h>
@@ -70,13 +62,13 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
             break;
         if (!yaz_is_abspath(ad) && base)
         {
-            strcpy (dirname, base);
+            strcpy(dirname, base);
             i = strlen(dirname);
             dirname[i++] = '/';
         }
         while (*ad)
         {
-	    if (*ad == ':' && strchr ("+-0123456789", ad[1]))
+	    if (*ad == ':' && strchr("+-0123456789", ad[1]))
 		break;
             if (i < FILENAME_MAX)
                 dirname[i++] = *ad;
@@ -85,12 +77,12 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
         dirname[i] = '\0';
         if (*ad++ != ':')
         {
-	    yaz_log (YLOG_WARN, "Missing colon after path: %s", ad0);
+	    yaz_log(YLOG_WARN, "Missing colon after path: %s", ad0);
             return -1;
         }
         if (i == 0)
         {
-	    yaz_log (YLOG_WARN, "Empty path: %s", ad0);
+	    yaz_log(YLOG_WARN, "Empty path: %s", ad0);
             return -1;
         }
         while (*ad == ' ' || *ad == '\t')
@@ -105,7 +97,7 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
         size = 0;
         if (*ad < '0' || *ad > '9')
         {
-	    yaz_log (YLOG_FATAL, "Missing size after path: %s", ad0);
+	    yaz_log(YLOG_FATAL, "Missing size after path: %s", ad0);
             return -1;
         }
         size = 0;
@@ -118,10 +110,10 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
 	case 'M': case 'm': multi = 1048576; break;
 	case 'G': case 'g': multi = 1073741824; break;
         case '\0':
-            yaz_log (YLOG_FATAL, "Missing unit: %s", ad0);
+            yaz_log(YLOG_FATAL, "Missing unit: %s", ad0);
             return -1;
         default:
-            yaz_log (YLOG_FATAL, "Illegal unit: %c in %s", *ad, ad0);
+            yaz_log(YLOG_FATAL, "Illegal unit: %c in %s", *ad, ad0);
             return -1;
 	}
         ad++;
@@ -134,6 +126,15 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
     return 0;
 }
 
+/** \brief position within metafile (perform seek)
+    \param mf metafile handle
+    \param pos block position
+    \param offset offset within block
+    \retval 0 OK
+    \retval -1 ERROR
+    \retval -2 OK, but file does not created (read-only)
+*/
+   
 static zint file_position(MFile mf, zint pos, int offset)
 {
     zint off = 0, ps;
@@ -160,16 +161,19 @@ static zint file_position(MFile mf, zint pos, int offset)
                                         (O_BINARY|O_RDONLY), 0666)) < 0)
         {
             if (!mf->wr && errno == ENOENT && off == 0)
+            {
+                /* we can't open it for reading. But not really an error */
                 return -2;
-    	    yaz_log (YLOG_WARN|YLOG_ERRNO, "Failed to open %s", mf->files[c].path);
+            }
+    	    yaz_log(YLOG_WARN|YLOG_ERRNO, "Failed to open %s", mf->files[c].path);
 	    return -1;
         }
     }
     ps = pos - off;
-    if (mfile_seek(mf->files[c].fd, ps * (mfile_off_t) mf->blocksize + offset,
+    if (mfile_seek(mf->files[c].fd, ps *(mfile_off_t) mf->blocksize + offset,
     	SEEK_SET) < 0)
     {
-    	yaz_log (YLOG_WARN|YLOG_ERRNO, "Failed to seek in %s", mf->files[c].path);
+    	yaz_log(YLOG_WARN|YLOG_ERRNO, "Failed to seek in %s", mf->files[c].path);
         yaz_log(YLOG_WARN, "pos=" ZINT_FORMAT " off=" ZINT_FORMAT " blocksize=%d offset=%d",
                        pos, off, mf->blocksize, offset);
     	return -1;
@@ -188,10 +192,12 @@ static int cmp_part_file(const void *p1, const void *p2)
     return 0;
 }
 
-/*
- * Create a new area, cotaining metafiles in directories.
- * Find the part-files in each directory, and inventory the existing metafiles.
- */
+/** \brief creates a metafile area
+    \param name of area (does not show up on disk - purely for notation)
+    \param spec area specification (e.g. "/a:1G dir /b:2000M"
+    \param base base directory (NULL for no base)
+    \returns metafile area handle or NULL if error occurs
+*/
 MFile_area mf_init(const char *name, const char *spec, const char *base)
 {
     MFile_area ma = (MFile_area) xmalloc(sizeof(*ma));
@@ -203,13 +209,13 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
     int fd, number;
     char metaname[FILENAME_MAX+1], tmpnam[FILENAME_MAX+1];
     
-    yaz_log (YLOG_DEBUG, "mf_init(%s)", name);
+    yaz_log(YLOG_DEBUG, "mf_init(%s)", name);
     strcpy(ma->name, name);
     ma->mfiles = 0;
     ma->dirs = 0;
     if (scan_areadef(ma, spec, base) < 0)
     {
-    	yaz_log (YLOG_WARN, "Failed to access description of '%s'", name);
+    	yaz_log(YLOG_WARN, "Failed to access description of '%s'", name);
     	return 0;
     }
     /* look at each directory */
@@ -217,7 +223,7 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
     {
     	if (!(dd = opendir(dirp->name)))
     	{
-    	    yaz_log (YLOG_WARN|YLOG_ERRNO, "Failed to open directory %s",
+    	    yaz_log(YLOG_WARN|YLOG_ERRNO, "Failed to open directory %s",
                                      dirp->name);
     	    return 0;
 	}
@@ -225,13 +231,13 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
 	while ((dent = readdir(dd)))
 	{
 	    int len = strlen(dent->d_name);
-	    const char *cp = strrchr (dent->d_name, '-');
-	    if (strchr (".-", *dent->d_name))
+	    const char *cp = strrchr(dent->d_name, '-');
+	    if (strchr(".-", *dent->d_name))
 		continue;
-	    if (len < 5 || !cp || strcmp (dent->d_name + len - 3, ".mf"))
+	    if (len < 5 || !cp || strcmp(dent->d_name + len - 3, ".mf"))
 		continue;
 	    number = atoi(cp+1);
-	    memcpy (metaname, dent->d_name, cp - dent->d_name);
+	    memcpy(metaname, dent->d_name, cp - dent->d_name);
 	    metaname[ cp - dent->d_name] = '\0';
 
 	    for (meta_f = ma->mfiles; meta_f; meta_f = meta_f->next)
@@ -247,7 +253,7 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
 	    if (!meta_f)
 	    {
 	    	meta_f = (meta_file *) xmalloc(sizeof(*meta_f));
-        	zebra_mutex_init (&meta_f->mutex);
+        	zebra_mutex_init(&meta_f->mutex);
 	    	meta_f->ma = ma;
 	    	meta_f->next = ma->mfiles;
 	    	meta_f->open = 0;
@@ -265,13 +271,13 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
 	    /* get size */
 	    if ((fd = open(part_f->path, O_BINARY|O_RDONLY)) < 0)
 	    {
-	    	yaz_log (YLOG_FATAL|YLOG_ERRNO, "Failed to access %s",
+	    	yaz_log(YLOG_FATAL|YLOG_ERRNO, "Failed to access %s",
                       dent->d_name);
 	    	return 0;
 	    }
 	    if ((part_f->bytes = mfile_seek(fd, 0, SEEK_END)) < 0)
 	    {
-	    	yaz_log (YLOG_FATAL|YLOG_ERRNO, "Failed to seek in %s",
+	    	yaz_log(YLOG_FATAL|YLOG_ERRNO, "Failed to seek in %s",
                       dent->d_name);
 	    	return 0;
 	    }
@@ -286,7 +292,7 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
     }
     for (meta_f = ma->mfiles; meta_f; meta_f = meta_f->next)
     {
-    	yaz_log (YLOG_DEBUG, "mf_init: %s consists of %d part(s)", meta_f->name,
+    	yaz_log(YLOG_DEBUG, "mf_init: %s consists of %d part(s)", meta_f->name,
               meta_f->no_files);
     	qsort(meta_f->files, meta_f->no_files, sizeof(part_file),
               cmp_part_file);
@@ -294,6 +300,9 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
     return ma;
 }
 
+/** \brief destroys metafile area handle
+    \param ma metafile area handle
+*/
 void mf_destroy(MFile_area ma)
 {
     mf_dir *dp;
@@ -305,12 +314,16 @@ void mf_destroy(MFile_area ma)
     {
 	mf_dir *d = dp;
 	dp = dp->next;
-	xfree (d);
+	xfree(d);
     }
     mf_reset(ma, 0);
-    xfree (ma);
+    xfree(ma);
 }
 
+/** \brief reset all files in a metafile area (optionally delete them as well)
+    \param ma metafile area
+    \param unlink_flag if unlink_flag=1 all files are removed from FS
+*/
 void mf_reset(MFile_area ma, int unlink_flag)
 {
     meta_file *meta_f;
@@ -325,21 +338,25 @@ void mf_reset(MFile_area ma, int unlink_flag)
 
 	meta_f = meta_f->next;
 
-	assert (!m->open);
+	assert(!m->open);
 	for (i = 0; i<m->no_files; i++)
 	{
             if (unlink_flag)
-                unlink (m->files[i].path);
-	    xfree (m->files[i].path);
+                unlink(m->files[i].path);
+	    xfree(m->files[i].path);
 	}
-	zebra_mutex_destroy (&m->mutex);
-	xfree (m);
+	zebra_mutex_destroy(&m->mutex);
+	xfree(m);
     }
     ma->mfiles = 0;
 }
 
-/*
- * Open a metafile.
+/** \brief opens metafile
+    \param ma metafile area handle
+    \param name pseudo filename (name*.mf)
+    \param block_size block size for this file
+    \param wflag write flag, 0=read, 1=write&read
+    \returns metafile handle, or NULL for error (could not be opened)
  */
 MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 {
@@ -350,21 +367,22 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 
     yaz_log(YLOG_DEBUG, "mf_open(%s bs=%d, %s)", name, block_size,
          wflag ? "RW" : "RDONLY");
-    assert (ma);
+    assert(ma);
     for (mnew = ma->mfiles; mnew; mnew = mnew->next)
     	if (!strcmp(name, mnew->name))
 	{
     	    if (mnew->open)
-    	        abort();
-	    else
-	        break;
+            {
+                yaz_log(YLOG_WARN, "metafile %s already open", name);
+                return 0;
+            }
 	}
     if (!mnew)
     {
     	mnew = (meta_file *) xmalloc(sizeof(*mnew));
     	strcpy(mnew->name, name);
     	/* allocate one, empty file */
-	zebra_mutex_init (&mnew->mutex);
+	zebra_mutex_init(&mnew->mutex);
     	mnew->no_files = 1;
     	mnew->files[0].bytes = 0;
 	mnew->files[0].blocks = 0;
@@ -376,7 +394,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 	    mnew->min_bytes_creat; dp = dp->next);
 	if (!dp)
 	{
-	    yaz_log (YLOG_FATAL, "Insufficient space for new mfile.");
+	    yaz_log(YLOG_FATAL, "Insufficient space for new mfile.");
 	    return 0;
 	}
 	mnew->files[0].dir = dp;
@@ -416,14 +434,15 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     return mnew;
 }
 
-/*
- * Close a metafile.
- */
+/** \brief closes metafile
+    \param mf metafile handle
+    \retval 0 OK
+*/
 int mf_close(MFile mf)
 {
     int i;
 
-    yaz_log (YLOG_DEBUG, "mf_close(%s)", mf->name);
+    yaz_log(YLOG_DEBUG, "mf_close(%s)", mf->name);
     assert(mf->open);
     for (i = 0; i < mf->no_files; i++)
     {
@@ -440,44 +459,58 @@ int mf_close(MFile mf)
     return 0;
 }
 
-/*
- * Read one block from a metafile. Interface mirrors bfile.
+/** \brief reads block from metafile
+    \param mf metafile handle
+    \param no block position
+    \param offset offset within block
+    \param nbytes no of bytes to read (0 for whole block)
+    \param buf content (filled with data if OK)
+    \retval 0 block partially read
+    \retval 1 block fully read
+    \retval -1 block could not be read due to error
  */
 int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf)
 {
     zint rd;
     int toread;
 
-    zebra_mutex_lock (&mf->mutex);
+    zebra_mutex_lock(&mf->mutex);
     if ((rd = file_position(mf, no, offset)) < 0)
     {
         if (rd == -2)
 	{
-	    zebra_mutex_unlock (&mf->mutex);
+	    zebra_mutex_unlock(&mf->mutex);
             return 0;
 	}
         else
         {
-            yaz_log (YLOG_FATAL, "mf_read %s internal error", mf->name);
-            exit(1);
+            yaz_log(YLOG_FATAL, "mf_read2 %s internal error", mf->name);
+            return -1;
         }
     }
     toread = nbytes ? nbytes : mf->blocksize;
     if ((rd = read(mf->files[mf->cur_file].fd, buf, toread)) < 0)
     {
-    	yaz_log (YLOG_FATAL|YLOG_ERRNO, "mf_read: Read failed (%s)",
+    	yaz_log(YLOG_FATAL|YLOG_ERRNO, "mf_read2: Read failed (%s)",
               mf->files[mf->cur_file].path);
-    	exit(1);
+        return -1;
     }
-    zebra_mutex_unlock (&mf->mutex);
+    zebra_mutex_unlock(&mf->mutex);
     if (rd < toread)
     	return 0;
     else
     	return 1;
 }
 
-/*
- * Write.
+
+/** \brief writes block to metafile
+    \param mf metafile handle
+    \param no block position
+    \param offset offset within block
+    \param nbytes no of bytes to write (0 for whole block)
+    \param buf content to be written
+    \retval 0 block written
+    \retval -1 error (block not written)
  */
 int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 {
@@ -488,11 +521,11 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
     char tmp[FILENAME_MAX+1];
     unsigned char dummych = '\xff';
 
-    zebra_mutex_lock (&mf->mutex);
+    zebra_mutex_lock(&mf->mutex);
     if ((ps = file_position(mf, no, offset)) < 0)
     {
-        yaz_log (YLOG_FATAL, "mf_write %s internal error (1)", mf->name);
-	exit(1);
+        yaz_log(YLOG_FATAL, "mf_write %s internal error (1)", mf->name);
+        return -1;
     }
     /* file needs to grow */
     while (ps >= mf->files[mf->cur_file].blocks)
@@ -507,22 +540,22 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 	    if ((nblocks = (int) (mf->files[mf->cur_file].dir->avail_bytes /
 		mf->blocksize)) > 0)
 	    {
-	    	yaz_log (YLOG_DEBUG, "Capping off file %s at pos " ZINT_FORMAT,
+	    	yaz_log(YLOG_DEBUG, "Capping off file %s at pos " ZINT_FORMAT,
 		    mf->files[mf->cur_file].path, nblocks);
 	    	if ((ps = file_position(mf,
 		    (mf->cur_file ? mf->files[mf->cur_file-1].top : 0) +
 		    mf->files[mf->cur_file].blocks + nblocks - 1, 0)) < 0)
                 {
-                    yaz_log (YLOG_FATAL, "mf_write %s internal error (2)",
+                    yaz_log(YLOG_FATAL, "mf_write %s internal error (2)",
 				 mf->name);
-		    exit(1);
+                    return -1;
                 }
-		yaz_log (YLOG_DEBUG, "ps = " ZINT_FORMAT, ps);
+		yaz_log(YLOG_DEBUG, "ps = " ZINT_FORMAT, ps);
 		if (write(mf->files[mf->cur_file].fd, &dummych, 1) < 1)
 		{
-		    yaz_log (YLOG_ERRNO|YLOG_FATAL, "mf_write %s internal error (3)",
+		    yaz_log(YLOG_ERRNO|YLOG_FATAL, "mf_write %s internal error (3)",
 				      mf->name);
-		    exit(1);
+                    return -1;
 		}
 		mf->files[mf->cur_file].blocks += nblocks;
 		mf->files[mf->cur_file].bytes += nblocks * mf->blocksize;
@@ -530,14 +563,14 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 		    mf->blocksize;
 	    }
 	    /* get other bit */
-    	    yaz_log (YLOG_DEBUG, "Creating new file.");
+    	    yaz_log(YLOG_DEBUG, "Creating new file.");
     	    for (dp = mf->ma->dirs; dp && dp->max_bytes >= 0 &&
 		dp->avail_bytes < needed; dp = dp->next);
 	    if (!dp)
 	    {
-	    	yaz_log (YLOG_FATAL, "Cannot allocate more space for %s",
+	    	yaz_log(YLOG_FATAL, "Cannot allocate more space for %s",
                       mf->name);
-	    	exit(1);
+                return -1;
 	    }
 	    mf->files[mf->cur_file].top = (mf->cur_file ?
 	    	mf->files[mf->cur_file-1].top : -1) +
@@ -556,9 +589,9 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 	    /* open new file and position at beginning */
 	    if ((ps = file_position(mf, no, offset)) < 0)
             {
-                yaz_log (YLOG_FATAL, "mf_write %s internal error (4)",
+                yaz_log(YLOG_FATAL, "mf_write %s internal error (4)",
 				 mf->name);
-	    	exit(1);
+                return -1;
             }	
 	}
 	else
@@ -574,14 +607,23 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
     towrite = nbytes ? nbytes : mf->blocksize;
     if (write(mf->files[mf->cur_file].fd, buf, towrite) < towrite)
     {
-    	yaz_log (YLOG_FATAL|YLOG_ERRNO, "Write failed for file %s part %d",
+    	yaz_log(YLOG_FATAL|YLOG_ERRNO, "Write failed for file %s part %d",
 		mf->name, mf->cur_file);
-    	exit(1);
+        return -1;
     }
-    zebra_mutex_unlock (&mf->mutex);
+    zebra_mutex_unlock(&mf->mutex);
     return 0;
 }
 
+/** \brief metafile area statistics 
+    \param ma metafile area handle
+    \param no area number (0=first, 1=second, ..)
+    \param directory holds directory upon completion (if non-NULL)
+    \param used_bytes holds used bytes upon completion (if non-NULL)
+    \param max_bytes holds max size bytes upon completion (if non-NULL)
+    \retval 0 area number does not exist
+    \retval 1 area number exists (and directory,used_bytes,.. are set)
+*/
 int mf_area_directory_stat(MFile_area ma, int no, const char **directory,
 			   double *used_bytes, double *max_bytes)
 {

@@ -1,4 +1,4 @@
-/* $Id: bfile.c,v 1.50 2006-10-10 10:19:28 adam Exp $
+/* $Id: bfile.c,v 1.51 2006-11-08 22:08:27 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -62,12 +62,12 @@ struct BFiles_struct {
 
 BFiles bfs_create (const char *spec, const char *base)
 {
-    BFiles bfs = (BFiles) xmalloc (sizeof(*bfs));
-    bfs->commit_area = NULL;
+    BFiles bfs = (BFiles) xmalloc(sizeof(*bfs));
+    bfs->commit_area = 0;
     bfs->base = 0;
     bfs->cache_fname = 0;
     if (base)
-        bfs->base = xstrdup (base);
+        bfs->base = xstrdup(base);
     bfs->register_area = mf_init("register", spec, base);
     if (!bfs->register_area)
     {
@@ -77,44 +77,44 @@ BFiles bfs_create (const char *spec, const char *base)
     return bfs;
 }
 
-void bfs_destroy (BFiles bfs)
+void bfs_destroy(BFiles bfs)
 {
     if (!bfs)
         return;
-    xfree (bfs->cache_fname);
-    xfree (bfs->base);
-    mf_destroy (bfs->commit_area);
-    mf_destroy (bfs->register_area);
-    xfree (bfs);
+    xfree(bfs->cache_fname);
+    xfree(bfs->base);
+    mf_destroy(bfs->commit_area);
+    mf_destroy(bfs->register_area);
+    xfree(bfs);
 }
 
-static FILE *open_cache (BFiles bfs, const char *flags)
+static FILE *open_cache(BFiles bfs, const char *flags)
 {
     FILE *file;
 
-    file = fopen (bfs->cache_fname, flags);
+    file = fopen(bfs->cache_fname, flags);
     return file;
 }
 
-static void unlink_cache (BFiles bfs)
+static void unlink_cache(BFiles bfs)
 {
-    unlink (bfs->cache_fname);
+    unlink(bfs->cache_fname);
 }
 
-ZEBRA_RES bf_cache (BFiles bfs, const char *spec)
+ZEBRA_RES bf_cache(BFiles bfs, const char *spec)
 {
     if (spec)
     {
-        yaz_log (YLOG_LOG, "enabling shadow spec=%s", spec);
+        yaz_log(YLOG_LOG, "enabling shadow spec=%s", spec);
         if (!bfs->commit_area)
-	    bfs->commit_area = mf_init ("shadow", spec, bfs->base);
+	    bfs->commit_area = mf_init("shadow", spec, bfs->base);
         if (bfs->commit_area)
         {
-            bfs->cache_fname = xmalloc (strlen(bfs->commit_area->dirs->name)+
+            bfs->cache_fname = xmalloc(strlen(bfs->commit_area->dirs->name)+
                                        8);
-            strcpy (bfs->cache_fname, bfs->commit_area->dirs->name);
-            strcat (bfs->cache_fname, "/cache");
-            yaz_log (YLOG_LOG, "cache_fname = %s", bfs->cache_fname);
+            strcpy(bfs->cache_fname, bfs->commit_area->dirs->name);
+            strcat(bfs->cache_fname, "/cache");
+            yaz_log(YLOG_LOG, "cache_fname = %s", bfs->cache_fname);
         }
 	else
 	{
@@ -123,16 +123,17 @@ ZEBRA_RES bf_cache (BFiles bfs, const char *spec)
 	}
     }
     else
-        bfs->commit_area = NULL;
+        bfs->commit_area = 0;
     return ZEBRA_OK;
 }
 
-int bf_close (BFile bf)
+int bf_close(BFile bf)
 {
-    zebra_lock_rdwr_destroy (&bf->rdwr_lock);
+    zebra_lock_rdwr_destroy(&bf->rdwr_lock);
     if (bf->cf)
-        cf_close (bf->cf);
-    mf_close (bf->mf);
+        cf_close(bf->cf);
+    if (bf->mf)
+        mf_close(bf->mf);
     xfree(bf->alloc_buf);
     xfree(bf->magic);
     xfree(bf);
@@ -218,7 +219,7 @@ BFile bf_xopen(BFiles bfs, const char *name, int block_size, int wrflag,
     return bf;
 }
 
-int bf_xclose (BFile bf, int version, const char *more_info)
+int bf_xclose(BFile bf, int version, const char *more_info)
 {
     if (bf->header_dirty)
     {
@@ -240,21 +241,31 @@ int bf_xclose (BFile bf, int version, const char *more_info)
     return bf_close(bf);
 }
 
-BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag)
+BFile bf_open(BFiles bfs, const char *name, int block_size, int wflag)
 {
-    BFile bf = (BFile) xmalloc(sizeof(struct BFile_struct));
+    BFile bf = (BFile) xmalloc(sizeof(*bf));
 
     bf->alloc_buf = 0;
     bf->magic = 0;
     bf->block_size = block_size;
     bf->header_dirty = 0;
+    bf->cf = 0;
+    bf->mf = 0;
+    zebra_lock_rdwr_init(&bf->rdwr_lock);
+
     if (bfs->commit_area)
     {
         int first_time;
 
-        bf->mf = mf_open (bfs->register_area, name, block_size, 0);
-        bf->cf = cf_open (bf->mf, bfs->commit_area, name, block_size,
-                           wflag, &first_time);
+        bf->mf = mf_open(bfs->register_area, name, block_size, 0);
+        bf->cf = cf_open(bf->mf, bfs->commit_area, name, block_size,
+                         wflag, &first_time);
+        if (!bf->cf)
+        {
+            yaz_log(YLOG_FATAL, "cf_open failed for %s", name);
+            bf_close(bf);
+            return 0;
+        }
         if (first_time)
         {
             FILE *outf;
@@ -263,77 +274,104 @@ BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag)
             if (!outf)
             {
                 yaz_log(YLOG_FATAL|YLOG_ERRNO, "open %s", bfs->cache_fname);
-                exit(1);
+                bf_close(bf);
+                return 0;
             }
             fprintf(outf, "%s %d\n", name, block_size);
-            fclose(outf);
+            if (fclose(outf))
+            {
+                yaz_log(YLOG_FATAL|YLOG_ERRNO, "fclose %s", bfs->cache_fname);
+                bf_close(bf);
+                return 0;
+            }
         }
     }
     else
     {
         bf->mf = mf_open(bfs->register_area, name, block_size, wflag);
-        bf->cf = NULL;
     }
     if (!bf->mf)
     {
         yaz_log(YLOG_FATAL, "mf_open failed for %s", name);
-        xfree(bf);
+        bf_close(bf);
         return 0;
     }
-    zebra_lock_rdwr_init(&bf->rdwr_lock);
     return bf;
 }
 
-int bf_read (BFile bf, zint no, int offset, int nbytes, void *buf)
+int bf_read(BFile bf, zint no, int offset, int nbytes, void *buf)
 {
-    int r;
+    int ret = bf_read2(bf, no, offset, nbytes, buf);
 
-    zebra_lock_rdwr_rlock (&bf->rdwr_lock);
+    if (ret == -1)
+    {
+        exit(1);
+    }
+    return ret;
+}
+
+int bf_read2(BFile bf, zint no, int offset, int nbytes, void *buf)
+{
+    int ret;
+
+    zebra_lock_rdwr_rlock(&bf->rdwr_lock);
     if (bf->cf)
     {
-	if ((r = cf_read (bf->cf, no, offset, nbytes, buf)) == -1)
-	    r = mf_read (bf->mf, no, offset, nbytes, buf);
+	if ((ret = cf_read(bf->cf, no, offset, nbytes, buf)) == 0)
+	    ret = mf_read(bf->mf, no, offset, nbytes, buf);
     }
     else 
-	r = mf_read (bf->mf, no, offset, nbytes, buf);
-    zebra_lock_rdwr_runlock (&bf->rdwr_lock);
-    return r;
+	ret = mf_read(bf->mf, no, offset, nbytes, buf);
+    zebra_lock_rdwr_runlock(&bf->rdwr_lock);
+    return ret;
 }
 
-int bf_write (BFile bf, zint no, int offset, int nbytes, const void *buf)
+int bf_write(BFile bf, zint no, int offset, int nbytes, const void *buf)
+{
+    int ret = bf_write2(bf, no, offset, nbytes, buf);
+
+    if (ret == -1)
+    {
+        exit(1);
+    }
+    return ret;
+}
+
+int bf_write2(BFile bf, zint no, int offset, int nbytes, const void *buf)
 {
     int r;
-    zebra_lock_rdwr_wlock (&bf->rdwr_lock);
+    zebra_lock_rdwr_wlock(&bf->rdwr_lock);
     if (bf->cf)
-        r = cf_write (bf->cf, no, offset, nbytes, buf);
+        r = cf_write(bf->cf, no, offset, nbytes, buf);
     else
-	r = mf_write (bf->mf, no, offset, nbytes, buf);
-    zebra_lock_rdwr_wunlock (&bf->rdwr_lock);
+	r = mf_write(bf->mf, no, offset, nbytes, buf);
+    zebra_lock_rdwr_wunlock(&bf->rdwr_lock);
     return r;
 }
 
-int bf_commitExists (BFiles bfs)
+int bf_commitExists(BFiles bfs)
 {
     FILE *inf;
 
-    inf = open_cache (bfs, "rb");
+    inf = open_cache(bfs, "rb");
     if (inf)
     {
-        fclose (inf);
+        fclose(inf);
         return 1;
     }
     return 0;
 }
 
-void bf_reset (BFiles bfs)
+void bf_reset(BFiles bfs)
 {
     if (!bfs)
 	return;
     mf_reset(bfs->commit_area, 1);
     mf_reset(bfs->register_area, 1);
+    unlink_cache(bfs);
 }
 
-void bf_commitExec (BFiles bfs)
+void bf_commitExec(BFiles bfs)
 {
     FILE *inf;
     int block_size;
@@ -342,40 +380,40 @@ void bf_commitExec (BFiles bfs)
     CFile cf;
     int first_time;
 
-    assert (bfs->commit_area);
-    if (!(inf = open_cache (bfs, "rb")))
+    assert(bfs->commit_area);
+    if (!(inf = open_cache(bfs, "rb")))
     {
-        yaz_log (YLOG_LOG, "No commit file");
+        yaz_log(YLOG_LOG, "No commit file");
         return ;
     }
-    while (fscanf (inf, "%s %d", path, &block_size) == 2)
+    while (fscanf(inf, "%s %d", path, &block_size) == 2)
     {
-        mf = mf_open (bfs->register_area, path, block_size, 1);
-        cf = cf_open (mf, bfs->commit_area, path, block_size, 0, &first_time);
+        mf = mf_open(bfs->register_area, path, block_size, 1);
+        cf = cf_open(mf, bfs->commit_area, path, block_size, 0, &first_time);
 
-        cf_commit (cf);
+        cf_commit(cf);
 
-        cf_close (cf);
-        mf_close (mf);
+        cf_close(cf);
+        mf_close(mf);
     }
-    fclose (inf);
+    fclose(inf);
 }
 
-void bf_commitClean (BFiles bfs, const char *spec)
+void bf_commitClean(BFiles bfs, const char *spec)
 {
     int mustDisable = 0;
 
     if (!bfs->commit_area)
     {
-        bf_cache (bfs, spec);
+        bf_cache(bfs, spec);
         mustDisable = 1;
     }
 
     mf_reset(bfs->commit_area, 1);
 
-    unlink_cache (bfs);
+    unlink_cache(bfs);
     if (mustDisable)
-        bf_cache (bfs, 0);
+        bf_cache(bfs, 0);
 }
 
 int bf_alloc(BFile bf, int no, zint *blocks)
