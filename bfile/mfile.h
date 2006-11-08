@@ -1,4 +1,4 @@
-/* $Id: mfile.h,v 1.7 2006-10-09 22:10:00 adam Exp $
+/* $Id: mfile.h,v 1.8 2006-11-08 22:06:50 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -123,14 +123,8 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag);
  */
 int mf_close(MFile mf);
 
-/*
- * Read one block from a metafile. Interface mirrors bfile.
- */
 int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf);
 
-/*
- * Same.
- */
 int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf);
 
 /*
