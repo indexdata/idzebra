@@ -1,4 +1,4 @@
-/* $Id: tstbfile2.c,v 1.2 2006-11-08 13:05:33 adam Exp $
+/* $Id: tstbfile2.c,v 1.3 2006-11-08 22:05:43 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -80,12 +80,13 @@ void tst(void)
     YAZ_CHECK_EQ(r, ZEBRA_OK);
 #endif
 
+    yaz_log(YLOG_LOG, "writing file 1");
     bf = bf_open(bfs, "file", block_size, 1);
     YAZ_CHECK(bf);
     if (bf)
     {
 	zint bno[2];
-	memset(buf, '\0', block_size);
+	memset(buf, ' ', block_size);
 
 	bno[0] = 0;
 	bno[1] = 1;
@@ -102,6 +103,7 @@ void tst(void)
 	bf_close(bf);
     }
 
+    yaz_log(YLOG_LOG, "reading file 1");
     bf = bf_open(bfs, "file", block_size, 0);
     YAZ_CHECK(bf);
     if (bf)
@@ -113,7 +115,7 @@ void tst(void)
 	while (bno[0] < max_block)
 	{
 	    zint next = bno[0] + bno[1];
-	    memset(buf, '\0', block_size);
+	    memset(buf, ' ', block_size);
 
 	    YAZ_CHECK_EQ(bf_read(bf, bno[0], 0, 0, buf), 1);
 	    YAZ_CHECK_EQ(atoi(buf), bno[0]);
@@ -125,6 +127,7 @@ void tst(void)
     }
 
 #if 1
+    yaz_log(YLOG_LOG, "writing file 2");
     bf = bf_open(bfs, "file", block_size, 1);
     YAZ_CHECK(bf);
     if (bf)
@@ -132,7 +135,7 @@ void tst(void)
 	zint bno = 0;
 	while (bno < max_block)
 	{
-	    memset(buf, '\0', block_size);
+	    memset(buf, ' ', block_size);
 
 	    sprintf(buf, ZINT_FORMAT, bno);
 	    YAZ_CHECK_EQ(bf_write(bf, bno, 0, 0, buf), 0);
@@ -142,19 +145,22 @@ void tst(void)
 	bf_close(bf);
     }
 
+    yaz_log(YLOG_LOG, "reading file 2");
     bf = bf_open(bfs, "file", block_size, 0);
     YAZ_CHECK(bf);
     if (bf)
     {
 	zint bno = 0;
+	int step = max_block / 50;
+       
 	while (bno < max_block)
 	{
-	    memset(buf, '\0', block_size);
+	    memset(buf, ' ', block_size);
 
 	    YAZ_CHECK_EQ(bf_read(bf, bno, 0, 0, buf), 1);
 	    YAZ_CHECK_EQ(atoi(buf), bno);
 
-	    bno = bno + 2;
+	    bno = bno + 2*step;
 	}
 	bf_close(bf);
     }
