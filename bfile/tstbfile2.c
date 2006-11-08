@@ -1,4 +1,4 @@
-/* $Id: tstbfile2.c,v 1.1 2006-11-08 12:59:27 adam Exp $
+/* $Id: tstbfile2.c,v 1.2 2006-11-08 13:05:33 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -66,6 +66,19 @@ void tst(void)
     YAZ_CHECK_EQ(r, ZEBRA_OK);
 
     bf_reset(bfs);
+
+#if 1
+    /* we have to destroy bfs after reset. Unfortunately! */
+    bfs_destroy(bfs);
+
+    bfs = bfs_create("register:4M", 0 /* base: current dir */);
+    YAZ_CHECK(bfs);
+    if (!bfs)
+	return;
+
+    r = bf_cache(bfs, "shadow:4M");
+    YAZ_CHECK_EQ(r, ZEBRA_OK);
+#endif
 
     bf = bf_open(bfs, "file", block_size, 1);
     YAZ_CHECK(bf);
