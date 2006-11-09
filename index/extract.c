@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.234 2006-11-02 10:47:05 adam Exp $
+/* $Id: extract.c,v 1.235 2006-11-09 14:39:24 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1271,9 +1271,9 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
     zh->reg->key_buf_used = 0;
 }
 
-ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh,
-				  zebra_rec_keys_t reckeys,
-				  zebra_snippets *snippets)
+ZEBRA_RES zebra_rec_keys_to_snippets(ZebraHandle zh,
+                                     zebra_rec_keys_t reckeys,
+                                     zebra_snippets *snippets)
 {
     NMEM nmem = nmem_create();
     if (zebra_rec_keys_rewind(reckeys)) 

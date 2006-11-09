@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.180 2006-10-29 17:20:01 adam Exp $
+/* $Id: index.h,v 1.181 2006-11-09 14:39:24 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -392,8 +392,8 @@ YAZ_EXPORT void zebra_create_stream_fd(struct ZebraRecStream *stream,
                                        int fd, off_t start_offset);
 void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys);
 
-ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys,
-				  zebra_snippets *snippets);
+ZEBRA_RES zebra_rec_keys_to_snippets(ZebraHandle zh, zebra_rec_keys_t reckeys,
+                                     zebra_snippets *snippets);
 ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 				    zint sysno, zebra_snippets *snippets);
 
