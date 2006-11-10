@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.4 2006-11-03 23:17:08 adam Exp $
+/* $Id: alvis.c,v 1.5 2006-11-10 12:56:26 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -58,7 +58,7 @@ struct filter_info {
     char *fname;
     char *full_name;
     const char *profile_path;
-    const char *split_level;
+    int split_level;
     const char *split_path;
     ODR odr;
     struct filter_schema *schemas;
@@ -227,7 +227,6 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 	    continue;
 	if (!XML_STRCMP(ptr->name, "schema"))
 	{  
-            char tmp_xslt_full_name[1024];
 	    struct _xmlAttr *attr;
 	    struct filter_schema *schema = xmalloc(sizeof(*schema));
 	    schema->name = 0;
@@ -251,26 +250,37 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 
             /* find requested schema */
 
-	    if (schema->stylesheet){
-              yaz_filepath_resolve(schema->stylesheet, tinfo->profile_path, 
-                                   NULL, tmp_xslt_full_name);
-              schema->stylesheet_xsp 
-                = xsltParseStylesheetFile((const xmlChar*) tmp_xslt_full_name);
-              if (!schema->stylesheet_xsp)
-                yaz_log(YLOG_WARN, 
-                        "alvis filter: could not parse xslt stylesheet %s", 
-                        tmp_xslt_full_name);
+	    if (schema->stylesheet)
+            {
+                char tmp_xslt_full_name[1024];
+                if (!yaz_filepath_resolve(schema->stylesheet, tinfo->profile_path, 
+                                          NULL, tmp_xslt_full_name)) 
+                {
+                    yaz_log(YLOG_WARN, 
+                            "alvis filter: stylesheet %s not found in path %s",
+                            schema->stylesheet, tinfo->profile_path);
+                    return ZEBRA_FAIL;
+                }
+                schema->stylesheet_xsp 
+                    = xsltParseStylesheetFile((const xmlChar*) tmp_xslt_full_name);
+                if (!schema->stylesheet_xsp)
+                {
+                    yaz_log(YLOG_WARN, 
+                            "alvis filter: could not parse xslt stylesheet %s", 
+                            tmp_xslt_full_name);
+                    return ZEBRA_FAIL;
+                }
             }
-            
-                
 	}
 	else if (!XML_STRCMP(ptr->name, "split"))
 	{
 	    struct _xmlAttr *attr;
 	    for (attr = ptr->properties; attr; attr = attr->next)
 	    {
-		attr_content(attr, "level", &tinfo->split_level);
-		attr_content(attr, "path", &tinfo->split_path);
+                const char *split_level_str = 0;
+		attr_content(attr, "level", &split_level_str);
+                tinfo->split_level = 
+                    split_level_str ? atoi(split_level_str) : 0;
 	    }
 	}
 	else
@@ -313,22 +323,20 @@ static struct filter_schema *lookup_schema(struct filter_info *tinfo,
 static ZEBRA_RES filter_config(void *clientData, Res res, const char *args)
 {
     struct filter_info *tinfo = clientData;
-    if (!args || !*args){
-      yaz_log(YLOG_WARN, "alvis filter: need config file");
-      return ZEBRA_FAIL;
+    if (!args || !*args)
+    {
+        yaz_log(YLOG_WARN, "alvis filter: need config file");
+        return ZEBRA_FAIL;
     }
 
     if (tinfo->fname && !strcmp(args, tinfo->fname))
 	return ZEBRA_OK;
     
-    tinfo->profile_path 
-      /* = res_get_def(res, "profilePath", DEFAULT_PROFILE_PATH); */
-      = res_get(res, "profilePath");
+    tinfo->profile_path = res_get(res, "profilePath");
     yaz_log(YLOG_LOG, "alvis filter: profilePath %s", tinfo->profile_path);
 
     destroy_schemas(tinfo);
-    create_schemas(tinfo, args);
-    return ZEBRA_OK;
+    return create_schemas(tinfo, args);
 }
 
 static void filter_destroy(void *clientData)
@@ -471,7 +479,7 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
 	else
 	{
 	    yaz_log(YLOG_WARN, "No root for index XML record."
-		    " split_level=%s stylesheet=%s",
+		    " split_level=%d stylesheet=%s",
 		    tinfo->split_level, schema->stylesheet);
 	}
 	xmlFreeDoc(resDoc);
@@ -489,7 +497,7 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
 static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
 {
     int ret;
-    int split_depth = 0;
+
     if (p->first_record)
     {
 	if (tinfo->reader)
@@ -503,23 +511,31 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
     if (!tinfo->reader)
 	return RECCTRL_EXTRACT_ERROR_GENERIC;
 
-    if (tinfo->split_level)
-	split_depth = atoi(tinfo->split_level);
     ret = xmlTextReaderRead(tinfo->reader);
-    while (ret == 1) {
+    while (ret == 1)
+    {
 	int type = xmlTextReaderNodeType(tinfo->reader);
 	int depth = xmlTextReaderDepth(tinfo->reader);
-	if (split_depth == 0 ||
-	    (split_depth > 0 &&
-	     type == XML_READER_TYPE_ELEMENT && split_depth == depth))
+	if (tinfo->split_level == 0 ||
+	    (tinfo->split_level > 0 &&
+	     type == XML_READER_TYPE_ELEMENT && tinfo->split_level == depth))
 	{
 	    xmlNodePtr ptr = xmlTextReaderExpand(tinfo->reader);
-	    xmlNodePtr ptr2 = xmlCopyNode(ptr, 1);
-	    xmlDocPtr doc = xmlNewDoc((const xmlChar*) "1.0");
-
-	    xmlDocSetRootElement(doc, ptr2);
-
-	    return extract_doc(tinfo, p, doc);	 
+            if (ptr)
+            {
+                xmlNodePtr ptr2 = xmlCopyNode(ptr, 1);
+                xmlDocPtr doc = xmlNewDoc((const xmlChar*) "1.0");
+                
+                xmlDocSetRootElement(doc, ptr2);
+                
+                return extract_doc(tinfo, p, doc);
+            }
+            else
+            {
+                xmlFreeTextReader(tinfo->reader);
+                tinfo->reader = 0;
+                return RECCTRL_EXTRACT_ERROR_GENERIC;
+            }
 	}
 	ret = xmlTextReaderRead(tinfo->reader);
     }
@@ -528,36 +544,13 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
     return RECCTRL_EXTRACT_EOF;
 }
 
-static int extract_full(struct filter_info *tinfo, struct recExtractCtrl *p)
-{
-    if (p->first_record) /* only one record per stream */
-    {
-	xmlDocPtr doc = xmlReadIO(ioread_ex, ioclose_ex, p /* I/O handler */,
-				  0 /* URL */,
-				  0 /* encoding */,
-				  XML_PARSE_XINCLUDE);
-	if (!doc)
-	{
-	    return RECCTRL_EXTRACT_ERROR_GENERIC;
-	}
-	return extract_doc(tinfo, p, doc);
-    }
-    else
-	return RECCTRL_EXTRACT_EOF;
-}
-
 static int filter_extract(void *clientData, struct recExtractCtrl *p)
 {
     struct filter_info *tinfo = clientData;
 
     odr_reset(tinfo->odr);
 
-    if (tinfo->split_level == 0 && tinfo->split_path == 0)
-	return extract_full(tinfo, p);
-    else
-    {
-	return extract_split(tinfo, p);
-    }
+    return extract_split(tinfo, p);
 }
 
 static int ioread_ret(void *context, char *buffer, int len)
@@ -570,7 +563,6 @@ static int ioclose_ret(void *context)
 {
     return 0;
 }
-
 
 static const char *snippet_doc(struct recRetrieveCtrl *p, int text_mode,
 			       int window_size)
