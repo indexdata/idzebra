@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.39 2006-10-29 17:20:01 adam Exp $
+/* $Id: testlib.c,v 1.40 2006-11-10 12:57:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -148,7 +148,14 @@ int tl_init_data(ZebraHandle zh, const char **recs)
 	if (zebra_begin_trans (zh, 1) != ZEBRA_OK)
 	    return 0;
         for (i = 0; recs[i]; i++)
-            zebra_add_record(zh, recs[i], strlen(recs[i]));
+        {
+            if (zebra_add_record(zh, recs[i], strlen(recs[i])) != ZEBRA_OK)
+            {
+                if (zebra_end_trans(zh) != ZEBRA_OK)
+                    return 0;
+                return 0;
+            }
+        }
         if (zebra_end_trans(zh) != ZEBRA_OK)
 	    return 0;
         zebra_commit(zh);
