@@ -1,5 +1,5 @@
  <chapter id="record-model-alvisxslt">
-  <!-- $Id: recordmodel-alvisxslt.xml,v 1.10 2006-09-22 12:34:45 adam Exp $ -->
+  <!-- $Id: recordmodel-alvisxslt.xml,v 1.11 2006-11-13 14:53:40 marc Exp $ -->
   <title>ALVIS XML Record Model and Filter Module</title>
   
 
@@ -113,15 +113,15 @@
            z:id="oai:JTRS:CP-3290---Volume-I" 
            z:rank="47896"
            z:type="update"&gt;
-       &lt;z:index name="oai:identifier" type="0"&gt;
+       &lt;z:index name="oai_identifier" type="0"&gt;
                 oai:JTRS:CP-3290---Volume-I&lt;/z:index&gt;
-       &lt;z:index name="oai:datestamp" type="0"&gt;2004-07-09&lt;/z:index&gt;
-       &lt;z:index name="oai:setspec" type="0"&gt;jtrs&lt;/z:index&gt;
-       &lt;z:index name="dc:all" type="w"&gt;
-          &lt;z:index name="dc:title" type="w"&gt;Proceedings of the 4th 
+       &lt;z:index name="oai_datestamp" type="0"&gt;2004-07-09&lt;/z:index&gt;
+       &lt;z:index name="oai_setspec" type="0"&gt;jtrs&lt;/z:index&gt;
+       &lt;z:index name="dc_all" type="w"&gt;
+          &lt;z:index name="dc_title" type="w"&gt;Proceedings of the 4th 
                 International Conference and Exhibition:
                 World Congress on Superconductivity - Volume I&lt;/z:index&gt;
-          &lt;z:index name="dc:creator" type="w"&gt;Kumar Krishen and *Calvin
+          &lt;z:index name="dc_creator" type="w"&gt;Kumar Krishen and *Calvin
                 Burnham, Editors&lt;/z:index&gt;
        &lt;/z:index&gt;
      &lt;/z:record&gt;
@@ -289,7 +289,7 @@
 
          <!-- OAI indexing templates -->
          <xsl:template match="oai:record/oai:header/oai:identifier">
-          <z:index name="oai:identifier" type="0">
+          <z:index name="oai_identifier" type="0">
            <xsl:value-of select="."/>
           </z:index>    
          </xsl:template>
@@ -298,7 +298,7 @@
 
          <!-- DC specific indexing templates -->
          <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:title">
-          <z:index name="dc:title" type="w">
+          <z:index name="dc_title" type="w">
            <xsl:value-of select="."/>
           </z:index>
          </xsl:template>
