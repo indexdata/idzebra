@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.46 2006-11-09 14:39:24 adam Exp $
+/* $Id: retrieve.c,v 1.47 2006-11-13 09:07:05 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -36,19 +36,78 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/diagbib1.h>
 #include <direntz.h>
 
-int zebra_storedata_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
+static void parse_zebra_elem(const char *elem,
+                             const char **index, size_t *index_len,
+                             const char **type, size_t *type_len)
+{
+    *type = 0;
+    *type_len = 0;
+
+    *index = 0;
+    *index_len = 0;
+
+    if (elem && *elem)
+    {
+        const char *cp = strchr(elem, ':');
+
+        if (!cp) /* no colon */
+        {
+            *index = elem;
+            *index_len = strlen(elem);
+        }
+        else if (cp[1] == '\0') /* 'index:' */
+        {
+            *index = elem;
+            *index_len = cp - elem;
+        }
+        else
+        {
+            *index = elem;
+            *index_len = cp - elem;
+            *type = cp+1;
+            *type_len = strlen(cp+1);
+        }
+    }
+}
+
+int zebra_storekeys_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
                           Record rec,
                           const char *element_set,
                           oid_value input_format,
                           oid_value *output_format,
                           char **rec_bufp, int *rec_lenp)
 {
+    const char *retrieval_index;
+    size_t retrieval_index_len; 
+    const char *retrieval_type;
+    size_t retrieval_type_len;
+   
     WRBUF wrbuf = wrbuf_alloc();
     zebra_rec_keys_t keys = zebra_rec_keys_open();
     zebra_rec_keys_set_buf(keys,
                            rec->info[recInfo_delKeys],
                            rec->size[recInfo_delKeys],
                            0);
+
+    yaz_log(YLOG_LOG, "element_set=%s", element_set);
+    
+    parse_zebra_elem(element_set,
+                     &retrieval_index, &retrieval_index_len,
+                     &retrieval_type,  &retrieval_type_len);
+
+
+    if (input_format == VAL_TEXT_XML)
+    {
+        yaz_log(YLOG_LOG, "want XML output");
+    }
+    else if (input_format == VAL_SUTRS)
+    {
+        yaz_log(YLOG_LOG, "want SUTRS output");
+    }
+    else
+    {
+        yaz_log(YLOG_LOG, "unsupported.. We must produce an error");
+    }
     if (zebra_rec_keys_rewind(keys))
     {
         size_t slen;
@@ -61,21 +120,35 @@ int zebra_storedata_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
             int index_type;
             const char *db = 0;
             const char *string_index = 0;
+            size_t string_index_len;
             char dst_buf[IT_MAX_WORD];
             
             zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db,
                                     &string_index);
-            
-            if (string_index)
-                wrbuf_printf(wrbuf, "%s", string_index);
-            
-            zebra_term_untrans(zh, index_type, dst_buf, str);
-            wrbuf_printf(wrbuf, " %s", dst_buf);
-            
-            for (i = 1; i < key_in.len; i++)
-                wrbuf_printf(wrbuf, " " ZINT_FORMAT, key_in.mem[i]);
-            wrbuf_printf(wrbuf, "\n");
-            
+            string_index_len = strlen(string_index);
+            if (retrieval_index == 0 
+                || (string_index_len == retrieval_index_len 
+                    && !memcmp(string_index, retrieval_index,
+                               string_index_len)))
+            {
+                
+                if (retrieval_type == 0 
+                    || (retrieval_type_len == 1 
+                        && retrieval_type[0] == index_type))
+                {
+                    
+                    wrbuf_printf(wrbuf, "%s ", string_index);
+                    
+                    wrbuf_printf(wrbuf, "%c", index_type);
+                    
+                    zebra_term_untrans(zh, index_type, dst_buf, str);
+                    wrbuf_printf(wrbuf, " %s", dst_buf);
+                    
+                    for (i = 1; i < key_in.len; i++)
+                        wrbuf_printf(wrbuf, " " ZINT_FORMAT, key_in.mem[i]);
+                    wrbuf_printf(wrbuf, "\n");
+                }
+            }
         }
     }
     *output_format = VAL_SUTRS;
@@ -132,10 +205,10 @@ int zebra_record_fetch(ZebraHandle zh, SYSNO sysno, int score,
 
     if (comp && comp->which == Z_RecordComp_simple 
         && comp->u.simple->which == Z_ElementSetNames_generic 
-        && strncmp(comp->u.simple->u.generic, "zebra:", 6) == 0)
+        && strncmp(comp->u.simple->u.generic, "zebra::", 7) == 0)
     {
-        int r = zebra_storedata_fetch(zh, sysno, odr, rec,
-                                      comp->u.simple->u.generic,
+        int r = zebra_storekeys_fetch(zh, sysno, odr, rec,
+                                      comp->u.simple->u.generic + 7,
                                       input_format, output_format,
                                       rec_bufp, rec_lenp);
 
