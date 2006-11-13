@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.47 2006-11-13 09:07:05 adam Exp $
+/* $Id: retrieve.c,v 1.48 2006-11-13 13:53:49 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -82,37 +82,61 @@ int zebra_storekeys_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
     const char *retrieval_type;
     size_t retrieval_type_len;
    
+    int return_code = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+
     WRBUF wrbuf = wrbuf_alloc();
-    zebra_rec_keys_t keys = zebra_rec_keys_open();
+    zebra_rec_keys_t keys;
+    
+
+    /* only accept XML and SUTRS requests */
+    if (input_format != VAL_TEXT_XML
+        && input_format != VAL_SUTRS)
+    {
+        yaz_log(YLOG_WARN, "unsupported format for element set zebra::%s", 
+                element_set);
+        *output_format = VAL_NONE;
+        return return_code;
+    }
+
+
+    keys = zebra_rec_keys_open();
     zebra_rec_keys_set_buf(keys,
                            rec->info[recInfo_delKeys],
                            rec->size[recInfo_delKeys],
                            0);
 
-    yaz_log(YLOG_LOG, "element_set=%s", element_set);
-    
     parse_zebra_elem(element_set,
                      &retrieval_index, &retrieval_index_len,
                      &retrieval_type,  &retrieval_type_len);
 
 
-    if (input_format == VAL_TEXT_XML)
-    {
-        yaz_log(YLOG_LOG, "want XML output");
-    }
-    else if (input_format == VAL_SUTRS)
-    {
-        yaz_log(YLOG_LOG, "want SUTRS output");
-    }
-    else
-    {
-        yaz_log(YLOG_LOG, "unsupported.. We must produce an error");
-    }
+
+
+
     if (zebra_rec_keys_rewind(keys))
     {
         size_t slen;
         const char *str;
         struct it_key key_in;
+
+
+        if (input_format == VAL_TEXT_XML)
+            {
+                *output_format = VAL_TEXT_XML;
+                /*wrbuf_printf(wrbuf, 
+                  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");*/
+
+                wrbuf_printf(wrbuf, 
+                             "<record xmlns="
+                             "\"http://www.indexdata.com/zebra/\""
+                             " sysno=\"" ZINT_FORMAT "\""
+                             " set=\"zebra::%s\">\n",
+                             sysno, element_set);
+            }
+        else if (input_format == VAL_SUTRS)
+                *output_format = VAL_SUTRS;
+
+
         while(zebra_rec_keys_read(keys, &str, &slen, &key_in))
         {
             int i;
@@ -137,21 +161,44 @@ int zebra_storekeys_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
                         && retrieval_type[0] == index_type))
                 {
                     
-                    wrbuf_printf(wrbuf, "%s ", string_index);
+                    if (input_format == VAL_TEXT_XML)
+                        {
+                            wrbuf_printf(wrbuf, "  <index name=\"%s\"", 
+                                         string_index);
                     
-                    wrbuf_printf(wrbuf, "%c", index_type);
+                            wrbuf_printf(wrbuf, " type=\"%c\"", index_type);
+
+                            wrbuf_printf(wrbuf, " seq=\"" ZINT_FORMAT "\">", 
+                                             key_in.mem[key_in.len -1]);
+
+                            zebra_term_untrans(zh, index_type, dst_buf, str);
+                            wrbuf_xmlputs(wrbuf, dst_buf);
+                            wrbuf_printf(wrbuf, "</index>\n");
+                        }
+                    else if (input_format == VAL_SUTRS)
+                        {
+                            wrbuf_printf(wrbuf, "%s ", string_index);
                     
-                    zebra_term_untrans(zh, index_type, dst_buf, str);
-                    wrbuf_printf(wrbuf, " %s", dst_buf);
+                            wrbuf_printf(wrbuf, "%c", index_type);
                     
-                    for (i = 1; i < key_in.len; i++)
-                        wrbuf_printf(wrbuf, " " ZINT_FORMAT, key_in.mem[i]);
-                    wrbuf_printf(wrbuf, "\n");
+                            for (i = 1; i < key_in.len; i++)
+                                wrbuf_printf(wrbuf, " " ZINT_FORMAT, 
+                                             key_in.mem[i]);
+
+                            zebra_term_untrans(zh, index_type, dst_buf, str);
+                            wrbuf_printf(wrbuf, " %s", dst_buf);
+
+                            wrbuf_printf(wrbuf, "\n");
+                        }
                 }
             }
         }
+        if (input_format == VAL_TEXT_XML)
+            {
+                wrbuf_printf(wrbuf, "</record>\n");
+            }
     }
-    *output_format = VAL_SUTRS;
+
     *rec_lenp = wrbuf_len(wrbuf);
     *rec_bufp = odr_malloc(odr, *rec_lenp);
     memcpy(*rec_bufp, wrbuf_buf(wrbuf), *rec_lenp);
