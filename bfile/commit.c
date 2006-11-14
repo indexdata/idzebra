@@ -1,4 +1,4 @@
-/* $Id: commit.c,v 1.30 2006-11-14 08:12:06 adam Exp $
+/* $Id: commit.c,v 1.31 2006-11-14 10:03:21 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -30,6 +30,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cfile.h"
 
 #define CF_OPTIMIZE_COMMIT 0
+
+static int log_level = 0;
 
 #if CF_OPTIMIZE_COMMIT
 struct map_cache_entity {
@@ -66,13 +68,13 @@ static int map_cache_cmp_from (const void *p1, const void *p2)
         ((struct map_cache_entity*) p2)->from;
 }
 
-static int map_cache_cmp_to (const void *p1, const void *p2)
+static int map_cache_cmp_to(const void *p1, const void *p2)
 {
     return ((struct map_cache_entity*) p1)->to -
         ((struct map_cache_entity*) p2)->to;
 }
 
-static int map_cache_flush (struct map_cache *m_p)
+static int map_cache_flush(struct map_cache *m_p)
 {
     int i;
 
@@ -80,11 +82,11 @@ static int map_cache_flush (struct map_cache *m_p)
     assert (m_p->no < 2 || m_p->map[0].from < m_p->map[1].from);
     for (i = 0; i<m_p->no; i++)
     {
-        if (!mf_read (m_p->cf->block_mf, m_p->map[i].from, 0, 0,
-                      m_p->buf + i * m_p->cf->head.block_size))
+        if (mf_read(m_p->cf->block_mf, m_p->map[i].from, 0, 0,
+                    m_p->buf + i * m_p->cf->head.block_size) != 1)
         {
             yaz_log (YLOG_FATAL, "read commit block at position %d",
-                  m_p->map[i].from);
+                     m_p->map[i].from);
             return -1;
         }
         m_p->map[i].from = i;
@@ -93,8 +95,9 @@ static int map_cache_flush (struct map_cache *m_p)
     assert (m_p->no < 2 || m_p->map[0].to < m_p->map[1].to);
     for (i = 0; i<m_p->no; i++)
     {
-        mf_write (m_p->cf->rmf, m_p->map[i].to, 0, 0,
-                  m_p->buf + m_p->map[i].from * m_p->cf->head.block_size);
+        if (mf_write(m_p->cf->rmf, m_p->map[i].to, 0, 0,
+                     m_p->buf + m_p->map[i].from * m_p->cf->head.block_size))
+            return -1;
     }    
     m_p->no = 0;
     return 0;
@@ -102,7 +105,7 @@ static int map_cache_flush (struct map_cache *m_p)
 
 static int map_cache_del(struct map_cache *m_p)
 {
-    int r = map_cache_flush (m_p);
+    int r = map_cache_flush(m_p);
     xfree (m_p->map);
     xfree (m_p->buf);
     xfree (m_p);
@@ -117,7 +120,7 @@ static int map_cache_add(struct map_cache *m_p, int from, int to)
     m_p->map[i].to = to;
     m_p->no = ++i;
     if (i == m_p->max)
-        return map_cache_flush (m_p);
+        return map_cache_flush(m_p);
     return 0;
 }
 
@@ -159,13 +162,13 @@ static int cf_commit_hash (CFile cf)
                 goto out;
             }
 #else
-            if (mf_read (cf->block_mf, p->vno[i], 0, 0, cf->iobuf) != 1)
+            if (mf_read(cf->block_mf, p->vno[i], 0, 0, cf->iobuf) != 1)
             {
                 yaz_log (YLOG_FATAL, "read commit block");
                 r = -1;
                 goto out;
             }
-            if (mf_write (cf->rmf, p->no[i], 0, 0, cf->iobuf))
+            if (mf_write(cf->rmf, p->no[i], 0, 0, cf->iobuf))
             {
                 yaz_log (YLOG_FATAL, "write commit block");
                 r = -1;
@@ -224,7 +227,7 @@ static int cf_commit_flat(CFile cf)
                     goto out;
                 }
 #else
-                if (!mf_read (cf->block_mf, fp[i], 0, 0, cf->iobuf))
+                if (mf_read (cf->block_mf, fp[i], 0, 0, cf->iobuf) != 1)
                 {
                     yaz_log (YLOG_FATAL, "read data block hno=" ZINT_FORMAT " (" ZINT_FORMAT "-" ZINT_FORMAT ") "
                              "i=%d commit block at " ZINT_FORMAT " (->" ZINT_FORMAT")",
@@ -233,7 +236,7 @@ static int cf_commit_flat(CFile cf)
                     r = -1;
                     goto out;
                 }
-                if (mf_write (cf->rmf, vno, 0, 0, cf->iobuf) != 1)
+                if (mf_write(cf->rmf, vno, 0, 0, cf->iobuf))
                 {
                     r = -1;
                     goto out;
@@ -248,21 +251,23 @@ static int cf_commit_flat(CFile cf)
     if (map_cache_del(m_p))
         r = -1;
 #endif
+    yaz_log(log_level, "cf_commit_flat r=%d", r);
     xfree(fp);
     return r;
 }
 
-int cf_commit (CFile cf)
+int cf_commit(CFile cf)
 {
     if (cf->bucket_in_memory)
     {
         yaz_log(YLOG_FATAL, "cf_commit: dirty cache");
         return -1;
     }
+    yaz_log(log_level, "cf_commit: state=%d", cf->head.state);
     if (cf->head.state == 1)
-        return cf_commit_hash (cf);
+        return cf_commit_hash(cf);
     else if (cf->head.state == 2)
-        return cf_commit_flat (cf);
+        return cf_commit_flat(cf);
     else
     {
         yaz_log(YLOG_FATAL, "cf_commit: bad state=%d", cf->head.state);
