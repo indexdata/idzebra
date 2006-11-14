@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.85 2006-11-14 08:12:08 adam Exp $
+/* $Id: isamb.c,v 1.86 2006-11-14 12:03:48 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -462,11 +462,11 @@ static struct ISAMB_block *open_block(ISAMB b, ISAM_P pos)
     if (!cache_block (b, pos, p->buf, 0))
     {
         yaz_log(b->log_io, "bf_read: open_block");
-        if (!bf_read(b->file[cat].bf, pos/CAT_MAX, 0, 0, p->buf))
+        if (bf_read(b->file[cat].bf, pos/CAT_MAX, 0, 0, p->buf) != 1)
         {
             yaz_log(YLOG_FATAL, "isamb: read fail for pos=%ld block=%ld",
                      (long) pos, (long) pos/CAT_MAX);
-            abort();
+            zebra_exit("isamb:open_block");
         }
     }
     p->bytes = (char *)p->buf + offset;
@@ -512,7 +512,7 @@ struct ISAMB_block *new_block (ISAMB b, int leaf, int cat)
             {
                 yaz_log(YLOG_FATAL, "isamb: read fail for pos=%ld block=%ld",
                          (long) p->pos/CAT_MAX, (long) p->pos/CAT_MAX);
-                abort ();
+                zebra_exit("isamb:new_block");
             }
         }
         yaz_log(b->log_freelist, "got block " ZINT_FORMAT " from freelist %d:" ZINT_FORMAT, p->pos,
@@ -889,7 +889,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
                 if (!*lookahead_mode)
                 {
                     yaz_log(YLOG_WARN, "isamb: Inconsistent register (1)");
-                    assert (*lookahead_mode);
+                    assert(*lookahead_mode);
                 }
             }
             else
@@ -1007,7 +1007,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         {
 	    /* this is append. So a delete is bad */
             yaz_log(YLOG_WARN, "isamb: Inconsistent register (2)");
-            abort();
+            assert(*lookahead_mode);
         }
         else if (!half1 && dst > tail_cut)
         {

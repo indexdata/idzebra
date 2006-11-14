@@ -1,4 +1,4 @@
-/* $Id: insert.c,v 1.28 2006-08-29 13:39:18 adam Exp $
+/* $Id: insert.c,v 1.29 2006-11-14 12:04:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -105,8 +105,7 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
             }
         }
     }
-    if (best_no < 0) /* we didn't find any tail string entry at all! */
-        return -1;
+    assert(best_no >= 0); /* we didn't find any tail string entry at all! */
 
     j = best_indxp - (short*) p;
     subptr = new_page (dict, ptr, &subp);
@@ -344,7 +343,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
                         if (split_page (dict, ptr, p)) 
                         {
                             yaz_log (YLOG_FATAL, "Unable to split page %d\n", ptr);
-                            abort ();
+                            assert(0);
                         }
                         return dict_ins (dict, str-1, ptr, userlen, userinfo);
                     }
