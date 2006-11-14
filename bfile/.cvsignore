@@ -6,5 +6,7 @@ Makefile.in
 *.la
 tstbfile1
 tstbfile2
+tstmfile1
 register
 shadow
+*.mf

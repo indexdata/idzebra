@@ -1,4 +1,4 @@
-/* $Id: mfile.h,v 1.9 2006-11-14 08:12:06 adam Exp $
+/* $Id: mfile.h,v 1.10 2006-11-14 12:41:19 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 #include <yaz/yconfig.h>
 #include <idzebra/version.h>
+#include <idzebra/util.h>
 
 #ifdef WIN32
 

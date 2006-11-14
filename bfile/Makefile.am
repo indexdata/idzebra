@@ -1,11 +1,12 @@
-## $Id: Makefile.am,v 1.11 2006-11-08 12:59:27 adam Exp $ 
+## $Id: Makefile.am,v 1.12 2006-11-14 12:41:19 adam Exp $ 
 
 noinst_LTLIBRARIES = libidzebra-bfile.la
 
-check_PROGRAMS = tstbfile1 tstbfile2
+check_PROGRAMS = tstmfile1 tstbfile1 tstbfile2
 
 TESTS = $(check_PROGRAMS)
 
+tstmfile1_SOURCES = tstmfile1.c
 tstbfile1_SOURCES = tstbfile1.c
 tstbfile2_SOURCES = tstbfile2.c
 
