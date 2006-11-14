@@ -1,4 +1,4 @@
-/* $Id: xslt5.c,v 1.1 2006-11-10 13:10:31 adam Exp $
+/* $Id: xslt5.c,v 1.2 2006-11-14 10:45:34 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -23,6 +23,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 #include "testlib.h"
 
+#if YAZ_HAVE_XML2
+#include <libxml/xmlversion.h>
+#endif
+
 static void tst(int argc, char **argv)
 {
     char path[256];
@@ -36,7 +40,7 @@ static void tst(int argc, char **argv)
 
     tl_check_filter(zs, "alvis");
 
-    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
+    YAZ_CHECK_EQ(zebra_select_database(zh, "Default"), ZEBRA_OK);
     
     zebra_init(zh);
 
@@ -56,8 +60,16 @@ static void tst(int argc, char **argv)
         YAZ_CHECK(r > 2);
         record_buf[r] = '\0';
         
+#if YAZ_HAVE_XML2
+        /* On Mac OSX using Libxml 2.6.16, we xmlTextReaderExpand does
+           not return 0 ptr even though the record has an error in it */
+#if LIBXML_VERSION >= 20617
         YAZ_CHECK_EQ(zebra_add_record(zh, record_buf, strlen(record_buf)),
                      ZEBRA_FAIL);
+#else
+        zebra_add_record(zh, record_buf, strlen(record_buf));
+#endif
+#endif
     }
     YAZ_CHECK(tl_close_down(zh, zs));
 }
