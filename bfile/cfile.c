@@ -1,4 +1,4 @@
-/* $Id: cfile.c,v 1.39 2006-11-14 08:12:06 adam Exp $
+/* $Id: cfile.c,v 1.40 2006-11-14 12:11:48 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -28,6 +28,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/yaz-util.h>
 #include "mfile.h"
 #include "cfile.h"
+
+/* set to 1 if extra commit/shadow check is to be performed */
+#define EXTRA_CHECK 0
 
 static int write_head(CFile cf)
 {
@@ -343,20 +346,19 @@ static int cf_lookup_hash(CFile cf, zint no, zint *vno)
         }
         if (hb)
             continue;
-#if 0
-        /* extra check ... */
+#if EXTRA_CHECK
         for (hb = cf->bucket_lru_back; hb; hb = hb->lru_next)
         {
             if (hb->ph.this_bucket == block_no)
             {
                 yaz_log(YLOG_FATAL, "Found hash bucket on other chain(1)");
-                abort();
+                return -1;
             }
             for (i = 0; i<HASH_BUCKET && hb->ph.vno[i]; i++)
                 if (hb->ph.no[i] == no)
                 {
                     yaz_log(YLOG_FATAL, "Found hash bucket on other chain (2)");
-                    abort();
+                    return -1;
                 }
         }
 #endif
@@ -476,14 +478,13 @@ static zint cf_new_hash(CFile cf, zint no)
         if (hb)
             continue;
 
-#if 0
-        /* extra check ... */
+#if EXTRA_CHECK
         for (hb = cf->bucket_lru_back; hb; hb = hb->lru_next)
         {
             if (hb->ph.this_bucket == *bucketpp)
             {
                 yaz_log(YLOG_FATAL, "Found hash bucket on other chain");
-                abort();
+                return 0;
             }
         }
 #endif
