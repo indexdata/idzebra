@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.70 2006-09-20 10:51:25 adam Exp $
+/* $Id: zinfo.c,v 1.71 2006-11-14 08:12:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -855,8 +855,7 @@ static void zebraExplain_updateAccessInfo (ZebraExplainInfo zei, data1_node *n,
     if (!c)
     {
         data1_pr_tree (zei->dh, n, stdout);
-        exit (0);
-        assert (c);
+        zebra_exit("zebraExplain_updateAccessInfo");
     }
 
     if ((p = accessInfo->attributeSetIds))

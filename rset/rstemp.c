@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.68 2006-08-14 10:40:21 adam Exp $
+/* $Id: rstemp.c,v 1.69 2006-11-14 08:12:09 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -137,7 +137,7 @@ static RSFD r_open(RSET ct, int flag)
         if (info->fd == -1)
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: open failed %s", info->fname);
-            exit(1);
+            zebra_exit("r_open");
         }
     }
     rfd = rfd_create_base(ct);
@@ -178,7 +178,7 @@ static void r_flush(RSFD rfd, int mk)
         if (info->fd == -1)
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: mkstemp %s", template);
-            exit(1);
+            zebra_exit("r_flush");
         }
 	info->fname = nmem_strdup(rfd->rset->nmem, template);
 #else
@@ -190,7 +190,7 @@ static void r_flush(RSFD rfd, int mk)
         if (info->fd == -1)
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: open %s", info->fname);
-            exit(1);
+            zebra_exit("r_flush");
         }
 #endif
     }
@@ -202,7 +202,7 @@ static void r_flush(RSFD rfd, int mk)
         if (lseek(info->fd, info->pos_buf, SEEK_SET) == -1)
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: lseek (1) %s", info->fname);
-            exit(1);
+            zebra_exit("r_flusxh");
         }
         count = info->buf_size;
         if (count > info->pos_end - info->pos_buf)
@@ -214,7 +214,7 @@ static void r_flush(RSFD rfd, int mk)
             else
                 yaz_log(YLOG_FATAL, "rstemp: write of %ld but got %ld",
                       (long) count, (long) r);
-            exit(1);
+            zebra_exit("r_flush");
         }
         info->dirty = 0;
     }
@@ -259,7 +259,7 @@ static void r_reread(RSFD rfd)
             if (lseek(info->fd, info->pos_buf, SEEK_SET) == -1)
             {
                 yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: lseek (2) %s fd=%d", info->fname, info->fd);
-                exit(1);
+                zebra_exit("r_reread");
             }
             if ((r = read(info->fd, info->buf_mem, count)) < (int) count)
             {
@@ -268,7 +268,7 @@ static void r_reread(RSFD rfd)
                 else
                     yaz_log(YLOG_FATAL, "read of %ld but got %ld",
                           (long) count, (long) r);
-                exit(1);
+                zebra_exit("r_reread");
             }
         }
     }

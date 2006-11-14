@@ -1,4 +1,4 @@
-/* $Id: cfile.h,v 1.20 2006-10-09 22:10:00 adam Exp $
+/* $Id: cfile.h,v 1.21 2006-11-14 08:12:06 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -80,7 +80,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname, int block_size,
                int wflag, int *firstp);
 int cf_read (CFile cf, zint no, int offset, int nbytes, void *buf);
 int cf_write (CFile cf, zint no, int offset, int nbytes, const void *buf);
-void cf_commit (CFile cf);
+int cf_commit (CFile cf) ZEBRA_GCC_ATTR((warn_unused_result));
 
 YAZ_END_CDECL
 

@@ -1,4 +1,4 @@
-/* $Id: dclose.c,v 1.11 2006-11-14 08:12:07 adam Exp $
+/* $Id: exit.c,v 1.1 2006-11-14 08:12:10 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -20,26 +20,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-
-
-#include <sys/types.h>
-#include <fcntl.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <idzebra/util.h>
 
-#include "dict-p.h"
-
-int dict_bf_close (Dict_BFile dbf)
+void zebra_exit(const char *msg)
 {
-    dict_bf_flush_blocks (dbf, -1);
-    
-    xfree (dbf->all_blocks);
-    xfree (dbf->all_data);
-    xfree (dbf->hash_array);
-    bf_close(dbf->bf);
-    xfree (dbf);
-    return 0;
+    yaz_log(YLOG_LOG, "%s: exit", msg);
+    exit(1);
 }
+
 /*
  * Local variables:
  * c-basic-offset: 4

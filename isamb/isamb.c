@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.84 2006-09-26 12:56:33 adam Exp $
+/* $Id: isamb.c,v 1.85 2006-11-14 08:12:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -199,18 +199,31 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 
     assert(cache == 0);
     isamb->file = xmalloc(sizeof(*isamb->file) * isamb->no_cat);
+
+    for (i = 0; i < isamb->no_cat; i++)
+    {
+        isamb->file[i].bf = 0;
+        isamb->file[i].head_dirty = 0;
+        isamb->file[i].cache_entries = 0;
+    }
+
     for (i = 0; i < isamb->no_cat; i++)
     {
         char fname[DST_BUF_SIZE];
 	char hbuf[DST_BUF_SIZE];
-        isamb->file[i].cache_entries = 0;
-        isamb->file[i].head_dirty = 0;
+
         sprintf(fname, "%s%c", name, i+'A');
         if (cache)
             isamb->file[i].bf = bf_open(bfs, fname, ISAMB_CACHE_ENTRY_SIZE,
                                          writeflag);
         else
             isamb->file[i].bf = bf_open(bfs, fname, b_size, writeflag);
+
+        if (!isamb->file[i].bf)
+        {
+            isamb_close(isamb);
+            return 0;
+        }
 
         /* fill-in default values (for empty isamb) */
 	isamb->file[i].head.first_block = ISAMB_CACHE_ENTRY_SIZE/b_size+1;
@@ -414,7 +427,8 @@ void isamb_close (ISAMB isamb)
 		bf_write(isamb->file[i].bf, pos, 0, 0, hbuf + pos*b_size);
 	    }
 	}
-        bf_close (isamb->file[i].bf);
+        if (isamb->file[i].bf)
+            bf_close (isamb->file[i].bf);
     }
     xfree(isamb->file);
     xfree(isamb->method);

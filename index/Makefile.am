@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.57 2006-11-06 20:48:43 adam Exp $
+## $Id: Makefile.am,v 1.58 2006-11-14 08:12:08 adam Exp $
 
 aux_libs = \
  ../rset/libidzebra-rset.la \
@@ -15,7 +15,7 @@ aux_libs = \
 # Should also match the libidzebra_..._la lines..!
 zebralib = libidzebra-2.0.la
 
-noinst_PROGRAMS = apitest kdump zebrash
+noinst_PROGRAMS = kdump zebrash
 
 modlibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)/modules
 
@@ -95,7 +95,6 @@ bin_PROGRAMS = zebraidx zebrasrv
 zebraidx_SOURCES = zebraidx.c
 zebrasrv_SOURCES = zebrasrv.c
 zebrash_SOURCES = zebrash.c
-apitest_SOURCES = apitest.c
 kdump_SOURCES = kdump.c
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) \

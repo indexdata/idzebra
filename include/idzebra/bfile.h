@@ -1,4 +1,4 @@
-/* $Id: bfile.h,v 1.11 2006-11-08 22:08:26 adam Exp $
+/* $Id: bfile.h,v 1.12 2006-11-14 08:12:07 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -60,32 +60,40 @@ BFiles bfs_create (const char *spec, const char *base);
 */
 void bfs_destroy (BFiles bfiles);
 
-/** \brief closes a Block file
+/** \brief closes a Block file (may call exit)
     \param bf block file
  */
 YAZ_EXPORT
-int bf_close (BFile bf);
+void bf_close(BFile bf);
+
+/** \brief closes a Block file
+    \param bf block file
+    \retval 0 success
+    \retval -1 failure
+ */
+YAZ_EXPORT
+int bf_close2(BFile bf);
 
 /** \brief closes an extended Block file handle..
     \param bf extended block file opened with bf_xopen
     \param version version to be put in a file
     \param more_info more information to be stored in file (header)
-    \retval 0 succes
+    \retval 0 success
     \retval -1 failure (can never happen as the code is now)
 */    
 YAZ_EXPORT
-int bf_xclose (BFile bf, int version, const char *more_info);
+int bf_xclose(BFile bf, int version, const char *more_info);
 
 /** \brief opens and returns a Block file handle
     \param bfs block files
     \param name filename
     \param block_size block size in bytes
     \param wflag 1=opened for read&write, 0=read only
-    \retval 0 succes
+    \retval 0 success
     \retval -1 failure (can never happen as the code is now)
 */
 YAZ_EXPORT
-BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag);
+BFile bf_open(BFiles bfs, const char *name, int block_size, int wflag);
 
 /** \brief opens and returns an extended Block file handle
     \param bfs block files
@@ -124,7 +132,8 @@ int bf_read(BFile bf, zint no, int offset, int nbytes, void *buf);
     \retval -1 error
  */
 YAZ_EXPORT
-int bf_read2(BFile bf, zint no, int offset, int nbytes, void *buf);
+int bf_read2(BFile bf, zint no, int offset, int nbytes, void *buf)
+    ZEBRA_GCC_ATTR((warn_unused_result));
 
 
 /** \brief writes block of bytes to file (may call exit)
@@ -155,8 +164,8 @@ int bf_write(BFile bf, zint no, int offset, int nbytes, const void *buf);
     if write failed.
  */
 YAZ_EXPORT
-int bf_write2(BFile bf, zint no, int offset, int nbytes, const void *buf);
-
+int bf_write2(BFile bf, zint no, int offset, int nbytes, const void *buf)
+    ZEBRA_GCC_ATTR((warn_unused_result));
 
 /** \brief enables or disables shadow for block files
     \param bfs block files
@@ -179,7 +188,7 @@ int bf_commitExists (BFiles bfs);
     \param bfs block files
 */
 YAZ_EXPORT
-void bf_commitExec (BFiles bfs);
+int bf_commitExec (BFiles bfs) ZEBRA_GCC_ATTR((warn_unused_result));
 
 /** \brief Cleans shadow files (remove them)
     \param bfs block files

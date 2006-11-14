@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.52 2006-09-15 10:45:13 adam Exp $
+/* $Id: recindex.c,v 1.53 2006-11-14 08:12:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -352,6 +352,7 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "bf_open %s", p->data_fname[i]);
 	    ret = ZEBRA_FAIL;
+            break;
         }
     }
     p->cache_max = 400;

@@ -1,4 +1,4 @@
-/* $Id: mfile.h,v 1.8 2006-11-08 22:06:50 adam Exp $
+/* $Id: mfile.h,v 1.9 2006-11-14 08:12:06 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -19,8 +19,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
-
-
 
 #ifndef MFILE_H
 #define MFILE_H
@@ -103,33 +101,65 @@ typedef struct MFile_area_struct
     Zebra_mutex mutex;
 } MFile_area_struct;
 
-/*
- * Open an area, cotaining metafiles in directories.
- */
-MFile_area mf_init(const char *name, const char *spec, const char *base); 
+/** \brief creates a metafile area
+    \param name of area (does not show up on disk - purely for notation)
+    \param spec area specification (e.g. "/a:1G dir /b:2000M"
+    \param base base directory (NULL for no base)
+    \returns metafile area handle or NULL if error occurs
+*/
+MFile_area mf_init(const char *name, const char *spec, const char *base)
+    ZEBRA_GCC_ATTR((warn_unused_result));
 
-/*
- * Release an area.
- */
+/** \brief destroys metafile area handle
+    \param ma metafile area handle
+*/
 void mf_destroy(MFile_area ma);
 
-/*
- * Open a metafile.
+/** \brief opens metafile
+    \param ma metafile area handle
+    \param name pseudo filename (name*.mf)
+    \param block_size block size for this file
+    \param wflag write flag, 0=read, 1=write&read
+    \returns metafile handle, or NULL for error (could not be opened)
  */
-MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag);
-
-/*
- * Close a metafile.
- */
+MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
+    ZEBRA_GCC_ATTR((warn_unused_result));
+    
+/** \brief closes metafile
+    \param mf metafile handle
+    \retval 0 OK
+*/
 int mf_close(MFile mf);
 
-int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf);
-
-int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf);
-
-/*
- * Destroy all metafiles. No files may be opened.
+/** \brief reads block from metafile
+    \param mf metafile handle
+    \param no block position
+    \param offset offset within block
+    \param nbytes no of bytes to read (0 for whole block)
+    \param buf content (filled with data if OK)
+    \retval 0 block partially read
+    \retval 1 block fully read
+    \retval -1 block could not be read due to error
  */
+int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf)
+    ZEBRA_GCC_ATTR((warn_unused_result));
+    
+/** \brief writes block to metafile
+    \param mf metafile handle
+    \param no block position
+    \param offset offset within block
+    \param nbytes no of bytes to write (0 for whole block)
+    \param buf content to be written
+    \retval 0 block written
+    \retval -1 error (block not written)
+*/
+int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
+    ZEBRA_GCC_ATTR((warn_unused_result));    
+    
+/** \brief reset all files in a metafile area (optionally delete them as well)
+    \param ma metafile area
+    \param unlink_flag if unlink_flag=1 all files are removed from FS
+*/
 void mf_reset(MFile_area ma, int unlink_flag);
 
 /* \brief gets statistics about directory in metafile area

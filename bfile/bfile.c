@@ -1,4 +1,4 @@
-/* $Id: bfile.c,v 1.51 2006-11-08 22:08:27 adam Exp $
+/* $Id: bfile.c,v 1.52 2006-11-14 08:12:06 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -98,7 +98,8 @@ static FILE *open_cache(BFiles bfs, const char *flags)
 
 static void unlink_cache(BFiles bfs)
 {
-    unlink(bfs->cache_fname);
+    if (bfs->cache_fname)
+        unlink(bfs->cache_fname);
 }
 
 ZEBRA_RES bf_cache(BFiles bfs, const char *spec)
@@ -127,18 +128,34 @@ ZEBRA_RES bf_cache(BFiles bfs, const char *spec)
     return ZEBRA_OK;
 }
 
-int bf_close(BFile bf)
+int bf_close2(BFile bf)
 {
+    int ret = 0;
     zebra_lock_rdwr_destroy(&bf->rdwr_lock);
     if (bf->cf)
-        cf_close(bf->cf);
+    {
+        if (cf_close(bf->cf))
+            ret = -1;
+    }
     if (bf->mf)
-        mf_close(bf->mf);
+    {
+        if (mf_close(bf->mf))
+            ret = -1;
+    }
     xfree(bf->alloc_buf);
     xfree(bf->magic);
     xfree(bf);
-    return 0;
+    return ret;
 }
+
+void bf_close(BFile bf)
+{
+    if (bf_close2(bf))
+    {
+        zebra_exit("bf_close");
+    }
+}
+
 
 #define HEADER_SIZE 256
 
@@ -238,7 +255,7 @@ int bf_xclose(BFile bf, int version, const char *more_info)
 		break;
 	}
     }
-    return bf_close(bf);
+    return bf_close2(bf);
 }
 
 BFile bf_open(BFiles bfs, const char *name, int block_size, int wflag)
@@ -305,7 +322,7 @@ int bf_read(BFile bf, zint no, int offset, int nbytes, void *buf)
 
     if (ret == -1)
     {
-        exit(1);
+        zebra_exit("bf_read");
     }
     return ret;
 }
@@ -332,7 +349,7 @@ int bf_write(BFile bf, zint no, int offset, int nbytes, const void *buf)
 
     if (ret == -1)
     {
-        exit(1);
+        zebra_exit("bf_write");
     }
     return ret;
 }
@@ -371,7 +388,7 @@ void bf_reset(BFiles bfs)
     unlink_cache(bfs);
 }
 
-void bf_commitExec(BFiles bfs)
+int bf_commitExec(BFiles bfs)
 {
     FILE *inf;
     int block_size;
@@ -379,24 +396,40 @@ void bf_commitExec(BFiles bfs)
     MFile mf;
     CFile cf;
     int first_time;
+    int r = 0;
 
     assert(bfs->commit_area);
     if (!(inf = open_cache(bfs, "rb")))
     {
         yaz_log(YLOG_LOG, "No commit file");
-        return ;
+        return -1;
     }
     while (fscanf(inf, "%s %d", path, &block_size) == 2)
     {
         mf = mf_open(bfs->register_area, path, block_size, 1);
+        if (!mf)
+        {
+            r = -1;
+            break;
+        }
         cf = cf_open(mf, bfs->commit_area, path, block_size, 0, &first_time);
+        if (!cf)
+        {
+            mf_close(mf);
+            r = -1;
+            break;
+        }
 
-        cf_commit(cf);
+        r = cf_commit(cf);
 
         cf_close(cf);
         mf_close(mf);
+
+        if (r)
+            break;
     }
     fclose(inf);
+    return r;
 }
 
 void bf_commitClean(BFiles bfs, const char *spec)
@@ -432,11 +465,11 @@ int bf_alloc(BFile bf, int no, zint *blocks)
 	    memset(buf, '\0', sizeof(buf));
 
 	    blocks[i] = bf->free_list;
-	    if (!bf_read(bf, bf->free_list, 0, sizeof(buf), buf))
+	    if (bf_read(bf, bf->free_list, 0, sizeof(buf), buf) != 1)
 	    {
 		yaz_log(YLOG_WARN, "Bad freelist entry " ZINT_FORMAT,
 			bf->free_list);
-		exit(1);
+                return -1;
 	    }
 	    zebra_zint_decode(&cp, &bf->free_list);
 	}

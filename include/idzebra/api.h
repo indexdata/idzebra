@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.39 2006-08-22 13:59:02 adam Exp $
+/* $Id: api.h,v 1.40 2006-11-14 08:12:07 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -38,24 +38,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <idzebra/version.h>
 
 YAZ_BEGIN_CDECL
-
-/**
-  expand GCC_ATTRIBUTE if GCC is in use. See :
-  http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html
-
-  To see gcc pre-defines for c:
-  gcc -E -dM -x c /dev/null
-*/
-
-#ifdef __GNUC__
-#if __GNUC__ >= 4
-#define ZEBRA_GCC_ATTR(x) __attribute__ (x)
-#endif
-#endif
-
-#ifndef ZEBRA_GCC_ATTR
-#define ZEBRA_GCC_ATTR(x)
-#endif
 
 typedef struct {
     zint processed;

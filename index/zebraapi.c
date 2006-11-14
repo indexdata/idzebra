@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.230 2006-10-12 13:06:00 adam Exp $
+/* $Id: zebraapi.c,v 1.231 2006-11-14 08:12:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1564,6 +1564,16 @@ int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
     return wrbuf_len(wrbuf);
 }
 
+/** \brief set register state (state*.LCK)
+    \param zh Zebra handle
+    \param val state
+    \param seqno sequence number
+    
+    val is one of:
+    d=writing to shadow(dirty)
+    o=no writing, 
+    c=commit
+*/
 static void zebra_set_state (ZebraHandle zh, int val, int seqno)
 {
     char state_fname[256];
@@ -1673,7 +1683,6 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
     assert (zh->res);
     if (rw)
     {
-        int pass;
         int seqno = 0;
         char val = '?';
         const char *rval = 0;
@@ -1709,51 +1718,40 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
         if (zh->shadow_enable)
             rval = res_get (zh->res, "shadow");
         
-        for (pass = 0; pass < 2; pass++)
+        if (rval)
         {
+            zebra_lock_r(zh->lock_normal);
+            zebra_lock_w(zh->lock_shadow);
+        }
+        else
+        {
+            zebra_lock_w(zh->lock_normal);
+            zebra_lock_w(zh->lock_shadow);
+        }
+        zebra_get_state (zh, &val, &seqno);
+        if (val != 'o')
+        {
+            /* either we didn't finish commit or shadow is dirty */
+            zebra_unlock (zh->lock_shadow);
+            zebra_unlock (zh->lock_normal);
+            if (zebra_commit (zh))
+            {
+                zh->trans_no--;
+                zh->trans_w_no = 0;
+                return ZEBRA_FAIL;
+            }
             if (rval)
             {
-                zebra_lock_r (zh->lock_normal);
-                zebra_lock_w (zh->lock_shadow);
+                zebra_lock_r(zh->lock_normal);
+                zebra_lock_w(zh->lock_shadow);
             }
             else
             {
-                zebra_lock_w (zh->lock_normal);
-                zebra_lock_w (zh->lock_shadow);
+                zebra_lock_w(zh->lock_normal);
+                zebra_lock_w(zh->lock_shadow);
             }
-            
-            zebra_get_state (zh, &val, &seqno);
-            if (val == 'c')
-            {
-                yaz_log (YLOG_WARN, "previous transaction didn't finish commit");
-                zebra_unlock (zh->lock_shadow);
-                zebra_unlock (zh->lock_normal);
-                zebra_commit (zh);
-                continue;
-            }
-            else if (val == 'd')
-            {
-                if (rval)
-                {
-                    BFiles bfs = bfs_create (res_get (zh->res, "shadow"),
-                                             zh->path_reg);
-                    yaz_log (YLOG_WARN, "previous transaction didn't reach commit");
-                    bf_commitClean (bfs, rval);
-                    bfs_destroy (bfs);
-		}
-                else
-                {
-                    yaz_log (YLOG_WARN, "your previous transaction didn't finish");
-                }
-            }
-            break;
         }
-        if (pass == 2)
-        {
-            yaz_log (YLOG_FATAL, "zebra_begin_trans couldn't finish commit");
-            abort();
-            return ZEBRA_FAIL;
-        }
+
         zebra_set_state (zh, 'd', seqno);
         
         zh->reg = zebra_register_open(zh->service, zh->reg_name,
@@ -1988,6 +1986,8 @@ static ZEBRA_RES zebra_commit_ex(ZebraHandle zh, int clean_only)
     char val;
     const char *rval;
     BFiles bfs;
+    ZEBRA_RES res = ZEBRA_OK;
+
     ASSERTZH;
 
     zebra_select_default_database(zh);
@@ -1996,24 +1996,24 @@ static ZEBRA_RES zebra_commit_ex(ZebraHandle zh, int clean_only)
         zh->errCode = YAZ_BIB1_DATABASE_UNAVAILABLE;
         return ZEBRA_FAIL;
     }
-    rval = res_get (zh->res, "shadow");    
+    rval = res_get(zh->res, "shadow");    
     if (!rval)
     {
         yaz_log (YLOG_WARN, "Cannot perform commit - No shadow area defined");
         return ZEBRA_OK;
     }
 
-    zebra_lock_w (zh->lock_normal);
-    zebra_lock_r (zh->lock_shadow);
+    zebra_lock_w(zh->lock_normal);
+    zebra_lock_r(zh->lock_shadow);
 
-    bfs = bfs_create (res_get (zh->res, "register"), zh->path_reg);
+    bfs = bfs_create(res_get (zh->res, "register"), zh->path_reg);
     if (!bfs)
     {
 	zebra_unlock(zh->lock_shadow);
 	zebra_unlock(zh->lock_normal);
         return ZEBRA_FAIL;
     }
-    zebra_get_state (zh, &val, &seqno);
+    zebra_get_state(zh, &val, &seqno);
 
     if (val == 'd')
     {
@@ -2026,33 +2026,43 @@ static ZEBRA_RES zebra_commit_ex(ZebraHandle zh, int clean_only)
     if (bf_commitExists (bfs))
     {
         if (clean_only)
-            zebra_set_state (zh, 'd', seqno);
+            zebra_set_state(zh, 'd', seqno);
         else
         {
-            zebra_set_state (zh, 'c', seqno);
+            zebra_set_state(zh, 'c', seqno);
             
-            yaz_log (YLOG_DEBUG, "commit start");
-            bf_commitExec (bfs);
+            yaz_log(YLOG_DEBUG, "commit start");
+            if (bf_commitExec (bfs))
+                res = ZEBRA_FAIL;
         }
-        seqno++;
-        zebra_set_state (zh, 'o', seqno);
-
-	zebra_unlock (zh->lock_shadow);
-	zebra_unlock (zh->lock_normal);
-
-	zebra_lock_w(zh->lock_shadow);
-        bf_commitClean (bfs, rval);
-	zebra_unlock (zh->lock_shadow);
+        if (res == ZEBRA_OK)
+        {
+            seqno++;
+            zebra_set_state(zh, 'o', seqno);
+            
+            zebra_unlock(zh->lock_shadow);
+            zebra_unlock(zh->lock_normal);
+            
+            zebra_lock_w(zh->lock_shadow);
+            bf_commitClean(bfs, rval);
+            zebra_unlock(zh->lock_shadow);
+        }
+        else
+        {
+            zebra_unlock(zh->lock_shadow);
+            zebra_unlock(zh->lock_normal);
+            yaz_log(YLOG_WARN, "zebra_commit: failed");
+        }
     }
     else
     {
 	zebra_unlock(zh->lock_shadow);
 	zebra_unlock(zh->lock_normal);
-        yaz_log (log_level, "nothing to commit");
+        yaz_log(log_level, "nothing to commit");
     }
-    bfs_destroy (bfs);
+    bfs_destroy(bfs);
 
-    return ZEBRA_OK;
+    return res;
 }
 
 ZEBRA_RES zebra_clean(ZebraHandle zh)

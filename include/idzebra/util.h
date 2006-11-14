@@ -1,4 +1,4 @@
-/* $Id: util.h,v 1.9 2006-10-10 14:45:42 adam Exp $
+/* $Id: util.h,v 1.10 2006-11-14 08:12:07 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -27,6 +27,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/log.h>
 
 #include <idzebra/version.h>
+
+/**
+  expand GCC_ATTRIBUTE if GCC is in use. See :
+  http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html
+
+  To see gcc pre-defines for c:
+  gcc -E -dM -x c /dev/null
+*/
+
+#ifdef __GNUC__
+#if __GNUC__ >= 4
+#define ZEBRA_GCC_ATTR(x) __attribute__ (x)
+#endif
+#endif
+
+#ifndef ZEBRA_GCC_ATTR
+#define ZEBRA_GCC_ATTR(x)
+#endif
 
 /* check that we don't have all too old yaz */
 #ifndef YLOG_ERRNO
@@ -83,6 +101,9 @@ void zebra_zint_encode(char **dst, zint pos);
 
 YAZ_EXPORT
 void zebra_zint_decode(const char **src, zint *pos);
+
+YAZ_EXPORT
+void zebra_exit(const char *msg);
 
 YAZ_END_CDECL
 

@@ -1,4 +1,4 @@
-/* $Id: isamc.c,v 1.32 2006-08-14 10:40:19 adam Exp $
+/* $Id: isamc.c,v 1.33 2006-11-14 08:12:09 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -119,18 +119,10 @@ ISAMC isamc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
         is->merge_buf = NULL;
     for (i = 0; i<is->no_files; i++)
     {
-        char fname[512];
-
-        sprintf (fname, "%s%c", name, i+'A');
-        is->files[i].bf = bf_open (bfs, fname, is->method->filecat[i].bsize,
-                                   writeflag);
+        is->files[i].bf = 0;
         is->files[i].head_is_dirty = 0;
-        if (!bf_read (is->files[i].bf, 0, 0, sizeof(ISAMC_head),
-                     &is->files[i].head))
-        {
-            is->files[i].head.lastblock = 1;
-            is->files[i].head.freelist = 0;
-        }
+        is->files[i].head.lastblock = 1;
+        is->files[i].head.freelist = 0;
 	is->files[i].alloc_entries_num = 0;
 	is->files[i].alloc_entries_max =
 	    is->method->filecat[i].bsize / sizeof(zint) - 1;
@@ -150,6 +142,28 @@ ISAMC isamc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
 	is->files[i].no_prev = 0;
 
         init_fc (is, i);
+    }
+
+    for (i = 0; i<is->no_files; i++)
+    {
+        char fname[FILENAME_MAX];
+        int r;
+
+        sprintf (fname, "%s%c", name, i+'A');
+        is->files[i].bf = bf_open (bfs, fname, is->method->filecat[i].bsize,
+                                   writeflag);
+        if (!is->files[i].bf)
+        {
+            isamc_close(is);
+            return 0;
+        }
+        r = bf_read(is->files[i].bf, 0, 0, sizeof(ISAMC_head),
+                     &is->files[i].head);
+        if (r == -1)
+        {
+            isamc_close(is);
+            return 0;
+        }
     }
     return is;
 }
@@ -194,21 +208,24 @@ int isamc_close (ISAMC is)
     for (i = 0; i<is->no_files; i++)
     {
         release_fc (is, i);
-        assert (is->files[i].bf);
-        if (is->files[i].head_is_dirty)
-            bf_write (is->files[i].bf, 0, 0, sizeof(ISAMC_head),
-                 &is->files[i].head);
         if (is->method->debug)
             yaz_log (YLOG_LOG, "isc:%8d%8d%8d%8d%8d%8d",
-                  is->files[i].no_writes,
-                  is->files[i].no_reads,
-                  is->files[i].no_skip_writes,
-                  is->files[i].no_allocated,
-                  is->files[i].no_released,
-                  is->files[i].no_remap);
-        xfree (is->files[i].fc_list);
-	flush_block (is, i);
-        bf_close (is->files[i].bf);
+                     is->files[i].no_writes,
+                     is->files[i].no_reads,
+                     is->files[i].no_skip_writes,
+                     is->files[i].no_allocated,
+                     is->files[i].no_released,
+                     is->files[i].no_remap);
+        if (is->files[i].bf)
+        {
+            if (is->files[i].head_is_dirty)
+                bf_write (is->files[i].bf, 0, 0, sizeof(ISAMC_head),
+                          &is->files[i].head);
+            flush_block (is, i);
+            bf_close (is->files[i].bf);
+        }
+        xfree(is->files[i].fc_list);
+        xfree(is->files[i].alloc_buf);
     }
     xfree (is->files);
     xfree (is->merge_buf);
@@ -255,7 +272,6 @@ static void flush_block (ISAMC is, int cat)
 	bf_write (is->files[cat].bf, block, 0, 0, abuf);
 	is->files[cat].alloc_entries_num = 0;
     }
-    xfree (abuf);
 }
 
 static zint alloc_block (ISAMC is, int cat)
@@ -343,8 +359,6 @@ static void release_block (ISAMC is, int cat, zint pos)
 #else
 static void flush_block (ISAMC is, int cat)
 {
-    char *abuf = is->files[cat].alloc_buf;
-    xfree (abuf);
 }
 
 static zint alloc_block (ISAMC is, int cat)

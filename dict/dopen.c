@@ -1,4 +1,4 @@
-/* $Id: dopen.c,v 1.14 2006-08-14 10:40:09 adam Exp $
+/* $Id: dopen.c,v 1.15 2006-11-14 08:12:07 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -80,7 +80,10 @@ Dict_BFile dict_bf_open (BFiles bfs, const char *name, int block_size,
     dbf = (Dict_BFile) xmalloc (sizeof(*dbf));
     dbf->bf = bf_open (bfs, name, block_size, rw);
     if (!dbf->bf)
-        return NULL;
+    {
+        xfree(dbf);
+        return 0;
+    }
     common_init (dbf, block_size, cache);
     return dbf;
 }

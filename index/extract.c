@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.235 2006-11-09 14:39:24 adam Exp $
+/* $Id: extract.c,v 1.236 2006-11-14 08:12:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1202,7 +1202,7 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
     if (!(outf = fopen (out_fname, "wb")))
     {
         yaz_log (YLOG_FATAL|YLOG_ERRNO, "fopen %s", out_fname);
-        exit (1);
+        zebra_exit("extract_flushWriteKeys");
     }
     yaz_log (YLOG_LOG, "writing section %d", zh->reg->key_file_no);
     prevcp = cp = (zh->reg->key_buf)[zh->reg->ptr_top - ptr_i];
@@ -1231,7 +1231,7 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
     if (!(outf = fopen (out_fname, "wb")))
     {
         yaz_log (YLOG_FATAL|YLOG_ERRNO, "fopen %s", out_fname);
-        exit (1);
+        zebra_exit("extract_flushWriteKeys");
     }
     yaz_log (YLOG_LOG, "writing section %d", key_file_no);
     i = ptr_i;
@@ -1264,7 +1264,7 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
     if (fclose (outf))
     {
         yaz_log (YLOG_FATAL|YLOG_ERRNO, "fclose %s", out_fname);
-        exit (1);
+        zebra_exit("extract_flushWriteKeys");
     }
     yaz_log (YLOG_LOG, "finished section %d", zh->reg->key_file_no);
     zh->reg->ptr_i = 0;
@@ -1631,7 +1631,7 @@ static void encode_key_write (char *k, struct encode_info *i, FILE *outf)
     if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
     {
         yaz_log (YLOG_FATAL|YLOG_ERRNO, "fwrite");
-        exit (1);
+        zebra_exit("encode_key_write");
     }
 
 #if 0

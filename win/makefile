@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.58 2006-10-05 13:19:10 adam Exp $
+# $Id: makefile,v 1.59 2006-11-14 08:12:11 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -353,6 +353,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\dirs.obj \
 	$(OBJDIR)\dopen.obj \
 	$(OBJDIR)\drdwr.obj \
+	$(OBJDIR)\exit.obj \
 	$(OBJDIR)\extract.obj \
 	$(OBJDIR)\flock.obj \
 	$(OBJDIR)\imalloc.obj \

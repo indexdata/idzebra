@@ -1,4 +1,4 @@
-/* $Id: cfile.c,v 1.38 2006-11-08 22:08:27 adam Exp $
+/* $Id: cfile.c,v 1.39 2006-11-14 08:12:06 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -83,6 +83,9 @@ CFile cf_open(MFile mf, MFile_area area, const char *fname,
     CFile cf = (CFile) xmalloc(sizeof(*cf));
     int hash_bytes;
 
+    /* avoid valgrind warnings, but set to something nasty */
+    memset(cf, 'Z', sizeof(*cf));
+
     yaz_log(YLOG_DEBUG, "cf: open %s %s", cf->rmf->name,
             wflag ? "rdwr" : "rd");
    
@@ -110,14 +113,12 @@ CFile cf_open(MFile mf, MFile_area area, const char *fname,
     sprintf(path, "%s-b", fname);
     if (!(cf->block_mf = mf_open(area, path, block_size, wflag)))
     {
-        yaz_log(YLOG_FATAL|YLOG_ERRNO, "Failed to open %s", path);
         cf_close(cf);
         return 0;
     }
     sprintf(path, "%s-i", fname);
     if (!(cf->hash_mf = mf_open(area, path, HASH_BSIZE, wflag)))
     {
-        yaz_log(YLOG_FATAL|YLOG_ERRNO, "Failed to open %s", path);
         cf_close(cf);
         return 0;
     }
@@ -207,9 +208,10 @@ static void release_bucket(CFile cf, struct CFile_hash_bucket *p)
     xfree(p);
 }
 
-static void flush_bucket(CFile cf, int no_to_flush)
+static int flush_bucket(CFile cf, int no_to_flush)
 {
     int i;
+    int ret = 0;
     struct CFile_hash_bucket *p;
 
     for (i = 0; i != no_to_flush; i++)
@@ -219,11 +221,16 @@ static void flush_bucket(CFile cf, int no_to_flush)
             break;
         if (p->dirty)
         {
-            mf_write(cf->hash_mf, p->ph.this_bucket, 0, 0, &p->ph);
+            if (ret == 0)
+            {
+                if (mf_write(cf->hash_mf, p->ph.this_bucket, 0, 0, &p->ph))
+                    ret = -1;
+            }
             cf->dirty = 1;
         }
         release_bucket(cf, p);
     }
+    return ret;
 }
 
 static struct CFile_hash_bucket *alloc_bucket(CFile cf, zint block_no, int hno)
@@ -231,7 +238,10 @@ static struct CFile_hash_bucket *alloc_bucket(CFile cf, zint block_no, int hno)
     struct CFile_hash_bucket *p, **pp;
 
     if (cf->bucket_in_memory == cf->max_bucket_in_memory)
-        flush_bucket(cf, 1);
+    {
+        if (flush_bucket(cf, 1))
+            return 0;
+    }
     assert(cf->bucket_in_memory < cf->max_bucket_in_memory);
     ++(cf->bucket_in_memory);
     p = (struct CFile_hash_bucket *) xmalloc(sizeof(*p));
@@ -258,10 +268,12 @@ static struct CFile_hash_bucket *get_bucket(CFile cf, zint block_no, int hno)
     struct CFile_hash_bucket *p;
 
     p = alloc_bucket(cf, block_no, hno);
+    if (!p)
+        return 0;
     p->dirty = 0;
-    if (!mf_read(cf->hash_mf, block_no, 0, 0, &p->ph))
+    if (mf_read(cf->hash_mf, block_no, 0, 0, &p->ph) != 1)
     {
-        yaz_log(YLOG_FATAL|YLOG_ERRNO, "read get_bucket");
+        yaz_log(YLOG_FATAL, "read get_bucket");
         release_bucket(cf, p);
         return 0;
     }
@@ -277,6 +289,8 @@ static struct CFile_hash_bucket *new_bucket(CFile cf, zint *block_nop, int hno)
 
     block_no = *block_nop = cf->head.next_bucket++;
     p = alloc_bucket(cf, block_no, hno);
+    if (!p)
+        return 0;
     p->dirty = 1;
 
     for (i = 0; i<HASH_BUCKET; i++)
@@ -295,7 +309,9 @@ static int cf_lookup_flat(CFile cf, zint no, zint *vno)
     int off = (int) ((no*sizeof(zint)) - hno*HASH_BSIZE);
 
     *vno = 0;
-    mf_read(cf->hash_mf, hno+cf->head.next_bucket, off, sizeof(zint), vno);
+    if (mf_read(cf->hash_mf, hno+cf->head.next_bucket, off, sizeof(zint), vno)
+        == -1)
+        return -1;
     if (*vno)
         return 1;
     return 0;
@@ -376,14 +392,14 @@ static int cf_moveto_flat(CFile cf)
     int j;
     zint i;
 
-    yaz_log(YLOG_LOG, "cf: Moving to flat shadow: %s", cf->rmf->name);
     yaz_log(YLOG_DEBUG, "cf: Moving to flat shadow: %s", cf->rmf->name);
     yaz_log(YLOG_DEBUG, "cf: hits=%d miss=%d bucket_in_memory=" ZINT_FORMAT " total="
 	  ZINT_FORMAT,
 	cf->no_hits, cf->no_miss, cf->bucket_in_memory, 
         cf->head.next_bucket - cf->head.first_bucket);
     assert(cf->head.state == 1);
-    flush_bucket(cf, -1);
+    if (flush_bucket(cf, -1))
+        return -1;
     assert(cf->bucket_in_memory == 0);
     p = (struct CFile_hash_bucket *) xmalloc(sizeof(*p));
     for (i = cf->head.first_bucket; i < cf->head.next_bucket; i++)
@@ -489,6 +505,9 @@ static zint cf_new_hash(CFile cf, zint no)
     if (hbprev)
         hbprev->dirty = 1;
     hb = new_bucket(cf, bucketpp, hno);
+    if (!hb)
+        return 0;
+
     hb->ph.no[0] = no;
     hb->ph.vno[0] = vno;
     return vno;
@@ -528,14 +547,20 @@ int cf_read(CFile cf, zint no, int offset, int nbytes, void *buf)
     zebra_mutex_lock(&cf->mutex);
     ret = cf_lookup(cf, no, &block);
     zebra_mutex_unlock(&cf->mutex);
-    if (ret != 1)
+    if (ret == -1)
     {
-        /* block could not be read or error */
+        /* error */
+        yaz_log(YLOG_FATAL, "cf_lookup failed");
+        return -1;
+    }
+    else if (ret == 0)
+    {
+        /* block could not be read */
         return ret;
     }
-    if (mf_read(cf->block_mf, block, offset, nbytes, buf) != 1)
+    else if (mf_read(cf->block_mf, block, offset, nbytes, buf) != 1)
     {
-        yaz_log(YLOG_FATAL|YLOG_ERRNO, "cf_read no=" ZINT_FORMAT " block=" ZINT_FORMAT, no, block);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "mf_read no=" ZINT_FORMAT " block=" ZINT_FORMAT, no, block);
         return -1;
     }
     return 1;
@@ -575,7 +600,8 @@ int cf_write(CFile cf, zint no, int offset, int nbytes, const void *buf)
         }
         if (offset || nbytes)
         {
-            mf_read(cf->rmf, no, 0, 0, cf->iobuf);
+            if (mf_read(cf->rmf, no, 0, 0, cf->iobuf) == -1)
+                return -1;
             memcpy(cf->iobuf + offset, buf, nbytes);
             buf = cf->iobuf;
             offset = 0;
@@ -588,17 +614,21 @@ int cf_write(CFile cf, zint no, int offset, int nbytes, const void *buf)
 
 int cf_close(CFile cf)
 {
+    int ret = 0;
     yaz_log(YLOG_DEBUG, "cf: close hits=%d miss=%d bucket_in_memory=" ZINT_FORMAT
 	  " total=" ZINT_FORMAT,
           cf->no_hits, cf->no_miss, cf->bucket_in_memory,
           cf->head.next_bucket - cf->head.first_bucket);
-    flush_bucket(cf, -1);
+    if (flush_bucket(cf, -1))
+        ret = -1;
     if (cf->hash_mf)
     {
         if (cf->dirty)
         {
-            mf_write(cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head);
-            write_head(cf);
+            if (mf_write(cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head))
+                ret = -1;
+            if (write_head(cf))
+                ret = -1;
         }
         mf_close(cf->hash_mf);
     }
@@ -609,7 +639,7 @@ int cf_close(CFile cf)
     xfree(cf->iobuf);
     zebra_mutex_destroy(&cf->mutex);
     xfree(cf);
-    return 0;
+    return ret;
 }
 
 /*
