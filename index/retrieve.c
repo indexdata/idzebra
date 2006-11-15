@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.49 2006-11-14 14:32:13 marc Exp $
+/* $Id: retrieve.c,v 1.50 2006-11-15 14:09:43 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -327,7 +327,19 @@ int zebra_record_fetch(ZebraHandle zh, SYSNO sysno, int score,
     *addinfo = 0;
     elemsetname = yaz_get_esn(comp);
 
-    /* processing zebra special elementset names of form 'zebra:: */  
+    /*
+    yaz_log(YLOG_LOG, "ELEMENTSET: '%s'", elemsetname);
+    if (comp && comp->which)
+        {
+            yaz_log(YLOG_LOG, "%i %i", comp, comp->which);
+        }
+        If SRU, comp->which ==2 , and yaz_get_esn(comp) does not work correctly
+        IF Z3055, comp->which ==1 , and everything is fine - except reord 
+        encodning
+    */
+
+    /* processing zebra special elementset names of form 'zebra:: */
+    /* SUGGESTION: do not check elemset nema here, buuuut ... */  
     if (elemsetname  && 0 == strncmp(elemsetname, "zebra::", 7))
         return  zebra_special_fetch(zh, sysno, odr,
                                     elemsetname + 7,
@@ -408,13 +420,25 @@ int zebra_record_fetch(ZebraHandle zh, SYSNO sysno, int score,
 	zebra_snippets_log(snippet, YLOG_LOG);
 #endif
 
-        if (!(rt = recType_byName (zh->reg->recTypes, zh->res,
-                                   file_type, &clientData)))
+        /* SUGGESTION: do not check elemset name here, buuuut ... 
+           add another recType Struct with zebra internal stuff here,
+           which overrides the Alvis/GRS-1/Safari filters .... 
+        */
+        if (!(rt = recType_byName(zh->reg->recTypes, zh->res,
+                                  file_type, &clientData)))
         {
             return_code = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
         }
         else
         {
+        /* SUGGESTION: do not check elemset name here, buuuut ... 
+           add another recType Struct with zebra internal stuff here,
+           which overrides the Alvis/GRS-1/Safari filters .... 
+           (*rt->retrieve) method to make the correct encoded, etc, retrieval,
+           where all needed info already is found in the   &retrieveCtr
+           parameter. This way, we do not need to re-code/dublicate a lot of 
+           logic. 
+        */
             (*rt->retrieve)(clientData, &retrieveCtrl);
             return_code = retrieveCtrl.diagnostic;
 
@@ -423,6 +447,11 @@ int zebra_record_fetch(ZebraHandle zh, SYSNO sysno, int score,
             *rec_lenp = retrieveCtrl.rec_len;
             *addinfo = retrieveCtrl.addinfo;
         }
+        /* another SUGGESTION: throw out all this snippet stuff in this 
+           file, and do it correctly - either inside filters, or in another 
+           new   (*rt->retrieve)(clientData, &retrieveCtrl); type 'snippet'
+        */
+
 	zebra_snippets_destroy(snippet);
         zebra_snippets_destroy(retrieveCtrl.doc_snippet);
      }
