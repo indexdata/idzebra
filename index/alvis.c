@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.5 2006-11-10 12:56:26 adam Exp $
+/* $Id: alvis.c,v 1.6 2006-11-16 13:27:54 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -706,8 +706,11 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	xmlChar *buf_out;
 	int len_out;
 
-        xsltSaveResultToString(&buf_out, &len_out, resDoc,
-                               schema->stylesheet_xsp);	
+        if (schema->stylesheet_xsp)
+            xsltSaveResultToString(&buf_out, &len_out, resDoc,
+                                   schema->stylesheet_xsp);	
+        else
+	    xmlDocDumpMemory(resDoc, &buf_out, &len_out);            
 
 	p->output_format = VAL_TEXT_XML;
 	p->rec_len = len_out;
@@ -720,8 +723,11 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	xmlChar *buf_out;
 	int len_out;
 
-        xsltSaveResultToString(&buf_out, &len_out, resDoc,
-                               schema->stylesheet_xsp);	
+        if (schema->stylesheet_xsp)
+            xsltSaveResultToString(&buf_out, &len_out, resDoc,
+                                   schema->stylesheet_xsp);
+        else
+	    xmlDocDumpMemory(resDoc, &buf_out, &len_out);            
 
 	p->output_format = VAL_SUTRS;
 	p->rec_len = len_out;
