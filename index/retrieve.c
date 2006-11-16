@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.51 2006-11-16 10:49:11 adam Exp $
+/* $Id: retrieve.c,v 1.52 2006-11-16 11:10:46 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -316,7 +316,7 @@ int zebra_special_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
         struct ZebraRecStream stream;
         RecordAttr *recordAttr = rec_init_attr(zh->reg->zei, rec); 
         zebra_create_record_stream(zh, &rec, &stream);
-        *output_format = VAL_SUTRS;
+        *output_format = input_format;
         *rec_lenp = recordAttr->recordSize;
         *rec_bufp = (char *) odr_malloc(odr, *rec_lenp);
         stream.readf(&stream, *rec_bufp, *rec_lenp);
