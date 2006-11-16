@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.236 2006-11-14 08:12:08 adam Exp $
+/* $Id: extract.c,v 1.237 2006-11-16 11:11:36 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -824,6 +824,7 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         rec->size[recInfo_storeData] = zh->store_data_size;
         rec->info[recInfo_storeData] = zh->store_data_buf;
 	zh->store_data_buf = 0;
+        recordAttr->recordSize = zh->store_data_size;
     }
     else if (zh->m_store_data)
     {
