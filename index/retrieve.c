@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.50 2006-11-15 14:09:43 marc Exp $
+/* $Id: retrieve.c,v 1.51 2006-11-16 10:49:11 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -120,10 +120,7 @@ int zebra_special_index_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
     size_t retrieval_index_len; 
     const char *retrieval_type;
     size_t retrieval_type_len;
-   
-    /* int return_code = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS; */
-
-    WRBUF wrbuf = wrbuf_alloc();
+    WRBUF wrbuf = 0;
     zebra_rec_keys_t keys;
     
     /* only accept XML and SUTRS requests */
@@ -132,17 +129,43 @@ int zebra_special_index_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
         yaz_log(YLOG_WARN, "unsupported format for element set zebra::%s", 
                 elemsetname);
         *output_format = VAL_NONE;
-        return YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+        return YAZ_BIB1_NO_SYNTAXES_AVAILABLE_FOR_THIS_REQUEST;
+    }
+
+    parse_zebra_elem(elemsetname,
+                     &retrieval_index, &retrieval_index_len,
+                     &retrieval_type,  &retrieval_type_len);
+
+    if (retrieval_type_len != 0 && retrieval_type_len != 1)
+    {
+        return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+    }
+
+    if (retrieval_index_len)
+    {
+        char retrieval_index_cstr[256];
+
+        if (retrieval_index_len  < sizeof(retrieval_index_cstr) -1)
+        {
+            memcpy(retrieval_index_cstr, retrieval_index, retrieval_index_len);
+            retrieval_index_cstr[retrieval_index_len] = '\0';
+            
+            if (zebraExplain_lookup_attr_str(zh->reg->zei,
+                                             zinfo_index_category_index,
+                                             (retrieval_type_len == 0 ? -1 : 
+                                              retrieval_type[0]),
+                                             retrieval_index_cstr) == -1)
+            {
+                return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+            }
+        }
     }
 
     keys = zebra_rec_keys_open();
     zebra_rec_keys_set_buf(keys, rec->info[recInfo_delKeys],
                            rec->size[recInfo_delKeys], 0);
 
-    parse_zebra_elem(elemsetname,
-                     &retrieval_index, &retrieval_index_len,
-                     &retrieval_type,  &retrieval_type_len);
-
+    wrbuf = wrbuf_alloc();
     if (zebra_rec_keys_rewind(keys)){
         size_t slen;
         const char *str;
@@ -157,7 +180,7 @@ int zebra_special_index_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
                          "<record xmlns="
                          "\"http://www.indexdata.com/zebra/\""
                          " sysno=\"" ZINT_FORMAT "\""
-                         " set=\"zebra::index::%s\">\n",
+                         " set=\"zebra::index::%s/\">\n",
                          sysno, elemsetname);
         }
         else if (input_format == VAL_SUTRS)
@@ -241,9 +264,9 @@ int zebra_special_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
         && input_format != VAL_SUTRS){
         yaz_log(YLOG_WARN, "unsupported format for element set zebra::%s", 
                 elemsetname);
-        return YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+        return YAZ_BIB1_NO_SYNTAXES_AVAILABLE_FOR_THIS_REQUEST;
     }
-
+    
     /* processing zebra::meta::sysno elemset without fetching binary data */
     if (elemsetname  && 0 == strcmp(elemsetname, "meta::sysno"))
     {
@@ -254,10 +277,10 @@ int zebra_special_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
         } 
         else if (input_format == VAL_TEXT_XML){
             sprintf(rec_str, "<record xmlns="
-                             "\"http://www.indexdata.com/zebra/\""
+                    "\"http://www.indexdata.com/zebra/\""
                              " sysno=\"" ZINT_FORMAT "\""
-                             " set=\"zebra::%s\">\n",
-                             sysno, elemsetname);
+                             " set=\"zebra::%s\"/>\n",
+                    sysno, elemsetname);
             *output_format = VAL_TEXT_XML;
         }
 	*rec_lenp = strlen(rec_str);
@@ -272,7 +295,7 @@ int zebra_special_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
     /* fetching binary record up for all other display elementsets */
     rec = rec_get(zh->reg->records, sysno);
     if (!rec){
-        yaz_log(YLOG_DEBUG, "rec_get fail on sysno=" ZINT_FORMAT, sysno);
+        yaz_log(YLOG_WARN, "rec_get fail on sysno=" ZINT_FORMAT, sysno);
         return YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
     }
 
@@ -304,7 +327,7 @@ int zebra_special_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
 
     if (rec)
         rec_free(&rec);
-    return YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+    return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
 }
 
                           
@@ -327,20 +350,9 @@ int zebra_record_fetch(ZebraHandle zh, SYSNO sysno, int score,
     *addinfo = 0;
     elemsetname = yaz_get_esn(comp);
 
-    /*
-    yaz_log(YLOG_LOG, "ELEMENTSET: '%s'", elemsetname);
-    if (comp && comp->which)
-        {
-            yaz_log(YLOG_LOG, "%i %i", comp, comp->which);
-        }
-        If SRU, comp->which ==2 , and yaz_get_esn(comp) does not work correctly
-        IF Z3055, comp->which ==1 , and everything is fine - except reord 
-        encodning
-    */
-
     /* processing zebra special elementset names of form 'zebra:: */
     /* SUGGESTION: do not check elemset nema here, buuuut ... */  
-    if (elemsetname  && 0 == strncmp(elemsetname, "zebra::", 7))
+    if (elemsetname && 0 == strncmp(elemsetname, "zebra::", 7))
         return  zebra_special_fetch(zh, sysno, odr,
                                     elemsetname + 7,
                                     input_format, output_format,
@@ -351,7 +363,7 @@ int zebra_record_fetch(ZebraHandle zh, SYSNO sysno, int score,
     rec = rec_get(zh->reg->records, sysno);
     if (!rec)
     {
-        yaz_log(YLOG_DEBUG, "rec_get fail on sysno=" ZINT_FORMAT, sysno);
+        yaz_log(YLOG_WARN, "rec_get fail on sysno=" ZINT_FORMAT, sysno);
         *basenamep = 0;
         return YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
     }
@@ -365,9 +377,8 @@ int zebra_record_fetch(ZebraHandle zh, SYSNO sysno, int score,
     *basenamep = (char *) odr_malloc (odr, strlen(basename)+1);
     strcpy (*basenamep, basename);
 
-
-    yaz_log (YLOG_DEBUG, "retrieve localno=" ZINT_FORMAT " score=%d",
-             sysno, score);
+    yaz_log(YLOG_DEBUG, "retrieve localno=" ZINT_FORMAT " score=%d",
+            sysno, score);
 
     zebra_create_record_stream(zh, &rec, &stream);
     
