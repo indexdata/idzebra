@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.36 2006-08-14 10:40:15 adam Exp $
+/* $Id: zinfo.h,v 1.37 2006-11-16 10:48:35 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -62,6 +62,15 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
 			      int explain_database);
 int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
 			     int set, int use);
+
+/** \brief lookup ordinal from string index + index type 
+    \param zei explain info
+    \param cat category
+    \param index_type index type
+    \param str index string
+    \returns  -1 no such index+type exist; ordinal otherwise
+*/
+    
 int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, 
                                  zinfo_index_category_t cat,
                                  int index_type,
