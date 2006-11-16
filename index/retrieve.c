@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.52 2006-11-16 11:10:46 adam Exp $
+/* $Id: retrieve.c,v 1.53 2006-11-16 21:58:54 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -123,6 +123,9 @@ int zebra_special_index_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
     WRBUF wrbuf = 0;
     zebra_rec_keys_t keys;
     
+    /* set output variables before processing possible error states */
+    *rec_lenp = 0;
+
     /* only accept XML and SUTRS requests */
     if (input_format != VAL_TEXT_XML
         && input_format != VAL_SUTRS){
@@ -241,7 +244,6 @@ int zebra_special_index_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
         if (input_format == VAL_TEXT_XML)
             wrbuf_printf(wrbuf, "</record>\n");
      }
-    
     *rec_lenp = wrbuf_len(wrbuf);
     *rec_bufp = odr_malloc(odr, *rec_lenp);
     memcpy(*rec_bufp, wrbuf_buf(wrbuf), *rec_lenp);
@@ -258,6 +260,9 @@ int zebra_special_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
                            char **rec_bufp, int *rec_lenp)
 {
     Record rec;
+    
+    /* set output variables before processing possible error states */
+    *rec_lenp = 0;
 
     /* only accept XML and SUTRS requests */
     if (input_format != VAL_TEXT_XML

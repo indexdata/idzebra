@@ -1,4 +1,4 @@
-/* $Id: t16.c,v 1.2 2006-11-16 20:44:28 marc Exp $
+/* $Id: t16.c,v 1.3 2006-11-16 21:58:55 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
