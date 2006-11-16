@@ -1,4 +1,4 @@
-/* $Id: t16.c,v 1.1 2006-11-16 12:48:28 adam Exp $
+/* $Id: t16.c,v 1.2 2006-11-16 20:44:28 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -85,6 +85,13 @@ static void tst(int argc, char **argv)
 {
     zint hits;
     ZEBRA_RES res;
+    const char * zebra_xml_sysno 
+        = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\" set=\"zebra::meta::sysno\"/>\n";
+
+    const char * zebra_xml_index_title_p
+        = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\" set=\"zebra::index::title:p/\">\n"
+"  <index name=\"title\" type=\"p\" seq=\"4\">my title</index>\n"
+"</record>\n";
 
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
@@ -96,11 +103,24 @@ static void tst(int argc, char **argv)
     YAZ_CHECK_EQ(hits, 1);
     
     YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::data", VAL_TEXT_XML,
+                                     "mismatch"), ZEBRA_FAIL);
+
+    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::data", VAL_SUTRS,
                                      myrec[0]), ZEBRA_OK);
 
     YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::data", VAL_TEXT_XML,
-                                     "mismatch"), ZEBRA_FAIL);
+                                     myrec[0]), ZEBRA_OK);
 
+    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::meta::sysno", VAL_SUTRS,
+                                     "2"), ZEBRA_OK);
+
+    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::meta::sysno", VAL_TEXT_XML,
+                                     zebra_xml_sysno), ZEBRA_OK);
+
+    /* YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::data::index:title:p", 
+                                     VAL_TEXT_XML,
+                                     zebra_xml_index_title_p), ZEBRA_OK);
+    */
     YAZ_CHECK(tl_close_down(zh, zs));
 }
 
