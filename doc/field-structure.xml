@@ -1,5 +1,5 @@
  <chapter id="fields-and-charsets">
-  <!-- $Id: field-structure.xml,v 1.4 2006-11-13 14:53:40 marc Exp $ -->
+  <!-- $Id: field-structure.xml,v 1.5 2006-11-17 14:54:00 marc Exp $ -->
   <title>Field Structure and Character Sets
   </title>
   
@@ -263,7 +263,7 @@
   </section>
   <section id="default-idx-debug">
    <title>Field structure debugging using the special 
-          <literal>zebra::</literal> element set</title>
+          <literal>zebra::index::</literal> element set</title>
    <para>
     At some time, it is very hard to figure out what exactly has been
     indexed how and in which indexes. Using the indexing stylesheet of
@@ -275,13 +275,13 @@
     Starting with <literal>Zebra</literal> version
     <literal>2.0.4-2</literal> or newer, one has the possibility to
     use the special
-    <literal>zebra::</literal> element set name, which is only defined for
+    <literal>zebra::index::</literal> element set name, which is only defined for
     the <literal>SUTRS</literal> and <literal>XML</literal> record
     formats.
     <screen>
       Z> f @attr 1=dc_all minutter
       Z> format sutrs
-      Z> elements zebra::
+      Z> elements zebra::index::
       Z> s 1+1
     </screen>
     will display all indexed tokens from all indexed fields of the
@@ -290,9 +290,9 @@
     <screen>
       Z> f @attr 1=dc_all minutter
       Z> format xml
-      Z> elements zebra::dc_publisher
+      Z> elements zebra::index::dc_publisher
       Z> s 1+1
-      Z> elements zebra::dc_publisher:p
+      Z> elements zebra::index::dc_publisher:p
       Z> s 1+1
     </screen> 
     displays in <literal>XML</literal> record syntax only the content
