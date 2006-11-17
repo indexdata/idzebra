@@ -1,4 +1,4 @@
-/* $Id: t16.c,v 1.3 2006-11-16 21:58:55 marc Exp $
+/* $Id: t16.c,v 1.4 2006-11-17 14:24:56 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -116,11 +116,17 @@ static void tst(int argc, char **argv)
 
     YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::meta::sysno", VAL_TEXT_XML,
                                      zebra_xml_sysno), ZEBRA_OK);
-
-    /* YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::data::index:title:p", 
+    
+    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::index::title:p", 
                                      VAL_TEXT_XML,
                                      zebra_xml_index_title_p), ZEBRA_OK);
-    */
+    
+    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::nonexistent", 
+                                     VAL_TEXT_XML, ""), ZEBRA_OK);
+    
+    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::index::nonexistent", 
+                                     VAL_TEXT_XML, ""), ZEBRA_OK);
+    
     YAZ_CHECK(tl_close_down(zh, zs));
 }
 
