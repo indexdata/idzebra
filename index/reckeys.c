@@ -1,4 +1,4 @@
-/* $Id: reckeys.c,v 1.8 2006-10-29 17:20:01 adam Exp $
+/* $Id: reckeys.c,v 1.9 2006-11-20 13:59:35 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -59,10 +59,14 @@ struct zebra_rec_key_entry **zebra_rec_keys_mk_hash(zebra_rec_keys_t p,
     unsigned h = 0;
     size_t i;
     int j;
+#if 0
+    h = key->mem[key->len-1];
+#else
     for (i = 0; i<len; i++)
 	h = h * 65509 + buf[i];
     for (j = 0; j<key->len; j++)
 	h = h * 65509 + CAST_ZINT_TO_INT(key->mem[j]);
+#endif
     return &p->entries[h % (unsigned) p->hash_size];
 }
 
@@ -91,7 +95,7 @@ zebra_rec_keys_t zebra_rec_keys_open(void)
     p->decode_handle = iscz1_start(); 
 
     p->nmem = nmem_create();
-    p->hash_size = 1023;
+    p->hash_size = 32767;
     p->entries = 0;
 
     init_hash(p);
@@ -152,14 +156,19 @@ int zebra_rec_keys_add_hash(zebra_rec_keys_t keys,
 			    const char *str, size_t slen,
 			    const struct it_key *key)
 {
-    struct zebra_rec_key_entry **kep = zebra_rec_keys_mk_hash(keys,
-                                                              str, slen, key);
+    struct zebra_rec_key_entry **kep_first
+        = zebra_rec_keys_mk_hash(keys, str, slen, key);
+    struct zebra_rec_key_entry **kep = kep_first;
     while (*kep)
     {
 	struct zebra_rec_key_entry *e = *kep;
 	if (slen == e->len && !memcmp(str, e->buf, slen) &&
 	    !key_compare(key, &e->key))
 	{
+            *kep = (*kep)->next; /* out of queue */
+            e->next = *kep_first; /* move to front */
+            *kep_first = e;
+
 	    return 0;
 	}
 	kep = &(*kep)->next;
@@ -182,8 +191,17 @@ void zebra_rec_keys_write(zebra_rec_keys_t keys,
     
     assert(keys->owner_of_buffer);
 
+#if 1
     if (!zebra_rec_keys_add_hash(keys, str, slen, key))
+    {
+#if 0
+        yaz_log(YLOG_LOG, "dup key slen=%d %.*s "
+                "ord=" ZINT_FORMAT " seq=" ZINT_FORMAT,
+                slen, slen, str, key->mem[0], key->mem[key->len-1]);
+#endif
 	return;  /* key already there . Omit it */
+    }
+#endif
     if (keys->buf_used+1024 > keys->buf_max)
     {
         char *b = (char *) xmalloc (keys->buf_max += 128000);
