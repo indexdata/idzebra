@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.237 2006-11-16 11:11:36 adam Exp $
+/* $Id: extract.c,v 1.238 2006-11-20 13:59:13 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1154,9 +1154,6 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
     struct encode_info encode_info;
     int ptr_i = zh->reg->ptr_i;
     int temp_policy;
-#if SORT_EXTRA
-    int i;
-#endif
     if (!zh->reg->key_buf || ptr_i <= 0)
     {
         yaz_log(log_level_extract, "  nothing to flush section=%d buf=%p i=%d",
@@ -1168,10 +1165,15 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
     yaz_log (YLOG_LOG, "sorting section %d", (zh->reg->key_file_no));
     yaz_log(log_level_extract, "  sort_buff at %p n=%d",
                     zh->reg->key_buf + zh->reg->ptr_top - ptr_i,ptr_i);
-#if !SORT_EXTRA
-    qsort (zh->reg->key_buf + zh->reg->ptr_top - ptr_i, ptr_i,
-               sizeof(char*), key_qsort_compare);
 
+
+#if USE_SHELLSORT
+    shellsort(zh->reg->key_buf + zh->reg->ptr_top - ptr_i, ptr_i,
+              sizeof(char*), key_qsort_compare);
+#else
+    qsort(zh->reg->key_buf + zh->reg->ptr_top - ptr_i, ptr_i,
+          sizeof(char*), key_qsort_compare);
+#endif
     /* zebra.cfg: tempfiles:  
        Y: always use temp files (old way) 
        A: use temp files, if more than one (auto) 
@@ -1225,43 +1227,6 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
             encode_key_write (cp + strlen(cp), &encode_info, outf);
     }
     encode_key_flush ( &encode_info, outf);
-#else
-    qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), key_x_compare);
-    extract_get_fname_tmp (out_fname, key_file_no);
-
-    if (!(outf = fopen (out_fname, "wb")))
-    {
-        yaz_log (YLOG_FATAL|YLOG_ERRNO, "fopen %s", out_fname);
-        zebra_exit("extract_flushWriteKeys");
-    }
-    yaz_log (YLOG_LOG, "writing section %d", key_file_no);
-    i = ptr_i;
-    prevcp =  key_buf[ptr_top-i];
-    while (1)
-        if (!--i || strcmp (prevcp, key_buf[ptr_top-i]))
-        {
-            key_y_len = strlen(prevcp)+1;
-#if 0
-            yaz_log (YLOG_LOG, "key_y_len: %2d %02x %02x %s",
-                      key_y_len, prevcp[0], prevcp[1], 2+prevcp);
-#endif
-            qsort (key_buf + ptr_top-ptr_i, ptr_i - i,
-                                   sizeof(char*), key_y_compare);
-            cp = key_buf[ptr_top-ptr_i];
-            --key_y_len;
-            encode_key_init (&encode_info);
-            encode_key_write (cp, &encode_info, outf);
-            while (--ptr_i > i)
-            {
-                cp = key_buf[ptr_top-ptr_i];
-                encode_key_write (cp+key_y_len, &encode_info, outf);
-            }
-            encode_key_flush ( &encode_info, outf);
-            if (!i)
-                break;
-            prevcp = key_buf[ptr_top-ptr_i];
-        }
-#endif
     if (fclose (outf))
     {
         yaz_log (YLOG_FATAL|YLOG_ERRNO, "fclose %s", out_fname);
