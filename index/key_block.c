@@ -1,4 +1,4 @@
-/* $Id: key_block.c,v 1.2 2006-11-21 14:54:12 adam Exp $
+/* $Id: key_block.c,v 1.3 2006-11-21 17:48:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -40,8 +40,9 @@ struct zebra_key_block {
     size_t key_buf_used;
     int key_file_no;
     char *key_tmp_dir;
-#if YAZ_POSIX_THREADS
+    int use_threads;
     char **alt_buf;
+#if YAZ_POSIX_THREADS
     char **thread_key_buf;
     size_t thread_ptr_top;
     size_t thread_ptr_i;
@@ -181,7 +182,8 @@ static void *thread_func(void *vp)
 }
 #endif
 
-zebra_key_block_t key_block_create(int mem, const char *key_tmp_dir)
+zebra_key_block_t key_block_create(int mem, const char *key_tmp_dir,
+                                   int use_threads)
 {
     zebra_key_block_t p = xmalloc(sizeof(*p));
 
@@ -191,15 +193,22 @@ zebra_key_block_t key_block_create(int mem, const char *key_tmp_dir)
     p->key_buf_used = 0;
     p->key_tmp_dir = xstrdup(key_tmp_dir);
     p->key_file_no = 0;
+    p->alt_buf = 0;
+    p->use_threads = 0;
+    if (use_threads)
+    {
 #if YAZ_POSIX_THREADS
-    p->alt_buf = (char**) xmalloc (mem);
-    p->is_sorting = 0;
-    p->exit_flag = 0;
-    pthread_mutex_init(&p->mutex, 0);
-    pthread_cond_init(&p->work_available, 0);
-    pthread_cond_init(&p->cond_sorting, 0);
-    pthread_create(&p->thread_id, 0, thread_func, p);
+        p->use_threads = use_threads;
+        p->is_sorting = 0;
+        p->exit_flag = 0;
+        pthread_mutex_init(&p->mutex, 0);
+        pthread_cond_init(&p->work_available, 0);
+        pthread_cond_init(&p->cond_sorting, 0);
+        pthread_create(&p->thread_id, 0, thread_func, p);
+        p->alt_buf = (char**) xmalloc (mem);
 #endif
+    }
+    yaz_log(YLOG_LOG, "key_block_create t=%d", p->use_threads);
     return p;
 }
 
@@ -208,24 +217,27 @@ void key_block_destroy(zebra_key_block_t *pp)
     zebra_key_block_t p = *pp;
     if (p)
     {
+        if (p->use_threads)
+        {
 #if YAZ_POSIX_THREADS
-        pthread_mutex_lock(&p->mutex);
-
-        while (p->is_sorting)
-            pthread_cond_wait(&p->cond_sorting, &p->mutex);
-
-        p->exit_flag = 1;
-
-        pthread_cond_broadcast(&p->work_available);
-
-        pthread_mutex_unlock(&p->mutex);
-        pthread_join(p->thread_id, 0);
-        pthread_cond_destroy(&p->work_available);
-        pthread_cond_destroy(&p->cond_sorting);
-        pthread_mutex_destroy(&p->mutex);
-
-        xfree(p->alt_buf);
+            pthread_mutex_lock(&p->mutex);
+            
+            while (p->is_sorting)
+                pthread_cond_wait(&p->cond_sorting, &p->mutex);
+            
+            p->exit_flag = 1;
+            
+            pthread_cond_broadcast(&p->work_available);
+            
+            pthread_mutex_unlock(&p->mutex);
+            pthread_join(p->thread_id, 0);
+            pthread_cond_destroy(&p->work_available);
+            pthread_cond_destroy(&p->cond_sorting);
+            pthread_mutex_destroy(&p->mutex);
+            
 #endif
+            xfree(p->alt_buf);
+        }
         xfree(p->key_buf);
         xfree(p->key_tmp_dir);
         xfree(p);
@@ -339,43 +351,42 @@ void key_block_flush_int(zebra_key_block_t p,
 }
 
 void key_block_flush(zebra_key_block_t p, int is_final)
-        /* optimizing: if final=1, and no files written yet */
-        /* push the keys directly to merge, sidestepping the */
-        /* temp file altogether. Speeds small updates */
 {
-#if YAZ_POSIX_THREADS
-    char **tmp;
-#endif
     if (!p)
         return;
 
-#if YAZ_POSIX_THREADS
-    pthread_mutex_lock(&p->mutex);
-
-    while (p->is_sorting)
-        pthread_cond_wait(&p->cond_sorting, &p->mutex);
-
-    p->is_sorting = 1;
-
-    p->thread_ptr_top = p->ptr_top;
-    p->thread_ptr_i = p->ptr_i;
-    p->thread_key_buf = p->key_buf;
-
-    tmp = p->key_buf;
-    p->key_buf = p->alt_buf;
-    p->alt_buf = tmp;
-
-    pthread_cond_signal(&p->work_available);
-
-    if (is_final)
+    if (p->use_threads)
     {
+#if YAZ_POSIX_THREADS
+        char **tmp;
+    
+        pthread_mutex_lock(&p->mutex);
+        
         while (p->is_sorting)
             pthread_cond_wait(&p->cond_sorting, &p->mutex);
-    }
-    pthread_mutex_unlock(&p->mutex);
-#else
-    key_block_flush_int(p, p->key_buf, p->ptr_top, p->ptr_i);
+        
+        p->is_sorting = 1;
+        
+        p->thread_ptr_top = p->ptr_top;
+        p->thread_ptr_i = p->ptr_i;
+        p->thread_key_buf = p->key_buf;
+        
+        tmp = p->key_buf;
+        p->key_buf = p->alt_buf;
+        p->alt_buf = tmp;
+        
+        pthread_cond_signal(&p->work_available);
+        
+        if (is_final)
+        {
+            while (p->is_sorting)
+                pthread_cond_wait(&p->cond_sorting, &p->mutex);
+        }
+        pthread_mutex_unlock(&p->mutex);
 #endif
+    }
+    else
+        key_block_flush_int(p, p->key_buf, p->ptr_top, p->ptr_i);
     p->ptr_i = 0;
     p->key_buf_used = 0;
 }

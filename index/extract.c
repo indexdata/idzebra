@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.239 2006-11-21 14:32:38 adam Exp $
+/* $Id: extract.c,v 1.240 2006-11-21 17:48:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1021,9 +1021,10 @@ void extract_flushRecordKeys(ZebraHandle zh, SYSNO sysno, int cmd,
 
     if (!zh->reg->key_block)
     {
-	int mem= 1024*1024* atoi( res_get_def( zh->res, "memmax", "8"));
+	int mem = 1024*1024 * atoi( res_get_def( zh->res, "memmax", "8"));
         const char *key_tmp_dir = res_get_def (zh->res, "keyTmpDir", ".");
-        zh->reg->key_block = key_block_create(mem, key_tmp_dir);
+        int use_threads = atoi(res_get_def (zh->res, "threads", "1"));
+        zh->reg->key_block = key_block_create(mem, key_tmp_dir, use_threads);
     }
     zebraExplain_recordCountIncrement (zei, cmd ? 1 : -1);
 
