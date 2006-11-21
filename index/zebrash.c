@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.40 2006-10-29 17:20:01 adam Exp $
+/* $Id: zebrash.c,v 1.41 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -351,7 +351,7 @@ static int cmd_end_trans( char *args[], WRBUF outbuff)
 
 static int cmd_record_insert( char *args[], WRBUF outbuff)
 {
-    SYSNO sysno=0;
+    zint sysno = 0;
     int rc;
     char *rec=restargs(args,1);
     

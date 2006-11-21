@@ -1,4 +1,4 @@
-/* $Id: reckeys.h,v 1.7 2006-11-21 14:32:38 adam Exp $
+/* $Id: reckeys.h,v 1.8 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifndef RECKEYS_H
 #define RECKEYS_H
+
+#include <yaz/yconfig.h>
+#include "it_key.h"
 
 YAZ_BEGIN_CDECL
 

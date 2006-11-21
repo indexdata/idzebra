@@ -1,4 +1,4 @@
-/* $Id: key_block.c,v 1.3 2006-11-21 17:48:08 adam Exp $
+/* $Id: key_block.c,v 1.4 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <ctype.h>
 
@@ -29,9 +30,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <pthread.h>
 #endif
 
-#include <yaz/nmem.h>
-#include "index.h"
 #include "key_block.h"
+#include <yaz/nmem.h>
+#include <yaz/xmalloc.h>
 
 struct zebra_key_block {
     char **key_buf;
@@ -245,7 +246,7 @@ void key_block_destroy(zebra_key_block_t *pp)
     }
 }
 
-void key_block_write(zebra_key_block_t p,  SYSNO sysno, struct it_key *key_in,
+void key_block_write(zebra_key_block_t p, zint sysno, struct it_key *key_in,
                      int cmd, const char *str_buf, size_t str_len,
                      zint staticrank, int static_rank_enable)
 {

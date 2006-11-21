@@ -1,4 +1,4 @@
-/* $Id: dirs.c,v 1.25 2006-08-14 10:40:15 adam Exp $
+/* $Id: dirs.c,v 1.26 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -186,7 +186,7 @@ void dirs_rmdir (struct dirs_info *p, const char *src)
 	dict_delete (p->dict, path);
 }
 
-void dirs_add (struct dirs_info *p, const char *src, SYSNO sysno, time_t mtime)
+void dirs_add (struct dirs_info *p, const char *src, zint sysno, time_t mtime)
 {
     char path[DIRS_MAX_PATH];
     char info[16];

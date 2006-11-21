@@ -1,4 +1,4 @@
-/* $Id: util.h,v 1.10 2006-11-14 08:12:07 adam Exp $
+/* $Id: util.h,v 1.11 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -91,19 +91,13 @@ typedef short ZEBRA_RES;
 #define ZEBRA_FAIL -1
 #define ZEBRA_OK   0
 
-typedef zint SYSNO;
+YAZ_EXPORT zint atoi_zn(const char *buf, zint len);
 
-YAZ_EXPORT
-zint atoi_zn (const char *buf, zint len);
+YAZ_EXPORT void zebra_zint_encode(char **dst, zint pos);
 
-YAZ_EXPORT
-void zebra_zint_encode(char **dst, zint pos);
+YAZ_EXPORT void zebra_zint_decode(const char **src, zint *pos);
 
-YAZ_EXPORT
-void zebra_zint_decode(const char **src, zint *pos);
-
-YAZ_EXPORT
-void zebra_exit(const char *msg);
+YAZ_EXPORT void zebra_exit(const char *msg);
 
 YAZ_END_CDECL
 

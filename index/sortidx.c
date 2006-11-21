@@ -1,4 +1,4 @@
-/* $Id: sortidx.c,v 1.18 2006-08-14 10:40:15 adam Exp $
+/* $Id: sortidx.c,v 1.19 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -33,7 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define SORT_IDX_BLOCKSIZE 64
 
 struct sortFileHead {
-    SYSNO sysno_max;
+    zint sysno_max;
 };
 
 struct sortFile {
@@ -46,7 +46,7 @@ struct sortFile {
 struct sortIdx {
     BFiles bfs;
     int write_flag;
-    SYSNO sysno;
+    zint sysno;
     char *entry_buf;
     struct sortFile *current_file;
     struct sortFile *files;
@@ -116,12 +116,12 @@ int sortIdx_type (SortIdx si, int type)
     return 0;
 }
 
-void sortIdx_sysno (SortIdx si, SYSNO sysno)
+void sortIdx_sysno(SortIdx si, zint sysno)
 {
     si->sysno = rec_sysno_to_int(sysno);
 }
 
-void sortIdx_add (SortIdx si, const char *buf, int len)
+void sortIdx_add(SortIdx si, const char *buf, int len)
 {
     if (!si->current_file || !si->current_file->bf)
 	return;

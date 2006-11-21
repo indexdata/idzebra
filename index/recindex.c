@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.53 2006-11-14 08:12:08 adam Exp $
+/* $Id: recindex.c,v 1.54 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -61,13 +61,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define USUAL_RANGE 2000000000LL
 #endif
 
-static SYSNO rec_sysno_to_ext(SYSNO sysno)
+static zint rec_sysno_to_ext(zint sysno)
 {
     assert(sysno >= 0 && sysno <= USUAL_RANGE);
     return sysno + FAKE_OFFSET;
 }
 
-SYSNO rec_sysno_to_int(SYSNO sysno)
+zint rec_sysno_to_int(zint sysno)
 {
     assert(sysno >= FAKE_OFFSET && sysno <= FAKE_OFFSET + USUAL_RANGE);
     return sysno - FAKE_OFFSET;
@@ -101,7 +101,7 @@ static void rec_tmp_expand(Records p, int size)
     }
 }
 
-static int read_indx(Records p, SYSNO sysno, void *buf, int itemsize, 
+static int read_indx(Records p, zint sysno, void *buf, int itemsize, 
                       int ignoreError)
 {
     int r;
@@ -124,7 +124,7 @@ static int read_indx(Records p, SYSNO sysno, void *buf, int itemsize,
     return r;
 }
 
-static void write_indx(Records p, SYSNO sysno, void *buf, int itemsize)
+static void write_indx(Records p, zint sysno, void *buf, int itemsize)
 {
     zint pos = (sysno-1)*itemsize;
     int off = CAST_ZINT_TO_INT(pos%RIDX_CHUNK);
@@ -139,7 +139,7 @@ static void write_indx(Records p, SYSNO sysno, void *buf, int itemsize)
 		(char*) buf + sz1);
 }
 
-static ZEBRA_RES rec_release_blocks(Records p, SYSNO sysno)
+static ZEBRA_RES rec_release_blocks(Records p, zint sysno)
 {
     struct record_index_entry entry;
     zint freeblock;
@@ -212,7 +212,7 @@ static ZEBRA_RES rec_delete_single(Records p, Record rec)
     return ZEBRA_OK;
 }
 
-static ZEBRA_RES rec_write_tmp_buf(Records p, int size, SYSNO *sysnos)
+static ZEBRA_RES rec_write_tmp_buf(Records p, int size, zint *sysnos)
 {
     struct record_index_entry entry;
     int no_written = 0;
@@ -484,8 +484,8 @@ static ZEBRA_RES rec_write_multiple(Records p, int saveCount)
     int out_size = 1000;
     int out_offset = 0;
     char *out_buf = (char *) xmalloc(out_size);
-    SYSNO *sysnos = (SYSNO *) xmalloc(sizeof(*sysnos) * (p->cache_cur + 1));
-    SYSNO *sysnop = sysnos;
+    zint *sysnos = (zint *) xmalloc(sizeof(*sysnos) * (p->cache_cur + 1));
+    zint *sysnop = sysnos;
     ZEBRA_RES ret = ZEBRA_OK;
 
     for (i = 0; i<p->cache_cur - saveCount; i++)
@@ -602,7 +602,7 @@ static ZEBRA_RES rec_cache_flush(Records p, int saveCount)
     return ret;
 }
 
-static Record *rec_cache_lookup(Records p, SYSNO sysno,
+static Record *rec_cache_lookup(Records p, zint sysno,
 				enum recordCacheFlag flag)
 {
     int i;
@@ -683,7 +683,7 @@ ZEBRA_RES rec_close(Records *pp)
     return ret;
 }
 
-static Record rec_get_int(Records p, SYSNO sysno)
+static Record rec_get_int(Records p, zint sysno)
 {
     int i, in_size, r;
     Record rec, *recp;
@@ -828,7 +828,7 @@ static Record rec_get_int(Records p, SYSNO sysno)
     return rec;
 }
 
-Record rec_get(Records p, SYSNO sysno)
+Record rec_get(Records p, zint sysno)
 {
     Record rec;
     zebra_mutex_lock(&p->mutex);
@@ -846,7 +846,7 @@ Record rec_get_root(Records p)
 static Record rec_new_int(Records p)
 {
     int i;
-    SYSNO sysno;
+    zint sysno;
     Record rec;
 
     assert(p);

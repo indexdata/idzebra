@@ -1,4 +1,4 @@
-/* $Id: update_file.c,v 1.3 2006-09-11 22:57:54 adam Exp $
+/* $Id: update_file.c,v 1.4 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -104,7 +104,7 @@ static void file_update_r(ZebraHandle zh,
 
     sprintf (tmppath, "%s%s", base, src);
     e_src = dir_open (tmppath, zh->path_reg, zh->m_follow_links);
-    yaz_log (YLOG_LOG, "dir %s", tmppath);
+    yaz_log(YLOG_LOG, "dir %s", tmppath);
 
 #if 0
     if (!dst || repComp (dst->path, src, src_len))
@@ -149,7 +149,7 @@ static void file_update_r(ZebraHandle zh,
         {
             if (e_src[i_src].name)
             {
-                yaz_log (YLOG_DEBUG, "dst=%s src=%s", dst->path + src_len,
+                yaz_log(YLOG_DEBUG, "dst=%s src=%s", dst->path + src_len,
 		      e_src[i_src].name);
                 sd = strcmp (dst->path + src_len, e_src[i_src].name);
             }
@@ -160,7 +160,7 @@ static void file_update_r(ZebraHandle zh,
             sd = 1;
         else
             break;
-        yaz_log (YLOG_DEBUG, "trav sd=%d", sd);
+        yaz_log(YLOG_DEBUG, "trav sd=%d", sd);
 
         if (sd == 0)
         {
@@ -176,15 +176,15 @@ static void file_update_r(ZebraHandle zh,
                     {
                         dirs_add (di, src, dst->sysno, e_src[i_src].mtime);
                     }
-		    yaz_log (YLOG_DEBUG, "old: %s", ctime (&dst->mtime));
-                    yaz_log (YLOG_DEBUG, "new: %s", ctime (&e_src[i_src].mtime));
+		    yaz_log(YLOG_DEBUG, "old: %s", ctime (&dst->mtime));
+                    yaz_log(YLOG_DEBUG, "new: %s", ctime (&e_src[i_src].mtime));
                 }
                 dst = dirs_read (di);
                 break;
             case dirs_dir:
                 file_update_r(zh, di, dst, base, src, level+1);
                 dst = dirs_last (di);
-                yaz_log (YLOG_DEBUG, "last is %s", dst ? dst->path : "null");
+                yaz_log(YLOG_DEBUG, "last is %s", dst ? dst->path : "null");
                 break;
             default:
                 dst = dirs_read (di); 
@@ -193,7 +193,7 @@ static void file_update_r(ZebraHandle zh,
         }
         else if (sd > 0)
         {
-            SYSNO sysno = 0;
+            zint sysno = 0;
             strcpy (src + src_len, e_src[i_src].name);
             sprintf (tmppath, "%s%s", base, src);
 
@@ -257,14 +257,14 @@ static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
 
     if (ret == -1)
     {
-        yaz_log (YLOG_WARN|YLOG_ERRNO, "Cannot access path %s", src);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "Cannot access path %s", src);
     } 
     else if (S_ISREG(sbuf.st_mode))
     {
         struct dirs_entry *e_dst;
         di = dirs_fopen (dict, src, zh->m_flag_rw);
 
-        e_dst = dirs_read (di);
+        e_dst = dirs_read(di);
         if (e_dst)
         {
             if (sbuf.st_mtime > e_dst->mtime)
@@ -273,11 +273,11 @@ static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
         }
         else
         {
-            SYSNO sysno = 0;
+            zint sysno = 0;
             if (zebra_extract_file (zh, &sysno, src, 0) == ZEBRA_OK)
                  dirs_add (di, src, sysno, sbuf.st_mtime);
         }
-        dirs_free (&di);
+        dirs_free(&di);
     }
     else if (S_ISDIR(sbuf.st_mode))
     {
@@ -293,7 +293,7 @@ static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
     }
     else
     {
-        yaz_log (YLOG_WARN, "Skipping path %s", src);
+        yaz_log(YLOG_WARN, "Skipping path %s", src);
     }
 }
 
@@ -307,7 +307,7 @@ static ZEBRA_RES zebra_open_fmatch(ZebraHandle zh, Dict *dictp)
     if (!(*dictp = dict_open_res (zh->reg->bfs, fmatch_fname, 50,
                                 zh->m_flag_rw, 0, zh->res)))
     {
-        yaz_log (YLOG_FATAL, "dict_open fail of %s", fmatch_fname);
+        yaz_log(YLOG_FATAL, "dict_open fail of %s", fmatch_fname);
         return ZEBRA_FAIL;
     }
     return ZEBRA_OK;

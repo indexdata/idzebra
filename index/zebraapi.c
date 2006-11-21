@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.233 2006-11-21 14:32:38 adam Exp $
+/* $Id: zebraapi.c,v 1.234 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1316,7 +1316,7 @@ ZEBRA_RES zebra_admin_import_end (ZebraHandle zh)
 ZEBRA_RES zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
 {
     ZEBRA_RES res = ZEBRA_OK;
-    SYSNO sysno;
+    zint sysno;
     int i;
     ZEBRA_CHECK_HANDLE(zh);
     yaz_log(log_level, "zebra_admin_import_segment");
@@ -1358,7 +1358,7 @@ ZEBRA_RES zebra_admin_exchange_record(ZebraHandle zh,
     /* 4 = update. Insert/replace */
 {
     ZEBRA_RES res;
-    SYSNO sysno = 0;
+    zint sysno = 0;
     char *rinfo = 0;
     char recid_z[256];
     int db_ord;
@@ -2236,7 +2236,7 @@ ZEBRA_RES zebra_add_record(ZebraHandle zh,
 
 ZEBRA_RES zebra_insert_record(ZebraHandle zh, 
 			      const char *recordType,
-			      SYSNO *sysno, const char *match,
+			      zint *sysno, const char *match,
 			      const char *fname,
 			      const char *buf, int buf_size, int force_update)
 {
@@ -2267,12 +2267,12 @@ ZEBRA_RES zebra_insert_record(ZebraHandle zh,
     return res; 
 }
 
-ZEBRA_RES zebra_update_record (ZebraHandle zh, 
-			       const char *recordType,
-			       SYSNO* sysno, const char *match,
-			       const char *fname,
-			       const char *buf, int buf_size,
-			       int force_update)
+ZEBRA_RES zebra_update_record(ZebraHandle zh, 
+                              const char *recordType,
+                              zint *sysno, const char *match,
+                              const char *fname,
+                              const char *buf, int buf_size,
+                              int force_update)
 {
     ZEBRA_RES res;
 
@@ -2304,12 +2304,12 @@ ZEBRA_RES zebra_update_record (ZebraHandle zh,
     return res; 
 }
 
-ZEBRA_RES zebra_delete_record (ZebraHandle zh, 
-			       const char *recordType,
-			       SYSNO *sysno, const char *match,
-			       const char *fname,
-			       const char *buf, int buf_size,
-			       int force_update) 
+ZEBRA_RES zebra_delete_record(ZebraHandle zh, 
+                              const char *recordType,
+                              zint *sysno, const char *match,
+                              const char *fname,
+                              const char *buf, int buf_size,
+                              int force_update) 
 {
     ZEBRA_RES res;
 
@@ -2466,11 +2466,11 @@ void zebra_setError_zint(ZebraHandle zh, int code, zint i)
     zh->errString = nmem_strdup(zh->nmem_error, vstr);
 }
 
-void zebra_lock_prefix (Res res, char *path)
+void zebra_lock_prefix(Res res, char *path)
 {
     const char *lock_dir = res_get_def (res, "lockDir", "");
-
-    strcpy (path, lock_dir);
+    
+    strcpy(path, lock_dir);
     if (*path && path[strlen(path)-1] != '/')
         strcat (path, "/");
 }

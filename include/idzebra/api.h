@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.40 2006-11-14 08:12:07 adam Exp $
+/* $Id: api.h,v 1.41 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -57,7 +57,7 @@ typedef struct {
     int len;             /* length */
     oid_value format;    /* record syntax */
     char *base; 
-    SYSNO sysno;
+    zint sysno;
     int  score;
 } ZebraRetrievalRecord;
 
@@ -393,21 +393,22 @@ ZEBRA_RES zebra_add_record(ZebraHandle zh, const char *buf, int buf_size);
 YAZ_EXPORT 
 ZEBRA_RES zebra_insert_record(ZebraHandle zh, 
 			      const char *recordType,
-			      SYSNO *sysno, const char *match,
+			      zint *sysno, const char *match,
 			      const char *fname,
 			      const char *buf, int buf_size,
 			      int force_update);
 YAZ_EXPORT
 ZEBRA_RES zebra_update_record(ZebraHandle zh, 
 			      const char *recordType,
-			      SYSNO *sysno, const char *match,
+			      zint *sysno, const char *match,
 			      const char *fname,
 			      const char *buf, int buf_size,
 			      int force_update);
 YAZ_EXPORT 
 ZEBRA_RES zebra_delete_record(ZebraHandle zh, 
 			      const char *recordType,
-			      SYSNO *sysno, const char *match, const char *fname,
+			      zint *sysno, const char *match,
+                              const char *fname,
 			      const char *buf, int buf_size,
 			      int force_update);
 

@@ -1,4 +1,4 @@
-/* $Id: t13.c,v 1.9 2006-08-14 10:40:22 adam Exp $
+/* $Id: t13.c,v 1.10 2006-11-21 22:17:50 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -83,7 +83,7 @@ static void tst_no_config(void)
     static char *xml_buf = "<gils><title>myx</title></gils>";
     ZebraService zs;
     ZebraHandle zh;
-    SYSNO sysno = 0;
+    zint sysno = 0;
 
     zs = zebra_start_res(0, 0, 0);
     YAZ_CHECK(zs);

@@ -1,4 +1,4 @@
-/* $Id: reckeys.c,v 1.9 2006-11-20 13:59:35 adam Exp $
+/* $Id: reckeys.c,v 1.10 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -22,12 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <ctype.h>
 
-#include <yaz/nmem.h>
-#include "index.h"
 #include "reckeys.h"
+#include <yaz/nmem.h>
+#include <yaz/xmalloc.h>
 
 struct zebra_rec_key_entry {
     char *buf;

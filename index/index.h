@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.182 2006-11-21 14:32:38 adam Exp $
+/* $Id: index.h,v 1.183 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -66,7 +66,7 @@ struct dir_entry {
 struct dirs_entry {
     enum dirsKind kind;
     char path[256];
-    SYSNO sysno;
+    zint sysno;
     time_t mtime;
 };
 
@@ -78,12 +78,12 @@ struct dirs_entry *dirs_read(struct dirs_info *p);
 struct dirs_entry *dirs_last(struct dirs_info *p);
 void dirs_mkdir(struct dirs_info *p, const char *src, time_t mtime);
 void dirs_rmdir(struct dirs_info *p, const char *src);
-void dirs_add(struct dirs_info *p, const char *src, SYSNO sysno, time_t mtime);
+void dirs_add(struct dirs_info *p, const char *src, zint sysno, time_t mtime);
 void dirs_del(struct dirs_info *p, const char *src);
 void dirs_free(struct dirs_info **pp);
 
 struct dir_entry *dir_open(const char *rep, const char *base,
-                            int follow_links);
+                           int follow_links);
 void dir_sort(struct dir_entry *e);
 void dir_free(struct dir_entry **e_p);
 
@@ -106,17 +106,6 @@ ISAMC_M *key_isamc_m(Res res, ISAMC_M *me);
 
 #define GMATCH_DICT "gmatch"
 #define FMATCH_DICT "fmatch%d"
-
-struct strtab *strtab_mk(void);
-int strtab_src(struct strtab *t, const char *name, void ***infop);
-void strtab_del(struct strtab *t,
-                void (*func)(const char *name, void *info, void *data),
-                void *data);
-
-void zebraIndexLockMsg(ZebraHandle zh, const char *str);
-void zebraIndexUnlock(ZebraHandle zh);
-int zebraIndexLock(BFiles bfs, ZebraHandle zh, int commitNow, const char *rval);
-int zebraIndexWait(ZebraHandle zh, int commitPhase);
 
 void zebra_lock_prefix(Res res, char *dst);
 
@@ -308,7 +297,7 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet, RSET rset,
 			 NMEM nmem);
 void resultSetInvalidate(ZebraHandle zh);
 
-int zebra_record_fetch(ZebraHandle zh, SYSNO sysno, int score, 
+int zebra_record_fetch(ZebraHandle zh, zint sysno, int score, 
 			zebra_snippets *hit_snippet, ODR stream,
 			oid_value input_format, Z_RecordComposition *comp,
 			oid_value *output_format, char **rec_bufp,
@@ -324,7 +313,7 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
                                       int delete_flag,
                                       int test_mode, 
                                       const char *recordType,
-                                      SYSNO *sysno,
+                                      zint *sysno,
                                       const char *match_criteria,
                                       const char *fname,
                                       int force_update,
@@ -335,7 +324,7 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
                                       int delete_flag,
                                       int test_mode, 
                                       const char *recordType,
-                                      SYSNO *sysno,
+                                      zint *sysno,
                                       const char *match_criteria,
                                       const char *fname,
                                       int force_update,
@@ -356,7 +345,7 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 
 ZEBRA_RES zebra_extract_explain(void *handle, Record rec, data1_node *n);
 
-ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname,
+ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
 			     int deleteFlag);
 
 ZEBRA_RES zebra_begin_read(ZebraHandle zh);

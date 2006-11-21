@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.1 2006-09-22 10:18:08 adam Exp $
+/* $Id: zebrasrv.c,v 1.2 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -585,8 +585,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 		    Z_External *rec = notToKeep->elements[i]->record;
                     struct oident *oident = 0;
                     Odr_oct *opaque_recid = 0;
-		    SYSNO *sysno = 0;
-		    SYSNO sysno_tmp;
+		    zint *sysno = 0;
+		    zint sysno_tmp;
 
 		    if (notToKeep->elements[i]->u.opaque)
 		    {

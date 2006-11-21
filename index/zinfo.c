@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.71 2006-11-14 08:12:08 adam Exp $
+/* $Id: zinfo.c,v 1.72 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -53,7 +53,7 @@ struct zebSUInfoB {
 typedef struct zebAccessObjectB *zebAccessObject;
 struct zebAccessObjectB {
     void *handle;
-    SYSNO sysno;
+    zint sysno;
     Odr_oid *oid;
     zebAccessObject next;
 };
@@ -66,7 +66,7 @@ struct zebAccessInfoB {
 
 typedef struct {
     struct zebSUInfoB *SUInfo;
-    SYSNO sysno;
+    zint sysno;
     int dirty;
     int readFlag;
     data1_node *data1_tree;
@@ -79,7 +79,7 @@ struct zebDatabaseInfoB {
     data1_node *data1_database;
     zint recordCount;    /* records in db */
     zint recordBytes;    /* size of records */
-    SYSNO sysno;         /* sysno of database info */
+    zint sysno;          /* sysno of database info */
     int readFlag;        /* 1: read is needed when referenced; 0 if not */
     int dirty;           /* 1: database is dirty: write is needed */
     struct zebDatabaseInfoB *next;
@@ -94,7 +94,7 @@ struct zebraExplainAttset {
 
 struct zebraCategoryListInfo {
     int dirty;
-    SYSNO sysno;
+    zint sysno;
     data1_node *data1_categoryList;
 };
 
@@ -143,7 +143,7 @@ static void zebraExplain_writeCategoryList(ZebraExplainInfo zei,
 					    int key_flush);
 
 
-static Record createRecord(Records records, SYSNO *sysno)
+static Record createRecord(Records records, zint *sysno)
 {
     Record rec;
     if (*sysno)
@@ -976,7 +976,7 @@ static void zebraExplain_writeCategoryList (ZebraExplainInfo zei,
     int i;
     Record drec;
     data1_node *node_ci, *node_categoryList;
-    SYSNO sysno = 0;
+    zint sysno = 0;
     static char *category[] = {
 	"CategoryList",
 	"TargetInfo",

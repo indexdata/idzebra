@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.54 2006-11-17 08:20:17 marc Exp $
+/* $Id: retrieve.c,v 1.55 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -109,7 +109,7 @@ static void parse_zebra_elem(const char *elem,
 }
 
 
-int zebra_special_index_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
+int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
                           Record rec,
                           const char *elemsetname,
                           oid_value input_format,
@@ -253,7 +253,7 @@ int zebra_special_index_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
 }
 
 
-int zebra_special_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
+int zebra_special_fetch(ZebraHandle zh, zint sysno, ODR odr,
                            const char *elemsetname,
                            oid_value input_format,
                            oid_value *output_format,
@@ -336,7 +336,7 @@ int zebra_special_fetch(ZebraHandle zh, SYSNO sysno, ODR odr,
 }
 
                           
-int zebra_record_fetch(ZebraHandle zh, SYSNO sysno, int score,
+int zebra_record_fetch(ZebraHandle zh, zint sysno, int score,
                        zebra_snippets *hit_snippet, ODR odr,
                        oid_value input_format, Z_RecordComposition *comp,
                        oid_value *output_format,

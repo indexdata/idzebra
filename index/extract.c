@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.240 2006-11-21 17:48:08 adam Exp $
+/* $Id: extract.c,v 1.241 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -51,11 +51,11 @@ static void zebra_init_log_level(void)
     }
 }
 
-static void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
-                                     int cmd, zebra_rec_keys_t reckeys,
-                                     zint staticrank);
-static void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
-                                   int cmd, zebra_rec_keys_t skp);
+static void extract_flush_record_keys(ZebraHandle zh, zint sysno,
+                                      int cmd, zebra_rec_keys_t reckeys,
+                                      zint staticrank);
+static void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
+                                    int cmd, zebra_rec_keys_t skp);
 static void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid);
 static void extract_token_add (RecWord *p);
 
@@ -139,9 +139,9 @@ static void searchRecordKey(ZebraHandle zh,
 
 #define FILE_MATCH_BLANK "\t "
 
-static char *fileMatchStr (ZebraHandle zh,
-			   zebra_rec_keys_t reckeys,
-                           const char *fname, const char *spec)
+static char *get_match_from_spec(ZebraHandle zh,
+                          zebra_rec_keys_t reckeys,
+                          const char *fname, const char *spec)
 {
     static char dstBuf[2048];      /* static here ??? */
     char *dst = dstBuf;
@@ -309,7 +309,7 @@ static void all_matches_add(struct recExtractCtrl *ctrl)
                               "", 0);
 }
 
-ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname, 
+ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname, 
 			     int deleteFlag)
 {
     ZEBRA_RES r = ZEBRA_OK;
@@ -443,7 +443,7 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
                                       int delete_flag,
                                       int test_mode, 
                                       const char *recordType,
-                                      SYSNO *sysno,
+                                      zint *sysno,
                                       const char *match_criteria,
                                       const char *fname,
                                       int force_update,
@@ -505,7 +505,7 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
                                       int delete_flag,
                                       int test_mode, 
                                       const char *recordType,
-                                      SYSNO *sysno,
+                                      zint *sysno,
                                       const char *match_criteria,
                                       const char *fname,
                                       int force_update,
@@ -514,7 +514,7 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
                                       void *recTypeClientData)
 
 {
-    SYSNO sysno0 = 0;
+    zint sysno0 = 0;
     RecordAttr *recordAttr;
     struct recExtractCtrl extractCtrl;
     int r;
@@ -593,11 +593,11 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
             matchStr = match_criteria;
         } else {
             if (zh->m_record_id && *zh->m_record_id) {
-                matchStr = fileMatchStr (zh, zh->reg->keys, pr_fname, 
-                                         zh->m_record_id);
+                matchStr = get_match_from_spec(zh, zh->reg->keys, pr_fname, 
+                                               zh->m_record_id);
 		if (!matchStr)
                 {
-                    yaz_log (YLOG_WARN, "Bad match criteria (recordID)");
+                    yaz_log(YLOG_WARN, "Bad match criteria (recordID)");
 		    return ZEBRA_FAIL;
                 }
             }
@@ -649,10 +649,9 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 			    sizeof(*sysno), sysno);
         }
 
-
-	extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
-        extract_flushRecordKeys (zh, *sysno, 1, zh->reg->keys,
-			 recordAttr->staticrank);
+	extract_flush_sort_keys(zh, *sysno, 1, zh->reg->sortKeys);
+        extract_flush_record_keys(zh, *sysno, 1, zh->reg->keys,
+                                  recordAttr->staticrank);
         zh->records_inserted++;
     } 
     else
@@ -682,9 +681,9 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 			       rec->size[recInfo_sortKeys],
 			       0);
 
-	extract_flushSortKeys (zh, *sysno, 0, sortKeys);
-        extract_flushRecordKeys (zh, *sysno, 0, delkeys,
-				 recordAttr->staticrank);
+	extract_flush_sort_keys(zh, *sysno, 0, sortKeys);
+        extract_flush_record_keys(zh, *sysno, 0, delkeys,
+                                  recordAttr->staticrank);
         if (delete_flag)
         {
             /* record going to be deleted */
@@ -718,9 +717,9 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 		    yaz_log(YLOG_LOG, "update %s %s " ZINT_FORMAT, recordType,
                             pr_fname, (zint) ZINT_FORMAT);
 	    recordAttr->staticrank = extractCtrl.staticrank;
-            extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
-            extract_flushRecordKeys (zh, *sysno, 1, zh->reg->keys, 
-					 recordAttr->staticrank);
+            extract_flush_sort_keys(zh, *sysno, 1, zh->reg->sortKeys);
+            extract_flush_record_keys(zh, *sysno, 1, zh->reg->keys, 
+                                      recordAttr->staticrank);
             zh->records_updated++;
         }
 	zebra_rec_keys_close(delkeys);
@@ -863,19 +862,19 @@ ZEBRA_RES zebra_extract_explain(void *handle, Record rec, data1_node *n)
 	zebra_rec_keys_set_buf(delkeys, rec->info[recInfo_delKeys],
 			       rec->size[recInfo_delKeys],
 			       0);
-	extract_flushRecordKeys (zh, rec->sysno, 0, delkeys, 0);
+	extract_flush_record_keys(zh, rec->sysno, 0, delkeys, 0);
 	zebra_rec_keys_close(delkeys);
 
 	zebra_rec_keys_set_buf(sortkeys, rec->info[recInfo_sortKeys],
 			       rec->size[recInfo_sortKeys],
 			       0);
 
-	extract_flushSortKeys (zh, rec->sysno, 0, sortkeys);
+	extract_flush_sort_keys(zh, rec->sysno, 0, sortkeys);
 	zebra_rec_keys_close(sortkeys);
     }
-    extract_flushRecordKeys (zh, rec->sysno, 1, zh->reg->keys, 0);
-    extract_flushSortKeys (zh, rec->sysno, 1, zh->reg->sortKeys);
-
+    extract_flush_record_keys(zh, rec->sysno, 1, zh->reg->keys, 0);
+    extract_flush_sort_keys(zh, rec->sysno, 1, zh->reg->sortKeys);
+    
     xfree (rec->info[recInfo_delKeys]);
     zebra_rec_keys_get_buf(zh->reg->keys,
 			   &rec->info[recInfo_delKeys],	
@@ -1004,9 +1003,9 @@ void extract_rec_keys_adjust(ZebraHandle zh, int is_insert,
     }
 }
 
-void extract_flushRecordKeys(ZebraHandle zh, SYSNO sysno, int cmd,
-                             zebra_rec_keys_t reckeys,
-                             zint staticrank)
+void extract_flush_record_keys(ZebraHandle zh, zint sysno, int cmd,
+                               zebra_rec_keys_t reckeys,
+                               zint staticrank)
 {
     ZebraExplainInfo zei = zh->reg->zei;
 
@@ -1347,8 +1346,8 @@ static void extract_schema_add(struct recExtractCtrl *p, Odr_oid *oid)
     zebraExplain_addSchema (zh->reg->zei, oid);
 }
 
-void extract_flushSortKeys(ZebraHandle zh, SYSNO sysno,
-                           int cmd, zebra_rec_keys_t reckeys)
+void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
+                             int cmd, zebra_rec_keys_t reckeys)
 {
     if (zebra_rec_keys_rewind(reckeys))
     {

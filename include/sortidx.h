@@ -1,4 +1,4 @@
-/* $Id: sortidx.h,v 1.10 2006-08-14 10:40:12 adam Exp $
+/* $Id: sortidx.h,v 1.11 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -33,12 +33,12 @@ YAZ_BEGIN_CDECL
 
 typedef struct sortIdx *SortIdx;
 
-SortIdx sortIdx_open (BFiles bfs, int write_flag);
-void sortIdx_close (SortIdx si);
-int sortIdx_type (SortIdx si, int type);
-void sortIdx_sysno (SortIdx si, SYSNO sysno);
-void sortIdx_add (SortIdx si, const char *buf, int len);
-void sortIdx_read (SortIdx si, char *buf);
+SortIdx sortIdx_open(BFiles bfs, int write_flag);
+void sortIdx_close(SortIdx si);
+int sortIdx_type(SortIdx si, int type);
+void sortIdx_sysno(SortIdx si, zint sysno);
+void sortIdx_add(SortIdx si, const char *buf, int len);
+void sortIdx_read(SortIdx si, char *buf);
 
 YAZ_END_CDECL
 

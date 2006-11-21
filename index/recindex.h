@@ -1,4 +1,4 @@
-/* $Id: recindex.h,v 1.29 2006-09-15 10:45:13 adam Exp $
+/* $Id: recindex.h,v 1.30 2006-11-21 22:17:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -32,7 +32,7 @@ YAZ_BEGIN_CDECL
 #define REC_NO_INFO 8
 
 typedef struct record_info {
-    SYSNO sysno;
+    zint sysno;
     int newFlag;
     char *info[REC_NO_INFO];
     size_t size[REC_NO_INFO];
@@ -72,7 +72,7 @@ Record rec_new(Records p);
     \param sysno system ID (external number)
     \returns record pointer (or NULL on error)
 */
-Record rec_get(Records p, SYSNO sysno);
+Record rec_get(Records p, zint sysno);
 
 /** \brief gets root record
     \param p records handle
@@ -91,7 +91,7 @@ Records rec_open(BFiles bfs, int rw, int compression_method);
 char *rec_strdup(const char *s, size_t *len);
 void rec_prstat(Records p);
 
-SYSNO rec_sysno_to_int(SYSNO sysno);
+zint rec_sysno_to_int(zint sysno);
 
 /** \brief compression types */
 #define REC_COMPRESS_NONE   0
