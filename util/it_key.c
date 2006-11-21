@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.61 2006-08-16 13:16:36 adam Exp $
+/* $Id: it_key.c,v 1.1 2006-11-21 14:32:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -25,7 +25,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 #include <assert.h>
 
-#include "index.h"
+#include <yaz/xmalloc.h>
+#include <it_key.h>
 
 #ifdef __GNUC__
 #define CODEC_INLINE inline
@@ -268,81 +269,6 @@ void iscz1_decode (void *vp, char **dst, const char **src)
 	p->key.mem[i] = iscz1_decode_int ((unsigned char **) src);
     memcpy (*dst, &p->key, sizeof(struct it_key));
     (*dst) += sizeof(struct it_key);
-}
-
-ISAMS_M *key_isams_m (Res res, ISAMS_M *me)
-{
-    isams_getmethod (me);
-
-    me->compare_item = key_compare;
-    me->log_item = key_logdump_txt;
-
-    me->codec.start = iscz1_start;
-    me->codec.decode = iscz1_decode;
-    me->codec.encode = iscz1_encode;
-    me->codec.stop = iscz1_stop;
-    me->codec.reset = iscz1_reset;
-
-    me->debug = atoi(res_get_def (res, "isamsDebug", "0"));
-
-    return me;
-}
-
-ISAMC_M *key_isamc_m (Res res, ISAMC_M *me)
-{
-    isamc_getmethod (me);
-
-    me->compare_item = key_compare;
-    me->log_item = key_logdump_txt;
-
-    me->codec.start = iscz1_start;
-    me->codec.decode = iscz1_decode;
-    me->codec.encode = iscz1_encode;
-    me->codec.stop = iscz1_stop;
-    me->codec.reset = iscz1_reset;
-
-    me->debug = atoi(res_get_def (res, "isamcDebug", "0"));
-
-    return me;
-}
-
-int key_SU_encode (int ch, char *out)
-{
-    int i;
-    for (i = 0; ch; i++)
-    {
-	if (ch >= 64)
-	    out[i] = 65 + (ch & 63);
-	else
-	    out[i] = 1 + ch;
-	ch = ch >> 6;
-    }
-    return i;
-    /* in   out
-       0     1
-       1     2
-       63    64
-       64    65, 2
-       65    66, 2
-       127   128, 2
-       128   65, 3
-       191   128, 3
-       192   65, 4
-    */
-}
-
-int key_SU_decode (int *ch, const unsigned char *out)
-{
-    int len = 1;
-    int fact = 1;
-    *ch = 0;
-    for (len = 1; *out >= 65; len++, out++)
-    {
-	*ch += (*out - 65) * fact;
-	fact <<= 6;
-    }
-    *ch += (*out - 1) * fact;
-    return len;
 }
 
 /*

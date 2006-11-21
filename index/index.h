@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.181 2006-11-09 14:39:24 adam Exp $
+/* $Id: index.h,v 1.182 2006-11-21 14:32:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-#ifndef INDEX_H
-#define INDEX_H
+#ifndef ZEBRA_INDEX_H
+#define ZEBRA_INDEX_H
 
 #include <time.h>
 #include <stdlib.h>
@@ -48,19 +48,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <rset.h>
 #include <zebramap.h>
 
+#include <it_key.h>
+#include <su_codec.h>
+
 YAZ_BEGIN_CDECL
 
 #define ISAM_DEFAULT "b"
-
-#define SU_SCHEME 1
-
-#define IT_MAX_WORD 256
-
-#define IT_KEY_LEVEL_MAX 5
-struct it_key {
-    int  len;
-    zint mem[IT_KEY_LEVEL_MAX];
-};
 
 enum dirsKind { dirs_dir, dirs_file };
 
@@ -77,78 +70,60 @@ struct dirs_entry {
     time_t mtime;
 };
 
-void getFnameTmp (Res res, char *fname, int no);
+void getFnameTmp(Res res, char *fname, int no);
         
-struct dirs_info *dirs_open (Dict dict, const char *rep, int rw);
-struct dirs_info *dirs_fopen (Dict dict, const char *path, int rw);
-struct dirs_entry *dirs_read (struct dirs_info *p);
-struct dirs_entry *dirs_last (struct dirs_info *p);
-void dirs_mkdir (struct dirs_info *p, const char *src, time_t mtime);
-void dirs_rmdir (struct dirs_info *p, const char *src);
-void dirs_add (struct dirs_info *p, const char *src, SYSNO sysno, time_t mtime);
-void dirs_del (struct dirs_info *p, const char *src);
-void dirs_free (struct dirs_info **pp);
+struct dirs_info *dirs_open(Dict dict, const char *rep, int rw);
+struct dirs_info *dirs_fopen(Dict dict, const char *path, int rw);
+struct dirs_entry *dirs_read(struct dirs_info *p);
+struct dirs_entry *dirs_last(struct dirs_info *p);
+void dirs_mkdir(struct dirs_info *p, const char *src, time_t mtime);
+void dirs_rmdir(struct dirs_info *p, const char *src);
+void dirs_add(struct dirs_info *p, const char *src, SYSNO sysno, time_t mtime);
+void dirs_del(struct dirs_info *p, const char *src);
+void dirs_free(struct dirs_info **pp);
 
-struct dir_entry *dir_open (const char *rep, const char *base,
+struct dir_entry *dir_open(const char *rep, const char *base,
                             int follow_links);
-void dir_sort (struct dir_entry *e);
-void dir_free (struct dir_entry **e_p);
+void dir_sort(struct dir_entry *e);
+void dir_free(struct dir_entry **e_p);
 
-void repositoryUpdate (ZebraHandle zh, const char *path);
-void repositoryAdd (ZebraHandle zh, const char *path);
-void repositoryDelete (ZebraHandle zh, const char *path);
-void repositoryShow (ZebraHandle zh, const char *path);
+void repositoryUpdate(ZebraHandle zh, const char *path);
+void repositoryAdd(ZebraHandle zh, const char *path);
+void repositoryDelete(ZebraHandle zh, const char *path);
+void repositoryShow(ZebraHandle zh, const char *path);
 
-int key_open (ZebraHandle zh, int mem);
-int key_close (ZebraHandle zh);
-int key_compare (const void *p1, const void *p2);
-void key_init(struct it_key *k);
-char *key_print_it (const void *p, char *buf);
-zint key_get_seq (const void *p);
-zint key_get_segment (const void *p);
-int key_compare_it (const void *p1, const void *p2);
-int key_qsort_compare (const void *p1, const void *p2);
-void key_logdump (int mask, const void *p);
-void key_logdump_txt (int logmask, const void *p, const char *txt);
-void inv_prstat (ZebraHandle zh);
-void inv_compact (BFiles bfs);
-void key_input (ZebraHandle zh, int nkeys, int cache, Res res);
-ISAMS_M *key_isams_m (Res res, ISAMS_M *me);
-ISAMC_M *key_isamc_m (Res res, ISAMC_M *me);
-int merge_sort (char **buf, int from, int to);
-int key_SU_code (int ch, char *out);
+void inv_prstat(ZebraHandle zh);
+void inv_compact(BFiles bfs);
+void key_input(ZebraHandle zh, int nkeys, int cache, Res res);
+ISAMS_M *key_isams_m(Res res, ISAMS_M *me);
+ISAMC_M *key_isamc_m(Res res, ISAMC_M *me);
 
 #define FNAME_DICT "dict"
 #define FNAME_ISAM "isam"
 #define FNAME_ISAMC "isamc"
 #define FNAME_ISAMS "isams"
-#define FNAME_ISAMH "isamh"
-#define FNAME_ISAMD "isamd"
 #define FNAME_CONFIG "zebra.cfg"
 
 #define GMATCH_DICT "gmatch"
 #define FMATCH_DICT "fmatch%d"
 
-struct strtab *strtab_mk (void);
-int strtab_src (struct strtab *t, const char *name, void ***infop);
-void strtab_del (struct strtab *t,
-                 void (*func)(const char *name, void *info, void *data),
-                 void *data);
+struct strtab *strtab_mk(void);
+int strtab_src(struct strtab *t, const char *name, void ***infop);
+void strtab_del(struct strtab *t,
+                void (*func)(const char *name, void *info, void *data),
+                void *data);
 
-void zebraIndexLockMsg (ZebraHandle zh, const char *str);
-void zebraIndexUnlock (ZebraHandle zh);
-int zebraIndexLock (BFiles bfs, ZebraHandle zh, int commitNow, const char *rval);
-int zebraIndexWait (ZebraHandle zh, int commitPhase);
+void zebraIndexLockMsg(ZebraHandle zh, const char *str);
+void zebraIndexUnlock(ZebraHandle zh);
+int zebraIndexLock(BFiles bfs, ZebraHandle zh, int commitNow, const char *rval);
+int zebraIndexWait(ZebraHandle zh, int commitPhase);
 
-void zebra_lock_prefix (Res res, char *dst);
+void zebra_lock_prefix(Res res, char *dst);
 
 #define FNAME_MAIN_LOCK   "zebraidx.LCK"
 #define FNAME_COMMIT_LOCK "zebracmt.LCK"
 #define FNAME_ORG_LOCK    "zebraorg.LCK"
 #define FNAME_TOUCH_TIME  "zebraidx.time"
-
-int key_SU_decode (int *ch, const unsigned char *out);
-int key_SU_encode (int ch, char *out);
 
 typedef struct zebra_set *ZebraSet;
 
@@ -160,6 +135,7 @@ typedef struct zebra_rank_class {
 } *ZebraRankClass;
 
 #include "reckeys.h"
+#include "key_block.h"
 
 struct zebra_register {
     char *name;
@@ -187,11 +163,8 @@ struct zebra_register {
 
     zebra_rec_keys_t keys;
     zebra_rec_keys_t sortKeys;
-    char **key_buf;
-    size_t ptr_top;
-    size_t ptr_i;
-    size_t key_buf_used;
-    int key_file_no;
+
+    zebra_key_block_t key_block;
 };
 
 struct zebra_service {
@@ -315,42 +288,36 @@ RSET rset_trunc(ZebraHandle zh, ISAM_P *isam_p, int no,
 void resultSetAddTerm(ZebraHandle zh, ZebraSet s, int reg_type,
                       const char *db, const char *index_name,
                       const char *term);
-ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov);
-ZebraSet resultSetGet (ZebraHandle zh, const char *name);
-ZEBRA_RES resultSetAddRPN (ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
+ZebraSet resultSetAdd(ZebraHandle zh, const char *name, int ov);
+ZebraSet resultSetGet(ZebraHandle zh, const char *name);
+ZEBRA_RES resultSetAddRPN(ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
 		     int num_bases, char **basenames,
 		     const char *setname);
-RSET resultSetRef (ZebraHandle zh, const char *resultSetId);
-void resultSetDestroy (ZebraHandle zh, int num_names, char **names,
+RSET resultSetRef(ZebraHandle zh, const char *resultSetId);
+void resultSetDestroy(ZebraHandle zh, int num_names, char **names,
 		       int *statuses);
-ZEBRA_RES resultSetSort (ZebraHandle zh, NMEM nmem,
+ZEBRA_RES resultSetSort(ZebraHandle zh, NMEM nmem,
 			 int num_input_setnames, const char **input_setnames,
 			 const char *output_setname,
 			 Z_SortKeySpecList *sort_sequence, int *sort_status);
-ZEBRA_RES resultSetSortSingle (ZebraHandle zh, NMEM nmem,
+ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
 			       ZebraSet sset, RSET rset,
 			       Z_SortKeySpecList *sort_sequence,
 			       int *sort_status);
-ZEBRA_RES resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset,
+ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet, RSET rset,
 			 NMEM nmem);
-void resultSetInvalidate (ZebraHandle zh);
+void resultSetInvalidate(ZebraHandle zh);
 
-int zebra_server_lock_init (ZebraService zh);
-int zebra_server_lock_destroy (ZebraService zh);
-int zebra_server_lock (ZebraService zh, int lockCommit);
-void zebra_server_unlock (ZebraService zh, int commitPhase);
-int zebra_server_lock_get_state (ZebraService zh, time_t *timep);
-
-int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, 
+int zebra_record_fetch(ZebraHandle zh, SYSNO sysno, int score, 
 			zebra_snippets *hit_snippet, ODR stream,
 			oid_value input_format, Z_RecordComposition *comp,
 			oid_value *output_format, char **rec_bufp,
 			int *rec_lenp, char **basenamep,
 			char **addinfo);
 
-void extract_get_fname_tmp (ZebraHandle zh, char *fname, int no);
+void extract_get_fname_tmp(ZebraHandle zh, char *fname, int no);
 
-void zebra_index_merge (ZebraHandle zh);
+void zebra_index_merge(ZebraHandle zh);
 
 ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh, 
                                       const char *buf, size_t buf_size,
@@ -376,16 +343,6 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
                                       RecType recType,
                                       void *recTypeClientData);
 
-#if 0
-int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
-                        const char *buf, size_t buf_size,
-                        const char *databaseName, int delete_flag,
-                        int test_mode, int *sysno,
-                        int store_keys, int store_data,
-                        const char *match_criteria);
-#endif
-void extract_flushWriteKeys (ZebraHandle zh, int final);
-
 YAZ_EXPORT void zebra_create_stream_mem(struct ZebraRecStream *stream,
                                         const char *buf, size_t sz);
 YAZ_EXPORT void zebra_create_stream_fd(struct ZebraRecStream *stream,
@@ -402,22 +359,14 @@ ZEBRA_RES zebra_extract_explain(void *handle, Record rec, data1_node *n);
 ZEBRA_RES zebra_extract_file(ZebraHandle zh, SYSNO *sysno, const char *fname,
 			     int deleteFlag);
 
-ZEBRA_RES zebra_begin_read (ZebraHandle zh);
-ZEBRA_RES zebra_end_read (ZebraHandle zh);
+ZEBRA_RES zebra_begin_read(ZebraHandle zh);
+ZEBRA_RES zebra_end_read(ZebraHandle zh);
 
-int zebra_file_stat (const char *file_name, struct stat *buf,
+int zebra_file_stat(const char *file_name, struct stat *buf,
                      int follow_links);
 
-void zebra_livcode_transform(ZebraHandle zh, Z_RPNQuery *query);
-
-void *iscz1_start (void);
-void iscz1_reset (void *vp);
-void iscz1_stop (void *p);
-void iscz1_decode (void *vp, char **dst, const char **src);
-void iscz1_encode (void *vp, char **dst, const char **src);
-
-Dict dict_open_res (BFiles bfs, const char *name, int cache, int rw,
-		    int compact_flag, Res res);
+Dict dict_open_res(BFiles bfs, const char *name, int cache, int rw,
+                   int compact_flag, Res res);
 
 void zebra_setError(ZebraHandle zh, int code, const char *addinfo);
 void zebra_setError_zint(ZebraHandle zh, int code, zint i);
@@ -453,7 +402,6 @@ ZEBRA_RES zebra_update_file_match(ZebraHandle zh, const char *path);
 ZEBRA_RES zebra_update_from_path(ZebraHandle zh, const char *path);
 ZEBRA_RES zebra_delete_from_path(ZebraHandle zh, const char *path);
 ZEBRA_RES zebra_remove_file_match(ZebraHandle zh);
-
 
 struct rpn_char_map_info
 {

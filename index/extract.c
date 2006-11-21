@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.238 2006-11-20 13:59:13 adam Exp $
+/* $Id: extract.c,v 1.239 2006-11-21 14:32:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -36,13 +36,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <direntz.h>
 #include <charmap.h>
 
-#define ENCODE_BUFLEN 768
-struct encode_info {
-    void *encode_handle;
-    void *decode_handle;
-    char buf[ENCODE_BUFLEN];
-};
-
 static int log_level_extract = 0;
 static int log_level_details = 0;
 static int log_level_initialized = 0;
@@ -65,37 +58,6 @@ static void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
                                    int cmd, zebra_rec_keys_t skp);
 static void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid);
 static void extract_token_add (RecWord *p);
-
-static void encode_key_init (struct encode_info *i);
-static void encode_key_write (char *k, struct encode_info *i, FILE *outf);
-static void encode_key_flush (struct encode_info *i, FILE *outf);
-
-#define USE_SHELLSORT 0
-
-#if USE_SHELLSORT
-static void shellsort(void *ar, int r, size_t s,
-                      int (*cmp)(const void *a, const void *b))
-{
-    char *a = ar;
-    char v[100];
-    int h, i, j, k;
-    static const int incs[16] = { 1391376, 463792, 198768, 86961, 33936,
-                                  13776, 4592, 1968, 861, 336, 
-                                  112, 48, 21, 7, 3, 1 };
-    for ( k = 0; k < 16; k++)
-        for (h = incs[k], i = h; i < r; i++)
-        { 
-            memcpy (v, a+s*i, s);
-            j = i;
-            while (j > h && (*cmp)(a + s*(j-h), v) > 0)
-            {
-                memcpy (a + s*j, a + s*(j-h), s);
-                j -= h;
-            }
-            memcpy (a+s*j, v, s);
-        } 
-}
-#endif
 
 static void logRecord (ZebraHandle zh)
 {
@@ -1042,10 +1004,9 @@ void extract_rec_keys_adjust(ZebraHandle zh, int is_insert,
     }
 }
 
-void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
-                              int cmd,
-			      zebra_rec_keys_t reckeys,
-			      zint staticrank)
+void extract_flushRecordKeys(ZebraHandle zh, SYSNO sysno, int cmd,
+                             zebra_rec_keys_t reckeys,
+                             zint staticrank)
 {
     ZebraExplainInfo zei = zh->reg->zei;
 
@@ -1058,21 +1019,11 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
         extract_rec_keys_log(zh, cmd, reckeys, log_level_details);
     }
 
-    if (!zh->reg->key_buf)
+    if (!zh->reg->key_block)
     {
 	int mem= 1024*1024* atoi( res_get_def( zh->res, "memmax", "8"));
-	if (mem <= 0)
-	{
-	    yaz_log(YLOG_WARN, "Invalid memory setting, using default 8 MB");
-	    mem= 1024*1024*8;
-	}
-	/* FIXME: That "8" should be in a default settings include */
-	/* not hard-coded here! -H */
-	zh->reg->key_buf = (char**) xmalloc (mem);
-	zh->reg->ptr_top = mem/sizeof(char*);
-	zh->reg->ptr_i = 0;
-	zh->reg->key_buf_used = 0;
-	zh->reg->key_file_no = 0;
+        const char *key_tmp_dir = res_get_def (zh->res, "keyTmpDir", ".");
+        zh->reg->key_block = key_block_create(mem, key_tmp_dir);
     }
     zebraExplain_recordCountIncrement (zei, cmd ? 1 : -1);
 
@@ -1083,159 +1034,13 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 	struct it_key key_in;
 	while(zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
 	{
-	    int ch = 0;
-            int i, j = 0;
-	    struct it_key key_out;
-
-	    assert(key_in.len >= 2);
-            assert(key_in.len <= IT_KEY_LEVEL_MAX);
-	    
-	    /* check for buffer overflow */
-	    if (zh->reg->key_buf_used + 1024 > 
-		(zh->reg->ptr_top -zh->reg->ptr_i)*sizeof(char*))
-		extract_flushWriteKeys (zh, 0);
-	    
-	    ++(zh->reg->ptr_i);
-	    assert(zh->reg->ptr_i > 0);
-	    (zh->reg->key_buf)[zh->reg->ptr_top - zh->reg->ptr_i] =
-		(char*)zh->reg->key_buf + zh->reg->key_buf_used;
-
-            /* key_in.mem[0] ord/ch */
-            /* key_in.mem[1] filter specified record ID */
-
-	    /* encode the ordinal value (field/use/attribute) .. */
-	    ch = CAST_ZINT_TO_INT(key_in.mem[0]);
-	    zh->reg->key_buf_used +=
-		key_SU_encode(ch, (char*)zh->reg->key_buf +
-			      zh->reg->key_buf_used);
-
-	    /* copy the 0-terminated stuff from str to output */
-	    memcpy((char*)zh->reg->key_buf + zh->reg->key_buf_used, str, slen);
-	    zh->reg->key_buf_used += slen;
-	    ((char*)zh->reg->key_buf)[(zh->reg->key_buf_used)++] = '\0';
-
-	    /* the delete/insert indicator */
-	    ((char*)zh->reg->key_buf)[(zh->reg->key_buf_used)++] = cmd;
-
-	    if (zh->m_staticrank) /* rank config enabled ? */
-	    {
-		if (staticrank < 0)
-		{
-		    yaz_log(YLOG_WARN, "staticrank = %ld. Setting to 0",
-			    (long) staticrank);
-		    staticrank = 0;
-		}
-                key_out.mem[j++] = staticrank;
-	    }
-	    
-	    if (key_in.mem[1]) /* filter specified record ID */
-		key_out.mem[j++] = key_in.mem[1];
-	    else
-		key_out.mem[j++] = sysno;
-            for (i = 2; i < key_in.len; i++)
-                key_out.mem[j++] = key_in.mem[i];
-	    key_out.len = j;
-
-	    memcpy((char*)zh->reg->key_buf + zh->reg->key_buf_used,
-		   &key_out, sizeof(key_out));
-	    (zh->reg->key_buf_used) += sizeof(key_out);
+            key_block_write(zh->reg->key_block, sysno, 
+                            &key_in, cmd, str, slen,
+                            staticrank, zh->m_staticrank);
 	}
     }
 }
 
-void extract_flushWriteKeys (ZebraHandle zh, int final)
-        /* optimizing: if final=1, and no files written yet */
-        /* push the keys directly to merge, sidestepping the */
-        /* temp file altogether. Speeds small updates */
-{
-    FILE *outf;
-    char out_fname[200];
-    char *prevcp, *cp;
-    struct encode_info encode_info;
-    int ptr_i = zh->reg->ptr_i;
-    int temp_policy;
-    if (!zh->reg->key_buf || ptr_i <= 0)
-    {
-        yaz_log(log_level_extract, "  nothing to flush section=%d buf=%p i=%d",
-               zh->reg->key_file_no, zh->reg->key_buf, ptr_i);
-        return;
-    }
-
-    (zh->reg->key_file_no)++;
-    yaz_log (YLOG_LOG, "sorting section %d", (zh->reg->key_file_no));
-    yaz_log(log_level_extract, "  sort_buff at %p n=%d",
-                    zh->reg->key_buf + zh->reg->ptr_top - ptr_i,ptr_i);
-
-
-#if USE_SHELLSORT
-    shellsort(zh->reg->key_buf + zh->reg->ptr_top - ptr_i, ptr_i,
-              sizeof(char*), key_qsort_compare);
-#else
-    qsort(zh->reg->key_buf + zh->reg->ptr_top - ptr_i, ptr_i,
-          sizeof(char*), key_qsort_compare);
-#endif
-    /* zebra.cfg: tempfiles:  
-       Y: always use temp files (old way) 
-       A: use temp files, if more than one (auto) 
-          = if this is both the last and the first 
-       N: never bother with temp files (new) */
-
-    temp_policy=toupper(res_get_def(zh->res,"tempfiles","auto")[0]);
-    if (temp_policy != 'Y' && temp_policy != 'N' && temp_policy != 'A') {
-        yaz_log (YLOG_WARN, "Illegal tempfiles setting '%c'. using 'Auto' ", 
-                        temp_policy);
-        temp_policy='A';
-    }
-
-    if (   ( temp_policy =='N' )   ||     /* always from memory */
-         ( ( temp_policy =='A' ) &&       /* automatic */
-             (zh->reg->key_file_no == 1) &&  /* this is first time */
-             (final) ) )                     /* and last (=only) time */
-    { /* go directly from memory */
-        zh->reg->key_file_no =0; /* signal not to read files */
-        zebra_index_merge(zh); 
-        zh->reg->ptr_i = 0;
-        zh->reg->key_buf_used = 0; 
-        return; 
-    }
-
-    /* Not doing directly from memory, write into a temp file */
-    extract_get_fname_tmp (zh, out_fname, zh->reg->key_file_no);
-
-    if (!(outf = fopen (out_fname, "wb")))
-    {
-        yaz_log (YLOG_FATAL|YLOG_ERRNO, "fopen %s", out_fname);
-        zebra_exit("extract_flushWriteKeys");
-    }
-    yaz_log (YLOG_LOG, "writing section %d", zh->reg->key_file_no);
-    prevcp = cp = (zh->reg->key_buf)[zh->reg->ptr_top - ptr_i];
-    
-    encode_key_init (&encode_info);
-    encode_key_write (cp, &encode_info, outf);
-    
-    while (--ptr_i > 0)
-    {
-        cp = (zh->reg->key_buf)[zh->reg->ptr_top - ptr_i];
-        if (strcmp (cp, prevcp))
-        {
-            encode_key_flush ( &encode_info, outf);
-            encode_key_init (&encode_info);
-            encode_key_write (cp, &encode_info, outf);
-            prevcp = cp;
-        }
-        else
-            encode_key_write (cp + strlen(cp), &encode_info, outf);
-    }
-    encode_key_flush ( &encode_info, outf);
-    if (fclose (outf))
-    {
-        yaz_log (YLOG_FATAL|YLOG_ERRNO, "fclose %s", out_fname);
-        zebra_exit("extract_flushWriteKeys");
-    }
-    yaz_log (YLOG_LOG, "finished section %d", zh->reg->key_file_no);
-    zh->reg->ptr_i = 0;
-    zh->reg->key_buf_used = 0;
-}
 
 ZEBRA_RES zebra_rec_keys_to_snippets(ZebraHandle zh,
                                      zebra_rec_keys_t reckeys,
@@ -1535,14 +1340,14 @@ static void extract_set_store_data_prepare(struct recExtractCtrl *p)
     p->setStoreData = extract_set_store_data_cb;
 }
 
-static void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid)
+static void extract_schema_add(struct recExtractCtrl *p, Odr_oid *oid)
 {
     ZebraHandle zh = (ZebraHandle) p->handle;
     zebraExplain_addSchema (zh->reg->zei, oid);
 }
 
-void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
-                            int cmd, zebra_rec_keys_t reckeys)
+void extract_flushSortKeys(ZebraHandle zh, SYSNO sysno,
+                           int cmd, zebra_rec_keys_t reckeys)
 {
     if (zebra_rec_keys_rewind(reckeys))
     {
@@ -1564,62 +1369,6 @@ void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
                 sortIdx_add(sortIdx, "", 1);
         }
     }
-}
-
-static void encode_key_init(struct encode_info *i)
-{
-    i->encode_handle = iscz1_start();
-    i->decode_handle = iscz1_start();
-}
-
-static void encode_key_write (char *k, struct encode_info *i, FILE *outf)
-{
-    struct it_key key;
-    char *bp = i->buf, *bp0;
-    const char *src = (char *) &key;
-
-    /* copy term to output buf */
-    while ((*bp++ = *k++))
-        ;
-    /* and copy & align key so we can mangle */
-    memcpy (&key, k+1, sizeof(struct it_key));  /* *k is insert/delete */
-
-#if 0
-    /* debugging */
-    key_logdump_txt(YLOG_LOG, &key, *k ? "i" : "d");
-#endif
-    assert(key.mem[0] >= 0);
-
-    bp0 = bp++;
-    iscz1_encode(i->encode_handle, &bp, &src);
-
-    *bp0 = (*k * 128) + bp - bp0 - 1; /* length and insert/delete combined */
-    if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
-    {
-        yaz_log (YLOG_FATAL|YLOG_ERRNO, "fwrite");
-        zebra_exit("encode_key_write");
-    }
-
-#if 0
-    /* debugging */
-    if (1)
-    {
-	struct it_key key2;
-	const char *src = bp0+1;
-	char *dst = (char*) &key2;
-	iscz1_decode(i->decode_handle, &dst, &src);
-
-	key_logdump_txt(YLOG_LOG, &key2, *k ? "i" : "d");
-
-	assert(key2.mem[1]);
-    }
-#endif
-}
-
-static void encode_key_flush (struct encode_info *i, FILE *outf)
-{ 
-    iscz1_stop(i->encode_handle);
-    iscz1_stop(i->decode_handle);
 }
 
 /*

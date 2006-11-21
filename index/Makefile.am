@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.58 2006-11-14 08:12:08 adam Exp $
+## $Id: Makefile.am,v 1.59 2006-11-21 14:32:38 adam Exp $
 
 aux_libs = \
  ../rset/libidzebra-rset.la \
@@ -81,14 +81,14 @@ libidzebra_2_0_la_SOURCES = \
   dir.c dirs.c \
   extract.c \
   index.h invstat.c \
-  kinput.c kcompare.c  kcontrol.c \
+  kinput.c kcontrol.c \
   limit.c \
   orddict.c orddict.h \
   rank.h rank1.c ranksimilarity.c rankstatic.c \
   recindex.c  recindex.h recindxp.h reckeys.c reckeys.h recstat.c retrieve.c \
   rpnscan.c rpnsearch.c sortidx.c symtab.c stream.c \
-  update_path.c update_file.c trunc.c untrans.c \
-  zaptterm.c zebraapi.c zinfo.c zinfo.h zsets.c 
+  update_path.c update_file.c trunc.c untrans.c isam_methods.c \
+  zaptterm.c zebraapi.c zinfo.c zinfo.h zsets.c key_block.c key_block.h
 
 bin_PROGRAMS = zebraidx zebrasrv
 

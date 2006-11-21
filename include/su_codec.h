@@ -1,4 +1,4 @@
-/* $Id: reckeys.h,v 1.7 2006-11-21 14:32:38 adam Exp $
+/* $Id: su_codec.h,v 1.1 2006-11-21 14:32:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -20,33 +20,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-#ifndef RECKEYS_H
-#define RECKEYS_H
+#ifndef ZEBRA_SU_CODEC_H
+#define ZEBRA_SU_CODEC_H
+
+#include <idzebra/version.h>
+#include <idzebra/util.h>
 
 YAZ_BEGIN_CDECL
 
-typedef struct zebra_rec_keys_t_ *zebra_rec_keys_t;
-
-zebra_rec_keys_t zebra_rec_keys_open(void);
-
-void zebra_rec_keys_close(zebra_rec_keys_t p);
-
-void zebra_rec_keys_write(zebra_rec_keys_t keys, 
-			  const char *str, size_t slen,
-			  const struct it_key *key);
-void zebra_rec_keys_reset(zebra_rec_keys_t keys);
-
-int zebra_rec_keys_read(zebra_rec_keys_t keys,
-			const char **str, size_t *slen,
-			struct it_key *key);
-int zebra_rec_keys_rewind(zebra_rec_keys_t keys);
-
-int zebra_rec_keys_empty(zebra_rec_keys_t keys);
-
-void zebra_rec_keys_get_buf(zebra_rec_keys_t p, char **buf, size_t *sz);
-
-void zebra_rec_keys_set_buf(zebra_rec_keys_t p, char *buf, size_t sz,
-			    int copy_buf);
+int key_SU_decode(int *ch, const unsigned char *out);
+int key_SU_encode(int ch, char *out);
 
 YAZ_END_CDECL
 

@@ -1,4 +1,4 @@
-/* $Id: reckeys.h,v 1.7 2006-11-21 14:32:38 adam Exp $
+/* $Id: key_block.h,v 1.1 2006-11-21 14:32:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -20,33 +20,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-#ifndef RECKEYS_H
-#define RECKEYS_H
+#ifndef ZEBRA_KEY_BLOCK_H
+#define ZEBRA_KEY_BLOCK_H
 
 YAZ_BEGIN_CDECL
 
-typedef struct zebra_rec_keys_t_ *zebra_rec_keys_t;
+typedef struct zebra_key_block *zebra_key_block_t;
 
-zebra_rec_keys_t zebra_rec_keys_open(void);
-
-void zebra_rec_keys_close(zebra_rec_keys_t p);
-
-void zebra_rec_keys_write(zebra_rec_keys_t keys, 
-			  const char *str, size_t slen,
-			  const struct it_key *key);
-void zebra_rec_keys_reset(zebra_rec_keys_t keys);
-
-int zebra_rec_keys_read(zebra_rec_keys_t keys,
-			const char **str, size_t *slen,
-			struct it_key *key);
-int zebra_rec_keys_rewind(zebra_rec_keys_t keys);
-
-int zebra_rec_keys_empty(zebra_rec_keys_t keys);
-
-void zebra_rec_keys_get_buf(zebra_rec_keys_t p, char **buf, size_t *sz);
-
-void zebra_rec_keys_set_buf(zebra_rec_keys_t p, char *buf, size_t sz,
-			    int copy_buf);
+zebra_key_block_t key_block_create(int mem, const char *key_tmp_dir);
+void key_block_destroy(zebra_key_block_t *pp);
+void key_block_flush(zebra_key_block_t p, int is_final);
+void key_block_write(zebra_key_block_t p,  SYSNO sysno, struct it_key *key_in,
+                     int cmd, const char *str_buf, size_t str_len,
+                     zint staticrank, int static_rank_enable);
+int key_block_get_no_files(zebra_key_block_t p);
 
 YAZ_END_CDECL
 

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.232 2006-11-17 13:47:22 marc Exp $
+/* $Id: zebraapi.c,v 1.233 2006-11-21 14:32:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -84,9 +84,10 @@ static ZEBRA_RES zebra_flush_reg (ZebraHandle zh)
     ZEBRA_CHECK_HANDLE(zh);
     yaz_log(log_level, "zebra_flush_reg");
     zebraExplain_flush (zh->reg->zei, zh);
-    
-    extract_flushWriteKeys (zh, 1 /* final */);
-    zebra_index_merge (zh );
+
+    key_block_flush(zh->reg->key_block, 1);
+
+    zebra_index_merge(zh);
     return ZEBRA_OK;
 }
 
@@ -367,8 +368,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     }
     reg->rank_classes = NULL;
 
-    reg->key_buf = 0;
-
+    reg->key_block = 0;
     reg->keys = zebra_rec_keys_open();
 
     reg->sortKeys = zebra_rec_keys_open();
@@ -381,8 +381,6 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     reg->isamc = 0;
     reg->isamb = 0;
     reg->zei = 0;
-    reg->key_file_no = 0;
-    reg->ptr_i = 0;
     
     /* installing rank classes */
     zebraRankInstall (reg, rank_1_class);
@@ -550,7 +548,7 @@ static void zebra_register_close(ZebraService zs, struct zebra_register *reg)
     zebra_rec_keys_close(reg->keys);
     zebra_rec_keys_close(reg->sortKeys);
 
-    xfree(reg->key_buf);
+    key_block_destroy(&reg->key_block);
     xfree(reg->name);
     xfree(reg);
 }

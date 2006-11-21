@@ -1,4 +1,4 @@
-/* $Id: reckeys.h,v 1.7 2006-11-21 14:32:38 adam Exp $
+/* $Id: su_codec.c,v 1.1 2006-11-21 14:32:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -20,37 +20,53 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-#ifndef RECKEYS_H
-#define RECKEYS_H
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <assert.h>
 
-YAZ_BEGIN_CDECL
+#include <yaz/xmalloc.h>
+#include <su_codec.h>
 
-typedef struct zebra_rec_keys_t_ *zebra_rec_keys_t;
+int key_SU_encode (int ch, char *out)
+{
+    int i;
+    for (i = 0; ch; i++)
+    {
+	if (ch >= 64)
+	    out[i] = 65 + (ch & 63);
+	else
+	    out[i] = 1 + ch;
+	ch = ch >> 6;
+    }
+    return i;
+    /* in   out
+       0     1
+       1     2
+       63    64
+       64    65, 2
+       65    66, 2
+       127   128, 2
+       128   65, 3
+       191   128, 3
+       192   65, 4
+    */
+}
 
-zebra_rec_keys_t zebra_rec_keys_open(void);
+int key_SU_decode (int *ch, const unsigned char *out)
+{
+    int len = 1;
+    int fact = 1;
+    *ch = 0;
+    for (len = 1; *out >= 65; len++, out++)
+    {
+	*ch += (*out - 65) * fact;
+	fact <<= 6;
+    }
+    *ch += (*out - 1) * fact;
+    return len;
+}
 
-void zebra_rec_keys_close(zebra_rec_keys_t p);
-
-void zebra_rec_keys_write(zebra_rec_keys_t keys, 
-			  const char *str, size_t slen,
-			  const struct it_key *key);
-void zebra_rec_keys_reset(zebra_rec_keys_t keys);
-
-int zebra_rec_keys_read(zebra_rec_keys_t keys,
-			const char **str, size_t *slen,
-			struct it_key *key);
-int zebra_rec_keys_rewind(zebra_rec_keys_t keys);
-
-int zebra_rec_keys_empty(zebra_rec_keys_t keys);
-
-void zebra_rec_keys_get_buf(zebra_rec_keys_t p, char **buf, size_t *sz);
-
-void zebra_rec_keys_set_buf(zebra_rec_keys_t p, char *buf, size_t sz,
-			    int copy_buf);
-
-YAZ_END_CDECL
-
-#endif
 /*
  * Local variables:
  * c-basic-offset: 4

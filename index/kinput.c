@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.77 2006-10-29 17:20:01 adam Exp $
+/* $Id: kinput.c,v 1.78 2006-11-21 14:32:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -90,21 +90,21 @@ void key_file_chunk_read (struct key_file *f)
     f->buf_size = 0;
     if (fd == -1)
     {
-        yaz_log (YLOG_WARN|YLOG_ERRNO, "cannot open %s", fname);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "cannot open %s", fname);
 	return ;
     }
     if (!f->length)
     {
         if ((f->length = lseek (fd, 0L, SEEK_END)) == (off_t) -1)
         {
-            yaz_log (YLOG_WARN|YLOG_ERRNO, "cannot seek %s", fname);
+            yaz_log(YLOG_WARN|YLOG_ERRNO, "cannot seek %s", fname);
 	    close (fd);
 	    return ;
         }
     }
     if (lseek (fd, f->offset, SEEK_SET) == -1)
     {
-        yaz_log (YLOG_WARN|YLOG_ERRNO, "cannot seek %s", fname);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "cannot seek %s", fname);
 	close(fd);
 	return ;
     }
@@ -117,7 +117,7 @@ void key_file_chunk_read (struct key_file *f)
     }
     if (r == -1)
     {
-        yaz_log (YLOG_WARN|YLOG_ERRNO, "read of %s", fname);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "read of %s", fname);
 	close (fd);
 	return;
     }
@@ -166,32 +166,6 @@ int key_file_getc (struct key_file *f)
         return f->buf[(f->buf_ptr)++];
     else
         return EOF;
-}
-
-int key_file_decode (struct key_file *f)
-{
-    int c, d;
-
-    c = key_file_getc (f);
-    switch (c & 192) 
-    {
-    case 0:
-        d = c;
-        break;
-    case 64:
-        d = ((c&63) << 8) + (key_file_getc (f) & 0xff);
-        break;
-    case 128:
-        d = ((c&63) << 8) + (key_file_getc (f) & 0xff);
-        d = (d << 8) + (key_file_getc (f) & 0xff);
-        break;
-    default: /* 192 */
-        d = ((c&63) << 8) + (key_file_getc (f) & 0xff);
-        d = (d << 8) + (key_file_getc (f) & 0xff);
-        d = (d << 8) + (key_file_getc (f) & 0xff);
-        break;
-    }
-    return d;
 }
 
 int key_file_read (struct key_file *f, char *key)
@@ -375,29 +349,11 @@ static void key_heap_insert (struct heap_info *hi, const char *buf, int nbytes,
     }
 }
 
-static int heap_read_one_raw(struct heap_info *hi, char *name, char *key)
-{
-    ZebraHandle zh = hi->zh;
-    size_t ptr_i = zh->reg->ptr_i;
-    char *cp;
-    if (!ptr_i)
-        return 0;
-    --(zh->reg->ptr_i);
-    cp=(zh->reg->key_buf)[zh->reg->ptr_top - ptr_i];
-    strcpy(name, cp);
-    memcpy(key, cp+strlen(name)+1, KEY_SIZE);
-    hi->no_iterations++;
-    return 1;
-}
-
 static int heap_read_one (struct heap_info *hi, char *name, char *key)
 {
     int n, r;
     char rbuf[INP_NAME_MAX];
     struct key_file *kf;
-
-    if (hi->raw_reading)
-        return heap_read_one_raw(hi, name, key);
 
     if (!hi->heapnum)
         return 0;
@@ -736,7 +692,7 @@ int heap_inps (struct heap_cread_info *hci, struct heap_info *hi)
         }
 	else
 	{
-	    yaz_log (YLOG_FATAL, "isams doesn't support this kind of update");
+	    yaz_log(YLOG_FATAL, "isams doesn't support this kind of update");
 	    break;
 	}
     }
@@ -766,10 +722,10 @@ void progressFunc (struct key_file *keyp, void *info)
         remaining = (time_t) ((now - p->startTime)*
             ((double) p->totalBytes/p->totalOffset - 1.0));
         if (remaining <= 130)
-            yaz_log (YLOG_LOG, "Merge %2.1f%% completed; %ld seconds remaining",
+            yaz_log(YLOG_LOG, "Merge %2.1f%% completed; %ld seconds remaining",
                  (100.0*p->totalOffset) / p->totalBytes, (long) remaining);
         else
-            yaz_log (YLOG_LOG, "Merge %2.1f%% completed; %ld minutes remaining",
+            yaz_log(YLOG_LOG, "Merge %2.1f%% completed; %ld minutes remaining",
 	         (100.0*p->totalOffset) / p->totalBytes, (long) remaining/60);
     }
     p->totalOffset += keyp->buf_size;
@@ -786,62 +742,50 @@ void zebra_index_merge (ZebraHandle zh)
     int i, r;
     struct heap_info *hi;
     struct progressInfo progressInfo;
-    int nkeys = zh->reg->key_file_no;
-    int usefile; 
-    yaz_log (YLOG_DEBUG, " index_merge called with nk=%d b=%p", 
-                    nkeys, zh->reg->key_buf);
-    if ( (nkeys==0) && (zh->reg->key_buf==0) )
-        return; /* nothing to merge - probably flush after end-trans */
-    
-    usefile = (nkeys!=0); 
+    int nkeys = key_block_get_no_files(zh->reg->key_block);
 
-    if (usefile)
+    if (nkeys == 0)
+        return;
+    
+    if (nkeys < 0)
     {
-        if (nkeys < 0)
+        char fname[1024];
+        nkeys = 0;
+        while (1)
         {
-            char fname[1024];
-            nkeys = 0;
-            while (1)
-            {
-                extract_get_fname_tmp  (zh, fname, nkeys+1);
-                if (access (fname, R_OK) == -1)
-                        break;
-                nkeys++;
-            }
-            if (!nkeys)
-                return ;
+            extract_get_fname_tmp  (zh, fname, nkeys+1);
+            if (access (fname, R_OK) == -1)
+                break;
+            nkeys++;
         }
-        kf = (struct key_file **) xmalloc ((1+nkeys) * sizeof(*kf));
-        progressInfo.totalBytes = 0;
-        progressInfo.totalOffset = 0;
-        time (&progressInfo.startTime);
-        time (&progressInfo.lastTime);
-        for (i = 1; i<=nkeys; i++)
-        {
-            kf[i] = key_file_init (i, 8192, zh->res);
-            kf[i]->readHandler = progressFunc;
-            kf[i]->readInfo = &progressInfo;
-            progressInfo.totalBytes += kf[i]->length;
-            progressInfo.totalOffset += kf[i]->buf_size;
-        }
-        hi = key_heap_init_file(zh, nkeys, key_qsort_compare);
-        hi->reg = zh->reg;
-        
-        for (i = 1; i<=nkeys; i++)
-            if ((r = key_file_read (kf[i], rbuf)))
-                key_heap_insert (hi, rbuf, r, kf[i]);
-    }  /* use file */
-    else 
-    { /* do not use file, read straight from buffer */
-        hi = key_heap_init_raw(zh, key_qsort_compare);
-        hi->reg = zh->reg;
+        if (!nkeys)
+            return ;
     }
+    kf = (struct key_file **) xmalloc ((1+nkeys) * sizeof(*kf));
+    progressInfo.totalBytes = 0;
+    progressInfo.totalOffset = 0;
+    time (&progressInfo.startTime);
+    time (&progressInfo.lastTime);
+    for (i = 1; i<=nkeys; i++)
+    {
+        kf[i] = key_file_init (i, 8192, zh->res);
+        kf[i]->readHandler = progressFunc;
+        kf[i]->readInfo = &progressInfo;
+        progressInfo.totalBytes += kf[i]->length;
+        progressInfo.totalOffset += kf[i]->buf_size;
+    }
+    hi = key_heap_init_file(zh, nkeys, key_qsort_compare);
+    hi->reg = zh->reg;
+    
+    for (i = 1; i<=nkeys; i++)
+        if ((r = key_file_read (kf[i], rbuf)))
+            key_heap_insert (hi, rbuf, r, kf[i]);
 
     if (1)
     {
-	struct heap_cread_info hci;
-    
-	hci.key = (char *) xmalloc (KEY_SIZE);
+        struct heap_cread_info hci;
+        
+        hci.key = (char *) xmalloc (KEY_SIZE);
 	hci.key_1 = (char *) xmalloc (KEY_SIZE);
 	hci.key_2 = (char *) xmalloc (KEY_SIZE);
 	hci.ret = -1;
@@ -862,28 +806,24 @@ void zebra_index_merge (ZebraHandle zh)
 	xfree (hci.key_2);
     }
 	
-    if (usefile)
+    for (i = 1; i<=nkeys; i++)
     {
-        for (i = 1; i<=nkeys; i++)
-        {
-            extract_get_fname_tmp  (zh, rbuf, i);
-            unlink (rbuf);
-        }
-        for (i = 1; i<=nkeys; i++)
-            key_file_destroy (kf[i]);
-        xfree (kf);
+        extract_get_fname_tmp  (zh, rbuf, i);
+        unlink (rbuf);
     }
+    for (i = 1; i<=nkeys; i++)
+        key_file_destroy (kf[i]);
+    xfree (kf);
     if (hi->no_iterations)
     { /* do not log if nothing happened */
-        yaz_log (YLOG_LOG, "Iterations . . .%7d", hi->no_iterations);
-        yaz_log (YLOG_LOG, "Distinct words .%7d", hi->no_diffs);
-        yaz_log (YLOG_LOG, "Updates. . . . .%7d", hi->no_updates);
-        yaz_log (YLOG_LOG, "Deletions. . . .%7d", hi->no_deletions);
-        yaz_log (YLOG_LOG, "Insertions . . .%7d", hi->no_insertions);
+        yaz_log(YLOG_LOG, "Iterations . . .%7d", hi->no_iterations);
+        yaz_log(YLOG_LOG, "Distinct words .%7d", hi->no_diffs);
+        yaz_log(YLOG_LOG, "Updates. . . . .%7d", hi->no_updates);
+        yaz_log(YLOG_LOG, "Deletions. . . .%7d", hi->no_deletions);
+        yaz_log(YLOG_LOG, "Insertions . . .%7d", hi->no_insertions);
     }
-    zh->reg->key_file_no = 0;
-
-    key_heap_destroy (hi, nkeys);
+    key_block_destroy(&zh->reg->key_block);
+    key_heap_destroy(hi, nkeys);
 }
 /*
  * Local variables:
