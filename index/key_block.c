@@ -1,4 +1,4 @@
-/* $Id: key_block.c,v 1.1 2006-11-21 14:32:38 adam Exp $
+/* $Id: key_block.c,v 1.2 2006-11-21 14:54:12 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -365,7 +365,6 @@ void key_block_flush(zebra_key_block_t p, int is_final)
     p->key_buf = p->alt_buf;
     p->alt_buf = tmp;
 
-    yaz_log(YLOG_LOG, "key_block_flush 1 p=%p", p);
     pthread_cond_signal(&p->work_available);
 
     if (is_final)
