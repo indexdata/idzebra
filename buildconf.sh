@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: buildconf.sh,v 1.23 2006-10-29 17:19:07 adam Exp $
+# $Id: buildconf.sh,v 1.24 2006-11-22 09:42:27 adam Exp $
 if automake --version|head -1 |grep '1\.[4-7]'; then
     echo "automake 1.4-1.7 is active. You should use automake 1.8 or later"
     if test -f /etc/debian_version; then
@@ -27,6 +27,12 @@ conf_flags=""
 case $1 in
     -d)
 	sh_flags="-g -Wall -O0 -Wdeclaration-after-statement -Wstrict-prototypes"
+	enable_configure=true
+	enable_help=false
+	shift
+	;;
+    -p)
+	sh_flags="-g -pg -Wall -Wdeclaration-after-statement -Wstrict-prototypes"
 	enable_configure=true
 	enable_help=false
 	shift
