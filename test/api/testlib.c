@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.40 2006-11-10 12:57:49 adam Exp $
+/* $Id: testlib.c,v 1.41 2006-11-22 14:06:53 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -38,32 +38,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <idzebra/api.h>
 #include "testlib.h"
 
-/** start_log: open a log file */
-/*    FIXME - parse command line arguments to set log levels etc */
-int log_level=0; /* not static, t*.c may use it */
+int log_level = YLOG_LOG;
 
-void tl_start_log(int argc, char **argv)
-{
-    char logname[2048];
-    if (!argv) 
-        return;
-    if (!argv[0])
-        return;
-    sprintf(logname, "%s.log", argv[0]);
-#if HAVE_UNISTD_H
-    unlink(logname);
-#endif
-    yaz_log_init_file(logname);
-    if (argc >= 2)
-	log_level = yaz_log_mask_str_x(argv[1], 0);
-    if (argc >= 3)
-	yaz_log_time_format(argv[2]);
-    if (log_level)
-        yaz_log_init_level(log_level);
-    yaz_log(log_level, "starting %s", argv[0]);
-}
-
-/** 
+/* 
  * tl_start_up : do common start things, and a zebra_start
  *    - nmem_init
  *    - build the name of logfile from argv[0], and open it
@@ -82,7 +59,6 @@ ZebraService tl_start_up(char *cfgname, int argc, char **argv)
 #endif
 #endif
     nmem_init();
-    tl_start_log(argc, argv);
     return tl_zebra_start(cfgname);
 }
 

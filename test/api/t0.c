@@ -1,4 +1,4 @@
-/* $Id: t0.c,v 1.5 2006-08-14 10:40:22 adam Exp $
+/* $Id: t0.c,v 1.6 2006-11-22 14:06:53 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -26,7 +26,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static void tst(int argc, char **argv)
 {
-    tl_start_log(argc, argv);
     YAZ_CHECK(!zebra_start("xxxxpoiasdfasfd.cfg")); /* should fail */
 }
 

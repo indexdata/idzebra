@@ -1,4 +1,4 @@
-/* $Id: t13.c,v 1.10 2006-11-21 22:17:50 adam Exp $
+/* $Id: t13.c,v 1.11 2006-11-22 14:06:53 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -111,7 +111,6 @@ static void tst_no_config(void)
 
 static void tst(int argc, char **argv)
 {
-    tl_start_log(argc, argv);
     tst_res();
     tst_no_config();
 }
