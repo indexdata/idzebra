@@ -1,4 +1,4 @@
-/* $Id: symtab.c,v 1.11 2006-11-21 22:17:49 adam Exp $
+/* $Id: symtab.c,v 1.12 2006-11-22 14:12:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -20,11 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <yaz/xmalloc.h>
 
 struct strentry {
     char *name;
