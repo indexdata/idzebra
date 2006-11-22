@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.54 2006-11-21 22:17:49 adam Exp $
+/* $Id: recindex.c,v 1.55 2006-11-22 11:13:17 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -202,6 +202,8 @@ static ZEBRA_RES rec_delete_single(Records p, Record rec)
 {
     struct record_index_entry entry;
 
+    /* all data in entry must be reset, since it's written verbatim */
+    memset(&entry, '\0', sizeof(entry));
     if (rec_release_blocks(p, rec_sysno_to_int(rec->sysno)) != ZEBRA_OK)
 	return ZEBRA_FAIL;
 
@@ -220,6 +222,9 @@ static ZEBRA_RES rec_write_tmp_buf(Records p, int size, zint *sysnos)
     zint block_prev = -1, block_free;
     int dst_type = 0;
     int i;
+
+    /* all data in entry must be reset, since it's written verbatim */
+    memset(&entry, '\0', sizeof(entry));
 
     for (i = 1; i<REC_BLOCK_TYPES; i++)
         if (size >= p->head.block_move[i])
@@ -279,6 +284,7 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
     ZEBRA_RES ret = ZEBRA_OK;
 
     p = (Records) xmalloc(sizeof(*p));
+    memset(&p->head, '\0', sizeof(p->head));
     p->compression_method = compression_method;
     p->rw = rw;
     p->tmp_size = 1024;

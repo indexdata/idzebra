@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.72 2006-11-21 22:17:49 adam Exp $
+/* $Id: zinfo.c,v 1.73 2006-11-22 11:13:17 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1611,6 +1611,8 @@ RecordAttr *rec_init_attr (ZebraExplainInfo zei, Record rec)
     if (rec->info[recInfo_attr])
 	return (RecordAttr *) rec->info[recInfo_attr];
     recordAttr = (RecordAttr *) xmalloc (sizeof(*recordAttr));
+
+    memset(recordAttr, '\0', sizeof(*recordAttr));
     rec->info[recInfo_attr] = (char *) recordAttr;
     rec->size[recInfo_attr] = sizeof(*recordAttr);
     
