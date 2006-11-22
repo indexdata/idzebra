@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: buildconf.sh,v 1.10.2.1 2005-03-11 21:07:53 adam Exp $
+# $Id: buildconf.sh,v 1.10.2.2 2006-11-22 09:41:47 adam Exp $
 set -x
 dir=`aclocal --print-ac-dir`
 aclocal -I .
@@ -18,7 +18,19 @@ sh_flags=""
 conf_flags=""
 case $1 in
     -d)
-	sh_flags="-g -Wall"
+	sh_flags="-g -Wall -Wdeclaration-after-statement"
+	enable_configure=true
+	enable_help=false
+	shift
+	;;
+    -o)
+	sh_flags="-g -Wall -O2 -Wdeclaration-after-statement"
+	enable_configure=true
+	enable_help=false
+	shift
+	;;
+    -p)
+	sh_flags="-g -pg -Wall -Wdeclaration-after-statement"
 	enable_configure=true
 	enable_help=false
 	shift
