@@ -1,4 +1,4 @@
-/* $Id: t16.c,v 1.4 2006-11-17 14:24:56 marc Exp $
+/* $Id: t16.c,v 1.5 2006-11-22 10:26:12 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -63,8 +63,8 @@ static ZEBRA_RES fetch_first(ZebraHandle zh, const char *element_set,
 static ZEBRA_RES fetch_first_compare(ZebraHandle zh, const char *element_set,
                                      oid_value format, const char *cmp_rec)
 {
-    const char *rec_buf;
-    size_t rec_len;
+    const char *rec_buf = 0;
+    size_t rec_len = 0;
     ODR odr = odr_createmem(ODR_ENCODE);
     ZEBRA_RES res = fetch_first(zh, element_set, format, odr,
                                 &rec_buf, &rec_len);
