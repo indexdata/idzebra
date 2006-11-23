@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.56 2006-11-23 09:03:51 marc Exp $
+/* $Id: retrieve.c,v 1.57 2006-11-23 14:01:21 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -336,17 +336,17 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
                      "<record xmlns="
                      "\"http://www.indexdata.com/zebra/\""
                      " sysno=\"" ZINT_FORMAT "\""
-                     " base=\"%s\""
-                     " file=\"%s\""
-                     " type=\"%s\""
+                     " base=\"%.*s\""
+                     " file=\"%.*s\""
+                     " type=\"%.*s\""
                      " score=\"%i\""
                      " rank=\"" ZINT_FORMAT "\""
                      " size=\"%i\""
                      " set=\"zebra::%s/\">\n",
                      sysno, 
-                     rec->info[recInfo_databaseName],
-                     rec->info[recInfo_filename],
-                     rec->info[recInfo_fileType],
+                     rec->size[recInfo_databaseName], rec->info[recInfo_databaseName],
+                     rec->size[recInfo_filename], rec->info[recInfo_filename],
+                     rec->size[recInfo_fileType], rec->info[recInfo_fileType],
                      score,
                      recordAttr->staticrank,
                      recordAttr->recordSize,
@@ -356,17 +356,17 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
             *output_format = VAL_SUTRS;
              sprintf(rec_str, 
                      "sysno " ZINT_FORMAT "\n"
-                     "base %s\n"
-                     "file %s\n"
-                     "type %s\n"
+                     "base %.*s\n"
+                     "file %.*s\n"
+                     "type %.*s\n"
                      "score %i\n"
                      "rank " ZINT_FORMAT "\n"
                      "size %i\n"
                      "set zebra::%s\n",
                      sysno, 
-                     rec->info[recInfo_databaseName],
-                     rec->info[recInfo_filename],
-                     rec->info[recInfo_fileType],
+                     rec->size[recInfo_databaseName], rec->info[recInfo_databaseName],
+                     rec->size[recInfo_filename], rec->info[recInfo_filename],
+                     rec->size[recInfo_fileType], rec->info[recInfo_fileType],
                      score,
                      recordAttr->staticrank,
                      recordAttr->recordSize,
