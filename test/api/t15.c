@@ -1,4 +1,4 @@
-/* $Id: t15.c,v 1.10 2006-11-23 21:35:02 adam Exp $
+/* $Id: t15.c,v 1.11 2006-11-23 21:38:26 adam Exp $
    Copyright (C) 2004-2006
    Index Data ApS
 
@@ -32,9 +32,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #if HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
+#if HAVE_SYS_UTSNAME_H
+#include <sys/utsname.h>
+#endif
 
 #include <string.h>
-#include <sys/utsname.h>
 
 #include "testlib.h"
 
@@ -111,6 +113,7 @@ static void tst(int argc, char **argv)
 
 #if HAVE_SYS_WAIT_H
 #if HAVE_UNISTD_H
+#if HAVE_SYS_UTSNAME_H
 
     if (1)
     {
@@ -137,6 +140,7 @@ static void tst(int argc, char **argv)
 	    YAZ_CHECK(status[2] == 0);
         }
     }
+#endif
 #endif
 #endif
     YAZ_CHECK(tl_close_down(0, zs));
