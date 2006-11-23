@@ -1,5 +1,5 @@
  <chapter id="fields-and-charsets">
-  <!-- $Id: field-structure.xml,v 1.5 2006-11-17 14:54:00 marc Exp $ -->
+  <!-- $Id: field-structure.xml,v 1.6 2006-11-23 09:03:50 marc Exp $ -->
   <title>Field Structure and Character Sets
   </title>
   
@@ -261,44 +261,134 @@
     would both produce the same results.
    </para>
   </section>
-  <section id="default-idx-debug">
-   <title>Field structure debugging using the special 
-          <literal>zebra::index::</literal> element set</title>
+
+  <section id="default-idx-zebra">
+   <title>Accessing Zebra internal record data using 
+    the <literal>zebra::</literal> element sets</title>
    <para>
-    At some time, it is very hard to figure out what exactly has been
+    Starting with <literal>Zebra</literal> version
+    <literal>2.0.4-2</literal> or newer, one has the possibility to
+    use the special
+    <literal>zebra::data</literal>,
+    <literal>zebra::meta</literal> and 
+    <literal>zebra::index</literal> element set names.
+   </para>
+   <note>
+    <para>
+     Usage of the <literal>zebra::</literal> element sets accesses
+     record data directly from the internal storage, and will
+     therefore work exactly the same way, irrespectively of indexing
+     filter used. 
+    </para>
+    <para>
+     These element set names are optimized for retrieval speed, and
+     will perform better than using for example
+     <literal>alvis</literal> filter XSLT based extraction of small
+     parts of the records.  
+    </para>
+   </note>
+   <para>
+    For example, to  fetch the raw binary record data stored in the
+    zebra internal storage, or on the filesystem, the following
+    commands can be issued:
+    <screen>
+      Z> f @attr 1=title my
+      Z> format xml
+      Z> elements zebra::data
+      Z> s 1+1
+      Z> format sutrs
+      Z> s 1+1
+      Z> format usmarc
+      Z> s 1+1
+    </screen>
+    </para>
+   <note>
+    <para>
+     The special 
+     <literal>zebra::data</literal> element set name is 
+     defined for any record syntax, but will always fetch  
+     the raw record data in exactly the original form. No record syntax
+     specific transformations will be applied to the raw record data. 
+    </para>
+   </note>
+   <para>
+    Also, Zebra internal metadata about the record can be accessed: 
+    <screen>
+      Z> f @attr 1=title my
+      Z> format xml
+      Z> elements zebra::meta::sysno
+      Z> s 1+1
+    </screen> 
+    displays in <literal>XML</literal> record syntax only internal
+    record system number, whereas 
+    <screen>
+      Z> f @attr 1=title my
+      Z> format xml
+      Z> elements zebra::meta
+      Z> s 1+1
+    </screen> 
+    displays all available metadata on the record. These include sytem
+      number, database name,  indexed filename,  filter used for indexing,
+      score and static ranking information and finally bytesize of record.
+   </para>
+   <note>
+    <para>
+     The special 
+     <literal>zebra::meta</literal> element set names are only 
+     defined for
+     <literal>SUTRS</literal> and <literal>XML</literal> record
+     syntaxes. 
+    </para>
+   </note>
+   <para>
+    Sometimes, it is very hard to figure out what exactly has been
     indexed how and in which indexes. Using the indexing stylesheet of
     the Alvis filter, one can at least see which portion of the record
     went into which index, but a similar aid does not exist for all
     other indexing filters.  
    </para>
    <para>
-    Starting with <literal>Zebra</literal> version
-    <literal>2.0.4-2</literal> or newer, one has the possibility to
-    use the special
-    <literal>zebra::index::</literal> element set name, which is only defined for
-    the <literal>SUTRS</literal> and <literal>XML</literal> record
-    formats.
+    The special
+    <literal>zebra::index</literal> element set names are provided to
+    access information on per record indexed fields. For example, the
+    queries 
     <screen>
-      Z> f @attr 1=dc_all minutter
+      Z> f @attr 1=title my
       Z> format sutrs
-      Z> elements zebra::index::
+      Z> elements zebra::index
       Z> s 1+1
     </screen>
     will display all indexed tokens from all indexed fields of the
     first record, and it will display in <literal>SUTRS</literal>
     record syntax, whereas 
     <screen>
-      Z> f @attr 1=dc_all minutter
+      Z> f @attr 1=title my
       Z> format xml
-      Z> elements zebra::index::dc_publisher
+      Z> elements zebra::index::title
       Z> s 1+1
-      Z> elements zebra::index::dc_publisher:p
+      Z> elements zebra::index::title:p
       Z> s 1+1
     </screen> 
     displays in <literal>XML</literal> record syntax only the content
-      of the zebra string index <literal>dc_publisher</literal>, or
+      of the zebra string index <literal>title</literal>, or
       even only the type <literal>p</literal> phrase indexed part of it.
    </para>
+   <note>
+    <para>
+     The special <literal>zebra::index</literal> 
+     element set names are only 
+     defined for
+     <literal>SUTRS</literal> and <literal>XML</literal> record
+     syntaxes. 
+    </para>
+    <para> Trying to access numeric <literal>Bib-1</literal> use
+    attributes or trying to access non-existent zebra intern string
+    access points will result in a
+    <literal>
+     Diagnostic [25]: Specified element set name not valid for specified database
+    </literal>
+    </para>
+   </note>
   </section>
  </chapter>
  <!-- Keep this comment at the end of the file

@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.55 2006-11-21 22:17:49 adam Exp $
+/* $Id: retrieve.c,v 1.56 2006-11-23 09:03:51 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -74,31 +74,40 @@ static int zebra_create_record_stream(ZebraHandle zh,
     
 
 
-static void parse_zebra_elem(const char *elem,
+static int parse_zebra_elem(const char *elem,
                              const char **index, size_t *index_len,
                              const char **type, size_t *type_len)
 {
-    *type = 0;
-    *type_len = 0;
-
     *index = 0;
     *index_len = 0;
 
+    *type = 0;
+    *type_len = 0;
+
     if (elem && *elem)
     {
-        const char *cp = strchr(elem, ':');
+        char *cp;
+        /* verify that '::' is in the beginning of *elem 
+           and something more follows */
+        if (':' != *elem
+            || !(elem +1) || ':' != *(elem +1)
+            || !(elem +2) || '\0' == *(elem +2))
+            return 0;
+ 
+        /* pick out info from string after '::' */
+        elem = elem + 2;
+        cp = strchr(elem, ':');
 
-        if (!cp) /* no colon */
+        if (!cp) /* index, no colon, no type */
         {
             *index = elem;
             *index_len = strlen(elem);
         }
-        else if (cp[1] == '\0') /* 'index:' */
+        else if (cp[1] == '\0') /* colon, but no following type */
         {
-            *index = elem;
-            *index_len = cp - elem;
+            return 0;
         }
-        else
+        else  /* index, colon and type */
         {
             *index = elem;
             *index_len = cp - elem;
@@ -106,6 +115,7 @@ static void parse_zebra_elem(const char *elem,
             *type_len = strlen(cp+1);
         }
     }
+    return 1;
 }
 
 
@@ -135,9 +145,10 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
         return YAZ_BIB1_NO_SYNTAXES_AVAILABLE_FOR_THIS_REQUEST;
     }
 
-    parse_zebra_elem(elemsetname,
+    if (!parse_zebra_elem(elemsetname,
                      &retrieval_index, &retrieval_index_len,
-                     &retrieval_type,  &retrieval_type_len);
+                     &retrieval_type,  &retrieval_type_len))
+        return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
 
     if (retrieval_type_len != 0 && retrieval_type_len != 1)
     {
@@ -158,9 +169,7 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
                                              (retrieval_type_len == 0 ? -1 : 
                                               retrieval_type[0]),
                                              retrieval_index_cstr) == -1)
-            {
                 return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
-            }
         }
     }
 
@@ -183,7 +192,7 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
                          "<record xmlns="
                          "\"http://www.indexdata.com/zebra/\""
                          " sysno=\"" ZINT_FORMAT "\""
-                         " set=\"zebra::index::%s/\">\n",
+                         " set=\"zebra::index%s/\">\n",
                          sysno, elemsetname);
         }
         else if (input_format == VAL_SUTRS)
@@ -202,42 +211,51 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
             zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db,
                                     &string_index);
             string_index_len = strlen(string_index);
+
+            /* process only if index is not defined, 
+               or if defined and matching */
             if (retrieval_index == 0 
                 || (string_index_len == retrieval_index_len 
                     && !memcmp(string_index, retrieval_index,
                                string_index_len))){
-                
+               
+                /* process only if type is not defined, or is matching */
                 if (retrieval_type == 0 
                     || (retrieval_type_len == 1 
                         && retrieval_type[0] == index_type)){
                     
-                    if (input_format == VAL_TEXT_XML){
-                        wrbuf_printf(wrbuf, "  <index name=\"%s\"", 
-                                     string_index);
-                        
-                        wrbuf_printf(wrbuf, " type=\"%c\"", index_type);
-                        
-                        wrbuf_printf(wrbuf, " seq=\"" ZINT_FORMAT "\">", 
-                                     key_in.mem[key_in.len -1]);
-                        
-                        zebra_term_untrans(zh, index_type, dst_buf, str);
-                        wrbuf_xmlputs(wrbuf, dst_buf);
-                        wrbuf_printf(wrbuf, "</index>\n");
-                    }
-                    else if (input_format == VAL_SUTRS){
-                        wrbuf_printf(wrbuf, "%s ", string_index);
-                    
-                        wrbuf_printf(wrbuf, "%c", index_type);
-                    
-                        for (i = 1; i < key_in.len; i++)
-                            wrbuf_printf(wrbuf, " " ZINT_FORMAT, 
-                                         key_in.mem[i]);
 
-                        zebra_term_untrans(zh, index_type, dst_buf, str);
-                        wrbuf_printf(wrbuf, " %s", dst_buf);
+                    zebra_term_untrans(zh, index_type, dst_buf, str);
+                    if (strlen(dst_buf)){
+
+                        if (input_format == VAL_TEXT_XML){
+                            wrbuf_printf(wrbuf, "  <index name=\"%s\"", 
+                                         string_index);
+                            
+                            wrbuf_printf(wrbuf, " type=\"%c\"", index_type);
+                            
+                            wrbuf_printf(wrbuf, " seq=\"" ZINT_FORMAT "\">", 
+                                         key_in.mem[key_in.len -1]);
                         
-                        wrbuf_printf(wrbuf, "\n");
+                            wrbuf_xmlputs(wrbuf, dst_buf);
+                            wrbuf_printf(wrbuf, "</index>\n");
+                        }
+                        else if (input_format == VAL_SUTRS){
+                            wrbuf_printf(wrbuf, "%s ", string_index);
+                            
+                            wrbuf_printf(wrbuf, "%c", index_type);
+                            
+                            for (i = 1; i < key_in.len; i++)
+                                wrbuf_printf(wrbuf, " " ZINT_FORMAT, 
+                                             key_in.mem[i]);
+
+                        /* zebra_term_untrans(zh, index_type, dst_buf, str); */
+                            wrbuf_printf(wrbuf, " %s", dst_buf);
+                        
+                            wrbuf_printf(wrbuf, "\n");
+                        }
                     }
+                    
                 }
             }
         }
@@ -253,7 +271,8 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
 }
 
 
-int zebra_special_fetch(ZebraHandle zh, zint sysno, ODR odr,
+
+int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
                            const char *elemsetname,
                            oid_value input_format,
                            oid_value *output_format,
@@ -304,11 +323,74 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, ODR odr,
         return YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
     }
 
+    /* processing special elementsetnames zebra::meta:: */
+    if (elemsetname && 0 == strcmp(elemsetname, "meta")){
+        int ret = 0;
+        char rec_str[1024];
+        RecordAttr *recordAttr = rec_init_attr(zh->reg->zei, rec); 
+
+        if (input_format == VAL_TEXT_XML){
+            *output_format = VAL_TEXT_XML;
+
+             sprintf(rec_str, 
+                     "<record xmlns="
+                     "\"http://www.indexdata.com/zebra/\""
+                     " sysno=\"" ZINT_FORMAT "\""
+                     " base=\"%s\""
+                     " file=\"%s\""
+                     " type=\"%s\""
+                     " score=\"%i\""
+                     " rank=\"" ZINT_FORMAT "\""
+                     " size=\"%i\""
+                     " set=\"zebra::%s/\">\n",
+                     sysno, 
+                     rec->info[recInfo_databaseName],
+                     rec->info[recInfo_filename],
+                     rec->info[recInfo_fileType],
+                     score,
+                     recordAttr->staticrank,
+                     recordAttr->recordSize,
+                     elemsetname);
+        }
+        else if (input_format == VAL_SUTRS){
+            *output_format = VAL_SUTRS;
+             sprintf(rec_str, 
+                     "sysno " ZINT_FORMAT "\n"
+                     "base %s\n"
+                     "file %s\n"
+                     "type %s\n"
+                     "score %i\n"
+                     "rank " ZINT_FORMAT "\n"
+                     "size %i\n"
+                     "set zebra::%s\n",
+                     sysno, 
+                     rec->info[recInfo_databaseName],
+                     rec->info[recInfo_filename],
+                     rec->info[recInfo_fileType],
+                     score,
+                     recordAttr->staticrank,
+                     recordAttr->recordSize,
+                     elemsetname);
+        }
+        
+        
+	*rec_lenp = strlen(rec_str);
+        if (*rec_lenp){
+            *rec_bufp = odr_strdup(odr, rec_str);
+            ret = 0;
+        } else {
+            ret = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+        }
+
+        rec_free(&rec);
+        return ret;
+    }
+
     /* processing special elementsetnames zebra::index:: */
-    if (elemsetname && 0 == strncmp(elemsetname, "index::", 7)){
+    if (elemsetname && 0 == strncmp(elemsetname, "index", 5)){
         
         int ret = zebra_special_index_fetch(zh, sysno, odr, rec,
-                                            elemsetname + 7,
+                                            elemsetname + 5,
                                             input_format, output_format,
                                             rec_bufp, rec_lenp);
         
@@ -357,7 +439,7 @@ int zebra_record_fetch(ZebraHandle zh, zint sysno, int score,
 
     /* processing zebra special elementset names of form 'zebra:: */
     if (elemsetname && 0 == strncmp(elemsetname, "zebra::", 7))
-        return  zebra_special_fetch(zh, sysno, odr,
+        return  zebra_special_fetch(zh, sysno, score, odr,
                                     elemsetname + 7,
                                     input_format, output_format,
                                     rec_bufp, rec_lenp);
