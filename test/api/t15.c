@@ -1,4 +1,4 @@
-/* $Id: t15.c,v 1.9 2006-11-23 21:34:22 adam Exp $
+/* $Id: t15.c,v 1.10 2006-11-23 21:35:02 adam Exp $
    Copyright (C) 2004-2006
    Index Data ApS
 
@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <sys/wait.h>
 #endif
 
+#include <string.h>
 #include <sys/utsname.h>
 
 #include "testlib.h"
