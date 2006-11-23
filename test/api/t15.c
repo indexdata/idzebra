@@ -1,4 +1,4 @@
-/* $Id: t15.c,v 1.8 2006-09-20 19:29:25 adam Exp $
+/* $Id: t15.c,v 1.9 2006-11-23 21:34:22 adam Exp $
    Copyright (C) 2004-2006
    Index Data ApS
 
@@ -32,6 +32,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #if HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
+
+#include <sys/utsname.h>
 
 #include "testlib.h"
 
@@ -108,20 +110,31 @@ static void tst(int argc, char **argv)
 
 #if HAVE_SYS_WAIT_H
 #if HAVE_UNISTD_H
+
     if (1)
     {
+        int tst_with_fork = 1;
 	int status[3];
 	pid_t pids[3];
+        struct utsname s;
+        uname(&s);
+        if (!strcmp(s.sysname, "FreeBSD"))
+            tst_with_fork = 0;
 
-	pids[0] = fork_service(zs, 200, search_process);
-	pids[1] = fork_service(zs, 20, update_process);
-	pids[2] = fork_service(zs, 20, update_process);
-	waitpid(pids[0], &status[0], 0);
-	YAZ_CHECK(status[0] == 0);
-	waitpid(pids[1], &status[1], 0);
-	YAZ_CHECK(status[1] == 0);
-	waitpid(pids[2], &status[2], 0);
-	YAZ_CHECK(status[2] == 0);
+        yaz_log(YLOG_LOG, "s.sysname=%s tst_with_fork=%d", s.sysname,
+            tst_with_fork);
+        if (tst_with_fork)
+        {
+	    pids[0] = fork_service(zs, 200, search_process);
+	    pids[1] = fork_service(zs, 20, update_process);
+	    pids[2] = fork_service(zs, 20, update_process);
+	    waitpid(pids[0], &status[0], 0);
+	    YAZ_CHECK(status[0] == 0);
+	    waitpid(pids[1], &status[1], 0);
+	    YAZ_CHECK(status[1] == 0);
+	    waitpid(pids[2], &status[2], 0);
+	    YAZ_CHECK(status[2] == 0);
+        }
     }
 #endif
 #endif
