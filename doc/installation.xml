@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.31 2006-09-22 12:34:45 adam Exp $ -->
+<!-- $Id: installation.xml,v 1.32 2006-11-24 13:25:02 adam Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -172,9 +172,30 @@
        </para>
       </listitem>
      </varlistentry>
+
+     <varlistentry>
+     <term><literal>index/*.so</literal></term>
+      <listitem>
+       <para>
+	The <literal>.so</literal>-files are Zebra record filter modules.
+	There are modules for reading 
+	MARC (<filename>mod-grs-marc.so</filename>),
+	XML (<filename>mod-grs-xml.so</filename>) , etc. 
+       </para>
+      </listitem>
+     </varlistentry>
+
     </variablelist>
    </para>
-   
+
+   <note>
+    <para>
+     Using configure option <literal>--disable-shared</literal> builds
+     Zebra statically and links "in" Zebra filter code statically, i.e.
+     no <literal>.so-files</literal> are generated
+    </para>
+   </note>
+
    <para>
     You can now use Zebra. If you wish to install it system-wide, then
     as root type
@@ -184,7 +205,9 @@
     By default this will install the Zebra executables in 
     <filename>/usr/local/bin</filename>,
     and the standard configuration files in 
-    <filename>/usr/local/share/idzebra-2.0</filename>
+    <filename>/usr/local/share/idzebra-2.0</filename>. If
+    shared modules are built, these are installed in
+    <filename>/usr/local/lib/idzebra-2.0/modules</filename>.
     You can override this with the <literal>--prefix</literal> option
     to configure.
    </para>
