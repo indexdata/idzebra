@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.14 2006-11-24 13:05:11 adam Exp $ -->
+  <!-- $Id: architecture.xml,v 1.15 2006-11-24 13:25:42 adam Exp $ -->
   <title>Overview of Zebra Architecture</title>
 
   <section id="architecture-representation">
@@ -420,17 +420,17 @@
 	<literal>zebra::index::</literal><replaceable>f</replaceable>
        </entry>
        <entry>
-	Get indexed keys for field <replaceable>f</replaceable>	of record
+	Get indexed keys for field <replaceable>f</replaceable>	for record
        </entry>
        <entry>XML and SUTRS</entry>
       </row>
       <row>
        <entry>
-	<literal>zebra::index::</literal><replaceable>field</replaceable>:<replaceable>t</replaceable>
+	<literal>zebra::index::</literal><replaceable>f</replaceable>:<replaceable>t</replaceable>
        </entry>
        <entry>
 	Get indexed keys for field <replaceable>f</replaceable>
-	  and type <replaceable>t</replaceable> of record
+	  and type <replaceable>t</replaceable> for record
        </entry>
        <entry>XML and SUTRS</entry>
       </row>
