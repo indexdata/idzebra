@@ -1,7 +1,6 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.13 2006-09-22 12:34:45 adam Exp $ -->
+  <!-- $Id: architecture.xml,v 1.14 2006-11-24 13:05:11 adam Exp $ -->
   <title>Overview of Zebra Architecture</title>
-  
 
   <section id="architecture-representation">
    <title>Local Representation</title>
@@ -368,6 +367,159 @@
    </itemizedlist>
 
   </para>
+  </section>
+
+  <section id="default-idx-zebra">
+   <title>Retrieval of Zebra internal record data</title>
+   <para>
+    Starting with <literal>Zebra</literal> version 2.0.5 or newer, it is
+    possible to use a special element set which has the prefix
+    <literal>zebra::</literal>.
+   </para>
+   <para>
+    Using this element will, regardless of record type, return
+    Zebra's internal index structure/data for a record.
+    In particular, the regular record filters are not invoked when
+    these are in use.
+    This can in some cases make the retrival faster than regular
+    retrieval operations (for MARC, XML etc).
+   </para>
+   <table id="special-retrieval">
+    <title>Special Retrieval Elements</title>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>Element Set</entry>
+       <entry>Description</entry>
+       <entry>Syntax</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry><literal>zebra::meta::sysno</literal></entry>
+       <entry>Get Zebra record system ID</entry>
+       <entry>XML and SUTRS</entry>
+      </row>
+      <row>
+       <entry><literal>zebra::data</literal></entry>
+       <entry>Get raw record</entry>
+       <entry>all</entry>
+      </row>
+      <row>
+       <entry><literal>zebra::meta</literal></entry>
+       <entry>Get Zebra record internal metadata</entry>
+       <entry>XML and SUTRS</entry>
+      </row>
+      <row>
+       <entry><literal>zebra::index</literal></entry>
+       <entry>Get all indexed keys for record</entry>
+       <entry>XML and SUTRS</entry>
+      </row>
+      <row>
+       <entry>
+	<literal>zebra::index::</literal><replaceable>f</replaceable>
+       </entry>
+       <entry>
+	Get indexed keys for field <replaceable>f</replaceable>	of record
+       </entry>
+       <entry>XML and SUTRS</entry>
+      </row>
+      <row>
+       <entry>
+	<literal>zebra::index::</literal><replaceable>field</replaceable>:<replaceable>t</replaceable>
+       </entry>
+       <entry>
+	Get indexed keys for field <replaceable>f</replaceable>
+	  and type <replaceable>t</replaceable> of record
+       </entry>
+       <entry>XML and SUTRS</entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+   <para>
+    For example, to fetch the raw binary record data stored in the
+    zebra internal storage, or on the filesystem, the following
+    commands can be issued:
+    <screen>
+      Z> f @attr 1=title my
+      Z> format xml
+      Z> elements zebra::data
+      Z> s 1+1
+      Z> format sutrs
+      Z> s 1+1
+      Z> format usmarc
+      Z> s 1+1
+    </screen>
+    </para>
+   <para>
+    The special 
+    <literal>zebra::data</literal> element set name is 
+    defined for any record syntax, but will always fetch  
+    the raw record data in exactly the original form. No record syntax
+    specific transformations will be applied to the raw record data. 
+   </para>
+   <para>
+    Also, Zebra internal metadata about the record can be accessed: 
+    <screen>
+      Z> f @attr 1=title my
+      Z> format xml
+      Z> elements zebra::meta::sysno
+      Z> s 1+1
+    </screen> 
+    displays in <literal>XML</literal> record syntax only internal
+    record system number, whereas 
+    <screen>
+      Z> f @attr 1=title my
+      Z> format xml
+      Z> elements zebra::meta
+      Z> s 1+1
+    </screen> 
+    displays all available metadata on the record. These include sytem
+    number, database name,  indexed filename,  filter used for indexing,
+    score and static ranking information and finally bytesize of record.
+   </para>
+   <para>
+    Sometimes, it is very hard to figure out what exactly has been
+    indexed how and in which indexes. Using the indexing stylesheet of
+    the Alvis filter, one can at least see which portion of the record
+    went into which index, but a similar aid does not exist for all
+    other indexing filters.  
+   </para>
+   <para>
+    The special
+    <literal>zebra::index</literal> element set names are provided to
+    access information on per record indexed fields. For example, the
+    queries 
+    <screen>
+      Z> f @attr 1=title my
+      Z> format sutrs
+      Z> elements zebra::index
+      Z> s 1+1
+    </screen>
+    will display all indexed tokens from all indexed fields of the
+    first record, and it will display in <literal>SUTRS</literal>
+    record syntax, whereas 
+    <screen>
+      Z> f @attr 1=title my
+      Z> format xml
+      Z> elements zebra::index::title
+      Z> s 1+1
+      Z> elements zebra::index::title:p
+      Z> s 1+1
+    </screen> 
+    displays in <literal>XML</literal> record syntax only the content
+      of the zebra string index <literal>title</literal>, or
+      even only the type <literal>p</literal> phrase indexed part of it.
+   </para>
+   <note>
+    <para>
+     Trying to access numeric <literal>Bib-1</literal> use
+     attributes or trying to access non-existent zebra intern string
+     access points will result in a Diagnostic 25: Specified element set
+     'name not valid for specified database.
+    </para>
+   </note>
   </section>
 
  </chapter> 
