@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.59 2006-11-14 08:12:11 adam Exp $
+# $Id: makefile,v 1.60 2006-11-24 19:48:23 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -363,8 +363,10 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\isamb.obj \
 	$(OBJDIR)\isamc.obj \
 	$(OBJDIR)\isams.obj \
-	$(OBJDIR)\kcompare.obj \
+	$(OBJDIR)\isam_methods.obj \
+	$(OBJDIR)\it_key.obj \
 	$(OBJDIR)\kcontrol.obj \
+	$(OBJDIR)\key_block.obj \
 	$(OBJDIR)\kinput.obj \
 	$(OBJDIR)\limit.obj \
 	$(OBJDIR)\lookgrep.obj \
@@ -409,6 +411,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\sortidx.obj \
 	$(OBJDIR)\states.obj \
 	$(OBJDIR)\stream.obj \
+	$(OBJDIR)\su_codec.obj \
 	$(OBJDIR)\symtab.obj \
 	$(OBJDIR)\trunc.obj \
 	$(OBJDIR)\untrans.obj \
