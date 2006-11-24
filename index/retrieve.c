@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.58 2006-11-24 11:35:23 adam Exp $
+/* $Id: retrieve.c,v 1.59 2006-11-24 12:21:31 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -271,10 +271,16 @@ static void retrieve_puts_attr(WRBUF wrbuf, const char *name,
 {
     if (value)
     {
-        wrbuf_printf(wrbuf, "%s=\"", name);
+        wrbuf_printf(wrbuf, " %s=\"", name);
         wrbuf_xmlputs(wrbuf, value);
-        wrbuf_printf(wrbuf, "\"\n");
+        wrbuf_printf(wrbuf, "\"");
     }
+}
+
+static void retrieve_puts_attr_int(WRBUF wrbuf, const char *name,
+                               const int value)
+{
+    wrbuf_printf(wrbuf, " %s=\"%i\"", name, value);
 }
 
 static void retrieve_puts_str(WRBUF wrbuf, const char *name,
@@ -282,6 +288,12 @@ static void retrieve_puts_str(WRBUF wrbuf, const char *name,
 {
     if (value)
         wrbuf_printf(wrbuf, "%s %s\n", name, value);
+}
+
+static void retrieve_puts_int(WRBUF wrbuf, const char *name,
+                               const int value)
+{
+    wrbuf_printf(wrbuf, "%s %i\n", name, value);
 }
 
 int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
@@ -367,23 +379,21 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
         {
             *output_format = VAL_TEXT_XML;
             
-            wrbuf_printf(
-                wrbuf, ZEBRA_XML_HEADER_STR
-                " sysno=\"" ZINT_FORMAT "\"", sysno);
+            wrbuf_printf(wrbuf, ZEBRA_XML_HEADER_STR
+                         " sysno=\"" ZINT_FORMAT "\"", sysno);
             retrieve_puts_attr(wrbuf, "base", rec->info[recInfo_databaseName]);
             retrieve_puts_attr(wrbuf, "file", rec->info[recInfo_filename]);
             retrieve_puts_attr(wrbuf, "type", rec->info[recInfo_fileType]);
-            
-            wrbuf_printf(
-                wrbuf,
-                " score=\"%i\""
-                " rank=\"" ZINT_FORMAT "\""
-                " size=\"%i\""
-                " set=\"zebra::%s\"/>\n",
-                score,
-                recordAttr->staticrank,
-                recordAttr->recordSize,
-                elemsetname);
+            if (score >= 0)
+                retrieve_puts_attr_int(wrbuf, "score", score);
+           
+            wrbuf_printf(wrbuf,
+                         " rank=\"" ZINT_FORMAT "\""
+                         " size=\"%i\""
+                         " set=\"zebra::%s\"/>\n",
+                         recordAttr->staticrank,
+                         recordAttr->recordSize,
+                         elemsetname);
         }
         else if (input_format == VAL_SUTRS)
         {
@@ -392,13 +402,13 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
             retrieve_puts_str(wrbuf, "base", rec->info[recInfo_databaseName]);
             retrieve_puts_str(wrbuf, "file", rec->info[recInfo_filename]);
             retrieve_puts_str(wrbuf, "type", rec->info[recInfo_fileType]);
+            if (score >= 0)
+                retrieve_puts_int(wrbuf, "score", score);
 
             wrbuf_printf(wrbuf,
-                         "score %i\n"
                          "rank " ZINT_FORMAT "\n"
                          "size %i\n"
                          "set zebra::%s\n",
-                         score,
                          recordAttr->staticrank,
                          recordAttr->recordSize,
                          elemsetname);

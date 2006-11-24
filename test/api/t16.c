@@ -1,4 +1,4 @@
-/* $Id: t16.c,v 1.6 2006-11-23 09:03:51 marc Exp $
+/* $Id: t16.c,v 1.7 2006-11-24 12:21:31 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -88,6 +88,9 @@ static void tst(int argc, char **argv)
     const char * zebra_xml_sysno 
         = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\" set=\"zebra::meta::sysno\"/>\n";
 
+    const char * zebra_xml_meta 
+        = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\" base=\"Default\" type=\"grs.sgml\" rank=\"0\" size=\"41\" set=\"zebra::meta\"/>\n";
+
     const char * zebra_xml_index_title_p
         = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\" set=\"zebra::index::title:p/\">\n"
 "  <index name=\"title\" type=\"p\" seq=\"4\">my title</index>\n"
@@ -118,7 +121,7 @@ static void tst(int argc, char **argv)
                                      zebra_xml_sysno), ZEBRA_OK);
     
     YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::meta", VAL_TEXT_XML,
-                                     "definitely not this"), ZEBRA_FAIL);
+                                     zebra_xml_meta), ZEBRA_OK);
     
     YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::index::title:p", 
                                      VAL_TEXT_XML,
