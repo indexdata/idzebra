@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.241 2006-11-21 22:17:49 adam Exp $
+/* $Id: extract.c,v 1.242 2006-11-25 09:15:19 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -406,6 +406,7 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
     }
     while(1)
     {
+        int more = 0;
         r = zebra_extract_record_stream(zh, streamp,
                                         deleteFlag,
                                         0, /* tst_mode */
@@ -415,11 +416,9 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
                                         fname,
                                         1, /* force_update */
                                         1, /* allow_update */
-                                        recType, recTypeClientData);
-	if (r != ZEBRA_OK)
-	{
-	    break;
-	}
+                                        recType, recTypeClientData, &more);
+        if (!more)
+            break;
 	if (sysno)
 	{
 	    break;
@@ -453,6 +452,7 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
     ZEBRA_RES res;
     void *clientData;
     RecType recType = 0;
+    int more = 0;
 
     if (recordType && *recordType)
     {
@@ -481,8 +481,6 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
         return ZEBRA_FAIL;
     }
 
-
-
     zebra_create_stream_mem(&stream, buf, buf_size);
 
     res = zebra_extract_record_stream(zh, &stream,
@@ -494,7 +492,7 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
                                       fname,
                                       force_update,
                                       allow_update,
-                                      recType, clientData);
+                                      recType, clientData, &more);
     stream.destroy(&stream);
     return res;
 }
@@ -511,7 +509,8 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
                                       int force_update,
                                       int allow_update,
                                       RecType recType,
-                                      void *recTypeClientData)
+                                      void *recTypeClientData,
+                                      int *more)
 
 {
     zint sysno0 = 0;
@@ -520,7 +519,7 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
     int r;
     const char *matchStr = 0;
     Record rec;
-    off_t start_offset = 0;
+    off_t start_offset = 0, end_offset = 0;
     const char *pr_fname = fname;  /* filename to print .. */
     int show_progress = zh->records_processed < zh->m_file_verbose_limit ? 1:0;
 
@@ -558,7 +557,6 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         extractCtrl.match_criteria[0] = '\0';
         extractCtrl.staticrank = 0;
 
-    
         init_extractCtrl(zh, &extractCtrl);
         
         extract_set_store_data_prepare(&extractCtrl);
@@ -584,9 +582,21 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         
         if (extractCtrl.match_criteria[0])
             match_criteria = extractCtrl.match_criteria;
-    }
-    if (!sysno) {
 
+
+        end_offset = stream->endf(stream, 0);
+
+        if (!end_offset)
+            end_offset = stream->tellf(stream);
+        else
+            stream->seekf(stream, end_offset);
+
+    }
+
+
+    *more = 1;
+    if (!sysno)
+    {
 	sysno = &sysno0;
 
         if (match_criteria && *match_criteria) {
@@ -597,7 +607,8 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
                                                zh->m_record_id);
 		if (!matchStr)
                 {
-                    yaz_log(YLOG_WARN, "Bad match criteria (recordID)");
+                    yaz_log (YLOG_LOG, "error %s %s " ZINT_FORMAT, recordType,
+                             pr_fname, (zint) start_offset);
 		    return ZEBRA_FAIL;
                 }
             }
@@ -672,6 +683,10 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 	
 	recordAttr = rec_init_attr (zh->reg->zei, rec);
 
+        /* decrease total size */
+        zebraExplain_recordBytesIncrement (zh->reg->zei,
+                                           - recordAttr->recordSize);
+
 	zebra_rec_keys_set_buf(delkeys,
 			       rec->info[recInfo_delKeys],
 			       rec->size[recInfo_delKeys],
@@ -714,8 +729,8 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         else
         {
 	    if (show_progress)
-		    yaz_log(YLOG_LOG, "update %s %s " ZINT_FORMAT, recordType,
-                            pr_fname, (zint) ZINT_FORMAT);
+                yaz_log(YLOG_LOG, "update %s %s " ZINT_FORMAT, recordType,
+                        pr_fname, (zint) start_offset);
 	    recordAttr->staticrank = extractCtrl.staticrank;
             extract_flush_sort_keys(zh, *sysno, 1, zh->reg->sortKeys);
             extract_flush_record_keys(zh, *sysno, 1, zh->reg->keys, 
@@ -755,18 +770,8 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 			   &rec->info[recInfo_sortKeys],
 			   &rec->size[recInfo_sortKeys]);
 
-    /* save file size of original record */
-    zebraExplain_recordBytesIncrement (zh->reg->zei,
-				       - recordAttr->recordSize);
     if (stream)
     {
-        off_t end_offset = stream->endf(stream, 0);
-
-        if (!end_offset)
-            end_offset = stream->tellf(stream);
-        else
-            stream->seekf(stream, end_offset);
-
         recordAttr->recordSize = end_offset - start_offset;
         zebraExplain_recordBytesIncrement(zh->reg->zei,
                                           recordAttr->recordSize);

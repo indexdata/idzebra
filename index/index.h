@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.183 2006-11-21 22:17:49 adam Exp $
+/* $Id: index.h,v 1.184 2006-11-25 09:15:19 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -330,7 +330,8 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
                                       int force_update,
                                       int allow_update,
                                       RecType recType,
-                                      void *recTypeClientData);
+                                      void *recTypeClientData,
+                                      int *more);
 
 YAZ_EXPORT void zebra_create_stream_mem(struct ZebraRecStream *stream,
                                         const char *buf, size_t sz);
