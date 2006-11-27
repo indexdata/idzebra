@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.73 2006-11-22 11:13:17 adam Exp $
+/* $Id: zinfo.c,v 1.74 2006-11-27 10:09:48 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -963,6 +963,8 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
 
     zebraExplain_initCommonInfo (zei, node_adinfo);
 
+    data1_mk_tag_data_text(zei->dh, node_adinfo, "name", database, zei->nmem);
+
     return 0;
 }
 
@@ -1048,6 +1050,7 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
     zad->dirty = 0;
 #if ZINFO_DEBUG
     yaz_log(YLOG_LOG, "zebraExplain_writeAttributeDetails");    
+    data1_pr_tree(zei->dh, zad->data1_tree, stderr);
 #endif
 
     drec = createRecord (zei->records, &zad->sysno);
@@ -1058,9 +1061,6 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
     node_adinfo = data1_search_tag (zei->dh, zad->data1_tree,
 				   "/attributeDetails");
     zebraExplain_updateCommonInfo (zei, node_adinfo);
-
-    data1_mk_tag_data_text (zei->dh, node_adinfo, "name",
-			    databaseName, zei->nmem);
 
     /* extract *searchable* keys from it. We do this here, because
        record count, etc. is affected */
