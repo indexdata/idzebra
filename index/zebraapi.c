@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.234 2006-11-21 22:17:49 adam Exp $
+/* $Id: zebraapi.c,v 1.235 2006-11-27 09:17:01 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1066,9 +1066,12 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 		int len = 0;
 		zebra_snippets *hit_snippet = zebra_snippets_create();
 
+                /* we disable hit snippets for now. It does not work well
+                 and it slows retrieval down a lot */
+#if 0
 		zebra_snippets_hit_vector(zh, setname, poset[i].sysno, 
 					  hit_snippet);
-
+#endif
 		recs[i].errCode =
 		    zebra_record_fetch(zh, poset[i].sysno, poset[i].score,
 				       hit_snippet,
