@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.74 2006-11-27 10:09:48 adam Exp $
+/* $Id: zinfo.c,v 1.75 2006-11-27 10:40:33 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1062,13 +1062,14 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
 				   "/attributeDetails");
     zebraExplain_updateCommonInfo (zei, node_adinfo);
 
+    /* zebra info (private) .. no children yet.. so se don't index zebraInfo */
+    node_zebra = data1_mk_tag_uni (zei->dh, zei->nmem,
+				 "zebraInfo", node_adinfo);
+
     /* extract *searchable* keys from it. We do this here, because
        record count, etc. is affected */
     if (key_flush)
 	(*zei->updateFunc)(zei->updateHandle, drec, zad->data1_tree);
-    /* zebra info (private) */
-    node_zebra = data1_mk_tag_uni (zei->dh, zei->nmem,
-				 "zebraInfo", node_adinfo);
     node_list = data1_mk_tag_uni (zei->dh, zei->nmem,
 				 "attrlist", node_zebra);
     for (zsui = zad->SUInfo; zsui; zsui = zsui->next)
@@ -1152,10 +1153,6 @@ static void zebraExplain_writeDatabase (ZebraExplainInfo zei,
     zebraExplain_updateCommonInfo (zei, node_dbinfo);
     zebraExplain_updateAccessInfo (zei, node_dbinfo, zdi->accessInfo);
 
-    /* extract *searchable* keys from it. We do this here, because
-       record count, etc. is affected */
-    if (key_flush)
-	(*zei->updateFunc)(zei->updateHandle, drec, zdi->data1_database);
     /* record count */
     node_count = data1_mk_tag_uni (zei->dh, zei->nmem,
 				 "recordCount", node_dbinfo);
@@ -1165,6 +1162,11 @@ static void zebraExplain_writeDatabase (ZebraExplainInfo zei,
     /* zebra info (private) */
     node_zebra = data1_mk_tag_uni (zei->dh, zei->nmem,
 				 "zebraInfo", node_dbinfo);
+
+    /* extract *searchable* keys from it. We do this here, because
+       record count, etc. is affected */
+    if (key_flush)
+	(*zei->updateFunc)(zei->updateHandle, drec, zdi->data1_database);
     data1_mk_tag_data_zint (zei->dh, node_zebra,
 			   "recordBytes", zdi->recordBytes, zei->nmem);
 
@@ -1306,12 +1308,12 @@ static void zebraExplain_writeTarget (ZebraExplainInfo zei, int key_flush)
     zebraExplain_updateCommonInfo (zei, node_tgtinfo);
     zebraExplain_updateAccessInfo (zei, node_tgtinfo, zei->accessInfo);
 
+    node_zebra = data1_mk_tag_uni (zei->dh, zei->nmem,
+				 "zebraInfo", node_tgtinfo);
     /* convert to "SGML" and write it */
     if (key_flush)
 	(*zei->updateFunc)(zei->updateHandle, trec, zei->data1_target);
 
-    node_zebra = data1_mk_tag_uni (zei->dh, zei->nmem,
-				 "zebraInfo", node_tgtinfo);
     data1_mk_tag_data_text (zei->dh, node_zebra, "version",
 			       ZEBRAVER, zei->nmem);
     node_list = data1_mk_tag (zei->dh, zei->nmem,
