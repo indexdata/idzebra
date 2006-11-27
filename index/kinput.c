@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.78 2006-11-21 14:32:38 adam Exp $
+/* $Id: kinput.c,v 1.79 2006-11-27 10:10:14 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -55,7 +55,7 @@ struct key_file {
     Res res;
 };
 
-#if 0
+#if 1
 static void pkey(const char *b, int mode)
 {
     key_logdump_txt(YLOG_LOG, b, mode ? "i" : "d");
@@ -372,29 +372,29 @@ static int heap_read_one (struct heap_info *hi, char *name, char *key)
 #define PR_KEY_LOW 0
 #define PR_KEY_TOP 0
 
-#if 0
 /* for debugging only */
-static void print_dict_item(ZebraHandle zh, const char *s)
+void zebra_log_dict_entry(ZebraHandle zh, const char *s)
 {
     char dst[IT_MAX_WORD+1];
     int ord;
     int len = key_SU_decode(&ord, (const unsigned char *) s);
     int index_type;
-    const char *db = 0;
 
     if (!zh)
         yaz_log(YLOG_LOG, "ord=%d", ord);
     else
     {
-        zebraExplain_lookup_ord (zh->reg->zei,
-			     ord, &index_type, &db, 0, 0, 0);
+        const char *string_index;
+        const char *db = 0;
+        zebraExplain_lookup_ord(zh->reg->zei,
+                                ord, &index_type, &db, &string_index);
 
         zebra_term_untrans(zh, index_type, dst, s + len);
 
-        yaz_log(YLOG_LOG, "ord=%d term=%s", ord, dst);
+        yaz_log(YLOG_LOG, "ord=%d index_type=%c index=%s term=%s",
+                ord, index_type, string_index, dst);
     }
 }
-#endif
 
 struct heap_cread_info {
     char prev_name[INP_NAME_MAX];
@@ -522,6 +522,7 @@ int heap_cread_item (void *vp, char **dst, int *insertMode)
         *insertMode = p->key[0];
         memcpy (*dst, p->key+1, sizeof(struct it_key));
 #if PR_KEY_LOW
+        zebra_log_dict_entry(hi->zh, p->cur_name);
         pkey(*dst, *insertMode);
 #endif
         (*dst) += sizeof(struct it_key);
@@ -539,6 +540,7 @@ int heap_cread_item (void *vp, char **dst, int *insertMode)
     *insertMode = p->key[0];
     memcpy (*dst, p->key+1, sizeof(struct it_key));
 #if PR_KEY_LOW
+    zebra_log_dict_entry(hi->zh, p->cur_name);
     pkey(*dst, *insertMode);
 #endif
     (*dst) += sizeof(struct it_key);
@@ -633,7 +635,7 @@ int heap_inpb(struct heap_cread_info *hci, struct heap_info *hi)
 
 #if 0
 	assert(hi->zh);
-        print_dict_item(hi->zh, hci->cur_name);
+        zebra_log_dict_entry(hi->zh, hci->cur_name);
 #endif
         if ((dict_info = dict_lookup (hi->reg->dict, hci->cur_name)))
         {
