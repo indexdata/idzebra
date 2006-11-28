@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.242 2006-11-25 09:15:19 adam Exp $
+/* $Id: extract.c,v 1.243 2006-11-28 08:44:10 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -651,6 +651,11 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         *sysno = rec->sysno;
 
 	recordAttr = rec_init_attr (zh->reg->zei, rec);
+	if (extractCtrl.staticrank < 0)
+        {
+            yaz_log(YLOG_WARN, "Negative staticrank for record. Set to 0");
+	    extractCtrl.staticrank = 0;
+        }
 	recordAttr->staticrank = extractCtrl.staticrank;
 
         if (matchStr)
