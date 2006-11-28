@@ -1,3 +1,18 @@
+--- 2.0.6 2006/11/28
+
+Fixed bug #736: Updates gets slower.
+
+Fixed bug #735: Delete fails to process rest of file after a record that
+does not exist,
+
+Added RPM package for Zebra 2.
+
+Improved indexing speed for large documents.
+
+Added support for special utility retrieval zebra:: which offers retrieval
+of fundamental properties for record, such as indexed terms, raw record,
+and system record ID.
+
 --- 2.0.4 2006/10/16
 
 Fixed bug #47: Commit needs to check for roll-back.
