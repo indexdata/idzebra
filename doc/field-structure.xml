@@ -1,5 +1,5 @@
  <chapter id="fields-and-charsets">
-  <!-- $Id: field-structure.xml,v 1.9 2006-11-28 14:18:26 marc Exp $ -->
+  <!-- $Id: field-structure.xml,v 1.10 2006-11-28 14:37:45 marc Exp $ -->
   <title>Field Structure and Character Sets
   </title>
   
@@ -107,6 +107,40 @@
        </para>
       </listitem></varlistentry>
     </variablelist>
+   </para>
+   <para>
+    Following are three excerpts of the standard
+    <filename>tab/default.idx</filename> configuration file. Notice
+    that the <literal>index</literal> and <literal>sort</literal>
+    are grouping directives, which bind all other following directives
+    to them:
+    <screen>
+     # Traditional word index
+     # Used if completenss is 'incomplete field' (@attr 6=1) and
+     # structure is word/phrase/word-list/free-form-text/document-text
+     index w
+     completeness 0
+     position 1
+     alwaysmatches 1
+     firstinfield 1
+     charmap string.chr
+
+     ...
+
+     # Null map index (no mapping at all)
+     # Used if structure=key (@attr 4=3)
+     index 0
+     completeness 0
+     position 1
+     charmap @
+
+     ...
+
+     # Sort register
+     sort s
+     completeness 1
+     charmap string.chr
+    </screen>
    </para>
   </section>
 
