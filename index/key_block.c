@@ -1,4 +1,4 @@
-/* $Id: key_block.c,v 1.4 2006-11-21 22:17:49 adam Exp $
+/* $Id: key_block.c,v 1.5 2006-11-28 08:43:53 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -279,7 +279,10 @@ void key_block_write(zebra_key_block_t p, zint sysno, struct it_key *key_in,
     ((char*)p->key_buf)[(p->key_buf_used)++] = cmd;
     
     if (static_rank_enable)
+    {
+        assert(staticrank >= 0);
         key_out.mem[j++] = staticrank;
+    }
     
     if (key_in->mem[1]) /* filter specified record ID */
         key_out.mem[j++] = key_in->mem[1];
@@ -305,9 +308,6 @@ void key_block_flush_int(zebra_key_block_t p,
 
     (p->key_file_no)++;
     yaz_log(YLOG_LOG, "sorting section %d", (p->key_file_no));
-    yaz_log(log_level, "  sort_buff at %p n=%d",
-                    key_buf + ptr_top - ptr_i,ptr_i);
-
 
 #if USE_SHELLSORT
     shellsort(key_buf + ptr_top - ptr_i, ptr_i,
