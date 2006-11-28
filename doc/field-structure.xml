@@ -1,5 +1,5 @@
  <chapter id="fields-and-charsets">
-  <!-- $Id: field-structure.xml,v 1.7 2006-11-24 13:05:11 adam Exp $ -->
+  <!-- $Id: field-structure.xml,v 1.8 2006-11-28 13:05:57 marc Exp $ -->
   <title>Field Structure and Character Sets
   </title>
   
@@ -103,6 +103,7 @@
        <para>
 	This is the filename of the character
 	map to be used for this index for field type.
+        See <xref linkend="character-map-files"/> for details.
        </para>
       </listitem></varlistentry>
     </variablelist>
@@ -112,10 +113,67 @@
   <section id="character-map-files">
    <title>The character map file format</title>
    <para>
-    The contents of the character map files are structured as follows:
+    The character map files are used to define the word tokenization
+    and character normalization performed before inserting text into
+    the inverse indexes. Zebra ships with the predefined character map
+    files <filename>tab/*.chr</filename>. Users are allowed to add
+    and/or modify maps according to their needs.  
    </para>
 
+   <table id="querymodel-attribute-sets-table" frame="top">
+     <title>Character maps predefined in Zebra</title>
+      <tgroup cols="3">
+       <thead>
+        <row>
+         <entry>File name</entry>
+         <entry>Intended type</entry>
+         <entry>Description</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry><literal>numeric.chr</literal></entry>
+         <entry><literal>:n</literal></entry>
+         <entry>Numeric digit tokenization and normalization map. All
+         characters not in the set <literal>-{0-9}.,</literal> will be
+         suppressed. Note that floating point numbers are processed
+         fine, but scientific exponential numbers are trashed.</entry>
+        </row>
+        <row>
+         <entry><literal>scan.chr</literal></entry>
+         <entry><literal>:w or :p</literal></entry>
+         <entry>Word tokenization char map for Scandinavian
+         languages. This one resembles the generic word tokenization
+         character map <literal>tab/string.chr</literal>, the main
+         differences are sorting of the special characters 
+        <literal>üzæäøöå</literal> and equivalence maps according to
+         Scandinavian language rules.</entry>
+        </row>
+        <row>
+         <entry><literal>string.chr</literal></entry>
+         <entry><literal>:w or :p</literal></entry>
+         <entry>General word tokenization and normalization character
+         map, mostly useful for English texts. Use this to derive your
+         own language tokenization and normalization derivatives.</entry>
+        </row>
+        <row>
+         <entry><literal>urx.chr</literal></entry>
+         <entry><literal>:u</literal></entry>
+         <entry>URL parsing and tokenization character map.</entry>
+        </row>
+        <row>
+         <entry><literal>@</literal></entry>
+         <entry><literal>:0</literal></entry>
+         <entry>Do-nothing character map used for literal binary
+         indexing. There is no existing file associated to it, and
+         there is no normalization or tokenization performed at all.</entry>
+        </row>
+      </tbody>
+     </tgroup>
+   </table>
+
    <para>
+    The contents of the character map files are structured as follows:
     <variablelist>
 
      <varlistentry>
@@ -170,15 +228,29 @@
 	</itemizedlist>
 
        </para>
+       <para>
+        For example, <literal>scan.chr</literal> contains the following
+        lowercase normalization and sorting order:
+        <screen>
+         lowercase {0-9}{a-y}üzæäøöå
+        </screen>
+       </para>
       </listitem></varlistentry>
      <varlistentry>
       <term>uppercase <replaceable>value-set</replaceable></term>
       <listitem>
        <para>
 	This directive introduces the
-	upper-case equivalencis to the value set (if any). The number and
+	upper-case equivalences to the value set (if any). The number and
 	order of the entries in the list should be the same as in the
 	<literal>lowercase</literal> directive.
+       </para>
+       <para>
+        For example, <literal>scan.chr</literal> contains the following
+        uppercase equivalent:
+        <screen>
+         uppercase {0-9}{A-Y}ÜZÆÄØÖÅ
+        </screen>
        </para>
       </listitem></varlistentry>
      <varlistentry>
@@ -194,6 +266,13 @@
 	<literal>uppercase</literal> and <literal>lowercase</literal>
 	directives.
        </para>
+       <para>
+        For example, <literal>scan.chr</literal> contains the following
+        space instruction:
+        <screen><![CDATA[
+         space {\001-\040}!"#$%&'\()*+,-./:;<=>?@\[\\]^_`\{|}~
+        ]]></screen>
+       </para>
       </listitem></varlistentry>
      <varlistentry>
       <term>map <replaceable>value-set</replaceable>
@@ -204,7 +283,7 @@
 	members of the value-set on the left to the character on the
 	right. The character on the right must occur in the value
 	set (the <literal>lowercase</literal> directive) of the
-	character set, but it may be a paranthesis-enclosed
+	character set, but it may be a parenthesis-enclosed
 	multi-octet character. This directive may be used to map
 	diacritics to their base characters, or to map HTML-style
 	character-representations to their natural form, etc. The
@@ -212,6 +291,37 @@
 	searching and/or sorting, and to perform other special
 	transformations. See section <xref
 	 linkend="leading-articles"/>.
+       </para>
+       <para>
+        For example, <literal>scan.chr</literal> contains the following
+        map instructions among others, to make sure that HTML entity
+        encoded  Danish special characters are mapped to the
+        equivalent Latin-1 characters:
+        <screen><![CDATA[
+         map (&aelig;)      æ
+         map (&oslash;)     ø
+         map (&aring;)      å
+        ]]></screen>
+       </para>
+      </listitem></varlistentry>
+     <varlistentry>
+      <term>equivalent <replaceable>value-set</replaceable></term>
+      <listitem>
+       <para>
+	This directive introduces equivalence classes of characters
+	and/or strings for sorting purposes only. It resembles the map
+	directive, but does not affect search and retrieval indexing,
+	but only sorting order under present requests. 
+       </para>
+       <para>
+        For example, <literal>scan.chr</literal> contains the following
+        equivalent sorting instructions, which can be uncommented:
+        <screen><![CDATA[
+         # equivalent æä(ae)
+         # equivalent øö(oe)
+         # equivalent å(aa)
+         # equivalent uü
+        ]]></screen>
        </para>
       </listitem></varlistentry>
     </variablelist>
