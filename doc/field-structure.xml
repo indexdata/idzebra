@@ -1,5 +1,5 @@
  <chapter id="fields-and-charsets">
-  <!-- $Id: field-structure.xml,v 1.8 2006-11-28 13:05:57 marc Exp $ -->
+  <!-- $Id: field-structure.xml,v 1.9 2006-11-28 14:18:26 marc Exp $ -->
   <title>Field Structure and Character Sets
   </title>
   
@@ -175,6 +175,29 @@
    <para>
     The contents of the character map files are structured as follows:
     <variablelist>
+     <varlistentry>
+      <term>encoding <replaceable>encoding-name</replaceable></term>
+      <listitem>
+       <para>
+	This directive must be at the very beginning of the file, and it
+        specifies the character encoding used in the entire file. If
+        omitted, the encoding <literal>ISO-8859-1</literal> is assumed.
+       </para>
+       <para>
+        For example, one of the test files found at  
+          <literal>test/rusmarc/tab/string.chr</literal> contains the following
+        encoding directive:
+        <screen>
+         encoding koi8-r
+        </screen>
+          and the test file
+          <literal>test/charmap/string.utf8.chr</literal> is encoded
+          in UTF-8:
+        <screen>
+         encoding utf-8
+        </screen>
+       </para>
+      </listitem></varlistentry>
 
      <varlistentry>
       <term>lowercase <replaceable>value-set</replaceable></term>
