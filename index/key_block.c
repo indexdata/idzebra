@@ -1,4 +1,4 @@
-/* $Id: key_block.c,v 1.5 2006-11-28 08:43:53 adam Exp $
+/* $Id: key_block.c,v 1.6 2006-11-29 10:31:29 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -188,6 +188,11 @@ zebra_key_block_t key_block_create(int mem, const char *key_tmp_dir,
 {
     zebra_key_block_t p = xmalloc(sizeof(*p));
 
+#if YAZ_POSIX_THREADS
+    /* we'll be making two memory areas so cut in half */
+    if (use_threads)
+        mem = mem / 2;
+#endif
     p->key_buf = (char**) xmalloc (mem);
     p->ptr_top = mem/sizeof(char*);
     p->ptr_i = 0;
