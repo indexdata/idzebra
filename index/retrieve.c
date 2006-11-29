@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.59 2006-11-24 12:21:31 marc Exp $
+/* $Id: retrieve.c,v 1.60 2006-11-29 09:01:53 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -322,9 +322,8 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
         else if (input_format == VAL_TEXT_XML)
         {
             wrbuf_printf(wrbuf, ZEBRA_XML_HEADER_STR
-                         " sysno=\"" ZINT_FORMAT "\""
-                         " set=\"zebra::%s\"/>\n",
-                         sysno, elemsetname);
+                         " sysno=\"" ZINT_FORMAT "\"/>\n",
+                         sysno);
             *output_format = VAL_TEXT_XML;
         }
 	*rec_lenp = wrbuf_len(wrbuf);

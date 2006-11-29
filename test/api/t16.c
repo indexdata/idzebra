@@ -1,4 +1,4 @@
-/* $Id: t16.c,v 1.7 2006-11-24 12:21:31 marc Exp $
+/* $Id: t16.c,v 1.8 2006-11-29 09:01:53 marc Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -86,7 +86,7 @@ static void tst(int argc, char **argv)
     zint hits;
     ZEBRA_RES res;
     const char * zebra_xml_sysno 
-        = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\" set=\"zebra::meta::sysno\"/>\n";
+        = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\"/>\n";
 
     const char * zebra_xml_meta 
         = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\" base=\"Default\" type=\"grs.sgml\" rank=\"0\" size=\"41\" set=\"zebra::meta\"/>\n";
