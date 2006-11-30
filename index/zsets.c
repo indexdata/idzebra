@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.112 2006-10-29 17:20:01 adam Exp $
+/* $Id: zsets.c,v 1.113 2006-11-30 10:33:19 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -94,6 +94,7 @@ static void loglevels(void)
     log_level_set = 1;
 }
 
+
 ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
 			  Z_RPNQuery *rpn, ZebraSet sset)
 {
@@ -115,6 +116,9 @@ ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
         sort_sequence->specs[i] = 0;
     
     attrset = oid_getentbyoid (rpn->attributeSetId);
+
+    rpn_get_top_approx_limit(zh, rpn->RPNStructure, &sset->approx_limit);
+
     res = rpn_search_top(zh, rpn->RPNStructure, attrset->value,
 			 nmem, rset_nmem,
 			 sort_sequence,

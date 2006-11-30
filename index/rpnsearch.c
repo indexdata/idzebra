@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.2 2006-10-12 12:28:42 adam Exp $
+/* $Id: rpnsearch.c,v 1.3 2006-11-30 10:33:19 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -2317,6 +2317,37 @@ static ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
 				      RSET **result_sets, int *num_result_sets,
 				      Z_Operator *parent_op,
 				      struct rset_key_control *kc);
+
+ZEBRA_RES rpn_get_top_approx_limit(ZebraHandle zh, Z_RPNStructure *zs,
+                                   zint *approx_limit)
+{
+    ZEBRA_RES res = ZEBRA_OK;
+    if (zs->which == Z_RPNStructure_complex)
+    {
+        if (res == ZEBRA_OK)
+            res = rpn_get_top_approx_limit(zh, zs->u.complex->s1,
+                                           approx_limit);
+        if (res == ZEBRA_OK)
+            res = rpn_get_top_approx_limit(zh, zs->u.complex->s2,
+                                           approx_limit);
+    }
+    else if (zs->which == Z_RPNStructure_simple)
+    {
+        if (zs->u.simple->which == Z_Operand_APT)
+        {
+            Z_AttributesPlusTerm *zapt = zs->u.simple->u.attributesPlusTerm;
+            AttrType global_hits_limit_attr;
+            int l;
+            
+            attr_init_APT(&global_hits_limit_attr, zapt, 12);
+            
+            l = attr_find(&global_hits_limit_attr, NULL);
+            if (l != -1)
+                *approx_limit = l;
+        }
+    }
+    return res;
+}
 
 ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
 			 oid_value attributeSet, 

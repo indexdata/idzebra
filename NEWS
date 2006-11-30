@@ -1,3 +1,7 @@
+Added support for specification of approximative limits for whole query.
+This is specified as attribute type 12. Semantics is the same as
+estimatehits in zebra.cfg.
+
 --- 2.0.6 2006/11/28
 
 Fixed bug #736: Updates gets slower.

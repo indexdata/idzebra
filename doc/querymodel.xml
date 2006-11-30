@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.26 2006-09-22 12:34:45 adam Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.27 2006-11-30 10:33:19 adam Exp $ -->
   <title>Query Model</title>
   
   <section id="querymodel-overview">
@@ -205,7 +205,7 @@
          <entry><literal>bib-1</literal></entry>
          <entry>Standard PQF query language attribute set which defines the
           semantics of Z39.50 searching. In addition, all of the
-          non-use attributes (types 2-11) define the hard-wired 
+          non-use attributes (types 2-12) define the hard-wired 
           Zebra internal query
           processing.</entry>
          <entry>default</entry>
@@ -348,7 +348,7 @@
      </para>
      <para>
       Atomic (APT) queries are always leaf nodes in the PQF query tree. 
-      UN-supplied non-use attributes types 2-11 are either inherited from
+      UN-supplied non-use attributes types 2-12 are either inherited from
       higher nodes in the query tree, or are set to Zebra's default values.
       See <xref linkend="querymodel-bib1"/> for details. 
      </para>
@@ -1434,7 +1434,7 @@
     model. These extensions are <emphasis>non-standard</emphasis>
     and <emphasis>non-portable</emphasis>: most functional extensions
     are modeled over the <literal>bib-1</literal> attribute set,
-    defining type 7-9 attributes.
+    defining type 7 and higher values.
     There are also the special 
     <literal>string</literal> type index names for the
     <literal>idxpath</literal> attribute set.  
@@ -1514,16 +1514,22 @@
 	<entry>1.1</entry>
        </row>
        <row>
-	<entry>Approx Limit</entry>
+	<entry>Term Reference</entry>
+	<entry>10</entry>
+	<entry>search</entry>
+	<entry>1.4</entry>
+       </row>
+       <row>
+	<entry>Local Approx Limit</entry>
 	<entry>11</entry>
 	<entry>search</entry>
 	<entry>1.4</entry>
        </row>
        <row>
-	<entry>Term Reference</entry>
-	<entry>10</entry>
+	<entry>Global Approx Limit</entry>
+	<entry>12</entry>
 	<entry>search</entry>
-	<entry>1.4</entry>
+	<entry>2.0.8</entry>
        </row>
       </tbody>
      </tgroup>
@@ -1622,12 +1628,37 @@
        Z> find @attr 2=102 @or @attr 9=30 @attr 1=4 utah @attr 9=20 utah
       </screen>
      </para>
-     </section>
-     
-    <section id="querymodel-zebra-attr-limit">
-     <title>Zebra Extension Approximative Limit Attribute (type 11)</title>
+    </section>
+
+    <section id="querymodel-zebra-attr-termref">
+     <title>Zebra Extension Term Reference Attribute (type 10)</title>
      <para>
-      Zebra  computes - unless otherwise configured -
+      Zebra supports the searchResult-1 facility. 
+      If the Term Reference Attribute (type 10) is
+      given, that specifies a subqueryId value returned as part of the
+      search result. It is a way for a client to name an APT part of a
+      query. 
+     </para>
+     <!--
+     <para>
+     <screen>
+    </screen>
+    </para>
+     -->
+     <warning>
+      <para>
+       Experimental. Do not use in production code.
+       </para>
+     </warning>
+     
+    </section>
+   
+   
+     
+    <section id="querymodel-zebra-local-attr-limit">
+     <title>Local Approximative Limit Attribute (type 11)</title>
+     <para>
+      Zebra computes - unless otherwise configured -
       the exact hit count for every APT
       (leaf) in the query tree. These hit counts are returned as part of
       the searchResult-1 facility in the binary encoded Z39.50 search
@@ -1663,45 +1694,36 @@
       <para>
        Do not use approximative hit count limits
        in conjunction with relevance ranking, as re-sorting of the
-       result set obviosly only works when the entire result set has
+       result set only works when the entire result set has
        been processed. 
-      </para>
-     </warning>
-     <warning>
-      <para>
-       This facility clashes with rank weight, because there all
-       documents in the hit lists need to be examined for scoring and
-       re-sorting.
-       It is an experimental
-       extension. Do not use in production code.
       </para>
      </warning>
     </section>
 
-    <section id="querymodel-zebra-attr-termref">
-     <title>Zebra Extension Term Reference Attribute (type 10)</title>
+    <section id="querymodel-zebra-global-attr-limit">
+     <title>Global Approximative Limit Attribute (type 12)</title>
      <para>
-      Zebra supports the searchResult-1 facility. 
-      If the Term Reference Attribute (type 10) is
-      given, that specifies a subqueryId value returned as part of the
-      search result. It is a way for a client to name an APT part of a
-      query. 
+      By default Zebra computes precise hit counts for a query as
+      a whole. Setting attribute 12 makes it perform approximative
+      hit counts instead. It has the same semantics as 
+      <literal>estimatehits</literal> for the <xref linkend="zebra-cfg"/>.
      </para>
-     <!--
      <para>
-     <screen>
-    </screen>
-    </para>
-     -->
+      The attribute (12) can occur anywhere in the query tree.
+      Unlike regular attributes it does not relate to the leaf (APT)
+      - but to the whole query.
+     </para>
      <warning>
       <para>
-       Experimental. Do not use in production code.
-       </para>
+       Do not use approximative hit count limits
+       in conjunction with relevance ranking, as re-sorting of the
+       result set only works when the entire result set has
+       been processed. 
+      </para>
      </warning>
-     
     </section>
+
    </section>
-    
 
    <section id="querymodel-zebra-attr-scan">
     <title>Zebra specific Scan Extensions to all Attribute Sets</title>

@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.46 2006-10-11 12:23:24 adam Exp $ -->
+ <!-- $Id: administration.xml,v 1.47 2006-11-30 10:33:19 adam Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -325,7 +325,7 @@
        <para>
 	Approximate hit counts can also be triggered by a particular
 	attribute in a query.
-	Refer to <xref linkend="querymodel-zebra-attr-approx"/>.
+	Refer to <xref linkend="querymodel-zebra-global-attr-limit"/>.
        </para>
       </listitem>
      </varlistentry>

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.184 2006-11-25 09:15:19 adam Exp $
+/* $Id: index.h,v 1.185 2006-11-30 10:33:19 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -260,6 +260,9 @@ ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
 			 Z_SortKeySpecList *sort_sequence,
 			 int num_bases, char **basenames,
 			 RSET *result_set);
+
+ZEBRA_RES rpn_get_top_approx_limit(ZebraHandle zh, Z_RPNStructure *zs,
+                                   zint *approx_limit);
 
 ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                    oid_value attributeset,
