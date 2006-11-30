@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.15 2006-11-24 13:25:42 adam Exp $ -->
+  <!-- $Id: architecture.xml,v 1.16 2006-11-30 10:29:23 adam Exp $ -->
   <title>Overview of Zebra Architecture</title>
 
   <section id="architecture-representation">
@@ -369,7 +369,7 @@
   </para>
   </section>
 
-  <section id="default-idx-zebra">
+  <section id="special-retrieval">
    <title>Retrieval of Zebra internal record data</title>
    <para>
     Starting with <literal>Zebra</literal> version 2.0.5 or newer, it is
@@ -384,7 +384,7 @@
     This can in some cases make the retrival faster than regular
     retrieval operations (for MARC, XML etc).
    </para>
-   <table id="special-retrieval">
+   <table id="special-retrieval-types">
     <title>Special Retrieval Elements</title>
     <tgroup cols="2">
      <thead>
