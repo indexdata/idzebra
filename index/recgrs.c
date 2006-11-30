@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.10 2006-11-29 18:06:57 adam Exp $
+/* $Id: recgrs.c,v 1.11 2006-11-30 11:03:57 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -295,8 +295,6 @@ int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
                 res = 0;
                 /* looking for the attribute with a specified name */
                 for (attr = n->u.tag.attributes; attr; attr = attr->next) {
-                    yaz_log(YLOG_DEBUG,"  - attribute %s <-> %s", attname, attr->name );
-                    
                     if (!strcmp(attr->name, attname)) {
                         if (p->u.relation.op[0]) {
                             if (*p->u.relation.op != '=') {
@@ -305,8 +303,6 @@ int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
                                 yaz_log(YLOG_WARN, "predicate %s ignored", p->u.relation.name);
                                 res = 1; break;
                             } else {
-                                yaz_log(YLOG_DEBUG,"    - value %s <-> %s", 
-                                     p->u.relation.value, attr->value );
                                 if (!strcmp(attr->value, p->u.relation.value)) {
                                     res = 1; break;
                                 } 
@@ -317,7 +313,6 @@ int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
                         }
                     }
                 }
-		yaz_log(YLOG_DEBUG, "return %d", res);
                 return res;
             } else {
                 return 1;
@@ -436,12 +431,8 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
                backwards trough xpath location steps ... */
             for (i = xpe->xpath_len - 1; i>0; i--)
 	    {
-                yaz_log(YLOG_DEBUG, "Checking step %d: %s on tag %s",
-			i, xp[i].part, nn->u.tag.tag);
-                
                 if (!d1_check_xpath_predicate(nn, xp[i].predicate))
 		{
-                    yaz_log(YLOG_DEBUG, "  Predicates didn't match");
                     ok = 0;
                     break;
                 }
