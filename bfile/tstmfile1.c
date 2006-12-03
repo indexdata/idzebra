@@ -1,4 +1,4 @@
-/* $Id: tstmfile1.c,v 1.1 2006-11-14 12:41:19 adam Exp $
+/* $Id: tstmfile1.c,v 1.2 2006-12-03 16:05:13 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 void tst1(void)
 {
-    MFile_area a = mf_init("main", 0 /* spec */, 0 /* base */);
+    MFile_area a = mf_init("main", 0 /* spec */, 0 /* base */, 0 /* only sh */);
     YAZ_CHECK(a);
     mf_destroy(a);
 }
@@ -40,7 +40,7 @@ void tst1(void)
 void tst2(void)
 {
     char buf[BLOCK_SIZE];
-    MFile_area a = mf_init("main", 0 /* spec */, 0 /* base */);
+    MFile_area a = mf_init("main", 0 /* spec */, 0 /* base */, 0 /* only sh */);
     MFile f;
 
     YAZ_CHECK(a);

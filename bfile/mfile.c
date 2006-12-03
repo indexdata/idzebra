@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.71 2006-11-14 08:12:06 adam Exp $
+/* $Id: mfile.c,v 1.72 2006-12-03 16:05:13 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -192,7 +192,8 @@ static int cmp_part_file(const void *p1, const void *p2)
     return 0;
 }
 
-MFile_area mf_init(const char *name, const char *spec, const char *base)
+MFile_area mf_init(const char *name, const char *spec, const char *base,
+                   int only_shadow_files)
 {
     MFile_area ma = (MFile_area) xmalloc(sizeof(*ma));
     mf_dir *dirp;
@@ -236,6 +237,11 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
 	    memcpy(metaname, dent->d_name, cp - dent->d_name);
 	    metaname[ cp - dent->d_name] = '\0';
 
+            /* only files such as file-i-0.mf and file-i-b-0.mf, bug #739 */
+            if (only_shadow_files && cp[-2] != '-')
+                continue;
+            if (!only_shadow_files && cp[-2] == '-')
+                continue;
 	    for (meta_f = ma->mfiles; meta_f; meta_f = meta_f->next)
 	    {
 	    	/* known metafile */

@@ -1,4 +1,4 @@
-/* $Id: bfile.c,v 1.52 2006-11-14 08:12:06 adam Exp $
+/* $Id: bfile.c,v 1.53 2006-12-03 16:05:13 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -55,7 +55,7 @@ struct BFile_struct
 
 struct BFiles_struct {
     MFile_area commit_area;
-    MFile_area_struct *register_area;
+    MFile_area register_area;
     char *base;
     char *cache_fname;
 };
@@ -68,7 +68,7 @@ BFiles bfs_create (const char *spec, const char *base)
     bfs->cache_fname = 0;
     if (base)
         bfs->base = xstrdup(base);
-    bfs->register_area = mf_init("register", spec, base);
+    bfs->register_area = mf_init("register", spec, base, 0);
     if (!bfs->register_area)
     {
         bfs_destroy(bfs);
@@ -108,7 +108,7 @@ ZEBRA_RES bf_cache(BFiles bfs, const char *spec)
     {
         yaz_log(YLOG_LOG, "enabling shadow spec=%s", spec);
         if (!bfs->commit_area)
-	    bfs->commit_area = mf_init("shadow", spec, bfs->base);
+	    bfs->commit_area = mf_init("shadow", spec, bfs->base, 1);
         if (bfs->commit_area)
         {
             bfs->cache_fname = xmalloc(strlen(bfs->commit_area->dirs->name)+

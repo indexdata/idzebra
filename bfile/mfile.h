@@ -1,4 +1,4 @@
-/* $Id: mfile.h,v 1.10 2006-11-14 12:41:19 adam Exp $
+/* $Id: mfile.h,v 1.11 2006-12-03 16:05:13 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -106,11 +106,13 @@ typedef struct MFile_area_struct
     \param name of area (does not show up on disk - purely for notation)
     \param spec area specification (e.g. "/a:1G dir /b:2000M"
     \param base base directory (NULL for no base)
+    \param only_shadow_files only consider shadow files in area
     \returns metafile area handle or NULL if error occurs
 */
-MFile_area mf_init(const char *name, const char *spec, const char *base)
+MFile_area mf_init(const char *name, const char *spec, const char *base,
+                   int only_shadow_files)
     ZEBRA_GCC_ATTR((warn_unused_result));
-
+    
 /** \brief destroys metafile area handle
     \param ma metafile area handle
 */
