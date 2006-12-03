@@ -1,4 +1,4 @@
-/* $Id: key_block.c,v 1.6 2006-11-29 10:31:29 adam Exp $
+/* $Id: key_block.c,v 1.7 2006-12-03 15:55:02 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -64,8 +64,6 @@ struct encode_info {
     void *decode_handle;
     char buf[ENCODE_BUFLEN];
 };
-
-static int log_level = 0;
 
 #define USE_SHELLSORT 0
 
