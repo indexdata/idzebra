@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.185 2006-11-30 10:33:19 adam Exp $
+/* $Id: index.h,v 1.186 2006-12-05 14:06:29 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -408,6 +408,8 @@ void rpn_char_map_prepare(struct zebra_register *reg, int reg_type,
 ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			    char *termz);
 
+
+int zebra_check_res(Res res);
 
 #define FIRST_IN_FIELD_STR "\001^"
 #define FIRST_IN_FIELD_CHAR 1

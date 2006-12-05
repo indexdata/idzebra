@@ -1,4 +1,4 @@
-/* $Id: res.h,v 1.10 2006-08-14 10:40:14 adam Exp $
+/* $Id: res.h,v 1.11 2006-12-05 14:06:29 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -90,6 +90,9 @@ char **res_get_array(Res r, const char* name);
 
 YAZ_EXPORT
 void res_dump (Res r, int level);
+
+YAZ_EXPORT
+int res_check(Res r_i, Res r_v);
 
 YAZ_END_CDECL
 

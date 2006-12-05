@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.52 2006-12-05 09:24:31 adam Exp $
+/* $Id: res.c,v 1.53 2006-12-05 14:06:30 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -554,6 +554,61 @@ void res_dump (Res r, int level)
 	res_dump (r->over_res, level + 1);
     }
 }
+
+int res_check(Res r_i, Res r_v)
+{
+    struct res_entry *e_i;
+    int errors = 0;
+    
+    for (e_i = r_i->first; e_i; e_i = e_i->next)
+    {
+        struct res_entry *e_v;
+        for (e_v = r_v->first; e_v; e_v = e_v->next)
+        {
+            int prefix_allowed = 0;
+            int suffix_allowed = 0;
+            const char *name = e_i->name;
+            size_t name_len = strlen(e_i->name);
+            char namez[32];
+
+            if (strchr(e_v->value, 'p'))
+                prefix_allowed = 1;
+            if (strchr(e_v->value, 's'))
+                suffix_allowed = 1;
+
+            if (prefix_allowed)
+            {
+                const char *cp = strchr(name, '.');
+                if (cp)
+                {
+                    name = cp;
+                    name_len = strlen(name);
+                }
+            }
+            if (suffix_allowed)
+            {
+                const char *cp = strchr(name, '.');
+                if (cp)
+                    name_len = cp - name;
+            }
+            if (name_len < sizeof(namez)-1)
+            {
+                memcpy(namez, name, name_len);
+                namez[name_len] = '\0';
+                if (!yaz_matchstr(namez, e_v->name))
+                    break;
+            }
+        }
+        if (!e_v)
+        {
+            yaz_log(YLOG_WARN, "The following setting is unrecognized: %s",
+                    e_i->name);
+            errors++;
+        }
+    }
+    return errors;
+}
+
 /*
  * Local variables:
  * c-basic-offset: 4

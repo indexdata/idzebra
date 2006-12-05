@@ -1,4 +1,4 @@
-/* $Id: sort1.c,v 1.11 2006-09-20 10:51:25 adam Exp $
+/* $Id: sort1.c,v 1.12 2006-12-05 14:06:30 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -30,7 +30,7 @@ static void tst(int argc, char **argv)
     char path[256];
     int i;
 
-    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
+    YAZ_CHECK_EQ(zebra_select_database(zh, "Default"), ZEBRA_OK);
 
     zebra_init(zh);
 

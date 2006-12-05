@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.236 2006-12-05 09:26:37 adam Exp $
+/* $Id: zebraapi.c,v 1.237 2006-12-05 14:06:29 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -209,7 +209,18 @@ ZebraService zebra_start_res(const char *configName, Res def_res, Res over_res)
 		res_close(res);
 		return 0;
 	    }
+            if (zebra_check_res(res))
+            {
+                yaz_log(YLOG_FATAL, "Configuration error(s) for %s",
+                        configName);
+                return 0;
+            }
 	}
+        else
+        {
+            zebra_check_res(res);
+        }
+
 	zh = xmalloc(sizeof(*zh));
         zh->global_res = res;
         zh->sessions = 0;
