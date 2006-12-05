@@ -1,4 +1,4 @@
-/* $Id: grepper.c,v 1.10.2.1 2006-08-14 10:38:53 adam Exp $
+/* $Id: grepper.c,v 1.10.2.2 2006-12-05 21:14:39 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -329,7 +329,7 @@ static int grep_file (struct DFA *dfa, const char *fname, int range)
         inf = fopen (fname, "r");
         if (!inf)
         {
-            logf (LOG_FATAL|LOG_ERRNO, "cannot open `%s'", fname);
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "cannot open `%s'", fname);
             exit (1);
         }
     }
@@ -401,7 +401,7 @@ int main (int argc, char **argv)
         }
         else
         {
-            logf (LOG_FATAL, "Unknown option '-%s'", arg);
+            yaz_log(YLOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }

@@ -11,7 +11,7 @@ rights reserved.
 Licensed under the Academic Free License version 1.1.
 http://opensource.org/licenses/academic.php
 
-$Id: livcode.c,v 1.1.2.1 2006-10-27 11:06:46 adam Exp $
+$Id: livcode.c,v 1.1.2.2 2006-12-05 21:14:40 adam Exp $
 
 */
 
@@ -166,7 +166,7 @@ int read_zrank_file(ZebraHandle zh)
 
     if (!rankfile)
     {
-        yaz_log(LOG_LOG, "rankfile entry not found in config file" ) ;
+        yaz_log(YLOG_LOG, "rankfile entry not found in config file" ) ;
         return 0 ;
     }
     ifd = yaz_path_fopen(profilePath, rankfile, "r" ) ;
@@ -188,7 +188,7 @@ int read_zrank_file(ZebraHandle zh)
         { 
             if ( !(ifd = fopen( rankfile, "r" )) )
             {
-                logf( LOG_LOG, "unable to open rankfile %s",rankfile ) ;
+                yaz_log(YLOG_LOG, "unable to open rankfile %s",rankfile ) ;
                 return 0;
             }
      
@@ -211,7 +211,7 @@ int read_zrank_file(ZebraHandle zh)
         }
         else 
         {
-            yaz_log(LOG_WARN|LOG_ERRNO, "unable to open config file (%s)",
+            yaz_log(YLOG_WARN|YLOG_ERRNO, "unable to open config file (%s)",
                     rankfile);
         }
     }
@@ -559,7 +559,7 @@ static void *create (ZebraHandle zh)
     struct rank_class_info *ci = (struct rank_class_info *)
 	xmalloc (sizeof(*ci));
 
-    logf (LOG_DEBUG, "livrank create");
+    yaz_log(YLOG_DEBUG, "livrank create");
 
     read_zrank_file(zh) ;
 
@@ -575,7 +575,7 @@ static void destroy (struct zebra_register *reg, void *class_handle)
 {
     struct rank_class_info *ci = (struct rank_class_info *) class_handle;
 
-    logf (LOG_DEBUG, "livrank destroy");
+    yaz_log(YLOG_DEBUG, "livrank destroy");
     xfree (ci);
 }
 
@@ -590,7 +590,7 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
     struct rank_set_info *si = (struct rank_set_info *) xmalloc (sizeof(*si));
     int i;
 
-    logf (LOG_DEBUG, "livrank begin");
+    yaz_log(YLOG_DEBUG, "livrank begin");
     si->no_entries = rset->no_rset_terms;
     si->no_rank_entries = 0;
     si->entries = (struct rank_term_info *)
@@ -614,7 +614,7 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
 	si->entries[i].local_occur = 0;
 	si->entries[i].global_occur = g;
 	si->entries[i].global_inv = 32 - log2_int (g);
-	logf (LOG_DEBUG, "-------- %d ------", 32 - log2_int (g));
+	yaz_log(YLOG_DEBUG, "-------- %d ------", 32 - log2_int (g));
     }
     return si;
 }
@@ -626,7 +626,7 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
 static void end (struct zebra_register *reg, void *set_handle)
 {
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
-    logf (LOG_DEBUG, "livrank end");
+    yaz_log(YLOG_DEBUG, "livrank end");
     xfree (si->entries);
     xfree (si);
 }
@@ -639,7 +639,7 @@ static void end (struct zebra_register *reg, void *set_handle)
 static void add (void *set_handle, int seqno, int term_index)
 {
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
-    logf (LOG_DEBUG, "rank-1 add seqno=%d term_index=%d", seqno, term_index);
+    yaz_log(YLOG_DEBUG, "rank-1 add seqno=%d term_index=%d", seqno, term_index);
     si->last_pos = seqno;
     si->entries[term_index].local_occur++;
 }
@@ -655,7 +655,7 @@ static int calc (void *set_handle, int sysno)
     int i, lo, divisor, score = 0;
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
 
-    logf (LOG_DEBUG, "livrank calc sysno=%d", sysno);
+    yaz_log(YLOG_DEBUG, "livrank calc sysno=%d", sysno);
 
     if (!si->no_rank_entries)
 	return -1;

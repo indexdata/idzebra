@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.112.2.7 2006-10-27 11:06:46 adam Exp $
+/* $Id: main.c,v 1.112.2.8 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -124,7 +124,7 @@ int main (int argc, char **argv)
                     zs = zebra_start_res (config, 0, res);
                     if (!zs)
                     {
-			yaz_log (LOG_FATAL, "Cannot read config %s", config);
+			yaz_log(YLOG_FATAL, "Cannot read config %s", config);
                         exit (1);
 	            }	
                     zh = zebra_open (zs);
@@ -133,7 +133,7 @@ int main (int argc, char **argv)
 
 		if (database && zebra_select_database (zh, database))
 		{
-		    logf(LOG_FATAL, "Could not select database %s errCode=%d",
+		    yaz_log(YLOG_FATAL, "Could not select database %s errCode=%d",
 			 database, zebra_errCode(zh) );
 		    exit (1);
 		}
@@ -181,7 +181,7 @@ int main (int argc, char **argv)
                 }
                 else
                 {
-                    logf (LOG_FATAL, "unknown command: %s", arg);
+                    yaz_log(YLOG_FATAL, "unknown command: %s", arg);
                     exit (1);
                 }
             }
@@ -266,7 +266,7 @@ int main (int argc, char **argv)
         else if (ret == 'L')
 	    res_set(res, "followLinks", "0");
         else
-            logf (LOG_WARN, "unknown option '-%s'", arg);
+            yaz_log(YLOG_WARN, "unknown option '-%s'", arg);
     } /* while arg */
 
     if (trans_started)
@@ -281,7 +281,7 @@ int main (int argc, char **argv)
         usec = (end_time.tv_sec - start_time.tv_sec) * 1000000.0 +
 	    end_time.tv_usec - start_time.tv_usec;
         times(&tms2);
-        yaz_log (LOG_LOG, "zebraidx times: %5.2f %5.2f %5.2f",
+        yaz_log(YLOG_LOG, "zebraidx times: %5.2f %5.2f %5.2f",
 		usec / 1000000,
 		(double) (tms2.tms_utime - tms1.tms_utime)/100,
 		(double) (tms2.tms_stime - tms1.tms_stime)/100);

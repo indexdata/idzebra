@@ -1,4 +1,4 @@
-/* $Id: isamd.c,v 1.27.2.2 2006-10-27 11:06:47 adam Exp $
+/* $Id: isamd.c,v 1.27.2.3 2006-12-05 21:14:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -113,11 +113,11 @@ ISAMD isamd_open (BFiles bfs, const char *name, int writeflag, ISAMD_M *method)
 
     /* determine number of block categories */
     if (is->method->debug>0)
-        logf (LOG_LOG, "isamd: bsize  maxkeys");
+        yaz_log(YLOG_LOG, "isamd: bsize  maxkeys");
     do
     {
         if (is->method->debug>0)
-            logf (LOG_LOG, "isamd:%6d %6d",
+            yaz_log(YLOG_LOG, "isamd:%6d %6d",
                   filecat[i].bsize, filecat[i].mblocks);
     } while (filecat[i++].mblocks);
     is->no_files = i;
@@ -213,10 +213,10 @@ int isamd_close (ISAMD is)
 
     if (is->method->debug>0)
     {
-        logf (LOG_LOG, "isamd statistics");
-	logf (LOG_LOG, "f    nxt   forw  mid-f   prev  backw  mid-b");
+        yaz_log(YLOG_LOG, "isamd statistics");
+	yaz_log(YLOG_LOG, "f    nxt   forw  mid-f   prev  backw  mid-b");
 	for (i = 0; i<is->no_files; i++)
-	    logf (LOG_LOG, "%d%7d%7d%7.1f%7d%7d%7.1f",i,
+	    yaz_log(YLOG_LOG, "%d%7d%7d%7.1f%7d%7d%7.1f",i,
 		  is->files[i].no_next,
 		  is->files[i].no_forward,
 		  is->files[i].no_forward ?
@@ -229,7 +229,7 @@ int isamd_close (ISAMD is)
 		    : 0.0);
     }
     if (is->method->debug>0)
-        logf (LOG_LOG, "f  writes   reads skipped   alloc released ");
+        yaz_log(YLOG_LOG, "f  writes   reads skipped   alloc released ");
     for (i = 0; i<is->no_files; i++)
     {
         release_fc (is, i);
@@ -238,7 +238,7 @@ int isamd_close (ISAMD is)
             bf_write (is->files[i].bf, 0, 0, sizeof(ISAMD_head),
                  &is->files[i].head);
         if (is->method->debug>0)
-            logf (LOG_LOG, "%d%8d%8d%8d%8d%8d",i,
+            yaz_log(YLOG_LOG, "%d%8d%8d%8d%8d%8d",i,
                   is->files[i].no_writes,
                   is->files[i].no_reads,
                   is->files[i].no_skip_writes,
@@ -251,49 +251,49 @@ int isamd_close (ISAMD is)
     
     if (is->method->debug>0) 
     {
-        logf (LOG_LOG, "f   opens    main  diffonly");
+        yaz_log(YLOG_LOG, "f   opens    main  diffonly");
         for (i = 0; i<is->no_files; i++)
         {
-            logf (LOG_LOG, "%d%8d%8d%8d",i,
+            yaz_log(YLOG_LOG, "%d%8d%8d%8d",i,
                   is->files[i].no_op_main+
                   is->files[i].no_op_diffonly,
                   is->files[i].no_op_main,
                   is->files[i].no_op_diffonly);
         }
-        logf(LOG_LOG,"open single  %8d", is->no_op_single);
-        logf(LOG_LOG,"open new     %8d", is->no_op_new);
+        yaz_log(YLOG_LOG,"open single  %8d", is->no_op_single);
+        yaz_log(YLOG_LOG,"open new     %8d", is->no_op_new);
 
-        logf(LOG_LOG, "new build   %8d", is->no_fbuilds);
-        logf(LOG_LOG, "append      %8d", is->no_appds);
-        logf(LOG_LOG, "  merges    %8d", is->no_merges);
-        logf(LOG_LOG, "  singles   %8d", is->no_singles);
-        logf(LOG_LOG, "  no-ops    %8d", is->no_non);
+        yaz_log(YLOG_LOG, "new build   %8d", is->no_fbuilds);
+        yaz_log(YLOG_LOG, "append      %8d", is->no_appds);
+        yaz_log(YLOG_LOG, "  merges    %8d", is->no_merges);
+        yaz_log(YLOG_LOG, "  singles   %8d", is->no_singles);
+        yaz_log(YLOG_LOG, "  no-ops    %8d", is->no_non);
 
-        logf(LOG_LOG, "read blocks %8d", is->no_read);
-        logf(LOG_LOG, "read keys:  %8d %8.1f k/bl", 
+        yaz_log(YLOG_LOG, "read blocks %8d", is->no_read);
+        yaz_log(YLOG_LOG, "read keys:  %8d %8.1f k/bl", 
                   is->no_read_keys, 
                   1.0*(is->no_read_keys+1)/(is->no_read+1) );
-        logf(LOG_LOG, "read main-k %8d %8.1f %% of keys",
+        yaz_log(YLOG_LOG, "read main-k %8d %8.1f %% of keys",
                   is->no_read_main,
                   100.0*(is->no_read_main+1)/(is->no_read_keys+1) );
-        logf(LOG_LOG, "read ends:  %8d %8.1f k/e",
+        yaz_log(YLOG_LOG, "read ends:  %8d %8.1f k/e",
                   is->no_read_eof,
                   1.0*(is->no_read_keys+1)/(is->no_read_eof+1) );
         s= is->no_seek_nxt+ is->no_seek_sam+ is->no_seek_fwd +
            is->no_seek_prv+ is->no_seek_bak+ is->no_seek_cat;
         if (s==0) 
           s++;
-        logf(LOG_LOG, "seek same   %8d %8.1f%%",
+        yaz_log(YLOG_LOG, "seek same   %8d %8.1f%%",
             is->no_seek_sam, 100.0*is->no_seek_sam/s );
-        logf(LOG_LOG, "seek next   %8d %8.1f%%",
+        yaz_log(YLOG_LOG, "seek next   %8d %8.1f%%",
             is->no_seek_nxt, 100.0*is->no_seek_nxt/s );
-        logf(LOG_LOG, "seek prev   %8d %8.1f%%",
+        yaz_log(YLOG_LOG, "seek prev   %8d %8.1f%%",
             is->no_seek_prv, 100.0*is->no_seek_prv/s );
-        logf(LOG_LOG, "seek forw   %8d %8.1f%%",
+        yaz_log(YLOG_LOG, "seek forw   %8d %8.1f%%",
             is->no_seek_fwd, 100.0*is->no_seek_fwd/s );
-        logf(LOG_LOG, "seek back   %8d %8.1f%%",
+        yaz_log(YLOG_LOG, "seek back   %8d %8.1f%%",
             is->no_seek_bak, 100.0*is->no_seek_bak/s );
-        logf(LOG_LOG, "seek cat    %8d %8.1f%%",
+        yaz_log(YLOG_LOG, "seek cat    %8d %8.1f%%",
             is->no_seek_cat, 100.0*is->no_seek_cat/s );
     }
     xfree (is->files);
@@ -326,7 +326,7 @@ int isamd_read_block (ISAMD is, int cat, int pos, char *dst)
     ++(is->files[cat].no_reads);
     ++(is->no_read);
     if (is->method->debug > 6)
-        logf (LOG_LOG, "isamd: read_block %d:%d",cat, pos);
+        yaz_log(YLOG_LOG, "isamd: read_block %d:%d",cat, pos);
     return bf_read (is->files[cat].bf, pos, 0, 0, dst);
 }
 
@@ -336,7 +336,7 @@ int isamd_write_block (ISAMD is, int cat, int pos, char *src)
     ++(is->files[cat].no_writes);
     ++(is->no_write);
     if (is->method->debug > 6)
-        logf (LOG_LOG, "isamd: write_block %d:%d", cat, pos);
+        yaz_log(YLOG_LOG, "isamd: write_block %d:%d", cat, pos);
     return bf_write (is->files[cat].bf, pos, 0, 0, src);
 }
 
@@ -345,7 +345,7 @@ int isamd_write_dblock (ISAMD is, int cat, int pos, char *src,
 {
     ISAMD_BLOCK_SIZE size = offset + ISAMD_BLOCK_OFFSET_N;
     if (is->method->debug > 4)
-        logf (LOG_LOG, "isamd: write_dblock. size=%d nextpos=%d",
+        yaz_log(YLOG_LOG, "isamd: write_dblock. size=%d nextpos=%d",
               (int) size, nextpos);
     src -= ISAMD_BLOCK_OFFSET_N;
     assert( ISAMD_BLOCK_OFFSET_N == sizeof(int)+sizeof(int) );
@@ -504,14 +504,14 @@ int isamd_alloc_block (ISAMD is, int cat)
     if (!block)
         block = alloc_block (is, cat);
     if (is->method->debug > 4)
-        logf (LOG_LOG, "isamd: alloc_block in cat %d: %d", cat, block);
+        yaz_log(YLOG_LOG, "isamd: alloc_block in cat %d: %d", cat, block);
     return block;
 }
 
 void isamd_release_block (ISAMD is, int cat, int pos)
 {
     if (is->method->debug > 4)
-        logf (LOG_LOG, "isamd: release_block in cat %d: %d", cat, pos);
+        yaz_log(YLOG_LOG, "isamd: release_block in cat %d: %d", cat, pos);
     assert(pos!=0);
     
     if (is->files[cat].fc_list)
@@ -557,7 +557,7 @@ void isamd_pp_close (ISAMD_PP pp)
     (*is->method->code_stop)(ISAMD_DECODE, pp->decodeClientData);
     isamd_free_diffs(pp);  /* see merge-d.h */
     if (is->method->debug > 5)
-       logf (LOG_LOG, "isamd_pp_close %p %d=%d:%d  sz=%d n=%d=%d:%d nk=%d",
+       yaz_log(YLOG_LOG, "isamd_pp_close %p %d=%d:%d  sz=%d n=%d=%d:%d nk=%d",
              pp, isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->size, 
              pp->next, isamd_type(pp->next), isamd_block(pp->next), 
              pp->numKeys );
@@ -625,7 +625,7 @@ ISAMD_PP isamd_pp_open (ISAMD is, const char *dictbuf, int dictlen)
        pp->cat=0; 
        pp->pos=0;
        if (is->method->debug > 5)
-          logf (LOG_LOG, "isamd_pp_open dict");
+          yaz_log(YLOG_LOG, "isamd_pp_open dict");
        pp->numKeys=(unsigned char) dictbuf[0];
        memcpy(pp->buf+ISAMD_BLOCK_OFFSET_1, dictbuf+1,dictlen-1);
        pp->size=pp->offset=dictlen+ISAMD_BLOCK_OFFSET_1-1;
@@ -659,7 +659,7 @@ ISAMD_PP isamd_pp_open (ISAMD is, const char *dictbuf, int dictlen)
           is->files[pp->cat].no_op_diffonly++;
     }
     if (is->method->debug > 5)
-       logf (LOG_LOG, "isamd_pp_open  %p %d=%d:%d  sz=%d n=%d=%d:%d",
+       yaz_log(YLOG_LOG, "isamd_pp_open  %p %d=%d:%d  sz=%d n=%d=%d:%d",
              pp, isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->size, 
              pp->next, isamd_type(pp->next), isamd_block(pp->next) );
 
@@ -680,7 +680,7 @@ void isamd_buildfirstblock(ISAMD_PP pp){
   dst += sizeof(pp->numKeys);
   assert (dst - pp->buf  == ISAMD_BLOCK_OFFSET_1);
   if (pp->is->method->debug > 5)
-     logf (LOG_LOG, "isamd: bldfirst:  p=%d=%d:%d n=%d:%d:%d sz=%d nk=%d ",
+     yaz_log(YLOG_LOG, "isamd: bldfirst:  p=%d=%d:%d n=%d:%d:%d sz=%d nk=%d ",
            isamd_addr(pp->pos,pp->cat),pp->cat, pp->pos, 
            pp->next, isamd_type(pp->next), isamd_block(pp->next),
            pp->size, pp->numKeys);
@@ -696,7 +696,7 @@ void isamd_buildlaterblock(ISAMD_PP pp){
   dst += sizeof(pp->size);
   assert (dst - pp->buf  == ISAMD_BLOCK_OFFSET_N);
   if (pp->is->method->debug > 5)
-     logf (LOG_LOG, "isamd: l8r: sz=%d  p=%d/%d>%d/%d",
+     yaz_log(YLOG_LOG, "isamd: l8r: sz=%d  p=%d/%d>%d/%d",
            pp->size, 
            pp->pos, pp->cat, 
            isamd_block(pp->next), isamd_type(pp->next) );
@@ -774,7 +774,7 @@ int isamd_read_main_item (ISAMD_PP pp, char **dst)
         (*is->method->code_item)(ISAMD_DECODE, pp->decodeClientData, dst, &src);
         pp->offset = src - pp->buf; 
         if (is->method->debug > 8)
-            logf (LOG_LOG, "isamd: read_m: block %d:%d sz=%d ofs=%d-%d next=%d",
+            yaz_log(YLOG_LOG, "isamd: read_m: block %d:%d sz=%d ofs=%d-%d next=%d",
                  pp->cat, pp->pos, pp->size, oldoffs, pp->offset, pp->next);
         return 2;
     }
@@ -782,7 +782,7 @@ int isamd_read_main_item (ISAMD_PP pp, char **dst)
     (*is->method->code_item)(ISAMD_DECODE, pp->decodeClientData, dst, &src);
     pp->offset = src - pp->buf; 
     if (is->method->debug > 8)
-        logf (LOG_LOG, "isamd: read_m: got %d:%d sz=%d ofs=%d-%d next=%d",
+        yaz_log(YLOG_LOG, "isamd: read_m: got %d:%d sz=%d ofs=%d-%d next=%d",
              pp->cat, pp->pos, pp->size, oldoffs, pp->offset, pp->next);
     return 1;
 }
@@ -825,16 +825,16 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
   int olddebug= is->method->debug;
   is->method->debug=0; /* no debug logs while reading for dump */
   
-  logf(LOG_LOG,"dumping isamd block %d (%d:%d)",
+  yaz_log(YLOG_LOG,"dumping isamd block %d (%d:%d)",
                   (int)ipos, isamd_type(ipos), isamd_block(ipos) );
   pp=isamd_pp_open(is,ipos);
-  logf(LOG_LOG,"numKeys=%d,  ofs=%d sz=%d",
+  yaz_log(YLOG_LOG,"numKeys=%d,  ofs=%d sz=%d",
        pp->numKeys, pp->offset, pp->size );
   diffidx=oldoffs= pp->offset;
   while ((diffidx < is->method->filecat[pp->cat].bsize) && (diffmax>0))
   {
     memcpy(&diffmax,&(pp->buf[diffidx]),sizeof(int));
-    logf (LOG_LOG,"diff set at %d-%d: %s", diffidx, diffmax, 
+    yaz_log(YLOG_LOG,"diff set at %d-%d: %s", diffidx, diffmax, 
       hexdump(pp->buf+diffidx,8,0)); 
       /*! todo: dump the actual diffs as well !!! */
     diffidx=diffmax;
@@ -845,7 +845,7 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
      if (oldaddr != isamd_addr(pp->pos,pp->cat) )
      {
         oldaddr = isamd_addr(pp->pos,pp->cat); 
-        logf(LOG_LOG,"block %d=%d:%d sz=%d nx=%d=%d:%d ofs=%d",
+        yaz_log(YLOG_LOG,"block %d=%d:%d sz=%d nx=%d=%d:%d ofs=%d",
                   isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, 
                   pp->size,
                   pp->next, isamd_type(pp->next), isamd_block(pp->next),
@@ -854,14 +854,14 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
         while (i<pp->size) {
           n=pp->size-i;
           if (n>8) n=8;
-          logf(LOG_LOG,"  %05x: %s",i,hexdump(pp->buf+i,n,hexbuff));
+          yaz_log(YLOG_LOG,"  %05x: %s",i,hexdump(pp->buf+i,n,hexbuff));
           i+=n;
         }
         if (oldoffs >  ISAMD_BLOCK_OFFSET_N)
            oldoffs=ISAMD_BLOCK_OFFSET_N;
      } /* new block */
      occur++;
-     logf (LOG_LOG,"    got %d:%d=%x:%x from %s at %d=%x",
+     yaz_log(YLOG_LOG,"    got %d:%d=%x:%x from %s at %d=%x",
       	          key.sysno, key.seqno,
 	          key.sysno, key.seqno,
 	          hexdump(pp->buf+oldoffs, pp->offset-oldoffs, hexbuff),

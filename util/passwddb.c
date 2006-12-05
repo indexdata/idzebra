@@ -1,4 +1,4 @@
-/* $Id: passwddb.c,v 1.7.2.4 2006-10-11 20:18:47 adam Exp $
+/* $Id: passwddb.c,v 1.7.2.5 2006-12-05 21:14:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -122,7 +122,7 @@ void passwd_db_show (Passwd_db db)
 {
     struct passwd_entry *pe;
     for (pe = db->entries; pe; pe = pe->next)
-	logf (LOG_LOG,"%s:%s", pe->name, pe->des);
+	yaz_log(YLOG_LOG,"%s:%s", pe->name, pe->des);
 }
 
 int passwd_db_auth (Passwd_db db, const char *user, const char *pass)

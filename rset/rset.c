@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.21.2.1 2006-08-14 10:39:20 adam Exp $
+/* $Id: rset.c,v 1.21.2.2 2006-12-05 21:14:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -35,7 +35,7 @@ RSET rset_create(const struct rset_control *sel, void *parms)
     RSET rnew;
     int i;
 
-    logf (LOG_DEBUG, "rs_create(%s)", sel->desc);
+    yaz_log(YLOG_DEBUG, "rs_create(%s)", sel->desc);
     rnew = (RSET) xmalloc(sizeof(*rnew));
     rnew->control = sel;
     rnew->flags = 0;
@@ -43,9 +43,9 @@ RSET rset_create(const struct rset_control *sel, void *parms)
     rnew->rset_terms = NULL;
     rnew->no_rset_terms = 0;
     rnew->buf = (*sel->f_create)(rnew, sel, parms);
-    logf (LOG_DEBUG, "no_rset_terms: %d", rnew->no_rset_terms);
+    yaz_log(YLOG_DEBUG, "no_rset_terms: %d", rnew->no_rset_terms);
     for (i = 0; i<rnew->no_rset_terms; i++)
-	logf (LOG_DEBUG, " %s", rnew->rset_terms[i]->name);
+	yaz_log(YLOG_DEBUG, " %s", rnew->rset_terms[i]->name);
     return rnew;
 }
 
@@ -81,19 +81,19 @@ int rset_default_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
 {
     int more=1;
     int cmp=2;
-    logf (LOG_DEBUG, "rset_default_forward starting '%s' (ct=%p rfd=%p)",
+    yaz_log(YLOG_DEBUG, "rset_default_forward starting '%s' (ct=%p rfd=%p)",
                     ct->control->desc, ct,rfd);
-    key_logdump(LOG_DEBUG, untilbuf);
+    key_logdump(YLOG_DEBUG, untilbuf);
     while ( (cmp==2) && (more))
     {
-        logf (LOG_DEBUG, "rset_default_forward looping m=%d c=%d",more,cmp);
+        yaz_log(YLOG_DEBUG, "rset_default_forward looping m=%d c=%d",more,cmp);
         more=rset_read(ct, rfd, buf, term_index);
         if (more)
             cmp=(*cmpfunc)(untilbuf,buf);
         if (more)
-            key_logdump(LOG_DEBUG,buf);
+            key_logdump(YLOG_DEBUG,buf);
     }
-    logf (LOG_DEBUG, "rset_default_forward exiting m=%d c=%d",more,cmp);
+    yaz_log(YLOG_DEBUG, "rset_default_forward exiting m=%d c=%d",more,cmp);
 
     return more;
 }

@@ -1,4 +1,4 @@
-/* $Id: dicttest.c,v 1.28.2.1 2006-08-14 10:38:54 adam Exp $
+/* $Id: dicttest.c,v 1.28.2.2 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -103,7 +103,7 @@ int main (int argc, char **argv)
                 name = arg;
             else
             {
-                logf (LOG_FATAL, "too many files specified\n");
+                yaz_log(YLOG_FATAL, "too many files specified\n");
                 exit (1);
             }
         }
@@ -151,31 +151,31 @@ int main (int argc, char **argv)
         }
         else
         {
-            logf (LOG_FATAL, "Unknown option '-%s'", arg);
+            yaz_log(YLOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }
     if (!config || !name)
     {
-        logf (LOG_FATAL, "no config and/or dictionary specified");
+        yaz_log(YLOG_FATAL, "no config and/or dictionary specified");
         exit (1);
     }
     my_resource = res_open (config, 0, 0);
     if (!my_resource)
     {
-        logf (LOG_FATAL, "cannot open resource `%s'", config);
+        yaz_log(YLOG_FATAL, "cannot open resource `%s'", config);
         exit (1);
     }
     bfs = bfs_create (res_get(my_resource, "register"), 0);
     if (!bfs)
     {
-        logf (LOG_FATAL, "bfs_create fail");
+        yaz_log(YLOG_FATAL, "bfs_create fail");
         exit (1);
     }
     dict = dict_open (bfs, name, cache, rw, 0);
     if (!dict)
     {
-        logf (LOG_FATAL, "dict_open fail of `%s'", name);
+        yaz_log(YLOG_FATAL, "dict_open fail of `%s'", name);
         exit (1);
     }
     if (inputfile)
@@ -188,7 +188,7 @@ int main (int argc, char **argv)
 
         if (!(ipf = fopen(inputfile, "r")))
         {
-            logf (LOG_FATAL|LOG_ERRNO, "cannot open %s", inputfile);
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "cannot open %s", inputfile);
             exit (1);
         }
         
@@ -227,11 +227,11 @@ int main (int argc, char **argv)
                             case 1:
                                 no_of_change++;
                                 if (unique)
-                                    logf (LOG_LOG, "%s change\n", ipf_ptr);
+                                    yaz_log(YLOG_LOG, "%s change\n", ipf_ptr);
                                 break;
                             case 2:
                                 if (unique)
-                                    logf (LOG_LOG, "%s duplicate\n", ipf_ptr);
+                                    yaz_log(YLOG_LOG, "%s duplicate\n", ipf_ptr);
                                 no_of_same++;
                                 break;
                             }
@@ -270,36 +270,36 @@ int main (int argc, char **argv)
     }
     if (rw && delete_term)
     {
-	logf (LOG_LOG, "dict_delete_subtree %s", delete_term);
+	yaz_log(YLOG_LOG, "dict_delete_subtree %s", delete_term);
 	dict_delete_subtree (dict, delete_term, 0, 0);
     }
     if (grep_pattern)
     {
         if (range < 0)
             range = 0;
-        logf (LOG_LOG, "Grepping '%s'", grep_pattern);
+        yaz_log(YLOG_LOG, "Grepping '%s'", grep_pattern);
         dict_lookup_grep (dict, grep_pattern, range, NULL, &max_pos,
                           srange, grep_handler);
     }
     if (rw)
     {
-        logf (LOG_LOG, "Iterations.... %d", no_of_iterations);            
+        yaz_log(YLOG_LOG, "Iterations.... %d", no_of_iterations);            
         if (do_delete)
         {
-            logf (LOG_LOG, "No of deleted. %d", no_of_deleted);
-            logf (LOG_LOG, "No not found.. %d", no_not_found);
+            yaz_log(YLOG_LOG, "No of deleted. %d", no_of_deleted);
+            yaz_log(YLOG_LOG, "No not found.. %d", no_not_found);
         }
         else
         {
-            logf (LOG_LOG, "No of new..... %d", no_of_new);
-            logf (LOG_LOG, "No of change.. %d", no_of_change);
+            yaz_log(YLOG_LOG, "No of new..... %d", no_of_new);
+            yaz_log(YLOG_LOG, "No of change.. %d", no_of_change);
         }
     }
     else
     {
-        logf (LOG_LOG, "Lookups....... %d", no_of_iterations);
-        logf (LOG_LOG, "No of hits.... %d", no_of_hits);
-        logf (LOG_LOG, "No of misses.. %d", no_of_misses);
+        yaz_log(YLOG_LOG, "Lookups....... %d", no_of_iterations);
+        yaz_log(YLOG_LOG, "No of hits.... %d", no_of_hits);
+        yaz_log(YLOG_LOG, "No of misses.. %d", no_of_misses);
     }
     if (scan_the_thing)
     {
@@ -307,7 +307,7 @@ int main (int argc, char **argv)
         
 	int before = 1000000;
 	int after = 1000000;
-	logf (LOG_LOG, "dict_scan");
+	yaz_log(YLOG_LOG, "dict_scan");
 	term_dict[0] = 1;
 	term_dict[1] = 0;
 	dict_scan (dict, term_dict, &before, &after, 0, scan_handler);

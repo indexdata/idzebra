@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.28.2.5 2006-08-14 10:39:00 adam Exp $
+/* $Id: trunc.c,v 1.28.2.6 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -342,7 +342,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                         key_compare_it);
         for (i = to-from; --i >= 0; )
         {
-            logf(LOG_FATAL, "isam_d does not (currently) support truncs");
+            yaz_log(YLOG_FATAL, "isam_d does not (currently) support truncs");
             abort();
             /*ispt[i] = isamd_pp_open (zi->reg->isamd, isam_p[from+i]); */
             if (isamd_pp_read (ispt[i], ti->tmpbuf))
@@ -487,7 +487,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         xfree (ispt);
     }
     else
-        logf (LOG_WARN, "Unknown isam set in rset_trunc_r");
+        yaz_log(YLOG_WARN, "Unknown isam set in rset_trunc_r");
 
     parms.rset_term->nn = nn;
     rset_close (result, result_rsfd);
@@ -541,7 +541,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 		 const char *term, int length, const char *flags,
                  int preserve_position, int term_type)
 {
-    logf (LOG_DEBUG, "rset_trunc no=%d", no);
+    yaz_log(YLOG_DEBUG, "rset_trunc no=%d", no);
     if (no < 1)
     {
 	rset_null_parms parms;
@@ -614,7 +614,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
         {
             rset_isamd_parms parms;
 
-            logf(LOG_FATAL, "isam_d does not (currently) support truncs");
+            yaz_log(YLOG_FATAL, "isam_d does not (currently) support truncs");
             abort();
             /* parms.pos = *isam_p; */
             parms.is = zi->reg->isamd;
@@ -661,7 +661,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
     }
     else
     {
-        logf (LOG_WARN, "Unknown isam set in rset_trunc");
+        yaz_log(YLOG_WARN, "Unknown isam set in rset_trunc");
 	return rset_create (rset_kind_null, NULL);
     }
     return rset_trunc_r (zi, term, length, flags, isam_p, 0, no, 100,

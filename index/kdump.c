@@ -1,4 +1,4 @@
-/* $Id: kdump.c,v 1.24.2.1 2006-08-14 10:38:58 adam Exp $
+/* $Id: kdump.c,v 1.24.2.2 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -127,13 +127,13 @@ int main (int argc, char **argv)
 	{
 	    if (!(res = res_open (arg, 0, 0)))
             {
-		logf(LOG_FATAL, "Failed to open resource file %s", arg);
+		yaz_log(YLOG_FATAL, "Failed to open resource file %s", arg);
 	        exit (1);
 	    }
 	}
         else
         {
-            logf (LOG_FATAL, "Unknown option '-%s'", arg);
+            yaz_log(YLOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }
@@ -147,7 +147,7 @@ int main (int argc, char **argv)
     zm = zebra_maps_open (res, 0);
     if (!(inf = fopen (key_fname, "r")))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "fopen %s", key_fname);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "fopen %s", key_fname);
         exit (1);
     }
     printf ("t  rg op  sysno seqno txt\n");
@@ -181,7 +181,7 @@ int main (int argc, char **argv)
     zebra_maps_close (zm);
     if (fclose (inf))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "fclose %s", key_fname);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "fclose %s", key_fname);
         exit (1);
     }
     

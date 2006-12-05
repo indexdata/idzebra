@@ -1,3 +1,5 @@
+Update code to use new YAZ log functions/defines.
+
 --- 1.3.46 2006/10/31
 
 Fixed several compilation warnings. (gcc 4.1.2, -O3 -g -Wall)

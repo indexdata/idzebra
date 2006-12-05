@@ -1,4 +1,4 @@
-/* $Id: perlread.c,v 1.8.2.4 2006-08-14 10:39:16 adam Exp $
+/* $Id: perlread.c,v 1.8.2.5 2006-12-05 21:14:44 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -247,9 +247,9 @@ static void *grs_init_perl(void)
     if (!context->origi) {
 	context->perli = perl_alloc();
 	PERL_SET_CONTEXT(context->perli);
-	logf (LOG_LOG, "Initializing new perl interpreter context (%p)",context->perli);
+	yaz_log(YLOG_LOG, "Initializing new perl interpreter context (%p)",context->perli);
     } else {
-	logf (LOG_LOG, "Using existing perl interpreter context (%p)",context->origi);
+	yaz_log(YLOG_LOG, "Using existing perl interpreter context (%p)",context->origi);
     }
     context->perli_ready = 0;
     strcpy(context->filterClass, "");
@@ -260,7 +260,7 @@ void grs_destroy_perl(void *clientData)
 {
     struct perl_context *context = (struct perl_context *) clientData;
     
-    logf (LOG_LOG, "Destroying perl interpreter context");
+    yaz_log(YLOG_LOG, "Destroying perl interpreter context");
     if (context->perli_ready) {
 	/*
 	  FREETMPS;
@@ -318,7 +318,7 @@ static data1_node *grs_read_perl (struct grs_read_info *p)
 	
 	/* parse, and run the init call */
 	if (context->origi == NULL) {
-	    logf (LOG_LOG, "Interpreting filter class:%s", filterClass);
+	    yaz_log(YLOG_LOG, "Interpreting filter class:%s", filterClass);
 	    
 	    arglist[2] = (char *) data1_get_tabpath(p->dh);
 	    sprintf(modarg,"-M%s",filterClass);
@@ -340,12 +340,12 @@ static data1_node *grs_read_perl (struct grs_read_info *p)
        the filter object reference may go out of scope... */
     if (!sv_isa(context->filterRef, context->filterClass)) {
 	Filter_create(context);
-	logf (LOG_DEBUG,"Filter recreated");
+	yaz_log(YLOG_DEBUG,"Filter recreated");
     }
 
     if (!SvTRUE(context->filterRef))
     {
-	logf (LOG_WARN,"Failed to initialize perl filter %s",context->filterClass);
+	yaz_log(YLOG_WARN,"Failed to initialize perl filter %s",context->filterClass);
 	return (0);
     }
     

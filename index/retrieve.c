@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.21.2.2 2006-08-14 10:38:59 adam Exp $
+/* $Id: retrieve.c,v 1.21.2.3 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -111,7 +111,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     rec = rec_get (zh->reg->records, sysno);
     if (!rec)
     {
-        logf (LOG_DEBUG, "rec_get fail on sysno=%d", sysno);
+        yaz_log(YLOG_DEBUG, "rec_get fail on sysno=%d", sysno);
 	*basenamep = 0;
         return 14;
     }
@@ -132,10 +132,10 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     if (!(rt = recType_byName (zh->reg->recTypes,
 			       file_type, subType, &clientData)))
     {
-        logf (LOG_WARN, "Retrieve: Cannot handle type %s",  file_type);
+        yaz_log(YLOG_WARN, "Retrieve: Cannot handle type %s",  file_type);
 	return 14;
     }
-    logf (LOG_DEBUG, "retrieve localno=%d score=%d", sysno, score);
+    yaz_log(YLOG_DEBUG, "retrieve localno=%d score=%d", sysno, score);
     retrieveCtrl.fh = &fc;
     fc.fd = -1;
     retrieveCtrl.fname = fname;
@@ -147,7 +147,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
         fc.record_int_len = rec->size[recInfo_storeData];
         fc.record_int_buf = rec->info[recInfo_storeData];
         fc.record_int_pos = 0;
-        logf (LOG_DEBUG, "Internal retrieve. %d bytes", fc.record_int_len);
+        yaz_log(YLOG_DEBUG, "Internal retrieve. %d bytes", fc.record_int_len);
 	if (raw_mode)
 	{
             *output_format = VAL_SUTRS;
@@ -173,7 +173,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
 
         if ((fc.fd = open (full_rep, O_BINARY|O_RDONLY)) == -1)
         {
-            logf (LOG_WARN|LOG_ERRNO, "Retrieve fail; missing file: %s",
+            yaz_log(YLOG_WARN|YLOG_ERRNO, "Retrieve fail; missing file: %s",
 		  full_rep);
             rec_rm (&rec);
             return 14;

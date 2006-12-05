@@ -1,4 +1,4 @@
-/* $Id: d1_handle.c,v 1.3.2.1 2006-08-14 10:38:51 adam Exp $
+/* $Id: d1_handle.c,v 1.3.2.2 2006-12-05 21:14:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -116,14 +116,14 @@ WRBUF data1_get_wrbuf (data1_handle dp)
 char **data1_get_read_buf (data1_handle dp, int **lenp)
 {
     *lenp = &dp->read_len;
-    yaz_log (LOG_DEBUG, "data1_get_read_buf lenp=%u", **lenp);
+    yaz_log(YLOG_DEBUG, "data1_get_read_buf lenp=%u", **lenp);
     return &dp->read_buf;
 }
 
 char **data1_get_map_buf (data1_handle dp, int **lenp)
 {
     *lenp = &dp->map_len;
-    yaz_log (LOG_DEBUG, "data1_get_map_buf lenp=%u", **lenp);
+    yaz_log(YLOG_DEBUG, "data1_get_map_buf lenp=%u", **lenp);
     return &dp->map_buf;
 }
 

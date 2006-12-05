@@ -1,4 +1,4 @@
-/* $Id: res-test.c,v 1.8.2.1 2006-08-14 10:39:24 adam Exp $
+/* $Id: res-test.c,v 1.8.2.2 2006-12-05 21:14:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static void res_print (const char *name, const char *value)
 {
-    logf (LOG_LOG, "%s=%s", name, value);
+    yaz_log(YLOG_LOG, "%s=%s", name, value);
 }
 
 int main(int argc, char **argv)
@@ -41,24 +41,24 @@ int main(int argc, char **argv)
     Res res;
     int write_flag = 0;
 
-    log_init (LOG_DEFAULT_LEVEL, prog, NULL);
+    log_init(YLOG_DEFAULT_LEVEL, prog, NULL);
     while ((ret = options ("wp:v", argv, argc, &arg)) != -2)
         if (ret == 0)
             resfile = arg;
         else if (ret == 'v')
-            log_init (LOG_ALL, prog, NULL);
+            log_init(YLOG_ALL, prog, NULL);
         else if (ret == 'p')
             prefix = arg;
         else if (ret == 'w')
             write_flag = 1;
         else
         {
-            logf (LOG_FATAL, "Unknown option '-%s'", arg);
+            yaz_log(YLOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     if (!resfile)
     {
-        logf (LOG_FATAL, "No resource file given.");
+        yaz_log(YLOG_FATAL, "No resource file given.");
         exit (1);
     }
     res = res_open (resfile);

@@ -1,4 +1,4 @@
-/* $Id: dir.c,v 1.28.2.1 2006-08-14 10:38:57 adam Exp $
+/* $Id: dir.c,v 1.28.2.2 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -66,10 +66,10 @@ struct dir_entry *dir_open (const char *rep, const char *base,
         *full_rep = '\0';
     strcat (full_rep, rep);
 
-    logf (LOG_DEBUG, "dir_open %s", full_rep);
+    yaz_log(YLOG_DEBUG, "dir_open %s", full_rep);
     if (!(dir = opendir(full_rep)))
     {
-        logf (LOG_WARN|LOG_ERRNO, "opendir %s", rep);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "opendir %s", rep);
         if (errno != ENOENT && errno != EACCES)
             exit (1);
         return NULL;
@@ -127,7 +127,7 @@ struct dir_entry *dir_open (const char *rep, const char *base,
     }
     entry[idx].name = NULL;
     closedir (dir);
-    logf (LOG_DEBUG, "dir_close");
+    yaz_log(YLOG_DEBUG, "dir_close");
     return entry;
 }
 

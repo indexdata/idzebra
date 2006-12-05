@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.4.2.2 2006-08-14 10:39:23 adam Exp $
+/* $Id: t5.c,v 1.4.2.3 2006-12-05 21:14:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -40,12 +40,12 @@ static void expect(ZebraHandle zh, const char *pqf, int hits_expect,
     int hits;
     if (zebra_search_PQF (zh, pqf, "set1", &hits) != 0)
     {
-        yaz_log(LOG_FATAL, "Search %s: failed", pqf);
+        yaz_log(YLOG_FATAL, "Search %s: failed", pqf);
         *exit_code = 1;
     }
     else if (hits != hits_expect)
     {
-        yaz_log(LOG_FATAL, "Search %s: Expected %d, got %d", pqf,
+        yaz_log(YLOG_FATAL, "Search %s: Expected %d, got %d", pqf,
 		hits_expect, hits);
         *exit_code = 2;
     }

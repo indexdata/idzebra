@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.35.2.1 2006-08-14 10:38:58 adam Exp $
+/* $Id: invstat.c,v 1.35.2.2 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -64,7 +64,7 @@ static void print_dict_item (ZebraMaps zm, const char *s, int count,
                 *to++ = *res++;
     }
     *to = '\0';
-    /* yaz_log (LOG_LOG, "%s", keybuf); */
+    /* yaz_log(YLOG_LOG, "%s", keybuf); */
     printf("%10d %s %d.%d - %d.%d\n",count, keybuf,
               firstsys,firstseq, lastsys,lastseq);
 }
@@ -173,7 +173,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
             lastsys=key.sysno;
             lastseq=key.seqno;
             if ( pp->is->method->debug >8 )
-	       logf (LOG_LOG,"sysno=%d seqno=%d (%x/%x) oc=%d/%d ofs=%d ",
+	       yaz_log(YLOG_LOG,"sysno=%d seqno=%d (%x/%x) oc=%d/%d ofs=%d ",
 	           key.sysno, key.seqno,
 	           key.sysno, key.seqno,
 	           occur,occurx, pp->offset);
@@ -181,12 +181,12 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         /* printf("\n"); */ /*!*/
 #ifdef SKIPTHIS
         if ( pp->is->method->debug >7 )
-	   logf(LOG_LOG,"item %d=%d:%d says %d keys, counted %d",
+	   yaz_log(YLOG_LOG,"item %d=%d:%d says %d keys, counted %d",
 	      isam_p, isamd_type(isam_p), isamd_block(isam_p),
 	      occur, occurx); 
 #endif
         if (occurx != occur) 
-          logf(LOG_LOG,"Count error!!! read %d, counted %d", occur, occurx);
+          yaz_log(YLOG_LOG,"Count error!!! read %d, counted %d", occur, occurx);
         assert (occurx == occur);
         i = pp->cat;
         if (info[1])
@@ -321,7 +321,7 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
     {
 	fprintf (stdout, "   Blocks   Occur      KB Bytes/Entry\n");
 	if (zh->reg->isamd->method->debug >0) 
-            logf(LOG_LOG,"   Blocks   Occur      KB Bytes/Entry");
+            yaz_log(YLOG_LOG,"   Blocks   Occur      KB Bytes/Entry");
 	for (i = 0; i<=SINGLETON_TYPE; i++)
 	{
 	    blocks= isamd_block_used(zh->reg->isamd,i);
@@ -338,7 +338,7 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
     		    	 (int) ((1023.0 + (double) blocks * size)/1024),
     			 ((double) blocks * size)/count);
 	        if (zh->reg->isamd->method->debug >0) 
-    		    logf(LOG_LOG, "%c %7d %7d %7d %5.2f",
+    		    yaz_log(YLOG_LOG, "%c %7d %7d %7d %5.2f",
     		         (i==SINGLETON_TYPE)?('z'):('A'+i),
     		         blocks,
     		         count,

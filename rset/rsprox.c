@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.5.2.2 2006-08-14 10:39:20 adam Exp $
+/* $Id: rsprox.c,v 1.5.2.3 2006-12-05 21:14:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -140,11 +140,11 @@ static RSFD r_open (RSET ct, int flag)
 
     if (flag & RSETF_WRITE)
     {
-	logf (LOG_FATAL, "prox set type is read-only");
+	yaz_log(YLOG_FATAL, "prox set type is read-only");
 	return NULL;
     }
     rfd = (struct rset_prox_rfd *) xmalloc (sizeof(*rfd));
-    logf(LOG_DEBUG,"rsprox (%s) open [%p]", ct->control->desc, rfd);
+    yaz_log(YLOG_DEBUG,"rsprox (%s) open [%p]", ct->control->desc, rfd);
     rfd->next = info->rfd_list;
     info->rfd_list = rfd;
     rfd->info = info;
@@ -192,7 +192,7 @@ static void r_close (RSFD rfd)
             xfree (rfd);
             return;
         }
-    logf (LOG_FATAL, "r_close but no rfd match!");
+    yaz_log(YLOG_FATAL, "r_close but no rfd match!");
     assert (0);
 }
 
@@ -216,7 +216,7 @@ static void r_rewind (RSFD rfd)
     struct rset_prox_rfd *p = (struct rset_prox_rfd *) rfd;
     int dummy, i;
 
-    logf (LOG_DEBUG, "rsprox_rewind");
+    yaz_log(YLOG_DEBUG, "rsprox_rewind");
 
     for (i = 0; i < info->p.rset_no; i++)
     {
@@ -392,7 +392,7 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
 
 static int r_write (RSFD rfd, const void *buf)
 {
-    logf (LOG_FATAL, "prox set type is read-only");
+    yaz_log(YLOG_FATAL, "prox set type is read-only");
     return -1;
 }
 

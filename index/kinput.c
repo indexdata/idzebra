@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.59.2.2 2006-08-14 10:38:58 adam Exp $
+/* $Id: kinput.c,v 1.59.2.3 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -85,21 +85,21 @@ void key_file_chunk_read (struct key_file *f)
     f->buf_size = 0;
     if (fd == -1)
     {
-        logf (LOG_WARN|LOG_ERRNO, "cannot open %s", fname);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "cannot open %s", fname);
 	return ;
     }
     if (!f->length)
     {
         if ((f->length = lseek (fd, 0L, SEEK_END)) == (off_t) -1)
         {
-            logf (LOG_WARN|LOG_ERRNO, "cannot seek %s", fname);
+            yaz_log(YLOG_WARN|YLOG_ERRNO, "cannot seek %s", fname);
 	    close (fd);
 	    return ;
         }
     }
     if (lseek (fd, f->offset, SEEK_SET) == -1)
     {
-        logf (LOG_WARN|LOG_ERRNO, "cannot seek %s", fname);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "cannot seek %s", fname);
 	close(fd);
 	return ;
     }
@@ -112,7 +112,7 @@ void key_file_chunk_read (struct key_file *f)
     }
     if (r == -1)
     {
-        logf (LOG_WARN|LOG_ERRNO, "read of %s", fname);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "read of %s", fname);
 	close (fd);
 	return;
     }
@@ -220,7 +220,7 @@ int key_file_read (struct key_file *f, char *key)
 		sprintf(s+strlen(s), "%02X", key[j]&0xff);
 	    if (j == 20)
 		sprintf(s+strlen(s), " ..");
-	    yaz_log(LOG_LOG, "key hex=%s", s);
+	    yaz_log(YLOG_LOG, "key hex=%s", s);
 	}
     }
     d = key_file_decode (f);
@@ -235,7 +235,7 @@ int key_file_read (struct key_file *f, char *key)
     d = key_file_decode (f);
     itkey.seqno = d + f->seqno;
 #if 0
-    yaz_log(LOG_LOG, "key sysno=%d seqno=%d cmd=%d", itkey.sysno, itkey.seqno,
+    yaz_log(YLOG_LOG, "key sysno=%d seqno=%d cmd=%d", itkey.sysno, itkey.seqno,
 	    key[i-1]);
 #endif
     f->seqno = itkey.seqno;
@@ -310,8 +310,8 @@ struct heap_info *key_heap_init_buff ( ZebraHandle zh,
 void key_heap_destroy (struct heap_info *hi, int nkeys)
 {
     int i;
-    yaz_log (LOG_DEBUG, "key_heap_destroy");
-    yaz_log (LOG_DEBUG, "key_heap_destroy nk=%d",nkeys);
+    yaz_log(YLOG_DEBUG, "key_heap_destroy");
+    yaz_log(YLOG_DEBUG, "key_heap_destroy nk=%d",nkeys);
     if (!hi->zh)
         for (i = 0; i<=nkeys; i++)
             xfree (hi->info.buf[i]);
@@ -385,7 +385,7 @@ static int heap_read_one_raw (struct heap_info *hi, char *name, char *key)
         return 0;
     --(zh->reg->ptr_i);
     cp=(zh->reg->key_buf)[zh->reg->ptr_top - ptr_i];
-    logf (LOG_DEBUG, " raw: i=%ld top=%ld cp=%p", (long) ptr_i,
+    yaz_log(YLOG_DEBUG, " raw: i=%ld top=%ld cp=%p", (long) ptr_i,
 	  (long) zh->reg->ptr_top, cp);
     strcpy(name, cp);
     memcpy(key, cp+strlen(name)+1, KEY_SIZE);
@@ -625,7 +625,7 @@ static void print_dict_item (ZebraMaps zm, const char *s)
                 *to++ = *res++;
     }
     *to = '\0';
-    yaz_log (LOG_LOG, "%s", keybuf);
+    yaz_log(YLOG_LOG, "%s", keybuf);
 }
 #endif
 
@@ -725,7 +725,7 @@ int heap_inpd (struct heap_info *hi)
             dictlen=dict_info[0];
             memcpy (dictentry, dict_info+1, dictlen );
 #ifdef SKIPTHIS
-            logf(LOG_LOG,"dictentry before. len=%d: %d %d %d %d %d %d %d %d %d",
+            yaz_log(YLOG_LOG,"dictentry before. len=%d: %d %d %d %d %d %d %d %d %d",
                dictlen,dictentry[0], dictentry[1], dictentry[2],
                        dictentry[3], dictentry[4], dictentry[5],
                        dictentry[6], dictentry[7], dictentry[8]); /*!*/
@@ -747,7 +747,7 @@ int heap_inpd (struct heap_info *hi)
                 hi->no_deletions++;
                 if (!dict_delete (hi->reg->dict, this_name)) 
                 {
-	            logf (LOG_FATAL, "dict_delete failed");
+	            yaz_log(YLOG_FATAL, "dict_delete failed");
                     abort();
                 }
             }
@@ -875,7 +875,7 @@ int heap_inps (struct heap_info *hi)
         }
 	else
 	{
-	    logf (LOG_FATAL, "isams doesn't support this kind of update");
+	    yaz_log(YLOG_FATAL, "isams doesn't support this kind of update");
 	    break;
 	}
     }
@@ -905,10 +905,10 @@ void progressFunc (struct key_file *keyp, void *info)
         remaining = (time_t) ((now - p->startTime)*
             ((double) p->totalBytes/p->totalOffset - 1.0));
         if (remaining <= 130)
-            logf (LOG_LOG, "Merge %2.1f%% completed; %ld seconds remaining",
+            yaz_log(YLOG_LOG, "Merge %2.1f%% completed; %ld seconds remaining",
                  (100.0*p->totalOffset) / p->totalBytes, (long) remaining);
         else
-            logf (LOG_LOG, "Merge %2.1f%% completed; %ld minutes remaining",
+            yaz_log(YLOG_LOG, "Merge %2.1f%% completed; %ld minutes remaining",
 	         (100.0*p->totalOffset) / p->totalBytes, (long) remaining/60);
     }
     p->totalOffset += keyp->buf_size;
@@ -928,7 +928,7 @@ void zebra_index_merge (ZebraHandle zh)
     int nkeys = zh->reg->key_file_no;
     int usefile; 
     
-    logf (LOG_DEBUG, " index_merge called with nk=%d b=%p", 
+    yaz_log(YLOG_DEBUG, " index_merge called with nk=%d b=%p", 
                     nkeys, zh->reg->key_buf);
     if ( (nkeys==0) && (zh->reg->key_buf==0) )
         return; /* nothing to merge - probably flush after end-trans */
@@ -1000,11 +1000,11 @@ void zebra_index_merge (ZebraHandle zh)
     }
     if (hi->no_iterations)
     { /* do not log if nothing happened */
-        logf (LOG_LOG, "Iterations . . .%7d", hi->no_iterations);
-        logf (LOG_LOG, "Distinct words .%7d", hi->no_diffs);
-        logf (LOG_LOG, "Updates. . . . .%7d", hi->no_updates);
-        logf (LOG_LOG, "Deletions. . . .%7d", hi->no_deletions);
-        logf (LOG_LOG, "Insertions . . .%7d", hi->no_insertions);
+        yaz_log(YLOG_LOG, "Iterations . . .%7d", hi->no_iterations);
+        yaz_log(YLOG_LOG, "Distinct words .%7d", hi->no_diffs);
+        yaz_log(YLOG_LOG, "Updates. . . . .%7d", hi->no_updates);
+        yaz_log(YLOG_LOG, "Deletions. . . .%7d", hi->no_deletions);
+        yaz_log(YLOG_LOG, "Insertions . . .%7d", hi->no_insertions);
     }
     zh->reg->key_file_no = 0;
 

@@ -1,4 +1,4 @@
-/* $Id: d1_sumout.c,v 1.2.2.1 2006-08-14 10:38:51 adam Exp $
+/* $Id: d1_sumout.c,v 1.2.2.2 2006-12-05 21:14:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -63,7 +63,7 @@ Z_BriefBib *data1_nodetosummary (data1_handle dh, data1_node *n,
     assert(n->which == DATA1N_root);
     if (strcmp(n->u.root.type, "summary"))
     {
-	yaz_log(LOG_WARN, "Attempt to convert a non-summary record");
+	yaz_log(YLOG_WARN, "Attempt to convert a non-summary record");
 	return 0;
     }
 
@@ -87,7 +87,7 @@ Z_BriefBib *data1_nodetosummary (data1_handle dh, data1_node *n,
     {
 	if (c->which != DATA1N_tag || !c->u.tag.element)
 	{
-	    yaz_log(LOG_WARN, "Malformed element in Summary record");
+	    yaz_log(YLOG_WARN, "Malformed element in Summary record");
 	    return 0;
 	}
 	if (select && !c->u.tag.node_selected)
@@ -109,7 +109,7 @@ Z_BriefBib *data1_nodetosummary (data1_handle dh, data1_node *n,
 	    case 16: res->abstract = f_string(c, o); break;
 	    case 17: abort(); /* TODO */
 	    default:
-	        yaz_log(LOG_WARN, "Unknown element in Summary record.");
+	        yaz_log(YLOG_WARN, "Unknown element in Summary record.");
 	}
     }
     return res;

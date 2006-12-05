@@ -1,4 +1,4 @@
-/* $Id: d1_varset.c,v 1.2.2.2 2006-08-14 10:38:51 adam Exp $
+/* $Id: d1_varset.c,v 1.2.2.3 2006-12-05 21:14:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -39,11 +39,11 @@ data1_vartype *data1_getvartypebyct (data1_handle dh, data1_varset *set,
 	    for (t = c->types; t; t = t->next)
 		if (!data1_matchstr(t->name, type))
 		    return t;
-	    yaz_log(LOG_WARN, "Unknown variant type %s in class %s",
+	    yaz_log(YLOG_WARN, "Unknown variant type %s in class %s",
 		    type, zclass);
 	    return 0;
 	}
-    yaz_log(LOG_WARN, "Unknown variant class %s", zclass);
+    yaz_log(YLOG_WARN, "Unknown variant class %s", zclass);
     return 0;
 }
 
@@ -64,7 +64,7 @@ data1_varset *data1_read_varset (data1_handle dh, const char *file)
 
     if (!(f = data1_path_fopen(dh, file, "r")))
     {
-	yaz_log(LOG_WARN|LOG_ERRNO, "%s", file);
+	yaz_log(YLOG_WARN|YLOG_ERRNO, "%s", file);
 	return 0;
     }
     while ((argc = readconf_line(f, &lineno, line, 512, argv, 50)))
@@ -74,7 +74,7 @@ data1_varset *data1_read_varset (data1_handle dh, const char *file)
 	    
 	    if (argc != 3)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # or args to class",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # or args to class",
 			file, lineno);
 		continue;
 	    }
@@ -94,13 +94,13 @@ data1_varset *data1_read_varset (data1_handle dh, const char *file)
 
 	    if (!typep)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Directive class must precede type",
+		yaz_log(YLOG_WARN, "%s:%d: Directive class must precede type",
 			file, lineno);
 		continue;
 	    }
 	    if (argc != 4)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # or args to type",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # or args to type",
 			file, lineno);
 		continue;
 	    }
@@ -110,7 +110,7 @@ data1_varset *data1_read_varset (data1_handle dh, const char *file)
 	    r->type = atoi(argv[1]);
 	    if (!(r->datatype = data1_maptype (dh, argv[3])))
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Unknown datatype '%s'",
+		yaz_log(YLOG_WARN, "%s:%d: Unknown datatype '%s'",
 			file, lineno, argv[3]);
 		fclose(f);
 		return 0;
@@ -122,7 +122,7 @@ data1_varset *data1_read_varset (data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # args for name",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # args for name",
 			file, lineno);
 		continue;
 	    }
@@ -132,19 +132,19 @@ data1_varset *data1_read_varset (data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # args for reference",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # args for reference",
 			file, lineno);
 		continue;
 	    }
 	    if ((res->reference = oid_getvalbyname(argv[1])) == VAL_NONE)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Unknown reference '%s'",
+		yaz_log(YLOG_WARN, "%s:%d: Unknown reference '%s'",
 			file, lineno, argv[1]);
 		continue;
 	    }
 	}
 	else 
-	    yaz_log(LOG_WARN, "%s:%d: Unknown directive '%s'",
+	    yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'",
 		    file, lineno, argv[0]);
     
     fclose(f);

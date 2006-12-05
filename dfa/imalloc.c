@@ -1,4 +1,4 @@
-/* $Id: imalloc.c,v 1.9.2.1 2006-08-14 10:38:53 adam Exp $
+/* $Id: imalloc.c,v 1.9.2.2 2006-12-05 21:14:39 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -45,7 +45,7 @@ void *imalloc (size_t size)
     size_t words = (4*sizeof(unsigned) -1 + size)/sizeof(unsigned);
     char *p = (char *)xmalloc( words*sizeof(unsigned) );
     if( !p )
-        logf (LOG_FATAL, "No memory: imalloc(%u); c/f %d/%d; %ld/%ld",
+        yaz_log(YLOG_FATAL, "No memory: imalloc(%u); c/f %d/%d; %ld/%ld",
            size, alloc_calls, free_calls, alloc, max_alloc );
     *((unsigned *)p) = size;
     ((unsigned *)p)[1] = MAG1;
@@ -59,7 +59,7 @@ void *imalloc (size_t size)
 #else
     void *p = (void *)xmalloc( size );
     if( !p )
-        logf (LOG_FATAL, "Out of memory (imalloc)" );
+        yaz_log(YLOG_FATAL, "Out of memory (imalloc)" );
     return p;
 #endif
 }
@@ -70,7 +70,7 @@ void *icalloc (size_t size)
     unsigned words = (4*sizeof(unsigned) -1 + size)/sizeof(unsigned);
     char *p = (char *) xcalloc( words*sizeof(unsigned), 1 );
     if( !p )
-        logf (LOG_FATAL, "No memory: icalloc(%u); c/f %d/%d; %ld/%ld",
+        yaz_log(YLOG_FATAL, "No memory: icalloc(%u); c/f %d/%d; %ld/%ld",
            size, alloc_calls, free_calls, alloc, max_alloc );
     ((unsigned *)p)[0] = size;
     ((unsigned *)p)[1] = MAG1;
@@ -84,7 +84,7 @@ void *icalloc (size_t size)
 #else
     void *p = (void *) xcalloc( size, 1 );
     if( !p )
-        logf (LOG_FATAL, "Out of memory (icalloc)" );
+        yaz_log(YLOG_FATAL, "Out of memory (icalloc)" );
     return p;
 #endif
 }
@@ -98,14 +98,14 @@ void ifree (void *p)
     ++free_calls;
     size = (-2)[(unsigned *) p];
     if( (-1)[(unsigned *) p] != MAG1 )
-        logf (LOG_FATAL,"Internal: ifree(%u) magic 1 corrupted", size );
+        yaz_log(YLOG_FATAL,"Internal: ifree(%u) magic 1 corrupted", size );
     if( size[(unsigned char *) p] != MAG2 )
-        logf (LOG_FATAL,"Internal: ifree(%u) magic 2 corrupted", size );
+        yaz_log(YLOG_FATAL,"Internal: ifree(%u) magic 2 corrupted", size );
     if( (size+1)[(unsigned char *) p] != MAG3 )
-        logf (LOG_FATAL,"Internal: ifree(%u) magic 3 corrupted", size );
+        yaz_log(YLOG_FATAL,"Internal: ifree(%u) magic 3 corrupted", size );
     alloc -= size;
     if( alloc < 0L )
-        logf (LOG_FATAL,"Internal: ifree(%u) negative alloc.", size );
+        yaz_log(YLOG_FATAL,"Internal: ifree(%u) negative alloc.", size );
     xfree( (unsigned *) p-2 );
 #else
     xfree (p);

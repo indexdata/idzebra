@@ -1,4 +1,4 @@
-/* $Id: physical.c,v 1.18.2.2 2006-08-14 10:39:03 adam Exp $
+/* $Id: physical.c,v 1.18.2.3 2006-12-05 21:14:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -44,14 +44,14 @@ static int is_freestore_alloc(ISAM is, int type)
     	if (bf_read(is->types[type].bf, tmp, 0, sizeof(tmp),
 	    &is->types[type].freelist) <=0)
 	{
-	    logf (LOG_FATAL, "Failed to allocate block");
+	    yaz_log(YLOG_FATAL, "Failed to allocate block");
 	    exit(1);
 	}
     }
     else
     	tmp = is->types[type].top++;
 
-    logf (LOG_DEBUG, "Allocating block #%d", tmp);
+    yaz_log(YLOG_DEBUG, "Allocating block #%d", tmp);
     return tmp;
 }
 
@@ -59,12 +59,12 @@ static void is_freestore_free(ISAM is, int type, int block)
 {
     int tmp;
 
-    logf (LOG_DEBUG, "Releasing block #%d", block);
+    yaz_log(YLOG_DEBUG, "Releasing block #%d", block);
     tmp = is->types[type].freelist;
     is->types[type].freelist = block;
     if (bf_write(is->types[type].bf, block, 0, sizeof(tmp), &tmp) < 0)
     {
-    	logf (LOG_FATAL, "Failed to deallocate block.");
+    	yaz_log(YLOG_FATAL, "Failed to deallocate block.");
     	exit(1);
     }
 }
@@ -88,7 +88,7 @@ int is_p_read_partial(is_mtable *tab, is_mblock *block)
     if (bf_read(tab->is->types[tab->pos_type].bf, block->diskpos, 0, toread,
 	buf->data) < 0)
     {
-    	logf (LOG_FATAL, "bfread failed.");
+    	yaz_log(YLOG_FATAL, "bfread failed.");
     	return -1;
     }
     /* extract header info */
@@ -105,7 +105,7 @@ int is_p_read_partial(is_mtable *tab, is_mblock *block)
 	    sizeof(tab->num_records));
 	buf->offset +=sizeof(tab->num_records);
     }
-    logf(LOG_DEBUG, "R: Block #%d: num %d nextpos %d total %d",
+    yaz_log(YLOG_DEBUG, "R: Block #%d: num %d nextpos %d total %d",
         block->diskpos, block->num_records, block->nextpos,
 	block == tab->data ? tab->num_records : -1);
     buf->num = (toread - buf->offset) / is_keysize(tab->is);
@@ -126,7 +126,7 @@ int is_p_read_full(is_mtable *tab, is_mblock *block)
 
     if (block->state == IS_MBSTATE_UNREAD && is_p_read_partial(tab, block) < 0)
     {
-    	logf (LOG_FATAL, "partial read failed.");
+    	yaz_log(YLOG_FATAL, "partial read failed.");
     	return -1;
     }
     if (block->state == IS_MBSTATE_PARTIAL)
@@ -145,7 +145,7 @@ int is_p_read_full(is_mtable *tab, is_mblock *block)
 	    if (bf_read(tab->is->types[tab->pos_type].bf, block->diskpos, block->bread, toread *
 		is_keysize(tab->is), buf->data) < 0)
 	    {
-	    	logf (LOG_FATAL, "bfread failed.");
+	    	yaz_log(YLOG_FATAL, "bfread failed.");
 	    	return -1;
 	    }
 	    buf->offset = 0;
@@ -155,7 +155,7 @@ int is_p_read_full(is_mtable *tab, is_mblock *block)
     	}
 	block->state = IS_MBSTATE_CLEAN;
     }
-    logf (LOG_DEBUG, "R: Block #%d contains %d records.", block->diskpos, block->num_records);
+    yaz_log(YLOG_DEBUG, "R: Block #%d contains %d records.", block->diskpos, block->num_records);
     return 0;
 }
 
@@ -199,12 +199,12 @@ void is_p_sync(is_mtable *tab)
 		sizeof(tab->num_records));
 	    sum += sizeof(tab->num_records);
 	}
-	logf (LOG_DEBUG, "W: Block #%d contains %d records.", p->diskpos,
+	yaz_log(YLOG_DEBUG, "W: Block #%d contains %d records.", p->diskpos,
 	    p->num_records);
 	assert(p->num_records > 0);
 	for (b = p->data; b; b = b->next)
 	{
-            logf(LOG_DEBUG, "   buf: offset %d, keys %d, type %d, ref %d",
+            yaz_log(YLOG_DEBUG, "   buf: offset %d, keys %d, type %d, ref %d",
 	    	b->offset, b->num, b->type, b->refcount);
 	    if ((v = b->num * is_keysize(tab->is)) > 0)
 		memcpy(type->dbuf + sum, b->data + b->offset, v);
@@ -214,7 +214,7 @@ void is_p_sync(is_mtable *tab)
 	}
 	if (bf_write(type->bf, p->diskpos, 0, sum, type->dbuf) < 0)
 	{
-	    logf (LOG_FATAL, "Failed to write block.");
+	    yaz_log(YLOG_FATAL, "Failed to write block.");
 	    exit(1);
 	}
     }
@@ -282,7 +282,7 @@ void is_p_align(is_mtable *tab)
     is_mbuf *mbufs, *mbp;
     int blocks, recsblock;
 
-    logf (LOG_DEBUG, "Realigning table.");
+    yaz_log(YLOG_DEBUG, "Realigning table.");
     for (mblock = tab->data; mblock; mblock = next)
     {
         next = mblock->next;
@@ -303,7 +303,7 @@ void is_p_align(is_mtable *tab)
 		    {
 			if (is_p_read_full(tab, next) < 0)
 			{
-			    logf(LOG_FATAL, "Error during re-alignment");
+			    yaz_log(YLOG_FATAL, "Error during re-alignment");
 			    abort();
 			}
 			if (next->nextpos && !next->next)
@@ -371,14 +371,14 @@ void is_p_remap(is_mtable *tab)
     is_mblock *blockp, **blockpp;
     int recsblock, blocks;
 
-    logf (LOG_DEBUG, "Remapping table.");
+    yaz_log(YLOG_DEBUG, "Remapping table.");
     /* collect all data */
     bufpp = &mbufs;
     for (blockp = tab->data; blockp; blockp = blockp->next)
     {
     	if (blockp->state < IS_MBSTATE_CLEAN && is_m_read_full(tab, blockp) < 0)
 	{
-	    logf (LOG_FATAL, "Read-full failed in remap.");
+	    yaz_log(YLOG_FATAL, "Read-full failed in remap.");
 	    exit(1);
 	}
     	*bufpp = blockp->data;

@@ -1,4 +1,4 @@
-/* $Id: merge.c,v 1.23.2.1 2006-08-14 10:39:12 adam Exp $
+/* $Id: merge.c,v 1.23.2.2 2006-12-05 21:14:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -105,7 +105,7 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
             if (!*firstpos)
                 *firstpos = mb[i].block;
             if (is->method->debug > 2)
-                logf (LOG_LOG, "isc: skip ptr=%d size=%d %d %d",
+                yaz_log(YLOG_LOG, "isc: skip ptr=%d size=%d %d %d",
                      i, ssize, cat, mb[i].block);
             ++(is->files[cat].no_skip_writes);
             continue;
@@ -121,7 +121,7 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
             memcpy (src+sizeof(int)+sizeof(ssize), numkeys,
                     sizeof(*numkeys));
             if (is->method->debug > 2)
-                logf (LOG_LOG, "isc: flush ptr=%d numk=%d size=%d nextpos=%d",
+                yaz_log(YLOG_LOG, "isc: flush ptr=%d numk=%d size=%d nextpos=%d",
                      i, *numkeys, (int) ssize, mb[i+1].block);
         }
         else
@@ -129,7 +129,7 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
             src = r_buf + mb[i].offset - ISAMC_BLOCK_OFFSET_N;
             ssize += ISAMC_BLOCK_OFFSET_N;
             if (is->method->debug > 2)
-                logf (LOG_LOG, "isc: flush ptr=%d size=%d nextpos=%d",
+                yaz_log(YLOG_LOG, "isc: flush ptr=%d size=%d nextpos=%d",
                      i, (int) ssize, mb[i+1].block);
         }
         memcpy (src, &mb[i+1].block, sizeof(int));
@@ -190,7 +190,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
     cat = pp->cat;
 
     if (debug > 1)
-        logf (LOG_LOG, "isc: isc_merge begin %d %d", cat, pp->pos);
+        yaz_log(YLOG_LOG, "isc: isc_merge begin %d %d", cat, pp->pos);
 
     /* read first item from i */
     i_item_ptr = i_item;
@@ -221,7 +221,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
                        the original (if any)
 		    */
                     if (debug > 3)
-                        logf (LOG_LOG, "isc: release A");
+                        yaz_log(YLOG_LOG, "isc: release A");
                     if (mb[ptr].block)
                         isc_release_block (is, pp->cat, mb[ptr].block);
                     mb[ptr].block = pp->pos;
@@ -237,7 +237,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
                     mb[ptr].dirty = last_dirty;
                     mb[ptr].offset = r_offset;
                     if (debug > 3)
-                        logf (LOG_LOG, "isc: bound ptr=%d,offset=%d",
+                        yaz_log(YLOG_LOG, "isc: bound ptr=%d,offset=%d",
                             ptr, r_offset);
                     if (cat==is->max_cat && ptr >= is->method->max_blocks_mem)
                     {
@@ -245,7 +245,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
                            except 1 will be flushed.
                          */
                         if (debug > 2)
-                            logf (LOG_LOG, "isc: flush A %d sections", ptr);
+                            yaz_log(YLOG_LOG, "isc: flush A %d sections", ptr);
                         flush_blocks (is, mb, ptr-1, r_buf, &firstpos, cat,
                                       0, &pp->numKeys);
                         mb[0].block = mb[ptr-1].block;
@@ -322,7 +322,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
         {
             if (!i_mode)                /* delete item which isn't there? */
             {
-                logf (LOG_FATAL, "Inconsistent register at offset %d",
+                yaz_log(YLOG_FATAL, "Inconsistent register at offset %d",
                                  r_offset);
                 abort ();
             }
@@ -348,7 +348,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
             if (border < new_offset && border >= r_offset)
             {
                 if (debug > 2)
-                    logf (LOG_LOG, "isc: border %d %d", ptr, border);
+                    yaz_log(YLOG_LOG, "isc: border %d %d", ptr, border);
                 /* Max size of current block category reached ...
                    make new virtual block entry */
                 mb[++ptr].block = 0;
@@ -361,7 +361,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
                        surely not the last one(s).
                      */
                     if (debug > 2)
-                        logf (LOG_LOG, "isc: flush B %d sections", ptr-1);
+                        yaz_log(YLOG_LOG, "isc: flush B %d sections", ptr-1);
                     flush_blocks (is, mb, ptr-1, r_buf, &firstpos, cat,
                                   0, &pp->numKeys);
                     mb[0].block = mb[ptr-1].block;
@@ -408,23 +408,23 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
                 int border = is->method->filecat[cat].ifill -
                          ISAMC_BLOCK_OFFSET_1 + mb[j].offset;
                 if (debug > 3)
-                    logf (LOG_LOG, "isc: remap %d border=%d", i, border);
+                    yaz_log(YLOG_LOG, "isc: remap %d border=%d", i, border);
                 if (mb[i+1].offset > border && mb[i].offset <= border)
                 {
                     if (debug > 3)
-                        logf (LOG_LOG, "isc:  to %d %d", j, mb[i].offset);
+                        yaz_log(YLOG_LOG, "isc:  to %d %d", j, mb[i].offset);
                     mb[++j].dirty = 1;
                     mb[j].block = 0;
                     mb[j].offset = mb[i].offset;
                 }
             }
             if (debug > 2)
-                logf (LOG_LOG, "isc: remap from %d to %d sections to cat %d",
+                yaz_log(YLOG_LOG, "isc: remap from %d to %d sections to cat %d",
                       ptr, j, cat);
             ptr = j;
             border = get_border (is, mb, ptr, cat, firstpos);
 	    if (debug > 3)
-		logf (LOG_LOG, "isc: border=%d r_offset=%d", border, r_offset);
+		yaz_log(YLOG_LOG, "isc: border=%d r_offset=%d", border, r_offset);
         }
     }
     if (mb[ptr].offset < r_offset)
@@ -438,7 +438,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
         if (cat == pp->cat && mb[ptr].block)
         {
             if (debug > 3)
-                logf (LOG_LOG, "isc: release C");
+                yaz_log(YLOG_LOG, "isc: release C");
             isc_release_block (is, pp->cat, mb[ptr].block);
             mb[ptr].block = 0;
 	    if (ptr > 0)
@@ -447,7 +447,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
     }
 
     if (debug > 2)
-        logf (LOG_LOG, "isc: flush C, %d sections", ptr);
+        yaz_log(YLOG_LOG, "isc: flush C, %d sections", ptr);
 
     if (firstpos)
     {
@@ -456,7 +456,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
         if (numKeys != isc_pp_num (pp))
         {
             if (debug > 2)
-                logf (LOG_LOG, "isc: patch num keys firstpos=%d num=%d",
+                yaz_log(YLOG_LOG, "isc: patch num keys firstpos=%d num=%d",
                                 firstpos, numKeys);
             bf_write (is->files[cat].bf, firstpos, ISAMC_BLOCK_OFFSET_N,
                       sizeof(numKeys), &numKeys);
@@ -475,14 +475,17 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
     if (!firstpos)
         cat = 0;
     if (debug > 1)
-        logf (LOG_LOG, "isc: isc_merge return %d %d", cat, firstpos);
+        yaz_log(YLOG_LOG, "isc: isc_merge return %d %d", cat, firstpos);
     isc_pp_close (pp);
     return cat + firstpos * 8;
 }
 
 /*
  * $Log: merge.c,v $
- * Revision 1.23.2.1  2006-08-14 10:39:12  adam
+ * Revision 1.23.2.2  2006-12-05 21:14:42  adam
+ * Updated code to use new YAZ log functions/defines.
+ *
+ * Revision 1.23.2.1  2006/08/14 10:39:12  adam
  * Update copyright year + FSF address
  *
  * Revision 1.23  2003/06/23 15:36:11  adam

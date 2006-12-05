@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.8.2.4 2006-08-14 10:38:51 adam Exp $
+/* $Id: d1_read.c,v 1.8.2.5 2006-12-05 21:14:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -118,7 +118,7 @@ static void data1_init_node (data1_handle dh, data1_node *r, int type)
         r->u.preprocess.attributes = 0;
         break;
     default:
-	logf (LOG_WARN, "data_mk_node_type. bad type = %d\n", type);
+	yaz_log(YLOG_WARN, "data_mk_node_type. bad type = %d\n", type);
     }
 }
 
@@ -194,7 +194,7 @@ data1_node *data1_mk_root (data1_handle dh, NMEM nmem, const char *name)
     data1_node *res;
     if (!absyn)
     {
-        yaz_log(LOG_WARN, "Unable to acquire abstract syntax " "for '%s'",
+        yaz_log(YLOG_WARN, "Unable to acquire abstract syntax " "for '%s'",
                 name); 
         /* It's now OK for a record not to have an absyn */
     }
@@ -804,7 +804,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 	    }
 	    if (amp || c != '>')
 	    {
-		yaz_log(LOG_WARN, "d1: %d: Malformed tag", line);
+		yaz_log(YLOG_WARN, "d1: %d: Malformed tag", line);
 		return 0;
 	    }
 	    else
@@ -832,7 +832,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 		    }
 		    if (i != level)
 		    {
-			yaz_log (LOG_WARN, "%d: no begin tag for %s",
+			yaz_log(YLOG_WARN, "%d: no begin tag for %s",
 				 line, tag);
 			break;
 		    }
@@ -1126,7 +1126,7 @@ int data1_iconv (data1_handle dh, NMEM m, data1_node *n,
                   const char *tocode, 
                   const char *fromcode)
 {
-    yaz_log(LOG_DEBUG, "data1_iconv tocode=%s fromcode=%s", tocode, fromcode);
+    yaz_log(YLOG_DEBUG, "data1_iconv tocode=%s fromcode=%s", tocode, fromcode);
     if (yaz_matchstr (tocode, fromcode))
     {
         WRBUF wrbuf = wrbuf_alloc();

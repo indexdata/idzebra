@@ -1,4 +1,4 @@
-/* $Id: lookgrep.c,v 1.26.2.1 2006-08-14 10:38:54 adam Exp $
+/* $Id: lookgrep.c,v 1.26.2.2 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -20,13 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
 
+#include <yaz/xmalloc.h>
 #include <dfa.h>
 #include <dict.h>
 
@@ -373,10 +372,10 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     dfa_verbose = 1;
 #endif
 
-    logf (LOG_DEBUG, "dict_lookup_grep range=%d", range);
+    yaz_log(YLOG_DEBUG, "dict_lookup_grep range=%d", range);
     for (i = 0; pattern[i]; i++)
     {
-	logf (LOG_DEBUG, " %3d  %c", pattern[i],
+	yaz_log(YLOG_DEBUG, " %3d  %c", pattern[i],
 	      (pattern[i] > ' ' && pattern[i] < 127) ? pattern[i] : '?');
     }
    
@@ -385,7 +384,7 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     i = dfa_parse (dfa, &this_pattern);
     if (i || *this_pattern)
     {
-        yaz_log (LOG_WARN, "dfa_parse fail=%d", i);
+        yaz_log(YLOG_WARN, "dfa_parse fail=%d", i);
         dfa_delete (&dfa);
         return -1;
     }
@@ -418,7 +417,7 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
                        dfa, max_pos, init_pos);
     else
         i = 0;
-    logf (LOG_DEBUG, "max_pos = %d", *max_pos);
+    yaz_log(YLOG_DEBUG, "max_pos = %d", *max_pos);
     dfa_delete (&dfa);
     xfree (Rj);
     rm_MatchContext (&mc);

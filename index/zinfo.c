@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.37.2.4 2006-08-14 10:39:00 adam Exp $
+/* $Id: zinfo.c,v 1.37.2.5 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -199,7 +199,7 @@ void zebraExplain_flush (ZebraExplainInfo zei, void *handle)
 void zebraExplain_close (ZebraExplainInfo zei)
 {
 #if ZINFO_DEBUG
-    yaz_log (LOG_LOG, "zebraExplain_close");
+    yaz_log(YLOG_LOG, "zebraExplain_close");
 #endif
     if (!zei)
 	return;
@@ -333,7 +333,7 @@ ZebraExplainInfo zebraExplain_open (
     NMEM nmem = nmem_create ();
 
 #if ZINFO_DEBUG
-    logf (LOG_LOG, "zebraExplain_open wr=%d", writeFlag);
+    yaz_log(YLOG_LOG, "zebraExplain_open wr=%d", writeFlag);
 #endif
     zei = (ZebraExplainInfo) nmem_malloc (nmem, sizeof(*zei));
     zei->databaseInfo = 0;
@@ -382,7 +382,7 @@ ZebraExplainInfo zebraExplain_open (
 	if (!zei->data1_target)
 #endif
 	{
-	    logf (LOG_FATAL, "Explain schema missing. Check profilePath");
+	    yaz_log(YLOG_FATAL, "Explain schema missing. Check profilePath");
 	    nmem_destroy (zei->nmem);
 	    return 0;
 	}
@@ -464,7 +464,7 @@ ZebraExplainInfo zebraExplain_open (
 	    np = np->child;
 	    assert (np && np->which == DATA1N_data);
 	    zei->runNumber = atoi_n (np->u.data.data, np->u.data.len);
-            yaz_log (LOG_DEBUG, "read runnumber = %d", zei->runNumber);
+            yaz_log(YLOG_DEBUG, "read runnumber = %d", zei->runNumber);
 	    *zdip = NULL;
 	}
 	rec_rm (&trec);
@@ -489,7 +489,7 @@ ZebraExplainInfo zebraExplain_open (
 				 "</></>\n" );
 	    if (!zei->data1_target)
 	    {
-		logf (LOG_FATAL, "Explain schema missing. Check profilePath");
+		yaz_log(YLOG_FATAL, "Explain schema missing. Check profilePath");
 		nmem_destroy (zei->nmem);
 		return 0;
 	    }
@@ -598,7 +598,7 @@ static void zebraExplain_readAttributeDetails (ZebraExplainInfo zei,
 				     node_use->u.data.len);
 	(*zsuip)->info.ordinal = atoi_n (node_ordinal->u.data.data,
 					 node_ordinal->u.data.len);
-	logf (LOG_DEBUG, "set=%d use=%d ordinal=%d",
+	yaz_log(YLOG_DEBUG, "set=%d use=%d ordinal=%d",
 	      (*zsuip)->info.set, (*zsuip)->info.use, (*zsuip)->info.ordinal);
         zsuip = &(*zsuip)->next;
     }
@@ -705,19 +705,19 @@ int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database)
     if (!zdi)
         return -1;
 #if ZINFO_DEBUG
-    logf (LOG_LOG, "zebraExplain_curDatabase: %s", database);
+    yaz_log(YLOG_LOG, "zebraExplain_curDatabase: %s", database);
 #endif
     if (zdi->readFlag)
     {
 #if ZINFO_DEBUG
-	logf (LOG_LOG, "zebraExplain_readDatabase: %s", database);
+	yaz_log(YLOG_LOG, "zebraExplain_readDatabase: %s", database);
 #endif
         zebraExplain_readDatabase (zei, zdi);
     }
     if (zdi->attributeDetails->readFlag)
     {
 #if ZINFO_DEBUG
-	logf (LOG_LOG, "zebraExplain_readAttributeDetails: %s", database);
+	yaz_log(YLOG_LOG, "zebraExplain_readAttributeDetails: %s", database);
 #endif
         zebraExplain_readAttributeDetails (zei, zdi->attributeDetails);
     }
@@ -789,7 +789,7 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
         database_n = database;
 
 #if ZINFO_DEBUG
-    logf (LOG_LOG, "zebraExplain_newDatabase: %s", database);
+    yaz_log(YLOG_LOG, "zebraExplain_newDatabase: %s", database);
 #endif
     assert (zei);
     for (zdi = zei->databaseInfo; zdi; zdi=zdi->next)
@@ -918,7 +918,7 @@ static void zebraExplain_writeCategoryList (ZebraExplainInfo zei,
     node_categoryList = zcl->data1_categoryList;
 
 #if ZINFO_DEBUG
-    logf (LOG_LOG, "zebraExplain_writeCategoryList");
+    yaz_log(YLOG_LOG, "zebraExplain_writeCategoryList");
 #endif
 
     drec = createRecord (zei->records, &sysno);
@@ -972,7 +972,7 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
     
     zad->dirty = 0;
 #if ZINFO_DEBUG
-    logf (LOG_LOG, "zebraExplain_writeAttributeDetails");    
+    yaz_log(YLOG_LOG, "zebraExplain_writeAttributeDetails");    
 #endif
 
     drec = createRecord (zei->records, &zad->sysno);
@@ -1100,7 +1100,7 @@ static void zebraExplain_writeDatabase (ZebraExplainInfo zei,
 
     zdi->dirty = 0;
 #if ZINFO_DEBUG
-    logf (LOG_LOG, "zebraExplain_writeDatabase %s", zdi->databaseName);
+    yaz_log(YLOG_LOG, "zebraExplain_writeDatabase %s", zdi->databaseName);
 #endif
     drec = createRecord (zei->records, &zdi->sysno);
     assert (zdi->data1_database);
@@ -1184,7 +1184,7 @@ static void zebraExplain_writeAttributeSet (ZebraExplainInfo zei,
 	attset = data1_attset_search_id (zei->dh, entp->value);
 	    
 #if ZINFO_DEBUG
-    logf (LOG_LOG, "zebraExplain_writeAttributeSet %s",
+    yaz_log(YLOG_LOG, "zebraExplain_writeAttributeSet %s",
 	  attset ? attset->name : "<unknown>");    
 #endif
 
@@ -1461,7 +1461,7 @@ static void att_loadset(void *p, const char *n, const char *name)
 {
     data1_handle dh = (data1_handle) p;
     if (!data1_get_attset (dh, name))
-	logf (LOG_WARN, "Directive attset failed for %s", name);
+	yaz_log(YLOG_WARN, "Directive attset failed for %s", name);
 }
 
 void zebraExplain_loadAttsets (data1_handle dh, Res res)

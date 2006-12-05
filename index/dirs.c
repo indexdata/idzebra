@@ -1,4 +1,4 @@
-/* $Id: dirs.c,v 1.19.2.2 2006-08-14 10:38:57 adam Exp $
+/* $Id: dirs.c,v 1.19.2.3 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -84,7 +84,7 @@ struct dirs_info *dirs_open (Dict dict, const char *rep, int rw)
     struct dirs_info *p;
     int before = 0, after;
 
-    logf (LOG_DEBUG, "dirs_open %s", rep);
+    yaz_log(YLOG_DEBUG, "dirs_open %s", rep);
     p = (struct dirs_info *) xmalloc (sizeof (*p));
     p->dict = dict;
     p->rw = rw;
@@ -96,7 +96,7 @@ struct dirs_info *dirs_open (Dict dict, const char *rep, int rw)
     after = p->no_max = 100;
     p->entries = (struct dirs_entry *)
 	xmalloc (sizeof(*p->entries) * (p->no_max));
-    logf (LOG_DEBUG, "dirs_open first scan");
+    yaz_log(YLOG_DEBUG, "dirs_open first scan");
     dict_scan (p->dict, p->nextpath, &before, &after, p, dirs_client_proc);
     return p;
 }
@@ -136,7 +136,7 @@ struct dirs_entry *dirs_read (struct dirs_info *p)
 
     if (p->no_read < p->no_cur)
     {
-        logf (LOG_DEBUG, "dirs_read %d. returns %s", p->no_read,
+        yaz_log(YLOG_DEBUG, "dirs_read %d. returns %s", p->no_read,
               (p->entries + p->no_read)->path);
         return p->last_entry = p->entries + (p->no_read++);
     }
@@ -154,7 +154,7 @@ struct dirs_entry *dirs_read (struct dirs_info *p)
     }
     p->no_read = 1;
     p->nextpath_deleted = 0;
-    logf (LOG_DEBUG, "dirs_read rescan %s", p->nextpath);
+    yaz_log(YLOG_DEBUG, "dirs_read rescan %s", p->nextpath);
     dict_scan (p->dict, p->nextpath, &before, &after, p, dirs_client_proc);
     if (p->no_read <= p->no_cur)
         return p->last_entry = p->entries;
@@ -171,7 +171,7 @@ void dirs_mkdir (struct dirs_info *p, const char *src, time_t mtime)
     char path[DIRS_MAX_PATH];
 
     sprintf (path, "%s%s", p->prefix, src);
-    logf (LOG_DEBUG, "dirs_mkdir %s", path);
+    yaz_log(YLOG_DEBUG, "dirs_mkdir %s", path);
     if (p->rw)
 	dict_insert (p->dict, path, sizeof(mtime), &mtime);
 }
@@ -181,7 +181,7 @@ void dirs_rmdir (struct dirs_info *p, const char *src)
     char path[DIRS_MAX_PATH];
 
     sprintf (path, "%s%s", p->prefix, src);
-    logf (LOG_DEBUG, "dirs_rmdir %s", path);
+    yaz_log(YLOG_DEBUG, "dirs_rmdir %s", path);
     if (p->rw)
 	dict_delete (p->dict, path);
 }
@@ -192,7 +192,7 @@ void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime)
     char info[16];
 
     sprintf (path, "%s%s", p->prefix, src);
-    logf (LOG_DEBUG, "dirs_add %s", path);
+    yaz_log(YLOG_DEBUG, "dirs_add %s", path);
     memcpy (info, &sysno, sizeof(sysno));
     memcpy (info+sizeof(sysno), &mtime, sizeof(mtime));
     if (p->rw)
@@ -204,7 +204,7 @@ void dirs_del (struct dirs_info *p, const char *src)
     char path[DIRS_MAX_PATH];
 
     sprintf (path, "%s%s", p->prefix, src);
-    logf (LOG_DEBUG, "dirs_del %s", path);
+    yaz_log(YLOG_DEBUG, "dirs_del %s", path);
     if (p->rw)
     {
         if (!strcmp(path, p->nextpath))

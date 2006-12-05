@@ -1,4 +1,4 @@
-/* $Id: drdwr.c,v 1.13.2.1 2006-08-14 10:38:54 adam Exp $
+/* $Id: drdwr.c,v 1.13.2.2 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -102,7 +102,7 @@ void dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush)
 		    bf_write (bf->bf, effective_block, effective_offset,
 			      p->nbytes, p->data);
 #if 0
-		    logf (LOG_LOG, "bf_write no=%d offset=%d size=%d",
+		    yaz_log(YLOG_LOG, "bf_write no=%d offset=%d size=%d",
 			  effective_block, effective_offset,
 			  p->nbytes);
 #endif
@@ -111,14 +111,14 @@ void dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush)
 		else
 		{
 #if 0
-		    logf (LOG_LOG, "bf_write1 no=%d offset=%d size=%d",
+		    yaz_log(YLOG_LOG, "bf_write1 no=%d offset=%d size=%d",
 			  effective_block, effective_offset,
 			  remain);
 #endif
 		    bf_write (bf->bf, effective_block, effective_offset,
 			      remain, p->data);
 #if 0
-		    logf (LOG_LOG, "bf_write2 no=%d offset=%d size=%d",
+		    yaz_log(YLOG_LOG, "bf_write2 no=%d offset=%d size=%d",
 			  effective_block+1, 0, p->nbytes - remain);
 #endif
 		    bf_write (bf->bf, effective_block+1, 0,

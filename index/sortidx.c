@@ -1,4 +1,4 @@
-/* $Id: sortidx.c,v 1.8.2.1 2006-08-14 10:38:59 adam Exp $
+/* $Id: sortidx.c,v 1.8.2.2 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -20,10 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-
- 
 #include <string.h>
 
+#include <yaz/xmalloc.h>
 #include <yaz/log.h>
 #include <bfile.h>
 #include <sortidx.h>
@@ -92,7 +91,7 @@ int sortIdx_type (SortIdx si, int type)
     sf->type = type;
     sf->bf = NULL;
     sprintf (fname, "sort%d", type);
-    logf (LOG_DEBUG, "sort idx %s wr=%d", fname, si->write_flag);
+    yaz_log(YLOG_DEBUG, "sort idx %s wr=%d", fname, si->write_flag);
     sf->bf = bf_open (si->bfs, fname, SORT_IDX_BLOCKSIZE, si->write_flag);
     if (!sf->bf)
     {

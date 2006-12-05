@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.18.2.1 2006-08-14 10:39:20 adam Exp $
+/* $Id: rsnull.c,v 1.18.2.2 2006-12-05 21:14:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -72,7 +72,7 @@ static RSFD r_open (RSET ct, int flag)
 {
     if (flag & RSETF_WRITE)
     {
-	logf (LOG_FATAL, "NULL set type is read-only");
+	yaz_log(YLOG_FATAL, "NULL set type is read-only");
 	return NULL;
     }
     return "";
@@ -90,7 +90,7 @@ static void r_delete (RSET ct)
 
 static void r_rewind (RSFD rfd)
 {
-    logf (LOG_DEBUG, "rsnull_rewind");
+    yaz_log(YLOG_DEBUG, "rsnull_rewind");
 }
 
 static void r_pos (RSFD rfd, int *current, int *total)
@@ -110,7 +110,7 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
 
 static int r_write (RSFD rfd, const void *buf)
 {
-    logf (LOG_FATAL, "NULL set type is read-only");
+    yaz_log(YLOG_FATAL, "NULL set type is read-only");
     return -1;
 }
 

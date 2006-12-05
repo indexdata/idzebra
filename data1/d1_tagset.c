@@ -1,4 +1,4 @@
-/* $Id: d1_tagset.c,v 1.2.2.1 2006-08-14 10:38:51 adam Exp $
+/* $Id: d1_tagset.c,v 1.2.2.2 2006-12-05 21:14:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -129,7 +129,7 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
 
     if (!(f = data1_path_fopen(dh, file, "r")))
     {
-	yaz_log(LOG_WARN|LOG_ERRNO, "%s", file);
+	yaz_log(YLOG_WARN|YLOG_ERRNO, "%s", file);
 	return 0;
     }
     res = data1_empty_tagset (dh);
@@ -149,7 +149,7 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
 
 	    if (argc != 4)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # args to tag", file, lineno);
+		yaz_log(YLOG_WARN, "%s:%d: Bad # args to tag", file, lineno);
 		continue;
 	    }
 	    value = atoi(argv[1]);
@@ -167,7 +167,7 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
 
 	    if (!(rr->kind = data1_maptype(dh, type)))
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Unknown datatype %s",
+		yaz_log(YLOG_WARN, "%s:%d: Unknown datatype %s",
 		     file, lineno, type);
 		fclose(f);
 		return 0;
@@ -195,7 +195,7 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # args to name", file, lineno);
+		yaz_log(YLOG_WARN, "%s:%d: Bad # args to name", file, lineno);
 		continue;
 	    }
 	    res->name = nmem_strdup(mem, argv[1]);
@@ -206,14 +206,14 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
 	    
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # args to reference",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # args to reference",
 			file, lineno);
 		continue;
 	    }
 	    name = argv[1];
 	    if ((res->reference = oid_getvalbyname(name)) == VAL_NONE)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Unknown tagset ref '%s'",
+		yaz_log(YLOG_WARN, "%s:%d: Unknown tagset ref '%s'",
 			file, lineno, name);
 		continue;
 	    }
@@ -222,7 +222,7 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log (LOG_WARN, "%s:%d: Bad # args to type", file, lineno);
+		yaz_log(YLOG_WARN, "%s:%d: Bad # args to type", file, lineno);
 		continue;
 	    }
 	    if (!res->type)
@@ -235,7 +235,7 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
 
 	    if (argc < 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # args to include",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # args to include",
 			file, lineno);
 		continue;
 	    }
@@ -245,7 +245,7 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
 	    *childp = data1_read_tagset (dh, name, type);
 	    if (!(*childp))
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Inclusion failed for tagset %s",
+		yaz_log(YLOG_WARN, "%s:%d: Inclusion failed for tagset %s",
 			file, lineno, name);
 		continue;
 	    }
@@ -253,7 +253,7 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
 	}
 	else
 	{
-	    yaz_log(LOG_WARN, "%s:%d: Unknown directive '%s'",
+	    yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'",
 		    file, lineno, cmd);
 	}
     }

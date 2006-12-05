@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.14.2.1 2006-08-14 10:38:59 adam Exp $
+/* $Id: rank1.c,v 1.14.2.2 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -70,7 +70,7 @@ static void *create (ZebraHandle zh)
     struct rank_class_info *ci = (struct rank_class_info *)
 	xmalloc (sizeof(*ci));
 
-    yaz_log (LOG_DEBUG, "rank-1 create");
+    yaz_log(YLOG_DEBUG, "rank-1 create");
     return ci;
 }
 
@@ -83,7 +83,7 @@ static void destroy (struct zebra_register *reg, void *class_handle)
 {
     struct rank_class_info *ci = (struct rank_class_info *) class_handle;
 
-    yaz_log (LOG_DEBUG, "rank-1 destroy");
+    yaz_log(YLOG_DEBUG, "rank-1 destroy");
     xfree (ci);
 }
 
@@ -99,7 +99,7 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
     int i;
 
 #if DEBUG_RANK
-    yaz_log (LOG_LOG, "rank-1 begin");
+    yaz_log(YLOG_LOG, "rank-1 begin");
 #endif
     si->no_entries = rset->no_rset_terms;
     si->no_rank_entries = 0;
@@ -109,7 +109,7 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
     {
 	int g = rset->rset_terms[i]->nn;
 #if DEBUG_RANK
-        yaz_log(LOG_LOG, "i=%d flags=%s", i, rset->rset_terms[i]->flags);
+        yaz_log(YLOG_LOG, "i=%d flags=%s", i, rset->rset_terms[i]->flags);
 #endif
 	if (!strncmp (rset->rset_terms[i]->flags, "rank,", 5))
 	{
@@ -120,7 +120,7 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
             else
                 si->entries[i].rank_weight = 34;
 #if DEBUG_RANK
-            yaz_log (LOG_LOG, " i=%d weight=%d", i,
+            yaz_log(YLOG_LOG, " i=%d weight=%d", i,
                      si->entries[i].rank_weight);
 #endif
 	    (si->no_rank_entries)++;
@@ -130,7 +130,7 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
 	si->entries[i].local_occur = 0;
 	si->entries[i].global_occur = g;
 	si->entries[i].global_inv = 32 - log2_int (g);
-	yaz_log (LOG_DEBUG, " global_inv = %d g = %d", 32 - log2_int (g), g);
+	yaz_log(YLOG_DEBUG, " global_inv = %d g = %d", 32 - log2_int (g), g);
     }
     return si;
 }
@@ -142,7 +142,7 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
 static void end (struct zebra_register *reg, void *set_handle)
 {
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
-    yaz_log (LOG_DEBUG, "rank-1 end");
+    yaz_log(YLOG_DEBUG, "rank-1 end");
     xfree (si->entries);
     xfree (si);
 }
@@ -156,7 +156,7 @@ static void add (void *set_handle, int seqno, int term_index)
 {
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
 #if DEBUG_RANK
-    yaz_log (LOG_LOG, "rank-1 add seqno=%d term_index=%d", seqno, term_index);
+    yaz_log(YLOG_LOG, "rank-1 add seqno=%d term_index=%d", seqno, term_index);
 #endif
     si->last_pos = seqno;
     si->entries[term_index].local_occur++;
@@ -177,12 +177,12 @@ static int calc (void *set_handle, int sysno)
 	return -1;
 
 #if DEBUG_RANK
-    yaz_log(LOG_LOG, "calc");
+    yaz_log(YLOG_LOG, "calc");
 #endif
     for (i = 0; i < si->no_entries; i++)
     {
 #if DEBUG_RANK
-        yaz_log(LOG_LOG, "i=%d rank_flag=%d lo=%d",
+        yaz_log(YLOG_LOG, "i=%d rank_flag=%d lo=%d",
                 i, si->entries[i].rank_flag, si->entries[i].local_occur);
 #endif
 	if (si->entries[i].rank_flag && (lo = si->entries[i].local_occur))
@@ -192,7 +192,7 @@ static int calc (void *set_handle, int sysno)
     divisor = si->no_rank_entries * (8+log2_int (si->last_pos/si->no_entries));
     score = score / divisor;
 #if DEBUG_RANK
-    yaz_log (LOG_LOG, "sysno=%d score=%d", sysno, score);
+    yaz_log(YLOG_LOG, "sysno=%d score=%d", sysno, score);
 #endif
     if (score > 1000)
 	score = 1000;

@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.15.2.5 2006-08-14 10:39:20 adam Exp $
+/* $Id: rsbetween.c,v 1.15.2.6 2006-12-05 21:14:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -130,7 +130,7 @@ static void log2 (struct rset_between_rfd *p, char *msg, int cmp_l, int cmp_r)
     char buf_l[32];
     char buf_m[32];
     char buf_r[32];
-    logf(LOG_DEBUG,"btw: %s l=%s(%d/%d) m=%s(%d) r=%s(%d/%d), lev=%d",
+    yaz_log(YLOG_DEBUG,"btw: %s l=%s(%d/%d) m=%s(%d) r=%s(%d/%d), lev=%d",
       msg, 
       (*p->info->printer)(p->buf_l, buf_l), p->more_l, cmp_l,
       (*p->info->printer)(p->buf_m, buf_m), p->more_m,
@@ -202,7 +202,7 @@ static RSFD r_open_between (RSET ct, int flag)
 
     if (flag & RSETF_WRITE)
     {
-        logf (LOG_FATAL, "between set type is read-only");
+        yaz_log(YLOG_FATAL, "between set type is read-only");
         return NULL;
     }
     rfd = (struct rset_between_rfd *) xmalloc (sizeof(*rfd));
@@ -275,7 +275,7 @@ static void r_close_between (RSFD rfd)
             xfree (rfd);
             return;
         }
-    logf (LOG_FATAL, "r_close_between but no rfd match!");
+    yaz_log(YLOG_FATAL, "r_close_between but no rfd match!");
     assert (0);
 }
 
@@ -299,7 +299,7 @@ static void r_rewind_between (RSFD rfd)
     struct rset_between_rfd *p = (struct rset_between_rfd *) rfd;
 
 #if RSBETWEEN_DEBUG
-    logf (LOG_DEBUG, "rsbetween_rewind");
+    yaz_log(YLOG_DEBUG, "rsbetween_rewind");
 #endif
     rset_rewind (info->rset_l, p->rfd_l);
     rset_rewind (info->rset_m, p->rfd_m);
@@ -349,7 +349,7 @@ static int r_forward_between(RSET ct, RSFD rfd, void *buf, int *term_index,
 
 static int r_write_between (RSFD rfd, const void *buf)
 {
-    logf (LOG_FATAL, "between set type is read-only");
+    yaz_log(YLOG_FATAL, "between set type is read-only");
     return -1;
 }
 

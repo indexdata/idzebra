@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.37.2.2 2006-08-14 10:39:24 adam Exp $
+/* $Id: res.c,v 1.37.2.3 2006-12-05 21:14:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -150,7 +150,7 @@ static void reread (Res r)
     fr = fopen (r->name, "r");
     if (!fr)
     {
-        logf (LOG_WARN|LOG_ERRNO, "Cannot open `%s'", r->name);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "Cannot open `%s'", r->name);
 	return ;
     }
     val_buf = (char*) xmalloc (val_max);
@@ -206,7 +206,7 @@ static void reread (Res r)
                         val_size--;
                     val_buf[val_size] = '\0';
 		    resp->value = xstrdup_env(val_buf);
-                    logf (LOG_DEBUG, "(name=%s,value=%s)",
+                    yaz_log(YLOG_DEBUG, "(name=%s,value=%s)",
                          resp->name, resp->value);
                     break;
                 }
@@ -253,7 +253,7 @@ Res res_open (const char *name, Res def_res, Res over_res)
         if (access (name, R_OK))
 #endif
         {
-            logf (LOG_WARN|LOG_ERRNO, "Cannot open `%s'", name);
+            yaz_log(YLOG_WARN|YLOG_ERRNO, "Cannot open `%s'", name);
 	    return 0;
         }
     }
@@ -339,7 +339,7 @@ const char *res_get_def (Res r, const char *name, const char *def)
 
     if (!(t = res_get (r, name)))
     {
-    	logf (LOG_DEBUG, "CAUTION: Using default resource %s:%s", name, def);
+    	yaz_log(YLOG_DEBUG, "CAUTION: Using default resource %s:%s", name, def);
     	return def;
     }
     else
@@ -415,7 +415,7 @@ int res_write (Res r)
     fr = fopen (r->name, "w");
     if (!fr)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "Cannot create `%s'", r->name);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "Cannot create `%s'", r->name);
         exit (1);
     }
 

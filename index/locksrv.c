@@ -1,4 +1,4 @@
-/* $Id: locksrv.c,v 1.17.2.1 2006-08-14 10:38:58 adam Exp $
+/* $Id: locksrv.c,v 1.17.2.2 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -46,7 +46,7 @@ int zebra_server_lock_init (ZebraService zi)
     zi->server_path_prefix = (char *) xmalloc (strlen(path_prefix)+1);
     strcpy (zi->server_path_prefix, path_prefix);
 
-    logf (LOG_DEBUG, "Locking system initialized");
+    yaz_log(YLOG_DEBUG, "Locking system initialized");
     return 0;
 }
 
@@ -55,7 +55,7 @@ int zebra_server_lock_destroy (ZebraService zi)
     xfree (zi->server_path_prefix);
     zebra_lock_destroy (zi->server_lock_cmt);
     zebra_lock_destroy (zi->server_lock_org);
-    logf (LOG_DEBUG, "Locking system destroyed");
+    yaz_log(YLOG_DEBUG, "Locking system destroyed");
     return 0;
 }
 
@@ -69,7 +69,7 @@ int zebra_server_lock (ZebraService zi, int commitPhase)
 	strcat (path, FNAME_COMMIT_LOCK);
         if (!(zi->server_lock_cmt = zebra_lock_create (path, 0)))
         {
-            logf (LOG_FATAL|LOG_ERRNO, "create %s", path);
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "create %s", path);
             return -1;
         }
         assert (zi->server_lock_org == NULL);
@@ -78,18 +78,18 @@ int zebra_server_lock (ZebraService zi, int commitPhase)
 	strcat (path, FNAME_ORG_LOCK);
         if (!(zi->server_lock_org = zebra_lock_create (path, 0)))
         {
-            logf (LOG_FATAL|LOG_ERRNO, "create %s", path);
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "create %s", path);
             return -1;
         }
     }
     if (commitPhase)
     {
-        logf (LOG_DEBUG, "Server locks org");
+        yaz_log(YLOG_DEBUG, "Server locks org");
         zebra_lock (zi->server_lock_org);
     }
     else
     {
-        logf (LOG_DEBUG, "Server locks cmt");
+        yaz_log(YLOG_DEBUG, "Server locks cmt");
         zebra_lock (zi->server_lock_cmt);
     }
     return 0;
@@ -99,9 +99,9 @@ void zebra_server_unlock (ZebraService zi, int commitPhase)
 {
     if (zi->server_lock_org == NULL)
         return;
-    logf (LOG_DEBUG, "Server unlocks org");
+    yaz_log(YLOG_DEBUG, "Server unlocks org");
     zebra_unlock (zi->server_lock_org);
-    logf (LOG_DEBUG, "Server unlocks cmt");
+    yaz_log(YLOG_DEBUG, "Server unlocks cmt");
     zebra_unlock (zi->server_lock_cmt);
 }
 

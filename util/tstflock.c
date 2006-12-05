@@ -1,4 +1,4 @@
-/* $Id: tstflock.c,v 1.16.2.1 2006-10-23 11:37:11 adam Exp $
+/* $Id: tstflock.c,v 1.16.2.2 2006-12-05 21:14:46 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -190,7 +190,7 @@ static void tst_thread(int num, int write_flag)
     for (i = 0; i < num; i++)
         YAZ_CHECK(id[i] == 123);
     *seqp++ = '\0';
-    logf(LOG_LOG, "tst_thread(%d,%d) returns seq=%s", 
+    yaz_log(YLOG_LOG, "tst_thread(%d,%d) returns seq=%s", 
          num, write_flag, seq);
 }
 

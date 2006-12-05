@@ -1,4 +1,4 @@
-/* $Id: issh.c,v 1.6.2.1 2006-08-14 10:39:03 adam Exp $
+/* $Id: issh.c,v 1.6.2.2 2006-12-05 21:14:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -161,7 +161,7 @@ int main()
     static char word[1024] = "help", arg[1024] = "";
     int i;
 
-    log_init(LOG_ALL, "issh", 0);
+    log_init(YLOG_ALL, "issh", 0);
 
     common_resource = res_open("testres");
     assert(common_resource);

@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.50.2.4 2006-10-30 14:14:20 adam Exp $
+/* $Id: regxread.c,v 1.50.2.5 2006-12-05 21:14:44 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -412,7 +412,7 @@ static int readParseToken (const char **cpp, int *len)
         cmd[i] = '\0';
         if (i == 0)
         {
-            logf (LOG_WARN, "bad character %d %c", *cp, *cp);
+            yaz_log(YLOG_WARN, "bad character %d %c", *cp, *cp);
             cp++;
             while (*cp && *cp != ' ' && *cp != '\t' &&
                    *cp != '\n' && *cp != '\r')
@@ -433,7 +433,7 @@ static int readParseToken (const char **cpp, int *len)
 	    return REGX_INIT;
         else
         {
-            logf (LOG_WARN, "bad command %s", cmd);
+            yaz_log(YLOG_WARN, "bad command %s", cmd);
             return 0;
         }
     }
@@ -472,7 +472,7 @@ static int actionListMk (struct lexSpec *spec, const char *s,
 	        int sz = s - s0;
                 xfree (*ap);
                 *ap = NULL;
-                logf (LOG_WARN, "regular expression error '%.*s'", sz, s0);
+                yaz_log(YLOG_WARN, "regular expression error '%.*s'", sz, s0);
                 return -1;
             }
 	    if (debug_dfa_tran)
@@ -484,10 +484,10 @@ static int actionListMk (struct lexSpec *spec, const char *s,
             s++;
             break;
         case REGX_BEGIN:
-            logf (LOG_WARN, "cannot use BEGIN here");
+            yaz_log(YLOG_WARN, "cannot use BEGIN here");
             continue;
         case REGX_INIT:
-            logf (LOG_WARN, "cannot use INIT here");
+            yaz_log(YLOG_WARN, "cannot use INIT here");
             continue;
         case REGX_END:
             *ap = (struct lexRuleAction *) xmalloc (sizeof(**ap));
@@ -513,7 +513,7 @@ int readOneSpec (struct lexSpec *spec, const char *s)
 	tok = readParseToken (&s, &len);
 	if (tok != REGX_CODE)
 	{
-	    logf (LOG_WARN, "missing name after CONTEXT keyword");
+	    yaz_log(YLOG_WARN, "missing name after CONTEXT keyword");
 	    return 0;
 	}
 	if (len > 31)
@@ -544,17 +544,17 @@ int readOneSpec (struct lexSpec *spec, const char *s)
 	break;
     case REGX_PATTERN:
 #if REGX_DEBUG
-	logf (LOG_LOG, "rule %d %s", spec->context->ruleNo, s);
+	yaz_log(YLOG_LOG, "rule %d %s", spec->context->ruleNo, s);
 #endif
         r = dfa_parse (spec->context->dfa, &s);
         if (r)
         {
-            logf (LOG_WARN, "regular expression error. r=%d", r);
+            yaz_log(YLOG_WARN, "regular expression error. r=%d", r);
             return -1;
         }
         if (*s != '/')
         {
-            logf (LOG_WARN, "expects / at end of pattern. got %c", *s);
+            yaz_log(YLOG_WARN, "expects / at end of pattern. got %c", *s);
             return -1;
         }
         s++;
@@ -589,13 +589,13 @@ int readFileSpec (struct lexSpec *spec)
     }
     if (!spec_inf)
     {
-        logf (LOG_ERRNO|LOG_WARN, "cannot read spec file %s", spec->name);
+        yaz_log(YLOG_ERRNO|YLOG_WARN, "cannot read spec file %s", spec->name);
         return -1;
     }
-    logf (LOG_LOG, "reading regx filter %s", fname);
+    yaz_log(YLOG_LOG, "reading regx filter %s", fname);
 #if HAVE_TCL_H
     if (spec->tcl_interp)
-	logf (LOG_LOG, "Tcl enabled");
+	yaz_log(YLOG_LOG, "Tcl enabled");
 #endif
 
 #if 0
@@ -679,16 +679,16 @@ static void execData (struct lexSpec *spec,
 	return ;
 #if REGX_DEBUG
     if (elen > 80)
-        logf (LOG_LOG, "data(%d bytes) %.40s ... %.*s", elen,
+        yaz_log(YLOG_LOG, "data(%d bytes) %.40s ... %.*s", elen,
 	      ebuf, 40, ebuf + elen-40);
     else if (elen == 1 && ebuf[0] == '\n')
     {
-        logf (LOG_LOG, "data(new line)");
+        yaz_log(YLOG_LOG, "data(new line)");
     }
     else if (elen > 0)
-        logf (LOG_LOG, "data(%d bytes) %.*s", elen, elen, ebuf);
+        yaz_log(YLOG_LOG, "data(%d bytes) %.*s", elen, elen, ebuf);
     else 
-        logf (LOG_LOG, "data(%d bytes)", elen);
+        yaz_log(YLOG_LOG, "data(%d bytes)", elen);
 #endif
         
     if (spec->d1_level <= 1)
@@ -807,7 +807,7 @@ static void variantBegin (struct lexSpec *spec,
 
     if (spec->d1_level == 0)
     {
-        logf (LOG_WARN, "in variant begin. No record type defined");
+        yaz_log(YLOG_WARN, "in variant begin. No record type defined");
         return ;
     }
     if (class_len >= DATA1_MAX_SYMBOL)
@@ -821,7 +821,7 @@ static void variantBegin (struct lexSpec *spec,
     ttype[type_len] = '\0';
 
 #if REGX_DEBUG 
-    logf (LOG_LOG, "variant begin(%s,%s,%d)", tclass, ttype,
+    yaz_log(YLOG_LOG, "variant begin(%s,%s,%d)", tclass, ttype,
 	  spec->d1_level);
 #endif
 
@@ -846,7 +846,7 @@ static void variantBegin (struct lexSpec *spec,
 	}
 
 #if REGX_DEBUG 
-    logf (LOG_LOG, "variant node(%d)", spec->d1_level);
+    yaz_log(YLOG_LOG, "variant node(%d)", spec->d1_level);
 #endif
     parent = spec->d1_stack[spec->d1_level-1];
     res = data1_mk_node2 (spec->dh, spec->m, DATA1N_variant, parent);
@@ -883,7 +883,7 @@ static void tagBegin (struct lexSpec *spec,
 {
     if (spec->d1_level == 0)
     {
-        logf (LOG_WARN, "in element begin. No record type defined");
+        yaz_log(YLOG_WARN, "in element begin. No record type defined");
         return ;
     }
     tagStrip (&tag, &len);
@@ -891,7 +891,7 @@ static void tagBegin (struct lexSpec *spec,
 	tagDataRelease (spec);
 
 #if REGX_DEBUG 
-    logf (LOG_LOG, "begin tag(%.*s, %d)", len, tag, spec->d1_level);
+    yaz_log(YLOG_LOG, "begin tag(%.*s, %d)", len, tag, spec->d1_level);
 #endif
 
     spec->d1_stack[spec->d1_level] = data1_mk_tag_n (
@@ -917,7 +917,7 @@ static void tagEnd (struct lexSpec *spec, int min_level,
             break;
     }
 #if REGX_DEBUG
-    logf (LOG_LOG, "end tag(%d)", spec->d1_level);
+    yaz_log(YLOG_LOG, "end tag(%d)", spec->d1_level);
 #endif
 }
 
@@ -1089,7 +1089,7 @@ static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
         data1_node *res;
 
 #if REGX_DEBUG
-	logf (LOG_LOG, "begin record %s", absynName);
+	yaz_log(YLOG_LOG, "begin record %s", absynName);
 #endif
         res = data1_mk_root (spec->dh, spec->m, absynName);
         
@@ -1117,7 +1117,7 @@ static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
     {
 	struct lexContext *lc = spec->context;
 #if REGX_DEBUG
-	logf (LOG_LOG, "begin context %s",argv[2]);
+	yaz_log(YLOG_LOG, "begin context %s",argv[2]);
 #endif
 	while (lc && strcmp (argv[2], lc->name))
 	    lc = lc->next;
@@ -1126,7 +1126,7 @@ static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
 	    spec->context_stack[++(spec->context_stack_top)] = lc;
 	}
 	else
-	    logf (LOG_WARN, "unknown context %s", argv[2]);
+	    yaz_log(YLOG_WARN, "unknown context %s", argv[2]);
     }
     else
 	return TCL_ERROR;
@@ -1148,7 +1148,7 @@ static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
 	    (spec->d1_level)--;
 	}
 #if REGX_DEBUG
-	logf (LOG_LOG, "end record");
+	yaz_log(YLOG_LOG, "end record");
 #endif
 	spec->stop_flag = 1;
     }
@@ -1169,7 +1169,7 @@ static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
 	if (spec->d1_level <= 1)
 	{
 #if REGX_DEBUG
-	    logf (LOG_LOG, "end element end records");
+	    yaz_log(YLOG_LOG, "end element end records");
 #endif
 	    spec->stop_flag = 1;
 	}
@@ -1177,7 +1177,7 @@ static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
     else if (!strcmp (argv[1], "context"))
     {
 #if REGX_DEBUG
-	logf (LOG_LOG, "end context");
+	yaz_log(YLOG_LOG, "end context");
 #endif
 	if (spec->context_stack_top)
 	    (spec->context_stack_top)--;
@@ -1299,7 +1299,7 @@ static void execTcl (struct lexSpec *spec, struct regxCode *code)
     if (ret != TCL_OK)
     {
     	const char *err = Tcl_GetVar(spec->tcl_interp, "errorInfo", 0);
-	logf(LOG_FATAL, "Tcl error, line=%d, \"%s\"\n%s", 
+	yaz_log(YLOG_FATAL, "Tcl error, line=%d, \"%s\"\n%s", 
 	    spec->tcl_interp->errorLine,
 	    spec->tcl_interp->result,
 	    err ? err : "[NO ERRORINFO]");
@@ -1330,7 +1330,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
             r = execTok (spec, &s, &cmd_str, &cmd_len);
             if (r < 2)
 	    {
-		logf (LOG_WARN, "missing keyword after 'begin'");
+		yaz_log(YLOG_WARN, "missing keyword after 'begin'");
                 continue;
 	    }
             p = regxStrz (cmd_str, cmd_len, ptmp);
@@ -1349,7 +1349,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                     memcpy (absynName, cmd_str, cmd_len);
                     absynName[cmd_len] = '\0';
 #if REGX_DEBUG
-                    logf (LOG_LOG, "begin record %s", absynName);
+                    yaz_log(YLOG_LOG, "begin record %s", absynName);
 #endif
                     res = data1_mk_root (spec->dh, spec->m, absynName);
                     
@@ -1412,21 +1412,21 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 		    r = execTok (spec, &s, &cmd_str, &cmd_len);
 		    p = regxStrz (cmd_str, cmd_len, ptmp);
 #if REGX_DEBUG
-		    logf (LOG_LOG, "begin context %s", p);
+		    yaz_log(YLOG_LOG, "begin context %s", p);
 #endif
 		    while (lc && strcmp (p, lc->name))
 			lc = lc->next;
 		    if (lc)
 			spec->context_stack[++(spec->context_stack_top)] = lc;
 		    else
-			logf (LOG_WARN, "unknown context %s", p);
+			yaz_log(YLOG_WARN, "unknown context %s", p);
 		    
 		}
 		r = execTok (spec, &s, &cmd_str, &cmd_len);
 	    }
 	    else
 	    {
-		logf (LOG_WARN, "bad keyword '%s' after begin", p);
+		yaz_log(YLOG_WARN, "bad keyword '%s' after begin", p);
 	    }
         }
         else if (!strcmp (p, "end"))
@@ -1434,7 +1434,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
             r = execTok (spec, &s, &cmd_str, &cmd_len);
             if (r < 2)
 	    {
-		logf (LOG_WARN, "missing keyword after 'end'");
+		yaz_log(YLOG_WARN, "missing keyword after 'end'");
 		continue;
 	    }
 	    p = regxStrz (cmd_str, cmd_len, ptmp);
@@ -1447,7 +1447,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 		}
 		r = execTok (spec, &s, &cmd_str, &cmd_len);
 #if REGX_DEBUG
-		logf (LOG_LOG, "end record");
+		yaz_log(YLOG_LOG, "end record");
 #endif
 		spec->stop_flag = 1;
 	    }
@@ -1469,7 +1469,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                 if (spec->d1_level <= 1)
                 {
 #if REGX_DEBUG
-		    logf (LOG_LOG, "end element end records");
+		    yaz_log(YLOG_LOG, "end element end records");
 #endif
 		    spec->stop_flag = 1;
                 }
@@ -1478,14 +1478,14 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 	    else if (!strcmp (p, "context"))
 	    {
 #if REGX_DEBUG
-		logf (LOG_LOG, "end context");
+		yaz_log(YLOG_LOG, "end context");
 #endif
 		if (spec->context_stack_top)
 		    (spec->context_stack_top)--;
 		r = execTok (spec, &s, &cmd_str, &cmd_len);
 	    }	    
 	    else
-		logf (LOG_WARN, "bad keyword '%s' after end", p);
+		yaz_log(YLOG_WARN, "bad keyword '%s' after end", p);
 	}
         else if (!strcmp (p, "data"))
         {
@@ -1513,12 +1513,12 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                         break;
                 }
                 else 
-                    logf (LOG_WARN, "bad data option: %.*s",
+                    yaz_log(YLOG_WARN, "bad data option: %.*s",
                           cmd_len, cmd_str);
             }
             if (r != 2)
             {
-                logf (LOG_WARN, "missing data item after data");
+                yaz_log(YLOG_WARN, "missing data item after data");
                 continue;
             }
             if (element_str)
@@ -1541,7 +1541,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                 r = execTok (spec, &s, &cmd_str, &cmd_len);
                 if (r < 2)
                 {
-                    logf (LOG_WARN, "missing number after -offset");
+                    yaz_log(YLOG_WARN, "missing number after -offset");
                     continue;
                 }
                 p = regxStrz (cmd_str, cmd_len, ptmp);
@@ -1552,12 +1552,12 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                 offset = 0;
             if (r < 2)
             {
-                logf (LOG_WARN, "missing index after unread command");
+                yaz_log(YLOG_WARN, "missing index after unread command");
                 continue;
             }
             if (cmd_len != 1 || *cmd_str < '0' || *cmd_str > '9')
             {
-                logf (LOG_WARN, "bad index after unread command");
+                yaz_log(YLOG_WARN, "bad index after unread command");
                 continue;
             }
             else
@@ -1582,20 +1582,20 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 		if (lc)
 		    spec->context_stack[spec->context_stack_top] = lc;
 		else
-		    logf (LOG_WARN, "unknown context %s", p);
+		    yaz_log(YLOG_WARN, "unknown context %s", p);
 
 	    }
 	    r = execTok (spec, &s, &cmd_str, &cmd_len);
 	}
         else
         {
-            logf (LOG_WARN, "unknown code command '%.*s'", cmd_len, cmd_str);
+            yaz_log(YLOG_WARN, "unknown code command '%.*s'", cmd_len, cmd_str);
             r = execTok (spec, &s, &cmd_str, &cmd_len);
             continue;
         }
         if (r > 1)
         {
-            logf (LOG_WARN, "ignoring token %.*s", cmd_len, cmd_str);
+            yaz_log(YLOG_WARN, "ignoring token %.*s", cmd_len, cmd_str);
             do {
                 r = execTok (spec, &s, &cmd_str, &cmd_len);
             } while (r > 1);
@@ -1633,7 +1633,7 @@ static int execAction (struct lexSpec *spec, struct lexRuleAction *ap,
                     arg_no++;
                     arg_start[arg_no] = F_WIN_EOF;
                     arg_end[arg_no] = F_WIN_EOF;
-		    yaz_log(LOG_DEBUG, "Pattern match rest of record");
+		    yaz_log(YLOG_DEBUG, "Pattern match rest of record");
 		    *pptr = F_WIN_EOF;
                 }
                 else
@@ -1685,7 +1685,7 @@ static int execRule (struct lexSpec *spec, struct lexContext *context,
                      int ruleNo, int start_ptr, int *pptr)
 {
 #if REGX_DEBUG
-    logf (LOG_LOG, "exec rule %d", ruleNo);
+    yaz_log(YLOG_LOG, "exec rule %d", ruleNo);
 #endif
     return execAction (spec, context->fastRule[ruleNo]->actionList,
                        start_ptr, pptr);
@@ -1764,7 +1764,7 @@ data1_node *lexNode (struct lexSpec *spec, int *ptr)
                         if (spec->f_win_ef && *ptr != F_WIN_EOF)
 			{
 #if REGX_DEBUG
-			    logf (LOG_LOG, "regx: endf ptr=%d", *ptr);
+			    yaz_log(YLOG_LOG, "regx: endf ptr=%d", *ptr);
 #endif
                             (*spec->f_win_ef)(spec->f_win_fh, *ptr);
 			}
@@ -1829,7 +1829,7 @@ static data1_node *lexRoot (struct lexSpec *spec, off_t offset,
     }
     if (!lt)
     {
-	logf (LOG_WARN, "cannot find context %s", context_name);
+	yaz_log(YLOG_WARN, "cannot find context %s", context_name);
 	return NULL;
     }
     spec->context_stack[spec->context_stack_top] = lt;
@@ -1876,7 +1876,7 @@ data1_node *grs_read_regx (struct grs_read_info *p)
     struct lexSpec **curLexSpec = &specs->spec;
 
 #if REGX_DEBUG
-    logf (LOG_LOG, "grs_read_regx");
+    yaz_log(YLOG_LOG, "grs_read_regx");
 #endif
     if (!*curLexSpec || strcmp ((*curLexSpec)->name, p->type))
     {
@@ -1922,7 +1922,7 @@ data1_node *grs_read_tcl (struct grs_read_info *p)
     struct lexSpec **curLexSpec = &specs->spec;
 
 #if REGX_DEBUG
-    logf (LOG_LOG, "grs_read_tcl");
+    yaz_log(YLOG_LOG, "grs_read_tcl");
 #endif
     if (!*curLexSpec || strcmp ((*curLexSpec)->name, p->type))
     {

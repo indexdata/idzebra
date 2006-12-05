@@ -1,4 +1,4 @@
-/* $Id: apitest.c,v 1.16.2.2 2006-08-14 10:38:57 adam Exp $
+/* $Id: apitest.c,v 1.16.2.3 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -168,7 +168,7 @@ int main (int argc, char **argv)
 	/* bad query? */
 	if (!query)
 	{
-	    logf (LOG_WARN, "bad query %s\n", argv[argno]);
+	    yaz_log(YLOG_WARN, "bad query %s\n", argv[argno]);
 	    odr_reset (odr_input);
 	    continue;
 	}

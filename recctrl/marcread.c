@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.24.2.6 2006-10-26 23:46:49 adam Exp $
+/* $Id: marcread.c,v 1.24.2.7 2006-12-05 21:14:44 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -60,7 +60,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     {
 	int i;
 
-	yaz_log(LOG_WARN, "MARC: Skipping bad byte %d (0x%02X)",
+	yaz_log(YLOG_WARN, "MARC: Skipping bad byte %d (0x%02X)",
 		*buf & 0xff, *buf & 0xff);
 	for (i = 0; i<4; i++)
 	    buf[i] = buf[i+1];
@@ -71,14 +71,14 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     record_length = atoi_n (buf, 5);
     if (record_length < 25)
     {
-        logf (LOG_WARN, "MARC record length < 25, is %d", record_length);
+        yaz_log(YLOG_WARN, "MARC record length < 25, is %d", record_length);
         return NULL;
     }
     /* read remaining part - attempt to read one byte furhter... */
     read_bytes = (*p->readf)(p->fh, buf+5, record_length-4);
     if (read_bytes < record_length-5)
     {
-        logf (LOG_WARN, "Couldn't read whole MARC record");
+        yaz_log(YLOG_WARN, "Couldn't read whole MARC record");
         return NULL;
     }
     if (read_bytes == record_length - 4)
@@ -93,7 +93,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     res_root = data1_mk_root (p->dh, p->mem, absynName);
     if (!res_root)
     {
-        yaz_log (LOG_WARN, "cannot read MARC without an abstract syntax");
+        yaz_log(YLOG_WARN, "cannot read MARC without an abstract syntax");
         return 0;
     }
     if (marc_xml)
@@ -137,7 +137,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
         int l = 3 + length_data_entry + length_starting;
         if (entry_p + l >= record_length)
         {
-	    yaz_log(LOG_WARN, "MARC: Directory offset %d: end of record.",
+	    yaz_log(YLOG_WARN, "MARC: Directory offset %d: end of record.",
 		    entry_p);
 	    return 0;
         }
@@ -148,7 +148,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
         if (l >= 3)
         {
             /* not all digits, so stop directory scan */
-	    yaz_log(LOG_LOG, "MARC: Bad directory");
+	    yaz_log(YLOG_LOG, "MARC: Bad directory");
             break;
         }
         entry_p += 3 + length_data_entry + length_starting;
@@ -156,7 +156,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     end_of_directory = entry_p;
     if (base_address != entry_p+1)
     {
-	yaz_log(LOG_WARN, "MARC: Base address does not follow directory");
+	yaz_log(YLOG_WARN, "MARC: Base address does not follow directory");
     }
     for (entry_p = 24; entry_p != end_of_directory; )
     {
@@ -189,7 +189,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 
 	if (data_length <= 0 || data_offset < 0 || end_offset >= record_length)
 	{
-	    yaz_log(LOG_WARN, "MARC: Bad offsets in data. Skipping rest");
+	    yaz_log(YLOG_WARN, "MARC: Bad offsets in data. Skipping rest");
 	    break;
 	}
 	
@@ -419,7 +419,7 @@ static inline_subfield *cat_inline_subfield(mc_subfield *psf, WRBUF buf,
 		    wrbuf_puts(buf, " ");
 		}
 #if MARCOMP_DEBUG
-		logf(LOG_LOG, "cat_inline_subfield(): add subfield $%s", found->name);
+		yaz_log(YLOG_LOG, "cat_inline_subfield(): add subfield $%s", found->name);
 #endif		
 		pisf = found->next;
 	    }
@@ -483,7 +483,7 @@ static void cat_inline_field(mc_field *pf, WRBUF buf, data1_node *subfield)
 	    int i;
 	    if ((i=inline_parse(pif, psubf->u.tag.tag, get_data(psubf, &len)))<0)
 	    {
-		logf(LOG_WARN, "inline subfield ($%s): parse error",
+		yaz_log(YLOG_WARN, "inline subfield ($%s): parse error",
 		    psubf->u.tag.tag);
 		inline_destroy_field(pif);
 		return;	
@@ -525,14 +525,14 @@ static void cat_inline_field(mc_field *pf, WRBUF buf, data1_node *subfield)
 		}
 		else
 		{
-		    logf(LOG_WARN, "In-line field %s missed -- indicators do not match", pif->name);
+		    yaz_log(YLOG_WARN, "In-line field %s missed -- indicators do not match", pif->name);
 		}
 	    }
 	}
 	inline_destroy_field(pif);
     }
 #if MARCOMP_DEBUG    
-    logf(LOG_LOG, "cat_inline_field(): got buffer {%s}", buf->buf);
+    yaz_log(YLOG_LOG, "cat_inline_field(): got buffer {%s}", buf->buf);
 #endif
 }
 
@@ -577,7 +577,7 @@ static data1_node *cat_subfield(mc_subfield *psf, WRBUF buf,
 		    wrbuf_puts(buf, " ");
 		}
 #if MARCOMP_DEBUG		
-		logf(LOG_LOG, "cat_subfield(): add subfield $%s", found->u.tag.tag);
+		yaz_log(YLOG_LOG, "cat_subfield(): add subfield $%s", found->u.tag.tag);
 #endif		
 		subfield = found->next;
 	    }
@@ -653,7 +653,7 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
 	    wrbuf_puts(buf, "");
 	}
 #if MARCOMP_DEBUG
-        logf(LOG_LOG, "cat_field(): got buffer {%s}", buf->buf);
+        yaz_log(YLOG_LOG, "cat_field(): got buffer {%s}", buf->buf);
 #endif
 	return field->next;
     }
@@ -671,7 +671,7 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
 	))
     {
 #if MARCOMP_DEBUG
-	logf(LOG_WARN, "Field %s missed -- does not match indicators", field->u.tag.tag);
+	yaz_log(YLOG_WARN, "Field %s missed -- does not match indicators", field->u.tag.tag);
 #endif
 	return field->next;
     }
@@ -684,7 +684,7 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
     cat_subfield(pf->list, buf, subfield);
 
 #if MARCOMP_DEBUG    
-    logf(LOG_LOG, "cat_field(): got buffer {%s}", buf->buf);
+    yaz_log(YLOG_LOG, "cat_field(): got buffer {%s}", buf->buf);
 #endif
     
     return field->next;    
@@ -726,13 +726,13 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
     }
     buf = wrbuf_alloc();
 #if MARCOMP_DEBUG    
-    logf(LOG_LOG, "parse_data1_tree(): statement -{%s}", mc_stmnt);
+    yaz_log(YLOG_LOG, "parse_data1_tree(): statement -{%s}", mc_stmnt);
 #endif
     if (!yaz_matchstr(pf->name, "ldr"))
     {
 	data1_node *new;
 #if MARCOMP_DEBUG
-	logf(LOG_LOG,"parse_data1_tree(): try LEADER from {%d} to {%d} positions",
+	yaz_log(YLOG_LOG,"parse_data1_tree(): try LEADER from {%d} to {%d} positions",
 	    pf->interval.start, pf->interval.end);
 #endif	
 	if (marctab)
@@ -753,7 +753,7 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
 		data1_node *new;
 		char *pb;
 #if MARCOMP_DEBUG		
-		logf(LOG_LOG, "parse_data1_tree(): try field {%s}", field->u.tag.tag);
+		yaz_log(YLOG_LOG, "parse_data1_tree(): try field {%s}", field->u.tag.tag);
 #endif		
 		wrbuf_rewind(buf);
 		wrbuf_puts(buf, "");

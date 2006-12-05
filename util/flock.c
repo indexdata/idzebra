@@ -1,4 +1,4 @@
-/* $Id: flock.c,v 1.4.2.5 2006-10-27 11:06:48 adam Exp $
+/* $Id: flock.c,v 1.4.2.6 2006-12-05 21:14:46 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -147,7 +147,7 @@ ZebraLockHandle zebra_lock_create(const char *dir, const char *name)
         if (p->fd == -1)
         {
             xfree(p);
-            logf(LOG_WARN | LOG_ERRNO, 
+            yaz_log(YLOG_WARN|YLOG_ERRNO, 
                     "zebra_lock_create fail fname=%s", fname);
             p = 0;
         }
@@ -176,7 +176,7 @@ ZebraLockHandle zebra_lock_create(const char *dir, const char *name)
 #ifndef WIN32
         h->write_flag = 0;
 #endif
-        logf(log_level, "zebra_lock_create fd=%d p=%p fname=%s",
+        yaz_log(log_level, "zebra_lock_create fd=%d p=%p fname=%s",
                 h->p->fd, h, p->fname);
     }
     zebra_mutex_unlock(&lock_list_mutex);
@@ -189,10 +189,10 @@ void zebra_lock_destroy(ZebraLockHandle h)
 {
     if (!h)
 	return;
-    logf(log_level, "zebra_lock_destroy fd=%d p=%p fname=%s",
+    yaz_log(log_level, "zebra_lock_destroy fd=%d p=%p fname=%s",
             h->p->fd, h, h->p->fname);
     zebra_mutex_lock(&lock_list_mutex);
-    logf(log_level, "zebra_lock_destroy fd=%d p=%p fname=%s refcount=%d",
+    yaz_log(log_level, "zebra_lock_destroy fd=%d p=%p fname=%s refcount=%d",
             h->p->fd, h, h->p->fname, h->p->ref_count);
     assert(h->p->ref_count > 0);
     --(h->p->ref_count);
@@ -211,7 +211,7 @@ void zebra_lock_destroy(ZebraLockHandle h)
                 hp = &(*hp)->next;
         }
 
-        logf(log_level, "zebra_lock_destroy fd=%d p=%p fname=%s remove",
+        yaz_log(log_level, "zebra_lock_destroy fd=%d p=%p fname=%s remove",
                 h->p->fd, h, h->p->fname);
 
 #ifndef WIN32
@@ -237,12 +237,12 @@ static int unixLock(int fd, int type, int cmd)
     area.l_whence = SEEK_SET;
     area.l_len = area.l_start = 0L;
 
-    logf(log_level, "fcntl begin type=%d fd=%d", type, fd);
+    yaz_log(log_level, "fcntl begin type=%d fd=%d", type, fd);
     r = fcntl(fd, cmd, &area);
     if (r == -1)
-        logf(LOG_WARN|LOG_ERRNO, "fcntl FAIL type=%d fd=%d", type, fd);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "fcntl FAIL type=%d fd=%d", type, fd);
     else
-        logf(log_level, "fcntl type=%d OK fd=%d", type, fd);
+        yaz_log(log_level, "fcntl type=%d OK fd=%d", type, fd);
     
     return r;
 }
@@ -252,7 +252,7 @@ int zebra_lock_w(ZebraLockHandle h)
 {
     int r = 0;
     int do_lock = 0;
-    logf(log_level, "zebra_lock_w fd=%d p=%p fname=%s begin", 
+    yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s begin", 
             h->p->fd, h, h->p->fname);
 
 #ifdef WIN32
@@ -279,7 +279,7 @@ int zebra_lock_w(ZebraLockHandle h)
 
     h->write_flag = 1;
 #endif
-    logf(log_level, "zebra_lock_w fd=%d p=%p fname=%s end", 
+    yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s end", 
             h->p->fd, h, h->p->fname);
 
     return r;
@@ -290,7 +290,7 @@ int zebra_lock_r(ZebraLockHandle h)
     int r = 0;
     int do_lock = 0;
 
-    logf(log_level, "zebra_lock_r fd=%d p=%p fname=%s begin", 
+    yaz_log(log_level, "zebra_lock_r fd=%d p=%p fname=%s begin", 
             h->p->fd, h, h->p->fname);
 #ifdef WIN32
     while ((r = _locking(h->p->fd, _LK_LOCK, 1)))
@@ -316,7 +316,7 @@ int zebra_lock_r(ZebraLockHandle h)
     
     h->write_flag = 0;
 #endif
-    logf(log_level, "zebra_lock_r fd=%d p=%p fname=%s end", 
+    yaz_log(log_level, "zebra_lock_r fd=%d p=%p fname=%s end", 
             h->p->fd, h, h->p->fname);
     return r;
 }
@@ -324,7 +324,7 @@ int zebra_lock_r(ZebraLockHandle h)
 int zebra_unlock(ZebraLockHandle h)
 {
     int r = 0;
-    logf(log_level, "zebra_unlock fd=%d p=%p fname=%s begin",
+    yaz_log(log_level, "zebra_unlock fd=%d p=%p fname=%s begin",
             h->p->fd, h, h->p->fname);
 #ifdef WIN32
     r = _locking(h->p->fd, _LK_UNLCK, 1);
@@ -358,7 +358,7 @@ int zebra_unlock(ZebraLockHandle h)
             zebra_lock_rdwr_runlock(&h->p->rdwr_lock);
     }
 #endif
-    logf(log_level, "zebra_unlock fd=%d p=%p fname=%s end",
+    yaz_log(log_level, "zebra_unlock fd=%d p=%p fname=%s end",
             h->p->fd, h, h->p->fname);
     return r;
 }
@@ -376,7 +376,7 @@ static int check_for_linuxthreads()
     size_t r = confstr(_CS_GNU_LIBPTHREAD_VERSION, conf_buf, sizeof(conf_buf));
     if (r == 0)
     {
-        logf(LOG_WARN|LOG_ERRNO, "confstr failed");
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "confstr failed");
         return -1;
     }
     if (strncmp(conf_buf, "linuxthreads", 12) == 0)
@@ -394,10 +394,10 @@ void zebra_flock_init()
     {
         initialized = 1;
         log_level = yaz_log_module_level("flock");
-        logf(log_level, "zebra_flock_init");
+        yaz_log(log_level, "zebra_flock_init");
         check_for_linuxthreads();
         zebra_mutex_init(&lock_list_mutex);
-        logf(log_level, "posix_locks: %d", posix_locks);
+        yaz_log(log_level, "posix_locks: %d", posix_locks);
     }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: rsisams.c,v 1.6.2.1 2006-08-14 10:39:20 adam Exp $
+/* $Id: rsisams.c,v 1.6.2.2 2006-12-05 21:14:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -84,10 +84,10 @@ RSFD r_open (RSET ct, int flag)
     struct rset_isams_info *info = (struct rset_isams_info *) ct->buf;
     struct rset_pp_info *ptinfo;
 
-    logf (LOG_DEBUG, "risams_open");
+    yaz_log(YLOG_DEBUG, "risams_open");
     if (flag & RSETF_WRITE)
     {
-	logf (LOG_FATAL, "ISAMS set type is read-only");
+	yaz_log(YLOG_FATAL, "ISAMS set type is read-only");
 	return NULL;
     }
     ptinfo = (struct rset_pp_info *) xmalloc (sizeof(*ptinfo));
@@ -113,7 +113,7 @@ static void r_close (RSFD rfd)
             xfree (rfd);
             return;
         }
-    logf (LOG_FATAL, "r_close but no rfd match!");
+    yaz_log(YLOG_FATAL, "r_close but no rfd match!");
     assert (0);
 }
 
@@ -121,7 +121,7 @@ static void r_delete (RSET ct)
 {
     struct rset_isams_info *info = (struct rset_isams_info *) ct->buf;
 
-    logf (LOG_DEBUG, "rsisams_delete");
+    yaz_log(YLOG_DEBUG, "rsisams_delete");
     assert (info->ispt_list == NULL);
     rset_term_destroy (ct->rset_terms[0]);
     xfree (ct->rset_terms);
@@ -130,7 +130,7 @@ static void r_delete (RSET ct)
 
 static void r_rewind (RSFD rfd)
 {   
-    logf (LOG_DEBUG, "rsisams_rewind");
+    yaz_log(YLOG_DEBUG, "rsisams_rewind");
     abort ();
 }
 
@@ -143,6 +143,6 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
 
 static int r_write (RSFD rfd, const void *buf)
 {
-    logf (LOG_FATAL, "ISAMS set type is read-only");
+    yaz_log(YLOG_FATAL, "ISAMS set type is read-only");
     return -1;
 }

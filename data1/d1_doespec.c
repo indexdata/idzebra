@@ -1,4 +1,4 @@
-/* $Id: d1_doespec.c,v 1.2.2.3 2006-08-14 10:38:51 adam Exp $
+/* $Id: d1_doespec.c,v 1.2.2.4 2006-12-05 21:14:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -188,7 +188,7 @@ static int match_node_and_attr (data1_node *c, const char *spec)
     }
     else
     {
-	yaz_log(LOG_WARN, "Bad simpleelement component: '%s'", spec);
+	yaz_log(YLOG_WARN, "Bad simpleelement component: '%s'", spec);
     }
     return 0;
 }
@@ -247,7 +247,7 @@ static int match_children_here (data1_handle dh, data1_node *n,
 	    }
 	    else
 	    {
-		yaz_log(LOG_WARN, "Bad SpecificTag type: %d",
+		yaz_log(YLOG_WARN, "Bad SpecificTag type: %d",
 			want->tagValue->which);
 		continue;
 	    }
@@ -262,7 +262,7 @@ static int match_children_here (data1_handle dh, data1_node *n,
 	counter++;
 	if (occur && occur->which == Z_Occurrences_last)
 	{
-	    yaz_log(LOG_WARN, "Can't do occurrences=last (yet)");
+	    yaz_log(YLOG_WARN, "Can't do occurrences=last (yet)");
 	    return 0;
 	}
 	if (!occur || occur->which == Z_Occurrences_all ||

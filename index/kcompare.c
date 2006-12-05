@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.46.2.3 2006-08-14 10:38:58 adam Exp $
+/* $Id: kcompare.c,v 1.46.2.4 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -40,10 +40,10 @@ void key_logdump_txt (int logmask, const void *p, const char *txt)
     if (p)
     {
         memcpy (&key, p, sizeof(key));
-        logf (logmask, "%7d:%-4d %s", key.sysno, key.seqno,txt);
+        yaz_log(logmask, "%7d:%-4d %s", key.sysno, key.seqno,txt);
     }
     else
-        logf(logmask, " (null) %s",txt);
+        yaz_log(logmask, " (null) %s",txt);
 }
 
 void key_logdump (int logmask, const void *p)

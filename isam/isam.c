@@ -1,4 +1,4 @@
-/* $Id: isam.c,v 1.28.2.1 2006-08-14 10:39:03 adam Exp $
+/* $Id: isam.c,v 1.28.2.2 2006-12-05 21:14:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -86,7 +86,7 @@ static int splitargs(const char *s, char *bf[], int max)
 	ct++;
 	if (ct > max)
 	{
-	    logf (LOG_WARN, "Ignoring extra args to is resource");
+	    yaz_log(YLOG_WARN, "Ignoring extra args to is resource");
 	    bf[ct] = '\0';
 	    return(ct - 1);
 	}
@@ -109,7 +109,7 @@ ISAM is_open(BFiles bfs, const char *name,
     const char *r;
     is_type_header th;
 
-    logf (LOG_DEBUG, "is_open(%s, %s)", name, writeflag ? "RW" : "RDONLY");
+    yaz_log(YLOG_DEBUG, "is_open(%s, %s)", name, writeflag ? "RW" : "RDONLY");
     if (writeflag)
     {
 	statistics.total_merge_operations = 0;
@@ -138,7 +138,7 @@ ISAM is_open(BFiles bfs, const char *name,
 					 "blocktypes", 0), "64 512 4K 32K")) ||
 	!(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
     {
-    	logf (LOG_FATAL, "Failed to locate resource %s", nm);
+    	yaz_log(YLOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
     }
     inew->num_types = num;
@@ -146,7 +146,7 @@ ISAM is_open(BFiles bfs, const char *name,
     {
     	if ((rs = sscanf(pp[i], "%d%1[bBkKmM]", &size, m)) < 1)
     	{
-	    logf (LOG_FATAL, "Error in resource %s: %s", r, pp[i]);
+	    yaz_log(YLOG_FATAL, "Error in resource %s: %s", r, pp[i]);
 	    return 0;
 	}
 	if (rs == 1)
@@ -160,7 +160,7 @@ ISAM is_open(BFiles bfs, const char *name,
 		case 'm': case 'M':
 		    inew->types[i].blocksize = size * 1048576; break;
 		default:
-		    logf (LOG_FATAL, "Illegal size suffix: %c", *m);
+		    yaz_log(YLOG_FATAL, "Illegal size suffix: %c", *m);
 		    return 0;
 	}
 	inew->types[i].dbuf = (char *) xmalloc(inew->types[i].blocksize);
@@ -169,14 +169,14 @@ ISAM is_open(BFiles bfs, const char *name,
 	if (!(inew->types[i].bf = bf_open(bfs, strconcat(name, m, 0), 
 	    inew->types[i].blocksize, writeflag)))
 	{
-	    logf (LOG_FATAL, "bf_open failed");
+	    yaz_log(YLOG_FATAL, "bf_open failed");
 	    return 0;
 	}
 	if ((rs = is_rb_read(&inew->types[i], &th)) > 0)
 	{
 	    if (th.blocksize != inew->types[i].blocksize)
 	    {
-	    	logf (LOG_FATAL, "File blocksize mismatch in %s", name);
+	    	yaz_log(YLOG_FATAL, "File blocksize mismatch in %s", name);
 	    	exit(1);
 	    }
 	    inew->types[i].freelist = th.freelist;
@@ -186,7 +186,7 @@ ISAM is_open(BFiles bfs, const char *name,
 	{
 	    if ((rs = is_rb_write(&inew->types[i], &th)) <=0)  /* dummy */
 	    {
-	    	logf (LOG_FATAL, "Failed to write initial superblock.");
+	    	yaz_log(YLOG_FATAL, "Failed to write initial superblock.");
 	    	exit(1);
 	    }
 	    inew->types[i].freelist = -1;
@@ -201,12 +201,12 @@ ISAM is_open(BFiles bfs, const char *name,
         if (!(r = res_get_def(res, nm = strconcat(name, ".",
 						  "keysize", 0), "4")))
         {
-            logf (LOG_FATAL, "Failed to locate resource %s", nm);
+            yaz_log(YLOG_FATAL, "Failed to locate resource %s", nm);
             return 0;
         }
         if ((inew->keysize = atoi(r)) <= 0)
         {
-            logf (LOG_FATAL, "Must specify positive keysize.");
+            yaz_log(YLOG_FATAL, "Must specify positive keysize.");
             return 0;
         }
     }
@@ -215,7 +215,7 @@ ISAM is_open(BFiles bfs, const char *name,
     if (!(r = res_get_def(res, nm = strconcat(name, ".", "repack",
 					      0), IS_DEF_REPACK_PERCENT)))
     {
-    	logf (LOG_FATAL, "Failed to locate resource %s", nm);
+    	yaz_log(YLOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
     }
     inew->repack = atoi(r);
@@ -226,19 +226,19 @@ ISAM is_open(BFiles bfs, const char *name,
 					 "maxkeys", 0), "50 640 10000")) ||
 	!(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
     {
-    	logf (LOG_FATAL, "Failed to locate resource %s", nm);
+    	yaz_log(YLOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
     }
     if (num < inew->num_types -1)
     {
-    	logf (LOG_FATAL, "Not enough elements in %s", nm);
+    	yaz_log(YLOG_FATAL, "Not enough elements in %s", nm);
     	return 0;
     }
     for (i = 0; i < num; i++)
     {
     	if ((rs = sscanf(pp[i], "%d", &tmp)) < 1)
     	{
-	    logf (LOG_FATAL, "Error in resource %s: %s", r, pp[i]);
+	    yaz_log(YLOG_FATAL, "Error in resource %s: %s", r, pp[i]);
 	    return 0;
 	}
 	inew->types[i].max_keys = tmp;
@@ -259,7 +259,7 @@ ISAM is_open(BFiles bfs, const char *name,
 		inew->keysize;
 	if (inew->types[i].max_keys_block0 < 1)
 	{
-	    logf (LOG_FATAL, "Blocksize too small in %s", name);
+	    yaz_log(YLOG_FATAL, "Blocksize too small in %s", name);
 	    exit(1);
 	}
     }
@@ -270,19 +270,19 @@ ISAM is_open(BFiles bfs, const char *name,
 					 "nicefill", 0), "90 90 90 95")) ||
 	!(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
     {
-    	logf (LOG_FATAL, "Failed to locate resource %s", nm);
+    	yaz_log(YLOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
     }
     if (num < inew->num_types)
     {
-    	logf (LOG_FATAL, "Not enough elements in %s", nm);
+    	yaz_log(YLOG_FATAL, "Not enough elements in %s", nm);
     	return 0;
     }
     for (i = 0; i < num; i++)
     {
     	if ((rs = sscanf(pp[i], "%d", &tmp)) < 1)
     	{
-	    logf (LOG_FATAL, "Error in resource %s: %s", r, pp[i]);
+	    yaz_log(YLOG_FATAL, "Error in resource %s: %s", r, pp[i]);
 	    return 0;
 	}
 	inew->types[i].nice_keys_block = (inew->types[i].max_keys_block0 * tmp) /
@@ -303,7 +303,7 @@ int is_close(ISAM is)
     int i;
     is_type_header th;
 
-    logf (LOG_DEBUG, "is_close()");
+    yaz_log(YLOG_DEBUG, "is_close()");
     for (i = 0; i < is->num_types; i++)
     {
     	if (is->types[i].bf)
@@ -316,7 +316,7 @@ int is_close(ISAM is)
 		th.top = is->types[i].top;
 		if (is_rb_write(&is->types[i], &th) < 0)
 		{
-		    logf (LOG_FATAL, "Failed to write headerblock");
+		    yaz_log(YLOG_FATAL, "Failed to write headerblock");
 		    exit(1);
 		}
 	    }
@@ -328,25 +328,25 @@ int is_close(ISAM is)
 
     if (is->writeflag)
     {
-	logf(LOG_LOG, "ISAM statistics:");
-	logf(LOG_LOG, "total_merge_operations      %d",
+	yaz_log(YLOG_LOG, "ISAM statistics:");
+	yaz_log(YLOG_LOG, "total_merge_operations      %d",
 	    statistics.total_merge_operations);
-	logf(LOG_LOG, "total_items                 %d", statistics.total_items);
-	logf(LOG_LOG, "dub_items_removed           %d",
+	yaz_log(YLOG_LOG, "total_items                 %d", statistics.total_items);
+	yaz_log(YLOG_LOG, "dub_items_removed           %d",
 	    statistics.dub_items_removed);
-	logf(LOG_LOG, "new_items                   %d", statistics.new_items);
-	logf(LOG_LOG, "failed_deletes              %d",
+	yaz_log(YLOG_LOG, "new_items                   %d", statistics.new_items);
+	yaz_log(YLOG_LOG, "failed_deletes              %d",
 	    statistics.failed_deletes);
-	logf(LOG_LOG, "skipped_inserts             %d",
+	yaz_log(YLOG_LOG, "skipped_inserts             %d",
 	    statistics.skipped_inserts);
-	logf(LOG_LOG, "delete_insert_noop          %d",
+	yaz_log(YLOG_LOG, "delete_insert_noop          %d",
 	    statistics.delete_insert_noop);
-	logf(LOG_LOG, "delete_replace              %d",
+	yaz_log(YLOG_LOG, "delete_replace              %d",
 	    statistics.delete_replace);
-	logf(LOG_LOG, "delete                      %d", statistics.deletes);
-	logf(LOG_LOG, "remaps                      %d", statistics.remaps);
-	logf(LOG_LOG, "block_jumps                 %d", statistics.block_jumps);
-	logf(LOG_LOG, "tab_deletes                 %d", statistics.tab_deletes);
+	yaz_log(YLOG_LOG, "delete                      %d", statistics.deletes);
+	yaz_log(YLOG_LOG, "remaps                      %d", statistics.remaps);
+	yaz_log(YLOG_LOG, "block_jumps                 %d", statistics.block_jumps);
+	yaz_log(YLOG_LOG, "tab_deletes                 %d", statistics.tab_deletes);
     }
     xfree(is);
     return 0;
@@ -378,7 +378,7 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
     if (pos)
     	if (is_m_read_full(&tab, tab.data) < 0)
     	{
-	    logf (LOG_FATAL, "read_full failed");
+	    yaz_log(YLOG_FATAL, "read_full failed");
 	    exit(1);
 	}
     oldnum = tab.num_records;
@@ -399,13 +399,13 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 	{
 	    if (operation == KEYOP_INSERT)
 	    {
-	        logf (LOG_DEBUG, "XXInserting new record.");
+	        yaz_log(YLOG_DEBUG, "XXInserting new record.");
 		is_m_write_record(&tab, record);
 		statistics.new_items++;
 	    }
 	    else
 	    {
-	    	logf (LOG_DEBUG, "XXDeletion failed to find match.");
+	    	yaz_log(YLOG_DEBUG, "XXDeletion failed to find match.");
 		statistics.failed_deletes++;
 	    }
 	}
@@ -413,7 +413,7 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 	{
 	    if (operation == KEYOP_INSERT)
 	    {
-	        logf (LOG_DEBUG, "XXSkipping insertion - match found.");
+	        yaz_log(YLOG_DEBUG, "XXSkipping insertion - match found.");
 		statistics.skipped_inserts++;
 	    	continue;
 	    }
@@ -425,7 +425,7 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 		    /* next key is identical insert? - NOOP - skip it */
 		    if (!memcmp(record, data + 1, is_keysize(is)))
 		    {
-		        logf (LOG_DEBUG, "XXNoop delete. skipping.");
+		        yaz_log(YLOG_DEBUG, "XXNoop delete. skipping.");
 		    	data += 1 + is_keysize(is);
 		    	num--;
 			while (num && !memcmp(data, data + is_keysize(tab.is) +
@@ -442,7 +442,7 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 		    if (is_m_peek_record(&tab, keybuf) &&
 			(*is->cmp)(data + 1, keybuf) < 0)
 		    {
-		        logf (LOG_DEBUG, "XXReplacing record.");
+		        yaz_log(YLOG_DEBUG, "XXReplacing record.");
 		    	is_m_replace_record(&tab, data + 1);
 		    	data += 1 + is_keysize(is);
 		    	num--;
@@ -457,7 +457,7 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 			continue;
 		    }
 		}
-		logf (LOG_DEBUG, "Deleting record.");
+		yaz_log(YLOG_DEBUG, "Deleting record.");
 		is_m_delete_record(&tab);
 		statistics.deletes++;
 	    }

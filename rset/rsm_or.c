@@ -1,4 +1,4 @@
-/* $Id: rsm_or.c,v 1.16.2.1 2006-08-14 10:39:20 adam Exp $
+/* $Id: rsm_or.c,v 1.16.2.2 2006-12-05 21:14:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -212,7 +212,7 @@ static RSFD r_open (RSET ct, int flag)
 
     if (flag & RSETF_WRITE)
     {
-	logf (LOG_FATAL, "m_or set type is read-only");
+	yaz_log(YLOG_FATAL, "m_or set type is read-only");
 	return NULL;
     }
     rfd = (struct rset_mor_rfd *) xmalloc (sizeof(*rfd));
@@ -273,7 +273,7 @@ static void r_close (RSFD rfd)
             xfree (rfd);
             return;
         }
-    logf (LOG_FATAL, "r_close but no rfd match!");
+    yaz_log(YLOG_FATAL, "r_close but no rfd match!");
     assert (0);
 }
 
@@ -351,6 +351,6 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
 
 static int r_write (RSFD rfd, const void *buf)
 {
-    logf (LOG_FATAL, "mor set type is read-only");
+    yaz_log(YLOG_FATAL, "mor set type is read-only");
     return -1;
 }

@@ -1,4 +1,4 @@
-/* $Id: d1_expout.c,v 1.2.2.1 2006-08-14 10:38:51 adam Exp $
+/* $Id: d1_expout.c,v 1.2.2.2 2006-12-05 21:14:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -47,12 +47,12 @@ static int is_numeric_tag (ExpHandle *eh, data1_node *c)
 	return 0;
     if (!c->u.tag.element)
     {
-	yaz_log(LOG_WARN, "Tag %s is local", c->u.tag.tag);
+	yaz_log(YLOG_WARN, "Tag %s is local", c->u.tag.tag);
 	return 0;
     }
     if (c->u.tag.element->tag->which != DATA1T_numeric)
     {
-	yaz_log(LOG_WARN, "Tag %s is not numeric", c->u.tag.tag);
+	yaz_log(YLOG_WARN, "Tag %s is not numeric", c->u.tag.tag);
 	return 0;
     }
     if (eh->select && !c->u.tag.node_selected)
@@ -1381,7 +1381,7 @@ Z_ExplainRecord *data1_nodetoexplain (data1_handle dh, data1_node *n,
     assert(n->which == DATA1N_root);
     if (strcmp(n->u.root.type, "explain"))
     {
-	yaz_log(LOG_WARN, "Attempt to convert a non-Explain record");
+	yaz_log(YLOG_WARN, "Attempt to convert a non-Explain record");
 	return 0;
     }
     for (n = n->child; n; n = n->next)
@@ -1415,6 +1415,6 @@ Z_ExplainRecord *data1_nodetoexplain (data1_handle dh, data1_node *n,
 	    return res;
 	}
     }
-    yaz_log(LOG_WARN, "No category in Explain record");
+    yaz_log(YLOG_WARN, "No category in Explain record");
     return 0;
 }

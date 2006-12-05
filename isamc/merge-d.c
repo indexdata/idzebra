@@ -1,4 +1,4 @@
-/* $Id: merge-d.c,v 1.30.2.2 2006-10-27 11:06:47 adam Exp $
+/* $Id: merge-d.c,v 1.30.2.3 2006-12-05 21:14:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -84,7 +84,7 @@ void filter_fill(FILTER F)
         if ( 0 != F->r1 ) /* not eof */
           F->r2 = FILTER_NOTYET; /* say we want more */
         if (F->is->method->debug > 9)  
-          logf(LOG_LOG,"filt_fill: shift %d.%d m=%d r=%d",
+          yaz_log(YLOG_LOG,"filt_fill: shift %d.%d m=%d r=%d",
              F->k1.sysno, 
              F->k1.seqno, 
              F->m1, F->r1);
@@ -94,7 +94,7 @@ void filter_fill(FILTER F)
         char *k_ptr = (char*) &F->k2;
         F->r2 = (F->data->read_item)(F->data->clientData, &k_ptr, &F->m2); 
         if (F->is->method->debug > 9)
-          logf(LOG_LOG,"filt_fill: read %d.%d m=%d r=%d",
+          yaz_log(YLOG_LOG,"filt_fill: read %d.%d m=%d r=%d",
              F->k2.sysno, F->k2.seqno, F->m2, F->r2);
      }  
      if ( (F->k1.sysno == F->k2.sysno) && 
@@ -103,7 +103,7 @@ void filter_fill(FILTER F)
           (F->r1 >0 ) && (F->r2 >0) )
      { /* del-ins pair of same key (not eof) , ignore both */
        if (F->is->method->debug > 9)
-         logf(LOG_LOG,"filt_fill: skipped %d.%d m=%d/%d r=%d/%d",
+         yaz_log(YLOG_LOG,"filt_fill: skipped %d.%d m=%d/%d r=%d/%d",
             F->k1.sysno, F->k1.seqno, 
             F->m1,F->m2, F->r1,F->r2);
        F->r1 = FILTER_NOTYET;
@@ -139,7 +139,7 @@ static int filter_read( FILTER F,
   int res;
   filter_fill(F);
   if (F->is->method->debug > 9)
-    logf(LOG_LOG,"filt_read: reading %d.%d m=%d r=%d",
+    yaz_log(YLOG_LOG,"filt_read: reading %d.%d m=%d r=%d",
        F->k1.sysno, F->k1.seqno, F->m1, F->r1);
   res  = F->r1;
   if(res) 
@@ -249,14 +249,14 @@ static void isamd_reduceblock(ISAMD_PP pp)
       return; /* existing block, do not touch */
       /* TODO: Probably we may touch anyway? */
    if (pp->is->method->debug > 5)  
-     logf(LOG_LOG,"isamd_reduce: start p=%d c=%d sz=%d",
+     yaz_log(YLOG_LOG,"isamd_reduce: start p=%d c=%d sz=%d",
        pp->pos, pp->cat, pp->size); 
    while ( ( pp->cat > 0 ) && (!pp->next) && 
            (pp->offset < pp->is->method->filecat[pp->cat-1].bsize ) )
       pp->cat--;
    pp->pos = isamd_alloc_block(pp->is, pp->cat);
    if (pp->is->method->debug > 5) 
-     logf(LOG_LOG,"isamd_reduce:  got  p=%d c=%d sz=%d",
+     yaz_log(YLOG_LOG,"isamd_reduce:  got  p=%d c=%d sz=%d",
        pp->pos, pp->cat, pp->size);    
 } /* reduceblock */
 
@@ -302,14 +302,14 @@ void isamd_free_diffs(ISAMD_PP pp)
 {
   int i;
   if (pp->is->method->debug > 5)
-     logf(LOG_LOG,"isamd_free_diffs: pp=%p di=%p", pp, pp->diffinfo);
+     yaz_log(YLOG_LOG,"isamd_free_diffs: pp=%p di=%p", pp, pp->diffinfo);
   if (!pp->diffinfo) 
     return;
   for (i=0;pp->diffinfo[i].difftype!=DT_NONE;i++) 
       if(pp->diffinfo[i].decodeData)
       {
           if (pp->is->method->debug > 8)
-             logf(LOG_LOG,"isamd_free_diffs [%d]=%p",i, 
+             yaz_log(YLOG_LOG,"isamd_free_diffs [%d]=%p",i, 
                            pp->diffinfo[i].decodeData);
           (*pp->is->method->code_stop)(ISAMD_DECODE,pp->diffinfo[i].decodeData);
       } 
@@ -334,7 +334,7 @@ static void getDiffInfo(ISAMD_PP pp )
    pp->offset = pp->size+1; /* used this block up */
    memset(pp->diffinfo,'\0',diffsz);
    if (pp->is->method->debug > 5)   
-      logf(LOG_LOG,"isamd_getDiffInfo: %d=%d:%d->%d, ix=%d mx=%d",
+      yaz_log(YLOG_LOG,"isamd_getDiffInfo: %d=%d:%d->%d, ix=%d mx=%d",
          isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->next,
          diffidx,maxinfos);
    
@@ -352,24 +352,24 @@ static void getDiffInfo(ISAMD_PP pp )
       if ( diffidx+sizeof(int) > pp->is->method->filecat[pp->cat].bsize )
       {
          if (pp->is->method->debug > 5)
-           logf(LOG_LOG,"isamd_getDiffInfo:Near end (no room for len) at ix=%d n=%d",
+           yaz_log(YLOG_LOG,"isamd_getDiffInfo:Near end (no room for len) at ix=%d n=%d",
                diffidx, i);
          return; /* whole block done */
       }
       memcpy( &pp->diffinfo[i].maxidx, &pp->diffbuf[diffidx], sizeof(int) );
       pp->diffinfo[i].difftype=DT_DIFF;
       if (pp->is->method->debug > 5)
-        logf(LOG_LOG,"isamd_getDiffInfo: max=%d ix=%d dbuf=%p",
+        yaz_log(YLOG_LOG,"isamd_getDiffInfo: max=%d ix=%d dbuf=%p",
           pp->diffinfo[i].maxidx, diffidx, pp->diffbuf);
 
       if ( (pp->is->method->debug > 0) &&
          (pp->diffinfo[i].maxidx > pp->is->method->filecat[pp->cat].bsize) )
       { 
-         logf(LOG_LOG,"Bad MaxIx!!! %s:%d: diffidx=%d", 
+         yaz_log(YLOG_LOG,"Bad MaxIx!!! %s:%d: diffidx=%d", 
                        __FILE__,__LINE__, diffidx);
-         logf(LOG_LOG,"i=%d maxix=%d bsz=%d", i, pp->diffinfo[i].maxidx,
+         yaz_log(YLOG_LOG,"i=%d maxix=%d bsz=%d", i, pp->diffinfo[i].maxidx,
                        pp->is->method->filecat[pp->cat].bsize);
-         logf(LOG_LOG,"pp=%d=%d:%d  pp->nx=%d=%d:%d",
+         yaz_log(YLOG_LOG,"pp=%d=%d:%d  pp->nx=%d=%d:%d",
                        isamd_addr(pp->pos,pp->cat), pp->pos, pp->cat,
                        pp->next, isamd_type(pp->next), isamd_block(pp->next) );                      
       }
@@ -378,7 +378,7 @@ static void getDiffInfo(ISAMD_PP pp )
       if (0==pp->diffinfo[i].maxidx)
       {
          if (pp->is->method->debug > 5)  /* !!! 4 */
-           logf(LOG_LOG,"isamd_getDiffInfo:End mark at ix=%d n=%d",
+           yaz_log(YLOG_LOG,"isamd_getDiffInfo:End mark at ix=%d n=%d",
                diffidx, i);
          return; /* end marker */
       }
@@ -386,7 +386,7 @@ static void getDiffInfo(ISAMD_PP pp )
       pp->diffinfo[i].decodeData = (*pp->is->method->code_start)(ISAMD_DECODE);
       pp->diffinfo[i].diffidx = diffidx;
       if (pp->is->method->debug > 5)
-        logf(LOG_LOG,"isamd_getDiff[%d]:%d-%d %s",
+        yaz_log(YLOG_LOG,"isamd_getDiff[%d]:%d-%d %s",
           i,diffidx-sizeof(int),pp->diffinfo[i].maxidx,
           hexdump((unsigned char *)&pp->diffbuf[diffidx-4],8,0) );
       diffidx=pp->diffinfo[i].maxidx;
@@ -411,7 +411,7 @@ static ISAMD_PP get_new_main_block( ISAMD_PP firstpp, ISAMD_PP pp)
      pp->pos = isamd_alloc_block(pp->is,pp->cat);
      firstpp->next = isamd_addr(pp->pos,pp->cat);
      if (pp->is->method->debug >3) 
-        logf(LOG_LOG,"isamd_build: Alloc 1. dblock  p=%d=%d:%d",
+        yaz_log(YLOG_LOG,"isamd_build: Alloc 1. dblock  p=%d=%d:%d",
            isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos);
   }
   newblock=isamd_alloc_block(pp->is,pp->cat);
@@ -419,7 +419,7 @@ static ISAMD_PP get_new_main_block( ISAMD_PP firstpp, ISAMD_PP pp)
   isamd_buildlaterblock(pp);
   isamd_write_block(pp->is,pp->cat,pp->pos,pp->buf);
   if (pp->is->method->debug >3) 
-     logf(LOG_LOG,"isamd_build: Alloc nxt %d=%d:%d -> %d=%d:%d",
+     yaz_log(YLOG_LOG,"isamd_build: Alloc nxt %d=%d:%d -> %d=%d:%d",
         isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos,
         isamd_addr(newblock,pp->cat), pp->cat, newblock);
   pp->next=0;
@@ -449,7 +449,7 @@ static ISAMD_PP  append_main_item(ISAMD_PP firstpp,
    codelen = c_ptr - codebuff;
    assert ( (codelen<128) && (codelen>0));
    if (pp->is->method->debug >7)
-      logf(LOG_LOG,"isamd:build: coded %s nk=%d,ofs=%d-%d",
+      yaz_log(YLOG_LOG,"isamd:build: coded %s nk=%d,ofs=%d-%d",
           hexdump((unsigned char *) codebuff, c_ptr-codebuff,hexbuff), firstpp->numKeys+1,
           pp->offset, pp->offset+codelen);
 
@@ -465,7 +465,7 @@ static ISAMD_PP  append_main_item(ISAMD_PP firstpp,
       codelen = c_ptr - codebuff;
       assert ( (codelen<128) && (codelen>0));
       if (pp->is->method->debug >7)
-         logf(LOG_LOG,"isamd:build: recoded into %s  (nk=%d)",
+         yaz_log(YLOG_LOG,"isamd:build: recoded into %s  (nk=%d)",
              hexdump((unsigned char *) codebuff, c_ptr-codebuff,hexbuff), firstpp->numKeys+1);
    } /* block full */    
 
@@ -518,14 +518,14 @@ int isamd_read_item_merge (
      if (p_key)  
      {  /* we have an extra item to inject into the merge */
        if (pp->is->method->debug >9)  /* !!!!! */
-          logf(LOG_LOG,"isamd_read_item: going to merge with %d.%d",
+          yaz_log(YLOG_LOG,"isamd_read_item: going to merge with %d.%d",
                p_key->sysno, p_key->seqno);
        pp->diffinfo[i].key = *p_key;  /* the key merge could not handle */
        pp->diffinfo[i].mode = pp->diffinfo[i].key.seqno & 1;
        pp->diffinfo[i].key.seqno >>= 1;
        pp->diffinfo[i].difftype=DT_INPU;
        if (pp->is->method->debug > 7)
-         logf(LOG_LOG,"isamd_read_item: inpu key %d sys=%d  seq=%d=2*%d+%d",
+         yaz_log(YLOG_LOG,"isamd_read_item: inpu key %d sys=%d  seq=%d=2*%d+%d",
             i, p_key->sysno,
             pp->diffinfo[i].key.seqno*2 + pp->diffinfo[1].mode,
             pp->diffinfo[i].key.seqno,
@@ -560,11 +560,11 @@ int isamd_read_item_merge (
               pp->diffinfo[i].mode = pp->diffinfo[i].key.seqno & 1;
               pp->diffinfo[i].key.seqno = pp->diffinfo[i].key.seqno >>1 ;
               if (pp->is->method->debug > 9)
-                logf(LOG_LOG,"isamd_read_item: dif[%d] at %d-%d: %s",
+                yaz_log(YLOG_LOG,"isamd_read_item: dif[%d] at %d-%d: %s",
                   i,oldoffs, pp->diffinfo[i].diffidx,
                   hexdump((unsigned char *) pp->buf+oldoffs, pp->diffinfo[i].diffidx-oldoffs,0));
               if (pp->is->method->debug > 7)
-                logf(LOG_LOG,"isamd_read_item: rd dif[%d] %d.%d (%x.%x)",
+                yaz_log(YLOG_LOG,"isamd_read_item: rd dif[%d] %d.%d (%x.%x)",
                   i,
                   pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno,
                   pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno);
@@ -578,7 +578,7 @@ int isamd_read_item_merge (
               if (0==rc) 
               { /* eof */
                  if (pp->is->method->debug > 7)
-                   logf(LOG_LOG,"isamd_read_item: eof (rc=%d) main ",
+                   yaz_log(YLOG_LOG,"isamd_read_item: eof (rc=%d) main ",
                            rc);
                 pp->diffinfo[i].maxidx=-1;
                 pp->diffinfo[i].key.sysno=0;
@@ -589,7 +589,7 @@ int isamd_read_item_merge (
               { /* not eof */
                  pp->diffinfo[i].mode = 1;
                  if (pp->is->method->debug > 7)
-                   logf(LOG_LOG,"isamd_read_item: rd main %d-%d %d.%d (%x.%x) m=%d",
+                   yaz_log(YLOG_LOG,"isamd_read_item: rd main %d-%d %d.%d (%x.%x) m=%d",
                      oldoffs,pp->offset,
                      pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno,
                      pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno,
@@ -609,7 +609,7 @@ int isamd_read_item_merge (
                  pp->diffinfo[i].difftype=DT_DONE;
               }
               if (pp->is->method->debug >7)
-                 logf(LOG_LOG,"merge: read inpu m=%d %d.%d (%x.%x)",
+                 yaz_log(YLOG_LOG,"merge: read inpu m=%d %d.%d (%x.%x)",
                     pp->diffinfo[i].mode, 
                     pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno,
                     pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno );        
@@ -617,7 +617,7 @@ int isamd_read_item_merge (
         } /* read a new one */
         
         if (pp->is->method->debug > 8)
-          logf(LOG_LOG,"isamd_read_item: considering d%d %d.%d ix=%d mx=%d",
+          yaz_log(YLOG_LOG,"isamd_read_item: considering d%d %d.%d ix=%d mx=%d",
                i, pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno,
                   pp->diffinfo[i].diffidx,   pp->diffinfo[i].maxidx);
             
@@ -632,7 +632,7 @@ int isamd_read_item_merge (
           if (cmp<0)
           {
              if (pp->is->method->debug > 8)
-               logf(LOG_LOG,"isamd_read_item: ins [%d]%d.%d < [%d]%d.%d",
+               yaz_log(YLOG_LOG,"isamd_read_item: ins [%d]%d.%d < [%d]%d.%d",
                  i,  
                  pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno,
                  winner, 
@@ -642,7 +642,7 @@ int isamd_read_item_merge (
              else
              {
                if (pp->is->method->debug > 1)
-                 logf(LOG_LOG,"delete diff for nonexisting item");
+                 yaz_log(YLOG_LOG,"delete diff for nonexisting item");
                assert(!"delete diff for nonexisting item");  
                /* is an assert too steep here? Not really.*/
              }
@@ -652,7 +652,7 @@ int isamd_read_item_merge (
              if (!pp->diffinfo[i].mode) /* delete diff. should always be */
              {
                 if (pp->is->method->debug > 8)
-                  logf(LOG_LOG,"isamd_read_item: del %d at%d %d.%d (%x.%x)",
+                  yaz_log(YLOG_LOG,"isamd_read_item: del %d at%d %d.%d (%x.%x)",
                     i, winner,
                     pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno,
                     pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno);
@@ -660,7 +660,7 @@ int isamd_read_item_merge (
              }
              else
                 if (pp->is->method->debug > 2)
-                  logf(LOG_LOG,"isamd_read_item: duplicate ins %d at%d %d.%d (%x.%x)",
+                  yaz_log(YLOG_LOG,"isamd_read_item: duplicate ins %d at%d %d.%d (%x.%x)",
                     i, winner,
                     pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno,
                     pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno);
@@ -677,7 +677,7 @@ int isamd_read_item_merge (
   if ( pp->diffinfo[winner].key.sysno)
   {
     if (pp->is->method->debug > 7)
-      logf(LOG_LOG,"isamd_read_item: got %d  %d.%d (%x.%x)",
+      yaz_log(YLOG_LOG,"isamd_read_item: got %d  %d.%d (%x.%x)",
         winner,
         pp->diffinfo[winner].key.sysno, pp->diffinfo[winner].key.seqno,
         pp->diffinfo[winner].key.sysno, pp->diffinfo[winner].key.seqno);
@@ -689,7 +689,7 @@ int isamd_read_item_merge (
   else 
   {
     if (pp->is->method->debug > 7)
-      logf(LOG_LOG,"isamd_read_item: eof w=%d  %d.%d (%x.%x)",
+      yaz_log(YLOG_LOG,"isamd_read_item: eof w=%d  %d.%d (%x.%x)",
         winner,
         pp->diffinfo[winner].key.sysno, pp->diffinfo[winner].key.seqno,
         pp->diffinfo[winner].key.sysno, pp->diffinfo[winner].key.seqno);
@@ -742,7 +742,7 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
   diffidx = ISAMD_BLOCK_OFFSET_1; 
   
   if (readpp->is->method->debug >4) 
-      logf(LOG_LOG,"isamd_merge: f=%d=%d:%d n=%d=%d:%d",
+      yaz_log(YLOG_LOG,"isamd_merge: f=%d=%d:%d n=%d=%d:%d",
         isamd_addr(firstpp->pos,firstpp->cat), firstpp->cat, firstpp->pos,
         firstpp->next, isamd_type(firstpp->next), isamd_block(firstpp->next));  
 
@@ -752,7 +752,7 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
   {
       isamd_release_block(firstpp->is, firstpp->cat, killblk);
       if (readpp->is->method->debug >3)   
-          logf(LOG_LOG,"isamd_merge: released old firstblock %d (%d:%d)",
+          yaz_log(YLOG_LOG,"isamd_merge: released old firstblock %d (%d:%d)",
               isamd_addr(killblk,firstpp->cat), firstpp->cat, killblk );
   }
   
@@ -766,7 +766,7 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
     r_key.sysno = 0;
     r_key.seqno = 0;
      if (readpp->is->method->debug >5) 
-         logf(LOG_LOG,"isamd_merge:all data has been deleted (nk=%d) ",
+         yaz_log(YLOG_LOG,"isamd_merge:all data has been deleted (nk=%d) ",
             readpp->numKeys);
   }
 
@@ -776,7 +776,7 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
   firstpp=isamd_pp_create(readpp->is, diffcat);
   firstpp->pos=isamd_alloc_block(firstpp->is,diffcat);
   if (readpp->is->method->debug >3)   
-      logf(LOG_LOG,"isamd_merge: allocated new firstpp %d=%d:%d",
+      yaz_log(YLOG_LOG,"isamd_merge: allocated new firstpp %d=%d:%d",
           isamd_addr(firstpp->pos,firstpp->cat), firstpp->cat, firstpp->pos );
   
   pp=isamd_pp_create(readpp->is,readpp->is->max_cat );
@@ -785,14 +785,14 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
   while (r_more)
   {
      if (readpp->is->method->debug >6) 
-         logf(LOG_LOG,"isamd_merge: got key %d.%d",
+         yaz_log(YLOG_LOG,"isamd_merge: got key %d.%d",
            r_key.sysno, r_key.seqno );
      pp= append_main_item(firstpp, pp, &r_key);
 
      if ( (readpp->pos != killblk ) && (0!=readpp->pos) )
      {  /* pos can get to 0 at end of main seq, if still diffs left...*/
         if (readpp->is->method->debug >3)  
-            logf(LOG_LOG,"isamd_merge: released block %d (%d:%d) now %d=%d:%d",
+            yaz_log(YLOG_LOG,"isamd_merge: released block %d (%d:%d) now %d=%d:%d",
                 isamd_addr(killblk,readpp->cat), readpp->cat, killblk,
                 isamd_addr(readpp->pos,readpp->cat),readpp->cat, readpp->pos );
         isamd_release_block(readpp->is, readpp->cat, readpp->pos);
@@ -811,18 +811,18 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
     firstpp->next = isamd_addr(pp->pos,pp->cat);
   save_last_pp(pp);
   if (readpp->is->method->debug >4) 
-      logf(LOG_LOG,"isamd_merge: saved last block %d=%d:%d",
+      yaz_log(YLOG_LOG,"isamd_merge: saved last block %d=%d:%d",
             isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos);
   isamd_pp_close(pp);
 
   if (readpp->is->method->debug >5) 
-        logf(LOG_LOG,"isamd_merge: closing readpp %d=%d:%d di=%p",
+        yaz_log(YLOG_LOG,"isamd_merge: closing readpp %d=%d:%d di=%p",
               isamd_addr(readpp->pos,readpp->cat), readpp->cat, readpp->pos,
               readpp->diffinfo);
   isamd_pp_close(readpp); /* pos is 0 by now, at eof. close works anyway */
 
   if (readpp->is->method->debug >2)  
-      logf(LOG_LOG,"isamd_merge: merge ret f=%d=%d:%d pp=%d=%d:%d",
+      yaz_log(YLOG_LOG,"isamd_merge: merge ret f=%d=%d:%d pp=%d=%d:%d",
             isamd_addr(firstpp->pos,pp->cat), firstpp->cat, firstpp->pos,
             isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos);
 
@@ -894,7 +894,7 @@ static int append_diffs(
    }
 
    if (is->method->debug >2) 
-      logf(LOG_LOG,"isamd_appd: Start ipos=%d=%d:%d n=%d=%d:%d nk=%d sz=%d",
+      yaz_log(YLOG_LOG,"isamd_appd: Start ipos=%d=%d:%d n=%d=%d:%d nk=%d sz=%d",
         ipos, isamd_type(ipos), isamd_block(ipos),
         firstpp->next, isamd_type(firstpp->next), isamd_block(firstpp->next),
         firstpp->numKeys, firstpp->size);
@@ -909,7 +909,7 @@ static int append_diffs(
    /* i_more = (*data->read_item)(data->clientData, &i_ptr, &i_mode); */
 
    if (is->method->debug >6)
-      logf(LOG_LOG,"isamd_appd: start m=%d %d.%d=%x.%x: %d",
+      yaz_log(YLOG_LOG,"isamd_appd: start m=%d %d.%d=%x.%x: %d",
          i_mode, 
          i_key.sysno, i_key.seqno, 
          i_key.sysno, i_key.seqno,
@@ -928,7 +928,7 @@ static int append_diffs(
       codelen = c_ptr - codebuff;
       assert ( (codelen<128) && (codelen>0));
       if (is->method->debug >7)
-         logf(LOG_LOG,"isamd_appd: coded %d: %s (nk=%d) (ix=%d)",
+         yaz_log(YLOG_LOG,"isamd_appd: coded %d: %s (nk=%d) (ix=%d)",
              codelen, hexdump((unsigned char *) codebuff, codelen,hexbuff), 
              firstpp->numKeys,diffidx);
 
@@ -943,16 +943,16 @@ static int append_diffs(
              maxsize = is->method->filecat[firstpp->cat].bsize; 
              firstpp->pos=0; /* need to allocate it when saving */             
              if (is->method->debug >3)
-                logf(LOG_LOG,"isamd_appd: increased diff block sz to %d (%d)",
+                yaz_log(YLOG_LOG,"isamd_appd: increased diff block sz to %d (%d)",
                    firstpp->cat, maxsize);
          }
          if  ((firstpp->cat >= firstpp->is->max_cat) &&
                  (diffidx + codelen > maxsize) )
          { /* max size - can't help, need to merge it */
              if (is->method->debug >7)
-                logf(LOG_LOG,"isamd_appd: need to merge");
+                yaz_log(YLOG_LOG,"isamd_appd: need to merge");
              if (is->method->debug >9)  /* !!!!! */
-                logf(LOG_LOG,"isamd_appd: going to merge with m=%d %d.%d",
+                yaz_log(YLOG_LOG,"isamd_appd: going to merge with m=%d %d.%d",
                      i_mode, i_key.sysno, i_key.seqno);
              merge_rc = merge (firstpp, &i_key, filt, dictentry, dictlen);
              if (0!=merge_rc)
@@ -963,9 +963,9 @@ static int append_diffs(
 
       if (!( diffidx+codelen <= maxsize )) 
       { /* bug hunting */
-         logf(LOG_LOG,"OOPS, diffidx problem: d=%d c=%d s=%d > m=%d",
+         yaz_log(YLOG_LOG,"OOPS, diffidx problem: d=%d c=%d s=%d > m=%d",
            diffidx, codelen, diffidx+codelen, maxsize);
-         logf(LOG_LOG,"ipos=%d f=%d=%d:%d",
+         yaz_log(YLOG_LOG,"ipos=%d f=%d=%d:%d",
            ipos, 
            isamd_addr(firstpp->pos, firstpp->cat),
            firstpp->cat, firstpp->pos );
@@ -990,7 +990,7 @@ static int append_diffs(
       i_more = filter_read(filt, &i_key, &i_mode); 
     /*  i_more = (*data->read_item)(data->clientData, &i_ptr, &i_mode); */
       if ( (i_more) && (is->method->debug >6) )
-         logf(LOG_LOG,"isamd_appd: got m=%d %d.%d=%x.%x: %d",
+         yaz_log(YLOG_LOG,"isamd_appd: got m=%d %d.%d=%x.%x: %d",
             i_mode, 
             i_key.sysno, i_key.seqno, 
             i_key.sysno, i_key.seqno,
@@ -1009,12 +1009,12 @@ static int append_diffs(
    }
 
    dsize=diffidx-ISAMD_BLOCK_OFFSET_1;
-   /* logf(LOG_LOG,"!! nxt=%d diffidx=%d ds=%d", 
+   /* yaz_log(YLOG_LOG,"!! nxt=%d diffidx=%d ds=%d", 
            firstpp->next, diffidx, dsize);  */
 
    if ( (0==firstpp->next) && (dsize <ISAMD_MAX_DICT_LEN))
    {
-        /* logf(LOG_LOG,"building a dict entry!!"); */
+        /* yaz_log(YLOG_LOG,"building a dict entry!!"); */
         assert(firstpp->numKeys < 128);
         assert(firstpp->numKeys >0);
         /* actually, 255 is good enough, but sign mismatches... */
@@ -1054,7 +1054,7 @@ int isamd_append (ISAMD is, char *dictentry, int dictlen, ISAMD_I data)
    if ( filter_isempty(F) ) /* can be, if del-ins of the same */
    {
       if (is->method->debug >3) 
-         logf(LOG_LOG,"isamd_appd: nothing to do ");
+         yaz_log(YLOG_LOG,"isamd_appd: nothing to do ");
       filter_close(F);
       ++(is->no_non);
       return dictlen; /* without doing anything at all */
@@ -1072,11 +1072,11 @@ int isamd_append (ISAMD is, char *dictentry, int dictlen, ISAMD_I data)
       if (!rc) 
       {
       if (is->method->debug >9) 
-         logf(LOG_LOG,"isamd_appd: singleton didn't fit, backfilling");
+         yaz_log(YLOG_LOG,"isamd_appd: singleton didn't fit, backfilling");
          filter_backfill(F,&k, mode);
       }
       if (is->method->debug >9) 
-         logf(LOG_LOG,"isamd_appd: singleton %d (%x)",
+         yaz_log(YLOG_LOG,"isamd_appd: singleton %d (%x)",
            rc,rc);
       if (rc)
         is->no_singles++;
@@ -1088,7 +1088,7 @@ int isamd_append (ISAMD is, char *dictentry, int dictlen, ISAMD_I data)
    filter_close(F);
 
    if (is->method->debug >2) 
-      logf(LOG_LOG,"isamd_appd: ret len=%d ", newlen);
+      yaz_log(YLOG_LOG,"isamd_appd: ret len=%d ", newlen);
    return newlen;
 } /*  isamd_append */
 
@@ -1100,7 +1100,10 @@ int isamd_append (ISAMD is, char *dictentry, int dictlen, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.30.2.2  2006-10-27 11:06:47  adam
+ * Revision 1.30.2.3  2006-12-05 21:14:42  adam
+ * Updated code to use new YAZ log functions/defines.
+ *
+ * Revision 1.30.2.2  2006/10/27 11:06:47  adam
  * Fixed several compilation warnings. (gcc 4.1.2, -O3 -g -Wall)
  *
  * Revision 1.30.2.1  2006/08/14 10:39:11  adam

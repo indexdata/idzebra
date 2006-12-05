@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.7.2.1 2004-11-04 12:49:36 heikki Exp $
+/* $Id: zvrank.c,v 1.7.2.2 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -91,14 +91,14 @@ struct rs_info {      /* for result set */
 typedef struct rs_info *RS;
 
 static void prn_rs(RS rs) { /* for debugging */
-    yaz_log(LOG_DEBUG, "* RS:");
-    yaz_log(LOG_DEBUG, " db_docs:   %d", rs->db_docs);
-    yaz_log(LOG_DEBUG, " db_terms:  %d", rs->db_terms);
-    yaz_log(LOG_DEBUG, " f_max:     %d", rs->db_f_max);
-    yaz_log(LOG_DEBUG, " f_max_str: %s", rs->db_f_max_str);
-    yaz_log(LOG_DEBUG, " veclen:    %d", rs->veclen);
+    yaz_log(YLOG_DEBUG, "* RS:");
+    yaz_log(YLOG_DEBUG, " db_docs:   %d", rs->db_docs);
+    yaz_log(YLOG_DEBUG, " db_terms:  %d", rs->db_terms);
+    yaz_log(YLOG_DEBUG, " f_max:     %d", rs->db_f_max);
+    yaz_log(YLOG_DEBUG, " f_max_str: %s", rs->db_f_max_str);
+    yaz_log(YLOG_DEBUG, " veclen:    %d", rs->veclen);
     /* rscheme implies functions */
-    yaz_log(LOG_DEBUG, " rscheme:   %s", rs->rscheme);
+    yaz_log(YLOG_DEBUG, " rscheme:   %s", rs->rscheme);
     return;
 }
 
@@ -116,13 +116,13 @@ typedef struct ds_info* DS;
 
 #if 0
 static void prn_ds(DS ds) { /* for debugging */
-    yaz_log(LOG_DEBUG, " * DS:");
-    yaz_log(LOG_DEBUG, " docid:      %s", ds->docid);
-    yaz_log(LOG_DEBUG, " docno:      %d", ds->docno);
-    yaz_log(LOG_DEBUG, " doclen:     %d", ds->doclen);
-    yaz_log(LOG_DEBUG, " d_f_max:    %d", ds->d_f_max);
-    yaz_log(LOG_DEBUG, " d_f_max_str:%s", ds->d_f_max_str);
-    yaz_log(LOG_DEBUG, " veclen:     %d", ds->veclen);
+    yaz_log(YLOG_DEBUG, " * DS:");
+    yaz_log(YLOG_DEBUG, " docid:      %s", ds->docid);
+    yaz_log(YLOG_DEBUG, " docno:      %d", ds->docno);
+    yaz_log(YLOG_DEBUG, " doclen:     %d", ds->doclen);
+    yaz_log(YLOG_DEBUG, " d_f_max:    %d", ds->d_f_max);
+    yaz_log(YLOG_DEBUG, " d_f_max_str:%s", ds->d_f_max_str);
+    yaz_log(YLOG_DEBUG, " veclen:     %d", ds->veclen);
     return;
 }
 #endif
@@ -141,7 +141,7 @@ typedef struct ts_info *TS;
 
 #if 0
 static void prn_ts(TS ts) { /* for debugging */
-    yaz_log(LOG_DEBUG, " * TERM:%s gocc:%d locc:%d  tf:%f idf:%f wt:%f",
+    yaz_log(YLOG_DEBUG, " * TERM:%s gocc:%d locc:%d  tf:%f idf:%f wt:%f",
             ts->name, ts->gocc, ts->locc, ts->tf, ts->idf, ts->wt);
     return;
 }
@@ -332,7 +332,7 @@ static void idf_squared(void *rsi, void *dsi) {
     /* idf ^ 2 */
     veclen=ds->veclen;
     num_docs=rs->db_docs;
-    yaz_log(LOG_DEBUG, "idf_squared: db_docs required");
+    yaz_log(YLOG_DEBUG, "idf_squared: db_docs required");
     for (i=0; i < veclen; i++) {
         gocc=ds->terms[i].gocc;
         if (gocc==0)
@@ -467,10 +467,10 @@ static void zv_init_scheme(RS rs, const char *sname) {
     char c0, c1, c2, c3, c4, c5, c6;
     const char *def_rscheme="ntc-atn"; /* a good default */
     /**/
-    yaz_log(LOG_DEBUG, "zv_init_scheme");
+    yaz_log(YLOG_DEBUG, "zv_init_scheme");
     slen=strlen(sname);
     if (slen < 7) 
-        yaz_log(LOG_LOG, "zvrank: invalid weighting-scheme \"%s\"", sname);
+        yaz_log(YLOG_LOG, "zvrank: invalid weighting-scheme \"%s\"", sname);
     if (slen > 0) c0=sname[0]; else c0=def_rscheme[0];
     if (slen > 1) c1=sname[1]; else c1=def_rscheme[1];
     if (slen > 2) c2=sname[2]; else c2=def_rscheme[2];
@@ -488,12 +488,12 @@ static void zv_init_scheme(RS rs, const char *sname) {
                       case 'm':
                           rs->d_tf_fct=tf_max_norm;
                           rs->rscheme[0]='m';
-                          yaz_log(LOG_DEBUG, "tf_max_norm: d_f_max required");
+                          yaz_log(YLOG_DEBUG, "tf_max_norm: d_f_max required");
                           break;
                       case 'a':
                           rs->d_tf_fct=tf_aug_norm;
                           rs->rscheme[0]='a';
-                          yaz_log(LOG_DEBUG, "tf_aug_norm: d_f_max required");
+                          yaz_log(YLOG_DEBUG, "tf_aug_norm: d_f_max required");
                           break;
                       case 's':
                           rs->d_tf_fct=tf_square;
@@ -511,22 +511,22 @@ static void zv_init_scheme(RS rs, const char *sname) {
                       case 't':
                           rs->d_idf_fct=idf_tfidf;
                           rs->rscheme[1]='t';
-                          yaz_log(LOG_DEBUG, "idf_tfidf: db_docs required");
+                          yaz_log(YLOG_DEBUG, "idf_tfidf: db_docs required");
                           break;
                       case 'p':
                           rs->d_idf_fct=idf_prob;
                           rs->rscheme[1]='p';
-                          yaz_log(LOG_DEBUG, "idf_prob: db_docs required");
+                          yaz_log(YLOG_DEBUG, "idf_prob: db_docs required");
                           break;
                       case 'f':
                           rs->d_idf_fct=idf_freq;
                           rs->rscheme[1]='f';
-                          yaz_log(LOG_DEBUG, "idf_freq: db_docs required");
+                          yaz_log(YLOG_DEBUG, "idf_freq: db_docs required");
                           break;
                       case 's':
                           rs->d_idf_fct=idf_squared;
                           rs->rscheme[1]='s';
-                          yaz_log(LOG_DEBUG, "idf_squared: db_docs required");
+                          yaz_log(YLOG_DEBUG, "idf_squared: db_docs required");
                           break;
                       default: /* 'n' */
                           rs->d_idf_fct=idf_none;
@@ -563,13 +563,13 @@ static void zv_init_scheme(RS rs, const char *sname) {
                           break;
                       case 'm':
                           rs->q_tf_fct=tf_max_norm;
-                          yaz_log(LOG_DEBUG, "tf_max_norm: d_f_max required");
+                          yaz_log(YLOG_DEBUG, "tf_max_norm: d_f_max required");
                           rs->rscheme[4]='m';
                           break;
                       case 'a':
                           rs->q_tf_fct=tf_aug_norm;
                           rs->rscheme[4]='a';
-                          yaz_log(LOG_DEBUG, "tf_aug_norm: d_f_max required");
+                          yaz_log(YLOG_DEBUG, "tf_aug_norm: d_f_max required");
                           break;
                       case 's':
                           rs->q_tf_fct=tf_square;
@@ -587,22 +587,22 @@ static void zv_init_scheme(RS rs, const char *sname) {
                       case 't':
                           rs->q_idf_fct=idf_tfidf;
                           rs->rscheme[5]='t';
-                          yaz_log(LOG_DEBUG, "idf_tfidf: db_docs required");
+                          yaz_log(YLOG_DEBUG, "idf_tfidf: db_docs required");
                           break;
                       case 'p':
                           rs->q_idf_fct=idf_prob;
                           rs->rscheme[5]='p';
-                          yaz_log(LOG_DEBUG, "idf_prob: db_docs required");
+                          yaz_log(YLOG_DEBUG, "idf_prob: db_docs required");
                           break;
                       case 'f':
                           rs->q_idf_fct=idf_freq;
                           rs->rscheme[5]='f';
-                          yaz_log(LOG_DEBUG, "idf_freq: db_docs required");
+                          yaz_log(YLOG_DEBUG, "idf_freq: db_docs required");
                           break;
                       case 's':
                           rs->q_idf_fct=idf_squared;
                           rs->rscheme[5]='s';
-                          yaz_log(LOG_DEBUG, "idf_squared: db_docs required");
+                          yaz_log(YLOG_DEBUG, "idf_squared: db_docs required");
                           break;
                       default: /* 'n' */
                           rs->q_idf_fct=idf_none;
@@ -632,12 +632,12 @@ static void zv_init_scheme(RS rs, const char *sname) {
                       rs->rscheme[7]='\0';
                       /**/
                       rs->sim_fct=sim_cosine;
-                      yaz_log(LOG_DEBUG, "zv_scheme %s", rs->rscheme);
+                      yaz_log(YLOG_DEBUG, "zv_scheme %s", rs->rscheme);
                       return;
 }
 
 static void zv_init(RS rs, const char *rscheme) {
-    yaz_log(LOG_DEBUG, "zv_init");
+    yaz_log(YLOG_DEBUG, "zv_init");
     /**/
     rs->db_docs=100000;   /* assign correct value here */
     rs->db_terms=500000;  /* assign correct value here (for debugging) */
@@ -659,7 +659,7 @@ static void *zv_create (ZebraHandle zh) {
     const char *wscheme;
     struct rank_class_info *ci = (struct rank_class_info *)
         xmalloc (sizeof(*ci));
-    yaz_log(LOG_DEBUG, "zv_create");
+    yaz_log(YLOG_DEBUG, "zv_create");
     wscheme=res_get_def(res, "zvrank.weighting-scheme", "");
     for (i=0; wscheme[i] && i < 8; i++) 
         ci->rscheme[i]=wscheme[i];
@@ -674,7 +674,7 @@ static void *zv_create (ZebraHandle zh) {
  */
 static void zv_destroy (struct zebra_register *reg, void *class_handle) {
     struct rank_class_info *ci = (struct rank_class_info *) class_handle;
-    yaz_log(LOG_DEBUG, "zv_destroy");
+    yaz_log(YLOG_DEBUG, "zv_destroy");
     xfree (ci);
 }
 
@@ -691,7 +691,7 @@ static void *zv_begin(struct zebra_register *reg, void *class_handle, RSET rset)
     int i;
     int veclen, gocc;
     /**/
-    yaz_log(LOG_DEBUG, "zv_begin");
+    yaz_log(YLOG_DEBUG, "zv_begin");
     veclen=rset->no_rset_terms; /* smaller vector here */
     zv_init(rs, ci->rscheme);
     rs->veclen=veclen;
@@ -708,11 +708,11 @@ static void *zv_begin(struct zebra_register *reg, void *class_handle, RSET rset)
     rs->rdoc->veclen=veclen;
     rs->rdoc->d_f_max=10; /* just a guess */
     rs->rdoc->d_f_max_str=""; 
-    /* yaz_log(LOG_DEBUG, "zv_begin_init"); */
+    /* yaz_log(YLOG_DEBUG, "zv_begin_init"); */
     for (i = 0; i < rs->veclen; i++)
     {
         gocc=rset->rset_terms[i]->nn;
-        /* yaz_log(LOG_DEBUG, "zv_begin_init i=%d gocc=%d", i, gocc); */
+        /* yaz_log(YLOG_DEBUG, "zv_begin_init i=%d gocc=%d", i, gocc); */
         rs->qdoc->terms[i].gocc=gocc;
         rs->qdoc->terms[i].locc=1;  /* assume query has no duplicate terms */
         rs->rdoc->terms[i].gocc=gocc;
@@ -731,7 +731,7 @@ static void *zv_begin(struct zebra_register *reg, void *class_handle, RSET rset)
 static void zv_end (struct zebra_register *reg, void *rsi)
 {
     RS rs=(RS)rsi;
-    yaz_log(LOG_DEBUG, "zv_end");
+    yaz_log(YLOG_DEBUG, "zv_end");
     xfree(rs->qdoc->terms);
     xfree(rs->rdoc->terms);
     xfree(rs->qdoc);
@@ -747,7 +747,7 @@ static void zv_end (struct zebra_register *reg, void *rsi)
  */
 static void zv_add (void *rsi, int seqno, int i) {
     RS rs=(RS)rsi;
-    /* yaz_log(LOG_DEBUG, "zvrank zv_add seqno=%d term_index=%d", seqno, term_index);*/
+    /* yaz_log(YLOG_DEBUG, "zvrank zv_add seqno=%d term_index=%d", seqno, term_index);*/
     rs->rdoc->terms[i].locc++;
 }
 
@@ -763,7 +763,7 @@ static int zv_calc (void *rsi, int sysno)
     int score=0;
     double dscore=0.0;
     RS rs=(RS)rsi;
-    /* yaz_log(LOG_DEBUG, "zv_calc"); */
+    /* yaz_log(YLOG_DEBUG, "zv_calc"); */
     /**/
     veclen=rs->veclen;
     if (veclen==0)
@@ -776,7 +776,7 @@ static int zv_calc (void *rsi, int sysno)
         dscore=rs->sim_fct(rs->qdoc, rs->rdoc);
     }
     score = dscore * 1000;
-    yaz_log (LOG_LOG, "sysno=%d score=%d", sysno, score);
+    yaz_log(YLOG_LOG, "sysno=%d score=%d", sysno, score);
     if (score > 1000) /* should not happen */
         score = 1000;
     /* reset counts for the next record */

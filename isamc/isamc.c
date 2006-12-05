@@ -1,4 +1,4 @@
-/* $Id: isamc.c,v 1.24.2.2 2006-10-27 11:06:47 adam Exp $
+/* $Id: isamc.c,v 1.24.2.3 2006-12-05 21:14:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -20,8 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-
-
 /* 
  * TODO:
  *   Reduction to lower categories in isc_merge
@@ -31,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 #include <stdio.h>
 
+#include <yaz/xmalloc.h>
 #include <yaz/log.h>
 #include "isamc-p.h"
 
@@ -89,11 +88,11 @@ ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
 
     /* determine number of block categories */
     if (is->method->debug)
-        logf (LOG_LOG, "isc: bsize  ifill  mfill mblocks");
+        yaz_log(YLOG_LOG, "isc: bsize  ifill  mfill mblocks");
     do
     {
         if (is->method->debug)
-            logf (LOG_LOG, "isc:%6d %6d %6d %6d",
+            yaz_log(YLOG_LOG, "isc:%6d %6d %6d %6d",
                   filecat[i].bsize, filecat[i].ifill, 
                   filecat[i].mfill, filecat[i].mblocks);
         if (max_buf_size < filecat[i].mblocks * filecat[i].bsize)
@@ -106,7 +105,7 @@ ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
     if (max_buf_size < (1+is->method->max_blocks_mem) * filecat[i].bsize)
         max_buf_size = (1+is->method->max_blocks_mem) * filecat[i].bsize;
     if (is->method->debug)
-        logf (LOG_LOG, "isc: max_buf_size %d", max_buf_size);
+        yaz_log(YLOG_LOG, "isc: max_buf_size %d", max_buf_size);
     
     assert (is->no_files > 0);
     is->files = (ISAMC_file) xmalloc (sizeof(*is->files)*is->no_files);
@@ -175,9 +174,9 @@ int isc_close (ISAMC is)
 
     if (is->method->debug)
     {
-	logf (LOG_LOG, "isc:    next    forw   mid-f    prev   backw   mid-b");
+	yaz_log(YLOG_LOG, "isc:    next    forw   mid-f    prev   backw   mid-b");
 	for (i = 0; i<is->no_files; i++)
-	    logf (LOG_LOG, "isc:%8d%8d%8.1f%8d%8d%8.1f",
+	    yaz_log(YLOG_LOG, "isc:%8d%8d%8.1f%8d%8d%8.1f",
 		  is->files[i].no_next,
 		  is->files[i].no_forward,
 		  is->files[i].no_forward ?
@@ -190,7 +189,7 @@ int isc_close (ISAMC is)
 		  : 0.0);
     }
     if (is->method->debug)
-        logf (LOG_LOG, "isc:  writes   reads skipped   alloc released  remap");
+        yaz_log(YLOG_LOG, "isc:  writes   reads skipped   alloc released  remap");
     for (i = 0; i<is->no_files; i++)
     {
         release_fc (is, i);
@@ -199,7 +198,7 @@ int isc_close (ISAMC is)
             bf_write (is->files[i].bf, 0, 0, sizeof(ISAMC_head),
                  &is->files[i].head);
         if (is->method->debug)
-            logf (LOG_LOG, "isc:%8d%8d%8d%8d%8d%8d",
+            yaz_log(YLOG_LOG, "isc:%8d%8d%8d%8d%8d%8d",
                   is->files[i].no_writes,
                   is->files[i].no_reads,
                   is->files[i].no_skip_writes,
@@ -227,7 +226,7 @@ int isc_write_block (ISAMC is, int cat, int pos, char *src)
 {
     ++(is->files[cat].no_writes);
     if (is->method->debug > 2)
-        logf (LOG_LOG, "isc: write_block %d %d", cat, pos);
+        yaz_log(YLOG_LOG, "isc: write_block %d %d", cat, pos);
     return bf_write (is->files[cat].bf, pos, 0, 0, src);
 }
 
@@ -236,7 +235,7 @@ int isc_write_dblock (ISAMC is, int cat, int pos, char *src,
 {
     ISAMC_BLOCK_SIZE size = offset + ISAMC_BLOCK_OFFSET_N;
     if (is->method->debug > 2)
-        logf (LOG_LOG, "isc: write_dblock. size=%d nextpos=%d",
+        yaz_log(YLOG_LOG, "isc: write_dblock. size=%d nextpos=%d",
               (int) size, nextpos);
     src -= ISAMC_BLOCK_OFFSET_N;
     memcpy (src, &nextpos, sizeof(int));
@@ -394,14 +393,14 @@ int isc_alloc_block (ISAMC is, int cat)
     if (!block)
         block = alloc_block (is, cat);
     if (is->method->debug > 3)
-        logf (LOG_LOG, "isc: alloc_block in cat %d: %d", cat, block);
+        yaz_log(YLOG_LOG, "isc: alloc_block in cat %d: %d", cat, block);
     return block;
 }
 
 void isc_release_block (ISAMC is, int cat, int pos)
 {
     if (is->method->debug > 3)
-        logf (LOG_LOG, "isc: release_block in cat %d: %d", cat, pos);
+        yaz_log(YLOG_LOG, "isc: release_block in cat %d: %d", cat, pos);
     if (is->files[cat].fc_list)
     {
         int j;
@@ -479,7 +478,7 @@ ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P ipos)
         pp->offset = src - pp->buf; 
         assert (pp->offset == ISAMC_BLOCK_OFFSET_1);
         if (is->method->debug > 2)
-            logf (LOG_LOG, "isc: read_block size=%d %d %d next=%d",
+            yaz_log(YLOG_LOG, "isc: read_block size=%d %d %d next=%d",
                  pp->size, pp->cat, pp->pos, pp->next);
     }
     return pp;
@@ -546,7 +545,7 @@ int isc_read_item (ISAMC_PP pp, char **dst)
         (*is->method->code_item)(ISAMC_DECODE, pp->decodeClientData, dst, &src);
         pp->offset = src - pp->buf; 
         if (is->method->debug > 2)
-            logf (LOG_LOG, "isc: read_block size=%d %d %d next=%d",
+            yaz_log(YLOG_LOG, "isc: read_block size=%d %d %d next=%d",
                  pp->size, pp->cat, pp->pos, pp->next);
         return 2;
     }

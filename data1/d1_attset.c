@@ -1,4 +1,4 @@
-/* $Id: d1_attset.c,v 1.2.2.1 2006-08-14 10:38:51 adam Exp $
+/* $Id: d1_attset.c,v 1.2.2.2 2006-12-05 21:14:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -90,7 +90,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 	    
 	    if (argc < 3)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args to att", file, lineno);
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to att", file, lineno);
 		continue;
 	    }
 	    num = atoi (argv[1]);
@@ -129,7 +129,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args to name", file, lineno);
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to name", file, lineno);
 		continue;
 	    }
 	}
@@ -139,14 +139,14 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args to reference",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to reference",
 			file, lineno);
 		continue;
 	    }
 	    name = argv[1];
 	    if ((res->reference = oid_getvalbyname(name)) == VAL_NONE)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Unknown reference oid '%s'",
+		yaz_log(YLOG_WARN, "%s:%d: Unknown reference oid '%s'",
 			file, lineno, name);
 		fclose(f);
 		return 0;
@@ -154,7 +154,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 	}
 	else if (!strcmp(cmd, "ordinal"))
 	{
-	    yaz_log (LOG_WARN, "%s:%d: Directive ordinal ignored",
+	    yaz_log(YLOG_WARN, "%s:%d: Directive ordinal ignored",
 		     file, lineno);
 	}
 	else if (!strcmp(cmd, "include"))
@@ -164,7 +164,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args to include",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to include",
 			file, lineno);
 		continue;
 	    }
@@ -172,7 +172,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 
 	    if (!(attset = data1_get_attset (dh, name)))
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Include of attset %s failed",
+		yaz_log(YLOG_WARN, "%s:%d: Include of attset %s failed",
 			file, lineno, name);
 		continue;
 		
@@ -185,7 +185,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 	}
 	else
 	{
-	    yaz_log(LOG_WARN, "%s:%d: Unknown directive '%s'",
+	    yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'",
 		    file, lineno, cmd);
 	}
     }

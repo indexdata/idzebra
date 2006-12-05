@@ -1,4 +1,4 @@
-/* $Id: t2.c,v 1.11.2.1 2006-08-14 10:39:23 adam Exp $
+/* $Id: t2.c,v 1.11.2.2 2006-12-05 21:14:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     zebra_search_PQF (zh, "@attr 1=4 my", "set1", &hits);
     if (hits != 1)
     {
-        yaz_log(LOG_FATAL, "Expected 1 hit. Got %d", hits);
+        yaz_log(YLOG_FATAL, "Expected 1 hit. Got %d", hits);
         exit_code = 1;
     }
 

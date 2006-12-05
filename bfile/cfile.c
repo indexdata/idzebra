@@ -1,4 +1,4 @@
-/* $Id: cfile.c,v 1.27.2.1 2006-08-14 10:38:50 adam Exp $
+/* $Id: cfile.c,v 1.27.2.2 2006-12-05 21:14:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -78,17 +78,17 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
     int hash_bytes;
    
     cf->rmf = mf; 
-    logf (LOG_DEBUG, "cf: open %s %s", cf->rmf->name, wflag ? "rdwr" : "rd");
+    yaz_log(YLOG_DEBUG, "cf: open %s %s", cf->rmf->name, wflag ? "rdwr" : "rd");
     sprintf (path, "%s-b", fname);
     if (!(cf->block_mf = mf_open (area, path, block_size, wflag)))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", path);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "Failed to open %s", path);
         exit (1);
     }
     sprintf (path, "%s-i", fname);
     if (!(cf->hash_mf = mf_open (area, path, HASH_BSIZE, wflag)))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", path);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "Failed to open %s", path);
         exit (1);
     }
     assert (firstp);
@@ -223,7 +223,7 @@ static struct CFile_hash_bucket *get_bucket (CFile cf, int block_no, int hno)
     p = alloc_bucket (cf, block_no, hno);
     if (!mf_read (cf->hash_mf, block_no, 0, 0, &p->ph))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "read get_bucket");
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "read get_bucket");
         exit (1);
     }
     assert (p->ph.this_bucket == block_no);
@@ -290,13 +290,13 @@ static int cf_lookup_hash (CFile cf, int no)
         {
             if (hb->ph.this_bucket == block_no)
             {
-                logf (LOG_FATAL, "Found hash bucket on other chain (1)");
+                yaz_log(YLOG_FATAL, "Found hash bucket on other chain (1)");
                 abort ();
             }
             for (i = 0; i<HASH_BUCKET && hb->ph.vno[i]; i++)
                 if (hb->ph.no[i] == no)
                 {
-                    logf (LOG_FATAL, "Found hash bucket on other chain (2)");
+                    yaz_log(YLOG_FATAL, "Found hash bucket on other chain (2)");
                     abort ();
                 }
         }
@@ -327,8 +327,8 @@ static void cf_moveto_flat (CFile cf)
     struct CFile_hash_bucket *p;
     int i, j;
 
-    logf (LOG_DEBUG, "cf: Moving to flat shadow: %s", cf->rmf->name);
-    logf (LOG_DEBUG, "cf: hits=%d miss=%d bucket_in_memory=%d total=%d",
+    yaz_log(YLOG_DEBUG, "cf: Moving to flat shadow: %s", cf->rmf->name);
+    yaz_log(YLOG_DEBUG, "cf: hits=%d miss=%d bucket_in_memory=%d total=%d",
 	cf->no_hits, cf->no_miss, cf->bucket_in_memory, 
         cf->head.next_bucket - cf->head.first_bucket);
     assert (cf->head.state == 1);
@@ -339,7 +339,7 @@ static void cf_moveto_flat (CFile cf)
     {
         if (!mf_read (cf->hash_mf, i, 0, 0, &p->ph))
         {
-            logf (LOG_FATAL|LOG_ERRNO, "read bucket moveto flat");
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "read bucket moveto flat");
             exit (1);
         }
         for (j = 0; j < HASH_BUCKET && p->ph.vno[j]; j++)
@@ -406,7 +406,7 @@ static int cf_new_hash (CFile cf, int no)
         {
             if (hb->ph.this_bucket == *bucketpp)
             {
-                logf (LOG_FATAL, "Found hash bucket on other chain");
+                yaz_log(YLOG_FATAL, "Found hash bucket on other chain");
                 abort ();
             }
         }
@@ -461,7 +461,7 @@ int cf_read (CFile cf, int no, int offset, int nbytes, void *buf)
     zebra_mutex_unlock (&cf->mutex);
     if (!mf_read (cf->block_mf, block, offset, nbytes, buf))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "cf_read no=%d, block=%d", no, block);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "cf_read no=%d, block=%d", no, block);
         exit (1);
     }
     return 1;
@@ -488,7 +488,7 @@ int cf_write (CFile cf, int no, int offset, int nbytes, const void *buf)
     zebra_mutex_unlock (&cf->mutex);
     if (mf_write (cf->block_mf, block, offset, nbytes, buf))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "cf_write no=%d, block=%d", no, block);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "cf_write no=%d, block=%d", no, block);
         exit (1);
     }
     return 0;
@@ -496,7 +496,7 @@ int cf_write (CFile cf, int no, int offset, int nbytes, const void *buf)
 
 int cf_close (CFile cf)
 {
-    logf (LOG_DEBUG, "cf: close hits=%d miss=%d bucket_in_memory=%d total=%d",
+    yaz_log(YLOG_DEBUG, "cf: close hits=%d miss=%d bucket_in_memory=%d total=%d",
           cf->no_hits, cf->no_miss, cf->bucket_in_memory,
           cf->head.next_bucket - cf->head.first_bucket);
     flush_bucket (cf, -1);

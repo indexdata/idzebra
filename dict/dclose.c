@@ -1,4 +1,4 @@
-/* $Id: dclose.c,v 1.6.2.1 2006-08-14 10:38:54 adam Exp $
+/* $Id: dclose.c,v 1.6.2.2 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -20,13 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-
-
 #include <sys/types.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <yaz/xmalloc.h>
 #include <dict.h>
 
 int dict_bf_close (Dict_BFile dbf)

@@ -1,4 +1,4 @@
-/* $Id: open.c,v 1.19.2.1 2006-08-14 10:38:54 adam Exp $
+/* $Id: open.c,v 1.19.2.2 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -20,12 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
+#include <yaz/xmalloc.h>
 #include <dict.h>
 
 Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
@@ -46,7 +44,7 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
     page_size = DICT_DEFAULT_PAGESIZE;
     if (page_size < 2048)
     {
-        logf (LOG_WARN, "Resource %s was too small. Set to 2048",
+        yaz_log(YLOG_WARN, "Resource %s was too small. Set to 2048",
               resource_str);
         page_size = 2048;
     }
@@ -55,7 +53,7 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
 
     if(!dict->dbf)
     {
-        logf (LOG_WARN, "Cannot open `%s'", name);
+        yaz_log(YLOG_WARN, "Cannot open `%s'", name);
         xfree (dict);
         return NULL;
     }
@@ -78,12 +76,12 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
 	memcpy (&dict->head, head_buf, sizeof(dict->head));
         if (strcmp (dict->head.magic_str, DICT_MAGIC))
         {
-            logf (LOG_WARN, "Bad magic of `%s'", name);
+            yaz_log(YLOG_WARN, "Bad magic of `%s'", name);
             exit (1);
         }
         if (dict->head.page_size != page_size)
         {
-            logf (LOG_WARN, "Resource %s is %d and pagesize of `%s' is %d",
+            yaz_log(YLOG_WARN, "Resource %s is %d and pagesize of `%s' is %d",
                   resource_str, page_size, name, dict->head.page_size);
 	    return 0;
         }

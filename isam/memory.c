@@ -1,4 +1,4 @@
-/* $Id: memory.c,v 1.18.2.1 2006-08-14 10:39:03 adam Exp $
+/* $Id: memory.c,v 1.18.2.2 2006-12-05 21:14:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -289,7 +289,7 @@ int is_m_write_record(is_mtable *tab, const void *rec)
 	mbuf->cur_record = 0;
     }
     /*
-    logf (LOG_DEBUG, "is_m_write_rec(rec == %d)", mbuf->cur_record);
+    yaz_log(YLOG_DEBUG, "is_m_write_rec(rec == %d)", mbuf->cur_record);
     */
     memcpy(mbuf->data + mbuf->offset + mbuf->cur_record * is_keysize(tab->is),
 	rec, is_keysize(tab->is));
@@ -422,7 +422,7 @@ int is_m_num_records(is_mtable *tab)
     if (tab->data->state < IS_MBSTATE_PARTIAL)
 	if (read_current_full(tab, tab->data) < 0)
 	{
-	    logf (LOG_FATAL, "read full failed");
+	    yaz_log(YLOG_FATAL, "read full failed");
 	    exit(1);
 	}
     return tab->num_records;

@@ -1,4 +1,4 @@
-/* $Id: isams.c,v 1.5.2.2 2006-10-27 11:06:48 adam Exp $
+/* $Id: isams.c,v 1.5.2.3 2006-12-05 21:14:43 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 #include <stdio.h>
 
+#include <yaz/xmalloc.h>
 #include <yaz/log.h>
 #include <isams.h>
 
@@ -124,7 +125,7 @@ ISAMS_P isams_merge (ISAMS is, ISAMS_I data)
     if (is->head.last_offset > is->block_size)
     {
 	if (is->debug > 2)
-	    logf (LOG_LOG, "first_block=%d", first_block);
+	    yaz_log(YLOG_LOG, "first_block=%d", first_block);
 	bf_write(is->bf, is->head.last_block, 0, 0, is->merge_buf);
 	(is->head.last_block)++;
 	is->head.last_offset -= is->block_size;
@@ -187,7 +188,7 @@ ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos)
     ISAMS_PP pp = (ISAMS_PP) xmalloc (sizeof(*pp));
 
     if (is->debug > 1)
-	logf (LOG_LOG, "isams: isams_pp_open pos=%ld", (long) pos);
+	yaz_log(YLOG_LOG, "isams: isams_pp_open pos=%ld", (long) pos);
     pp->is = is;
     pp->decodeClientData = (*is->method->code_start)(ISAMC_DECODE);
     pp->numKeys = 0;
@@ -196,7 +197,7 @@ ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos)
     pp->block_no = pos/is->block_size;
     pp->block_offset = pos - pp->block_no * is->block_size;
     if (is->debug)
-        logf (LOG_LOG, "isams: isams_pp_open off=%d no=%d",
+        yaz_log(YLOG_LOG, "isams: isams_pp_open off=%d no=%d",
               pp->block_offset, pp->block_no);
     if (pos)
     {
@@ -204,7 +205,7 @@ ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos)
 	bf_read (is->bf, pp->block_no+1, 0, 0, pp->buf + is->block_size);
 	memcpy(&pp->numKeys, pp->buf + pp->block_offset, sizeof(int));
         if (is->debug)
-	    logf (LOG_LOG, "isams: isams_pp_open numKeys=%d", pp->numKeys);
+	    yaz_log(YLOG_LOG, "isams: isams_pp_open numKeys=%d", pp->numKeys);
 	pp->block_offset += sizeof(int);
     }
     return pp;

@@ -1,4 +1,4 @@
-/* $Id: insert.c,v 1.22.2.1 2006-08-14 10:38:54 adam Exp $
+/* $Id: insert.c,v 1.22.2.2 2006-12-05 21:14:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -20,13 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-
-
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 
+#include <yaz/xmalloc.h>
 #include <dict.h>
 
 #define CHECK 0
@@ -343,7 +342,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
                         }
                         if (split_page (dict, ptr, p)) 
                         {
-                            logf (LOG_FATAL, "Unable to split page %d\n", ptr);
+                            yaz_log(YLOG_FATAL, "Unable to split page %d\n", ptr);
                             abort ();
                         }
                         return dict_ins (dict, str-1, ptr, userlen, userinfo);
