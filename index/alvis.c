@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.6 2006-11-16 13:27:54 adam Exp $
+/* $Id: alvis.c,v 1.7 2006-12-05 09:26:04 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -161,8 +161,8 @@ static void *filter_init(Res res, RecType recType)
 static int attr_content(struct _xmlAttr *attr, const char *name,
 			const char **dst_content)
 {
-    if (!XML_STRCMP(attr->name, name) && attr->children &&
-	attr->children->type == XML_TEXT_NODE)
+    if (!XML_STRCMP(attr->name, name) && attr->children 
+        && attr->children->type == XML_TEXT_NODE)
     {
 	*dst_content = (const char *)(attr->children->content);
 	return 1;
@@ -193,27 +193,29 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
     char tmp_full_name[1024];
     xmlNodePtr ptr;
     tinfo->fname = xstrdup(fname);
-
-   if (yaz_filepath_resolve(tinfo->fname, tinfo->profile_path, 
+    
+    if (yaz_filepath_resolve(tinfo->fname, tinfo->profile_path, 
                              NULL, tmp_full_name))
-      tinfo->full_name = xstrdup(tmp_full_name);
+        tinfo->full_name = xstrdup(tmp_full_name);
     else
-      tinfo->full_name = xstrdup(tinfo->fname);
-
+        tinfo->full_name = xstrdup(tinfo->fname);
+    
     yaz_log(YLOG_LOG, "alvis filter: loading config file %s", tinfo->full_name);
-
+    
     tinfo->doc = xmlParseFile(tinfo->full_name);
-
-    if (!tinfo->doc){
+    
+    if (!tinfo->doc)
+    {
         yaz_log(YLOG_WARN, "alvis filter: could not parse config file %s", 
                 tinfo->full_name);
-
+        
 	return ZEBRA_FAIL;
     }
     
     ptr = xmlDocGetRootElement(tinfo->doc);
-    if (!ptr || ptr->type != XML_ELEMENT_NODE ||
-	XML_STRCMP(ptr->name, "schemaInfo")){
+    if (!ptr || ptr->type != XML_ELEMENT_NODE 
+        || XML_STRCMP(ptr->name, "schemaInfo"))
+    {
         yaz_log(YLOG_WARN, 
                 "alvis filter:  config file %s :" 
                 " expected root element <schemaInfo>", 
