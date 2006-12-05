@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.51 2006-08-14 10:40:34 adam Exp $
+/* $Id: res.c,v 1.52 2006-12-05 09:24:31 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -43,10 +43,18 @@ struct res_entry {
 };
 
 struct res_struct {
+    int ref_count;
     struct res_entry *first, *last;
     Res def_res;
     Res over_res;
 };
+
+static Res res_incref(Res r)
+{
+    if (r)
+        r->ref_count++;
+    return r;
+}
 
 static struct res_entry *add_entry(Res r)
 {
@@ -226,13 +234,16 @@ ZEBRA_RES res_read_file(Res r, const char *fname)
     fclose(fr);
     return ZEBRA_OK;
 }
+
 Res res_open(Res def_res, Res over_res)
 {
     Res r;
     r = (Res) xmalloc(sizeof(*r));
+
+    r->ref_count = 1;
     r->first = r->last = NULL;
-    r->def_res = def_res;
-    r->over_res = over_res;
+    r->def_res = res_incref(def_res);
+    r->over_res = res_incref(over_res);
     return r;
 }
 
@@ -253,11 +264,13 @@ void res_clear(Res r)
 
 void res_close(Res r)
 {
-    if (!r)
-        return;
-    res_clear(r);
-
-    xfree(r);
+    if (r && --(r->ref_count) == 0)
+    {
+        res_clear(r);
+        res_close(r->def_res);
+        res_close(r->over_res);
+        xfree(r);
+    }
 }
 
 const char *res_get_prefix(Res r, const char *name, const char *prefix,
@@ -462,10 +475,10 @@ void res_close_over (Res r)
 void res_add (Res r, const char *name, const char *value)
 {
     struct res_entry *re;
-    assert (r);
-    if ((name) && (value)) 
-	yaz_log (YLOG_RES, "res_add res=%p, name=%s, value=%s", r, name, value);
-    
+    assert(r);
+    assert(name);
+    assert(value);
+    yaz_log (YLOG_RES, "res_add res=%p, name=%s, value=%s", r, name, value);
     re = add_entry (r);
     re->name = xstrdup (name);
     re->value = xstrdup_env (value);
