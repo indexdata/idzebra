@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.243 2006-11-28 08:44:10 adam Exp $
+/* $Id: extract.c,v 1.244 2006-12-05 08:14:47 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1190,20 +1190,12 @@ static void extract_add_incomplete_field(RecWord *p)
     ZebraHandle zh = p->extractCtrl->handle;
     const char *b = p->term_buf;
     int remain = p->term_len;
+    int first = 1;
     const char **map = 0;
     
     if (remain > 0)
 	map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, 0);
 
-    if (map)
-    {   
-        if (zebra_maps_is_first_in_field(zh->reg->zebra_maps, p->index_type))
-        {
-             /* first in field marker */
-            extract_add_string(p, FIRST_IN_FIELD_STR, FIRST_IN_FIELD_LEN);
-            p->seqno++;
-        }
-    }
     while (map)
     {
 	char buf[IT_MAX_WORD+1];
@@ -1236,6 +1228,17 @@ static void extract_add_incomplete_field(RecWord *p)
 	}
 	if (!i)
 	    return;
+
+        if (first)
+        {   
+            first = 0;
+            if (zebra_maps_is_first_in_field(zh->reg->zebra_maps, p->index_type))
+            {
+                /* first in field marker */
+                extract_add_string(p, FIRST_IN_FIELD_STR, FIRST_IN_FIELD_LEN);
+                p->seqno++;
+            }
+        }
 	extract_add_string (p, buf, i);
         p->seqno++;
     }
