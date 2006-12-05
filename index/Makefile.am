@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.59 2006-11-21 14:32:38 adam Exp $
+## $Id: Makefile.am,v 1.60 2006-12-05 09:26:37 adam Exp $
 
 aux_libs = \
  ../rset/libidzebra-rset.la \
@@ -99,6 +99,7 @@ kdump_SOURCES = kdump.c
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) \
   -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\" \
+  -DDEFAULT_MODULE_PATH=\"$(modlibdir)\" \
   $(TCL_INCLUDE)
 
 LDADD = $(zebralib) $(YAZLALIB) 

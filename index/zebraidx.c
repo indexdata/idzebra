@@ -1,4 +1,4 @@
-/* $Id: zebraidx.c,v 1.1 2006-09-22 10:18:08 adam Exp $
+/* $Id: zebraidx.c,v 1.2 2006-12-05 09:26:37 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -64,6 +64,7 @@ int main (int argc, char **argv)
     int enable_commit = 1;
     char *database = 0;
     Res res = res_open(0, 0);
+    Res default_res = res_open(0, 0);
     
     int trans_started=0;
 #if HAVE_SYS_TIMES_H
@@ -120,6 +121,8 @@ int main (int argc, char **argv)
                  );
         exit (1);
     }
+    res_set(default_res, "profilePath", DEFAULT_PROFILE_PATH);
+    res_set(default_res, "modulePath", DEFAULT_MODULE_PATH);
     while ((ret = options("sVt:c:g:d:m:v:nf:l:L", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
@@ -129,7 +132,7 @@ int main (int argc, char **argv)
                 if (!zs)
                 {
 		    const char *config = configName ? configName : "zebra.cfg";
-                    zs = zebra_start_res (config, 0, res);
+                    zs = zebra_start_res(config, default_res, res);
                     if (!zs)
                     {
 			yaz_log (YLOG_FATAL, "Cannot read config %s", config);
@@ -309,6 +312,8 @@ int main (int argc, char **argv)
     }
 #endif
 #endif
+    res_close(res);
+    res_close(default_res);
     nmem_exit();
     exit (0);
     return 0;

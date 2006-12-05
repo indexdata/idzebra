@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.2 2006-11-21 22:17:49 adam Exp $
+/* $Id: zebrasrv.c,v 1.3 2006-12-05 09:26:37 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -756,9 +756,14 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 
 static void bend_start (struct statserv_options_block *sob)
 {
+    Res default_res = res_open(0, 0);
+
     if (sob->handle)
 	zebra_stop((ZebraService) sob->handle);
+    res_set(default_res, "profilePath", DEFAULT_PROFILE_PATH);
+    res_set(default_res, "modulePath", DEFAULT_MODULE_PATH);
     sob->handle = zebra_start(sob->configname);
+    res_close(default_res);
     if (!sob->handle)
     {
 	yaz_log (YLOG_FATAL, "Failed to read config `%s'", sob->configname);

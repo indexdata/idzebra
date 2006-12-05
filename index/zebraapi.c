@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.235 2006-11-27 09:17:01 adam Exp $
+/* $Id: zebraapi.c,v 1.236 2006-12-05 09:26:37 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -174,12 +174,12 @@ ZebraHandle zebra_open(ZebraService zs, Res res)
     return zh;
 }
 
-ZebraService zebra_start (const char *configName)
+ZebraService zebra_start(const char *configName)
 {
     return zebra_start_res(configName, 0, 0);
 }
 
-ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
+ZebraService zebra_start_res(const char *configName, Res def_res, Res over_res)
 {
     Res res;
 
@@ -348,8 +348,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     }
 
     getcwd(cwd, sizeof(cwd)-1);
-    profilePath = res_get_def(res, "profilePath", DEFAULT_PROFILE_PATH);
-    yaz_log(YLOG_DEBUG, "profilePath=%s cwd=%s", profilePath, cwd);
+    profilePath = res_get_def(res, "profilePath", 0);
 
     data1_set_tabpath (reg->dh, profilePath);
     data1_set_tabroot (reg->dh, reg_path);
