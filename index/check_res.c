@@ -1,4 +1,4 @@
-/* $Id: check_res.c,v 1.1 2006-12-05 14:06:29 adam Exp $
+/* $Id: check_res.c,v 1.2 2006-12-06 10:26:54 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -44,6 +44,7 @@ int zebra_check_res(Res res)
     res_add(v, "isamsDebug", "");
     res_add(v, "keyTmpDir", "");
     res_add(v, "lockDir", "");
+    res_add(v, "memmax", "");
     res_add(v, "modulePath", "");
     res_add(v, "perm", "s");
     res_add(v, "passwd", "");
