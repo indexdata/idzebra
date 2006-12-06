@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.60 2006-11-24 19:48:23 adam Exp $
+# $Id: makefile,v 1.61 2006-12-06 13:00:12 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -321,6 +321,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\bfile.obj \
 	$(OBJDIR)\bset.obj \
 	$(OBJDIR)\cfile.obj \
+	$(OBJDIR)\check_res.obj \
 	$(OBJDIR)\charmap.obj \
 	$(OBJDIR)\close.obj \
 	$(OBJDIR)\commit.obj \
