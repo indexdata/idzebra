@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.79 2006-11-27 10:10:14 adam Exp $
+/* $Id: kinput.c,v 1.80 2006-12-06 22:52:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -225,11 +225,11 @@ struct heap_info {
     struct zebra_register *reg;
     ZebraHandle zh;
     int raw_reading; /* 1=raw /mem read. 0=file reading */
-    int no_diffs;
-    int no_updates;
-    int no_deletions;
-    int no_insertions;
-    int no_iterations;
+    zint no_diffs;
+    zint no_updates;
+    zint no_deletions;
+    zint no_insertions;
+    zint no_iterations;
 };
 
 static struct heap_info *key_heap_malloc(void)
@@ -818,11 +818,11 @@ void zebra_index_merge (ZebraHandle zh)
     xfree (kf);
     if (hi->no_iterations)
     { /* do not log if nothing happened */
-        yaz_log(YLOG_LOG, "Iterations . . .%7d", hi->no_iterations);
-        yaz_log(YLOG_LOG, "Distinct words .%7d", hi->no_diffs);
-        yaz_log(YLOG_LOG, "Updates. . . . .%7d", hi->no_updates);
-        yaz_log(YLOG_LOG, "Deletions. . . .%7d", hi->no_deletions);
-        yaz_log(YLOG_LOG, "Insertions . . .%7d", hi->no_insertions);
+        yaz_log(YLOG_LOG, "Iterations     %9" ZINT_FORMAT0, hi->no_iterations);
+        yaz_log(YLOG_LOG, "Distinct words %9" ZINT_FORMAT0, hi->no_diffs);
+        yaz_log(YLOG_LOG, "Updates        %9" ZINT_FORMAT0, hi->no_updates);
+        yaz_log(YLOG_LOG, "Deletions      %9" ZINT_FORMAT0, hi->no_deletions);
+        yaz_log(YLOG_LOG, "Insertions     %9" ZINT_FORMAT0, hi->no_insertions);
     }
     key_block_destroy(&zh->reg->key_block);
     key_heap_destroy(hi, nkeys);
