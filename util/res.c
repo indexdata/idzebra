@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.53 2006-12-05 14:06:30 adam Exp $
+/* $Id: res.c,v 1.54 2006-12-06 10:26:40 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -570,26 +570,24 @@ int res_check(Res r_i, Res r_v)
             const char *name = e_i->name;
             size_t name_len = strlen(e_i->name);
             char namez[32];
+            const char *first_dot = 0;
+            const char *second_dot = 0;
 
             if (strchr(e_v->value, 'p'))
                 prefix_allowed = 1;
             if (strchr(e_v->value, 's'))
                 suffix_allowed = 1;
-
-            if (prefix_allowed)
+            
+            first_dot = strchr(name, '.');
+            if (prefix_allowed && first_dot)
             {
-                const char *cp = strchr(name, '.');
-                if (cp)
-                {
-                    name = cp;
-                    name_len = strlen(name);
-                }
+                name = first_dot+1;
+                name_len = strlen(name);
             }
-            if (suffix_allowed)
+            second_dot = strchr(name, '.');
+            if (suffix_allowed && second_dot)
             {
-                const char *cp = strchr(name, '.');
-                if (cp)
-                    name_len = cp - name;
+                name_len = second_dot - name;
             }
             if (name_len < sizeof(namez)-1)
             {
@@ -597,6 +595,19 @@ int res_check(Res r_i, Res r_v)
                 namez[name_len] = '\0';
                 if (!yaz_matchstr(namez, e_v->name))
                     break;
+            }
+            /* for case 'a.b' we have to check 'a' as well */
+            if (prefix_allowed && suffix_allowed && first_dot && !second_dot)
+            {
+                name = e_i->name;
+                name_len = first_dot - name;
+                if (name_len < sizeof(namez)-1)
+                {
+                    memcpy(namez, name, name_len);
+                    namez[name_len] = '\0';
+                    if (!yaz_matchstr(namez, e_v->name))
+                        break;
+                }
             }
         }
         if (!e_v)
