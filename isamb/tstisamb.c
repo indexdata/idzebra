@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.25 2006-10-30 16:21:29 adam Exp $
+/* $Id: tstisamb.c,v 1.26 2006-12-07 21:13:56 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -19,6 +19,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
+
+#if HAVE_SYS_TIMES_H
+#include <sys/times.h>
+#endif
+#if HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -96,10 +103,69 @@ int code_read(void *vp, char **dst, int *insertMode)
     ri->val = ri->val + ri->step;
     *insertMode = ri->insertMode;
 
-#if 1
-    yaz_log(YLOG_DEBUG, "%d %5d", ri->insertMode, x);
+#if 0
+    yaz_log(YLOG_LOG, "%d %5d", ri->insertMode, x);
 #endif
     return 1;
+}
+
+void bench_insert(ISAMB isb, int number_of_trees,
+                int number_of_rounds, int number_of_elements)
+{
+    ISAMC_I isamc_i;
+    ISAM_P *isamc_p = xmalloc(sizeof(ISAM_P) * number_of_trees);
+    struct read_info ri;
+    int round, i;
+
+    for (i = 0; i<number_of_trees; i++)
+        isamc_p[i] = 0; /* initially, is empty */
+
+    ri.val = 0;
+    ri.step = 1;
+    ri.insertMode = 1;
+    
+    for (round = 0; round < number_of_rounds; round++)
+    {
+#if HAVE_SYS_TIMES_H
+#if HAVE_SYS_TIME_H
+        struct tms tms1, tms2;
+        struct timeval start_time, end_time;
+        double usec;
+        times(&tms1);
+        gettimeofday(&start_time, 0);
+#endif
+#endif
+        for (i = 0; i<number_of_trees; i++)
+        {
+
+            /* insert a number of entries */
+            ri.no = 0;
+            
+            ri.val = (rand());
+            ri.max = number_of_elements;
+            
+            isamc_i.clientData = &ri;
+            isamc_i.read_item = code_read;
+            
+            
+            isamb_merge (isb, &isamc_p[i] , &isamc_i);
+        }
+#if HAVE_SYS_TIMES_H
+#if HAVE_SYS_TIME_H      
+        gettimeofday(&end_time, 0);
+        times(&tms2);
+        
+        usec = (end_time.tv_sec - start_time.tv_sec) * 1000000.0 +
+            end_time.tv_usec - start_time.tv_usec;
+        
+        yaz_log (YLOG_LOG, "round=%d times: %5.4f %5.2f %5.2f",
+                 round,
+                 usec / 1000000,
+                 (double) (tms2.tms_utime - tms1.tms_utime)/100,
+                 (double) (tms2.tms_stime - tms1.tms_stime)/100);
+#endif
+#endif
+    }
 }
 
 void tst_insert(ISAMB isb, int n)
@@ -556,7 +622,9 @@ int main(int argc, char **argv)
 	yaz_log(YLOG_WARN, "isamb_open failed");
 	exit(2);
     }
-#if 1
+#if 0
+    bench_insert(isb, 1000, 100, 10000);
+#else
     tst_insert(isb, 1);
     tst_insert(isb, 2);
     tst_insert(isb, 20);
