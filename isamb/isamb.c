@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.86 2006-11-14 12:03:48 adam Exp $
+/* $Id: isamb.c,v 1.87 2006-12-07 19:23:56 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -53,8 +53,9 @@ struct ISAMB_head {
 
 #define ISAMB_MAX_LEVEL 10
 /* approx 2*max page + max size of item */
-#define DST_BUF_SIZE 16840
+#define DST_BUF_SIZE (2*4096+300)
 
+/* should be maximum block size of multiple thereof */
 #define ISAMB_CACHE_ENTRY_SIZE 4096
 
 /* CAT_MAX: _must_ be power of 2 */
@@ -197,7 +198,14 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
     for (i = 0; i<ISAMB_MAX_LEVEL; i++)
 	isamb->skipped_nodes[i] = isamb->accessed_nodes[i] = 0;
 
-    assert(cache == 0);
+    if (cache == -1)
+    {
+        yaz_log(YLOG_WARN, "isamb_open %s. Degraded TEST mode", name);
+    }
+    else
+    {
+        assert(cache == 0 || cache == 1);
+    }
     isamb->file = xmalloc(sizeof(*isamb->file) * isamb->no_cat);
 
     for (i = 0; i < isamb->no_cat; i++)
@@ -229,6 +237,7 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 	isamb->file[i].head.first_block = ISAMB_CACHE_ENTRY_SIZE/b_size+1;
 	isamb->file[i].head.last_block = isamb->file[i].head.first_block;
 	isamb->file[i].head.block_size = b_size;
+        assert(b_size <= ISAMB_CACHE_ENTRY_SIZE);
 #if ISAMB_PTR_CODEC
 	if (i == isamb->no_cat-1 || b_size > 128)
 	    isamb->file[i].head.block_offset = 8;
