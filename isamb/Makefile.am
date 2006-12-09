@@ -1,13 +1,21 @@
-## $Id: Makefile.am,v 1.13 2006-07-05 15:03:48 adam Exp $
+## $Id: Makefile.am,v 1.14 2006-12-09 08:03:57 adam Exp $
 
 noinst_LTLIBRARIES = libidzebra-isamb.la
 
+noinst_PROGRAMS = benchisamb
 check_PROGRAMS = tstisamb
+
+EXTRA_DIST = bench1.sh bench1.plt
 
 TESTS = $(check_PROGRAMS)
 
 tstisamb_SOURCES = tstisamb.c
 tstisamb_LDADD = libidzebra-isamb.la \
+ ../bfile/libidzebra-bfile.la \
+ ../util/libidzebra-util.la $(YAZLALIB)
+
+benchisamb_SOURCES = benchisamb.c
+benchisamb_LDADD = libidzebra-isamb.la \
  ../bfile/libidzebra-bfile.la \
  ../util/libidzebra-util.la $(YAZLALIB)
 

@@ -4,5 +4,8 @@ Makefile
 Makefile.in
 *.mf
 tstisamb
+benchisamb
 *.lo
 *.la
+*.dat
+*.eps

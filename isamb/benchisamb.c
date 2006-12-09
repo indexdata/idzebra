@@ -1,0 +1,253 @@
+/* $Id: benchisamb.c,v 1.1 2006-12-09 08:03:57 adam Exp $
+   Copyright (C) 1995-2006
+   Index Data ApS
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+*/
+
+#include <yaz/options.h>
+#if HAVE_SYS_TIMES_H
+#include <sys/times.h>
+#endif
+#if HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
+#include <stdlib.h>
+#include <string.h>
+#include <yaz/log.h>
+#include <yaz/xmalloc.h>
+#include <idzebra/isamb.h>
+#include <assert.h>
+
+static void log_item(int level, const void *b, const char *txt)
+{
+    int x;
+    memcpy(&x, b, sizeof(int));
+    yaz_log(YLOG_LOG, "%s %d", txt, x);
+}
+
+static void log_pr(const char *txt)
+{
+    yaz_log(YLOG_LOG, "%s", txt);
+}
+
+int compare_item(const void *a, const void *b)
+{
+    int ia, ib;
+
+    memcpy(&ia, a, sizeof(int));
+    memcpy(&ib, b, sizeof(int));
+    if (ia > ib)
+	return 1;
+    if (ia < ib)
+	return -1;
+   return 0;
+}
+
+void *code_start(void)
+{
+    return 0;
+}
+
+void code_item(void *p, char **dst, const char **src)
+{
+    memcpy (*dst, *src, sizeof(int));
+    (*dst) += sizeof(int);
+    (*src) += sizeof(int);
+}
+
+void code_reset(void *p)
+{
+}
+void code_stop(void *p)
+{
+}
+
+struct read_info {
+    int val;
+    int step;
+
+    int no;
+    int max;
+    int insertMode;
+};
+
+int code_read(void *vp, char **dst, int *insertMode)
+{
+    struct read_info *ri = (struct read_info *)vp;
+    int x;
+
+    if (ri->no >= ri->max)
+	return 0;
+    ri->no++;
+
+    x = ri->val;
+    memcpy (*dst, &x, sizeof(int));
+    (*dst)+=sizeof(int);
+
+    ri->val = ri->val + ri->step;
+    *insertMode = ri->insertMode;
+
+#if 0
+    yaz_log(YLOG_LOG, "%d %5d", ri->insertMode, x);
+#endif
+    return 1;
+}
+
+void bench_insert(ISAMB isb, int number_of_trees,
+                  int number_of_rounds, int number_of_elements)
+{
+    ISAMC_I isamc_i;
+    ISAM_P *isamc_p = xmalloc(sizeof(ISAM_P) * number_of_trees);
+    struct read_info ri;
+    int round, i;
+
+    for (i = 0; i<number_of_trees; i++)
+        isamc_p[i] = 0; /* initially, is empty */
+
+    ri.val = 0;
+    ri.step = 1;
+    ri.insertMode = 1;
+    
+    for (round = 0; round < number_of_rounds; round++)
+    {
+#if HAVE_SYS_TIMES_H
+#if HAVE_SYS_TIME_H
+        struct tms tms1, tms2;
+        struct timeval start_time, end_time;
+        double usec;
+        times(&tms1);
+        gettimeofday(&start_time, 0);
+#endif
+#endif
+        for (i = 0; i<number_of_trees; i++)
+        {
+
+            /* insert a number of entries */
+            ri.no = 0;
+            
+            ri.val = (rand());
+            // ri.val = number_of_elements * round;
+            ri.max = number_of_elements;
+            
+            isamc_i.clientData = &ri;
+            isamc_i.read_item = code_read;
+            
+            isamb_merge (isb, &isamc_p[i] , &isamc_i);
+
+#if 0
+            isamb_dump(isb, isamc_p[i], log_pr);
+#endif       
+        }
+#if HAVE_SYS_TIMES_H
+#if HAVE_SYS_TIME_H      
+        gettimeofday(&end_time, 0);
+        times(&tms2);
+        
+        usec = (end_time.tv_sec - start_time.tv_sec) * 1000000.0 +
+            end_time.tv_usec - start_time.tv_usec;
+        
+        printf("%3d %8.6f %5.2f %5.2f\n",
+                 round+1,
+                 usec / 1000000,
+                 (double) (tms2.tms_utime - tms1.tms_utime)/100,
+                 (double) (tms2.tms_stime - tms1.tms_stime)/100);
+#endif
+#endif
+    }
+    xfree(isamc_p);
+}
+
+
+int main(int argc, char **argv)
+{
+    BFiles bfs;
+    ISAMB isb;
+    ISAMC_M method;
+    int ret;
+    char *arg;
+    int number_of_rounds = 10;
+    int number_of_items = 1000;
+    int number_of_isams = 1000;
+
+    while ((ret = options("r:n:i:", argv, argc, &arg)) != -2)
+    {
+        switch(ret)
+        {
+        case 'r':
+            number_of_rounds = atoi(arg);
+            break;
+        case 'n':
+            number_of_items = atoi(arg);
+            break;
+        case 'i':
+            number_of_isams = atoi(arg);
+            break;
+        case 0:
+            fprintf(stderr, "bad arg: %s\n", arg);
+            exit(1);
+        default:
+            fprintf(stderr, "bad option. %s\n", ret);
+            exit(1);
+        }
+    }
+	
+    /* setup method (attributes) */
+    method.compare_item = compare_item;
+    method.log_item = log_item;
+    method.codec.start = code_start;
+    method.codec.encode = code_item;
+    method.codec.decode = code_item;
+    method.codec.reset = code_reset;
+    method.codec.stop = code_stop;
+
+    /* create block system */
+    bfs = bfs_create(0, 0);
+    if (!bfs)
+    {
+	yaz_log(YLOG_WARN, "bfs_create failed");
+	exit(1);
+    }
+
+    bf_reset(bfs);
+
+    /* create isam handle */
+    isb = isamb_open (bfs, "isamb", 1, &method, 0);
+    if (!isb)
+    {
+	yaz_log(YLOG_WARN, "isamb_open failed");
+	exit(2);
+    }
+    bench_insert(isb, number_of_isams, number_of_rounds, number_of_items);
+    
+    isamb_close(isb);
+
+    /* exit block system */
+    bfs_destroy(bfs);
+    exit(0);
+    return 0;
+}
+/*
+ * Local variables:
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ * vim: shiftwidth=4 tabstop=8 expandtab
+ */
+
