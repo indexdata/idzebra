@@ -1,4 +1,4 @@
-/* $Id: benchisamb.c,v 1.2 2006-12-10 11:49:16 adam Exp $
+/* $Id: benchisamb.c,v 1.3 2006-12-10 20:59:52 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -51,8 +51,8 @@ int compare_item(const void *a, const void *b)
 {
     int ia, ib;
 
-    memcpy(&ia, a + 1, sizeof(int));
-    memcpy(&ib, b + 1, sizeof(int));
+    memcpy(&ia, (const char *) a + 1, sizeof(int));
+    memcpy(&ib, (const char *) b + 1, sizeof(int));
     if (ia > ib)
 	return 1;
     if (ia < ib)
@@ -148,8 +148,11 @@ void bench_insert(ISAMB isb, int number_of_trees,
 
             /* insert a number of entries */
             ri.no = 0;
-            
+          
             ri.val = (rand());
+            if (RAND_MAX < 65536)  
+                ri.val = ri.val + 65536*rand();
+
             // ri.val = number_of_elements * round;
             ri.max = number_of_elements;
             
