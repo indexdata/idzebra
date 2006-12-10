@@ -1,4 +1,4 @@
-/* $Id: benchindex1.c,v 1.1 2006-12-10 21:00:56 adam Exp $
+/* $Id: benchindex1.c,v 1.2 2006-12-10 21:02:28 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -269,7 +269,7 @@ void index_block_add(struct index_block *b,
 
 void exit_usage(void)
 {
-    fprintf(stderr, "benchindex1 [-z sz]\n");
+    fprintf(stderr, "benchindex1 [-m m] [iso2709file]\n");
     exit(1);
 }
 
