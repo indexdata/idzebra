@@ -1,4 +1,4 @@
-/* $Id: benchisamb.c,v 1.1 2006-12-09 08:03:57 adam Exp $
+/* $Id: benchisamb.c,v 1.2 2006-12-10 11:49:16 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -51,8 +51,8 @@ int compare_item(const void *a, const void *b)
 {
     int ia, ib;
 
-    memcpy(&ia, a, sizeof(int));
-    memcpy(&ib, b, sizeof(int));
+    memcpy(&ia, a + 1, sizeof(int));
+    memcpy(&ib, b + 1, sizeof(int));
     if (ia > ib)
 	return 1;
     if (ia < ib)
@@ -67,9 +67,10 @@ void *code_start(void)
 
 void code_item(void *p, char **dst, const char **src)
 {
-    memcpy (*dst, *src, sizeof(int));
-    (*dst) += sizeof(int);
-    (*src) += sizeof(int);
+    int sz = **src;
+    memcpy (*dst, *src, sz);
+    (*dst) += sz;
+    (*src) += sz;
 }
 
 void code_reset(void *p)
@@ -86,6 +87,7 @@ struct read_info {
     int no;
     int max;
     int insertMode;
+    int sz;
 };
 
 int code_read(void *vp, char **dst, int *insertMode)
@@ -98,8 +100,11 @@ int code_read(void *vp, char **dst, int *insertMode)
     ri->no++;
 
     x = ri->val;
-    memcpy (*dst, &x, sizeof(int));
-    (*dst)+=sizeof(int);
+    memset(*dst, 0, ri->sz);
+    **dst = ri->sz;
+    memcpy(*dst + 1, &x, sizeof(int));
+
+    (*dst) += ri->sz;
 
     ri->val = ri->val + ri->step;
     *insertMode = ri->insertMode;
@@ -111,7 +116,8 @@ int code_read(void *vp, char **dst, int *insertMode)
 }
 
 void bench_insert(ISAMB isb, int number_of_trees,
-                  int number_of_rounds, int number_of_elements)
+                  int number_of_rounds, int number_of_elements,
+                  int extra_size)
 {
     ISAMC_I isamc_i;
     ISAM_P *isamc_p = xmalloc(sizeof(ISAM_P) * number_of_trees);
@@ -124,6 +130,7 @@ void bench_insert(ISAMB isb, int number_of_trees,
     ri.val = 0;
     ri.step = 1;
     ri.insertMode = 1;
+    ri.sz = sizeof(int) + 1 + extra_size;
     
     for (round = 0; round < number_of_rounds; round++)
     {
@@ -151,9 +158,8 @@ void bench_insert(ISAMB isb, int number_of_trees,
             
             isamb_merge (isb, &isamc_p[i] , &isamc_i);
 
-#if 0
-            isamb_dump(isb, isamc_p[i], log_pr);
-#endif       
+            if (0)
+                isamb_dump(isb, isamc_p[i], log_pr);
         }
 #if HAVE_SYS_TIMES_H
 #if HAVE_SYS_TIME_H      
@@ -174,6 +180,11 @@ void bench_insert(ISAMB isb, int number_of_trees,
     xfree(isamc_p);
 }
 
+void exit_usage(void)
+{
+    fprintf(stderr, "benchisamb [-r rounds] [-n items] [-i isams]\n");
+    exit(1);
+}
 
 int main(int argc, char **argv)
 {
@@ -185,8 +196,9 @@ int main(int argc, char **argv)
     int number_of_rounds = 10;
     int number_of_items = 1000;
     int number_of_isams = 1000;
+    int extra_size = 0;
 
-    while ((ret = options("r:n:i:", argv, argc, &arg)) != -2)
+    while ((ret = options("z:r:n:i:", argv, argc, &arg)) != -2)
     {
         switch(ret)
         {
@@ -199,12 +211,15 @@ int main(int argc, char **argv)
         case 'i':
             number_of_isams = atoi(arg);
             break;
+        case 'z':
+            extra_size = atoi(arg);
+            break;
         case 0:
             fprintf(stderr, "bad arg: %s\n", arg);
-            exit(1);
+            exit_usage();
         default:
-            fprintf(stderr, "bad option. %s\n", ret);
-            exit(1);
+            fprintf(stderr, "bad option.\n");
+            exit_usage();
         }
     }
 	
@@ -234,7 +249,8 @@ int main(int argc, char **argv)
 	yaz_log(YLOG_WARN, "isamb_open failed");
 	exit(2);
     }
-    bench_insert(isb, number_of_isams, number_of_rounds, number_of_items);
+    bench_insert(isb, number_of_isams, number_of_rounds, number_of_items,
+                 extra_size);
     
     isamb_close(isb);
 
