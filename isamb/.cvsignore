@@ -5,6 +5,7 @@ Makefile.in
 *.mf
 tstisamb
 benchisamb
+benchindex1
 *.lo
 *.la
 *.dat
