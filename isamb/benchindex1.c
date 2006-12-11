@@ -1,4 +1,4 @@
-/* $Id: benchindex1.c,v 1.3 2006-12-11 10:02:14 adam Exp $
+/* $Id: benchindex1.c,v 1.4 2006-12-11 15:08:55 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -207,6 +207,7 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
     nmem_reset(b->nmem);
     b->no_entries = 0;
     b->terms = 0;
+    b->round++;
 
     zebra_timing_stop(tim);
 
@@ -215,6 +216,7 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
            zebra_timing_get_real(tim),
            zebra_timing_get_user(tim),
            zebra_timing_get_sys(tim));
+    fflush(stdout);
     zebra_timing_destroy(&tim);
 }
 
@@ -244,7 +246,7 @@ void index_block_add(struct index_block *b,
 
 void exit_usage(void)
 {
-    fprintf(stderr, "benchindex1 [-m mem] [-i] [iso2709file]\n");
+    fprintf(stderr, "benchindex1 [-t type] [-m mem] [-i] [inputfile]\n");
     exit(1);
 }
 
@@ -259,7 +261,8 @@ void index_term(struct index_block *b, const char *term,
     (*seqno)++;
 }
 
-void index_wrbuf(struct index_block *b, WRBUF wrbuf, zint docid)
+void index_wrbuf(struct index_block *b, WRBUF wrbuf, zint docid,
+                 int subfield_char)
 {
     int nl = 1;
     const char *cp = wrbuf_buf(wrbuf);
@@ -272,8 +275,16 @@ void index_wrbuf(struct index_block *b, WRBUF wrbuf, zint docid)
         if (nl)
         {
             int i;
-            for (i = 0; i<6 && *cp; i++, cp++)
-                ;
+            if (cp[0] != ' ')
+            {   /* skip field+indicator (e.g. 245 00) */
+                for (i = 0; i<6 && *cp; i++, cp++)
+                    ;
+            }
+            else
+            {  /* continuation line */
+                for (i = 0; i<4 && *cp; i++, cp++)
+                    ;
+            }   
         }
         nl = 0;
         if (*cp == '\n')
@@ -286,7 +297,7 @@ void index_wrbuf(struct index_block *b, WRBUF wrbuf, zint docid)
             nl = 1;
             cp++;
         }
-        else if (*cp == '$' && cp[1])
+        else if (*cp == subfield_char && cp[1])
         {
             if (sz)
             {
@@ -295,7 +306,7 @@ void index_wrbuf(struct index_block *b, WRBUF wrbuf, zint docid)
             }
             cp += 2;
         }
-        else if (strchr("$/-;,.:[]\"&(){} ", *cp))
+        else if (strchr("$*/-;,.:[]\"&(){} ", *cp))
         {
             if (sz)
             {
@@ -320,8 +331,71 @@ void index_wrbuf(struct index_block *b, WRBUF wrbuf, zint docid)
         index_term(b, term, docid, &seqno);
 }
 
+void index_marc_line_records(ISAMB isb,
+                             Dict dict,
+                             zint *docid_seq,
+                             FILE *inf,
+                             int memory)
+{
+    WRBUF wrbuf = wrbuf_alloc();
+    int no_docs = 0;
+    int new_rec = 1;
+    char line[4096];
+    struct index_block *b = index_block_new(memory);
+    while(fgets(line, sizeof(line)-1, inf))
+    {
+        if (line[0] == '$')
+        {
+            if (!new_rec)
+                new_rec = 1;
+            else
+                new_rec = 0;
+            continue;
+        }
+        if (new_rec)
+        {
+            (*docid_seq)++;
+            no_docs++;
+            index_block_check_flush(b, isb, dict, no_docs);
+            new_rec = 0;
+        }
+
+        if (line[0] == ' ')
+        {
+            /* continuation */
+            wrbuf_puts(wrbuf, line);
+            continue;
+        }
+        else
+        {
+            /* index existing buffer (if any) */
+            if (wrbuf_len(wrbuf))
+            {
+                index_wrbuf(b, wrbuf, *docid_seq, '*');
+                wrbuf_rewind(wrbuf);
+            }
+            if (line[0] != ' ' && line[1] != ' ' && line[2] != ' ' &&
+                line[3] == ' ')
+            {
+                /* normal field+indicator line */
+                wrbuf_puts(wrbuf, line);
+            }
+        }
+    }
+    if (wrbuf_len(wrbuf))
+    {
+        index_wrbuf(b, wrbuf, *docid_seq, '*');
+        wrbuf_rewind(wrbuf);
+    }
+    (*docid_seq)++;
+    no_docs++;
+    index_block_check_flush(b, isb, dict, no_docs);
+    index_block_destroy(&b);
+}
+
 void index_marc_from_file(ISAMB isb,
                           Dict dict,
+                          zint *docid_seq,
                           FILE *inf,
                           int memory,
                           int verbose, int print_offset)
@@ -329,16 +403,7 @@ void index_marc_from_file(ISAMB isb,
     yaz_marc_t mt = yaz_marc_create();
     WRBUF wrbuf = wrbuf_alloc();
     struct index_block *b = index_block_new(memory);
-    const char *dict_info = 0;
-    zint docid_seq = 1;
     int no_docs = 0;
-
-    dict_info = dict_lookup(dict, "_s");
-    if (dict_info)
-    {
-        assert(*dict_info == sizeof(docid_seq));
-        memcpy(&docid_seq, dict_info+1, sizeof(docid_seq));
-    }
 
     while (1)
     {
@@ -392,9 +457,9 @@ void index_marc_from_file(ISAMB isb,
         if (yaz_marc_write_line(mt, wrbuf))
             break;
 
-        index_wrbuf(b, wrbuf, docid_seq);
+        index_wrbuf(b, wrbuf, *docid_seq, '$');
         wrbuf_rewind(wrbuf);
-        docid_seq++;
+        (*docid_seq)++;
 
         no_docs++;
         index_block_check_flush(b, isb, dict, no_docs);
@@ -403,8 +468,6 @@ void index_marc_from_file(ISAMB isb,
     wrbuf_free(wrbuf, 1);
     yaz_marc_destroy(mt);
     index_block_destroy(&b);
-    yaz_log(YLOG_LOG, "Total " ZINT_FORMAT " documents", docid_seq);
-    dict_insert(dict, "_s", sizeof(docid_seq), &docid_seq);
 }
 
 int main(int argc, char **argv)
@@ -420,8 +483,11 @@ int main(int argc, char **argv)
     const char *fname = 0;
     FILE *inf = stdin;
     zebra_timing_t tim = 0;
+    zint docid_seq = 1;
+    const char *dict_info;
+    const char *type = "iso2709";
 
-    while ((ret = options("im:", argv, argc, &arg)) != -2)
+    while ((ret = options("im:t:", argv, argc, &arg)) != -2)
     {
         switch(ret)
         {
@@ -430,6 +496,17 @@ int main(int argc, char **argv)
             break;
         case 'i':
             reset = 1;
+            break;
+        case 't':
+            if (!strcmp(arg, "iso2709"))
+                type = "iso2709";
+            else if (!strcmp(arg, "line"))
+                type = "line";
+            else
+            {
+                fprintf(stderr, "bad type: %s.\n", arg);
+                exit_usage();
+            }
             break;
         case 0:
             fname = arg;
@@ -482,8 +559,21 @@ int main(int argc, char **argv)
     }
     dict = dict_open(bfs, "dict", 50, 1, 0, 4096);
 
-    index_marc_from_file(isb, dict, inf, memory, 
-                         0 /* verbose */ , 0 /* print_offset */);
+    dict_info = dict_lookup(dict, "_s");
+    if (dict_info)
+    {
+        assert(*dict_info == sizeof(docid_seq));
+        memcpy(&docid_seq, dict_info+1, sizeof(docid_seq));
+    }
+
+    if (!strcmp(type, "iso2709"))
+        index_marc_from_file(isb, dict, &docid_seq, inf, memory, 
+                             0 /* verbose */ , 0 /* print_offset */);
+    else if (!strcmp(type, "line"))
+        index_marc_line_records(isb, dict, &docid_seq, inf, memory);
+
+    yaz_log(YLOG_LOG, "Total " ZINT_FORMAT " documents", docid_seq);
+    dict_insert(dict, "_s", sizeof(docid_seq), &docid_seq);
 
     dict_close(dict);
     isamb_close(isb);
