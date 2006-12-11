@@ -1,4 +1,4 @@
-/* $Id: benchindex1.c,v 1.2 2006-12-10 21:02:28 adam Exp $
+/* $Id: benchindex1.c,v 1.3 2006-12-11 10:02:14 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -21,13 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include <yaz/options.h>
-#if HAVE_SYS_TIMES_H
-#include <sys/times.h>
-#endif
-#if HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
-
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,7 +35,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 struct index_block {
     NMEM nmem;
-    size_t no_entries;
+    int no_entries;
     size_t current_entry;
     size_t current_max;
     struct index_term *terms;
@@ -137,16 +130,7 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
     int no_words = 0, no_new_words = 0;
     const char *dict_info = 0;
     ISAM_P isamc_p = 0;
-
-#if HAVE_SYS_TIMES_H
-#if HAVE_SYS_TIME_H
-        struct tms tms1, tms2;
-        struct timeval start_time, end_time;
-        double usec;
-        times(&tms1);
-        gettimeofday(&start_time, 0);
-#endif
-#endif
+    zebra_timing_t tim = zebra_timing_create();
     
     b->ar = xmalloc(sizeof(*b->ar) * b->no_entries);
     for (i = 0; i < b->no_entries; i++, t = t->next)
@@ -224,23 +208,14 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
     b->no_entries = 0;
     b->terms = 0;
 
-#if HAVE_SYS_TIMES_H
-#if HAVE_SYS_TIME_H      
-    b->round++;
-    gettimeofday(&end_time, 0);
-    times(&tms2);
-    
-    usec = (end_time.tv_sec - start_time.tv_sec) * 1000000.0 +
-        end_time.tv_usec - start_time.tv_usec;
-    
+    zebra_timing_stop(tim);
+
     printf("%3d %8.6f %5.2f %5.2f\n",
            b->round,
-           usec / 1000000,
-           (double) (tms2.tms_utime - tms1.tms_utime)/100,
-           (double) (tms2.tms_stime - tms1.tms_stime)/100);
-#endif
-#endif
-
+           zebra_timing_get_real(tim),
+           zebra_timing_get_user(tim),
+           zebra_timing_get_sys(tim));
+    zebra_timing_destroy(&tim);
 }
 
 void index_block_check_flush(struct index_block *b, ISAMB isb, Dict dict,
@@ -269,7 +244,7 @@ void index_block_add(struct index_block *b,
 
 void exit_usage(void)
 {
-    fprintf(stderr, "benchindex1 [-m m] [iso2709file]\n");
+    fprintf(stderr, "benchindex1 [-m mem] [-i] [iso2709file]\n");
     exit(1);
 }
 
@@ -444,6 +419,7 @@ int main(int argc, char **argv)
     int memory = 5;
     const char *fname = 0;
     FILE *inf = stdin;
+    zebra_timing_t tim = 0;
 
     while ((ret = options("im:", argv, argc, &arg)) != -2)
     {
@@ -496,6 +472,7 @@ int main(int argc, char **argv)
     if (reset)
         bf_reset(bfs);
 
+    tim = zebra_timing_create();
     /* create isam handle */
     isb = isamb_open (bfs, "isamb", 1, &method, 0);
     if (!isb)
@@ -515,6 +492,15 @@ int main(int argc, char **argv)
         fclose(inf);
     /* exit block system */
     bfs_destroy(bfs);
+    zebra_timing_stop(tim);
+
+    yaz_log(YLOG_LOG, "Total %8.6f %5.2f %5.2f\n",
+            zebra_timing_get_real(tim),
+            zebra_timing_get_user(tim),
+            zebra_timing_get_sys(tim));
+    
+    zebra_timing_destroy(&tim);
+
     exit(0);
     return 0;
 }

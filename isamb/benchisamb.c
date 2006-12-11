@@ -1,4 +1,4 @@
-/* $Id: benchisamb.c,v 1.3 2006-12-10 20:59:52 adam Exp $
+/* $Id: benchisamb.c,v 1.4 2006-12-11 10:02:14 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -134,15 +134,9 @@ void bench_insert(ISAMB isb, int number_of_trees,
     
     for (round = 0; round < number_of_rounds; round++)
     {
-#if HAVE_SYS_TIMES_H
-#if HAVE_SYS_TIME_H
-        struct tms tms1, tms2;
-        struct timeval start_time, end_time;
-        double usec;
-        times(&tms1);
-        gettimeofday(&start_time, 0);
-#endif
-#endif
+        zebra_timing_t t = zebra_timing_create();
+
+        zebra_timing_start(t);
         for (i = 0; i<number_of_trees; i++)
         {
 
@@ -164,21 +158,13 @@ void bench_insert(ISAMB isb, int number_of_trees,
             if (0)
                 isamb_dump(isb, isamc_p[i], log_pr);
         }
-#if HAVE_SYS_TIMES_H
-#if HAVE_SYS_TIME_H      
-        gettimeofday(&end_time, 0);
-        times(&tms2);
-        
-        usec = (end_time.tv_sec - start_time.tv_sec) * 1000000.0 +
-            end_time.tv_usec - start_time.tv_usec;
-        
+        zebra_timing_stop(t);
         printf("%3d %8.6f %5.2f %5.2f\n",
-                 round+1,
-                 usec / 1000000,
-                 (double) (tms2.tms_utime - tms1.tms_utime)/100,
-                 (double) (tms2.tms_stime - tms1.tms_stime)/100);
-#endif
-#endif
+               round+1,
+               zebra_timing_get_real(t),
+               zebra_timing_get_user(t),
+               zebra_timing_get_sys(t));
+        zebra_timing_destroy(&t);
     }
     xfree(isamc_p);
 }
@@ -200,7 +186,8 @@ int main(int argc, char **argv)
     int number_of_items = 1000;
     int number_of_isams = 1000;
     int extra_size = 0;
-
+    zebra_timing_t t = 0;
+    
     while ((ret = options("z:r:n:i:", argv, argc, &arg)) != -2)
     {
         switch(ret)
@@ -235,6 +222,10 @@ int main(int argc, char **argv)
     method.codec.reset = code_reset;
     method.codec.stop = code_stop;
 
+    t = zebra_timing_create();
+    
+    zebra_timing_start(t);
+
     /* create block system */
     bfs = bfs_create(0, 0);
     if (!bfs)
@@ -259,6 +250,13 @@ int main(int argc, char **argv)
 
     /* exit block system */
     bfs_destroy(bfs);
+
+    zebra_timing_stop(t);
+    printf("Total %8.6f %5.2f %5.2f\n",
+           zebra_timing_get_real(t),
+           zebra_timing_get_user(t),
+           zebra_timing_get_sys(t));
+    zebra_timing_destroy(&t);
     exit(0);
     return 0;
 }
