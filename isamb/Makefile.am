@@ -1,11 +1,12 @@
-## $Id: Makefile.am,v 1.16 2006-12-10 21:00:56 adam Exp $
+## $Id: Makefile.am,v 1.17 2006-12-12 13:54:33 adam Exp $
 
 noinst_LTLIBRARIES = libidzebra-isamb.la
 
 noinst_PROGRAMS = benchisamb benchindex1
 check_PROGRAMS = tstisamb
 
-EXTRA_DIST = bench1.sh bench1.plt bench2.sh bench2.plt
+EXTRA_DIST = bench1.sh bench1.plt bench2.sh bench2.plt \
+ filesystems.plt dictisam.plt
 
 TESTS = $(check_PROGRAMS)
 
