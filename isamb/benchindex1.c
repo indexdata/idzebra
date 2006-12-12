@@ -1,4 +1,4 @@
-/* $Id: benchindex1.c,v 1.4 2006-12-11 15:08:55 adam Exp $
+/* $Id: benchindex1.c,v 1.5 2006-12-12 13:51:23 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -130,7 +130,11 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
     int no_words = 0, no_new_words = 0;
     const char *dict_info = 0;
     ISAM_P isamc_p = 0;
-    zebra_timing_t tim = zebra_timing_create();
+    zebra_timing_t tim_dict = 0;
+    zebra_timing_t tim_isamb = 0;
+    zint number_of_int_splits = isamb_get_int_splits(isb);
+    zint number_of_leaf_splits = isamb_get_leaf_splits(isb);
+    zint number_of_dict_splits = dict_get_no_split(dict);
     
     b->ar = xmalloc(sizeof(*b->ar) * b->no_entries);
     for (i = 0; i < b->no_entries; i++, t = t->next)
@@ -141,6 +145,7 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
     assert(!t);
     
     qsort(b->ar, b->no_entries, sizeof(*b->ar), cmp_ar);
+    tim_dict = zebra_timing_create();
 #if 0
     for (i = 0; i < b->no_entries; i++)
     {
@@ -184,6 +189,9 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
         }
     }
     dict_insert(dict, "_w", sizeof(word_id_seq), &word_id_seq);
+    
+    zebra_timing_stop(tim_dict);
+    tim_isamb = zebra_timing_create();
 
     b->current_entry = 0;
 
@@ -200,24 +208,47 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
         dict_insert(dict, "_i", sizeof(isamc_p), &isamc_p);
     }
 
-    yaz_log(YLOG_LOG, "Flushed %d postings, %d/%d words, %d records",
-            b->no_entries, no_words, no_new_words, no_docs);
+    zebra_timing_stop(tim_isamb);
+
+    number_of_int_splits = isamb_get_int_splits(isb) - number_of_int_splits;
+    number_of_leaf_splits = isamb_get_leaf_splits(isb) - number_of_leaf_splits;
+    number_of_dict_splits = dict_get_no_split(dict) - number_of_dict_splits;
+
+    if (b->round == 0)
+    {
+        printf("# run     total dict-real  user   sys isam-real  user   sys "
+               " intsp leafsp  docs postings  words    new d-spl\n");
+    }
+    b->round++;
+    printf("%5d %9.6f %9.6f %5.2f %5.2f %9.6f %5.2f %5.2f "
+           "%6" ZINT_FORMAT0 " %6" ZINT_FORMAT0 
+           " %5d %8d %6d %6d" " %5" ZINT_FORMAT0 "\n",
+           b->round,
+           zebra_timing_get_real(tim_dict) + zebra_timing_get_real(tim_isamb),
+           zebra_timing_get_real(tim_dict),
+           zebra_timing_get_user(tim_dict),
+           zebra_timing_get_sys(tim_dict),
+           zebra_timing_get_real(tim_isamb),
+           zebra_timing_get_user(tim_isamb),
+           zebra_timing_get_sys(tim_isamb),
+           number_of_int_splits,
+           number_of_leaf_splits,
+           no_docs,
+           b->no_entries,
+           no_words,
+           no_new_words,
+           number_of_dict_splits
+        );
+    fflush(stdout);
+
     xfree(b->ar);
     b->ar = 0;
     nmem_reset(b->nmem);
     b->no_entries = 0;
     b->terms = 0;
-    b->round++;
 
-    zebra_timing_stop(tim);
-
-    printf("%3d %8.6f %5.2f %5.2f\n",
-           b->round,
-           zebra_timing_get_real(tim),
-           zebra_timing_get_user(tim),
-           zebra_timing_get_sys(tim));
-    fflush(stdout);
-    zebra_timing_destroy(&tim);
+    zebra_timing_destroy(&tim_isamb);
+    zebra_timing_destroy(&tim_dict);
 }
 
 void index_block_check_flush(struct index_block *b, ISAMB isb, Dict dict,
@@ -227,7 +258,6 @@ void index_block_check_flush(struct index_block *b, ISAMB isb, Dict dict,
     int max = b->current_max;
     if (total > max)
     {
-        yaz_log(YLOG_LOG, "flush to disk total=%d max=%d", total, max);
         index_block_flush(b, isb, dict, no_docs);
     }
 }
@@ -242,12 +272,6 @@ void index_block_add(struct index_block *b,
     t->next = b->terms;
     b->terms = t;
     b->no_entries++;
-}
-
-void exit_usage(void)
-{
-    fprintf(stderr, "benchindex1 [-t type] [-m mem] [-i] [inputfile]\n");
-    exit(1);
 }
 
 void index_term(struct index_block *b, const char *term,
@@ -389,7 +413,7 @@ void index_marc_line_records(ISAMB isb,
     }
     (*docid_seq)++;
     no_docs++;
-    index_block_check_flush(b, isb, dict, no_docs);
+    index_block_flush(b, isb, dict, no_docs);
     index_block_destroy(&b);
 }
 
@@ -470,6 +494,12 @@ void index_marc_from_file(ISAMB isb,
     index_block_destroy(&b);
 }
 
+void exit_usage(void)
+{
+    fprintf(stderr, "benchindex1 [-t type] [-c d:i] [-m mem] [-i] [inputfile]\n");
+    exit(1);
+}
+
 int main(int argc, char **argv)
 {
     BFiles bfs;
@@ -480,14 +510,17 @@ int main(int argc, char **argv)
     int reset = 0;
     char *arg;
     int memory = 5;
+    int isam_cache_size = 40;
+    int dict_cache_size = 50;
     const char *fname = 0;
     FILE *inf = stdin;
     zebra_timing_t tim = 0;
     zint docid_seq = 1;
     const char *dict_info;
     const char *type = "iso2709";
+    int int_count_enable = 1;
 
-    while ((ret = options("im:t:", argv, argc, &arg)) != -2)
+    while ((ret = options("im:t:c:N", argv, argc, &arg)) != -2)
     {
         switch(ret)
         {
@@ -508,8 +541,19 @@ int main(int argc, char **argv)
                 exit_usage();
             }
             break;
+        case 'c':
+            if (sscanf(arg, "%d:%d", &dict_cache_size, &isam_cache_size) 
+                != 2)
+            {
+                fprintf(stderr, "bad cache sizes for -c\n");
+                exit_usage();
+            }
+            break;
         case 0:
             fname = arg;
+            break;
+        case 'N':
+            int_count_enable = 0;
             break;
         default:
             fprintf(stderr, "bad option.\n");
@@ -526,6 +570,12 @@ int main(int argc, char **argv)
             exit(1);
         }
     }
+    printf("# benchindex1 %s %s\n", __DATE__, __TIME__);
+    printf("# isam_cache_size = %d\n", isam_cache_size);
+    printf("# dict_cache_size = %d\n", dict_cache_size);
+    printf("# int_count_enable = %d\n", int_count_enable);
+    printf("# memory = %d\n", memory);
+    
     /* setup method (attributes) */
     method.compare_item = key_compare;
     method.log_item = key_logdump_txt;
@@ -551,13 +601,15 @@ int main(int argc, char **argv)
 
     tim = zebra_timing_create();
     /* create isam handle */
-    isb = isamb_open (bfs, "isamb", 1, &method, 0);
+    isb = isamb_open (bfs, "isamb", isam_cache_size ? 1 : 0, &method, 0);
     if (!isb)
     {
 	yaz_log(YLOG_WARN, "isamb_open failed");
 	exit(2);
     }
-    dict = dict_open(bfs, "dict", 50, 1, 0, 4096);
+    isamb_set_cache_size(isb, isam_cache_size);
+    isamb_set_int_count(isb, int_count_enable);
+    dict = dict_open(bfs, "dict", dict_cache_size, 1, 0, 4096);
 
     dict_info = dict_lookup(dict, "_s");
     if (dict_info)
@@ -572,7 +624,7 @@ int main(int argc, char **argv)
     else if (!strcmp(type, "line"))
         index_marc_line_records(isb, dict, &docid_seq, inf, memory);
 
-    yaz_log(YLOG_LOG, "Total " ZINT_FORMAT " documents", docid_seq);
+    printf("# Total " ZINT_FORMAT " documents\n", docid_seq);
     dict_insert(dict, "_s", sizeof(docid_seq), &docid_seq);
 
     dict_close(dict);
@@ -584,7 +636,7 @@ int main(int argc, char **argv)
     bfs_destroy(bfs);
     zebra_timing_stop(tim);
 
-    yaz_log(YLOG_LOG, "Total %8.6f %5.2f %5.2f\n",
+    printf("# Total timings real=%8.6f user=%3.2f system=%3.2f\n",
             zebra_timing_get_real(tim),
             zebra_timing_get_user(tim),
             zebra_timing_get_sys(tim));
