@@ -1,4 +1,4 @@
-/* $Id: benchindex1.c,v 1.6 2006-12-12 15:23:45 adam Exp $
+/* $Id: benchindex1.c,v 1.7 2006-12-12 17:33:35 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -217,12 +217,12 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
     if (b->round == 0)
     {
         printf("# run     total dict-real  user   sys isam-real  user   sys "
-               " intsp leafsp  docs postings  words    new d-spl\n");
+               " intsp leafsp     docs postings  words    new d-spl\n");
     }
     b->round++;
     printf("%5d %9.6f %9.6f %5.2f %5.2f %9.6f %5.2f %5.2f "
            "%6" ZINT_FORMAT0 " %6" ZINT_FORMAT0 
-           " %5d %8d %6d %6d" " %5" ZINT_FORMAT0 "\n",
+           " %8d %8d %6d %6d" " %5" ZINT_FORMAT0 "\n",
            b->round,
            zebra_timing_get_real(tim_dict) + zebra_timing_get_real(tim_isamb),
            zebra_timing_get_real(tim_dict),
