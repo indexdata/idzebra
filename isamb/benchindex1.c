@@ -1,4 +1,4 @@
-/* $Id: benchindex1.c,v 1.5 2006-12-12 13:51:23 adam Exp $
+/* $Id: benchindex1.c,v 1.6 2006-12-12 15:23:45 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -503,8 +503,8 @@ void exit_usage(void)
 int main(int argc, char **argv)
 {
     BFiles bfs;
-    ISAMB isb;
-    ISAMC_M method;
+    ISAMB isb_postings;
+    ISAMC_M method_postings;
     Dict dict;
     int ret;
     int reset = 0;
@@ -575,18 +575,18 @@ int main(int argc, char **argv)
     printf("# dict_cache_size = %d\n", dict_cache_size);
     printf("# int_count_enable = %d\n", int_count_enable);
     printf("# memory = %d\n", memory);
-    
-    /* setup method (attributes) */
-    method.compare_item = key_compare;
-    method.log_item = key_logdump_txt;
 
-    method.codec.start = iscz1_start;
-    method.codec.decode = iscz1_decode;
-    method.codec.encode = iscz1_encode;
-    method.codec.stop = iscz1_stop;
-    method.codec.reset = iscz1_reset;
+    /* setup postings isamb attributes */
+    method_postings.compare_item = key_compare;
+    method_postings.log_item = key_logdump_txt;
 
-    method.debug = 0;
+    method_postings.codec.start = iscz1_start;
+    method_postings.codec.decode = iscz1_decode;
+    method_postings.codec.encode = iscz1_encode;
+    method_postings.codec.stop = iscz1_stop;
+    method_postings.codec.reset = iscz1_reset;
+
+    method_postings.debug = 0;
 
     /* create block system */
     bfs = bfs_create(0, 0);
@@ -601,14 +601,15 @@ int main(int argc, char **argv)
 
     tim = zebra_timing_create();
     /* create isam handle */
-    isb = isamb_open (bfs, "isamb", isam_cache_size ? 1 : 0, &method, 0);
-    if (!isb)
+    isb_postings = isamb_open (bfs, "isamb", isam_cache_size ? 1 : 0,
+                               &method_postings, 0);
+    if (!isb_postings)
     {
 	yaz_log(YLOG_WARN, "isamb_open failed");
 	exit(2);
     }
-    isamb_set_cache_size(isb, isam_cache_size);
-    isamb_set_int_count(isb, int_count_enable);
+    isamb_set_cache_size(isb_postings, isam_cache_size);
+    isamb_set_int_count(isb_postings, int_count_enable);
     dict = dict_open(bfs, "dict", dict_cache_size, 1, 0, 4096);
 
     dict_info = dict_lookup(dict, "_s");
@@ -619,16 +620,16 @@ int main(int argc, char **argv)
     }
 
     if (!strcmp(type, "iso2709"))
-        index_marc_from_file(isb, dict, &docid_seq, inf, memory, 
+        index_marc_from_file(isb_postings, dict, &docid_seq, inf, memory, 
                              0 /* verbose */ , 0 /* print_offset */);
     else if (!strcmp(type, "line"))
-        index_marc_line_records(isb, dict, &docid_seq, inf, memory);
+        index_marc_line_records(isb_postings, dict, &docid_seq, inf, memory);
 
     printf("# Total " ZINT_FORMAT " documents\n", docid_seq);
     dict_insert(dict, "_s", sizeof(docid_seq), &docid_seq);
 
     dict_close(dict);
-    isamb_close(isb);
+    isamb_close(isb_postings);
 
     if (fname)
         fclose(inf);
