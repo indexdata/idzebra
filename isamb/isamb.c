@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.87 2006-12-07 19:23:56 adam Exp $
+/* $Id: isamb.c,v 1.88 2006-12-12 13:46:41 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -100,6 +100,10 @@ struct ISAMB_s {
     zint returned_numbers; 
     zint skipped_nodes[ISAMB_MAX_LEVEL]; /* [0]=skipped leaves, 1 = higher etc */
     zint accessed_nodes[ISAMB_MAX_LEVEL]; /* nodes we did not skip */
+    zint number_of_int_splits;
+    zint number_of_leaf_splits;
+    int enable_int_count; /* whether we count nodes (or not) */
+    int cache_size; /* size of blocks to cache (if cache=1) */
 };
 
 struct ISAMB_block {
@@ -180,6 +184,17 @@ static void decode_ptr(const char **src, zint *pos)
 }
 #endif
 
+
+void isamb_set_int_count(ISAMB b, int v)
+{
+    b->enable_int_count = v;
+}
+
+void isamb_set_cache_size(ISAMB b, int v)
+{
+    b->cache_size = v;
+}
+
 ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 		 int cache)
 {
@@ -195,6 +210,11 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
     isamb->cache = cache;
     isamb->skipped_numbers = 0;
     isamb->returned_numbers = 0;
+    isamb->number_of_int_splits = 0;
+    isamb->number_of_leaf_splits = 0;
+    isamb->enable_int_count = 1;
+    isamb->cache_size = 40;
+
     for (i = 0; i<ISAMB_MAX_LEVEL; i++)
 	isamb->skipped_nodes[i] = isamb->accessed_nodes[i] = 0;
 
@@ -357,9 +377,8 @@ static int cache_block (ISAMB b, ISAM_P pos, unsigned char *userbuf, int wr)
             return 1;
         }
     }
-    if (no >= 40)
+    if (no >= b->cache_size)
     {
-        assert (no == 40);
         assert (ce_last && *ce_last);
         ce_this = *ce_last;
         *ce_last = 0;  /* remove the last entry from list */
@@ -776,6 +795,8 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             const char *half;
             src = dst_buf;
             endp = dst;
+            
+            b->number_of_int_splits++;
 
 	    p->dirty = 1;
 	    close_block(b, sub_p2);
@@ -783,10 +804,13 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             half = src + b->file[p->cat].head.block_size/2;
             decode_ptr(&src, &pos);
 
-	    /* read sub block so we can get no_items for it */
-	    sub_p3 = open_block(b, pos);
-	    no_items_first_half += sub_p3->no_items;
-	    close_block(b, sub_p3);
+            if (b->enable_int_count)
+            {
+                /* read sub block so we can get no_items for it */
+                sub_p3 = open_block(b, pos);
+                no_items_first_half += sub_p3->no_items;
+                close_block(b, sub_p3);
+            }
 
             while (src <= half)
             {
@@ -801,10 +825,13 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
 #endif
                 decode_ptr(&src, &pos);
 
-		/* read sub block so we can get no_items for it */
-		sub_p3 = open_block(b, pos);
-		no_items_first_half += sub_p3->no_items;
-		close_block(b, sub_p3);
+                if (b->enable_int_count)
+                {
+                    /* read sub block so we can get no_items for it */
+                    sub_p3 = open_block(b, pos);
+                    no_items_first_half += sub_p3->no_items;
+                    close_block(b, sub_p3);
+                }
             }
 	    /*  p is first half */
             p_new_size = src - dst_buf;
@@ -1091,6 +1118,8 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         *sp2 = new_leaf (b, p->cat);
 
         (*b->method->codec.reset)(c2);
+
+        b->number_of_leaf_splits++;
 
         first_dst = (*sp2)->bytes;
 
@@ -1969,6 +1998,17 @@ again:
     }
     return 1;
 }
+
+zint isamb_get_int_splits(ISAMB b)
+{
+    return b->number_of_int_splits;
+}
+
+zint isamb_get_leaf_splits(ISAMB b)
+{
+    return b->number_of_leaf_splits;
+}
+
 /*
  * Local variables:
  * c-basic-offset: 4

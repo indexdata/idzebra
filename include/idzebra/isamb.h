@@ -1,4 +1,4 @@
-/* $Id: isamb.h,v 1.7 2006-08-14 10:40:14 adam Exp $
+/* $Id: isamb.h,v 1.8 2006-12-12 13:46:42 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -71,6 +71,18 @@ int isamb_block_info(ISAMB isamb, int cat);
 
 YAZ_EXPORT
 void isamb_dump(ISAMB b, ISAM_P pos, void (*pr)(const char *str));
+
+YAZ_EXPORT
+zint isamb_get_int_splits(ISAMB b);
+
+YAZ_EXPORT
+zint isamb_get_leaf_splits(ISAMB b);
+
+YAZ_EXPORT
+void isamb_set_int_count(ISAMB b, int v);
+
+YAZ_EXPORT
+void isamb_set_cache_size(ISAMB b, int sz);
 
 YAZ_END_CDECL
 
