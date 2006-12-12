@@ -1,4 +1,4 @@
-/* $Id: dict.h,v 1.12 2006-09-11 22:57:54 adam Exp $
+/* $Id: dict.h,v 1.13 2006-12-12 13:42:23 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -193,6 +193,26 @@ int dict_copy_compact(BFiles bfs, const char *from, const char *to);
 YAZ_EXPORT
 void dict_clean(Dict dict);
 
+/** \brief get number of lookup operations, since dict_open 
+    \param dict dictionary handle
+    \returns number of operatons
+*/
+YAZ_EXPORT
+zint dict_get_no_lookup(Dict dict);
+
+/** \brief get number of insert operations, since dict_open 
+    \param dict dictionary handle
+    \returns number of operatons
+*/
+YAZ_EXPORT
+zint dict_get_no_insert(Dict dict);
+
+/** \brief get number of page split operations, since dict_open 
+    \param dict dictionary handle
+    \returns number of operatons
+*/
+YAZ_EXPORT
+zint dict_get_no_split(Dict dict);
 
 YAZ_END_CDECL
    

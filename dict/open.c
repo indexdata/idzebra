@@ -1,4 +1,4 @@
-/* $Id: open.c,v 1.27 2006-09-11 22:57:54 adam Exp $
+/* $Id: open.c,v 1.28 2006-12-12 13:42:24 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -68,6 +68,9 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
     }
     dict->dbf = dict_bf_open (bfs, name, page_size, cache, rw);
     dict->rw = rw;
+    dict->no_split = 0;
+    dict->no_insert = 0;
+    dict->no_lookup = 0;
 
     if(!dict->dbf)
     {
@@ -116,6 +119,22 @@ int dict_strlen (const Dict_char *s)
 {
     return strlen((const char *) s);
 }
+
+zint dict_get_no_lookup(Dict dict)
+{
+    return dict->no_lookup;
+}
+
+zint dict_get_no_insert(Dict dict)
+{
+    return dict->no_insert;
+}
+
+zint dict_get_no_split(Dict dict)
+{
+    return dict->no_split;
+}
+
 /*
  * Local variables:
  * c-basic-offset: 4

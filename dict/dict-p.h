@@ -1,4 +1,4 @@
-/* $Id: dict-p.h,v 1.7 2006-08-29 11:28:42 adam Exp $
+/* $Id: dict-p.h,v 1.8 2006-12-12 13:42:24 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -77,6 +77,12 @@ struct Dict_struct {
     Dict_BFile dbf;
     const char **(*grep_cmap)(void *vp, const char **from, int len);
     void *grep_cmap_data;
+    /** number of split page operations, since dict_open */
+    zint no_split;
+    /** number of insert operations, since dict_open */
+    zint no_insert;
+    /** number of lookup operations, since dict_open */
+    zint no_lookup;
     struct Dict_head head;
 };
 

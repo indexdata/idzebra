@@ -1,4 +1,4 @@
-/* $Id: insert.c,v 1.29 2006-11-14 12:04:38 adam Exp $
+/* $Id: insert.c,v 1.30 2006-12-12 13:42:24 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -74,6 +74,7 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
     Dict_char prev_char = 0;
     int best_no = -1, no_current = 1;
 
+    dict->no_split++;
     /* determine splitting char... */
     indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     for (i = DICT_nodir (p); --i >= 0; --indxp)
@@ -438,6 +439,7 @@ int dict_insert (Dict dict, const char *str, int userlen, void *userinfo)
 {
     if (!dict->rw)
         return -1;
+    dict->no_insert++;
     if (!dict->head.root)
     {
 	void *p;

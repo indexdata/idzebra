@@ -1,4 +1,4 @@
-/* $Id: lookup.c,v 1.15 2006-08-14 10:40:09 adam Exp $
+/* $Id: lookup.c,v 1.16 2006-12-12 13:42:24 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -99,6 +99,7 @@ static char *dict_look (Dict dict, const Dict_char *str, Dict_ptr ptr)
 
 char *dict_lookup (Dict dict, const char *p)
 {
+    dict->no_lookup++;
     if (!dict->head.root)
         return NULL;
     return dict_look (dict, (const Dict_char *) p, dict->head.root);
