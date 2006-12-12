@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.42 2006-09-21 20:22:35 adam Exp $
+/* $Id: charmap.c,v 1.43 2006-12-12 15:22:26 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -238,8 +238,11 @@ const char **chr_map_q_input(chrmaptab maptab,
 const char *chr_map_output(chrmaptab maptab, const char **from, int len)
 {
     unsigned char c = ** (unsigned char **) from;
-    (*from)++;
-    return (const char*) maptab->output[c];
+    const char *out = (const char*) maptab->output[c];
+
+    if (out)
+        (*from)++;
+    return out;
 }
 
 static int zebra_ucs4_strlen(ucs4_t *s)
