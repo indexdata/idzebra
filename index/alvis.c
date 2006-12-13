@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.7 2006-12-05 09:26:04 adam Exp $
+/* $Id: alvis.c,v 1.8 2006-12-13 13:05:45 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -518,9 +518,7 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
     {
 	int type = xmlTextReaderNodeType(tinfo->reader);
 	int depth = xmlTextReaderDepth(tinfo->reader);
-	if (tinfo->split_level == 0 ||
-	    (tinfo->split_level > 0 &&
-	     type == XML_READER_TYPE_ELEMENT && tinfo->split_level == depth))
+	if (type == XML_READER_TYPE_ELEMENT && tinfo->split_level == depth)
 	{
 	    xmlNodePtr ptr = xmlTextReaderExpand(tinfo->reader);
             if (ptr)
@@ -546,13 +544,33 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
     return RECCTRL_EXTRACT_EOF;
 }
 
+static int extract_full(struct filter_info *tinfo, struct recExtractCtrl *p)
+{
+    if (p->first_record) /* only one record per stream */
+    {
+       xmlDocPtr doc = xmlReadIO(ioread_ex, ioclose_ex, p /* I/O handler */,
+                                 0 /* URL */,
+                                 0 /* encoding */,
+                                 XML_PARSE_XINCLUDE);
+       if (!doc)
+       {
+           return RECCTRL_EXTRACT_ERROR_GENERIC;
+       }
+       return extract_doc(tinfo, p, doc);
+    }
+    else
+       return RECCTRL_EXTRACT_EOF;
+}
+
 static int filter_extract(void *clientData, struct recExtractCtrl *p)
 {
     struct filter_info *tinfo = clientData;
 
     odr_reset(tinfo->odr);
-
-    return extract_split(tinfo, p);
+    if (tinfo->split_level == 0)
+        return extract_full(tinfo, p);
+    else
+        return extract_split(tinfo, p);
 }
 
 static int ioread_ret(void *context, char *buffer, int len)
