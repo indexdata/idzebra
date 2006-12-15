@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.61 2006-12-06 13:00:12 adam Exp $
+# $Id: makefile,v 1.62 2006-12-15 21:11:37 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -159,7 +159,7 @@ iconv:
 
 !if $(HAVE_LIBXML2)
 LIBXML2_LIB="$(LIBXML2_DIR)\lib\libxml2.lib"
-LIBXML2_DEF=/D HAVE_XML2=1 /I"$(LIBXML2_DIR)\include"
+LIBXML2_DEF=/DYAZ_HAVE_XML2=1 /D HAVE_XML2=1 /I"$(LIBXML2_DIR)\include"
 libxml2: $(BINDIR)\libxml2.dll $(BINDIR)\zlib1.dll
 
 $(BINDIR)\libxml2.dll:
