@@ -1,4 +1,4 @@
-/* $Id: xslt5.c,v 1.2 2006-11-14 10:45:34 adam Exp $
+/* $Id: xslt5.c,v 1.3 2006-12-16 09:04:28 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -56,10 +56,14 @@ static void tst(int argc, char **argv)
     if (f)
     {
         r = fread(record_buf, 1, sizeof(record_buf)-1, f);
+        YAZ_CHECK(r > 0);
         fclose(f);
         YAZ_CHECK(r > 2);
         record_buf[r] = '\0';
-        
+
+#if 0
+/* disable this test for now: bug #730 */ 
+/* http://xmlsoft.org/html/libxml-parser.html#xmlReadIO */
 #if YAZ_HAVE_XML2
         /* On Mac OSX using Libxml 2.6.16, we xmlTextReaderExpand does
            not return 0 ptr even though the record has an error in it */
@@ -68,6 +72,7 @@ static void tst(int argc, char **argv)
                      ZEBRA_FAIL);
 #else
         zebra_add_record(zh, record_buf, strlen(record_buf));
+#endif
 #endif
 #endif
     }
