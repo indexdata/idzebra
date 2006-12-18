@@ -1,4 +1,4 @@
-/* $Id: isamb.h,v 1.8 2006-12-12 13:46:42 adam Exp $
+/* $Id: isamb.h,v 1.9 2006-12-18 23:40:07 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -34,6 +34,10 @@ typedef struct ISAMB_PP_s *ISAMB_PP;
 YAZ_EXPORT
 ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
                   int cache);
+
+YAZ_EXPORT
+ISAMB isamb_open2(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
+                  int cache, int no_cat, int *sizes, int use_root_ptr);
 
 YAZ_EXPORT
 void isamb_close(ISAMB isamb);
@@ -83,6 +87,13 @@ void isamb_set_int_count(ISAMB b, int v);
 
 YAZ_EXPORT
 void isamb_set_cache_size(ISAMB b, int sz);
+
+YAZ_EXPORT
+zint isamb_get_root_ptr(ISAMB b);
+
+YAZ_EXPORT
+void isamb_set_root_ptr(ISAMB b, zint root_ptr);
+
 
 YAZ_END_CDECL
 

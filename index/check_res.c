@@ -1,4 +1,4 @@
-/* $Id: check_res.c,v 1.2 2006-12-06 10:26:54 adam Exp $
+/* $Id: check_res.c,v 1.3 2006-12-18 23:40:07 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -57,6 +57,7 @@ int zebra_check_res(Res res)
     res_add(v, "shadow", "");
     res_add(v, "segment", "");
     res_add(v, "setTmpDir", "");
+    res_add(v, "sortindex", "");
     res_add(v, "staticrank", "");
     res_add(v, "threads", "");
     res_add(v, "database", "p");

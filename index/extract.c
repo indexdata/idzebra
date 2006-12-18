@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.245 2006-12-11 17:08:03 adam Exp $
+/* $Id: extract.c,v 1.246 2006-12-18 23:40:07 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1361,24 +1361,30 @@ static void extract_schema_add(struct recExtractCtrl *p, Odr_oid *oid)
 void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
                              int cmd, zebra_rec_keys_t reckeys)
 {
+#if 0
+    yaz_log(YLOG_LOG, "extract_flush_sort_keys cmd=%d sysno=" ZINT_FORMAT,
+            cmd, sysno);
+    extract_rec_keys_log(zh, cmd, reckeys, YLOG_LOG);
+#endif
+
     if (zebra_rec_keys_rewind(reckeys))
     {
-        SortIdx sortIdx = zh->reg->sortIdx;
+        zebra_sort_index_t si = zh->reg->sort_index;
 	size_t slen;
 	const char *str;
 	struct it_key key_in;
 
-        sortIdx_sysno (sortIdx, sysno);
+        zebra_sort_sysno(si, sysno);
 
 	while (zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
         {
             int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
             
-            sortIdx_type(sortIdx, ord);
+            zebra_sort_type(si, ord);
             if (cmd == 1)
-                sortIdx_add(sortIdx, str, slen);
+                zebra_sort_add(si, str, slen);
             else
-                sortIdx_add(sortIdx, "", 1);
+                zebra_sort_delete(si);
         }
     }
 }

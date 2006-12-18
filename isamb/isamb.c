@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.88 2006-12-12 13:46:41 adam Exp $
+/* $Id: isamb.c,v 1.89 2006-12-18 23:40:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -33,7 +33,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 #define ISAMB_MAJOR_VERSION 3
-#define ISAMB_MINOR_VERSION 0
+#define ISAMB_MINOR_VERSION_NO_ROOT 0
+#define ISAMB_MINOR_VERSION_WITH_ROOT 1
 
 struct ISAMB_head {
     zint first_block;
@@ -104,6 +105,8 @@ struct ISAMB_s {
     zint number_of_leaf_splits;
     int enable_int_count; /* whether we count nodes (or not) */
     int cache_size; /* size of blocks to cache (if cache=1) */
+    int minor_version;
+    zint root_ptr;
 };
 
 struct ISAMB_block {
@@ -195,16 +198,18 @@ void isamb_set_cache_size(ISAMB b, int v)
     b->cache_size = v;
 }
 
-ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
-		 int cache)
+ISAMB isamb_open2(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
+                  int cache, int no_cat, int *sizes, int use_root_ptr)
 {
     ISAMB isamb = xmalloc(sizeof(*isamb));
-    int i, b_size = ISAMB_MIN_SIZE;
+    int i;
+
+    assert(no_cat <= CAT_MAX);
 
     isamb->bfs = bfs;
     isamb->method = (ISAMC_M *) xmalloc(sizeof(*method));
     memcpy(isamb->method, method, sizeof(*method));
-    isamb->no_cat = CAT_NO;
+    isamb->no_cat = no_cat;
     isamb->log_io = 0;
     isamb->log_freelist = 0;
     isamb->cache = cache;
@@ -214,6 +219,13 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
     isamb->number_of_leaf_splits = 0;
     isamb->enable_int_count = 1;
     isamb->cache_size = 40;
+
+    if (use_root_ptr)
+        isamb->minor_version = ISAMB_MINOR_VERSION_WITH_ROOT;
+    else
+        isamb->minor_version = ISAMB_MINOR_VERSION_NO_ROOT;
+
+    isamb->root_ptr = 0;
 
     for (i = 0; i<ISAMB_MAX_LEVEL; i++)
 	isamb->skipped_nodes[i] = isamb->accessed_nodes[i] = 0;
@@ -245,7 +257,7 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
             isamb->file[i].bf = bf_open(bfs, fname, ISAMB_CACHE_ENTRY_SIZE,
                                          writeflag);
         else
-            isamb->file[i].bf = bf_open(bfs, fname, b_size, writeflag);
+            isamb->file[i].bf = bf_open(bfs, fname, sizes[i], writeflag);
 
         if (!isamb->file[i].bf)
         {
@@ -254,12 +266,12 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
         }
 
         /* fill-in default values (for empty isamb) */
-	isamb->file[i].head.first_block = ISAMB_CACHE_ENTRY_SIZE/b_size+1;
+	isamb->file[i].head.first_block = ISAMB_CACHE_ENTRY_SIZE/sizes[i]+1;
 	isamb->file[i].head.last_block = isamb->file[i].head.first_block;
-	isamb->file[i].head.block_size = b_size;
-        assert(b_size <= ISAMB_CACHE_ENTRY_SIZE);
+	isamb->file[i].head.block_size = sizes[i];
+        assert(sizes[i] <= ISAMB_CACHE_ENTRY_SIZE);
 #if ISAMB_PTR_CODEC
-	if (i == isamb->no_cat-1 || b_size > 128)
+	if (i == isamb->no_cat-1 || sizes[i] > 128)
 	    isamb->file[i].head.block_offset = 8;
 	else
 	    isamb->file[i].head.block_offset = 4;
@@ -267,7 +279,7 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 	isamb->file[i].head.block_offset = 11;
 #endif
 	isamb->file[i].head.block_max =
-	    b_size - isamb->file[i].head.block_offset;
+	    sizes[i] - isamb->file[i].head.block_offset;
 	isamb->file[i].head.free_list = 0;
 	if (bf_read(isamb->file[i].bf, 0, 0, 0, hbuf))
 	{
@@ -292,10 +304,10 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 		     fname, major, ISAMB_MAJOR_VERSION);
 		return 0;
 	    }
-	    for (left = len - b_size; left > 0; left = left - b_size)
+	    for (left = len - sizes[i]; left > 0; left = left - sizes[i])
 	    {
 		pos++;
-		if (!bf_read(isamb->file[i].bf, pos, 0, 0, hbuf + pos*b_size))
+		if (!bf_read(isamb->file[i].bf, pos, 0, 0, hbuf + pos*sizes[i]))
 		{
 		    yaz_log(YLOG_WARN, "truncated isamb header for " 
 			 "file=%s len=%d pos=%d",
@@ -311,16 +323,32 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 	    decode_ptr(&src, &zint_tmp);
 	    isamb->file[i].head.block_max = (int) zint_tmp;
 	    decode_ptr(&src, &isamb->file[i].head.free_list);
+            if (isamb->minor_version >= ISAMB_MINOR_VERSION_WITH_ROOT)
+                decode_ptr(&src, &isamb->root_ptr);
 	}
         assert (isamb->file[i].head.block_size >= isamb->file[i].head.block_offset);
         isamb->file[i].head_dirty = 0;
-        assert(isamb->file[i].head.block_size == b_size);
-        b_size = b_size * ISAMB_FAC_SIZE;
+        assert(isamb->file[i].head.block_size == sizes[i]);
     }
 #if ISAMB_DEBUG
     yaz_log(YLOG_WARN, "isamb debug enabled. Things will be slower than usual");
 #endif
     return isamb;
+}
+
+ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
+		 int cache)
+{
+    int sizes[CAT_NO];
+    int i, b_size = ISAMB_MIN_SIZE;
+    
+    for (i = 0; i<CAT_NO; i++)
+    {
+        sizes[i] = b_size;
+        b_size = b_size * ISAMB_FAC_SIZE;
+    }
+    return isamb_open2(bfs, name, writeflag, method, cache,
+                       CAT_NO, sizes, 0);
 }
 
 static void flush_blocks (ISAMB b, int cat)
@@ -429,7 +457,6 @@ void isamb_close (ISAMB isamb)
 	{
 	    char hbuf[DST_BUF_SIZE];
 	    int major = ISAMB_MAJOR_VERSION;
-	    int minor = ISAMB_MINOR_VERSION;
 	    int len = 16;
 	    char *dst = hbuf + 16;
 	    int pos = 0, left;
@@ -440,12 +467,17 @@ void isamb_close (ISAMB isamb)
 	    encode_ptr(&dst, isamb->file[i].head.block_size);
 	    encode_ptr(&dst, isamb->file[i].head.block_max);
 	    encode_ptr(&dst, isamb->file[i].head.free_list);
+
+            if (isamb->minor_version >= ISAMB_MINOR_VERSION_WITH_ROOT)
+                encode_ptr(&dst, isamb->root_ptr);
+
 	    memset(dst, '\0', b_size); /* ensure no random bytes are written */
 
 	    len = dst - hbuf;
 
 	    /* print exactly 16 bytes (including trailing 0) */
-	    sprintf(hbuf, "isamb%02d %02d %02d\r\n", major, minor, len);
+	    sprintf(hbuf, "isamb%02d %02d %02d\r\n", major,
+                    isamb->minor_version, len);
 
             bf_write(isamb->file[i].bf, pos, 0, 0, hbuf);
 
@@ -2008,6 +2040,17 @@ zint isamb_get_leaf_splits(ISAMB b)
 {
     return b->number_of_leaf_splits;
 }
+
+zint isamb_get_root_ptr(ISAMB b)
+{
+    return b->root_ptr;
+}
+
+void isamb_set_root_ptr(ISAMB b, zint root_ptr)
+{
+    b->root_ptr = root_ptr;
+}
+
 
 /*
  * Local variables:

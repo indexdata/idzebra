@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.113 2006-11-30 10:33:19 adam Exp $
+/* $Id: zsets.c,v 1.114 2006-12-18 23:40:08 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -552,15 +552,15 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
     struct zset_sort_info *sort_info = sset->sort_info;
     int i, j;
 
-    sortIdx_sysno (zh->reg->sortIdx, sysno);
+    zebra_sort_sysno(zh->reg->sort_index, sysno);
     for (i = 0; i<num_criteria; i++)
     {
         char *this_entry_buf = tmp_cmp_buf[i];
         memset(this_entry_buf, '\0', SORT_IDX_ENTRYSIZE);
         if (criteria[i].ord != -1)
         {
-            sortIdx_type(zh->reg->sortIdx, criteria[i].ord);
-            sortIdx_read(zh->reg->sortIdx, this_entry_buf);
+            zebra_sort_type(zh->reg->sort_index, criteria[i].ord);
+            zebra_sort_read(zh->reg->sort_index, this_entry_buf);
         }
     }
     i = sort_info->num_entries;

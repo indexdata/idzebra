@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.237 2006-12-05 14:06:29 adam Exp $
+/* $Id: zebraapi.c,v 1.238 2006-12-18 23:40:07 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -314,6 +314,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     const char *recordCompression = 0;
     const char *profilePath;
     char cwd[1024];
+    int sort_type = ZEBRA_SORT_TYPE_FLAT;
     ZEBRA_RES ret = ZEBRA_OK;
 
     ASSERTZS;
@@ -385,7 +386,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
 
     reg->records = 0;
     reg->dict = 0;
-    reg->sortIdx = 0;
+    reg->sort_index = 0;
     reg->isams = 0;
     reg->matchDict = 0;
     reg->isamc = 0;
@@ -427,9 +428,22 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
 	yaz_log (YLOG_WARN, "dict_open failed");
 	ret = ZEBRA_FAIL;
     }
-    if (!(reg->sortIdx = sortIdx_open (reg->bfs, rw)))
+
+    
+    if (res_get_match (res, "sortindex", "f", "f"))
+        sort_type = ZEBRA_SORT_TYPE_FLAT;
+    else if (res_get_match (res, "sortindex", "i", "f"))
+        sort_type = ZEBRA_SORT_TYPE_ISAMB;
+    else
     {
-	yaz_log (YLOG_WARN, "sortIdx_open failed");
+	yaz_log (YLOG_WARN, "bad_value for 'sort:'");
+	ret = ZEBRA_FAIL;
+    }
+
+
+    if (!(reg->sort_index = zebra_sort_open(reg->bfs, rw, sort_type)))
+    {
+	yaz_log (YLOG_WARN, "zebra_sort_open failed");
 	ret = ZEBRA_FAIL;
     }
     if (res_get_match (res, "isam", "s", ISAM_DEFAULT))
@@ -540,7 +554,7 @@ static void zebra_register_close(ZebraService zs, struct zebra_register *reg)
     dict_close (reg->dict);
     if (reg->matchDict)
 	dict_close (reg->matchDict);
-    sortIdx_close (reg->sortIdx);
+    zebra_sort_close(reg->sort_index);
     if (reg->isams)
 	isams_close (reg->isams);
     if (reg->isamc)

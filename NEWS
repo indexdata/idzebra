@@ -1,3 +1,6 @@
+Implemented sorting via the ISAMB system. To enable, use sortindex:b
+in zebra.cfg. The sort keys can also be fetched using zebra::sort:field .
+
 Added support for specification of approximative limits for whole query.
 This is specified as attribute type 12. Semantics is the same as
 estimatehits in zebra.cfg.

@@ -1,4 +1,4 @@
-/* $Id: sortidx.h,v 1.11 2006-11-21 22:17:49 adam Exp $
+/* $Id: sortidx.h,v 1.12 2006-12-18 23:40:06 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -31,14 +31,18 @@ YAZ_BEGIN_CDECL
 
 #define SORT_IDX_ENTRYSIZE 64
 
-typedef struct sortIdx *SortIdx;
+typedef struct zebra_sort_index *zebra_sort_index_t;
 
-SortIdx sortIdx_open(BFiles bfs, int write_flag);
-void sortIdx_close(SortIdx si);
-int sortIdx_type(SortIdx si, int type);
-void sortIdx_sysno(SortIdx si, zint sysno);
-void sortIdx_add(SortIdx si, const char *buf, int len);
-void sortIdx_read(SortIdx si, char *buf);
+#define ZEBRA_SORT_TYPE_FLAT 1
+#define ZEBRA_SORT_TYPE_ISAMB 2
+
+zebra_sort_index_t zebra_sort_open(BFiles bfs, int write_flag, int sort_type);
+void zebra_sort_close(zebra_sort_index_t si);
+int zebra_sort_type(zebra_sort_index_t si, int type);
+void zebra_sort_sysno(zebra_sort_index_t si, zint sysno);
+void zebra_sort_add(zebra_sort_index_t si, const char *buf, int len);
+void zebra_sort_delete(zebra_sort_index_t si);
+void zebra_sort_read(zebra_sort_index_t si, char *buf);
 
 YAZ_END_CDECL
 

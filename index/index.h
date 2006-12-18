@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.186 2006-12-05 14:06:29 adam Exp $
+/* $Id: index.h,v 1.187 2006-12-18 23:40:07 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -134,7 +134,7 @@ struct zebra_register {
     ISAMB isamb;
     Dict dict;
     Dict matchDict;
-    SortIdx sortIdx;
+    zebra_sort_index_t sort_index;
     int registerState; /* 0 (no commit pages), 1 (use commit pages) */
     time_t registerChange;
     BFiles bfs;
