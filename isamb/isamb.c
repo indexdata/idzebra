@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.89 2006-12-18 23:40:08 adam Exp $
+/* $Id: isamb.c,v 1.90 2006-12-19 00:25:41 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -632,7 +632,7 @@ static void check_block (ISAMB b, struct ISAMB_block *p)
 #else
             zint item_len;
             decode_item_len(&src, &item_len);
-            assert (item_len > 0 && item_len < 80);
+            assert (item_len > 0 && item_len < 128);
             src += item_len;
 #endif
             decode_ptr(&src, &pos);
@@ -780,7 +780,7 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
 #if INT_ENCODE
 	const char *sub_item_ptr = sub_item;
 #endif
-        assert (sub_size < 80 && sub_size > 1);
+        assert (sub_size < 128 && sub_size > 1);
 
         memcpy (dst, startp, src - startp);
                 
@@ -1277,7 +1277,7 @@ void isamb_merge(ISAMB b, ISAM_P *pos, ISAMC_I *stream)
 #endif
 
             encode_ptr(&dst, p->pos);
-	    assert (sub_size < 80 && sub_size > 1);
+	    assert (sub_size < 128 && sub_size > 1);
 #if INT_ENCODE
 	    (*b->method->codec.reset)(c1);
 	    (*b->method->codec.encode)(c1, &dst, &sub_item_ptr);

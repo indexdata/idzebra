@@ -1,4 +1,4 @@
-/* $Id: sortidx.c,v 1.20 2006-12-18 23:40:07 adam Exp $
+/* $Id: sortidx.c,v 1.21 2006-12-19 00:25:41 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <sortidx.h>
 #include "recindex.h"
 
-#define SORT_MAX_TERM 127
+#define SORT_MAX_TERM 110
 
 #define SORT_IDX_BLOCKSIZE 64
 
