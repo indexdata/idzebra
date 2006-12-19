@@ -1,4 +1,4 @@
-/* $Id: sortidx.c,v 1.21 2006-12-19 00:25:41 adam Exp $
+/* $Id: sortidx.c,v 1.22 2006-12-19 16:57:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -385,7 +385,6 @@ void zebra_sort_read(zebra_sort_index_t si, char *buf)
             st.sysno = 99999;
             if (!sf->isam_pp)
             {
-                yaz_log(YLOG_LOG, "isamb_pp_open " ZINT_FORMAT, sf->isam_p);
                 sf->isam_pp = isamb_pp_open(sf->u.isamb, sf->isam_p, 1);
             }
             if (!sf->isam_pp)

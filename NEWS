@@ -1,5 +1,8 @@
-Implemented sorting via the ISAMB system. To enable, use sortindex:b
-in zebra.cfg. The sort keys can also be fetched using zebra::sort:field .
+Implemented sorting via the ISAMB system. To enable, use sortindex:i in
+zebra.cfg.
+
+Added special retrieval support for sort keys. These keys can also be
+fetched using zebra::index:field:s   
 
 Added support for specification of approximative limits for whole query.
 This is specified as attribute type 12. Semantics is the same as

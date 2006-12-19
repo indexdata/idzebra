@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.238 2006-12-18 23:40:07 adam Exp $
+/* $Id: zebraapi.c,v 1.239 2006-12-19 16:57:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -436,7 +436,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
         sort_type = ZEBRA_SORT_TYPE_ISAMB;
     else
     {
-	yaz_log (YLOG_WARN, "bad_value for 'sort:'");
+	yaz_log (YLOG_WARN, "bad_value for 'sortindex'");
 	ret = ZEBRA_FAIL;
     }
 

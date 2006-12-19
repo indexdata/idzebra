@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.61 2006-12-18 23:40:07 adam Exp $
+/* $Id: retrieve.c,v 1.62 2006-12-19 16:57:38 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -148,10 +148,8 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
         return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
     }
     
-    if (retrieval_type_len != 0 && retrieval_type_len != 1)
-    {
-        return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
-    }
+    if (retrieval_type_len == 0)
+        return -1;   /* must have a register type specified */
     if (!retrieval_index_len ||
         retrieval_index_len >= sizeof(retrieval_index_cstr)-1)
     {
@@ -163,11 +161,10 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
 
     ord = zebraExplain_lookup_attr_str(zh->reg->zei,
                                        zinfo_index_category_sort,
-                                       (retrieval_type_len == 0 ? -1 : 
-                                        retrieval_type[0]),
+                                       retrieval_type[0],
                                        retrieval_index_cstr);
     if (ord == -1)
-        return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+        return -1;  /* is not a sort index */
     else
     {
         char dst_buf[IT_MAX_WORD];
@@ -191,14 +188,14 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
             *output_format = VAL_TEXT_XML;
             wrbuf_printf(wrbuf, ZEBRA_XML_HEADER_STR
                          " sysno=\"" ZINT_FORMAT "\""
-                         " set=\"zebra::sort%s/\">\n",
+                         " set=\"zebra::index%s/\">\n",
                          sysno, elemsetname);
 
-            wrbuf_printf(wrbuf, "  <sort name=\"%s\"", 
+            wrbuf_printf(wrbuf, "  <index name=\"%s\"", 
                          string_index);
             wrbuf_printf(wrbuf, " type=\"%c\">", index_type);
             wrbuf_xmlputs(wrbuf, dst_buf);
-            wrbuf_printf(wrbuf, "</sort>\n");
+            wrbuf_printf(wrbuf, "</index>\n");
             wrbuf_printf(wrbuf, "</record>\n");
         }
         else if (input_format == VAL_SUTRS)
@@ -432,13 +429,16 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
         return ret;
     }
 
-    /* processing special elementsetnames zebra::sort:: */
-    if (elemsetname && 0 == strncmp(elemsetname, "sort", 4))
+    /* processing special elementsetname zebra::index:: for sort elements */
+    if (elemsetname && 0 == strncmp(elemsetname, "index", 5))
     {
-        return zebra_special_sort_fetch(zh, sysno, odr,
-                                        elemsetname + 4,
-                                        input_format, output_format,
-                                        rec_bufp, rec_lenp);
+        int ret = zebra_special_sort_fetch(zh, sysno, odr,
+                                           elemsetname + 5,
+                                           input_format, output_format,
+                                           rec_bufp, rec_lenp);
+        if (ret != -1)
+            return ret;
+        /* not a sort index so we continue to get the full record */
     }
 
 
