@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.72 2006-12-03 16:05:13 adam Exp $
+/* $Id: mfile.c,v 1.73 2006-12-19 13:17:34 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -288,9 +288,6 @@ MFile_area mf_init(const char *name, const char *spec, const char *base,
                 mf_destroy(ma);
 	    	return 0;
 	    }
-#ifndef WIN32
-	    fsync(fd);
-#endif
 	    close(fd);
 	    if (dirp->max_bytes >= 0)
 		dirp->avail_bytes -= part_f->bytes;
@@ -439,7 +436,8 @@ int mf_close(MFile mf)
     	if (mf->files[i].fd >= 0)
     	{
 #ifndef WIN32
-	    fsync(mf->files[i].fd);
+            if (mf->wr)
+                fsync(mf->files[i].fd);
 #endif
     	    close(mf->files[i].fd);
     	    mf->files[i].fd = -1;
