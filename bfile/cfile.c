@@ -1,4 +1,4 @@
-/* $Id: cfile.c,v 1.40 2006-11-14 12:11:48 adam Exp $
+/* $Id: cfile.c,v 1.41 2006-12-19 13:55:05 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -89,8 +89,7 @@ CFile cf_open(MFile mf, MFile_area area, const char *fname,
     /* avoid valgrind warnings, but set to something nasty */
     memset(cf, 'Z', sizeof(*cf));
 
-    yaz_log(YLOG_DEBUG, "cf: open %s %s", cf->rmf->name,
-            wflag ? "rdwr" : "rd");
+    yaz_log(YLOG_DEBUG, "cf: open %s %s", fname, wflag ? "rdwr" : "rd");
    
     cf->block_mf = 0;
     cf->hash_mf = 0;
