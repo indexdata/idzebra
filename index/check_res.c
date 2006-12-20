@@ -1,4 +1,4 @@
-/* $Id: check_res.c,v 1.3 2006-12-18 23:40:07 adam Exp $
+/* $Id: check_res.c,v 1.4 2006-12-20 14:19:21 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -60,6 +60,8 @@ int zebra_check_res(Res res)
     res_add(v, "sortindex", "");
     res_add(v, "staticrank", "");
     res_add(v, "threads", "");
+    res_add(v, "trunclimit", "");
+    res_add(v, "truncmax", "");
     res_add(v, "database", "p");
     res_add(v, "explainDatabase", "p");
     res_add(v, "fileVerboseLimit", "p");

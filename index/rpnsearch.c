@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.3 2006-11-30 10:33:19 adam Exp $
+/* $Id: rpnsearch.c,v 1.4 2006-12-20 14:19:21 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -78,19 +78,25 @@ struct grep_info {
     ISAM_P *isam_p_buf;
     int isam_p_size;        
     int isam_p_indx;
+    int trunc_max;
     ZebraHandle zh;
     int reg_type;
     ZebraSet termset;
 };        
 
-static void add_isam_p(const char *name, const char *info,
-		       struct grep_info *p)
+static int add_isam_p(const char *name, const char *info,
+                      struct grep_info *p)
 {
     if (!log_level_set)
     {
         log_level_rpn = yaz_log_module_level("rpn");
         log_level_set = 1;
     }
+    /* we may have to stop this madness.. NOTE: -1 so that if
+       truncmax == trunxlimit we do *not* generate result sets */
+    if (p->isam_p_indx >= p->trunc_max - 1)
+        return 1;
+
     if (p->isam_p_indx == p->isam_p_size)
     {
         ISAM_P *new_isam_p_buf;
@@ -140,12 +146,12 @@ static void add_isam_p(const char *name, const char *info,
 			 index_name, term_tmp);
     }
     (p->isam_p_indx)++;
+    return 0;
 }
 
 static int grep_handle(char *name, const char *info, void *p)
 {
-    add_isam_p(name, info, (struct grep_info *) p);
-    return 0;
+    return add_isam_p(name, info, (struct grep_info *) p);
 }
 
 static int term_pre(ZebraMaps zebra_maps, int reg_type, const char **src,
@@ -1209,6 +1215,7 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
 #ifdef TERM_COUNT
     grep_info->term_no = 0;
 #endif
+    grep_info->trunc_max = atoi(res_get_def(zh->res, "truncmax", "10000"));
     grep_info->isam_p_size = 0;
     grep_info->isam_p_buf = NULL;
     grep_info->zh = zh;
