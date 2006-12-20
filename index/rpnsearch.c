@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.4 2006-12-20 14:19:21 adam Exp $
+/* $Id: rpnsearch.c,v 1.5 2006-12-20 14:29:04 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -1699,7 +1699,7 @@ static int numeric_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     yaz_log(log_level_rpn, "dict_lookup_grep: %s", term_tmp);
     r = dict_lookup_grep(zh->reg->dict, term_dict, 0, grep_info, max_pos,
                           0, grep_handle);
-    if (r)
+    if (r != 0 && r != 1)
         yaz_log(YLOG_WARN, "dict_lookup_grep fail, rel = gt: %d", r);
     yaz_log(log_level_rpn, "%d positions", grep_info->isam_p_indx);
     return 1;
