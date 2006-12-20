@@ -1,4 +1,4 @@
-/* $Id: sortidx.c,v 1.22 2006-12-19 16:57:38 adam Exp $
+/* $Id: sortidx.c,v 1.23 2006-12-20 08:37:49 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -253,10 +253,10 @@ int zebra_sort_type(zebra_sort_index_t si, int id)
         else
         {
             sf->isam_p = isamb_get_root_ptr(sf->u.isamb);
-            sf->isam_pp = 0;
         }
         break;
     }
+    sf->isam_pp = 0;
     sf->no_inserted = 0;
     sf->no_deleted = 0;
     sf->next = si->files;
@@ -273,7 +273,7 @@ void zebra_sort_sysno(zebra_sort_index_t si, zint sysno)
     {
         sf->no_inserted = 0;
         sf->no_deleted = 0;
-        if (new_sysno < si->sysno && sf->isam_pp)
+        if (sf->isam_pp && new_sysno < si->sysno && sf->isam_pp)
         {
             isamb_pp_close(sf->isam_pp);
             sf->isam_pp = 0;
@@ -382,11 +382,8 @@ void zebra_sort_read(zebra_sort_index_t si, char *buf)
         {
             struct sort_term st, st_untilbuf;
 
-            st.sysno = 99999;
             if (!sf->isam_pp)
-            {
                 sf->isam_pp = isamb_pp_open(sf->u.isamb, sf->isam_p, 1);
-            }
             if (!sf->isam_pp)
                 return;
 
