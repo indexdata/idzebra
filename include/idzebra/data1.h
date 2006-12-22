@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.19 2006-10-26 23:49:14 adam Exp $
+/* $Id: data1.h,v 1.20 2006-12-22 13:57:26 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -580,6 +580,8 @@ YAZ_EXPORT const char *data1_systag_lookup(data1_absyn *absyn, const char *tag,
 YAZ_EXPORT void data1_concat_text(data1_handle dh, NMEM m, data1_node *n);
 
 YAZ_EXPORT void data1_absyn_destroy(data1_handle dh);
+
+YAZ_EXPORT const char *data1_absyn_get_staticrank(data1_absyn *absyn);
 
 YAZ_END_CDECL
 

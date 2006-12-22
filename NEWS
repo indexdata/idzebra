@@ -1,3 +1,7 @@
+Added support for specification of staticrank for grs-class of filters.
+This is enabled by using 'staticrank indexname' in .abs. Contents of
+indexname (elm ... indexname:w) is then used as value for staticrank.
+
 Implemented sorting via the ISAMB system. To enable, use sortindex:i in
 zebra.cfg.
 
