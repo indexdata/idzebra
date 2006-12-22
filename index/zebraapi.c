@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.239 2006-12-19 16:57:38 adam Exp $
+/* $Id: zebraapi.c,v 1.240 2006-12-22 12:14:25 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -258,6 +258,7 @@ ZebraService zebra_start_res(const char *configName, Res def_res, Res over_res)
 	    }
 	}
 
+        zh->timing = zebra_timing_create();
         zh->path_root = res_get (zh->global_res, "root");
 	zh->nmem = nmem_create();
 	zh->record_classes = recTypeClass_create (zh->global_res, zh->nmem);
@@ -581,8 +582,6 @@ ZEBRA_RES zebra_stop(ZebraService zs)
 {
     if (!zs)
         return ZEBRA_OK;
-    yaz_log (log_level, "zebra_stop");
-
     while (zs->sessions)
     {
         zebra_close (zs->sessions);
@@ -596,6 +595,15 @@ ZEBRA_RES zebra_stop(ZebraService zs)
     recTypeClass_destroy(zs->record_classes);
     nmem_destroy(zs->nmem);
     res_close (zs->global_res);
+
+    zebra_timing_stop(zs->timing);
+    yaz_log (YLOG_LOG, "zebra_stop: %4.2f %4.2f %4.2f",
+             zebra_timing_get_real(zs->timing),
+             zebra_timing_get_user(zs->timing),
+             zebra_timing_get_sys(zs->timing));
+    
+
+    zebra_timing_destroy(&zs->timing);
     xfree(zs);
     return ZEBRA_OK;
 }

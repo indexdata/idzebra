@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.187 2006-12-18 23:40:07 adam Exp $
+/* $Id: index.h,v 1.188 2006-12-22 12:14:25 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -167,6 +167,7 @@ struct zebra_service {
     const char *path_root;
     RecTypeClass record_classes;
     NMEM nmem;
+    zebra_timing_t timing;
 };
 
 

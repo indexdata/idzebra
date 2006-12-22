@@ -1,4 +1,4 @@
-/* $Id: zebraidx.c,v 1.2 2006-12-05 09:26:37 adam Exp $
+/* $Id: zebraidx.c,v 1.3 2006-12-22 12:14:25 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -30,13 +30,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#if HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
-#include <time.h>
-#if HAVE_SYS_TIMES_H
-#include <sys/times.h>
-#endif
 
 #include <yaz/log.h>
 #include <yaz/options.h>
@@ -66,14 +59,7 @@ int main (int argc, char **argv)
     Res res = res_open(0, 0);
     Res default_res = res_open(0, 0);
     
-    int trans_started=0;
-#if HAVE_SYS_TIMES_H
-    struct tms tms1, tms2;
-    double usec;
-#endif
-#if HAVE_SYS_TIME_H
-    struct timeval start_time, end_time;
-#endif
+    int trans_started = 0;
 #ifndef WIN32
     char nbuf[100];
 #endif
@@ -86,12 +72,6 @@ int main (int argc, char **argv)
 #else
     sprintf(nbuf, "%.40s(%ld)", *argv, (long) getpid());
     yaz_log_init_prefix (nbuf);
-#endif
-#if HAVE_SYS_TIMES_H
-    times(&tms1);
-#endif
-#if HAVE_SYS_TIME_H
-    gettimeofday(&start_time, 0);
 #endif
     prog = *argv;
     if (argc < 2)
@@ -297,21 +277,7 @@ int main (int argc, char **argv)
 
     zebra_close (zh);
     zebra_stop (zs);
-#if HAVE_SYS_TIMES_H
-#if HAVE_SYS_TIME_H
-    if (trans_started)
-    {
-        gettimeofday(&end_time, 0);
-        usec = (end_time.tv_sec - start_time.tv_sec) * 1000000.0 +
-	    end_time.tv_usec - start_time.tv_usec;
-        times(&tms2);
-        yaz_log (YLOG_LOG, "zebraidx times: %5.2f %5.2f %5.2f",
-		usec / 1000000,
-		(double) (tms2.tms_utime - tms1.tms_utime)/100,
-		(double) (tms2.tms_stime - tms1.tms_stime)/100);
-    }
-#endif
-#endif
+
     res_close(res);
     res_close(default_res);
     nmem_exit();
