@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.69 2006-11-14 08:12:09 adam Exp $
+/* $Id: rstemp.c,v 1.70 2006-12-22 19:47:36 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -168,13 +168,18 @@ static void r_flush(RSFD rfd, int mk)
     {
 #if HAVE_MKSTEMP
         char template[1024];
+
+        *template = '\0';
+
         if (info->temp_path)
-            sprintf(template, "%s/zrsXXXXXX", info->temp_path);
-        else
-            sprintf(template, "zrsXXXXXX");
+            sprintf(template, "%s/", info->temp_path);
+        strcat(template, "zrs_");
+#if HAVE_UNISTD_H
+        sprintf(template + strlen(template), "%ld_", (long) getpid());
+#endif
+        strcat(template, "XXXXXX");
 
         info->fd = mkstemp(template);
-
         if (info->fd == -1)
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: mkstemp %s", template);
