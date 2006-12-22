@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.42 2006-11-29 10:24:01 adam Exp $
+dnl $Id: configure.ac,v 1.43 2006-12-22 12:13:39 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.7],[zebra-help@indexdata.dk])
@@ -107,7 +107,7 @@ else
 fi
 dnl
 dnl ------ various functions
-AC_CHECK_FUNCS(mkstemp)
+AC_CHECK_FUNCS(mkstemp atoll)
 dnl
 dnl ------ GNU Readline
 READLINE_SHARED_LIBADD=""

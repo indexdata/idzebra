@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.8 2006-12-13 13:05:45 adam Exp $
+/* $Id: alvis.c,v 1.9 2006-12-22 12:13:40 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -434,7 +434,12 @@ static void index_record(struct filter_info *tinfo,struct recExtractCtrl *ctrl,
 	    sscanf(id_str, "%255s", ctrl->match_criteria);
 
 	if (rank_str)
-	    ctrl->staticrank = atoi(rank_str);
+	    ctrl->staticrank = 
+#if HAVE_ATOLL
+                atoll(rank_str);
+#else
+                atoi(rank_str);
+#endif
 	
 	ptr = ptr->children;
     }
