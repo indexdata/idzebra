@@ -1,4 +1,4 @@
-/* $Id: util.h,v 1.12 2006-12-11 09:50:36 adam Exp $
+/* $Id: util.h,v 1.13 2006-12-22 13:48:20 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -115,6 +115,8 @@ YAZ_EXPORT
 double zebra_timing_get_sys(zebra_timing_t t);
 YAZ_EXPORT
 void zebra_timing_destroy(zebra_timing_t *tp);
+
+YAZ_EXPORT zint atozint(const char *src);
 
 YAZ_END_CDECL
 

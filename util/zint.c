@@ -1,4 +1,4 @@
-/* $Id: zint.c,v 1.3 2006-08-14 10:40:34 adam Exp $
+/* $Id: zint.c,v 1.4 2006-12-22 13:48:20 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+#include <stdlib.h>
 #include <idzebra/util.h>
 
 void zebra_zint_encode(char **dst, zint pos)
@@ -50,6 +51,16 @@ void zebra_zint_decode(const char **src, zint *pos)
     d += ((zint) c << r);
     *pos = d;
 }
+
+zint atozint(const char *src)
+{
+#if HAVE_ATOLL
+    return atoll(src);
+#else
+    return atoi(src);
+#endif
+}
+
 /*
  * Local variables:
  * c-basic-offset: 4
