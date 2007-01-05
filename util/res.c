@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.54 2006-12-06 10:26:40 adam Exp $
+/* $Id: res.c,v 1.55 2007-01-05 16:11:25 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -344,6 +344,8 @@ void res_set(Res r, const char *name, const char *value)
     struct res_entry *re;
     assert(r);
 
+    if (!value)
+        return;
     for (re = r->first; re; re=re->next)
         if (re->value && !yaz_matchstr(re->name, name))
         {
