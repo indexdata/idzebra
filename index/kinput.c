@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.80 2006-12-06 22:52:38 adam Exp $
+/* $Id: kinput.c,v 1.81 2007-01-05 10:45:11 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -55,7 +55,7 @@ struct key_file {
     Res res;
 };
 
-#if 1
+#if 0
 static void pkey(const char *b, int mode)
 {
     key_logdump_txt(YLOG_LOG, b, mode ? "i" : "d");

@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2006
-dnl $Id: configure.ac,v 1.43 2006-12-22 12:13:39 adam Exp $
+dnl $Id: configure.ac,v 1.44 2007-01-05 10:45:11 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.7],[zebra-help@indexdata.dk])
@@ -25,7 +25,7 @@ AC_PROG_CPP
 AM_PROG_LIBTOOL
 dnl
 dnl ------ headers
-AC_CHECK_HEADERS(sys/resource.h sys/times.h sys/time.h sys/wait.h sys/utsname.h unistd.h)
+AC_CHECK_HEADERS(sys/resource.h sys/time.h sys/wait.h sys/utsname.h unistd.h)
 dnl ------ crypt
 AC_CHECK_LIB(crypt, crypt)
 if test "$ac_cv_lib_crypt_crypt" = "yes"; then
@@ -41,7 +41,7 @@ else
 fi
 dnl
 dnl ------ YAZ
-YAZ_INIT($yazflag,2.1.40)
+YAZ_INIT($yazflag,2.1.45)
 if test "$YAZVERSION" = "NONE"; then
     AC_MSG_ERROR([YAZ development libraries required])
 fi

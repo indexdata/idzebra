@@ -1,4 +1,4 @@
-/* $Id: util.h,v 1.13 2006-12-22 13:48:20 adam Exp $
+/* $Id: util.h,v 1.14 2007-01-05 10:45:11 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -98,23 +98,6 @@ YAZ_EXPORT void zebra_zint_encode(char **dst, zint pos);
 YAZ_EXPORT void zebra_zint_decode(const char **src, zint *pos);
 
 YAZ_EXPORT void zebra_exit(const char *msg);
-
-typedef struct zebra_timing *zebra_timing_t;
-
-YAZ_EXPORT
-zebra_timing_t zebra_timing_create(void);
-YAZ_EXPORT
-void zebra_timing_start(zebra_timing_t t);
-YAZ_EXPORT
-void zebra_timing_stop(zebra_timing_t t);
-YAZ_EXPORT
-double zebra_timing_get_real(zebra_timing_t t);
-YAZ_EXPORT
-double zebra_timing_get_user(zebra_timing_t t);
-YAZ_EXPORT
-double zebra_timing_get_sys(zebra_timing_t t);
-YAZ_EXPORT
-void zebra_timing_destroy(zebra_timing_t *tp);
 
 YAZ_EXPORT zint atozint(const char *src);
 

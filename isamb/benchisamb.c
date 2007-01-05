@@ -1,4 +1,4 @@
-/* $Id: benchisamb.c,v 1.4 2006-12-11 10:02:14 adam Exp $
+/* $Id: benchisamb.c,v 1.5 2007-01-05 10:45:12 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 #include <yaz/log.h>
 #include <yaz/xmalloc.h>
+#include <yaz/timing.h>
 #include <idzebra/isamb.h>
 #include <assert.h>
 
@@ -134,9 +135,9 @@ void bench_insert(ISAMB isb, int number_of_trees,
     
     for (round = 0; round < number_of_rounds; round++)
     {
-        zebra_timing_t t = zebra_timing_create();
+        yaz_timing_t t = yaz_timing_create();
 
-        zebra_timing_start(t);
+        yaz_timing_start(t);
         for (i = 0; i<number_of_trees; i++)
         {
 
@@ -158,13 +159,13 @@ void bench_insert(ISAMB isb, int number_of_trees,
             if (0)
                 isamb_dump(isb, isamc_p[i], log_pr);
         }
-        zebra_timing_stop(t);
+        yaz_timing_stop(t);
         printf("%3d %8.6f %5.2f %5.2f\n",
                round+1,
-               zebra_timing_get_real(t),
-               zebra_timing_get_user(t),
-               zebra_timing_get_sys(t));
-        zebra_timing_destroy(&t);
+               yaz_timing_get_real(t),
+               yaz_timing_get_user(t),
+               yaz_timing_get_sys(t));
+        yaz_timing_destroy(&t);
     }
     xfree(isamc_p);
 }
@@ -186,7 +187,7 @@ int main(int argc, char **argv)
     int number_of_items = 1000;
     int number_of_isams = 1000;
     int extra_size = 0;
-    zebra_timing_t t = 0;
+    yaz_timing_t t = 0;
     
     while ((ret = options("z:r:n:i:", argv, argc, &arg)) != -2)
     {
@@ -222,9 +223,9 @@ int main(int argc, char **argv)
     method.codec.reset = code_reset;
     method.codec.stop = code_stop;
 
-    t = zebra_timing_create();
+    t = yaz_timing_create();
     
-    zebra_timing_start(t);
+    yaz_timing_start(t);
 
     /* create block system */
     bfs = bfs_create(0, 0);
@@ -251,12 +252,12 @@ int main(int argc, char **argv)
     /* exit block system */
     bfs_destroy(bfs);
 
-    zebra_timing_stop(t);
+    yaz_timing_stop(t);
     printf("Total %8.6f %5.2f %5.2f\n",
-           zebra_timing_get_real(t),
-           zebra_timing_get_user(t),
-           zebra_timing_get_sys(t));
-    zebra_timing_destroy(&t);
+           yaz_timing_get_real(t),
+           yaz_timing_get_user(t),
+           yaz_timing_get_sys(t));
+    yaz_timing_destroy(&t);
     exit(0);
     return 0;
 }

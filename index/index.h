@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.188 2006-12-22 12:14:25 adam Exp $
+/* $Id: index.h,v 1.189 2007-01-05 10:45:11 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -35,6 +35,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 #include <sys/stat.h>
 
+#include <yaz/timing.h>
 #include <idzebra/dict.h>
 #include <idzebra/isams.h>
 #include <idzebra/isamc.h>
@@ -167,7 +168,7 @@ struct zebra_service {
     const char *path_root;
     RecTypeClass record_classes;
     NMEM nmem;
-    zebra_timing_t timing;
+    yaz_timing_t timing;
 };
 
 

@@ -1,4 +1,4 @@
-/* $Id: benchindex1.c,v 1.7 2006-12-12 17:33:35 adam Exp $
+/* $Id: benchindex1.c,v 1.8 2007-01-05 10:45:12 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/nmem.h>
 #include <yaz/xmalloc.h>
 #include <yaz/marcdisp.h>
+#include <yaz/timing.h>
 #include <it_key.h>
 #include <idzebra/isamb.h>
 #include <idzebra/dict.h>
@@ -130,8 +131,8 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
     int no_words = 0, no_new_words = 0;
     const char *dict_info = 0;
     ISAM_P isamc_p = 0;
-    zebra_timing_t tim_dict = 0;
-    zebra_timing_t tim_isamb = 0;
+    yaz_timing_t tim_dict = 0;
+    yaz_timing_t tim_isamb = 0;
     zint number_of_int_splits = isamb_get_int_splits(isb);
     zint number_of_leaf_splits = isamb_get_leaf_splits(isb);
     zint number_of_dict_splits = dict_get_no_split(dict);
@@ -145,7 +146,7 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
     assert(!t);
     
     qsort(b->ar, b->no_entries, sizeof(*b->ar), cmp_ar);
-    tim_dict = zebra_timing_create();
+    tim_dict = yaz_timing_create();
 #if 0
     for (i = 0; i < b->no_entries; i++)
     {
@@ -190,8 +191,8 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
     }
     dict_insert(dict, "_w", sizeof(word_id_seq), &word_id_seq);
     
-    zebra_timing_stop(tim_dict);
-    tim_isamb = zebra_timing_create();
+    yaz_timing_stop(tim_dict);
+    tim_isamb = yaz_timing_create();
 
     b->current_entry = 0;
 
@@ -208,7 +209,7 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
         dict_insert(dict, "_i", sizeof(isamc_p), &isamc_p);
     }
 
-    zebra_timing_stop(tim_isamb);
+    yaz_timing_stop(tim_isamb);
 
     number_of_int_splits = isamb_get_int_splits(isb) - number_of_int_splits;
     number_of_leaf_splits = isamb_get_leaf_splits(isb) - number_of_leaf_splits;
@@ -224,13 +225,13 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
            "%6" ZINT_FORMAT0 " %6" ZINT_FORMAT0 
            " %8d %8d %6d %6d" " %5" ZINT_FORMAT0 "\n",
            b->round,
-           zebra_timing_get_real(tim_dict) + zebra_timing_get_real(tim_isamb),
-           zebra_timing_get_real(tim_dict),
-           zebra_timing_get_user(tim_dict),
-           zebra_timing_get_sys(tim_dict),
-           zebra_timing_get_real(tim_isamb),
-           zebra_timing_get_user(tim_isamb),
-           zebra_timing_get_sys(tim_isamb),
+           yaz_timing_get_real(tim_dict) + yaz_timing_get_real(tim_isamb),
+           yaz_timing_get_real(tim_dict),
+           yaz_timing_get_user(tim_dict),
+           yaz_timing_get_sys(tim_dict),
+           yaz_timing_get_real(tim_isamb),
+           yaz_timing_get_user(tim_isamb),
+           yaz_timing_get_sys(tim_isamb),
            number_of_int_splits,
            number_of_leaf_splits,
            no_docs,
@@ -247,8 +248,8 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
     b->no_entries = 0;
     b->terms = 0;
 
-    zebra_timing_destroy(&tim_isamb);
-    zebra_timing_destroy(&tim_dict);
+    yaz_timing_destroy(&tim_isamb);
+    yaz_timing_destroy(&tim_dict);
 }
 
 void index_block_check_flush(struct index_block *b, ISAMB isb, Dict dict,
@@ -514,7 +515,7 @@ int main(int argc, char **argv)
     int dict_cache_size = 50;
     const char *fname = 0;
     FILE *inf = stdin;
-    zebra_timing_t tim = 0;
+    yaz_timing_t tim = 0;
     zint docid_seq = 1;
     const char *dict_info;
     const char *type = "iso2709";
@@ -599,7 +600,7 @@ int main(int argc, char **argv)
     if (reset)
         bf_reset(bfs);
 
-    tim = zebra_timing_create();
+    tim = yaz_timing_create();
     /* create isam handle */
     isb_postings = isamb_open (bfs, "isamb", isam_cache_size ? 1 : 0,
                                &method_postings, 0);
@@ -635,14 +636,14 @@ int main(int argc, char **argv)
         fclose(inf);
     /* exit block system */
     bfs_destroy(bfs);
-    zebra_timing_stop(tim);
+    yaz_timing_stop(tim);
 
     printf("# Total timings real=%8.6f user=%3.2f system=%3.2f\n",
-            zebra_timing_get_real(tim),
-            zebra_timing_get_user(tim),
-            zebra_timing_get_sys(tim));
+            yaz_timing_get_real(tim),
+            yaz_timing_get_user(tim),
+            yaz_timing_get_sys(tim));
     
-    zebra_timing_destroy(&tim);
+    yaz_timing_destroy(&tim);
 
     exit(0);
     return 0;
