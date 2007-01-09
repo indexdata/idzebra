@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.32 2006-11-24 13:25:02 adam Exp $ -->
+<!-- $Id: installation.xml,v 1.33 2007-01-09 09:11:22 adam Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -275,7 +275,7 @@
      <ulink url="&url.idzebra;">Zebra</ulink> indexer is
      recompiled and installed issuing
      <screen>
-      apt-get source --compile idzebra-2.0
+      fakeroot apt-get source --compile idzebra-2.0
      </screen>
      as normal user.
      The compiled GNU/Debian packages can then be
