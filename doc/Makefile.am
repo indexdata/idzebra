@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.62 2006-10-11 09:39:44 adam Exp $
+## $Id: Makefile.am,v 1.63 2007-01-15 20:04:34 adam Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -66,11 +66,7 @@ zebra.pdf: $(XMLFILES)
 	for i in $(PNGFILES); do \
 		if test ! -f $$i; then cp $(srcdir)/$$i .; fi; \
 	done
-	jade -E14 -D $(srcdir) -d common/print.dsl -t tex $(srcdir)/common/xml.dcl zebra.xml
-	pdfjadetex zebra.tex >/dev/null
-	pdfjadetex zebra.tex >/dev/null
-	pdfjadetex zebra.tex >/dev/null
-
+	dblatex $(srcdir)/zebra.xml
 
 manref.xml: $(XMLMAN) $(srcdir)/common/ref2dbinc.xsl
 	rm -f manref.xml
