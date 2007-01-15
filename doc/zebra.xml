@@ -11,25 +11,27 @@
 
      <!ENTITY test SYSTEM "test.xml">
 ]>
-<!-- $Id: zebra.xml,v 1.10 2006-09-05 12:08:47 adam Exp $ -->
+<!-- $Id: zebra.xml,v 1.11 2007-01-15 14:48:51 adam Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
-  <author>
-   <firstname>Adam</firstname><surname>Dickmeiss</surname>
-  </author>
-  <author>
-   <firstname>Heikki</firstname><surname>Levanto</surname>
-  </author>
-  <author>
-   <firstname>Marc</firstname><surname>Cromme</surname>
-  </author>
-  <author>
-   <firstname>Mike</firstname><surname>Taylor</surname>
-  </author>
-  <author>
-   <firstname>Sebastian</firstname><surname>Hammer</surname>
-  </author>
+  <authorgroup>
+   <author>
+    <firstname>Adam</firstname><surname>Dickmeiss</surname>
+   </author>
+   <author>
+    <firstname>Heikki</firstname><surname>Levanto</surname>
+   </author>
+   <author>
+    <firstname>Marc</firstname><surname>Cromme</surname>
+   </author>
+   <author>
+    <firstname>Mike</firstname><surname>Taylor</surname>
+   </author>
+   <author>
+    <firstname>Sebastian</firstname><surname>Hammer</surname>
+   </author>
+  </authorgroup>
   <copyright>
    <year>1995-2006</year>
    <holder>Index Data</holder>
