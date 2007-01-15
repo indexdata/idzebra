@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.3 2006-12-05 09:26:37 adam Exp $
+/* $Id: zebrasrv.c,v 1.4 2007-01-15 13:01:26 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -630,7 +630,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				     rec->u.octet_aligned->len,
 				     rec->u.octet_aligned->buf);
 		    }
-                    if (oident && oident->value != VAL_TEXT_XML)
+                    if (oident && oident->value != VAL_TEXT_XML 
+                        && oident->value != VAL_SUTRS)
                     {
                         rr->errcode = YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
                         rr->errstring = "only XML update supported";
