@@ -1,5 +1,5 @@
-/* $Id: attrfind.h,v 1.2 2006-08-14 10:40:12 adam Exp $
-   Copyright (C) 2005-2006
+/* $Id: attrfind.h,v 1.3 2007-01-15 20:08:24 adam Exp $
+   Copyright (C) 2005-2007
    Index Data ApS
 
 This file is part of the Zebra server.

@@ -1,5 +1,5 @@
-/* $Id: testlib.h,v 1.23 2006-10-29 17:20:01 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: testlib.h,v 1.24 2007-01-15 20:08:26 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

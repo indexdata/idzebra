@@ -1,5 +1,5 @@
-/* $Id: isam-codec.h,v 1.5 2006-10-29 17:20:00 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: isam-codec.h,v 1.6 2007-01-15 20:08:24 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

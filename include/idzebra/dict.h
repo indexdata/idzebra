@@ -1,5 +1,5 @@
-/* $Id: dict.h,v 1.13 2006-12-12 13:42:23 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: dict.h,v 1.14 2007-01-15 20:08:24 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

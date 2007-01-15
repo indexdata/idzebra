@@ -1,5 +1,5 @@
-/* $Id: data1.h,v 1.20 2006-12-22 13:57:26 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: data1.h,v 1.21 2007-01-15 20:08:24 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

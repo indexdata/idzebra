@@ -1,5 +1,5 @@
-/* $Id: reckeys.h,v 1.8 2006-11-21 22:17:49 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: reckeys.h,v 1.9 2007-01-15 20:08:25 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

@@ -1,5 +1,5 @@
-/* $Id: version.h,v 1.13 2006-11-29 10:24:01 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: version.h,v 1.14 2007-01-15 20:08:24 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define ZEBRAVER "2.0.7"
 
-#define ZEBRADATE "$Date: 2006-11-29 10:24:01 $"
+#define ZEBRADATE "$Date: 2007-01-15 20:08:24 $"
 
 #endif
 /*

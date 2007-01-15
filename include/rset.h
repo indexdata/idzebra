@@ -1,5 +1,5 @@
-/* $Id: rset.h,v 1.61 2006-08-14 10:40:12 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: rset.h,v 1.62 2007-01-15 20:08:24 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

@@ -1,5 +1,5 @@
-/* $Id: charmap.h,v 1.17 2006-09-21 20:22:33 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: charmap.h,v 1.18 2007-01-15 20:08:24 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

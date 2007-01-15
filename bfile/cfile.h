@@ -1,5 +1,5 @@
-/* $Id: cfile.h,v 1.21 2006-11-14 08:12:06 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: cfile.h,v 1.22 2007-01-15 20:08:23 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

@@ -1,5 +1,5 @@
-/* $Id: dfap.h,v 1.14 2006-08-14 10:40:08 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: dfap.h,v 1.15 2007-01-15 20:08:23 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.
