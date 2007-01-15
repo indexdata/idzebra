@@ -1,3 +1,12 @@
+
+For searches, do not truncate more than at most 'truncmax' terms in one
+single term with right-truncation/regular attribute. By default, 'truncmax',
+is 10000.
+
+Bug #781: Easier tracking of result sets. We only do this when mkstemp
+is available (most moderun Unixes supports this). The PID is included
+in filename : tempdir/zrs_PID_XXXXXX.
+
 Added support for specification of staticrank for grs-class of filters.
 This is enabled by using 'staticrank indexname' in .abs. Contents of
 indexname (elm ... indexname:w) is then used as value for staticrank.
