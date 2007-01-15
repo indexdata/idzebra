@@ -1,3 +1,4 @@
+--- 2.0.8 2007/01/15
 
 For searches, do not truncate more than at most 'truncmax' terms in one
 single term with right-truncation/regular attribute. By default, 'truncmax',

@@ -1,6 +1,6 @@
-; $Id: zebra.nsi,v 1.37 2006-11-28 11:42:13 adam Exp $
+; $Id: zebra.nsi,v 1.38 2007-01-15 20:14:38 adam Exp $
 
-!define VERSION "2.0.6"
+!define VERSION "2.0.8"
 
 ; VS 2005
 ; !define VS_RUNTIME_DLL      "c:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\msvcr80.dll"
