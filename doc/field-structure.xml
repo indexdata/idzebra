@@ -1,5 +1,5 @@
  <chapter id="fields-and-charsets">
-  <!-- $Id: field-structure.xml,v 1.10 2006-11-28 14:37:45 marc Exp $ -->
+  <!-- $Id: field-structure.xml,v 1.11 2007-01-15 14:51:04 adam Exp $ -->
   <title>Field Structure and Character Sets
   </title>
   
@@ -154,7 +154,7 @@
     and/or modify maps according to their needs.  
    </para>
 
-   <table id="querymodel-attribute-sets-table" frame="top">
+   <table id="character-map-table" frame="top">
      <title>Character maps predefined in Zebra</title>
       <tgroup cols="3">
        <thead>
