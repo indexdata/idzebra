@@ -1,5 +1,5 @@
-/* $Id: zsets.c,v 1.114 2006-12-18 23:40:08 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: zsets.c,v 1.115 2007-01-15 15:10:17 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

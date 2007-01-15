@@ -1,5 +1,5 @@
-/* $Id: rsprox.c,v 1.32 2006-08-14 10:40:21 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: rsprox.c,v 1.33 2007-01-15 15:10:19 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

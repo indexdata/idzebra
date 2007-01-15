@@ -1,5 +1,5 @@
-/* $Id: isam_methods.c,v 1.1 2006-11-21 17:55:47 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: isam_methods.c,v 1.2 2007-01-15 15:10:16 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

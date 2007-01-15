@@ -1,5 +1,5 @@
-/* $Id: rsmultiandor.c,v 1.26 2006-09-08 14:40:55 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: rsmultiandor.c,v 1.27 2007-01-15 15:10:19 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

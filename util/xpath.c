@@ -1,5 +1,5 @@
-/* $Id: xpath.c,v 1.7 2006-08-14 10:40:34 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: xpath.c,v 1.8 2007-01-15 15:10:26 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

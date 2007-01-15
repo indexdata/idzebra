@@ -1,5 +1,5 @@
-/* $Id: xslt5.c,v 1.3 2006-12-16 09:04:28 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: xslt5.c,v 1.4 2007-01-15 15:10:26 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

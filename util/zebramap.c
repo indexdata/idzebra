@@ -1,5 +1,5 @@
-/* $Id: zebramap.c,v 1.54 2006-12-05 09:24:47 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: zebramap.c,v 1.55 2007-01-15 15:10:26 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
    This file is part of the Zebra server.

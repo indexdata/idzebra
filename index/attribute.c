@@ -1,5 +1,5 @@
-/* $Id: attribute.c,v 1.27 2006-09-20 10:51:25 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: attribute.c,v 1.28 2007-01-15 15:10:16 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

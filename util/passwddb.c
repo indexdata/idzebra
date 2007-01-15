@@ -1,5 +1,5 @@
-/* $Id: passwddb.c,v 1.15 2006-10-11 20:18:47 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: passwddb.c,v 1.16 2007-01-15 15:10:26 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

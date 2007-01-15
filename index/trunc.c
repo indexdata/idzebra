@@ -1,5 +1,5 @@
-/* $Id: trunc.c,v 1.67 2006-08-14 10:40:15 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: trunc.c,v 1.68 2007-01-15 15:10:17 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

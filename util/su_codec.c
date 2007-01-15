@@ -1,5 +1,5 @@
-/* $Id: su_codec.c,v 1.1 2006-11-21 14:32:38 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: su_codec.c,v 1.2 2007-01-15 15:10:26 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

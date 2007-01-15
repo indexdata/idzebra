@@ -1,5 +1,5 @@
-/* $Id: rstemp.c,v 1.70 2006-12-22 19:47:36 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: rstemp.c,v 1.71 2007-01-15 15:10:19 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

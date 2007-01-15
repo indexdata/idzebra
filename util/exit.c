@@ -1,5 +1,5 @@
-/* $Id: exit.c,v 1.1 2006-11-14 08:12:10 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: exit.c,v 1.2 2007-01-15 15:10:26 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

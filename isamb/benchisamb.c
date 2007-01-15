@@ -1,5 +1,5 @@
-/* $Id: benchisamb.c,v 1.5 2007-01-05 10:45:12 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: benchisamb.c,v 1.6 2007-01-15 15:10:17 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

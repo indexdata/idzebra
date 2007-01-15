@@ -1,5 +1,5 @@
-/* $Id: res.c,v 1.55 2007-01-05 16:11:25 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: res.c,v 1.56 2007-01-15 15:10:26 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

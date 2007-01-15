@@ -1,5 +1,5 @@
-/* $Id: zebraidx.c,v 1.3 2006-12-22 12:14:25 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: zebraidx.c,v 1.4 2007-01-15 15:10:17 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -233,7 +233,7 @@ int main (int argc, char **argv)
         else if (ret == 'V')
         {
             printf("Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
-	    printf(" (C) 1994-2006, Index Data ApS\n");
+	    printf(" (C) 1994-2007, Index Data ApS\n");
 #ifdef WIN32
 #ifdef _DEBUG
             printf(" WIN32 Debug\n");

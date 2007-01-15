@@ -1,5 +1,5 @@
-/* $Id: isamb.c,v 1.90 2006-12-19 00:25:41 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: isamb.c,v 1.91 2007-01-15 15:10:17 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

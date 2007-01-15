@@ -1,5 +1,5 @@
-/* $Id: rpnscan.c,v 1.4 2006-10-29 17:18:05 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: rpnscan.c,v 1.5 2007-01-15 15:10:17 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

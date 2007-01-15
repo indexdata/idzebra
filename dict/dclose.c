@@ -1,5 +1,5 @@
-/* $Id: dclose.c,v 1.11 2006-11-14 08:12:07 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: dclose.c,v 1.12 2007-01-15 15:10:15 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

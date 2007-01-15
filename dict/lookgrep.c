@@ -1,5 +1,5 @@
-/* $Id: lookgrep.c,v 1.33 2006-08-29 13:36:26 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: lookgrep.c,v 1.34 2007-01-15 15:10:15 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

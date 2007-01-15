@@ -1,5 +1,5 @@
-/* $Id: tstpass.c,v 1.1 2006-10-11 20:19:31 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: tstpass.c,v 1.2 2007-01-15 15:10:26 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

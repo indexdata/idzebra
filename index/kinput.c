@@ -1,5 +1,5 @@
-/* $Id: kinput.c,v 1.81 2007-01-05 10:45:11 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: kinput.c,v 1.82 2007-01-15 15:10:16 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

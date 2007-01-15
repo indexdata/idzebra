@@ -1,5 +1,5 @@
-/* $Id: open.c,v 1.28 2006-12-12 13:42:24 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: open.c,v 1.29 2007-01-15 15:10:15 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

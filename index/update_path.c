@@ -1,5 +1,5 @@
-/* $Id: update_path.c,v 1.2 2006-08-14 10:40:15 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: update_path.c,v 1.3 2007-01-15 15:10:17 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

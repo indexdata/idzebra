@@ -1,5 +1,5 @@
-/* $Id: grs.xml.c,v 1.5 2006-08-14 10:40:26 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: grs.xml.c,v 1.6 2007-01-15 15:10:22 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

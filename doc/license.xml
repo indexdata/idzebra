@@ -1,10 +1,10 @@
 <appendix id="license">
- <!-- $Id: license.xml,v 1.13 2006-09-22 12:34:45 adam Exp $ -->
+ <!-- $Id: license.xml,v 1.14 2007-01-15 15:10:16 adam Exp $ -->
  <title>License</title>
 
   <para>
    Zebra Server, 
-  Copyright &copy; 1995-2006 Index Data ApS.
+  Copyright &copy; 1995-2007 Index Data ApS.
  </para>
 
   <para>

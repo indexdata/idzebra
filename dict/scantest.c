@@ -1,5 +1,5 @@
-/* $Id: scantest.c,v 1.9 2006-09-05 12:50:56 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: scantest.c,v 1.10 2007-01-15 15:10:15 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

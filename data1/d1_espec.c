@@ -1,5 +1,5 @@
-/* $Id: d1_espec.c,v 1.12 2006-08-14 10:40:06 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: d1_espec.c,v 1.13 2007-01-15 15:10:14 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

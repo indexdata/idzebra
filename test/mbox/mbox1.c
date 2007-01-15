@@ -1,5 +1,5 @@
-/* $Id: mbox1.c,v 1.6 2006-10-30 14:05:31 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: mbox1.c,v 1.7 2007-01-15 15:10:23 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

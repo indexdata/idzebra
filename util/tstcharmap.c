@@ -1,5 +1,5 @@
-/* $Id: tstcharmap.c,v 1.6 2006-10-29 17:20:02 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: tstcharmap.c,v 1.7 2007-01-15 15:10:26 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

@@ -1,5 +1,5 @@
-/* $Id: dfa.c,v 1.39 2006-10-12 12:27:28 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: dfa.c,v 1.40 2007-01-15 15:10:15 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.

@@ -1,5 +1,5 @@
-/* $Id: t10.c,v 1.13 2006-10-23 09:31:48 adam Exp $
-   Copyright (C) 1995-2006
+/* $Id: t10.c,v 1.14 2007-01-15 15:10:20 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
 
 This file is part of the Zebra server.
