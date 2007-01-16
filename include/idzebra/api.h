@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.42 2007-01-15 20:08:24 adam Exp $
+/* $Id: api.h,v 1.43 2007-01-16 15:01:15 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -179,6 +179,22 @@ ZEBRA_RES zebra_set_approx_limit(ZebraHandle zh, zint approx_limit);
 YAZ_EXPORT
 ZEBRA_RES zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
 		           const char *setname, zint *hits);
+
+/** \brief Search using RPN Query structure (from ASN.1)
+    \param zh session handle
+    \param o ODR handle
+    \param query RPN query using YAZ structure
+    \param setname name of resultset
+    \param hits number of hits is returned
+    \param estimated_hit_count whether hit count is an estimate
+    \param partial_resultset whether result is only partially evaluated
+*/
+YAZ_EXPORT
+ZEBRA_RES zebra_search_RPN_x(ZebraHandle zh, ODR o, Z_RPNQuery *query,
+                           const char *setname, zint *hits,
+                           int *estimated_hit_count,
+                           int *partial_resultset);
+
 
 /** \brief Search using RPN Query structure (from ASN.1)
     \param zh session handle

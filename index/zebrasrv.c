@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.5 2007-01-15 15:10:17 adam Exp $
+/* $Id: zebrasrv.c,v 1.6 2007-01-16 15:01:15 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -278,8 +278,10 @@ int bend_search(void *handle, bend_search_rr *r)
     switch (r->query->which)
     {
     case Z_Query_type_1: case Z_Query_type_101:
-	res = zebra_search_RPN(zh, r->stream, r->query->u.type_1,
-			       r->setname, &zhits);
+	res = zebra_search_RPN_x(zh, r->stream, r->query->u.type_1,
+                                 r->setname, &zhits,
+                                 &r->estimated_hit_count,
+                                 &r->partial_resultset);
 	if (res != ZEBRA_OK)
 	    zebra_result(zh, &r->errcode, &r->errstring);
 	else

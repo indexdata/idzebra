@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.242 2007-01-15 15:10:17 adam Exp $
+/* $Id: zebraapi.c,v 1.243 2007-01-16 15:01:15 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1015,8 +1015,10 @@ ZEBRA_RES zebra_set_approx_limit(ZebraHandle zh, zint approx_limit)
     return ZEBRA_OK;
 }
 
-ZEBRA_RES zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
-			   const char *setname, zint *hits)
+ZEBRA_RES zebra_search_RPN_x(ZebraHandle zh, ODR o, Z_RPNQuery *query,
+                             const char *setname, zint *hits,
+                             int *estimated_hit_count,
+                             int *partial_resultset)
 {
     ZEBRA_RES r;
     
@@ -1027,17 +1029,25 @@ ZEBRA_RES zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
     assert(hits);
     assert(setname);
     yaz_log(log_level, "zebra_search_rpn");
-    zh->hits = 0;
-    *hits = 0;
 
     if (zebra_begin_read(zh) == ZEBRA_FAIL)
 	return ZEBRA_FAIL;
 
     r = resultSetAddRPN(zh, odr_extract_mem(o), query, 
-			zh->num_basenames, zh->basenames, setname);
+			zh->num_basenames, zh->basenames, setname,
+                        hits, estimated_hit_count, partial_resultset);
     zebra_end_read(zh);
-    *hits = zh->hits;
     return r;
+}
+
+ZEBRA_RES zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
+                           const char *setname, zint *hits)
+{
+    int estimated_hit_count;
+    int partial_resultset;
+    return zebra_search_RPN_x(zh, o, query, setname, hits,
+                              &estimated_hit_count,
+                              &partial_resultset);
 }
 
 ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
@@ -2386,6 +2396,7 @@ ZEBRA_RES zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
     ZEBRA_RES res = ZEBRA_OK;
     Z_RPNQuery *query;
     ODR odr;
+
 
     ZEBRA_CHECK_HANDLE(zh);
 

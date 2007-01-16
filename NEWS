@@ -1,3 +1,6 @@
+For estimated hit counts, Zebra returns resultSetStatus=estimtate as
+part of SearchResponse. Requires YAZ 2.1.47 or later.
+
 --- 2.0.8 2007/01/15
 
 For searches, do not truncate more than at most 'truncmax' terms in one

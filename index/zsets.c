@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.115 2007-01-15 15:10:17 adam Exp $
+/* $Id: zsets.c,v 1.116 2007-01-16 15:01:15 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -58,6 +58,7 @@ struct zebra_set {
     int term_entries_max;
     struct zebra_set *next;
     int locked;
+    int estimated_hit_count;
 
     zint cache_position;  /* last position */
     RSFD cache_rfd;       /* rfd (NULL if not existing) */
@@ -95,16 +96,14 @@ static void loglevels(void)
 }
 
 
-ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
-			  Z_RPNQuery *rpn, ZebraSet sset)
+static ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
+                                 Z_RPNQuery *rpn, ZebraSet sset)
 {
     RSET rset = 0;
     oident *attrset;
     Z_SortKeySpecList *sort_sequence;
     int sort_status, i;
     ZEBRA_RES res = ZEBRA_OK;
-
-    zh->hits = 0;
 
     sort_sequence = (Z_SortKeySpecList *)
         nmem_malloc(nmem, sizeof(*sort_sequence));
@@ -149,13 +148,17 @@ ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
 
 ZEBRA_RES resultSetAddRPN (ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
 			   int num_bases, char **basenames,
-			   const char *setname)
+			   const char *setname,
+                           zint *hits, int *estimated_hit_count,
+                           int *partial_resultset)
 {
     ZebraSet zebraSet;
     int i;
     ZEBRA_RES res;
 
-    zh->hits = 0;
+    *hits = 0;
+    *estimated_hit_count = 0;
+    *partial_resultset = 0;
 
     zebraSet = resultSetAdd(zh, setname, 1);
     if (!zebraSet)
@@ -173,7 +176,10 @@ ZEBRA_RES resultSetAddRPN (ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
 
     res = resultSetSearch(zh, zebraSet->nmem, zebraSet->rset_nmem,
 			  rpn, zebraSet);
-    zh->hits = zebraSet->hits;
+    *hits = zebraSet->hits;
+    if (zebraSet->estimated_hit_count)
+        *estimated_hit_count = 1;
+
     if (zebraSet->rset)
         zebraSet->rpn = rpn;
     zebraSet->locked = 0;
@@ -273,6 +279,7 @@ ZebraSet resultSetAdd(ZebraHandle zh, const char *name, int ov)
     s->cache_position = 0;
     s->cache_rfd = 0;
     s->approx_limit = zh->approx_limit;
+    s->estimated_hit_count = 0;
     return s;
 }
 
@@ -987,6 +994,7 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
     sort_info = zebraSet->sort_info;
     sort_info->num_entries = 0;
     zebraSet->hits = 0;
+    zebraSet->estimated_hit_count = 0;
     rset_getterms(rset, 0, 0, &n);
     terms = (TERMID *) nmem_malloc(nmem, sizeof(*terms)*n);
     rset_getterms(rset, terms, n, &numTerms);
@@ -1023,7 +1031,10 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 	    if (this_sys != psysno) 
 	    {   /* new record .. */
 		if (rfd->counted_items > rset->hits_limit)
+                {
+                    zebraSet->estimated_hit_count = 1;
 		    break;
+                }
 		if (psysno)
 		{   /* only if we did have a previous record */
 		    score = (*rc->calc) (handle, psysno, pstaticrank,
