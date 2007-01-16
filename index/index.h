@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.191 2007-01-16 15:01:15 adam Exp $
+/* $Id: index.h,v 1.192 2007-01-16 15:31:23 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -199,6 +199,7 @@ struct zebra_session {
     char *dbaccesslist;
     int errCode;
     char *errString;
+    int partial_result;
 #if HAVE_SYS_TIMES_H
     struct tms tms1;
     struct tms tms2;    
@@ -286,8 +287,7 @@ ZebraSet resultSetGet(ZebraHandle zh, const char *name);
 ZEBRA_RES resultSetAddRPN(ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
                           int num_bases, char **basenames,
                           const char *setname,
-                          zint *hits, int *estimated_hit_count,
-                          int *partial_resultset);
+                          zint *hits, int *estimated_hit_count);
 RSET resultSetRef(ZebraHandle zh, const char *resultSetId);
 void resultSetDestroy(ZebraHandle zh, int num_names, char **names,
 		       int *statuses);
@@ -411,6 +411,8 @@ void rpn_char_map_prepare(struct zebra_register *reg, int reg_type,
 ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			    char *termz);
 
+
+void zebra_set_partial_result(ZebraHandle zh);
 
 int zebra_check_res(Res res);
 

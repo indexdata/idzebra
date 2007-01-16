@@ -1,5 +1,8 @@
-For estimated hit counts, Zebra returns resultSetStatus=estimtate as
-part of SearchResponse. Requires YAZ 2.1.47 or later.
+For truncations being limited (abort at truncmax terms), zebrasrv returns
+SearchResponse with resultSetStatus=subset.
+
+For estimated hit counts, zebrasrv returns SearchResponse with 
+resultSetStatus=estimate.
 
 --- 2.0.8 2007/01/15
 

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.243 2007-01-16 15:01:15 adam Exp $
+/* $Id: zebraapi.c,v 1.244 2007-01-16 15:31:23 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1015,6 +1015,11 @@ ZEBRA_RES zebra_set_approx_limit(ZebraHandle zh, zint approx_limit)
     return ZEBRA_OK;
 }
 
+void zebra_set_partial_result(ZebraHandle zh)
+{
+    zh->partial_result = 1;
+}
+
 ZEBRA_RES zebra_search_RPN_x(ZebraHandle zh, ODR o, Z_RPNQuery *query,
                              const char *setname, zint *hits,
                              int *estimated_hit_count,
@@ -1030,12 +1035,16 @@ ZEBRA_RES zebra_search_RPN_x(ZebraHandle zh, ODR o, Z_RPNQuery *query,
     assert(setname);
     yaz_log(log_level, "zebra_search_rpn");
 
+    zh->partial_result = 0;
+
     if (zebra_begin_read(zh) == ZEBRA_FAIL)
 	return ZEBRA_FAIL;
 
     r = resultSetAddRPN(zh, odr_extract_mem(o), query, 
 			zh->num_basenames, zh->basenames, setname,
-                        hits, estimated_hit_count, partial_resultset);
+                        hits, estimated_hit_count);
+
+    *partial_resultset = zh->partial_result;
     zebra_end_read(zh);
     return r;
 }

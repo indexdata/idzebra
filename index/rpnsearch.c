@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.6 2007-01-15 15:10:17 adam Exp $
+/* $Id: rpnsearch.c,v 1.7 2007-01-16 15:31:23 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1183,7 +1183,9 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                              grep_info, &max_pos, 
                              ord_len /* number of "exact" chars */,
                              grep_handle);
-        if (r)
+        if (r == 1)
+            zebra_set_partial_result(zh);
+        else if (r)
             yaz_log(YLOG_WARN, "dict_lookup_grep fail %d", r);
     }
     if (!bases_ok)
@@ -1699,7 +1701,10 @@ static int numeric_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     yaz_log(log_level_rpn, "dict_lookup_grep: %s", term_tmp);
     r = dict_lookup_grep(zh->reg->dict, term_dict, 0, grep_info, max_pos,
                           0, grep_handle);
-    if (r != 0 && r != 1)
+
+    if (r == 1)
+        zebra_set_partial_result(zh);
+    else if (r)
         yaz_log(YLOG_WARN, "dict_lookup_grep fail, rel = gt: %d", r);
     yaz_log(log_level_rpn, "%d positions", grep_info->isam_p_indx);
     return 1;

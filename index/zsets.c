@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.116 2007-01-16 15:01:15 adam Exp $
+/* $Id: zsets.c,v 1.117 2007-01-16 15:31:23 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -146,11 +146,10 @@ static ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
 }
 
 
-ZEBRA_RES resultSetAddRPN (ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
-			   int num_bases, char **basenames,
-			   const char *setname,
-                           zint *hits, int *estimated_hit_count,
-                           int *partial_resultset)
+ZEBRA_RES resultSetAddRPN(ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
+                          int num_bases, char **basenames,
+                          const char *setname,
+                          zint *hits, int *estimated_hit_count)
 {
     ZebraSet zebraSet;
     int i;
@@ -158,7 +157,6 @@ ZEBRA_RES resultSetAddRPN (ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
 
     *hits = 0;
     *estimated_hit_count = 0;
-    *partial_resultset = 0;
 
     zebraSet = resultSetAdd(zh, setname, 1);
     if (!zebraSet)
