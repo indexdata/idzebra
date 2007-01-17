@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.117 2007-01-16 15:31:23 adam Exp $
+/* $Id: zsets.c,v 1.118 2007-01-17 13:22:53 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1028,6 +1028,15 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 		key_logdump_txt(log_level_searchhits, &key, termid->name);
 	    if (this_sys != psysno) 
 	    {   /* new record .. */
+                if (zh->busy_handler_func)
+                {
+                    if (zh->busy_handler_func(zh->busy_handler_data))
+                    {
+                        yaz_log(YLOG_LOG, "Session end. Stop search");
+                        zebraSet->estimated_hit_count = 1;
+                        break;
+                    }
+                }
 		if (rfd->counted_items > rset->hits_limit)
                 {
                     zebraSet->estimated_hit_count = 1;

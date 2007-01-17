@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.6 2007-01-16 15:01:15 adam Exp $
+/* $Id: zebrasrv.c,v 1.7 2007-01-17 13:22:53 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -261,6 +261,15 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
     }
 }
 
+
+static int busy_handler(void *client_data, ZebraHandle zh)
+{
+    bend_association assoc =(bend_association) client_data;    
+    if (!bend_assoc_is_alive(assoc))
+        return 1;
+    return 0;
+}
+
 int bend_search(void *handle, bend_search_rr *r)
 {
     ZebraHandle zh = (ZebraHandle) handle;
@@ -274,6 +283,7 @@ int bend_search(void *handle, bend_search_rr *r)
         zebra_result (zh, &r->errcode, &r->errstring);
         return 0;
     }
+    zebra_set_busy_handler(zh, busy_handler, r->association);
     yaz_log (YLOG_DEBUG, "ResultSet '%s'", r->setname);
     switch (r->query->which)
     {
@@ -299,6 +309,7 @@ int bend_search(void *handle, bend_search_rr *r)
     default:
         r->errcode = YAZ_BIB1_QUERY_TYPE_UNSUPP;
     }
+    zebra_set_busy_handler(zh, 0, 0);
     return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.192 2007-01-16 15:31:23 adam Exp $
+/* $Id: index.h,v 1.193 2007-01-17 13:22:53 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -233,6 +233,9 @@ struct zebra_session {
     NMEM nmem_error;
 
     struct zebra_limit *m_limit;
+
+    int (*busy_handler_func)(void *client_data);
+    void *busy_handler_data;
 };
 
 

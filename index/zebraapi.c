@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.244 2007-01-16 15:31:23 adam Exp $
+/* $Id: zebraapi.c,v 1.245 2007-01-17 13:22:53 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -142,6 +142,9 @@ ZebraHandle zebra_open(ZebraService zs, Res res)
     zh->shadow_enable = 1;
     zh->m_staticrank = 0;
     zh->m_segment_indexing = 0;
+
+    zh->busy_handler_func = 0;
+    zh->busy_handler_data = 0;
 
     default_encoding = res_get_def(zh->session_res, "encoding", "ISO-8859-1");
 
@@ -1018,6 +1021,16 @@ ZEBRA_RES zebra_set_approx_limit(ZebraHandle zh, zint approx_limit)
 void zebra_set_partial_result(ZebraHandle zh)
 {
     zh->partial_result = 1;
+}
+
+
+ZEBRA_RES zebra_set_busy_handler(ZebraHandle zh,
+                                 int (*f)(void *client_data, ZebraHandle zh),
+                                 void *client_data)
+{
+    zh->busy_handler_func = f;
+    zh->busy_handler_data = client_data;
+    return ZEBRA_OK;
 }
 
 ZEBRA_RES zebra_search_RPN_x(ZebraHandle zh, ODR o, Z_RPNQuery *query,
