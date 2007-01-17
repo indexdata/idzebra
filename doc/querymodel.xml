@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.27 2006-11-30 10:33:19 adam Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.28 2007-01-17 12:59:38 adam Exp $ -->
   <title>Query Model</title>
   
   <section id="querymodel-overview">
@@ -1532,6 +1532,12 @@
 	<entry>2.0.8</entry>
        </row>
       </tbody>
+       <row>
+	<entry>Maximum number of truncated terms (truncmax)</entry>
+	<entry>13</entry>
+	<entry>search</entry>
+	<entry>2.0.10</entry>
+       </row>
      </tgroup>
     </table>      
     

@@ -1,3 +1,6 @@
+For searches, allow truncmax value to be controlled with attribute 13.
+If given, that overrides the value of 'truncmax'.
+
 For truncations being limited (abort at truncmax terms), zebrasrv returns
 SearchResponse with resultSetStatus=subset.
 

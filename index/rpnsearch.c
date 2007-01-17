@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.7 2007-01-16 15:31:23 adam Exp $
+/* $Id: rpnsearch.c,v 1.8 2007-01-17 12:59:38 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1210,10 +1210,6 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
 				   struct grep_info *grep_info,
 				   int reg_type)
 {
-    AttrType termset;
-    int termset_value_numeric;
-    const char *termset_value_string;
-
 #ifdef TERM_COUNT
     grep_info->term_no = 0;
 #endif
@@ -1223,35 +1219,50 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
     grep_info->zh = zh;
     grep_info->reg_type = reg_type;
     grep_info->termset = 0;
-    if (!zapt)
-        return ZEBRA_OK;
-    attr_init_APT(&termset, zapt, 8);
-    termset_value_numeric =
-        attr_find_ex(&termset, NULL, &termset_value_string);
-    if (termset_value_numeric != -1)
+    if (zapt)
     {
+        AttrType truncmax;
+        int truncmax_value;
+
+        attr_init_APT(&truncmax, zapt, 13);
+        truncmax_value = attr_find(&truncmax, NULL);
+        if (truncmax_value != -1)
+            grep_info->trunc_max = truncmax_value;
+    }
+    if (zapt)
+    {
+        AttrType termset;
+        int termset_value_numeric;
+        const char *termset_value_string;
+
+        attr_init_APT(&termset, zapt, 8);
+        termset_value_numeric =
+            attr_find_ex(&termset, NULL, &termset_value_string);
+        if (termset_value_numeric != -1)
+        {
 #if TERMSET_DISABLE
-        zebra_setError(zh, YAZ_BIB1_UNSUPP_SEARCH, "termset");
-        return ZEBRA_FAIL;
-#else
-        char resname[32];
-        const char *termset_name = 0;
-        if (termset_value_numeric != -2)
-        {
-    
-            sprintf(resname, "%d", termset_value_numeric);
-            termset_name = resname;
-        }
-        else
-            termset_name = termset_value_string;
-        yaz_log(log_level_rpn, "creating termset set %s", termset_name);
-        grep_info->termset = resultSetAdd(zh, termset_name, 1);
-        if (!grep_info->termset)
-        {
-	    zebra_setError(zh, YAZ_BIB1_ILLEGAL_RESULT_SET_NAME, termset_name);
+            zebra_setError(zh, YAZ_BIB1_UNSUPP_SEARCH, "termset");
             return ZEBRA_FAIL;
-        }
+#else
+            char resname[32];
+            const char *termset_name = 0;
+            if (termset_value_numeric != -2)
+            {
+                
+                sprintf(resname, "%d", termset_value_numeric);
+                termset_name = resname;
+            }
+            else
+            termset_name = termset_value_string;
+            yaz_log(log_level_rpn, "creating termset set %s", termset_name);
+            grep_info->termset = resultSetAdd(zh, termset_name, 1);
+            if (!grep_info->termset)
+            {
+                zebra_setError(zh, YAZ_BIB1_ILLEGAL_RESULT_SET_NAME, termset_name);
+                return ZEBRA_FAIL;
+            }
 #endif
+        }
     }
     return ZEBRA_OK;
 }
