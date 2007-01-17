@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.118 2007-01-17 13:22:53 adam Exp $
+/* $Id: zsets.c,v 1.119 2007-01-17 15:35:48 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -936,6 +936,14 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
 	kno++;
         if (this_sys != psysno)
         {
+            if ((sset->hits & 255) == 0 && zh->break_handler_func)
+            {
+                if (zh->break_handler_func(zh->break_handler_data))
+                {
+                    rset_set_hits_limit(rset, 0);
+                    break;
+                }
+            }
             (sset->hits)++;
             psysno = this_sys;
             resultSetInsertSort(zh, sset,
@@ -997,7 +1005,6 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
     terms = (TERMID *) nmem_malloc(nmem, sizeof(*terms)*n);
     rset_getterms(rset, terms, n, &numTerms);
 
-
     rank_class = zebraRankLookup(zh, rank_handler_name);
     if (!rank_class)
     {
@@ -1011,10 +1018,8 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 	struct rank_control *rc = rank_class->control;
 	int score;
 	zint count = 0;
-	
-	void *handle =
-	    (*rc->begin) (zh->reg, rank_class->class_handle, rset, nmem,
-			  terms, numTerms);
+        void *handle = (*rc->begin) (zh->reg, rank_class->class_handle, rset,
+                                     nmem, terms, numTerms);
 	zint psysno = 0;  /* previous doc id / sys no */
 	zint pstaticrank = 0; /* previous static rank */
 	int stop_flag = 0;
@@ -1028,20 +1033,16 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 		key_logdump_txt(log_level_searchhits, &key, termid->name);
 	    if (this_sys != psysno) 
 	    {   /* new record .. */
-                if (zh->busy_handler_func)
+                if (!(rfd->counted_items & 255) && zh->break_handler_func)
                 {
-                    if (zh->busy_handler_func(zh->busy_handler_data))
+                    if (zh->break_handler_func(zh->break_handler_data))
                     {
-                        yaz_log(YLOG_LOG, "Session end. Stop search");
-                        zebraSet->estimated_hit_count = 1;
-                        break;
+                        yaz_log(YLOG_LOG, "Aborted search");
+                        stop_flag = 1;
                     }
                 }
 		if (rfd->counted_items > rset->hits_limit)
-                {
-                    zebraSet->estimated_hit_count = 1;
-		    break;
-                }
+                    stop_flag = 1;
 		if (psysno)
 		{   /* only if we did have a previous record */
 		    score = (*rc->calc) (handle, psysno, pstaticrank,
@@ -1049,9 +1050,13 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 		    /* insert the hit. A=Ascending */
 		    resultSetInsertRank (zh, sort_info, psysno, score, 'A');
 		    count++;
-		    if (stop_flag)
-			break;
 		}
+                if (stop_flag)
+                {
+                    zebraSet->estimated_hit_count = 1;
+                    rset_set_hits_limit(rset, 0);
+                    break;
+                }
 		psysno = this_sys;
 		if (zh->m_staticrank)
 		    pstaticrank = key.mem[0];

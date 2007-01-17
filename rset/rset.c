@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.57 2007-01-15 15:10:19 adam Exp $
+/* $Id: rset.c,v 1.58 2007-01-17 15:35:48 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -65,19 +65,43 @@ RSFD rfd_create_base(RSET rs)
     return rnew;
 }
 
+static void rset_close_int(RSET rs, RSFD rfd)
+{
+    RSFD *pfd;
+    (*rs->control->f_close)(rfd);
+    
+    yaz_log(log_level, "rfd_delete_base: rfd=%p rs=%p priv=%p fl=%p",
+            rfd, rs, rfd->priv, rs->free_list); 
+    for (pfd = &rs->use_list; *pfd; pfd = &(*pfd)->next)
+	if (*pfd == rfd)
+	{
+	    *pfd = (*pfd)->next;
+	    rfd->next = rs->free_list;
+	    rs->free_list = rfd;
+	    return;
+	}
+    yaz_log(YLOG_WARN, "rset_close handle not found. type=%s",
+	    rs->control->desc);
+}
+
+void rset_set_hits_limit(RSET rs, zint l)
+{
+    rs->hits_limit = l;
+}
+
 /**
    \brief Closes a result set RFD handle
    \param rfd the RFD handle.
 */
 void rset_close(RSFD rfd)
 {
-    RSFD *pfd;
     RSET rs = rfd->rset;
 
     if (rs->hits_count == 0)
     {
 	TERMID termid;
 	char buf[100];
+
 	while(rfd->counted_items <= rs->hits_limit
 	      && rset_default_read(rfd, buf, &termid))
 	    ;
@@ -116,20 +140,7 @@ void rset_close(RSFD rfd)
 	yaz_log(log_level, "rset_close p=%p count=" ZINT_FORMAT, rs,
 		rs->hits_count);
     }
-    (*rs->control->f_close)(rfd);
-    
-    yaz_log(log_level, "rfd_delete_base: rfd=%p rs=%p priv=%p fl=%p",
-            rfd, rs, rfd->priv, rs->free_list); 
-    for (pfd = &rs->use_list; *pfd; pfd = &(*pfd)->next)
-	if (*pfd == rfd)
-	{
-	    *pfd = (*pfd)->next;
-	    rfd->next = rs->free_list;
-	    rs->free_list = rfd;
-	    return;
-	}
-    yaz_log(YLOG_WARN, "rset_close handle not found. type=%s",
-	    rs->control->desc);
+    rset_close_int(rs, rfd);
 }
 
 /**
@@ -261,7 +272,7 @@ zint rset_count(RSET rs)
     double cur, tot;
     RSFD rfd = rset_open(rs, 0);
     rset_pos(rfd, &cur, &tot);
-    rset_close(rfd);
+    rset_close_int(rs, rfd);
     return (zint) tot;
 }
 

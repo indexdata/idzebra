@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.45 2007-01-17 13:51:36 adam Exp $
+/* $Id: api.h,v 1.46 2007-01-17 15:35:47 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -498,9 +498,9 @@ YAZ_EXPORT
 ZEBRA_RES zebra_set_limit(ZebraHandle zh, int complement_flag, zint *ids);
 
 YAZ_EXPORT
-ZEBRA_RES zebra_set_busy_handler(ZebraHandle zh, 
-                                 int (*f)(void *client_data),
-                                 void *client_data);
+ZEBRA_RES zebra_set_break_handler(ZebraHandle zh, 
+                                  int (*f)(void *client_data),
+                                  void *client_data);
 
 YAZ_END_CDECL				      
 

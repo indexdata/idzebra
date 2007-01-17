@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.193 2007-01-17 13:22:53 adam Exp $
+/* $Id: index.h,v 1.194 2007-01-17 15:35:48 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -234,8 +234,8 @@ struct zebra_session {
 
     struct zebra_limit *m_limit;
 
-    int (*busy_handler_func)(void *client_data);
-    void *busy_handler_data;
+    int (*break_handler_func)(void *client_data);
+    void *break_handler_data;
 };
 
 

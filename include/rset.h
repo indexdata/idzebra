@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.62 2007-01-15 20:08:24 adam Exp $
+/* $Id: rset.h,v 1.63 2007-01-17 15:35:47 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -259,6 +259,8 @@ RSET rsisams_create(NMEM nmem, struct rset_key_control *kcontrol,
 		    int scope, ISAMS is, ISAM_P pos, TERMID term);
 
 void rset_visit(RSET rset, int level);
+
+void rset_set_hits_limit(RSET rs, zint l);
 
 YAZ_END_CDECL
 
