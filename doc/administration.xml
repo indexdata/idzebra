@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.47 2006-11-30 10:33:19 adam Exp $ -->
+ <!-- $Id: administration.xml,v 1.48 2007-01-17 13:31:36 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -1531,6 +1531,8 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     <screen>
      shadow: directoryname: size (e.g. 1000M)
     </screen>
+     See <xref linkend="zebra-cfg"/> for additional information on
+     these configuration options.
    </para>
    <note>
     <para>
@@ -1611,8 +1613,10 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
         <row>
          <entry><literal>recordIdNumber </literal></entry>
          <entry><literal>positive number</literal></entry>
-         <entry>Zebra's internal system number, only for update
-         actions.
+         <entry>Zebra's internal system number,
+         not allowed for  <literal>recordInsert</literal> or 
+         <literal>specialUpdate</literal> actions which result in fresh
+         record inserts.
         </entry>
         </row>
         <row>
@@ -1635,25 +1639,26 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     <literal>recordDelete</literal> (will fail if the record does not
        exist), and
     <literal>specialUpdate</literal> (will insert or update the record
-       as needed).
+       as needed, record deletion is not possible).
    </para>
 
     <para>
-     During a  <literal>recordInsert</literal> action, the
+     During all actions, the
      usual rules for internal record ID generation apply, unless an
      optional <literal>recordIdNumber</literal> Zebra internal ID or a
     <literal>recordIdOpaque</literal> string identifier is assigned. 
      The default ID generation is
      configured using the <literal>recordId:</literal> from
-     <filename>zebra.cfg</filename>.     
+     <filename>zebra.cfg</filename>.  
+     See <xref linkend="zebra-cfg"/>.   
     </para>
 
    <para>
-    The actions <literal>recordReplace</literal> or
-    <literal>recordDelete</literal> need specification of the additional 
-    <literal>recordIdNumber</literal> parameter, which must be an
-    existing Zebra internal system ID number, or the optional 
-     <literal>recordIdOpaque</literal> string parameter.
+    Setting of the <literal>recordIdNumber</literal> parameter, 
+    which must be an existing Zebra internal system ID number, is not
+    allowed during any  <literal>recordInsert</literal> or 
+     <literal>specialUpdate</literal> action resulting in fresh record
+    inserts.
     </para>
 
     <para>
@@ -1664,11 +1669,16 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     <literal>xmlns:id="http://www.indexdata.dk/zebra/"</literal>,
     where it can be picked up for later record updates or deletes. 
     </para>
-    <para>
-     Records indexed with the <literal>alvis</literal> filter
-     have similar means to discover the internal Zebra ID.
-    </para>
  
+    <para>
+     A new element set for retrieval of internal record
+     data has been added, which can be used to access minimal records
+     containing only the <literal>recordIdNumber</literal> Zebra
+     internal ID, or the <literal>recordIdOpaque</literal> string
+     identifier. This works for any indexing filter used.
+     See <xref linkend="special-retrieval"/>.
+    </para>
+
    <para>
      The <literal>recordIdOpaque</literal> string parameter
      is an client-supplied, opaque record
