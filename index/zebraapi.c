@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.245 2007-01-17 13:22:53 adam Exp $
+/* $Id: zebraapi.c,v 1.246 2007-01-17 13:51:36 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1025,7 +1025,7 @@ void zebra_set_partial_result(ZebraHandle zh)
 
 
 ZEBRA_RES zebra_set_busy_handler(ZebraHandle zh,
-                                 int (*f)(void *client_data, ZebraHandle zh),
+                                 int (*f)(void *client_data),
                                  void *client_data)
 {
     zh->busy_handler_func = f;

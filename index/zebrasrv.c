@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.7 2007-01-17 13:22:53 adam Exp $
+/* $Id: zebrasrv.c,v 1.8 2007-01-17 13:51:36 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -262,7 +262,7 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
 }
 
 
-static int busy_handler(void *client_data, ZebraHandle zh)
+static int busy_handler(void *client_data)
 {
     bend_association assoc =(bend_association) client_data;    
     if (!bend_assoc_is_alive(assoc))
