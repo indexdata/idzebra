@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.13 2007-01-15 15:10:17 adam Exp $
+/* $Id: recgrs.c,v 1.14 2007-01-22 18:15:03 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -525,25 +525,6 @@ static void mk_tag_path_full(char *tag_path_full, size_t max, data1_node *n)
 }
 	
 
-static void index_staticrank(struct recExtractCtrl *p,
-                             RecWord *wrd,
-                             data1_absyn *absyn)
-{
-    const char *staticrank_index = data1_absyn_get_staticrank(absyn);
-
-    if (staticrank_index && !strcmp(wrd->index_name, staticrank_index))
-    {
-        char valz[20];
-        size_t len = wrd->term_len;
-
-        if (len > sizeof(valz)-1)
-            len = sizeof(valz)-1;
-        memcpy(valz, wrd->term_buf, len);
-        valz[len] = '\0';
-        p->staticrank = atozint(valz);
-    }
-}
-
 static void index_xpath(struct source_parser *sp, data1_node *n,
 			struct recExtractCtrl *p,
 			int level, RecWord *wrd,
@@ -607,7 +588,6 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                 else
                 {
                     (*p->tokenAdd)(&wrd_tl);
-                    index_staticrank(p, &wrd_tl, n->root->u.root.absyn);
                 }
                 if (wrd_tl.seqno > max_seqno)
                     max_seqno = wrd_tl.seqno;
@@ -724,8 +704,6 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                                     wrd->term_buf = xp->value;
                                     wrd->term_len = strlen(xp->value);
                                     (*p->tokenAdd)(wrd);
-                                    index_staticrank(p, wrd,
-                                                     n->root->u.root.absyn);
                                 }
                             }
                         }
@@ -793,7 +771,6 @@ static void index_termlist (struct source_parser *sp, data1_node *par,
 	    {
 		wrd->index_type = *tlist->structure;
 		wrd->index_name = tlist->index_name;
-                index_staticrank(p, wrd, n->root->u.root.absyn);
 		(*p->tokenAdd)(wrd);
 	    }
 	}

@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.55 2007-01-15 15:10:26 adam Exp $
+/* $Id: zebramap.c,v 1.56 2007-01-22 18:15:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -32,6 +32,7 @@
 
 #define ZEBRA_MAP_TYPE_SORT  1
 #define ZEBRA_MAP_TYPE_INDEX 2
+#define ZEBRA_MAP_TYPE_STATICRANK 3
 
 #define ZEBRA_REPLACE_ANY  300
 
@@ -147,6 +148,23 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
 	    (*zm)->first_in_field = 0;
 	    zms->no_maps++;
 	}
+	else if (!yaz_matchstr(argv[0], "staticrank"))
+	{
+	    if (!zm)
+		zm = &zms->map_list;
+	    else
+		zm = &(*zm)->next;
+	    *zm = (struct zebra_map *) nmem_malloc(zms->nmem, sizeof(**zm));
+	    (*zm)->reg_id = argv[1][0];
+	    (*zm)->maptab_name = NULL;
+	    (*zm)->type = ZEBRA_MAP_TYPE_STATICRANK;
+	    (*zm)->maptab = NULL;
+	    (*zm)->completeness = 1;
+	    (*zm)->positioned = 0;
+	    (*zm)->alwaysmatches = 0;
+	    (*zm)->first_in_field = 0;
+	    zms->no_maps++;
+	}
         else if (!zm)
         {
             yaz_log(YLOG_WARN, "%s:%d: Missing sort/index before '%s'",  
@@ -155,7 +173,15 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
         }
 	else if (!yaz_matchstr(argv[0], "charmap") && argc == 2)
 	{
-	    (*zm)->maptab_name = nmem_strdup(zms->nmem, argv[1]);
+            if ((*zm)->type != ZEBRA_MAP_TYPE_STATICRANK)
+                (*zm)->maptab_name = nmem_strdup(zms->nmem, argv[1]);
+            else
+            {
+                yaz_log(YLOG_WARN|YLOG_FATAL, "%s:%d: charmap for "
+                        "staticrank is invalid", fname, lineno);
+                yaz_log(YLOG_LOG, "Type is %d", (*zm)->type);
+                failures++;
+            }
 	}
 	else if (!yaz_matchstr(argv[0], "completeness") && argc == 2)
 	{
@@ -167,7 +193,14 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
 	}
 	else if (!yaz_matchstr(argv[0], "alwaysmatches") && argc == 2)
 	{
-	    (*zm)->alwaysmatches = atoi(argv[1]);
+            if ((*zm)->type != ZEBRA_MAP_TYPE_STATICRANK)
+                (*zm)->alwaysmatches = atoi(argv[1]);
+            else
+            {
+                yaz_log(YLOG_WARN|YLOG_FATAL, "%s:%d: alwaysmatches for "
+                        "staticrank is invalid", fname, lineno);
+                failures++;
+            }
 	}
 	else if (!yaz_matchstr(argv[0], "firstinfield") && argc == 2)
 	{
@@ -334,6 +367,22 @@ int zebra_maps_is_positioned(ZebraMaps zms, unsigned reg_id)
     struct zebra_map *zm = zebra_map_get(zms, reg_id);
     if (zm)
 	return zm->positioned;
+    return 0;
+}
+
+int zebra_maps_is_index(ZebraMaps zms, unsigned reg_id)
+{
+    struct zebra_map *zm = zebra_map_get(zms, reg_id);
+    if (zm)
+	return zm->type == ZEBRA_MAP_TYPE_INDEX;
+    return 0;
+}
+
+int zebra_maps_is_staticrank(ZebraMaps zms, unsigned reg_id)
+{
+    struct zebra_map *zm = zebra_map_get(zms, reg_id);
+    if (zm)
+	return zm->type == ZEBRA_MAP_TYPE_STATICRANK;
     return 0;
 }
     

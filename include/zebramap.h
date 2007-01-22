@@ -1,4 +1,4 @@
-/* $Id: zebramap.h,v 1.21 2007-01-15 20:08:24 adam Exp $
+/* $Id: zebramap.h,v 1.22 2007-01-22 18:15:03 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -64,6 +64,12 @@ int zebra_maps_is_complete (ZebraMaps zms, unsigned reg_id);
 
 YAZ_EXPORT
 int zebra_maps_is_sort (ZebraMaps zms, unsigned reg_id);
+
+YAZ_EXPORT
+int zebra_maps_is_index (ZebraMaps zms, unsigned reg_id);
+
+YAZ_EXPORT
+int zebra_maps_is_staticrank (ZebraMaps zms, unsigned reg_id);
 
 YAZ_EXPORT
 int zebra_maps_is_alwaysmatches (ZebraMaps zms, unsigned reg_id);

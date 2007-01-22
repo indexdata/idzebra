@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.33 2007-01-15 15:10:14 adam Exp $
+/* $Id: d1_absyn.c,v 1.34 2007-01-22 18:15:02 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -703,7 +703,6 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
     res->reference = VAL_NONE;
     res->tagset = 0;
     res->encoding = 0;
-    res->staticrank = 0;
     res->xpath_indexing = 
         (f ? DATA1_XPATH_INDEXING_DISABLE : default_xpath);
     res->systags = 0;
@@ -1183,18 +1182,6 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
             (*systagsp)->value = nmem_strdup(data1_nmem_get(dh), argv[2]);
             systagsp = &(*systagsp)->next;
         }
-        else if (!strcmp(cmd, "staticrank"))
-        {
-            if (argc != 2)
-            {
-		yaz_log(YLOG_WARN, "%s:%d: Bad # or args for staticrank",
-		     file, lineno);
-            }
-            else
-            {
-                res->staticrank = nmem_strdup(data1_nmem_get(dh), argv[1]);
-            }
-        }
 	else
 	{
 	    yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'", file, 
@@ -1214,11 +1201,6 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
     }
     *systagsp = 0;
     return res;
-}
-
-YAZ_EXPORT const char *data1_absyn_get_staticrank(data1_absyn *absyn)
-{
-    return absyn ? absyn->staticrank : 0;
 }
 
 /*

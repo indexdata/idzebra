@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.h,v 1.10 2007-01-15 20:08:24 adam Exp $
+/* $Id: d1_absyn.h,v 1.11 2007-01-22 18:15:03 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -61,7 +61,6 @@ struct data1_absyn
     struct data1_xpelement *xp_elements; /* pop */
     struct data1_systag *systags;
     char *encoding;
-    char *staticrank;
     enum DATA1_XPATH_INDEXING xpath_indexing;
 };
 

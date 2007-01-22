@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.247 2007-01-15 15:10:16 adam Exp $
+/* $Id: extract.c,v 1.248 2007-01-22 18:15:03 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1158,6 +1158,20 @@ static void extract_add_sort_string(RecWord *p, const char *str, int length)
     zebra_rec_keys_write(zh->reg->sortKeys, str, length, &key);
 }
 
+static void extract_add_staticrank_string(RecWord *p,
+                                          const char *str, int length)
+{
+    char valz[40];
+    struct recExtractCtrl *ctrl = p->extractCtrl;
+
+    if (length > sizeof(valz)-1)
+        length = sizeof(valz)-1;
+
+    memcpy(valz, str, length);
+    valz[length] = '\0';
+    ctrl->staticrank = atozint(valz);
+}
+
 static void extract_add_string(RecWord *p, const char *string, int length)
 {
     ZebraHandle zh = p->extractCtrl->handle;
@@ -1166,9 +1180,7 @@ static void extract_add_string(RecWord *p, const char *string, int length)
     if (!p->index_name)
         return;
 
-    if (zebra_maps_is_sort(zh->reg->zebra_maps, p->index_type))
-	extract_add_sort_string(p, string, length);
-    else
+    if (zebra_maps_is_index(zh->reg->zebra_maps, p->index_type))
     {
 	extract_add_index_string(p, zinfo_index_category_index,
                                  string, length);
@@ -1181,6 +1193,14 @@ static void extract_add_string(RecWord *p, const char *string, int length)
             extract_add_index_string(
                 &word, zinfo_index_category_alwaysmatches, "", 0);
         }
+    }
+    else if (zebra_maps_is_sort(zh->reg->zebra_maps, p->index_type))
+    {
+	extract_add_sort_string(p, string, length);
+    }
+    else if (zebra_maps_is_staticrank(zh->reg->zebra_maps, p->index_type))
+    {
+	extract_add_staticrank_string(p, string, length);
     }
 }
 
