@@ -1,3 +1,5 @@
+--- 2.0.10 2007/01/24
+
 Staticrank indexing is now an index register type defined in default.idx
 via directive 'staticrank'. The 'staticrank' directive for grs is no longer
 supported (was only implemented for Zebra 2.0.8).
