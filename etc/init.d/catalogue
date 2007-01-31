@@ -1,0 +1,16 @@
+# $Id: catalogue,v 1.1 2007-01-31 12:26:50 mike Exp $
+#
+# Zebra catalogue -- specifies which Zebra services the
+# /etc/init.d/idzebra script should start up and and shut down.
+#
+# Comments, introduced by the hash character (#) are ignored, and
+# blank linkes are ignored.  Every other line describes a single Zebra
+# service.  Each such line consist of three whitespace-separated
+# fields: a short tag used to make service-specific filenames, the
+# path to the directory that Zebra should run in, and the name of the
+# master configuration file of the service's configuration (relative
+# to the directory)
+
+gils	/usr/local/src/cvs/zebra/examples/gils zebra.cfg
+irspy	/usr/local/src/cvs/irspy/zebra yazserver.xml
+alvis	/usr/local/src/cvs/alvis/zebra/alvisxsltconfig db2/yazserver.xml

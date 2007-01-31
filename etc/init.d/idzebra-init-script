@@ -1,0 +1,79 @@
+#! /bin/sh
+
+# $Id: idzebra-init-script,v 1.1 2007-01-31 12:26:50 mike Exp $
+#
+# This is a startup/shutdown script for Index Data's Zebra server,
+# suitable for use in a SysV-style init directory such as /etc/init.d
+# (on Debian systems) and /etc/rc.d/init.d (on Red Hat systems), like
+# this:
+#
+#	sudo cp idzebra-init-script /etc/init.d/idzebra
+#	sudo /etc/init.d/idzebra start
+#
+# You may need to tweak it to suit your system's paths.
+
+# zebrasrv-2.0 may be in /usr/local/bin, hence this slight security hole
+PATH=/bin:/usr/bin:/usr/local/bin/
+catfile=/usr/local/src/cvs/zebra/etc/init.d/catalogue
+
+case "$1" in
+    start)
+	while read line; do
+	    line=`echo "$line" | sed 's/#.*//'`
+	    line=`echo "$line" | sed 's/[ \t]*$//'`
+	    if [ "x$line" != x ]; then
+		set $line; tag=$1; dir=$2; file=$3
+		#echo "tag='$tag', dir='$dir', file='$file'"
+
+		logfile=/var/log/zebra-$tag
+		pidfile=/var/run/zebra-$tag.pid
+		if [ -f $pidfile ]; then
+			echo "Zebra service '$tag' seems to be already running"
+			continue
+		fi
+		echo "Starting Zebra service '$tag'"
+		test -f $logfile && mv $logfile $logfile.old
+		case "$file" in
+		  *.xml) opt=-f;;
+		  *.cfg) opt=-c;;
+		  *) echo "Unrecognised Zebra config-file type: '$file'";;
+		esac
+
+		(
+		    cd $dir
+		    echo === $dir zebrasrv-2.0 $opt $file === < /dev/null > $logfile 2>&1
+		    ( zebrasrv-2.0 $opt $file < /dev/null >> $logfile 2>&1 & )
+		    echo $! > $pidfile
+		)
+	    fi
+	done < $catfile
+	;;
+
+    stop)
+	# Unfortunate partial duplication of parsing code here
+	while read line; do
+	    line=`echo "$line" | sed 's/#.*//'`
+	    line=`echo "$line" | sed 's/[ \t]*$//'`
+	    if [ "x$line" != x ]; then
+		set $line; tag=$1
+
+		pidfile=/var/run/zebra-$tag.pid
+		if [ ! -f $pidfile ]; then
+			echo "Zebra service '$tag' does not seem to be running"
+			continue
+		fi
+
+		echo "Stopping Zebra service '$tag'"
+		kill `cat $pidfile`
+		rm $pidfile
+	    fi
+	done < $catfile
+	;;
+
+    restart)
+	$0 stop && $0 start
+	;;
+    *)
+	echo "Usage: $0 start|stop|restart" >&2
+        ;;
+esac
