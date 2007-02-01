@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.16 2006-11-30 10:29:23 adam Exp $ -->
+  <!-- $Id: architecture.xml,v 1.17 2007-02-01 21:08:12 marc Exp $ -->
   <title>Overview of Zebra Architecture</title>
 
   <section id="architecture-representation">
@@ -207,13 +207,48 @@
      modules. 
     </para>
 
-   
-   <section id="componentmodulestext">
-    <title>TEXT Record Model and Filter Module</title>
-    <para>
-      Plain ASCII text filter. TODO: add information here.
+
+   <section id="componentmodulesalvis">
+    <title>ALVIS Record Model and Filter Module</title>
+     <para>
+      The Alvis filter for XML files is an XSLT based input
+      filter. 
+      It indexes element and attribute content of any thinkable XML format
+      using full XPATH support, a feature which the standard Zebra
+      GRS SGML and XML filters lacked. The indexed documents are
+      parsed into a standard XML DOM tree, which restricts record size
+      according to availability of memory.
     </para>
-   </section>
+    <para>
+      The Alvis filter 
+      uses XSLT display stylesheets, which let
+      the Zebra DB administrator associate multiple, different views on
+      the same XML document type. These views are chosen on-the-fly in
+      search time.
+     </para>
+    <para>
+      In addition, the Alvis filter configuration is not bound to the
+      arcane  BIB-1 Z39.50 library catalogue indexing traditions and
+      folklore, and is therefore easier to understand.
+    </para>
+    <para>
+      Finally, the Alvis  filter allows for static ranking at index
+      time, and to to sort hit lists according to predefined
+      static ranks. This imposes no overhead at all, both
+      search and indexing perform still 
+      <emphasis>O(1)</emphasis> irrespectively of document
+      collection size. This feature resembles Googles pre-ranking using
+      their Pagerank algorithm.
+    </para>
+    <para>
+      Details on the experimental Alvis XSLT filter are found in 
+      <xref linkend="record-model-alvisxslt"/>.
+      </para>
+     <para>
+      The Debian package <literal>libidzebra-2.0-mod-alvis</literal>
+      contains the Alvis filter module.
+     </para>
+    </section>
 
    <section id="componentmodulesgrs">
     <title>GRS Record Model and Filter Modules</title>
@@ -260,48 +295,13 @@
       the next session.
     </para>
    </section>
-
-   <section id="componentmodulesalvis">
-    <title>ALVIS Record Model and Filter Module</title>
-     <para>
-      The Alvis filter for XML files is an XSLT based input
-      filter. 
-      It indexes element and attribute content of any thinkable XML format
-      using full XPATH support, a feature which the standard Zebra
-      GRS SGML and XML filters lacked. The indexed documents are
-      parsed into a standard XML DOM tree, which restricts record size
-      according to availability of memory.
+   
+   <section id="componentmodulestext">
+    <title>TEXT Record Model and Filter Module</title>
+    <para>
+      Plain ASCII text filter. TODO: add information here.
     </para>
-    <para>
-      The Alvis filter 
-      uses XSLT display stylesheets, which let
-      the Zebra DB administrator associate multiple, different views on
-      the same XML document type. These views are chosen on-the-fly in
-      search time.
-     </para>
-    <para>
-      In addition, the Alvis filter configuration is not bound to the
-      arcane  BIB-1 Z39.50 library catalogue indexing traditions and
-      folklore, and is therefore easier to understand.
-    </para>
-    <para>
-      Finally, the Alvis  filter allows for static ranking at index
-      time, and to to sort hit lists according to predefined
-      static ranks. This imposes no overhead at all, both
-      search and indexing perform still 
-      <emphasis>O(1)</emphasis> irrespectively of document
-      collection size. This feature resembles Googles pre-ranking using
-      their Pagerank algorithm.
-    </para>
-    <para>
-      Details on the experimental Alvis XSLT filter are found in 
-      <xref linkend="record-model-alvisxslt"/>.
-      </para>
-     <para>
-      The Debian package <literal>libidzebra-2.0-mod-alvis</literal>
-      contains the Alvis filter module.
-     </para>
-    </section>
+   </section>
 
     <!--
    <section id="componentmodulessafari">
