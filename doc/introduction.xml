@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.40 2006-09-22 12:34:45 adam Exp $ -->
+ <!-- $Id: introduction.xml,v 1.41 2007-02-01 20:49:05 marc Exp $ -->
  <title>Introduction</title>
  
  <section id="overview">
@@ -37,194 +37,215 @@
  </section>
  
  <section id="features">
-  <title>Features</title>
+  <title>Zebra Features Overview</title>
   
-  <para>
-   This is an overview of some of Zebra's most important features:
-  </para>
-  
-  <para>
-   <itemizedlist>
 
-    <listitem>
-     <para>
-      Very large databases: logical files can be
-      automatically partitioned over multiple disks.
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
-      Arbitrarily complex records.  The internal data format
-      is a structured format conceptually similar to XML or GRS-1,
-      which allows lists, nested structured data elements and
-      variant forms of data.
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
-      Robust updating - records can be added and deleted ``on the fly''
+   <table id="table-features-overview" frame="top">
+    <title>Zebra Features Overview</title>
+    <tgroup cols="4">
+     <thead>
+      <row>
+       <entry>Feature</entry>
+       <entry>Availability</entry>
+       <entry>Notes</entry>
+       <entry>Reference</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>Boolean query language</entry>
+       <entry>CQL and RPN/PQF</entry>
+       <entry>The type-1 Reverse Polish Notation (RPN)
+       and it's textual representation Prefix Query Format (PQF) are
+       supported. The Common Query Language (CQL) can be configured as
+       a mapping from CQL to RPN/PQF</entry>
+       <entry><xref linkend="querymodel-query-languages-pqf"/>
+       <xref linkend="querymodel-cql-to-pqf"/></entry>
+      </row>
+      <row>
+       <entry>Operation types</entry>
+       <entry> Z39.50/SRU explain, search, and scan</entry>
+       <entry></entry>
+       <entry><xref linkend="querymodel-operation-types"/></entry>
+      </row>
+      <row>
+       <entry>Recursive boolean query tree</entry>
+       <entry>CQL and RPN/PQF</entry>
+       <entry>Both CQL and RPN/PQF allow atomic query parts (APT) to
+       be combined into complex boolean query trees</entry>
+       <entry><xref linkend="querymodel-rpn-tree"/></entry>
+      </row>
+      <row>
+       <entry>Large databases</entry>
+       <entry>64 file pointers assure that register files can extend
+       the 2 GB limit. Logical files can be
+        automatically partitioned over multiple disks, thus allowing for
+       large databases.</entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Complex semi-structured Documents</entry>
+       <entry>XML and GRS-1 Documents</entry>
+       <entry>Both XML and GRS-1 documents exhibit a DOM like internal
+       representation allowing for complex indexing and display rules</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Database updates</entry>
+       <entry>live, incremental updates</entry>
+       <entry>Robust updating - records can be added and deleted ``on the fly''
       without rebuilding the index from scratch.
       Records can be safely updated even while users are accessing
       the server.
       The update procedure is tolerant to crashes or hard interrupts
       during database updating - data can be reconstructed following
-      a crash.
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
-      Configurable to understand many input formats.
-      A system of input filters driven by
-      regular expressions allows most ASCII-based
-      data formats to be easily processed.
-      SGML, XML, ISO2709 (MARC), and raw text are also
-      supported.
-     </para>
-    </listitem>
-
-    <listitem>     
-     <para>
-      Searching supports a powerful combination of boolean queries as
-      well as relevance-ranking (free-text) queries.  Truncation,
-      masking, full regular expression matching and "approximate
-      matching" (eg. spelling mistakes) are all handled.
-     </para>
-    </listitem>
-
-    <listitem>
-      <para>
-	Index-only databases: data can be, and usually is, imported
+      a crash.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Input document formats</entry>
+       <entry>XML, SGML, Text, ISO2709 (MARC)</entry>
+       <entry>
+        A system of input filters driven by
+        regular expressions allows most ASCII-based
+        data formats to be easily processed.
+        SGML, XML, ISO2709 (MARC), and raw text are also
+        supported.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Relevance ranking</entry>
+       <entry>TF-IDF like</entry>
+       <entry>Relevance-ranking of free-text queries is supported
+       using a TF-IDF like algorithm.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Document storage</entry>
+       <entry>Index-only, Key storage, Document storage</entry>
+       <entry>Data can be, and usually is, imported
         into Zebra's own storage, but Zebra can also refer to
         external files, building and maintaining indexes of "live"
-	collections.
-      </para>
-    </listitem>
-
-    <listitem>
-     <para>
-      Zebra is written in portable C, so it runs on most Unix-like systems 
-      as well as Windows (NT/2000/2003).  A binary distribution for Windows 
-      is available at
-      <ulink url="&url.idzebra.download.win32;"/>,
-      and pre-built packages are available for 
-      <!--- some Linux
-      distributions:
-      Red Hat 7.x RPMs at
-      <ulink url="http://ftp.indexdata.dk/pub/zebra/RedHat7.X/"/>
-      and Debian packages at
-      -->
-      <literal>GNU/Debian Linux</literal> at 
-      <ulink url="&url.idzebra.download.debian;"/>.
-     </para>
-    </listitem>
-    
-   </itemizedlist>
-   
-  </para>
-  
-  <para>
-     <ulink url="&url.z39.50;">Z39.50</ulink> protocol support:
-  </para>
-  
-  <para>   
-   <itemizedlist>
-    <listitem>
-     <para>
-      Protocol facilities: Init, Search, Present (retrieval),
+	collections.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Regular expression matching</entry>
+       <entry>Regexp </entry>
+       <entry>Full regular expression matching and "approximate
+        matching" (eg. spelling mistake corrections) are handled.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Search truncation</entry>
+       <entry></entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Remote update</entry>
+       <entry>Z39.50 extended services</entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Supported Platforms</entry>
+       <entry>UNIX, Linux, Windows (NT/2000/2003/XP)</entry>
+       <entry>Zebra is written in portable C, so it runs on most
+       Unix-like systems as well as Windows (NT/2000/2003/XP).  Binary
+       distributions are 
+       available for GNU/Debian Linux and Windows</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Z39.50</entry>
+       <entry>Z39.50  protocol support</entry>
+       <entry> Protocol facilities: Init, Search, Present (retrieval),
       Segmentation (support for very large records), Delete, Scan
       (index browsing), Sort, Close and support for the ``update''
-      Extended Service to add or replace an existing XML record.
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
-      Piggy-backed presents are honored in the search request - that
-      is, a subset of the found records can be returned directly with
-      a search response, enabling search and retrieval to happen in a
-      single round-trip.
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
-      Named result sets are supported.
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
-      Easily configured to support different application profiles, with
-      tables for attribute sets, tag sets, and abstract syntaxes.
-      Additional tables control facilities such as element mappings to
-      different schema (eg., GILS-to-USMARC).
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
-      Complex composition specifications using Espec-1 (partial support).
-      Element sets are defined using the Espec-1 capability,
-      and are specified in configuration files as simple element
-      requests (and, optionally, variant requests).
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
-      Multiple record syntaxes
+      Extended Service to add or replace an existing XML
+       record. Piggy-backed presents are honored in the search
+       request. Named result sets are supported.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Record Syntaxes</entry>
+       <entry></entry>
+       <entry> Multiple record syntaxes
       for data retrieval: GRS-1, SUTRS,
       XML, ISO2709 (MARC), etc. Records can be mapped between record syntaxes
-      and schemas on the fly.      
-     </para>
-    </listitem>
-
-   </itemizedlist>
-   
-  </para>
-
-  
-  <para>
-    <ulink url="&url.sru;">SRU</ulink> Web Service support:
-  </para>
-  <para>   
-   <itemizedlist>
-    <listitem>
-     <para>
-       The protocol operations <literal>explain</literal>, 
+      and schemas on the fly.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Web Service support</entry>
+       <entry>SRU GET/POST/SOAP</entry>
+       <entry> The protocol operations <literal>explain</literal>, 
        <literal>searchRetrieve</literal> and <literal>scan</literal>
-       are supported. 
-     </para>
-    </listitem>
-    <listitem>
-     <para>
-       <ulink url="&url.cql;">CQL</ulink> to internal query model RPN 
-       conversion is supported. 
-     </para>
-    </listitem>
-    <listitem>
-     <para>
-       Multiple XML record formats
-      for data retrieval are supported, modelled over the  GRS-1, SUTRS,
-      MARC record formats. Records can be mapped between record
-       schemas on the fly. Arbitrarily complex XSLT transformations
-      can be applied during record retrieval if one uses the 
-       <literal>alvis</literal> filter module.
-     </para>
-    </listitem>
-     <listitem>
-      <para>
-       Extended RPN queries for search/retrieve and scan are supported,
-       for controlling approximate hit counts, etc.
-     </para>
-     </listitem>
+       are supported. <ulink url="&url.cql;">CQL</ulink> to internal
+       query model RPN  conversion is supported. Extended RPN queries
+       for search/retrieve and scan are supported.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry></entry>
+       <entry></entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry></entry>
+       <entry></entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry></entry>
+       <entry></entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry></entry>
+       <entry></entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry></entry>
+       <entry></entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry></entry>
+       <entry></entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry></entry>
+       <entry></entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry></entry>
+       <entry></entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry></entry>
+       <entry></entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
 
-   </itemizedlist>
-   
-  </para>
 
   
  </section>
