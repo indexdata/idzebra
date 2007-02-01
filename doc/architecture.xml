@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.17 2007-02-01 21:08:12 marc Exp $ -->
+  <!-- $Id: architecture.xml,v 1.18 2007-02-01 21:08:52 marc Exp $ -->
   <title>Overview of Zebra Architecture</title>
 
   <section id="architecture-representation">
@@ -209,7 +209,7 @@
 
 
    <section id="componentmodulesalvis">
-    <title>ALVIS Record Model and Filter Module</title>
+    <title>ALVIS XML Record Model and Filter Module</title>
      <para>
       The Alvis filter for XML files is an XSLT based input
       filter. 
