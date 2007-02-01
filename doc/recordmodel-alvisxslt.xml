@@ -1,5 +1,5 @@
  <chapter id="record-model-alvisxslt">
-  <!-- $Id: recordmodel-alvisxslt.xml,v 1.12 2007-02-01 21:18:53 marc Exp $ -->
+  <!-- $Id: recordmodel-alvisxslt.xml,v 1.13 2007-02-01 21:26:30 marc Exp $ -->
   <title>ALVIS XML Record Model and Filter Module</title>
   
 
@@ -195,11 +195,11 @@
       Z> elem dc
       Z> form xml
       Z>
-      Z> f @attr 1=dc:creator Kumar
-      Z> scan @attr 1=dc:creator adam
+      Z> f @attr 1=dc_creator Kumar
+      Z> scan @attr 1=dc_creator adam
       Z>
-      Z> f @attr 1=dc:title @attr 4=2 "proceeding congress superconductivity"
-      Z> scan @attr 1=dc:title abc
+      Z> f @attr 1=dc_title @attr 4=2 "proceeding congress superconductivity"
+      Z> scan @attr 1=dc_title abc
       ]]>
      </screen>
      or the proprietary
@@ -208,8 +208,8 @@
      SRU, and SRW
      <screen>
       <![CDATA[
-      http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=%40attr+1%3Ddc%3Acreator+%40attr+4%3D6+%22the
-      http://localhost:9999/?version=1.1&operation=scan&x-pScanClause=@attr+1=dc:date+@attr+4=2+a
+      http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=%40attr+1%3Ddc_creator+%40attr+4%3D6+%22the
+      http://localhost:9999/?version=1.1&operation=scan&x-pScanClause=@attr+1=dc_date+@attr+4=2+a
       ]]>
      </screen>
      See <xref linkend="zebrasrv-sru"/> for more information on SRU/SRW
