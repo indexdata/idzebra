@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.43 2007-02-02 11:10:08 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.44 2007-02-02 14:34:20 marc Exp $ -->
  <title>Introduction</title>
  
  <section id="overview">
@@ -73,8 +73,30 @@
   <title>&zebra; Features Overview</title>
   
 
-   <table id="table-features-overview" frame="top">
-    <title>&zebra; Features Overview</title>
+      <!--
+      <row>
+       <entry></entry>
+       <entry></entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry></entry>
+       <entry></entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry></entry>
+       <entry></entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      -->
+
+
+   <table id="table-features-protocol" frame="top">
+    <title>&zebra; networked protocols</title>
     <tgroup cols="4">
      <thead>
       <row>
@@ -86,7 +108,57 @@
      </thead>
      <tbody>
       <row>
-       <entry>Boolean query language</entry>
+       <entry>Operation types</entry>
+       <entry> &z3950;/&sru; explain, search, and scan</entry>
+       <entry></entry>
+       <entry><xref linkend="querymodel-operation-types"/></entry>
+      </row>
+      <row>
+       <entry>Remote update</entry>
+       <entry>&z3950; extended services</entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>&z3950;</entry>
+       <entry>&z3950;  protocol support</entry>
+       <entry> Protocol facilities: Init, Search, Present (retrieval),
+      Segmentation (support for very large records), Delete, Scan
+      (index browsing), Sort, Close and support for the ``update''
+      Extended Service to add or replace an existing &xml;
+       record. Piggy-backed presents are honored in the search
+       request. Named result sets are supported.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Web Service support</entry>
+       <entry>&sru_gps;</entry>
+       <entry> The protocol operations <literal>explain</literal>, 
+       <literal>searchRetrieve</literal> and <literal>scan</literal>
+       are supported. <ulink url="&url.cql;">&cql;</ulink> to internal
+       query model &rpn;  conversion is supported. Extended RPN queries
+       for search/retrieve and scan are supported.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+
+
+   <table id="table-features-search" frame="top">
+    <title>&zebra; search functionality</title>
+    <tgroup cols="4">
+     <thead>
+      <row>
+       <entry>Feature</entry>
+       <entry>Availability</entry>
+       <entry>Notes</entry>
+       <entry>Reference</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>Query languages</entry>
        <entry>&cql; and &rpn;/&pqf;</entry>
        <entry>The type-1 Reverse Polish Notation (&rpn;)
        and it's textual representation Prefix Query Format (&pqf;) are
@@ -96,71 +168,32 @@
        <xref linkend="querymodel-cql-to-pqf"/></entry>
       </row>
       <row>
-       <entry>Operation types</entry>
-       <entry> &z3950;/&sru; explain, search, and scan</entry>
-       <entry></entry>
-       <entry><xref linkend="querymodel-operation-types"/></entry>
-      </row>
-      <row>
-       <entry>Recursive boolean query tree</entry>
+       <entry>Complex boolean query tree</entry>
        <entry>&cql; and &rpn;/&pqf;</entry>
        <entry>Both &cql; and &rpn;/&pqf; allow atomic query parts (&apt;) to
        be combined into complex boolean query trees</entry>
        <entry><xref linkend="querymodel-rpn-tree"/></entry>
       </row>
       <row>
-       <entry>Large databases</entry>
-       <entry>64 file pointers assure that register files can extend
-       the 2 GB limit. Logical files can be
-        automatically partitioned over multiple disks, thus allowing for
-       large databases.</entry>
+       <entry>Field search</entry>
+       <entry>user defined</entry>
+       <entry>Atomic query parts (&apt;) are either general, or
+       directed at user-specified document fields
+      </entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Data normalization</entry>
        <entry></entry>
+       <entry>Data normalization, text tokenization and character mappings can be
+          applied during indexing and searching</entry>
        <entry><xref linkend=""/></entry>
       </row>
       <row>
-       <entry>Complex semi-structured Documents</entry>
-       <entry>&xml; and &grs1; Documents</entry>
-       <entry>Both &xml; and &grs1; documents exhibit a &dom; like internal
-       representation allowing for complex indexing and display rules</entry>
-       <entry><xref linkend=""/></entry>
-      </row>
-      <row>
-       <entry>Database updates</entry>
-       <entry>live, incremental updates</entry>
-       <entry>Robust updating - records can be added and deleted ``on the fly''
-      without rebuilding the index from scratch.
-      Records can be safely updated even while users are accessing
-      the server.
-      The update procedure is tolerant to crashes or hard interrupts
-      during database updating - data can be reconstructed following
-      a crash.</entry>
-       <entry><xref linkend=""/></entry>
-      </row>
-      <row>
-       <entry>Input document formats</entry>
-       <entry>&xml;, &sgml;, Text, ISO2709 (&marc;)</entry>
-       <entry>
-        A system of input filters driven by
-        regular expressions allows most ASCII-based
-        data formats to be easily processed.
-        &sgml;, &xml;, ISO2709 (&marc;), and raw text are also
-        supported.</entry>
-       <entry><xref linkend=""/></entry>
-      </row>
-      <row>
-       <entry>Relevance ranking</entry>
-       <entry>TF-IDF like</entry>
-       <entry>Relevance-ranking of free-text queries is supported
-       using a TF-IDF like algorithm.</entry>
-       <entry><xref linkend=""/></entry>
-      </row>
-      <row>
-       <entry>Document storage</entry>
-       <entry>Index-only, Key storage, Document storage</entry>
-       <entry>Data can be, and usually is, imported
-        into &zebra;'s own storage, but &zebra; can also refer to
-        external files, building and maintaining indexes of "live"
-	collections.</entry>
+       <entry>Predefined field types</entry>
+       <entry></entry>
+       <entry>Data fields can be indexed as phrase, as into word tokenized text,
+          as numeric values, url's, dates, and raw binary data.</entry>
        <entry><xref linkend=""/></entry>
       </row>
       <row>
@@ -177,29 +210,103 @@
        <entry><xref linkend=""/></entry>
       </row>
       <row>
-       <entry>Remote update</entry>
-       <entry>&z3950; extended services</entry>
+       <entry>Fuzzy searches</entry>
        <entry></entry>
+       <entry>In addition, fuzzy searches are implemented, where one 
+          spelling mistake in search terms is matched</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+
+
+   <table id="table-features-scan" frame="top">
+    <title>&zebra; index scanning</title>
+    <tgroup cols="4">
+     <thead>
+      <row>
+       <entry>Feature</entry>
+       <entry>Availability</entry>
+       <entry>Notes</entry>
+       <entry>Reference</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>Scan</entry>
+       <entry>yes</entry>
+       <entry><literal>Scan</literal> on a given named index returns all the 
+          indexed terms in lexicographical order near the given start term.</entry>
        <entry><xref linkend=""/></entry>
       </row>
       <row>
-       <entry>Supported Platforms</entry>
-       <entry>UNIX, Linux, Windows (NT/2000/2003/XP)</entry>
-       <entry>&zebra; is written in portable C, so it runs on most
-       Unix-like systems as well as Windows (NT/2000/2003/XP).  Binary
-       distributions are 
-       available for GNU/Debian Linux and Windows</entry>
+       <entry>Facetted browsing</entry>
+       <entry>partial</entry>
+       <entry>&zebra; supports <literal>scan inside a hit 
+          set</literal> from a previous search, thus reducing the listed 
+          terms to the 
+          subset of terms found in the documents/records of the hit set.</entry>
        <entry><xref linkend=""/></entry>
       </row>
       <row>
-       <entry>&z3950;</entry>
-       <entry>&z3950;  protocol support</entry>
-       <entry> Protocol facilities: Init, Search, Present (retrieval),
-      Segmentation (support for very large records), Delete, Scan
-      (index browsing), Sort, Close and support for the ``update''
-      Extended Service to add or replace an existing &xml;
-       record. Piggy-backed presents are honored in the search
-       request. Named result sets are supported.</entry>
+       <entry>Drill-down or refine-search</entry>
+       <entry>partially</entry>
+       <entry>scanning in result sets can be used to implement
+       drill-down in search clients</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+
+
+   <table id="table-features-presentation" frame="top">
+    <title>&zebra; document presentation</title>
+    <tgroup cols="4">
+     <thead>
+      <row>
+       <entry>Feature</entry>
+       <entry>Availability</entry>
+       <entry>Notes</entry>
+       <entry>Reference</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>Hit count</entry>
+       <entry>yes</entry>
+       <entry>Search results include at any time the total hit count of a given
+          query, either exact computed, or approximative, in case that the
+          hit count exceeds a possible pre-defined hit set truncation
+       level.
+</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Paged result sets</entry>
+       <entry>yes</entry>
+       <entry>Paging of search requests and present/display request can return any
+          successive number of records from any start position in the hit set,
+          i.e. it is trivial to provide search results in successive pages of
+          any size.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>&xml;ocument transformations</entry>
+       <entry>&xslt; based</entry>
+       <entry> Record presentation can be performed in many pre-defined &xml; data
+          formats, where the original &xml; records are on-the-fly transformed
+          through any preconfigured &xslt; transformation. It is therefore
+          trivial to present records in short/full &xml; views, transforming to
+          RSS, Dublin Core, or other &xml; based data formats, or transform
+          records to XHTML snippets ready for inserting in XHTML pages.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Binary record transformations</entry>
+       <entry>&marc;, &usmarc;, &marc21; and &marcxml;</entry>
+       <entry></entry>
        <entry><xref linkend=""/></entry>
       </row>
       <row>
@@ -211,68 +318,270 @@
       and schemas on the fly.</entry>
        <entry><xref linkend=""/></entry>
       </row>
+     </tbody>
+    </tgroup>
+   </table>
+
+
+   <table id="table-features-sort-rank" frame="top">
+    <title>&zebra; sorting and ranking</title>
+    <tgroup cols="4">
+     <thead>
       <row>
-       <entry>Web Service support</entry>
-       <entry>&sru_gps;</entry>
-       <entry> The protocol operations <literal>explain</literal>, 
-       <literal>searchRetrieve</literal> and <literal>scan</literal>
-       are supported. <ulink url="&url.cql;">&cql;</ulink> to internal
-       query model &rpn;  conversion is supported. Extended RPN queries
-       for search/retrieve and scan are supported.</entry>
+       <entry>Feature</entry>
+       <entry>Availability</entry>
+       <entry>Notes</entry>
+       <entry>Reference</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>Sort</entry>
+       <entry>numeric, lexicographic</entry>
+       <entry>Sorting on the basis of alpha-numeric and numeric data
+       is supported. Alphanumeric sorts can be configured for different data encodings
+          and locales for European languages.  </entry>
        <entry><xref linkend=""/></entry>
       </row>
       <row>
+       <entry>Combined sorting</entry>
+       <entry>yes</entry>
+       <entry>Sorting on the basis of combined sorts ­ e.g. combinations of 
+          ascending/descending sorts of lexicographical/numeric/date field data
+          is supported</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Relevance ranking</entry>
+       <entry>TF-IDF like</entry>
+       <entry>Relevance-ranking of free-text queries is supported
+       using a TF-IDF like algorithm.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Relevence ranking</entry>
+       <entry>TDF-IDF like</entry>
        <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+
+
+
+   <table id="table-features-document" frame="top">
+    <title>&zebra; document model</title>
+    <tgroup cols="4">
+     <thead>
+      <row>
+       <entry>Feature</entry>
+       <entry>Availability</entry>
+       <entry>Notes</entry>
+       <entry>Reference</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>Complex semi-structured Documents</entry>
+       <entry>&xml; and &grs1; Documents</entry>
+       <entry>Both &xml; and &grs1; documents exhibit a &dom; like internal
+       representation allowing for complex indexing and display rules</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Input document formats</entry>
+       <entry>&xml;, &sgml;, Text, ISO2709 (&marc;)</entry>
+       <entry>
+        A system of input filters driven by
+        regular expressions allows most ASCII-based
+        data formats to be easily processed.
+        &sgml;, &xml;, ISO2709 (&marc;), and raw text are also
+        supported.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Document storage</entry>
+       <entry>Index-only, Key storage, Document storage</entry>
+       <entry>Data can be, and usually is, imported
+        into &zebra;'s own storage, but &zebra; can also refer to
+        external files, building and maintaining indexes of "live"
+	collections.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+
+     </tbody>
+    </tgroup>
+   </table>
+
+
+
+   <table id="table-features-scalability" frame="top">
+    <title>&zebra; data size and scalability</title>
+    <tgroup cols="4">
+     <thead>
+      <row>
+       <entry>Feature</entry>
+       <entry>Availability</entry>
+       <entry>Notes</entry>
+       <entry>Reference</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>No of records</entry>
+       <entry>40-60 million</entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Data size</entry>
+       <entry>100 GB of record data</entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>File pointers</entry>
+       <entry>64 bit</entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Scale out</entry>
+       <entry>multiple discs</entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Performance</entry>
+       <entry><literal>O(n * log N)</literal></entry>
+       <entry> &zebra; query speed and performance is affected roughly by 
+          <literal>O(log N)</literal>,
+          where <literal>N</literal> is the total database size, and by 
+          <literal>O(n)</literal>, where <literal>n</literal> is the
+          specific query hit set size.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Average search times</entry>
+       <entry></entry>
+       <entry> Even on very large size databases hit rates of 20 queries per
+          seconds with average query answering time of 1 second are possible,
+          provided that the boolean queries are constructed sufficiently
+          precise to result in hit sets of the order of 1000 to 5.000
+          documents.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Large databases</entry>
+       <entry>64 file pointers assure that register files can extend
+       the 2 GB limit. Logical files can be
+        automatically partitioned over multiple disks, thus allowing for
+       large databases.</entry>
+       <entry></entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+
+
+   <table id="table-features-updates" frame="top">
+    <title>&zebra; live updates</title>
+    <tgroup cols="4">
+     <thead>
+      <row>
+       <entry>Feature</entry>
+       <entry>Availability</entry>
+       <entry>Notes</entry>
+       <entry>Reference</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>Batch updates</entry>
+       <entry></entry>
+       <entry>It is possible to schedule record inserts/updates/deletes in any
+        quantity, from single individual handled records to batch updates
+        in strikes of any size, as well as total re-indexing of all records
+        from file system. </entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+      <row>
+       <entry>Incremental updates</entry>
        <entry></entry>
        <entry></entry>
        <entry><xref linkend=""/></entry>
       </row>
       <row>
-       <entry></entry>
-       <entry></entry>
-       <entry></entry>
-       <entry><xref linkend=""/></entry>
-      </row>
-      <row>
-       <entry></entry>
-       <entry></entry>
+       <entry>Remote updates</entry>
+       <entry>&z3950; extended services</entry>
        <entry></entry>
        <entry><xref linkend=""/></entry>
       </row>
       <row>
+       <entry>Live updates</entry>
        <entry></entry>
-       <entry></entry>
-       <entry></entry>
+       <entry> Data updates are transaction based and can be performed on running
+        &zebra; systems.  Full searchability is preserved during life data update due to use
+        of shadow disk areas for update operations. Multiple update transactions at the same time are lined up, to be
+        performed one after each other. Data integrity is preserved.</entry>
        <entry><xref linkend=""/></entry>
       </row>
       <row>
+       <entry>Database updates</entry>
+       <entry>live, incremental updates</entry>
+       <entry>Robust updating - records can be added and deleted ``on the fly''
+      without rebuilding the index from scratch.
+      Records can be safely updated even while users are accessing
+      the server.
+      The update procedure is tolerant to crashes or hard interrupts
+      during database updating - data can be reconstructed following
+      a crash.</entry>
+       <entry><xref linkend=""/></entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+
+   <table id="table-features-platforms" frame="top">
+    <title>&zebra; supported platforms</title>
+    <tgroup cols="4">
+     <thead>
+      <row>
+       <entry>Feature</entry>
+       <entry>Availability</entry>
+       <entry>Notes</entry>
+       <entry>Reference</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>Linux</entry>
        <entry></entry>
-       <entry></entry>
-       <entry></entry>
+       <entry>GNU Linux (32 and 64bit), journaling Reiser or (better) JFS filesystem
+        on disks. GNU/Debian Linux packages are available</entry>
        <entry><xref linkend=""/></entry>
       </row>
       <row>
-       <entry></entry>
-       <entry></entry>
-       <entry></entry>
+       <entry>Unix</entry>
+       <entry>tarball</entry>
+       <entry>Usual tarball install possible on many major Unix systems</entry>
        <entry><xref linkend=""/></entry>
       </row>
       <row>
+       <entry>Windows</entry>
        <entry></entry>
-       <entry></entry>
-       <entry></entry>
+       <entry>Windows installer packages available</entry>
        <entry><xref linkend=""/></entry>
       </row>
       <row>
-       <entry></entry>
-       <entry></entry>
-       <entry></entry>
-       <entry><xref linkend=""/></entry>
-      </row>
-      <row>
-       <entry></entry>
-       <entry></entry>
-       <entry></entry>
+       <entry>Supported Platforms</entry>
+       <entry>UNIX, Linux, Windows (NT/2000/2003/XP)</entry>
+       <entry>&zebra; is written in portable C, so it runs on most
+       Unix-like systems as well as Windows (NT/2000/2003/XP).  Binary
+       distributions are 
+       available for GNU/Debian Linux and Windows</entry>
        <entry><xref linkend=""/></entry>
       </row>
      </tbody>
