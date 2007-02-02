@@ -1,6 +1,6 @@
 <appendix id="indexdata">
-  <!-- $Id: indexdata.xml,v 1.10 2006-09-22 12:34:45 adam Exp $ -->
-  <title>About Index Data and the Zebra Server</title>
+  <!-- $Id: indexdata.xml,v 1.11 2007-02-02 09:58:39 marc Exp $ -->
+  <title>About Index Data and the &zebra; Server</title>
   
   <para>
    Index Data is a consulting and software-development enterprise that

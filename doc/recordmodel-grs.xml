@@ -1,5 +1,5 @@
  <chapter id="grs">
-  <!-- $Id: recordmodel-grs.xml,v 1.5 2006-10-11 12:37:23 adam Exp $ -->
+  <!-- $Id: recordmodel-grs.xml,v 1.6 2007-02-02 09:58:39 marc Exp $ -->
   <title>GRS Record Model and Filter Modules</title>
 
   <para>
@@ -33,7 +33,7 @@
       <term><literal>grs.marc.</literal><replaceable>type</replaceable></term>
       <listitem>
        <para>
-        This allows Zebra to read
+        This allows &zebra; to read
         records in the ISO2709 (MARC) encoding standard. 
         Last parameter <replaceable>type</replaceable> names the
         <literal>.abs</literal> file (see below)
@@ -58,7 +58,7 @@
       <term><literal>grs.marcxml.</literal><replaceable>type</replaceable></term>
       <listitem>
        <para>
-        This allows Zebra to read ISO2709 encoded records.
+        This allows &zebra; to read ISO2709 encoded records.
         Last parameter <replaceable>type</replaceable> names the
         <literal>.abs</literal> file (see below)
         which describes the specific MARC structure of the input record as
@@ -83,12 +83,12 @@
        <para>
         This filter reads XML records and uses
 	<ulink url="http://expat.sourceforge.net/">Expat</ulink> to
-        parse them and convert them into IDZebra's internal 
+        parse them and convert them into ID&zebra;'s internal 
         <literal>grs</literal> record model.
         Only one record per file is supported, due to the fact XML does
 	not allow two documents to "follow" each other (there is no way
 	to know when a document is finished).
-	This filter is only available if Zebra is compiled with EXPAT support.
+	This filter is only available if &zebra; is compiled with EXPAT support.
        </para>
        <para>
 	The loadable <literal>grs.xml</literal> filter module
@@ -136,7 +136,7 @@
      Although input data can take any form, it is sometimes useful to
      describe the record processing capabilities of the system in terms of
      a single, canonical input format that gives access to the full
-     spectrum of structure and flexibility in the system. In Zebra, this
+     spectrum of structure and flexibility in the system. In &zebra;, this
      canonical format is an "SGML-like" syntax.
     </para>
 
@@ -175,7 +175,7 @@
     <!-- There is no indentation in the example above!  -H
     -note-
      -para-
-      The indentation used above is used to illustrate how Zebra
+      The indentation used above is used to illustrate how &zebra;
       interprets the mark-up. The indentation, in itself, has no
       significance to the parser for the canonical input format, which
       discards superfluous whitespace.
@@ -214,7 +214,7 @@
       The following is a GILS record that
       contains only a single element (strictly speaking, that makes it an
       illegal GILS record, since the GILS profile includes several mandatory
-      elements - Zebra does not validate the contents of a record against
+      elements - &zebra; does not validate the contents of a record against
       the Z39.50 profile, however - it merely attempts to match up elements
       of a local representation with the given schema):
      </para>
@@ -235,11 +235,11 @@
      <title>Variants</title>
 
      <para>
-      Zebra allows you to provide individual data elements in a number of
+      &zebra; allows you to provide individual data elements in a number of
       <emphasis>variant forms</emphasis>. Examples of variant forms are
       textual data elements which might appear in different languages, and
       images which may appear in different formats or layouts.
-      The variant system in Zebra is essentially a representation of
+      The variant system in &zebra; is essentially a representation of
       the variant mechanism of Z39.50-1995.
      </para>
 
@@ -334,7 +334,7 @@
     <title>GRS REGX And TCL Input Filters</title>
 
     <para>
-     In order to handle general input formats, Zebra allows the
+     In order to handle general input formats, &zebra; allows the
      operator to define filters which read individual records in their
      native format and produce an internal representation that the system
      can work with.
@@ -571,7 +571,7 @@
     </para>
 
     <para>
-     If Zebra is compiled with support for Tcl enabled, the statements
+     If &zebra; is compiled with support for Tcl enabled, the statements
      described above are supplemented with a complete
      scripting environment, including control structures (conditional
      expressions and loop constructs), and powerful string manipulation
@@ -1092,7 +1092,7 @@
            <term>sysno</term>
            <listitem> 
             <para>
-             Zebra's system number (record ID) for the
+             &zebra;'s system number (record ID) for the
              record. By default this is mapped to element
              <literal>localControlNumber</literal>.
             </para>
@@ -1116,7 +1116,7 @@
        </term>
        <listitem>
 	<para>
-	 Specifies what information, if any, Zebra should
+	 Specifies what information, if any, &zebra; should
 	 automatically include in retrieval records for the 
 	 ``system fields'' that it supports.
 	 <replaceable>systemTag</replaceable> may
@@ -1783,7 +1783,7 @@
        the mapping is trivial. Note that XML schemas, preprocessing
        instructions and comments are not part of the internal representation
        and therefore will never be part of a generated XML record.
-       Future versions of the Zebra will support that.
+       Future versions of the &zebra; will support that.
       </para>
      </listitem>
 
@@ -1883,7 +1883,7 @@
     
     <para>At the beginning, we have to define the term
      <emphasis>index-formula</emphasis> for MARC records. This term helps
-     to understand the notation of extended indexing of MARC records by Zebra.
+     to understand the notation of extended indexing of MARC records by &zebra;.
      Our definition is based on the document
      <ulink url="http://www.rba.ru/rusmarc/soft/Z39-50.htm">"The table
       of conformity for Z39.50 use attributes and RUSMARC fields"</ulink>.
@@ -1899,7 +1899,7 @@
     </screen>
     
     <para>
-     We know that Zebra supports a Bib-1 attribute - right truncation.
+     We know that &zebra; supports a Bib-1 attribute - right truncation.
      In this case, the <emphasis>index-formula</emphasis> (1) consists from 
      forms, defined in the same way as (1)</para>
     
@@ -1975,13 +1975,13 @@
    </section>
    
    <section id="notation">
-    <title>Notation of <emphasis>index-formula</emphasis> for Zebra</title>
+    <title>Notation of <emphasis>index-formula</emphasis> for &zebra;</title>
     
     
     <para>Extended indexing overloads <literal>path</literal> of
-     <literal>elm</literal> definition in abstract syntax file of Zebra
+     <literal>elm</literal> definition in abstract syntax file of &zebra;
      (<literal>.abs</literal> file). It means that names beginning with
-     <literal>"mc-"</literal> are interpreted by Zebra as
+     <literal>"mc-"</literal> are interpreted by &zebra; as
      <emphasis>index-formula</emphasis>. The database index is created and
      linked with <emphasis>access point</emphasis> (Bib-1 use attribute)
      according to this formula.</para>
@@ -2126,7 +2126,7 @@
 	 elm 70._1_$a,_$g_ Author !:w,!:p
 	</screen>
 	
-	<para>When Zebra finds a field according to 
+	<para>When &zebra; finds a field according to 
 	 <literal>"70."</literal> pattern it checks the indicators. In this
 	 case the value of first indicator doesn't mater, but the value of
 	 second one must be whitespace, in another case a field is not 

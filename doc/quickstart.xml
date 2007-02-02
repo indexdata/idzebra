@@ -1,12 +1,12 @@
 <chapter id="quick-start">
- <!-- $Id: quickstart.xml,v 1.11 2006-07-03 12:16:31 sondberg Exp $ -->
+ <!-- $Id: quickstart.xml,v 1.12 2007-02-02 09:58:39 marc Exp $ -->
  <title>Quick Start </title>
 
  <para>
   <!-- ### ulink to GILS profile: what's the URL? -->
   In this section, we will test the system by indexing a small set of
-  sample GILS records that are included with the Zebra distribution,
-  running a Zebra server against the newly created database, and
+  sample GILS records that are included with the &zebra; distribution,
+  running a &zebra; server against the newly created database, and
   searching the indexes with a client that connects to that server.
  </para>
  <para>
@@ -35,7 +35,7 @@
  </para>
 
  <para>
-  The Zebra index that you have just created has a single database
+  The &zebra; index that you have just created has a single database
   named <literal>Default</literal>.
   The database contains records structured according to
   the GILS profile, and the server will

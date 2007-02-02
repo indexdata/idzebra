@@ -1,21 +1,21 @@
 <appendix id="license">
- <!-- $Id: license.xml,v 1.14 2007-01-15 15:10:16 adam Exp $ -->
+ <!-- $Id: license.xml,v 1.15 2007-02-02 09:58:39 marc Exp $ -->
  <title>License</title>
 
   <para>
-   Zebra Server, 
+   &zebra; Server, 
   Copyright &copy; 1995-2007 Index Data ApS.
  </para>
 
   <para>
-   Zebra is free software; you can redistribute it and/or modify it under
+   &zebra; is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
    Software Foundation; either version 2, or (at your option) any later
    version.
    </para>
 
   <para>
-   Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+   &zebra; is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or
    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
    for more details.
@@ -23,7 +23,7 @@
   
   <para>
    You should have received a copy of the GNU General Public License
-   along with Zebra; see the file LICENSE.zebra.  If not, write to the
+   along with &zebra;; see the file LICENSE.zebra.  If not, write to the
    Free Software Foundation, 
    51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
    </para>

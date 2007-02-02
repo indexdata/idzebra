@@ -1,29 +1,29 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.18 2007-02-01 21:08:52 marc Exp $ -->
-  <title>Overview of Zebra Architecture</title>
+  <!-- $Id: architecture.xml,v 1.19 2007-02-02 09:58:39 marc Exp $ -->
+  <title>Overview of &zebra; Architecture</title>
 
   <section id="architecture-representation">
    <title>Local Representation</title>
    
    <para>
-    As mentioned earlier, Zebra places few restrictions on the type of
+    As mentioned earlier, &zebra; places few restrictions on the type of
     data that you can index and manage. Generally, whatever the form of
     the data, it is parsed by an input filter specific to that format, and
-    turned into an internal structure that Zebra knows how to handle. This
+    turned into an internal structure that &zebra; knows how to handle. This
     process takes place whenever the record is accessed - for indexing and
     retrieval.
    </para>
 
    <para>
     The RecordType parameter in the <literal>zebra.cfg</literal> file, or
-    the <literal>-t</literal> option to the indexer tells Zebra how to
+    the <literal>-t</literal> option to the indexer tells &zebra; how to
     process input records.
     Two basic types of processing are available - raw text and structured
     data. Raw text is just that, and it is selected by providing the
-    argument <emphasis>text</emphasis> to Zebra. Structured records are
+    argument <emphasis>text</emphasis> to &zebra;. Structured records are
     all handled internally using the basic mechanisms described in the
     subsequent sections.
-    Zebra can read structured records in many different formats.
+    &zebra; can read structured records in many different formats.
     <!--
     How this is done is governed by additional parameters after the
     "grs" keyword, separated by "." characters.
@@ -34,7 +34,7 @@
   <section id="architecture-maincomponents">
    <title>Main Components</title>
    <para>
-    The Zebra system is designed to support a wide range of data management
+    The &zebra; system is designed to support a wide range of data management
     applications. The system can be configured to handle virtually any
     kind of structured data. Each record in the system is associated with
     a <emphasis>record schema</emphasis> which lends context to the data
@@ -44,7 +44,7 @@
     one database, the system poses no such restrictions.
    </para>
    <para>
-    The Zebra indexer and information retrieval server consists of the
+    The &zebra; indexer and information retrieval server consists of the
     following main applications: the <command>zebraidx</command>
     indexing maintenance utility, and the <command>zebrasrv</command>
     information query and retrieval server. Both are using some of the
@@ -53,14 +53,14 @@
    <para>    
     The virtual Debian package <literal>idzebra-2.0</literal>
     installs all the necessary packages to start
-    working with Zebra - including utility programs, development libraries,
+    working with &zebra; - including utility programs, development libraries,
     documentation and modules. 
   </para>    
    
    <section id="componentcore">
-    <title>Core Zebra Libraries Containing Common Functionality</title>
+    <title>Core &zebra; Libraries Containing Common Functionality</title>
     <para>
-     The core Zebra module is the meat of the <command>zebraidx</command>
+     The core &zebra; module is the meat of the <command>zebraidx</command>
     indexing maintenance utility, and the <command>zebrasrv</command>
     information query and retrieval server binaries. Shortly, the core
     libraries are responsible for  
@@ -77,7 +77,7 @@
       <varlistentry>
        <term>Index Maintenance</term>
        <listitem>
-        <para> Zebra maintains Term Dictionaries and ISAM index
+        <para> &zebra; maintains Term Dictionaries and ISAM index
         entries in inverted index structures kept on disk. These are
         optimized for fast inset, update and delete, as well as good
         search performance.
@@ -122,17 +122,17 @@
      </para>
     <para> 
      The Debian package <literal>libidzebra-2.0</literal> 
-     contains all run-time libraries for Zebra, the 
+     contains all run-time libraries for &zebra;, the 
      documentation in PDF and HTML is found in 
      <literal>idzebra-2.0-doc</literal>, and
      <literal>idzebra-2.0-common</literal>
-     includes common essential Zebra configuration files.
+     includes common essential &zebra; configuration files.
     </para>
    </section>
    
 
    <section id="componentindexer">
-    <title>Zebra Indexer</title>
+    <title>&zebra; Indexer</title>
     <para>
      The  <command>zebraidx</command>
      indexing maintenance utility 
@@ -147,7 +147,7 @@
    </section>
 
    <section id="componentsearcher">
-    <title>Zebra Searcher/Retriever</title>
+    <title>&zebra; Searcher/Retriever</title>
     <para>
      This is the executable which runs the Z39.50/SRU/SRW server and
      glues together the core libraries and the filter modules to one
@@ -165,7 +165,7 @@
      The YAZ server frontend is 
      a full fledged stateful Z39.50 server taking client
      connections, and forwarding search and scan requests to the 
-     Zebra core indexer.
+     &zebra; core indexer.
     </para>
     <para>
      In addition to Z39.50 requests, the YAZ server frontend acts
@@ -214,7 +214,7 @@
       The Alvis filter for XML files is an XSLT based input
       filter. 
       It indexes element and attribute content of any thinkable XML format
-      using full XPATH support, a feature which the standard Zebra
+      using full XPATH support, a feature which the standard &zebra;
       GRS SGML and XML filters lacked. The indexed documents are
       parsed into a standard XML DOM tree, which restricts record size
       according to availability of memory.
@@ -222,7 +222,7 @@
     <para>
       The Alvis filter 
       uses XSLT display stylesheets, which let
-      the Zebra DB administrator associate multiple, different views on
+      the &zebra; DB administrator associate multiple, different views on
       the same XML document type. These views are chosen on-the-fly in
       search time.
      </para>
@@ -290,7 +290,7 @@
       <literal>libidzebra-2.0-mod-grs-xml</literal> includes the 
       <emphasis>grs.xml</emphasis> filter which uses <ulink
       url="&url.expat;">Expat</ulink> to 
-      parse records in XML and turn them into IDZebra's internal GRS node
+      parse records in XML and turn them into ID&zebra;'s internal GRS node
       trees. Have also a look at the Alvis XML/XSLT filter described in
       the next session.
     </para>
@@ -370,15 +370,15 @@
   </section>
 
   <section id="special-retrieval">
-   <title>Retrieval of Zebra internal record data</title>
+   <title>Retrieval of &zebra; internal record data</title>
    <para>
-    Starting with <literal>Zebra</literal> version 2.0.5 or newer, it is
+    Starting with <literal>&zebra;</literal> version 2.0.5 or newer, it is
     possible to use a special element set which has the prefix
     <literal>zebra::</literal>.
    </para>
    <para>
     Using this element will, regardless of record type, return
-    Zebra's internal index structure/data for a record.
+    &zebra;'s internal index structure/data for a record.
     In particular, the regular record filters are not invoked when
     these are in use.
     This can in some cases make the retrival faster than regular
@@ -397,7 +397,7 @@
      <tbody>
       <row>
        <entry><literal>zebra::meta::sysno</literal></entry>
-       <entry>Get Zebra record system ID</entry>
+       <entry>Get &zebra; record system ID</entry>
        <entry>XML and SUTRS</entry>
       </row>
       <row>
@@ -407,7 +407,7 @@
       </row>
       <row>
        <entry><literal>zebra::meta</literal></entry>
-       <entry>Get Zebra record internal metadata</entry>
+       <entry>Get &zebra; record internal metadata</entry>
        <entry>XML and SUTRS</entry>
       </row>
       <row>
@@ -460,7 +460,7 @@
     specific transformations will be applied to the raw record data. 
    </para>
    <para>
-    Also, Zebra internal metadata about the record can be accessed: 
+    Also, &zebra; internal metadata about the record can be accessed: 
     <screen>
       Z> f @attr 1=title my
       Z> format xml

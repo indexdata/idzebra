@@ -2,13 +2,13 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" 
  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 
-<!-- $Id: marc_indexing.xml,v 1.3 2006-02-15 11:07:47 marc Exp $ -->
+<!-- $Id: marc_indexing.xml,v 1.4 2007-02-02 09:58:39 marc Exp $ -->
 
 <book id="marc_indexing">
 <bookinfo>
- <title>Indexing of MARC records by Zebra</title>
+ <title>Indexing of MARC records by &zebra;</title>
  <abstract>
-  <simpara>Zebra is suitable for distribution of MARC records via Z39.50. We
+  <simpara>&zebra; is suitable for distribution of MARC records via Z39.50. We
 	have a several possibilities to describe the indexing process of MARC records.
 	This document shows these possibilities.
   </simpara>
@@ -59,7 +59,7 @@ records.</para></note>
 
 <para>At the beginning, we have to define the term <emphasis>index-formula</emphasis>
 for MARC records. This term helps to understand the notation of extended indexing of MARC records
-by Zebra. Our definition is based on the document <ulink url="http://www.rba.ru/rusmarc/soft/Z39-50.htm">"The
+by &zebra;. Our definition is based on the document <ulink url="http://www.rba.ru/rusmarc/soft/Z39-50.htm">"The
 table of conformity for Z39.50 use attributes and RUSMARC fields"</ulink>.
 The document is available only in russian language.</para>
 
@@ -69,7 +69,7 @@ The document is available only in russian language.</para>
 71-00$a, $g, $h ($c){.$b ($c)} , (1)
 </screen>
 
-<para>We know that Zebra supports a Bib-1 attribute - right truncation.
+<para>We know that &zebra; supports a Bib-1 attribute - right truncation.
 In this case, the <emphasis>index-formula</emphasis> (1) consists from 
 forms, defined in the same way as (1)</para>
 
@@ -138,13 +138,13 @@ forms, defined in the same way as (1)</para>
 </sect1>
 
 <sect1 id="notation">
-<title>Notation of <emphasis>index-formula</emphasis> for Zebra</title>
+<title>Notation of <emphasis>index-formula</emphasis> for &zebra;</title>
 
 
 <para>Extended indexing overloads <literal>path</literal> of
-<literal>elm</literal> definition in abstract syntax file of Zebra
+<literal>elm</literal> definition in abstract syntax file of &zebra;
 (<literal>.abs</literal> file). It means that names beginning with
-<literal>"mc-"</literal> are interpreted by Zebra as
+<literal>"mc-"</literal> are interpreted by &zebra; as
 <emphasis>index-formula</emphasis>. The database index is created and
 linked with <emphasis>access point</emphasis> (Bib-1 use attribute)
 according to this formula.</para>
@@ -284,7 +284,7 @@ elm mc-100___$a[0-7]_ Date/time-added-to-db !
 elm 70._1_$a,_$g_ Author !:w,!:p
 </screen>
 
-<para>When Zebra finds a field according to <literal>"70."</literal> pattern it checks
+<para>When &zebra; finds a field according to <literal>"70."</literal> pattern it checks
 the indicators.  In this case the value of first indicator doesn't mater, but
 the value of second one must be whitespace, in another case a field is not 
 indexed.</para>

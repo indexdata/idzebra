@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.28 2007-01-17 12:59:38 adam Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.29 2007-02-02 09:58:39 marc Exp $ -->
   <title>Query Model</title>
   
   <section id="querymodel-overview">
@@ -9,7 +9,7 @@
     <title>Query Languages</title>
  
     <para>
-     Zebra is born as a networking Information Retrieval engine adhering
+     &zebra; is born as a networking Information Retrieval engine adhering
      to the international standards 
      <ulink url="&url.z39.50;">Z39.50</ulink> and
      <ulink url="&url.sru;">SRU</ulink>,
@@ -42,7 +42,7 @@
       <emphasis>Prefix Query Notation</emphasis>, or in short 
       PQN. See       
       <xref linkend="querymodel-rpn"/> for further explanations and
-      descriptions of Zebra's capabilities.  
+      descriptions of &zebra;'s capabilities.  
      </para>
     </section>    
     
@@ -56,7 +56,7 @@
       <ulink url="&url.cql;">CQL</ulink> is not natively supported.
      </para>
      <para>
-      Zebra can be configured to understand and map CQL to PQF. See
+      &zebra; can be configured to understand and map CQL to PQF. See
       <xref linkend="querymodel-cql-to-pqf"/>.
      </para>
     </section>    
@@ -66,7 +66,7 @@
    <section id="querymodel-operation-types">
     <title>Operation types</title>
     <para>
-     Zebra supports all of the three different
+     &zebra; supports all of the three different
      Z39.50/SRU operations defined in the
      standards: explain, search, 
      and scan. A short description of the
@@ -150,7 +150,7 @@
     The <ulink url="&url.yaz.pqf;">PQF grammar</ulink>
     is documented in the YAZ manual, and shall not be
     repeated here. This textual PQF representation
-    is not transmistted to Zebra during search, but it is in the
+    is not transmistted to &zebra; during search, but it is in the
     client mapped to the equivalent Z39.50 binary 
     query parse tree. 
    </para>
@@ -173,13 +173,13 @@
      <title>Attribute sets</title>
      <para>
       Attribute sets define the exact meaning and semantics of queries
-      issued. Zebra comes with some predefined attribute set
+      issued. &zebra; comes with some predefined attribute set
       definitions, others can easily be defined and added to the
       configuration.
      </para>
      
      <table id="querymodel-attribute-sets-table" frame="top">
-      <title>Attribute sets predefined in Zebra</title>
+      <title>Attribute sets predefined in &zebra;</title>
       <tgroup cols="4">
        <thead>
 	<row>
@@ -206,7 +206,7 @@
          <entry>Standard PQF query language attribute set which defines the
           semantics of Z39.50 searching. In addition, all of the
           non-use attributes (types 2-12) define the hard-wired 
-          Zebra internal query
+          &zebra; internal query
           processing.</entry>
          <entry>default</entry>
         </row>
@@ -237,7 +237,7 @@
      
      <note>
       <para>
-       The Zebra internal query processing is modeled after 
+       The &zebra; internal query processing is modeled after 
        the Bib-1 attribute set, and the non-use
        attributes type 2-6 are hard-wired in. It is therefore essential
        to be familiar with <xref linkend="querymodel-bib1-nonuse"/>. 
@@ -349,7 +349,7 @@
      <para>
       Atomic (APT) queries are always leaf nodes in the PQF query tree. 
       UN-supplied non-use attributes types 2-12 are either inherited from
-      higher nodes in the query tree, or are set to Zebra's default values.
+      higher nodes in the query tree, or are set to &zebra;'s default values.
       See <xref linkend="querymodel-bib1"/> for details. 
      </para>
      
@@ -369,7 +369,7 @@
          <entry>List of <emphasis>orthogonal</emphasis> attributes</entry>
          <entry>Any of the orthogonal attribute types may be omitted,
           these are inherited from higher query tree nodes, or if not
-          inherited, are set to the default Zebra configuration values.
+          inherited, are set to the default &zebra; configuration values.
          </entry>
         </row>
         <row>
@@ -427,7 +427,7 @@
     <section id="querymodel-resultset">
      <title>Named Result Sets</title>
      <para>
-      Named result sets are supported in Zebra, and result sets can be
+      Named result sets are supported in &zebra;, and result sets can be
       used as operands without limitations. It follows that named
       result sets are leaf nodes in the PQF query tree, exactly as
       atomic APT queries are.
@@ -462,28 +462,28 @@
       <para>
        Named result sets are only supported by the Z39.50 protocol.
        The SRU web service is stateless, and therefore the notion of
-       named result sets does not exist when accessing a Zebra server by
+       named result sets does not exist when accessing a &zebra; server by
        the SRU protocol.
       </para>
      </note>
     </section>
     
     <section id="querymodel-use-string">
-     <title>Zebra's special access point of type 'string'</title>
+     <title>&zebra;'s special access point of type 'string'</title>
      <para>
       The numeric <emphasis>use (type 1)</emphasis> attribute is usually 
       referred to from a given
-      attribute set. In addition, Zebra let you use 
+      attribute set. In addition, &zebra; let you use 
       <emphasis>any internal index
        name defined in your configuration</emphasis> 
       as use attribute value. This is a great feature for
       debugging, and when you do
       not need the complexity of defined use attribute values. It is
-      the preferred way of accessing Zebra indexes directly.  
+      the preferred way of accessing &zebra; indexes directly.  
      </para>
      <para>
       Finding all documents which have the term list "information
-      retrieval" in an Zebra index, using it's internal full string
+      retrieval" in an &zebra; index, using it's internal full string
       name. Scanning the same index.
       <screen>
        Z> find @attr 1=sometext "information retrieval"
@@ -518,7 +518,7 @@
     </section>
     
     <section id="querymodel-use-xpath">
-     <title>Zebra's special access point of type 'XPath' 
+     <title>&zebra;'s special access point of type 'XPath' 
       for GRS filters</title>
      <para>
       As we have seen above, it is possible (albeit seldom a great
@@ -634,7 +634,7 @@
      <ulink url="&url.z39.50.explain;">Explain</ulink> attribute set
      Exp-1, which is used to discover information 
      about a server's search semantics and functional capabilities
-     Zebra exposes a  "classic" 
+     &zebra; exposes a  "classic" 
      Explain database by base name <literal>IR-Explain-1</literal>, which
      is populated with system internal information.  
     </para>
@@ -679,7 +679,7 @@
      <para>
       Classic Explain only defines retrieval of Explain information
       via ASN.1. Practically no Z39.50 clients supports this. Fortunately
-      they don't have to - Zebra allows retrieval of this information
+      they don't have to - &zebra; allows retrieval of this information
       in other formats:
       <literal>SUTRS</literal>, <literal>XML</literal>, 
       <literal>GRS-1</literal> and  <literal>ASN.1</literal> Explain.
@@ -741,7 +741,7 @@
      <para>
       Get attribute details record for database
       <literal>Default</literal>.
-      This query is very useful to study the internal Zebra indexes.
+      This query is very useful to study the internal &zebra; indexes.
       If records have been indexed using the <literal>alvis</literal>
       XSLT filter, the string representation names of the known indexes can be
       found.
@@ -770,7 +770,7 @@
       Attribute Set</ulink> 
      version from 2003. Index Data is not the copyright holder of this
      information, except for the configuration details, the listing of
-     Zebra's capabilities, and the example queries. 
+     &zebra;'s capabilities, and the example queries. 
     </para>
     
     
@@ -814,7 +814,7 @@
      be sourced in the main configuration <filename>zebra.cfg</filename>. 
      </para>
     <para>
-      In addition, Zebra allows the access of 
+      In addition, &zebra; allows the access of 
      <emphasis>internal index names</emphasis> and <emphasis>dynamic
      XPath</emphasis> as use attributes; see
       <xref linkend="querymodel-use-string"/> and 
@@ -835,7 +835,7 @@
 
 
    <section id="querymodel-bib1-nonuse">
-     <title>Zebra general Bib1 Non-Use Attributes (type 2-6)</title>
+     <title>&zebra; general Bib1 Non-Use Attributes (type 2-6)</title>
     
     <section id="querymodel-bib1-relation">
      <title>Relation Attributes (type 2)</title>
@@ -1029,12 +1029,12 @@
 
      <note>
       <para>
-       Zebra only supports first-in-field seaches if the
+       &zebra; only supports first-in-field seaches if the
        <literal>firstinfield</literal> is enabled for the index
        Refer to <xref linkend="default-idx-file"/>.
-       Zebra does not distinguish between first in field and
+       &zebra; does not distinguish between first in field and
        first in subfield. They result in the same hit count.
-       Searching for first position in (sub)field in only supported in Zebra
+       Searching for first position in (sub)field in only supported in &zebra;
        2.0.2 and later.
       </para>
      </note>
@@ -1046,7 +1046,7 @@
      <para>
       The structure attribute specifies the type of search
       term. This causes the search to be mapped on
-      different Zebra internal indexes, which must have been defined
+      different &zebra; internal indexes, which must have been defined
       at index time. 
      </para>
 
@@ -1189,7 +1189,7 @@
     <para>
      The structure attribute value 
      <literal>Local number (107)</literal>
-     is supported, and maps always to the Zebra internal document ID,
+     is supported, and maps always to the &zebra; internal document ID,
      irrespectively which use attribute is specified. The following queries
      have exactly the same unique record in the hit set:
      <screen>
@@ -1213,7 +1213,7 @@
      </para>
      <note>
       <para>
-       The exact mapping between PQF queries and Zebra internal indexes
+       The exact mapping between PQF queries and &zebra; internal indexes
        and index types is explained in 
        <xref linkend="querymodel-pqf-apt-mapping"/>.
       </para>
@@ -1330,7 +1330,7 @@
 
      <para>
        The truncation attribute value 
-      <literal>Regexp-2 (103) </literal> is a Zebra specific extension
+      <literal>Regexp-2 (103) </literal> is a &zebra; specific extension
       which allows <emphasis>fuzzy</emphasis> matches. One single
       error in spelling of search terms is allowed, i.e., a document
       is hit if it includes a term which can be mapped to the used
@@ -1401,7 +1401,7 @@
       </para>
      <para>
       <literal>Incomplete subfield (1)</literal> is the default, and
-      makes Zebra use 
+      makes &zebra; use 
       register <literal>type="w"</literal>, whereas 
       <literal>Complete field (3)</literal> triggers
       search and scan in index <literal>type="p"</literal>.
@@ -1409,13 +1409,13 @@
      <para>
       The <literal>Complete subfield (2)</literal> is a reminiscens
       from the  happy <literal>MARC</literal>
-      binary format days. Zebra does not support it, but maps silently
+      binary format days. &zebra; does not support it, but maps silently
       to <literal>Complete field (3)</literal>.
      </para>
 
      <note>
       <para>
-       The exact mapping between PQF queries and Zebra internal indexes
+       The exact mapping between PQF queries and &zebra; internal indexes
        and index types is explained in 
        <xref linkend="querymodel-pqf-apt-mapping"/>.
       </para>
@@ -1427,9 +1427,9 @@
 
 
   <section id="querymodel-zebra">
-   <title>Extended Zebra RPN Features</title>
+   <title>Extended &zebra; RPN Features</title>
    <para>
-    The Zebra internal query engine has been extended to specific needs
+    The &zebra; internal query engine has been extended to specific needs
     not covered by the <literal>bib-1</literal> attribute set query
     model. These extensions are <emphasis>non-standard</emphasis>
     and <emphasis>non-portable</emphasis>: most functional extensions
@@ -1441,9 +1441,9 @@
    </para>
     
    <section id="querymodel-zebra-attr-allrecords">
-    <title>Zebra specific retrieval of all records</title>
+    <title>&zebra; specific retrieval of all records</title>
     <para>
-     Zebra defines a hardwired <literal>string</literal> index name
+     &zebra; defines a hardwired <literal>string</literal> index name
      called <literal>_ALLRECORDS</literal>. It matches any record
      contained in the database, if used in conjunction with 
      the relation attribute 
@@ -1470,28 +1470,28 @@
      <para>
       The special string index <literal>_ALLRECORDS</literal> is
       experimental, and the provided functionality and syntax may very
-      well change in future releases of Zebra.
+      well change in future releases of &zebra;.
      </para>
     </warning>
    </section>
 
    <section id="querymodel-zebra-attr-search">
-    <title>Zebra specific Search Extensions to all Attribute Sets</title>
+    <title>&zebra; specific Search Extensions to all Attribute Sets</title>
     <para>
-     Zebra extends the Bib-1 attribute types, and these extensions are
+     &zebra; extends the Bib-1 attribute types, and these extensions are
      recognized regardless of attribute 
      set used in a <literal>search</literal> operation query.
     </para>
     
     <table id="querymodel-zebra-attr-search-table" frame="top">
-     <title>Zebra Search Attribute Extensions</title>
+     <title>&zebra; Search Attribute Extensions</title>
      <tgroup cols="4">
       <thead>
        <row>
          <entry>Name</entry>
 	<entry>Value</entry>
 	<entry>Operation</entry>
-	<entry>Zebra version</entry>
+	<entry>&zebra; version</entry>
        </row>
       </thead>
       <tbody>
@@ -1542,7 +1542,7 @@
     </table>      
     
     <section id="querymodel-zebra-attr-sorting">
-     <title>Zebra Extension Embedded Sort Attribute (type 7)</title>
+     <title>&zebra; Extension Embedded Sort Attribute (type 7)</title>
      <para>
       The embedded sort is a way to specify sort within a query - thus
       removing the need to send a Sort Request separately. It is both
@@ -1584,7 +1584,7 @@
     </section>
 
      <!--
-    Zebra Extension Term Set Attribute
+    &zebra; Extension Term Set Attribute
     From the manual text, I can not see what is the point with this feature.
     I think it makes more sense when there are multiple terms in a query, or
     something...
@@ -1596,7 +1596,7 @@
 
      <!--
     <section id="querymodel-zebra-attr-estimation">
-     <title>Zebra Extension Term Set Attribute (type 8)</title>
+     <title>&zebra; Extension Term Set Attribute (type 8)</title>
     <para>
      The Term Set feature is a facility that allows a search to store
      hitting terms in a "pseudo" resultset; thus a search (as usual) +
@@ -1621,7 +1621,7 @@
 
 
     <section id="querymodel-zebra-attr-weight">
-     <title>Zebra Extension Rank Weight Attribute (type 9)</title>
+     <title>&zebra; Extension Rank Weight Attribute (type 9)</title>
      <para>
       Rank weight is a way to pass a value to a ranking algorithm - so
       that one APT has one value - while another as a different one. 
@@ -1637,9 +1637,9 @@
     </section>
 
     <section id="querymodel-zebra-attr-termref">
-     <title>Zebra Extension Term Reference Attribute (type 10)</title>
+     <title>&zebra; Extension Term Reference Attribute (type 10)</title>
      <para>
-      Zebra supports the searchResult-1 facility. 
+      &zebra; supports the searchResult-1 facility. 
       If the Term Reference Attribute (type 10) is
       given, that specifies a subqueryId value returned as part of the
       search result. It is a way for a client to name an APT part of a
@@ -1664,7 +1664,7 @@
     <section id="querymodel-zebra-local-attr-limit">
      <title>Local Approximative Limit Attribute (type 11)</title>
      <para>
-      Zebra computes - unless otherwise configured -
+      &zebra; computes - unless otherwise configured -
       the exact hit count for every APT
       (leaf) in the query tree. These hit counts are returned as part of
       the searchResult-1 facility in the binary encoded Z39.50 search
@@ -1672,7 +1672,7 @@
      </para>
      <para>
       By setting an estimation limit size of the resultset of the APT
-      leaves, Zebra stoppes processing the result set when the limit
+      leaves, &zebra; stoppes processing the result set when the limit
       length is reached.
       Hit counts under this limit are still precise, but hit counts over it
       are estimated using the statistics gathered from the chopped
@@ -1709,7 +1709,7 @@
     <section id="querymodel-zebra-global-attr-limit">
      <title>Global Approximative Limit Attribute (type 12)</title>
      <para>
-      By default Zebra computes precise hit counts for a query as
+      By default &zebra; computes precise hit counts for a query as
       a whole. Setting attribute 12 makes it perform approximative
       hit counts instead. It has the same semantics as 
       <literal>estimatehits</literal> for the <xref linkend="zebra-cfg"/>.
@@ -1732,21 +1732,21 @@
    </section>
 
    <section id="querymodel-zebra-attr-scan">
-    <title>Zebra specific Scan Extensions to all Attribute Sets</title>
+    <title>&zebra; specific Scan Extensions to all Attribute Sets</title>
     <para>
-     Zebra extends the Bib1 attribute types, and these extensions are
+     &zebra; extends the Bib1 attribute types, and these extensions are
      recognized regardless of attribute 
      set used in a scan operation query.
     </para>
     <table id="querymodel-zebra-attr-scan-table" frame="top">
-     <title>Zebra Scan Attribute Extensions</title>
+     <title>&zebra; Scan Attribute Extensions</title>
      <tgroup cols="4">
       <thead>
        <row>
 	<entry>Name</entry>
 	<entry>Type</entry>
 	<entry>Operation</entry>
-	<entry>Zebra version</entry>
+	<entry>&zebra; version</entry>
        </row>
       </thead>
       <tbody>
@@ -1767,7 +1767,7 @@
     </table>      
     
     <section id="querymodel-zebra-attr-narrow">
-     <title>Zebra Extension Result Set Narrow (type 8)</title>
+     <title>&zebra; Extension Result Set Narrow (type 8)</title>
      <para>
       If attribute Result Set Narrow (type 8)
       is given for scan, the value is the name of a
@@ -1803,7 +1803,7 @@
      </para>
      
      <para>
-      Zebra 2.0.2 and later is able to skip 0 hit counts. This, however,
+      &zebra; 2.0.2 and later is able to skip 0 hit counts. This, however,
       is known not to scale if the number of terms to skip is high.
       This most likely will happen if the result set is small (and
       result in many 0 hits).
@@ -1811,9 +1811,9 @@
     </section>
 
     <section id="querymodel-zebra-attr-approx">
-     <title>Zebra Extension Approximative Limit (type 11)</title>
+     <title>&zebra; Extension Approximative Limit (type 11)</title>
      <para>
-      The Zebra Extension Approximative Limit (type 11) is a way to
+      The &zebra; Extension Approximative Limit (type 11) is a way to
       enable approximate hit counts for scan hit counts, in the same
       way as for search hit counts. 
      </para>
@@ -1821,7 +1821,7 @@
    </section>
    
    <section id="querymodel-idxpath">
-    <title>Zebra special IDXPATH Attribute Set for GRS indexing</title>
+    <title>&zebra; special IDXPATH Attribute Set for GRS indexing</title>
     <para>
      The attribute-set <literal>idxpath</literal> consists of a single 
      Use (type 1) attribute. All non-use attributes behave as normal. 
@@ -1831,13 +1831,13 @@
      <literal>xpath enable</literal> option in the GRS filter
      <filename>*.abs</filename> configuration files. If one wants to use
      the special <literal>idxpath</literal> numeric attribute set, the
-     main Zebra configuration file <filename>zebra.cfg</filename>
+     main &zebra; configuration file <filename>zebra.cfg</filename>
      directive <literal>attset: idxpath.att</literal> must be enabled.
     </para>
     <warning>
      <para>
       The <literal>idxpath</literal> is deprecated, may not be
-      supported in future Zebra versions, and should definitely
+      supported in future &zebra; versions, and should definitely
       not be used in production code.
      </para>
     </warning>
@@ -1857,7 +1857,7 @@
      </warning>
      
      <table id="querymodel-idxpath-use-table" frame="top">
-      <title>Zebra specific IDXPATH Use Attributes (type 1)</title>
+      <title>&zebra; specific IDXPATH Use Attributes (type 1)</title>
       <tgroup cols="4">
        <thead>
         <row>
@@ -1971,7 +1971,7 @@
 
 
    <section id="querymodel-pqf-apt-mapping">
-    <title>Mapping from PQF atomic APT queries to Zebra internal 
+    <title>Mapping from PQF atomic APT queries to &zebra; internal 
      register indexes</title>
     <para>
      The rules for PQF APT mapping are rather tricky to grasp in the
@@ -1985,12 +1985,12 @@
    <section id="querymodel-pqf-apt-mapping-accesspoint">
     <title>Mapping of PQF APT access points</title>
     <para>
-      Zebra understands four fundamental different types of access
+      &zebra; understands four fundamental different types of access
       points, of which only the  
       <emphasis>numeric use attribute</emphasis> type access points
       are defined by the  <ulink url="&url.z39.50;">Z39.50</ulink>
       standard.
-      All other access point types are Zebra specific, and non-portable.
+      All other access point types are &zebra; specific, and non-portable.
     </para>
 
      <table id="querymodel-zebra-mapping-accesspoint-types" frame="top">
@@ -2018,7 +2018,7 @@
         <entry>normalized name is used as internal string index name</entry>
        </row>
        <row>
-        <entry>Zebra internal index name</entry>
+        <entry>&zebra; internal index name</entry>
         <entry>zebra</entry>
         <entry>_[a-zA-Z](_?[a-zA-Z0-9])*</entry>
         <entry>hardwired internal string index name</entry>
@@ -2043,7 +2043,7 @@
      
      <para>
       <emphasis>Numeric use attributes</emphasis> are mapped 
-      to the Zebra internal
+      to the &zebra; internal
       string index according to the attribute set definition in use.
       The default attribute set is <literal>Bib-1</literal>, and may be
       omitted in the PQF query.
@@ -2096,10 +2096,10 @@
      </para>
 
      <para>
-      Zebra internal indexes can be accessed directly,
+      &zebra; internal indexes can be accessed directly,
       according to the same rules as the user defined
       string indexes. The only difference is that   
-      Zebra internal index names are hardwired,
+      &zebra; internal index names are hardwired,
       all uppercase and
       must start with the character <literal>'_'</literal>. 
      </para>
@@ -2109,7 +2109,7 @@
       available using the <literal>GRS</literal> filter for indexing.
       These access point names must start with the character
       <literal>'/'</literal>, they are <emphasis>not
-      normalized</emphasis>, but passed unaltered to the Zebra internal
+      normalized</emphasis>, but passed unaltered to the &zebra; internal
       XPATH engine. See <xref linkend="querymodel-use-xpath"/>.
 
      </para>
@@ -2122,7 +2122,7 @@
      <title>Mapping of PQF APT structure and completeness to 
       register type</title>
     <para>
-      Internally Zebra has in it's default configuration several
+      Internally &zebra; has in it's default configuration several
      different types of registers or indexes, whose tokenization and
       character normalization rules differ. This reflects the fact that 
       searching fundamental different tokens like dates, numbers,
@@ -2295,7 +2295,7 @@
     <para>
      If the <emphasis>Structure</emphasis> attribute is
      <emphasis>Local Number</emphasis> the term is treated as
-     native Zebra Record Identifier.
+     native &zebra; Record Identifier.
     </para>
 
     <para>
@@ -2329,7 +2329,7 @@
    </section>
 
    <section  id="querymodel-regular">
-    <title>Zebra Regular Expressions in Truncation Attribute (type = 5)</title>
+    <title>&zebra; Regular Expressions in Truncation Attribute (type = 5)</title>
     
     <para>
      Each term in a query is interpreted as a regular expression if
@@ -2405,7 +2405,7 @@
      is a plus character (<literal>+</literal>) it marks the
      beginning of a section with non-standard specifiers.
      The next plus character marks the end of the section.
-     Currently Zebra only supports one specifier, the error tolerance,
+     Currently &zebra; only supports one specifier, the error tolerance,
      which consists one digit. 
      <!-- TODO Nice thing, but what does
      that error tolerance digit *mean*? Maybe an example would be nice? -->
@@ -2438,14 +2438,14 @@
    <!--
    <para>
     The RecordType parameter in the <literal>zebra.cfg</literal> file, or
-    the <literal>-t</literal> option to the indexer tells Zebra how to
+    the <literal>-t</literal> option to the indexer tells &zebra; how to
     process input records.
     Two basic types of processing are available - raw text and structured
     data. Raw text is just that, and it is selected by providing the
-    argument <literal>text</literal> to Zebra. Structured records are
+    argument <literal>text</literal> to &zebra;. Structured records are
     all handled internally using the basic mechanisms described in the
     subsequent sections.
-    Zebra can read structured records in many different formats.
+    &zebra; can read structured records in many different formats.
    </para>
    -->
   </section>

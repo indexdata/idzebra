@@ -8,7 +8,7 @@
      <!ENTITY % common  SYSTEM "common/common.ent">
      %common;
 ]>
-<!-- $Id: idzebra-config.xml,v 1.2 2007-01-15 14:55:50 adam Exp $ -->
+<!-- $Id: idzebra-config.xml,v 1.3 2007-02-02 09:58:39 marc Exp $ -->
 <refentry id="idzebra-config">
  <refentryinfo>
   <productname>zebra</productname>
@@ -104,7 +104,7 @@
    <varlistentry>
     <term>--modules</term>
     <listitem><para>
-      Return directory for Zebra modules.
+      Return directory for &zebra; modules.
      </para></listitem>
    </varlistentry>
 

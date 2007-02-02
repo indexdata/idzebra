@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.24 2006-09-22 12:34:45 adam Exp $ -->
+ <!-- $Id: examples.xml,v 1.25 2007-02-02 09:58:39 marc Exp $ -->
  <title>Example Configurations</title>
 
  <sect1 id="examples-overview">
@@ -15,7 +15,7 @@
    option to specify an alternative master configuration file.
   </para>
   <para>
-   The master configuration file tells Zebra:
+   The master configuration file tells &zebra;:
    <itemizedlist>
 
     <listitem>
@@ -64,7 +64,7 @@
   <title>Example 1: XML Indexing And Searching</title>
 
   <para>
-   This example shows how Zebra can be used with absolutely minimal
+   This example shows how &zebra; can be used with absolutely minimal
    configuration to index a body of
    <ulink url="&url.xml;">XML</ulink>
    documents, and search them using
@@ -88,9 +88,9 @@
    would you?  :-)
   </para>
   <para>
-   Now we need to create a Zebra database to hold and index the XML
+   Now we need to create a &zebra; database to hold and index the XML
    records.  We do this with the
-   Zebra indexer, <command>zebraidx</command>, which is
+   &zebra; indexer, <command>zebraidx</command>, which is
    driven by the <literal>zebra.cfg</literal> configuration file.
    For our purposes, we don't need any
    special behaviour - we can use the defaults - so we can start with a
@@ -102,7 +102,7 @@
    </screen>
   </para>
   <para>
-   That's all you need for a minimal Zebra configuration.  Now you can
+   That's all you need for a minimal &zebra; configuration.  Now you can
    roll the XML records into the database and build the indexes:
    <screen>
     zebraidx update records
@@ -228,7 +228,7 @@
    <literal>&lt;Zthes&gt;</literal> element.
   </para>
   <para>
-   This is a two-step process.  First, we need to tell Zebra that we
+   This is a two-step process.  First, we need to tell &zebra; that we
    want to support the BIB-1 attribute set.  Then we need to tell it
    which elements of its record pertain to access point 4.
    </para>
@@ -271,7 +271,7 @@ xelm /Zthes/termModifiedBy      termModifiedBy:w
     <callout arearefs="attset.attset">
      <para>
       Declare Bib-1 attribute set. See <filename>bib1.att</filename> in
-      Zebra's <filename>tab</filename> directory.
+      &zebra;'s <filename>tab</filename> directory.
      </para>
     </callout>
     <callout arearefs="termId">
@@ -375,7 +375,7 @@ rendering engine can handle.  I generated the EPS version of the image
 by exporting a line-drawing done in TGIF, then converted that to the
 GIF using a shell-script called "epstogif" which used an appallingly
 baroque sequence of conversions, which I would prefer not to pollute
-the Zebra build environment with:
+the &zebra; build environment with:
 
 	#!/bin/sh
 

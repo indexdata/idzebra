@@ -1,11 +1,11 @@
  <chapter id="fields-and-charsets">
-  <!-- $Id: field-structure.xml,v 1.11 2007-01-15 14:51:04 adam Exp $ -->
+  <!-- $Id: field-structure.xml,v 1.12 2007-02-02 09:58:39 marc Exp $ -->
   <title>Field Structure and Character Sets
   </title>
   
   <para>
    In order to provide a flexible approach to national character set
-   handling, Zebra allows the administrator to configure the set up the
+   handling, &zebra; allows the administrator to configure the set up the
    system to handle any 8-bit character set &mdash; including sets that
    require multi-octet diacritics or other multi-octet characters. The
    definition of a character set includes a specification of the
@@ -149,13 +149,13 @@
    <para>
     The character map files are used to define the word tokenization
     and character normalization performed before inserting text into
-    the inverse indexes. Zebra ships with the predefined character map
+    the inverse indexes. &zebra; ships with the predefined character map
     files <filename>tab/*.chr</filename>. Users are allowed to add
     and/or modify maps according to their needs.  
    </para>
 
    <table id="character-map-table" frame="top">
-     <title>Character maps predefined in Zebra</title>
+     <title>Character maps predefined in &zebra;</title>
       <tgroup cols="3">
        <thead>
         <row>
@@ -389,7 +389,7 @@
    <para>
     In addition to specifying sort orders, space (blank) handling,
     and upper/lowercase folding, you can also use the character map
-    files to make Zebra ignore leading articles in sorting records,
+    files to make &zebra; ignore leading articles in sorting records,
     or when doing complete field searching.
    </para>
    <para>

@@ -1,8 +1,8 @@
-<!-- $Id: installation.xml,v 1.33 2007-01-09 09:11:22 adam Exp $ -->
+<!-- $Id: installation.xml,v 1.34 2007-02-02 09:58:39 marc Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
-   Zebra is written in ANSI C and was implemented with portability in mind. 
+   &zebra; is written in ANSI C and was implemented with portability in mind. 
    We primarily use <ulink url="&url.gcc;">GCC</ulink> on UNIX and 
    <ulink url="&url.vstudio;">Microsoft Visual C++</ulink> on Windows.
   </para>
@@ -21,7 +21,7 @@
   </para>
   
   <para>
-   Zebra can be configured to use the following utilities (most of
+   &zebra; can be configured to use the following utilities (most of
    which are optional):
 
    <variablelist>
@@ -30,9 +30,9 @@
       (required)</term>
      <listitem>
       <para>
-       Zebra uses YAZ to support <ulink url="&url.z39.50;">Z39.50</ulink> / 
+       &zebra; uses YAZ to support <ulink url="&url.z39.50;">Z39.50</ulink> / 
 	<ulink url="&url.sru;">SRU</ulink>.
-	Also the memory management utilites from YAZ is used by Zebra.
+	Also the memory management utilites from YAZ is used by &zebra;.
       </para>
      </listitem>
     </varlistentry>
@@ -64,7 +64,7 @@
      <listitem>
       <para>
        Tcl is required if you  need to use the Tcl record filter
-       for Zebra. You can find binary packages for Tcl for many
+       for &zebra;. You can find binary packages for Tcl for many
        Unices and Windows.
       </para>
      </listitem>
@@ -78,8 +78,8 @@
      <listitem>
       <para>
        GNU Automake and Autoconf are only required if you're
-       using the CVS version of Zebra. You do not need these
-       if you have fetched a Zebra tar.
+       using the CVS version of &zebra;. You do not need these
+       if you have fetched a &zebra; tar.
       </para>
      </listitem>
     </varlistentry>
@@ -90,7 +90,7 @@
      <listitem>
       <para>
        These tools are only required if you're writing
-       documentation for Zebra. You need the following
+       documentation for &zebra;. You need the following
        Debian packages: docbook, docbook-xml, docbook-xsl,
        docbook-utils, xsltproc.
       </para>
@@ -111,7 +111,7 @@
     shell script attempts to guess correct values for various
     system-dependent variables used during compilation.
     It uses those values to create a <literal>Makefile</literal> in each
-    directory of Zebra.
+    directory of &zebra;.
    </para>
    
    <para>
@@ -177,7 +177,7 @@
      <term><literal>index/*.so</literal></term>
       <listitem>
        <para>
-	The <literal>.so</literal>-files are Zebra record filter modules.
+	The <literal>.so</literal>-files are &zebra; record filter modules.
 	There are modules for reading 
 	MARC (<filename>mod-grs-marc.so</filename>),
 	XML (<filename>mod-grs-xml.so</filename>) , etc. 
@@ -191,18 +191,18 @@
    <note>
     <para>
      Using configure option <literal>--disable-shared</literal> builds
-     Zebra statically and links "in" Zebra filter code statically, i.e.
+     &zebra; statically and links "in" &zebra; filter code statically, i.e.
      no <literal>.so-files</literal> are generated
     </para>
    </note>
 
    <para>
-    You can now use Zebra. If you wish to install it system-wide, then
+    You can now use &zebra;. If you wish to install it system-wide, then
     as root type
     <screen>
      make install
     </screen>
-    By default this will install the Zebra executables in 
+    By default this will install the &zebra; executables in 
     <filename>/usr/local/bin</filename>,
     and the standard configuration files in 
     <filename>/usr/local/share/idzebra-2.0</filename>. If
@@ -240,7 +240,7 @@
       apt-get update
      </screen>
      as <literal>root</literal>, the 
-     <ulink url="&url.idzebra;">Zebra</ulink> indexer is
+     <ulink url="&url.idzebra;">&zebra;</ulink> indexer is
      easily installed issuing
      <screen>
       apt-get install idzebra-2.0 idzebra-2.0-doc
@@ -251,7 +251,7 @@
    <section id="installation-debia-nother">
     <title>Ubuntu/Debian and GNU/Debian on other platforms</title>
     <para>
-     These <ulink url="&url.idzebra;">Zebra</ulink>
+     These <ulink url="&url.idzebra;">&zebra;</ulink>
      packages are specifically compiled for
      GNU/Debian Linux systems. Installation on other 
      GNU/Debian systems is possible by
@@ -272,7 +272,7 @@
       apt-get build-dep idzebra-2.0
      </screen>
      as <literal>root</literal>, the 
-     <ulink url="&url.idzebra;">Zebra</ulink> indexer is
+     <ulink url="&url.idzebra;">&zebra;</ulink> indexer is
      recompiled and installed issuing
      <screen>
       fakeroot apt-get source --compile idzebra-2.0
@@ -288,15 +288,15 @@
   </section>
 
   <section id="installation-win32"><title>WIN32</title>
-   <para>The easiest way to install Zebra on Windows is by downloading
+   <para>The easiest way to install &zebra; on Windows is by downloading
     an installer from 
     <ulink url="&url.idzebra.download.win32;">here</ulink>.
     The installer comes with source too - in case you wish to
-    compile Zebra with different Compiler options.
+    compile &zebra; with different Compiler options.
    </para>
    
    <para>
-    Zebra is shipped with "makefiles" for the NMAKE tool that comes
+    &zebra; is shipped with "makefiles" for the NMAKE tool that comes
     with <ulink url="&url.vstudio;">Microsoft Visual C++</ulink>.
     Version 2003 and 2005 has been tested. We expect that zebra compiles
     with version 6 as well.
@@ -323,7 +323,7 @@
      <varlistentry>
       <term><literal>YAZDIR</literal></term>
       <listitem><para>
-        Directory of YAZ source. Zebra's makefile expects to find
+        Directory of YAZ source. &zebra;'s makefile expects to find
         <filename>yaz.lib</filename>, <filename>yaz.dll</filename> 
         in <replaceable>yazdir</replaceable><literal>/lib</literal> and
         <replaceable>yazdir</replaceable><literal>/bin</literal> respectively.
@@ -335,7 +335,7 @@
       <term><literal>HAVE_EXPAT</literal>,
        <literal>EXPAT_DIR</literal></term>
       <listitem><para>
-        If <literal>HAVE_EXPAT</literal> is set to 1, Zebra is compiled
+        If <literal>HAVE_EXPAT</literal> is set to 1, &zebra; is compiled
         with <ulink url="&url.expat;">Expat</ulink> support.
 	In this configuration, set 
         <literal>ZEBRA_DIR</literal> to the Expat source directory.
@@ -348,7 +348,7 @@
       <term><literal>HAVE_ICONV</literal>,
        <literal>ICONV_DIR</literal></term>
        <listitem><para>
-        If <literal>HAVE_ICONV</literal> is set to 1, Zebra is compiled
+        If <literal>HAVE_ICONV</literal> is set to 1, &zebra; is compiled
         with iconv support. In this configuration, set 
         <literal>ICONV_DIR</literal> to the iconv source directory.
         Iconv binaries can be downloaded from
@@ -363,7 +363,7 @@
        <literal>BZIP2DEF</literal>
       </term>
       <listitem><para>
-        Define these symbols if Zebra is to be compiled with
+        Define these symbols if &zebra; is to be compiled with
 	<ulink url="&url.bzip2;">BZIP2</ulink> record compression support.
        </para></listitem>
      </varlistentry>
@@ -372,10 +372,10 @@
    </para>
    <warning>
     <para>
-     The <literal>DEBUG</literal> setting in the makefile for Zebra must
+     The <literal>DEBUG</literal> setting in the makefile for &zebra; must
      be set to the same value as <literal>DEBUG</literal> setting in the
      makefile for YAZ.
-     If not, the Zebra server/indexer will crash.
+     If not, the &zebra; server/indexer will crash.
     </para>
    </warning>
    <para>
@@ -395,7 +395,7 @@
     </para>
    </note>
    <para>
-    If you wish to recompile Zebra - for example if you modify
+    If you wish to recompile &zebra; - for example if you modify
      settings in the <filename>makefile</filename> you can delete
     object files, etc by running.
     <screen>
@@ -408,12 +408,12 @@
     <variablelist>
      <varlistentry><term><filename>bin/zebraidx.exe</filename></term>
       <listitem><para>
-        The Zebra indexer.
+        The &zebra; indexer.
        </para></listitem></varlistentry>
      
      <varlistentry><term><filename>bin/zebrasrv.exe</filename></term>
       <listitem><para>
-        The Zebra server.
+        The &zebra; server.
        </para></listitem></varlistentry>
      
     </variablelist>
@@ -423,9 +423,9 @@
 
 
   <section id="installation-upgrade">
-   <title>Upgrading from Zebra version 1.3.x</title>
+   <title>Upgrading from &zebra; version 1.3.x</title>
    <para>
-    Zebra's installation directories have changed a bit. In addition,
+    &zebra;'s installation directories have changed a bit. In addition,
     the new loadable modules must be defined in the 
     master <filename>zebra.cfg</filename> configuration file. The old
     version 1.3.x configuration options
@@ -444,7 +444,7 @@
    </para>
    <note>
     <para>
-     The internal binary register structures have changed; all Zebra
+     The internal binary register structures have changed; all &zebra;
      databases must be re-indexed after upgrade.
     </para>
    </note>

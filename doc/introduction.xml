@@ -1,12 +1,45 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.41 2007-02-01 20:49:05 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.42 2007-02-02 09:58:39 marc Exp $ -->
  <title>Introduction</title>
  
  <section id="overview">
   <title>Overview</title>
   
+      <para>
+        &zebra; is a free, fast, friendly information management system. It can
+        index records in XML/SGML, MARC, e-mail archives and many other
+        formats, and quickly find them using a combination of boolean
+        searching and relevance ranking. Search-and-retrieve applications can
+        be written using APIs in a wide variety of languages, communicating
+        with the &zebra; server using industry-standard information-retrieval
+        protocols or web services. 
+      </para>
+      <para>
+        &zebra; is licensed Open Source, and can be
+        deployed by anyone for any purpose without license fees. The C source
+        code is open to anybody to read and change under the GPL license.  
+      </para>
+      <para>
+        &zebra; is a networked component which acts as a reliable &z3950; server 
+        for both record/document search, presentation, insert, update and 
+        delete operations. In addition, it understands the &sru; family of 
+        webservices, which exist in REST GET/POST and truly SOAP flavors.
+      </para>
+      <para>
+        &zebra; is available as MS Windows 2003 Server (32 bit) self-extracting
+        package as well as GNU/Debian Linux (32 bit and 64 bit) precompiled
+        packages. It has been deployed successfully on other Unix systems,
+        including Sun Sparc, HP Unix, and many variants of Linux and BSD
+        based systems.  
+      </para>
+      <para>
+        <ulink url="http://www.indexdata.com/zebra/">http://www.indexdata.com/zebra/</ulink>
+        <ulink url="http://ftp.indexdata.dk/pub/zebra/win32/">http://ftp.indexdata.dk/pub/zebra/win32/</ulink>
+        <ulink url="http://ftp.indexdata.dk/pub/zebra/debian/">http://ftp.indexdata.dk/pub/zebra/debian/</ulink>
+      </para>
+
   <para>
-   <ulink url="http://indexdata.dk/zebra/">Zebra</ulink>
+   <ulink url="http://indexdata.dk/zebra/">&zebra;</ulink>
    is a high-performance, general-purpose structured text
    indexing and retrieval engine. It reads records in a
    variety of input formats (eg. email, XML, MARC) and provides access
@@ -15,11 +48,11 @@
   </para>
 
   <para>
-   Zebra supports large databases (tens of millions of records,
+   &zebra; supports large databases (tens of millions of records,
    tens of gigabytes of data). It allows safe, incremental
-   database updates on live systems. Because Zebra supports
+   database updates on live systems. Because &zebra; supports
    the industry-standard information retrieval protocol, Z39.50,
-   you can search Zebra databases using an enormous variety of
+   you can search &zebra; databases using an enormous variety of
    programs and toolkits, both commercial and free, which understand
    this protocol.  Application libraries are available to allow
    bespoke clients to be written in Perl, C, C++, Java, Tcl, Visual
@@ -29,7 +62,7 @@
   </para>
 
   <para>
-   This document is an introduction to the Zebra system. It explains
+   This document is an introduction to the &zebra; system. It explains
    how to compile the software, how to prepare your first database,
    and how to configure the server to give you the
    functionality that you need.
@@ -37,11 +70,11 @@
  </section>
  
  <section id="features">
-  <title>Zebra Features Overview</title>
+  <title>&zebra; Features Overview</title>
   
 
    <table id="table-features-overview" frame="top">
-    <title>Zebra Features Overview</title>
+    <title>&zebra; Features Overview</title>
     <tgroup cols="4">
      <thead>
       <row>
@@ -125,7 +158,7 @@
        <entry>Document storage</entry>
        <entry>Index-only, Key storage, Document storage</entry>
        <entry>Data can be, and usually is, imported
-        into Zebra's own storage, but Zebra can also refer to
+        into &zebra;'s own storage, but &zebra; can also refer to
         external files, building and maintaining indexes of "live"
 	collections.</entry>
        <entry><xref linkend=""/></entry>
@@ -152,7 +185,7 @@
       <row>
        <entry>Supported Platforms</entry>
        <entry>UNIX, Linux, Windows (NT/2000/2003/XP)</entry>
-       <entry>Zebra is written in portable C, so it runs on most
+       <entry>&zebra; is written in portable C, so it runs on most
        Unix-like systems as well as Windows (NT/2000/2003/XP).  Binary
        distributions are 
        available for GNU/Debian Linux and Windows</entry>
@@ -251,9 +284,9 @@
  </section>
  
   <section id="introduction-apps">
-  <title>References and Zebra based Applications</title>
+  <title>References and &zebra; based Applications</title>
   <para>
-   Zebra has been deployed in numerous applications, in both the
+   &zebra; has been deployed in numerous applications, in both the
    academic and commercial worlds, in application domains as diverse
    as bibliographic catalogues, geospatial information, structured
    vocabulary browsing, government information locators, civic
@@ -278,7 +311,7 @@
     <para>
      <ulink url="http://liblime.com/">LibLime</ulink>, 
      a company that is marketing and supporting Koha, adds in
-     the new release of Koha 3.0 the Zebra
+     the new release of Koha 3.0 the &zebra;
      database server to drive its bibliographic database.
     </para>
     <para>
@@ -287,10 +320,10 @@
      in the Koha 2.x series. After extensive evaluations of the best
      of the Open Source textual database engines - including MySQL
      full-text searching, PostgreSQL, Lucene and Plucene - the team
-     selected Zebra. 
+     selected &zebra;. 
     </para>
     <para>
-     "Zebra completely eliminates scalability limitations, because it
+     "&zebra; completely eliminates scalability limitations, because it
      can support tens of millions of records." explained Joshua
      Ferraro, LibLime's Technology President and Koha's Project
      Release Manager. "Our performance tests showed search results in
@@ -298,16 +331,16 @@
      modest i386 900Mhz test server." 
     </para>
     <para>
-     "Zebra also includes support for true boolean search expressions
+     "&zebra; also includes support for true boolean search expressions
      and relevance-ranked free-text queries, both of which the Koha
-     2.x series lack. Zebra also supports incremental and safe
+     2.x series lack. &zebra; also supports incremental and safe
      database updates, which allow on-the-fly record
-     management. Finally, since Zebra has at its heart the Z39.50
+     management. Finally, since &zebra; has at its heart the Z39.50
      protocol, it greatly improves Koha's support for that critical
      library standard." 
     </para>
     <para> 
-     Although the bibliographic database will be moved to Zebra, Koha
+     Although the bibliographic database will be moved to &zebra;, Koha
      3.0 will continue to use a relational SQL-based database design
      for the 'factual' database. "Relational database managers have
      their strengths, in spite of their inability to handle large
@@ -338,7 +371,7 @@
     </para>
     <para>
      As a surplus, 100% MARC compatibility has been achieved using the
-    Zebra Server from Index Data as backend server. 
+    &zebra; Server from Index Data as backend server. 
     </para> 
    </section>
 
@@ -354,7 +387,7 @@
      UTF8-encoding.  
     </para>
     <para>
-     Reindex.net runs on GNU/Debian Linux with Zebra and Simpleserver
+     Reindex.net runs on GNU/Debian Linux with &zebra; and Simpleserver
      from Index 
      Data for bibliographic data. The relational database system
      Sybase 9 XML is used for
@@ -422,11 +455,11 @@
      bioinformatics. 
     </para>
     <para>
-     The Zebra information retrieval indexing machine is used inside
+     The &zebra; information retrieval indexing machine is used inside
      the Alvis framework to
      manage huge collections of natural language processed and
      enhanced XML data, coming from a topic relevant web crawl.
-     In this application, Zebra swallows and manages 37GB of XML data
+     In this application, &zebra; swallows and manages 37GB of XML data
      in about 4 hours, resulting in search times of fractions of
      seconds. 
      </para>
@@ -449,9 +482,9 @@
     The member libraries send in data files representing their
     periodicals, including both brief bibliographic data and summary
     holdings.  Then 21 individual Z39.50 targets are created, each
-    using Zebra, and all mounted on the single hardware server.
+    using &zebra;, and all mounted on the single hardware server.
     The live service provides a web gateway allowing Z39.50 searching
-    of all of the targets or a selection of them.  Zebra's small
+    of all of the targets or a selection of them.  &zebra;'s small
     footprint allows a relatively modest system to comfortably host
     the 21 servers.
    </para>
@@ -469,7 +502,7 @@
     <!-- <ulink
     url="http://ki212.fernuni-hagen.de/nli/NLIintro.html"/> -->
     In order to evaluate this interface for recall and precision, they
-    chose Zebra as the basis for retrieval effectiveness.  The Zebra
+    chose &zebra; as the basis for retrieval effectiveness.  The &zebra;
     server contains a copy of the GIRT database, consisting of more
     than 76000 records in SGML format (bibliographic records from
     social science), which are mapped to MARC for presentation.
@@ -494,7 +527,7 @@
   <section id="various-web-indexes">
    <title>Various web indexes</title>
    <para>
-    Zebra has been used by a variety of institutions to construct
+    &zebra; has been used by a variety of institutions to construct
     indexes of large web sites, typically in the region of tens of
     millions of pages.  In this role, it functions somewhat similarly
     to the engine of google or altavista, but for a selected intranet
@@ -504,7 +537,7 @@
     For example, Liverpool University's web-search facility (see on
     the home page at
     <ulink url="http://www.liv.ac.uk/"/>
-    and many sub-pages) works by relevance-searching a Zebra database
+    and many sub-pages) works by relevance-searching a &zebra; database
     which is populated by the Harvest-NG web-crawling software.
    </para>
    <para>
@@ -514,31 +547,31 @@
    </para>
    <para>
     Kang-Jin Lee
-    has recently modified the Harvest web indexer to use Zebra as
+    has recently modified the Harvest web indexer to use &zebra; as
     its native repository engine.  His comments on the switch over
     from the old engine are revealing:
     <blockquote>
      <para>
-      The first results after some testing with Zebra are very
+      The first results after some testing with &zebra; are very
       promising.  The tests were done with around 220,000 SOIF files,
       which occupies 1.6GB of disk space.
      </para>
      <para>
-      Building the index from scratch takes around one hour with Zebra
+      Building the index from scratch takes around one hour with &zebra;
       where [old-engine] needs around five hours.  While [old-engine]
-      blocks search requests when updating its index, Zebra can still
+      blocks search requests when updating its index, &zebra; can still
       answer search requests.
       [...]
-      Zebra supports incremental indexing which will speed up indexing
+      &zebra; supports incremental indexing which will speed up indexing
       even further.
      </para>
      <para>
       While the search time of [old-engine] varies from some seconds
-      to some minutes depending how expensive the query is, Zebra
+      to some minutes depending how expensive the query is, &zebra;
       usually takes around one to three seconds, even for expensive
       queries.
       [...]
-      Zebra can search more than 100 times faster than [old-engine]
+      &zebra; can search more than 100 times faster than [old-engine]
       and can process multiple search requests simultaneously
      </para>
      <para>
@@ -553,20 +586,20 @@
   <section id="introduction-support">
    <title>Support</title>
    <para>
-    You can get support for Zebra from at least three sources.
+    You can get support for &zebra; from at least three sources.
    </para>
    <para>
-    First, there's the Zebra web site at
+    First, there's the &zebra; web site at
     <ulink url="&url.idzebra;"/>,
      which always has the most recent version available for download.
-     If you have a problem with Zebra, the first thing to do is see
+     If you have a problem with &zebra;, the first thing to do is see
      whether it's fixed in the current release.
    </para>
    <para>
-    Second, there's the Zebra mailing list.  Its home page at
+    Second, there's the &zebra; mailing list.  Its home page at
     <ulink url="&url.idzebra.mailinglist;"/>
      includes a complete archive of all messages that have ever been
-     posted on the list.  The Zebra mailing list is used both for
+     posted on the list.  The &zebra; mailing list is used both for
      announcements from the authors (new
      releases, bug fixes, etc.) and general discussion.  You are welcome
      to seek support there.  Join by filling the form on the list home page.
@@ -595,7 +628,7 @@
     <listitem>
      <para>
        Improved support for XML in search and retrieval. Eventually,
-       the goal is for Zebra to pull double duty as a flexible
+       the goal is for &zebra; to pull double duty as a flexible
        information retrieval engine and high-performance XML
        repository.  The recent addition of XPath searching is one
        example of the kind of enhancement we're working on.
@@ -607,13 +640,13 @@
        on this filter has been sponsored by the ALVIS EU project
        <ulink url="http://www.alvis.info/alvis/"/>. We expect this filter to
        mature soon, as it is planned to be included in the version 2.0
-       release of Zebra. 
+       release of &zebra;. 
      </para>
     </listitem>
 
     <listitem>
      <para>
-       Finalisation and documentation of Zebra's C programming
+       Finalisation and documentation of &zebra;'s C programming
        API, allowing updates, database management and other functions
        not readily expressed in Z39.50.  We will also consider
        exposing the API through SOAP.

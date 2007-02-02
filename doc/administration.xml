@@ -1,6 +1,6 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.48 2007-01-17 13:31:36 marc Exp $ -->
- <title>Administrating Zebra</title>
+ <!-- $Id: administration.xml,v 1.49 2007-02-02 09:58:39 marc Exp $ -->
+ <title>Administrating &zebra;</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
           "recordmodel-grs.xml" (which describes the other half) by the
@@ -9,12 +9,12 @@
  -->
 
  <para>
-  Unlike many simpler retrieval systems, Zebra supports safe, incremental
+  Unlike many simpler retrieval systems, &zebra; supports safe, incremental
   updates to an existing index.
  </para>
  
  <para>
-  Normally, when Zebra modifies the index it reads a number of records
+  Normally, when &zebra; modifies the index it reads a number of records
   that you specify.
   Depending on your specifications and on the contents of each record
   one the following events take place for each record:
@@ -25,8 +25,8 @@
     <listitem>
      <para>
       The record is indexed as if it never occurred before.
-      Either the Zebra system doesn't know how to identify the record or
-      Zebra can identify the record but didn't find it to be already indexed.
+      Either the &zebra; system doesn't know how to identify the record or
+      &zebra; can identify the record but didn't find it to be already indexed.
      </para>
     </listitem>
    </varlistentry>
@@ -53,20 +53,20 @@
  </para>
  
  <para>
-  Please note that in both the modify- and delete- case the Zebra
+  Please note that in both the modify- and delete- case the &zebra;
   indexer must be able to generate a unique key that identifies the record 
   in question (more on this below).
  </para>
  
  <para>
-  To administrate the Zebra retrieval system, you run the
+  To administrate the &zebra; retrieval system, you run the
   <literal>zebraidx</literal> program.
   This program supports a number of options which are preceded by a dash,
   and a few commands (not preceded by dash).
 </para>
  
  <para>
-  Both the Zebra administrative tool and the Z39.50 server share a
+  Both the &zebra; administrative tool and the Z39.50 server share a
   set of index files and a global configuration file.
   The name of the configuration file defaults to
   <literal>zebra.cfg</literal>.
@@ -85,7 +85,7 @@
    Indexing is a per-record process, in which either insert/modify/delete
    will occur. Before a record is indexed search keys are extracted from
    whatever might be the layout the original record (sgml,html,text, etc..).
-   The Zebra system currently supports two fundamental types of records:
+   The &zebra; system currently supports two fundamental types of records:
    structured and simple text.
    To specify a particular extraction process, use either the
    command line option <literal>-t</literal> or specify a
@@ -95,10 +95,10 @@
  </sect1>
  
  <sect1 id="zebra-cfg">
-  <title>The Zebra Configuration File</title>
+  <title>The &zebra; Configuration File</title>
   
   <para>
-   The Zebra configuration file, read by <literal>zebraidx</literal> and
+   The &zebra; configuration file, read by <literal>zebraidx</literal> and
    <literal>zebrasrv</literal> defaults to <literal>zebra.cfg</literal>
    unless specified by <literal>-c</literal> option.
   </para>
@@ -220,10 +220,10 @@
      <listitem>
       <para>
        Specifies whether the records should be stored internally
-       in the Zebra system files.
+       in the &zebra; system files.
        If you want to maintain the raw records yourself,
        this option should be false (0).
-       If you want Zebra to take care of the records for you, it
+       If you want &zebra; to take care of the records for you, it
        should be true(1).
       </para>
      </listitem>
@@ -233,7 +233,7 @@
      <term>register: <replaceable>register-location</replaceable></term>
      <listitem>
       <para>
-       Specifies the location of the various register files that Zebra uses
+       Specifies the location of the various register files that &zebra; uses
        to represent your databases.
        See <xref linkend="register-location"/>.
       </para>
@@ -243,7 +243,7 @@
      <term>shadow: <replaceable>register-location</replaceable></term>
      <listitem>
       <para>
-       Enables the <emphasis>safe update</emphasis> facility of Zebra, and
+       Enables the <emphasis>safe update</emphasis> facility of &zebra;, and
        tells the system where to place the required, temporary files.
        See <xref linkend="shadow-registers"/>.
       </para>
@@ -316,7 +316,7 @@
       <term>estimatehits:: <replaceable>integer</replaceable></term>
       <listitem>
        <para>
-	Controls whether Zebra should calculate approximite hit counts and
+	Controls whether &zebra; should calculate approximite hit counts and
 	at which hit count it is to be enabled.
 	A value of 0 disables approximiate hit counts.
 	For a positive value approximaite hit count is enabled
@@ -373,9 +373,9 @@
      <term>root: <replaceable>dir</replaceable></term>
      <listitem>
       <para>
-       Specifies a directory base for Zebra. All relative paths
+       Specifies a directory base for &zebra;. All relative paths
        given (in profilePath, register, shadow) are based on this
-       directory. This setting is useful if your Zebra server
+       directory. This setting is useful if your &zebra; server
        is running in a different directory from where
        <literal>zebra.cfg</literal> is located.
       </para>
@@ -386,7 +386,7 @@
      <term>passwd: <replaceable>file</replaceable></term>
      <listitem>
       <para>
-       Specifies a file with description of user accounts for Zebra.
+       Specifies a file with description of user accounts for &zebra;.
        The format is similar to that known to Apache's htpasswd files
        and UNIX' passwd files. Non-empty lines not beginning with
        # are considered account lines. There is one account per-line.
@@ -400,7 +400,7 @@
      <term>passwd.c: <replaceable>file</replaceable></term>
      <listitem>
       <para>
-       Specifies a file with description of user accounts for Zebra.
+       Specifies a file with description of user accounts for &zebra;.
        File format is similar to that used by the passwd directive except
        that the password are encrypted. Use Apache's htpasswd or similar
        for maintenance.
@@ -414,7 +414,7 @@
      <listitem>
       <para>
        Specifies permissions (priviledge) for a user that are allowed
-       to access Zebra via the passwd system. There are two kinds
+       to access &zebra; via the passwd system. There are two kinds
        of permissions currently: read (r) and write(w). By default
        users not listed in a permission directive are given the read
        privilege. To specify permissions for a user with no
@@ -448,7 +448,7 @@
   <title>Locating Records</title>
   
   <para>
-   The default behavior of the Zebra system is to reference the
+   The default behavior of the &zebra; system is to reference the
    records from their original location, i.e. where they were found when you
    run <literal>zebraidx</literal>.
    That is, when a client wishes to retrieve a record
@@ -463,7 +463,7 @@
    If your input files are not permanent - for example if you retrieve
    your records from an outside source, or if they were temporarily
    mounted on a CD-ROM drive,
-   you may want Zebra to make an internal copy of them. To do this,
+   you may want &zebra; to make an internal copy of them. To do this,
    you specify 1 (true) in the <literal>storeData</literal> setting. When
    the Z39.50 server retrieves the records they will be read from the
    internal file structures of the system.
@@ -557,7 +557,7 @@
    To enable indexing with pathname IDs, you must specify
    <literal>file</literal> as the value of <literal>recordId</literal>
    in the configuration file. In addition, you should set
-   <literal>storeKeys</literal> to <literal>1</literal>, since the Zebra
+   <literal>storeKeys</literal> to <literal>1</literal>, since the &zebra;
    indexer must save additional information about the contents of each record
    in order to modify the indexes correctly at a later time.
   </para>
@@ -587,7 +587,7 @@
   <note>
    <para>You cannot start out with a group of records with simple
     indexing (no record IDs as in the previous section) and then later
-    enable file record Ids. Zebra must know from the first time that you
+    enable file record Ids. &zebra; must know from the first time that you
     index the group that
     the files should be indexed with file record IDs.
    </para>
@@ -698,7 +698,7 @@
   </para>
   
   <para>
-   For instance, the sample GILS records that come with the Zebra
+   For instance, the sample GILS records that come with the &zebra;
    distribution contain a unique ID in the data tagged Control-Identifier.
    The data is mapped to the Bib-1 use attribute Identifier-standard
    (code 1007). To use this field as a record id, specify
@@ -752,7 +752,7 @@
    <literal>zebraidx</literal>. If you wish to store these, possibly large,
    files somewhere else, you must add the <literal>register</literal>
    entry to the <literal>zebra.cfg</literal> file.
-   Furthermore, the Zebra system allows its file
+   Furthermore, the &zebra; system allows its file
    structures to span multiple file systems, which is useful for
    managing very large databases. 
   </para>
@@ -767,7 +767,7 @@
    
    The <emphasis>dir</emphasis> specifies a directory in which index files
    will be stored and the <emphasis>size</emphasis> specifies the maximum
-   size of all files in that directory. The Zebra indexer system fills
+   size of all files in that directory. The &zebra; indexer system fills
    each directory in the order specified and use the next specified
    directories as needed.
    The <emphasis>size</emphasis> is an integer followed by a qualifier
@@ -792,12 +792,12 @@
   </para>
   
   <para>
-   Note that Zebra does not verify that the amount of space specified is
+   Note that &zebra; does not verify that the amount of space specified is
    actually available on the directory (file system) specified - it is
    your responsibility to ensure that enough space is available, and that
    other applications do not attempt to use the free space. In a large
    production system, it is recommended that you allocate one or more
-   file system exclusively to the Zebra register files.
+   file system exclusively to the &zebra; register files.
   </para>
   
  </sect1>
@@ -809,9 +809,9 @@
    <title>Description</title>
    
    <para>
-    The Zebra server supports <emphasis>updating</emphasis> of the index
+    The &zebra; server supports <emphasis>updating</emphasis> of the index
     structures. That is, you can add, modify, or remove records from
-    databases managed by Zebra without rebuilding the entire index.
+    databases managed by &zebra; without rebuilding the entire index.
     Since this process involves modifying structured files with various
     references between blocks of data in the files, the update process
     is inherently sensitive to system crashes, or to process interruptions:
@@ -826,7 +826,7 @@
    
    <para>
     You can solve these problems by enabling the shadow register system in
-    Zebra.
+    &zebra;.
     During the updating procedure, <literal>zebraidx</literal> will temporarily
     write changes to the involved files in a set of "shadow
     files", without modifying the files that are accessed by the
@@ -977,7 +977,7 @@
    <title>Overview</title>
    <para>
     The default ordering of a result set is left up to the server,
-    which inside Zebra means sorting in ascending document ID order. 
+    which inside &zebra; means sorting in ascending document ID order. 
     This is not always the order humans want to browse the sometimes
     quite large hit sets. Ranking and sorting comes to the rescue.
    </para>
@@ -996,7 +996,7 @@
     Simply put, <literal>dynamic relevance ranking</literal> 
     sorts a set of retrieved records such that those most likely to be
     relevant to your request are retrieved first. 
-    Internally, Zebra retrieves all documents that satisfy your
+    Internally, &zebra; retrieves all documents that satisfy your
     query, and re-orders the hit list to arrange them based on
     a measurement of similarity between your query and the content of
     each record. 
@@ -1015,7 +1015,7 @@
   <title>Static Ranking</title>
   
    <para>
-    Zebra uses internally inverted indexes to look up term occurencies
+    &zebra; uses internally inverted indexes to look up term occurencies
     in documents. Multiple queries from different indexes can be
     combined by the binary boolean operations <literal>AND</literal>, 
     <literal>OR</literal> and/or <literal>NOT</literal> (which
@@ -1037,7 +1037,7 @@
     <screen>
     staticrank: 1 
     </screen> 
-    directive in the main core Zebra configuration file, the internal document
+    directive in the main core &zebra; configuration file, the internal document
     keys used for ordering are augmented by a preceding integer, which
     contains the static rank of a given document, and the index lists
     are ordered 
@@ -1110,7 +1110,7 @@
      algorithms, which only considers searching in one full-text
      index, this one works on multiple indexes at the same time.
      More precisely, 
-     Zebra does boolean queries and searches in specific addressed
+     &zebra; does boolean queries and searches in specific addressed
      indexes (there are inverted indexes pointing from terms in the
      dictionary to documents and term positions inside documents). 
      It works like this:
@@ -1415,7 +1415,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
  <sect2 id="administration-ranking-sorting">
   <title>Sorting</title>
    <para>
-     Zebra sorts efficiently using special sorting indexes
+     &zebra; sorts efficiently using special sorting indexes
      (type=<literal>s</literal>; so each sortable index must be known
      at indexing time, specified in the configuration of record
      indexing.  For example, to enable sorting according to the BIB-1
@@ -1485,7 +1485,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
   
    <note>
     <para>
-     Extended services are only supported when accessing the Zebra
+     Extended services are only supported when accessing the &zebra;
      server using the <ulink url="&url.z39.50;">Z39.50</ulink>
      protocol. The <ulink url="&url.sru;">SRU</ulink> protocol does
      not support extended services.
@@ -1494,7 +1494,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
    
   <para>
     The extended services are not enabled by default in zebra - due to the
-    fact that they modify the system. Zebra can be configured
+    fact that they modify the system. &zebra; can be configured
     to allow anybody to
     search, and to allow only updates for a particular admin user
     in the main zebra configuration file <filename>zebra.cfg</filename>.
@@ -1512,7 +1512,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     <screen> 
      admin:secret
     </screen>
-    It is essential to configure  Zebra to store records internally, 
+    It is essential to configure  &zebra; to store records internally, 
     and to support
     modifications and deletion of records:
     <screen>
@@ -1537,7 +1537,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
    <note>
     <para>
      It is not possible to carry information about record types or
-     similar to Zebra when using extended services, due to
+     similar to &zebra; when using extended services, due to
      limitations of the <ulink url="&url.z39.50;">Z39.50</ulink>
      protocol. Therefore, indexing filters can not be chosen on a
      per-record basis. One and only one general XML indexing filter
@@ -1613,7 +1613,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
         <row>
          <entry><literal>recordIdNumber </literal></entry>
          <entry><literal>positive number</literal></entry>
-         <entry>Zebra's internal system number,
+         <entry>&zebra;'s internal system number,
          not allowed for  <literal>recordInsert</literal> or 
          <literal>specialUpdate</literal> actions which result in fresh
          record inserts.
@@ -1645,7 +1645,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     <para>
      During all actions, the
      usual rules for internal record ID generation apply, unless an
-     optional <literal>recordIdNumber</literal> Zebra internal ID or a
+     optional <literal>recordIdNumber</literal> &zebra; internal ID or a
     <literal>recordIdOpaque</literal> string identifier is assigned. 
      The default ID generation is
      configured using the <literal>recordId:</literal> from
@@ -1655,7 +1655,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
 
    <para>
     Setting of the <literal>recordIdNumber</literal> parameter, 
-    which must be an existing Zebra internal system ID number, is not
+    which must be an existing &zebra; internal system ID number, is not
     allowed during any  <literal>recordInsert</literal> or 
      <literal>specialUpdate</literal> action resulting in fresh record
     inserts.
@@ -1663,7 +1663,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
 
     <para>
      When retrieving existing
-     records indexed with GRS indexing filters, the Zebra internal 
+     records indexed with GRS indexing filters, the &zebra; internal 
      ID number is returned in the field
     <literal>/*/id:idzebra/localnumber</literal> in the namespace
     <literal>xmlns:id="http://www.indexdata.dk/zebra/"</literal>,
@@ -1673,7 +1673,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     <para>
      A new element set for retrieval of internal record
      data has been added, which can be used to access minimal records
-     containing only the <literal>recordIdNumber</literal> Zebra
+     containing only the <literal>recordIdNumber</literal> &zebra;
      internal ID, or the <literal>recordIdOpaque</literal> string
      identifier. This works for any indexing filter used.
      See <xref linkend="special-retrieval"/>.
@@ -1688,13 +1688,13 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
      records.      This identifier will
      replace zebra's own automagic identifier generation with a unique
      mapping from <literal>recordIdOpaque</literal> to the 
-     Zebra internal <literal>recordIdNumber</literal>.
+     &zebra; internal <literal>recordIdNumber</literal>.
      <emphasis>The opaque <literal>recordIdOpaque</literal> string
      identifiers
       are not visible in retrieval records, nor are
       searchable, so the value of this parameter is
       questionable. It serves mostly as a convenient mapping from
-      application domain string identifiers to Zebra internal ID's.
+      application domain string identifiers to &zebra; internal ID's.
      </emphasis> 
     </para>
    </sect2>

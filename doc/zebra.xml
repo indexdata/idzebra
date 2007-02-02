@@ -11,26 +11,16 @@
 
      <!ENTITY test SYSTEM "test.xml">
 ]>
-<!-- $Id: zebra.xml,v 1.14 2007-02-01 21:04:15 marc Exp $ -->
+<!-- $Id: zebra.xml,v 1.15 2007-02-02 09:58:40 marc Exp $ -->
 <book id="zebra">
  <bookinfo>
-  <title>Zebra - User's Guide and Reference</title>
+  <title>&zebra; - User's Guide and Reference</title>
   <authorgroup>
-   <author>
-    <firstname>Adam</firstname><surname>Dickmeiss</surname>
-   </author>
-   <author>
-    <firstname>Heikki</firstname><surname>Levanto</surname>
-   </author>
-   <author>
-    <firstname>Marc</firstname><surname>Cromme</surname>
-   </author>
-   <author>
-    <firstname>Mike</firstname><surname>Taylor</surname>
-   </author>
-   <author>
-    <firstname>Sebastian</firstname><surname>Hammer</surname>
-   </author>
+   <author>&adam;</author>
+   <author>&heikki;</author>
+   <author>&marccromme;</author>
+   <author>&mike;</author>
+   <author>&sebastian;</author>
   </authorgroup>
   <releaseinfo>&version;</releaseinfo>
   <copyright>
@@ -39,18 +29,18 @@
   </copyright>
   <abstract>
    <simpara>
-    Zebra is a free, fast, friendly information management system.  It
-    can index records in XML/SGML, MARC, e-mail archives and many
+    &zebra; is a free, fast, friendly information management system.  It
+    can index records in &xml;, &sgml;, &marc;, e-mail archives and many
     other formats, and quickly find them using a combination of
     boolean searching and relevance ranking.  Search-and-retrieve
     applications can be written using APIs in a wide variety of
-    languages, communicating with the Zebra server using
+    languages, communicating with the &zebra; server using
     industry-standard information-retrieval protocols or web services.
    </simpara>
    <simpara>
-    This manual explains how to build and install Zebra, configure it
+    This manual explains how to build and install &zebra;, configure it
     appropriately for your application, add data and set up a running
-    information service.  It describes version &version; of Zebra.
+    information service.  It describes version &version; of &zebra;.
    </simpara>
    <simpara>
     <inlinemediaobject>
