@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.63 2007-01-15 15:10:17 adam Exp $
+/* $Id: retrieve.c,v 1.64 2007-02-02 12:16:38 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -41,8 +41,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static int zebra_create_record_stream(ZebraHandle zh, 
                                Record *rec,
-                               struct ZebraRecStream *stream){
-
+                               struct ZebraRecStream *stream)
+{
     RecordAttr *recordAttr = rec_init_attr(zh->reg->zei, *rec);
 
     if ((*rec)->size[recInfo_storeData] > 0)
@@ -65,7 +65,7 @@ static int zebra_create_record_stream(ZebraHandle zh,
             yaz_log (YLOG_WARN|YLOG_ERRNO, "Retrieve fail; missing file: %s",
                      full_rep);
             rec_free(rec);
-            return 14;
+            return YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
         }
         zebra_create_stream_fd(stream, fd, recordAttr->recordOffset);
     }
@@ -650,6 +650,12 @@ int zebra_record_fetch(ZebraHandle zh, zint sysno, int score,
         if (!(rt = recType_byName(zh->reg->recTypes, zh->res,
                                   file_type, &clientData)))
         {
+            char addinfo_str[100];
+
+            sprintf(addinfo_str, "Could not handle record type %.40s",
+                    file_type);
+                    
+            *addinfo = odr_strdup(odr, addinfo_str);
             return_code = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
         }
         else

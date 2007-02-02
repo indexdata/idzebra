@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.14 2007-01-22 18:15:03 adam Exp $
+/* $Id: recgrs.c,v 1.15 2007-02-02 12:16:38 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <yaz/log.h>
 #include <yaz/oid.h>
+#include <yaz/diagbib1.h>
 
 #include <d1_absyn.h>
 #include <idzebra/recgrs.h>
@@ -1114,7 +1115,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     node = (*grs_read)(&gri);
     if (!node)
     {
-	p->diagnostic = 14;
+	p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
         nmem_destroy (mem);
 	return 0;
     }
@@ -1190,7 +1191,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 		onode = node;
 		if (!(node = data1_map_record(p->dh, onode, map, mem)))
 		{
-		    p->diagnostic = 14;
+		    p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
 		    nmem_destroy (mem);
 		    return 0;
 		}
@@ -1219,7 +1220,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
                 onode = node;
                 if (!(node = data1_map_record(p->dh, onode, map, mem)))
                 {
-                    p->diagnostic = 14;
+                    p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
                     nmem_destroy (mem);
                     return 0;
                 }
