@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.44 2007-02-02 14:34:20 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.45 2007-02-02 14:42:44 marc Exp $ -->
  <title>Introduction</title>
  
  <section id="overview">
@@ -108,24 +108,19 @@
      </thead>
      <tbody>
       <row>
-       <entry>Operation types</entry>
-       <entry> &z3950;/&sru; explain, search, and scan</entry>
+       <entry>Fundamental operation types</entry>
+       <entry>&z3950;/&sru; explain, search, and scan</entry>
        <entry></entry>
        <entry><xref linkend="querymodel-operation-types"/></entry>
       </row>
       <row>
-       <entry>Remote update</entry>
-       <entry>&z3950; extended services</entry>
-       <entry></entry>
-       <entry><xref linkend=""/></entry>
-      </row>
-      <row>
-       <entry>&z3950;</entry>
-       <entry>&z3950;  protocol support</entry>
-       <entry> Protocol facilities: Init, Search, Present (retrieval),
-      Segmentation (support for very large records), Delete, Scan
-      (index browsing), Sort, Close and support for the ``update''
-      Extended Service to add or replace an existing &xml;
+       <entry>&z3950; protocol support</entry>
+       <entry>yes</entry>
+       <entry> Protocol facilities supported are: 
+       Init, Search, Present (retrieval),
+       Segmentation (support for very large records), Delete, Scan
+       (index browsing), Sort, Close and support for the ``update''
+       Extended Service to add or replace an existing &xml;
        record. Piggy-backed presents are honored in the search
        request. Named result sets are supported.</entry>
        <entry><xref linkend=""/></entry>
@@ -136,7 +131,8 @@
        <entry> The protocol operations <literal>explain</literal>, 
        <literal>searchRetrieve</literal> and <literal>scan</literal>
        are supported. <ulink url="&url.cql;">&cql;</ulink> to internal
-       query model &rpn;  conversion is supported. Extended RPN queries
+       query model &rpn;
+       conversion is supported. Extended RPN queries
        for search/retrieve and scan are supported.</entry>
        <entry><xref linkend=""/></entry>
       </row>
