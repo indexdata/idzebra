@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.61 2006-12-05 14:06:29 adam Exp $
+## $Id: Makefile.am,v 1.62 2007-02-02 12:07:33 adam Exp $
 
 aux_libs = \
  ../rset/libidzebra-rset.la \
@@ -18,6 +18,7 @@ zebralib = libidzebra-2.0.la
 noinst_PROGRAMS = kdump zebrash
 
 modlibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)/modules
+tabdatadir = $(datadir)/$(PACKAGE)$(PACKAGE_SUFFIX)/tab
 
 # The shared modules 
 mod_grs_regx_la_SOURCES = regxread.c
@@ -99,7 +100,7 @@ zebrash_SOURCES = zebrash.c
 kdump_SOURCES = kdump.c
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) \
-  -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\" \
+  -DDEFAULT_PROFILE_PATH=\"$(tabdatadir)\" \
   -DDEFAULT_MODULE_PATH=\"$(modlibdir)\" \
   $(TCL_INCLUDE)
 
