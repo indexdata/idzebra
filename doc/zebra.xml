@@ -11,7 +11,7 @@
 
      <!ENTITY test SYSTEM "test.xml">
 ]>
-<!-- $Id: zebra.xml,v 1.15 2007-02-02 09:58:40 marc Exp $ -->
+<!-- $Id: zebra.xml,v 1.16 2007-02-02 11:10:08 marc Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>&zebra; - User's Guide and Reference</title>
@@ -33,7 +33,7 @@
     can index records in &xml;, &sgml;, &marc;, e-mail archives and many
     other formats, and quickly find them using a combination of
     boolean searching and relevance ranking.  Search-and-retrieve
-    applications can be written using APIs in a wide variety of
+    applications can be written using &api;s in a wide variety of
     languages, communicating with the &zebra; server using
     industry-standard information-retrieval protocols or web services.
    </simpara>

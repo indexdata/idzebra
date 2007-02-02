@@ -1,8 +1,8 @@
-<!-- $Id: installation.xml,v 1.34 2007-02-02 09:58:39 marc Exp $ -->
+<!-- $Id: installation.xml,v 1.35 2007-02-02 11:10:08 marc Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
-   &zebra; is written in ANSI C and was implemented with portability in mind. 
+   &zebra; is written in &ansi; C and was implemented with portability in mind. 
    We primarily use <ulink url="&url.gcc;">GCC</ulink> on UNIX and 
    <ulink url="&url.vstudio;">Microsoft Visual C++</ulink> on Windows.
   </para>
@@ -30,9 +30,9 @@
       (required)</term>
      <listitem>
       <para>
-       &zebra; uses YAZ to support <ulink url="&url.z39.50;">Z39.50</ulink> / 
-	<ulink url="&url.sru;">SRU</ulink>.
-	Also the memory management utilites from YAZ is used by &zebra;.
+       &zebra; uses &yaz; to support <ulink url="&url.z39.50;">&z3950;</ulink> / 
+	<ulink url="&url.sru;">&sru;</ulink>.
+	Also the memory management utilites from &yaz; is used by &zebra;.
       </para>
      </listitem>
     </varlistentry>
@@ -52,7 +52,7 @@
       (optional)</term>
      <listitem>
       <para>
-       XML parser. If you're going to index real XML you should
+       &xml; parser. If you're going to index real &xml; you should
        install this (filter grs.xml). On most systems you should be able
        to find binary Expat packages.
       </para>
@@ -103,7 +103,7 @@
    <para>
     On Unix, GCC works fine, but any native
     C compiler should be possible to use as long as it is 
-    ANSI C compliant.
+    &ansi; C compliant.
    </para>
    
    <para>
@@ -160,7 +160,7 @@
       <term><literal>zebrasrv</literal></term>
       <listitem>
        <para>
-        The Z39.50 server and search engine.
+        The &z3950; server and search engine.
        </para>
       </listitem>
      </varlistentry>
@@ -179,8 +179,8 @@
        <para>
 	The <literal>.so</literal>-files are &zebra; record filter modules.
 	There are modules for reading 
-	MARC (<filename>mod-grs-marc.so</filename>),
-	XML (<filename>mod-grs-xml.so</filename>) , etc. 
+	&marc; (<filename>mod-grs-marc.so</filename>),
+	&xml; (<filename>mod-grs-xml.so</filename>) , etc. 
        </para>
       </listitem>
      </varlistentry>
@@ -323,7 +323,7 @@
      <varlistentry>
       <term><literal>YAZDIR</literal></term>
       <listitem><para>
-        Directory of YAZ source. &zebra;'s makefile expects to find
+        Directory of &yaz; source. &zebra;'s makefile expects to find
         <filename>yaz.lib</filename>, <filename>yaz.dll</filename> 
         in <replaceable>yazdir</replaceable><literal>/lib</literal> and
         <replaceable>yazdir</replaceable><literal>/bin</literal> respectively.
@@ -374,7 +374,7 @@
     <para>
      The <literal>DEBUG</literal> setting in the makefile for &zebra; must
      be set to the same value as <literal>DEBUG</literal> setting in the
-     makefile for YAZ.
+     makefile for &yaz;.
      If not, the &zebra; server/indexer will crash.
     </para>
    </warning>
@@ -453,7 +453,7 @@
     redirection to other fields. 
     For example the following snippet of
     a custom <filename>custom/bib1.att</filename> 
-    Bib-1 attribute set definition file is no
+    &bib1; attribute set definition file is no
     longer supported:
     <screen>
      att 1016            Any 		1016,4,1005,62
@@ -465,7 +465,7 @@
    </para>
    <para>
     Similar behaviour can be expressed in the new release by defining
-    a new index <literal>Any:w</literal> in all GRS
+    a new index <literal>Any:w</literal> in all &grs1;
     <filename>*.abs</filename> record indexing configuration files.
     The above example configuration needs to make the changes
     from version 1.3.x indexing instructions
@@ -486,13 +486,13 @@
     <screen>
      att 1016            Body-of-text
     </screen>
-    with equivalent outcome without editing all  GRS
+    with equivalent outcome without editing all  &grs1;
     <filename>*.abs</filename> record indexing configuration files.
    </para>
 
    <para>
     Server installations which use the special
-    <literal>IDXPATH</literal> attribute set must add the following
+    <literal>&idxpath;</literal> attribute set must add the following
     line to the <filename>zebra.cfg</filename> configuration file:
     <screen>
      attset: idxpath.att

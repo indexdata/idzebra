@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.42 2007-02-02 09:58:39 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.43 2007-02-02 11:10:08 marc Exp $ -->
  <title>Introduction</title>
  
  <section id="overview">
@@ -7,10 +7,10 @@
   
       <para>
         &zebra; is a free, fast, friendly information management system. It can
-        index records in XML/SGML, MARC, e-mail archives and many other
+        index records in &xml;/&sgml;, &marc;, e-mail archives and many other
         formats, and quickly find them using a combination of boolean
         searching and relevance ranking. Search-and-retrieve applications can
-        be written using APIs in a wide variety of languages, communicating
+        be written using &api;s in a wide variety of languages, communicating
         with the &zebra; server using industry-standard information-retrieval
         protocols or web services. 
       </para>
@@ -23,7 +23,7 @@
         &zebra; is a networked component which acts as a reliable &z3950; server 
         for both record/document search, presentation, insert, update and 
         delete operations. In addition, it understands the &sru; family of 
-        webservices, which exist in REST GET/POST and truly SOAP flavors.
+        webservices, which exist in &rest; &get;/&post; and truly &soap; flavors.
       </para>
       <para>
         &zebra; is available as MS Windows 2003 Server (32 bit) self-extracting
@@ -42,7 +42,7 @@
    <ulink url="http://indexdata.dk/zebra/">&zebra;</ulink>
    is a high-performance, general-purpose structured text
    indexing and retrieval engine. It reads records in a
-   variety of input formats (eg. email, XML, MARC) and provides access
+   variety of input formats (eg. email, &xml;, &marc;) and provides access
    to them through a powerful combination of boolean search
    expressions and relevance-ranked free-text queries.
   </para>
@@ -51,13 +51,13 @@
    &zebra; supports large databases (tens of millions of records,
    tens of gigabytes of data). It allows safe, incremental
    database updates on live systems. Because &zebra; supports
-   the industry-standard information retrieval protocol, Z39.50,
+   the industry-standard information retrieval protocol, &z3950;,
    you can search &zebra; databases using an enormous variety of
    programs and toolkits, both commercial and free, which understand
    this protocol.  Application libraries are available to allow
    bespoke clients to be written in Perl, C, C++, Java, Tcl, Visual
-   Basic, Python, PHP and more - see the
-   <ulink url="&url.zoom;">ZOOM web site</ulink>
+   Basic, Python, &php; and more - see the
+   <ulink url="&url.zoom;">&zoom; web site</ulink>
    for more information on some of these client toolkits.
   </para>
 
@@ -87,24 +87,24 @@
      <tbody>
       <row>
        <entry>Boolean query language</entry>
-       <entry>CQL and RPN/PQF</entry>
-       <entry>The type-1 Reverse Polish Notation (RPN)
-       and it's textual representation Prefix Query Format (PQF) are
-       supported. The Common Query Language (CQL) can be configured as
-       a mapping from CQL to RPN/PQF</entry>
+       <entry>&cql; and &rpn;/&pqf;</entry>
+       <entry>The type-1 Reverse Polish Notation (&rpn;)
+       and it's textual representation Prefix Query Format (&pqf;) are
+       supported. The Common Query Language (&cql;) can be configured as
+       a mapping from &cql; to &rpn;/&pqf;</entry>
        <entry><xref linkend="querymodel-query-languages-pqf"/>
        <xref linkend="querymodel-cql-to-pqf"/></entry>
       </row>
       <row>
        <entry>Operation types</entry>
-       <entry> Z39.50/SRU explain, search, and scan</entry>
+       <entry> &z3950;/&sru; explain, search, and scan</entry>
        <entry></entry>
        <entry><xref linkend="querymodel-operation-types"/></entry>
       </row>
       <row>
        <entry>Recursive boolean query tree</entry>
-       <entry>CQL and RPN/PQF</entry>
-       <entry>Both CQL and RPN/PQF allow atomic query parts (APT) to
+       <entry>&cql; and &rpn;/&pqf;</entry>
+       <entry>Both &cql; and &rpn;/&pqf; allow atomic query parts (&apt;) to
        be combined into complex boolean query trees</entry>
        <entry><xref linkend="querymodel-rpn-tree"/></entry>
       </row>
@@ -119,8 +119,8 @@
       </row>
       <row>
        <entry>Complex semi-structured Documents</entry>
-       <entry>XML and GRS-1 Documents</entry>
-       <entry>Both XML and GRS-1 documents exhibit a DOM like internal
+       <entry>&xml; and &grs1; Documents</entry>
+       <entry>Both &xml; and &grs1; documents exhibit a &dom; like internal
        representation allowing for complex indexing and display rules</entry>
        <entry><xref linkend=""/></entry>
       </row>
@@ -138,12 +138,12 @@
       </row>
       <row>
        <entry>Input document formats</entry>
-       <entry>XML, SGML, Text, ISO2709 (MARC)</entry>
+       <entry>&xml;, &sgml;, Text, ISO2709 (&marc;)</entry>
        <entry>
         A system of input filters driven by
         regular expressions allows most ASCII-based
         data formats to be easily processed.
-        SGML, XML, ISO2709 (MARC), and raw text are also
+        &sgml;, &xml;, ISO2709 (&marc;), and raw text are also
         supported.</entry>
        <entry><xref linkend=""/></entry>
       </row>
@@ -178,7 +178,7 @@
       </row>
       <row>
        <entry>Remote update</entry>
-       <entry>Z39.50 extended services</entry>
+       <entry>&z3950; extended services</entry>
        <entry></entry>
        <entry><xref linkend=""/></entry>
       </row>
@@ -192,12 +192,12 @@
        <entry><xref linkend=""/></entry>
       </row>
       <row>
-       <entry>Z39.50</entry>
-       <entry>Z39.50  protocol support</entry>
+       <entry>&z3950;</entry>
+       <entry>&z3950;  protocol support</entry>
        <entry> Protocol facilities: Init, Search, Present (retrieval),
       Segmentation (support for very large records), Delete, Scan
       (index browsing), Sort, Close and support for the ``update''
-      Extended Service to add or replace an existing XML
+      Extended Service to add or replace an existing &xml;
        record. Piggy-backed presents are honored in the search
        request. Named result sets are supported.</entry>
        <entry><xref linkend=""/></entry>
@@ -206,18 +206,18 @@
        <entry>Record Syntaxes</entry>
        <entry></entry>
        <entry> Multiple record syntaxes
-      for data retrieval: GRS-1, SUTRS,
-      XML, ISO2709 (MARC), etc. Records can be mapped between record syntaxes
+      for data retrieval: &grs1;, &sutrs;,
+      &xml;, ISO2709 (&marc;), etc. Records can be mapped between record syntaxes
       and schemas on the fly.</entry>
        <entry><xref linkend=""/></entry>
       </row>
       <row>
        <entry>Web Service support</entry>
-       <entry>SRU GET/POST/SOAP</entry>
+       <entry>&sru_gps;</entry>
        <entry> The protocol operations <literal>explain</literal>, 
        <literal>searchRetrieve</literal> and <literal>scan</literal>
-       are supported. <ulink url="&url.cql;">CQL</ulink> to internal
-       query model RPN  conversion is supported. Extended RPN queries
+       are supported. <ulink url="&url.cql;">&cql;</ulink> to internal
+       query model &rpn;  conversion is supported. Extended RPN queries
        for search/retrieve and scan are supported.</entry>
        <entry><xref linkend=""/></entry>
       </row>
@@ -316,7 +316,7 @@
     </para>
     <para>
      In early 2005, the Koha project development team began looking at
-     ways to improve MARC support and overcome scalability limitations
+     ways to improve &marc; support and overcome scalability limitations
      in the Koha 2.x series. After extensive evaluations of the best
      of the Open Source textual database engines - including MySQL
      full-text searching, PostgreSQL, Lucene and Plucene - the team
@@ -335,7 +335,7 @@
      and relevance-ranked free-text queries, both of which the Koha
      2.x series lack. &zebra; also supports incremental and safe
      database updates, which allow on-the-fly record
-     management. Finally, since &zebra; has at its heart the Z39.50
+     management. Finally, since &zebra; has at its heart the &z3950;
      protocol, it greatly improves Koha's support for that critical
      library standard." 
     </para>
@@ -365,12 +365,12 @@
      from virtually any computer with an Internet connection, has
      template based layout allowing anyone to alter the visual
      appearance of Emilda, and is
-     XML based language for fast and easy portability to virtually any
+     &xml; based language for fast and easy portability to virtually any
      language.
      Currently, Emilda is used at three schools in Espoo, Finland.
     </para>
     <para>
-     As a surplus, 100% MARC compatibility has been achieved using the
+     As a surplus, 100% &marc; compatibility has been achieved using the
     &zebra; Server from Index Data as backend server. 
     </para> 
    </section>
@@ -382,18 +382,18 @@
      is a netbased library service offering all
      traditional functions on a very high level plus many new
      services. Reindex.net is a comprehensive and powerful WEB system
-     based on standards such as XML and Z39.50.
-     updates. Reindex supports MARC21, danMARC eller Dublin Core with
+     based on standards such as &xml; and &z3950;.
+     updates. Reindex supports &marc21;, dan&marc; eller Dublin Core with
      UTF8-encoding.  
     </para>
     <para>
      Reindex.net runs on GNU/Debian Linux with &zebra; and Simpleserver
      from Index 
      Data for bibliographic data. The relational database system
-     Sybase 9 XML is used for
+     Sybase 9 &xml; is used for
      administrative data. 
-     Internally MARCXML is used for bibliographical records. Update
-     utilizes Z39.50 extended services. 
+     Internally &marcxml; is used for bibliographical records. Update
+     utilizes &z3950; extended services. 
     </para>
    </section>
 
@@ -458,8 +458,8 @@
      The &zebra; information retrieval indexing machine is used inside
      the Alvis framework to
      manage huge collections of natural language processed and
-     enhanced XML data, coming from a topic relevant web crawl.
-     In this application, &zebra; swallows and manages 37GB of XML data
+     enhanced &xml; data, coming from a topic relevant web crawl.
+     In this application, &zebra; swallows and manages 37GB of &xml; data
      in about 4 hours, resulting in search times of fractions of
      seconds. 
      </para>
@@ -481,9 +481,9 @@
    <para>
     The member libraries send in data files representing their
     periodicals, including both brief bibliographic data and summary
-    holdings.  Then 21 individual Z39.50 targets are created, each
+    holdings.  Then 21 individual &z3950; targets are created, each
     using &zebra;, and all mounted on the single hardware server.
-    The live service provides a web gateway allowing Z39.50 searching
+    The live service provides a web gateway allowing &z3950; searching
     of all of the targets or a selection of them.  &zebra;'s small
     footprint allows a relatively modest system to comfortably host
     the 21 servers.
@@ -495,7 +495,7 @@
   </section>
 
   <section id="nli">
-   <title>NLI-Z39.50 - a Natural Language Interface for Libraries</title>
+   <title>NLI-&z3950; - a Natural Language Interface for Libraries</title>
    <para>
     Fernuniversit&#x00E4;t Hagen in Germany have developed a natural
     language interface for access to library databases.
@@ -504,8 +504,8 @@
     In order to evaluate this interface for recall and precision, they
     chose &zebra; as the basis for retrieval effectiveness.  The &zebra;
     server contains a copy of the GIRT database, consisting of more
-    than 76000 records in SGML format (bibliographic records from
-    social science), which are mapped to MARC for presentation.
+    than 76000 records in &sgml; format (bibliographic records from
+    social science), which are mapped to &marc; for presentation.
    </para>
    <para>
     (GIRT is the German Indexing and Retrieval Testdatabase.  It is a
@@ -627,16 +627,16 @@
 
     <listitem>
      <para>
-       Improved support for XML in search and retrieval. Eventually,
+       Improved support for &xml; in search and retrieval. Eventually,
        the goal is for &zebra; to pull double duty as a flexible
-       information retrieval engine and high-performance XML
+       information retrieval engine and high-performance &xml;
        repository.  The recent addition of XPath searching is one
        example of the kind of enhancement we're working on.
      </para>
      <para>
-       There is also the experimental <literal>ALVIS XSLT</literal>
-       XML input filter, which unleashes the full power of DOM based
-       XSLT transformations during indexing and record retrieval. Work
+       There is also the experimental <literal>ALVIS &xslt;</literal>
+       &xml; input filter, which unleashes the full power of &dom; based
+       &xslt; transformations during indexing and record retrieval. Work
        on this filter has been sponsored by the ALVIS EU project
        <ulink url="http://www.alvis.info/alvis/"/>. We expect this filter to
        mature soon, as it is planned to be included in the version 2.0
@@ -647,9 +647,9 @@
     <listitem>
      <para>
        Finalisation and documentation of &zebra;'s C programming
-       API, allowing updates, database management and other functions
-       not readily expressed in Z39.50.  We will also consider
-       exposing the API through SOAP.
+       &api;, allowing updates, database management and other functions
+       not readily expressed in &z3950;.  We will also consider
+       exposing the &api; through &soap;.
      </para>
     </listitem>
 

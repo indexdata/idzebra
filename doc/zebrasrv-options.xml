@@ -1,5 +1,5 @@
 <!-- 
-   $Id: zebrasrv-options.xml,v 1.6 2006-09-05 12:01:31 adam Exp $
+   $Id: zebrasrv-options.xml,v 1.7 2007-02-02 11:10:08 marc Exp $
    Options for generic frontend server and yaz-ztest.
    Included in both manual and man page for yaz-ztest
    Note - these files have been altered for zebrasrv, and are not in
@@ -52,7 +52,7 @@ crash at a single server instance. Heikki -->
 
  <varlistentry><term><literal>-z</literal></term>
   <listitem><para>
-    Use the Z39.50 protocol (default). This option and <literal>-s</literal>
+    Use the &z3950; protocol (default). This option and <literal>-s</literal>
     complement each other.
     You can use both multiple times on the same command
     line, between listener-specifications (see below). This way, you
@@ -77,8 +77,8 @@ crash at a single server instance. Heikki -->
 
  <varlistentry><term><literal>-f </literal>
    <replaceable>vconfig</replaceable></term>
-  <listitem><para>This specifies an XML file that describes
-    one or more YAZ frontend virtual servers. See section VIRTUAL
+  <listitem><para>This specifies an &xml; file that describes
+    one or more &yaz; frontend virtual servers. See section VIRTUAL
    HOSTS for details.
    </para></listitem></varlistentry>
 
@@ -221,7 +221,7 @@ Heikki -->
    <screen>
     hostname | IP-number [: portnumber]
    </screen>
-   The port number defaults to 210 (standard Z39.50 port) for
+   The port number defaults to 210 (standard &z3950; port) for
    privileged users (root), and 9999 for normal users.
    The special hostname "@" is mapped to
    the address INADDR_ANY, which causes the server to listen on any local
@@ -230,7 +230,7 @@ Heikki -->
   <para>
    The default behavior for <literal>zebrasrv</literal> - if started
    as non-priviledged user - is to establish
-   a single TCP/IP listener, for the Z39.50 protocol, on port 9999.
+   a single TCP/IP listener, for the &z3950; protocol, on port 9999.
    <screen>
     zebrasrv @
     zebrasrv tcp:some.server.name.org:1234
@@ -240,7 +240,7 @@ Heikki -->
 
   <para>
    To start the server listening on the registered port for
-   Z39.50, or on a filesystem socket, 
+   &z3950;, or on a filesystem socket, 
    and to drop root privileges once the ports are bound, execute
    the server like this from a root shell:
    <screen>

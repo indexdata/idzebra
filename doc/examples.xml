@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.25 2007-02-02 09:58:39 marc Exp $ -->
+ <!-- $Id: examples.xml,v 1.26 2007-02-02 11:10:08 marc Exp $ -->
  <title>Example Configurations</title>
 
  <sect1 id="examples-overview">
@@ -61,12 +61,12 @@
  </sect1>
 
  <sect1 id="example1">
-  <title>Example 1: XML Indexing And Searching</title>
+  <title>Example 1: &xml; Indexing And Searching</title>
 
   <para>
    This example shows how &zebra; can be used with absolutely minimal
    configuration to index a body of
-   <ulink url="&url.xml;">XML</ulink>
+   <ulink url="&url.xml;">&xml;</ulink>
    documents, and search them using
    <ulink url="&url.xpath;">XPath</ulink>
    expressions to specify access points.
@@ -81,14 +81,14 @@
    records are generated from the family tree in the file
    <literal>dino.tree</literal>.)
    Type <literal>make records/dino.xml</literal>
-   to make the XML data file.
-   (Or you could just type <literal>make dino</literal> to build the XML
+   to make the &xml; data file.
+   (Or you could just type <literal>make dino</literal> to build the &xml;
    data file, create the database and populate it with the taxonomic
    records all in one shot - but then you wouldn't learn anything,
    would you?  :-)
   </para>
   <para>
-   Now we need to create a &zebra; database to hold and index the XML
+   Now we need to create a &zebra; database to hold and index the &xml;
    records.  We do this with the
    &zebra; indexer, <command>zebraidx</command>, which is
    driven by the <literal>zebra.cfg</literal> configuration file.
@@ -103,7 +103,7 @@
   </para>
   <para>
    That's all you need for a minimal &zebra; configuration.  Now you can
-   roll the XML records into the database and build the indexes:
+   roll the &xml; records into the database and build the indexes:
    <screen>
     zebraidx update records
    </screen>
@@ -121,8 +121,8 @@
    <xref linkend="zebrasrv"/>.
   </para>
   <para>
-   Now you can use the Z39.50 client program of your choice to execute
-   XPath-based boolean queries and fetch the XML records that satisfy
+   Now you can use the &z3950; client program of your choice to execute
+   XPath-based boolean queries and fetch the &xml; records that satisfy
    them:
    <screen>
     $ yaz-client @:9999
@@ -187,8 +187,8 @@
   <para>
    How, then, can we build broadcasting Information Retrieval
    applications that look for records in many different databases?
-   The Z39.50 protocol offers a powerful and general solution to this:
-   abstract ``access points''.  In the Z39.50 model, an access point
+   The &z3950; protocol offers a powerful and general solution to this:
+   abstract ``access points''.  In the &z3950; model, an access point
    is simply a point at which searches can be directed.  Nothing is
    said about implementation: in a given database, an access point
    might be implemented as an index, a path into physical records, an
@@ -198,7 +198,7 @@
   </para>
   <para>
    For convenience, access points are gathered into <firstterm>attribute
-   sets</firstterm>.  For example, the BIB-1 attribute set is supposed to
+   sets</firstterm>.  For example, the &bib1; attribute set is supposed to
    contain bibliographic access points such as author, title, subject
    and ISBN; the GEO attribute set contains access points pertaining
    to geospatial information (bounding coordinates, stratum, latitude
@@ -207,7 +207,7 @@
    (provenance, inscriptions, etc.)
   </para>
   <para>
-   In practice, the BIB-1 attribute set has tended to be a dumping
+   In practice, the &bib1; attribute set has tended to be a dumping
    ground for all sorts of access points, so that, for example, it
    includes some geospatial access points as well as strictly
    bibliographic ones.  Nevertheless, this model
@@ -215,21 +215,21 @@
    records in databases.
   </para>
   <para>
-   In the BIB-1 attribute set, a taxon name is probably best
+   In the &bib1; attribute set, a taxon name is probably best
    interpreted as a title - that is, a phrase that identifies the item
-   in question.  BIB-1 represents title searches by
+   in question.  &bib1; represents title searches by
    access point 4.  (See 
-   <ulink url="&url.z39.50.bib1.semantics;">The BIB-1 Attribute
+   <ulink url="&url.z39.50.bib1.semantics;">The &bib1; Attribute
     Set Semantics</ulink>)
    So we need to configure our dinosaur database so that searches for
-   BIB-1 access point 4 look in the 
+   &bib1; access point 4 look in the 
    <literal>&lt;termName&gt;</literal> element,
    inside the top-level
    <literal>&lt;Zthes&gt;</literal> element.
   </para>
   <para>
    This is a two-step process.  First, we need to tell &zebra; that we
-   want to support the BIB-1 attribute set.  Then we need to tell it
+   want to support the &bib1; attribute set.  Then we need to tell it
    which elements of its record pertain to access point 4.
    </para>
    <para>
@@ -270,7 +270,7 @@ xelm /Zthes/termModifiedBy      termModifiedBy:w
     </callout>
     <callout arearefs="attset.attset">
      <para>
-      Declare Bib-1 attribute set. See <filename>bib1.att</filename> in
+      Declare &bib1; attribute set. See <filename>bib1.att</filename> in
       &zebra;'s <filename>tab</filename> directory.
      </para>
     </callout>
@@ -284,13 +284,13 @@ xelm /Zthes/termModifiedBy      termModifiedBy:w
     <callout arearefs="termName">
      <para>
       Make <literal>termName</literal> word searchable by both
-      Zthes attribute termName (1002) and Bib-1 atttribute title (4).
+      Zthes attribute termName (1002) and &bib1; atttribute title (4).
      </para>
     </callout>
    </calloutlist>
   </programlistingco>
    <para>
-    After re-indexing, we can search the database using Bib-1
+    After re-indexing, we can search the database using &bib1;
     attribute, title, as follows:
     <screen>
 Z> form xml
@@ -305,7 +305,7 @@ Elapsed: 0.106896
 Z> s
 Sent presentRequest (1+1).
 Records: 1
-[Default]Record type: XML
+[Default]Record type: &xml;
 &lt;Zthes&gt;
  &lt;termId&gt;2&lt;/termId&gt;
  &lt;termName&gt;Eoraptor&lt;/termName&gt;

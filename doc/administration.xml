@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.49 2007-02-02 09:58:39 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.50 2007-02-02 11:10:08 marc Exp $ -->
  <title>Administrating &zebra;</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -66,7 +66,7 @@
 </para>
  
  <para>
-  Both the &zebra; administrative tool and the Z39.50 server share a
+  Both the &zebra; administrative tool and the &z3950; server share a
   set of index files and a global configuration file.
   The name of the configuration file defaults to
   <literal>zebra.cfg</literal>.
@@ -127,7 +127,7 @@
    In the configuration file, the group name is placed before the option
    name itself, separated by a dot (.). For instance, to set the record type
    for group <literal>public</literal> to <literal>grs.sgml</literal>
-   (the SGML-like format for structured records) you would write:
+   (the &sgml;-like format for structured records) you would write:
   </para>
   
   <para>
@@ -195,7 +195,7 @@
      <replaceable>database</replaceable></term>
      <listitem>
       <para>
-       Specifies the Z39.50 database name.
+       Specifies the &z3950; database name.
        <!-- FIXME - now we can have multiple databases in one server. -H -->
       </para>
      </listitem>
@@ -418,7 +418,7 @@
        of permissions currently: read (r) and write(w). By default
        users not listed in a permission directive are given the read
        privilege. To specify permissions for a user with no
-       username, or Z39.50 anonymous style use
+       username, or &z3950; anonymous style use
 	<literal>anonymous</literal>. The permstring consists of
        a sequence of characters. Include character <literal>w</literal>
        for write/update access, <literal>r</literal> for read access and
@@ -465,7 +465,7 @@
    mounted on a CD-ROM drive,
    you may want &zebra; to make an internal copy of them. To do this,
    you specify 1 (true) in the <literal>storeData</literal> setting. When
-   the Z39.50 server retrieves the records they will be read from the
+   the &z3950; server retrieves the records they will be read from the
    internal file structures of the system.
   </para>
   
@@ -494,7 +494,7 @@
   <para>
    Consider a system in which you have a group of text files called
    <literal>simple</literal>.
-   That group of records should belong to a Z39.50 database called
+   That group of records should belong to a &z3950; database called
    <literal>textbase</literal>.
    The following <literal>zebra.cfg</literal> file will suffice:
   </para>
@@ -613,7 +613,7 @@
    information. If you have a group of records that explicitly associates
    an ID with each record, this method is convenient. For example, the
    record format may contain a title or a ID-number - unique within the group.
-   In either case you specify the Z39.50 attribute set and use-attribute
+   In either case you specify the &z3950; attribute set and use-attribute
    location in which this information is stored, and the system looks at
    that field to determine the identity of the record.
   </para>
@@ -700,7 +700,7 @@
   <para>
    For instance, the sample GILS records that come with the &zebra;
    distribution contain a unique ID in the data tagged Control-Identifier.
-   The data is mapped to the Bib-1 use attribute Identifier-standard
+   The data is mapped to the &bib1; use attribute Identifier-standard
    (code 1007). To use this field as a record id, specify
    <literal>(bib1,Identifier-standard)</literal> as the value of the
    <literal>recordId</literal> in the configuration file.
@@ -1049,7 +1049,7 @@
    </para>
    <para>
     The experimental <literal>alvis</literal> filter provides a
-    directive to fetch static rank information out of the indexed XML
+    directive to fetch static rank information out of the indexed &xml;
     records, thus making <emphasis>all</emphasis> hit sets ordered
     after <emphasis>ascending</emphasis> static
     rank, and for those doc's which have the same static rank, ordered
@@ -1086,21 +1086,21 @@
     indexing time (this is why we
     call it ``dynamic ranking'' in the first place ...)
     It is invoked by adding
-    the Bib-1 relation attribute with
-    value ``relevance'' to the PQF query (that is,
+    the &bib1; relation attribute with
+    value ``relevance'' to the &pqf; query (that is,
     <literal>@attr&nbsp;2=102</literal>, see also  
     <ulink url="&url.z39.50;bib1.html">
-     The BIB-1 Attribute Set Semantics</ulink>, also in 
+     The &bib1; Attribute Set Semantics</ulink>, also in 
       <ulink url="&url.z39.50.attset.bib1;">HTML</ulink>). 
     To find all articles with the word <literal>Eoraptor</literal> in
-    the title, and present them relevance ranked, issue the PQF query:
+    the title, and present them relevance ranked, issue the &pqf; query:
     <screen>
      @attr 2=102 @attr 1=4 Eoraptor
     </screen>
    </para>
 
     <sect3 id="administration-ranking-dynamic-rank1">
-     <title>Dynamically ranking using PQF queries with the 'rank-1' 
+     <title>Dynamically ranking using &pqf; queries with the 'rank-1' 
       algorithm</title>
 
    <para>
@@ -1167,7 +1167,7 @@
         </para>
         <para>
          It is possible to apply dynamic ranking on only parts of the
-         PQF query: 
+         &pqf; query: 
          <screen>
           @and @attr 2=102 @attr 1=1010 Utah @attr 1=1018 Springer
          </screen>
@@ -1202,7 +1202,7 @@
         </para>
         <para>
          Ranking weights may be used to pass a value to a ranking
-         algorithm, using the non-standard BIB-1 attribute type 9.
+         algorithm, using the non-standard &bib1; attribute type 9.
          This allows one branch of a query to use one value while
          another branch uses a different one.  For example, we can search
          for <literal>utah</literal> in the 
@@ -1214,7 +1214,7 @@
         </para>
         <para>
          The default weight is
-         sqrt(1000) ~ 34 , as the Z39.50 standard prescribes that the top score
+         sqrt(1000) ~ 34 , as the &z3950; standard prescribes that the top score
          is 1000 and the bottom score is 0, encoded in integers.
         </para>
         <warning>
@@ -1339,7 +1339,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
 
     <!--
     <sect3 id="administration-ranking-dynamic-rank1">
-     <title>Dynamically ranking PQF queries with the 'rank-static' 
+     <title>Dynamically ranking &pqf; queries with the 'rank-static' 
       algorithm</title>
     <para>
     The dummy <literal>rank-static</literal> reranking/scoring
@@ -1381,25 +1381,25 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     </sect3>
 
     <sect3 id="administration-ranking-dynamic-cql">
-     <title>Dynamically ranking CQL queries</title>
+     <title>Dynamically ranking &cql; queries</title>
      <para>
-      Dynamic ranking can be enabled during sever side CQL
+      Dynamic ranking can be enabled during sever side &cql;
       query expansion by adding <literal>@attr&nbsp;2=102</literal>
-      chunks to the CQL config file. For example
+      chunks to the &cql; config file. For example
       <screen>
        relationModifier.relevant		= 2=102
       </screen>
-      invokes dynamic ranking each time a CQL query of the form 
+      invokes dynamic ranking each time a &cql; query of the form 
       <screen>
        Z> querytype cql
        Z> f alvis.text =/relevant house
       </screen>
       is issued. Dynamic ranking can also be automatically used on
-      specific CQL indexes by (for example) setting
+      specific &cql; indexes by (for example) setting
       <screen>
        index.alvis.text                        = 1=text 2=102
       </screen>
-      which then invokes dynamic ranking each time a CQL query of the form 
+      which then invokes dynamic ranking each time a &cql; query of the form 
       <screen>
        Z> querytype cql
        Z> f alvis.text = house
@@ -1418,7 +1418,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
      &zebra; sorts efficiently using special sorting indexes
      (type=<literal>s</literal>; so each sortable index must be known
      at indexing time, specified in the configuration of record
-     indexing.  For example, to enable sorting according to the BIB-1
+     indexing.  For example, to enable sorting according to the &bib1;
      <literal>Date/time-added-to-db</literal> field, one could add the line
      <screen>
         xelm /*/@created               Date/time-added-to-db:s
@@ -1435,8 +1435,8 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
      <para>
       Indexing can be specified at searching time using a query term
       carrying the non-standard
-      BIB-1 attribute-type <literal>7</literal>.  This removes the
-      need to send a Z39.50 <literal>Sort Request</literal>
+      &bib1; attribute-type <literal>7</literal>.  This removes the
+      need to send a &z3950; <literal>Sort Request</literal>
       separately, and can dramatically improve latency when the client
       and server are on separate networks.
       The sorting part of the query is separate from the rest of the
@@ -1445,7 +1445,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
      </para>
      <para>
       A sorting subquery needs two attributes: an index (such as a
-      BIB-1 type-1 attribute) specifying which index to sort on, and a
+      &bib1; type-1 attribute) specifying which index to sort on, and a
       type-7 attribute whose value is be <literal>1</literal> for
       ascending sorting, or <literal>2</literal> for descending.  The
       term associated with the sorting attribute is the priority of
@@ -1454,7 +1454,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
       on.
      </para>
     <para>For example, a search for water, sort by title (ascending),
-    is expressed by the PQF query
+    is expressed by the &pqf; query
      <screen>
      @or @attr 1=1016 water @attr 7=1 @attr 1=4 0
      </screen>
@@ -1486,8 +1486,8 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
    <note>
     <para>
      Extended services are only supported when accessing the &zebra;
-     server using the <ulink url="&url.z39.50;">Z39.50</ulink>
-     protocol. The <ulink url="&url.sru;">SRU</ulink> protocol does
+     server using the <ulink url="&url.z39.50;">&z3950;</ulink>
+     protocol. The <ulink url="&url.sru;">&sru;</ulink> protocol does
      not support extended services.
     </para>
    </note>
@@ -1520,7 +1520,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
      storeKeys: 1
     </screen>
     The general record type should be set to any record filter which
-    is able to parse XML records, you may use any of the two
+    is able to parse &xml; records, you may use any of the two
     declarations (but not both simultaneously!)
     <screen>    
      recordType: grs.xml
@@ -1538,16 +1538,16 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     <para>
      It is not possible to carry information about record types or
      similar to &zebra; when using extended services, due to
-     limitations of the <ulink url="&url.z39.50;">Z39.50</ulink>
+     limitations of the <ulink url="&url.z39.50;">&z3950;</ulink>
      protocol. Therefore, indexing filters can not be chosen on a
-     per-record basis. One and only one general XML indexing filter
+     per-record basis. One and only one general &xml; indexing filter
      must be defined.  
      <!-- but because it is represented as an OID, we would need some
      form of proprietary mapping scheme between record type strings and
      OIDs. -->
      <!--
      However, as a minimum, it would be extremely useful to enable
-     people to use MARC21, assuming grs.marcxml.marc21 as a record
+     people to use &marc21;, assuming grs.marcxml.marc21 as a record
      type.  
      -->
     </para>
@@ -1555,10 +1555,10 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
 
 
    <sect2 id="administration-extended-services-z3950">
-    <title>Extended services in the Z39.50 protocol</title>
+    <title>Extended services in the &z3950; protocol</title>
 
     <para>
-     The <ulink url="&url.z39.50;">Z39.50</ulink> standard allows
+     The <ulink url="&url.z39.50;">&z3950;</ulink> standard allows
      servers to accept special binary <emphasis>extended services</emphasis>
      protocol packages, which may be used to insert, update and delete
      records into servers. These carry  control and update
@@ -1566,7 +1566,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     </para>
 
     <table id="administration-extended-services-z3950-table" frame="top">
-     <title>Extended services Z39.50 Package Fields</title>
+     <title>Extended services &z3950; Package Fields</title>
       <tgroup cols="3">
        <thead>
        <row>
@@ -1594,13 +1594,13 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
         </row>
         <row>
          <entry><literal>record</literal></entry>
-         <entry><literal>XML string</literal></entry>
-         <entry>An XML formatted string containing the record</entry>
+         <entry><literal>&xml; string</literal></entry>
+         <entry>An &xml; formatted string containing the record</entry>
         </row>
         <row>
          <entry><literal>syntax</literal></entry>
          <entry><literal>'xml'</literal></entry>
-         <entry>Only XML record syntax is supported</entry>
+         <entry>Only &xml; record syntax is supported</entry>
         </row>
         <row>
          <entry><literal>recordIdOpaque</literal></entry>
@@ -1663,7 +1663,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
 
     <para>
      When retrieving existing
-     records indexed with GRS indexing filters, the &zebra; internal 
+     records indexed with &grs1; indexing filters, the &zebra; internal 
      ID number is returned in the field
     <literal>/*/id:idzebra/localnumber</literal> in the namespace
     <literal>xmlns:id="http://www.indexdata.dk/zebra/"</literal>,
@@ -1712,7 +1712,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
      ]]>
    </screen>
     Now the <literal>Default</literal> database was created,
-    we can insert an XML file (esdd0006.grs
+    we can insert an &xml; file (esdd0006.grs
     from example/gils/records) and index it:
    <screen>  
     <![CDATA[
@@ -1782,8 +1782,8 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
   <title>Extended services from yaz-php</title>
 
    <para>
-    Extended services are also available from the YAZ PHP client layer. An
-    example of an YAZ-PHP extended service transaction is given here:
+    Extended services are also available from the &yaz; &php; client layer. An
+    example of an &yaz;-&php; extended service transaction is given here:
     <screen>
     <![CDATA[
      $record = '<record><title>A fine specimen of a record</title></record>';

@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.19 2007-02-02 09:58:39 marc Exp $ -->
+  <!-- $Id: architecture.xml,v 1.20 2007-02-02 11:10:08 marc Exp $ -->
   <title>Overview of &zebra; Architecture</title>
 
   <section id="architecture-representation">
@@ -87,9 +87,9 @@
       <varlistentry>
        <term>Search Evaluation</term>
        <listitem>
-        <para>by execution of search requests expressed in PQF/RPN
+        <para>by execution of search requests expressed in &pqf;/&rpn;
          data structures, which are handed over from
-         the YAZ server frontend API. Search evaluation includes
+         the &yaz; server frontend &api;. Search evaluation includes
          construction of hit lists according to boolean combinations
          of simpler searches. Fast performance is achieved by careful
          use of index structures, and by evaluation specific index hit
@@ -112,7 +112,7 @@
        <term>Record Presentation</term>
        <listitem>
         <para>returns - possibly ranked - result sets, hit
-         numbers, and the like internal data to the YAZ server backend API
+         numbers, and the like internal data to the &yaz; server backend &api;
          for shipping to the client. Each individual filter module
          implements it's own specific presentation formats.
         </para>
@@ -149,7 +149,7 @@
    <section id="componentsearcher">
     <title>&zebra; Searcher/Retriever</title>
     <para>
-     This is the executable which runs the Z39.50/SRU/SRW server and
+     This is the executable which runs the &z3950;/&sru;/&srw; server and
      glues together the core libraries and the filter modules to one
      great Information Retrieval server application. 
     </para>    
@@ -160,32 +160,32 @@
    </section>
 
    <section id="componentyazserver">
-    <title>YAZ Server Frontend</title>
+    <title>&yaz; Server Frontend</title>
     <para>
-     The YAZ server frontend is 
-     a full fledged stateful Z39.50 server taking client
+     The &yaz; server frontend is 
+     a full fledged stateful &z3950; server taking client
      connections, and forwarding search and scan requests to the 
      &zebra; core indexer.
     </para>
     <para>
-     In addition to Z39.50 requests, the YAZ server frontend acts
+     In addition to &z3950; requests, the &yaz; server frontend acts
      as HTTP server, honoring
-      <ulink url="&url.srw;">SRU SOAP</ulink> 
+      <ulink url="&url.srw;">&sru; &soap;</ulink> 
      requests, and  
-     <ulink url="&url.sru;">SRU REST</ulink> 
+     <ulink url="&url.sru;">&sru; &rest;</ulink> 
      requests. Moreover, it can
      translate incoming 
-     <ulink url="&url.cql;">CQL</ulink>
+     <ulink url="&url.cql;">&cql;</ulink>
      queries to
-     <ulink url="&url.yaz.pqf;">PQF</ulink>
+     <ulink url="&url.yaz.pqf;">&pqf;</ulink>
       queries, if
      correctly configured. 
     </para>
     <para>
-     <ulink url="&url.yaz;">YAZ</ulink>
+     <ulink url="&url.yaz;">&yaz;</ulink>
      is an Open Source  
      toolkit that allows you to develop software using the
-     ANSI Z39.50/ISO23950 standard for information retrieval.
+     &ansi; &z3950;/ISO23950 standard for information retrieval.
      It is packaged in the Debian packages     
      <literal>yaz</literal> and <literal>libyaz</literal>.
     </para>
@@ -209,26 +209,26 @@
 
 
    <section id="componentmodulesalvis">
-    <title>ALVIS XML Record Model and Filter Module</title>
+    <title>ALVIS &xml; Record Model and Filter Module</title>
      <para>
-      The Alvis filter for XML files is an XSLT based input
+      The Alvis filter for &xml; files is an &xslt; based input
       filter. 
-      It indexes element and attribute content of any thinkable XML format
-      using full XPATH support, a feature which the standard &zebra;
-      GRS SGML and XML filters lacked. The indexed documents are
-      parsed into a standard XML DOM tree, which restricts record size
+      It indexes element and attribute content of any thinkable &xml; format
+      using full &xpath; support, a feature which the standard &zebra;
+      &grs1; &sgml; and &xml; filters lacked. The indexed documents are
+      parsed into a standard &xml; &dom; tree, which restricts record size
       according to availability of memory.
     </para>
     <para>
       The Alvis filter 
-      uses XSLT display stylesheets, which let
+      uses &xslt; display stylesheets, which let
       the &zebra; DB administrator associate multiple, different views on
-      the same XML document type. These views are chosen on-the-fly in
+      the same &xml; document type. These views are chosen on-the-fly in
       search time.
      </para>
     <para>
       In addition, the Alvis filter configuration is not bound to the
-      arcane  BIB-1 Z39.50 library catalogue indexing traditions and
+      arcane  &bib1; &z3950; library catalogue indexing traditions and
       folklore, and is therefore easier to understand.
     </para>
     <para>
@@ -241,7 +241,7 @@
       their Pagerank algorithm.
     </para>
     <para>
-      Details on the experimental Alvis XSLT filter are found in 
+      Details on the experimental Alvis &xslt; filter are found in 
       <xref linkend="record-model-alvisxslt"/>.
       </para>
      <para>
@@ -251,27 +251,27 @@
     </section>
 
    <section id="componentmodulesgrs">
-    <title>GRS Record Model and Filter Modules</title>
+    <title>&grs1; Record Model and Filter Modules</title>
     <para>
-    The GRS filter modules described in 
+    The &grs1; filter modules described in 
     <xref linkend="grs"/>
-    are all based on the Z39.50 specifications, and it is absolutely
-    mandatory to have the reference pages on BIB-1 attribute sets on
-    you hand when configuring GRS filters. The GRS filters come in
+    are all based on the &z3950; specifications, and it is absolutely
+    mandatory to have the reference pages on &bib1; attribute sets on
+    you hand when configuring &grs1; filters. The GRS filters come in
     different flavors, and a short introduction is needed here.
-    GRS filters of various kind have also been called ABS filters due
+    &grs1; filters of various kind have also been called ABS filters due
     to the <filename>*.abs</filename> configuration file suffix.
     </para>
     <para>
       The <emphasis>grs.marc</emphasis> and 
       <emphasis>grs.marcxml</emphasis> filters are suited to parse and
-      index binary and XML versions of traditional library MARC records 
+      index binary and &xml; versions of traditional library &marc; records 
       based on the ISO2709 standard. The Debian package for both
       filters is 
      <literal>libidzebra-2.0-mod-grs-marc</literal>.
     </para>
     <para>
-      GRS TCL scriptable filters for extensive user configuration come
+      &grs1; TCL scriptable filters for extensive user configuration come
      in two flavors: a regular expression filter 
      <emphasis>grs.regx</emphasis> using TCL regular expressions, and
      a general scriptable TCL filter called 
@@ -280,7 +280,7 @@
      <literal>libidzebra-2.0-mod-grs-regx</literal> Debian package.
     </para>
     <para>
-      A general purpose SGML filter is called
+      A general purpose &sgml; filter is called
      <emphasis>grs.sgml</emphasis>. This filter is not yet packaged,
      but planned to be in the  
      <literal>libidzebra-2.0-mod-grs-sgml</literal> Debian package.
@@ -290,8 +290,8 @@
       <literal>libidzebra-2.0-mod-grs-xml</literal> includes the 
       <emphasis>grs.xml</emphasis> filter which uses <ulink
       url="&url.expat;">Expat</ulink> to 
-      parse records in XML and turn them into ID&zebra;'s internal GRS node
-      trees. Have also a look at the Alvis XML/XSLT filter described in
+      parse records in &xml; and turn them into ID&zebra;'s internal &grs1; node
+      trees. Have also a look at the Alvis &xml;/&xslt; filter described in
       the next session.
     </para>
    </section>
@@ -332,8 +332,8 @@
      
      <para>
       When records are accessed by the system, they are represented
-      in their local, or native format. This might be SGML or HTML files,
-      News or Mail archives, MARC records. If the system doesn't already
+      in their local, or native format. This might be &sgml; or HTML files,
+      News or Mail archives, &marc; records. If the system doesn't already
       know how to read the type of data you need to store, you can set up an
       input filter by preparing conversion rules based on regular
       expressions and possibly augmented by a flexible scripting language
@@ -360,7 +360,7 @@
      <para>
       Before transmitting records to the client, they are first
       converted from the internal structure to a form suitable for exchange
-      over the network - according to the Z39.50 standard.
+      over the network - according to the &z3950; standard.
      </para>
     </listitem>
 
@@ -382,7 +382,7 @@
     In particular, the regular record filters are not invoked when
     these are in use.
     This can in some cases make the retrival faster than regular
-    retrieval operations (for MARC, XML etc).
+    retrieval operations (for &marc;, &xml; etc).
    </para>
    <table id="special-retrieval-types">
     <title>Special Retrieval Elements</title>
@@ -398,7 +398,7 @@
       <row>
        <entry><literal>zebra::meta::sysno</literal></entry>
        <entry>Get &zebra; record system ID</entry>
-       <entry>XML and SUTRS</entry>
+       <entry>&xml; and &sutrs;</entry>
       </row>
       <row>
        <entry><literal>zebra::data</literal></entry>
@@ -408,12 +408,12 @@
       <row>
        <entry><literal>zebra::meta</literal></entry>
        <entry>Get &zebra; record internal metadata</entry>
-       <entry>XML and SUTRS</entry>
+       <entry>&xml; and &sutrs;</entry>
       </row>
       <row>
        <entry><literal>zebra::index</literal></entry>
        <entry>Get all indexed keys for record</entry>
-       <entry>XML and SUTRS</entry>
+       <entry>&xml; and &sutrs;</entry>
       </row>
       <row>
        <entry>
@@ -422,7 +422,7 @@
        <entry>
 	Get indexed keys for field <replaceable>f</replaceable>	for record
        </entry>
-       <entry>XML and SUTRS</entry>
+       <entry>&xml; and &sutrs;</entry>
       </row>
       <row>
        <entry>
@@ -432,7 +432,7 @@
 	Get indexed keys for field <replaceable>f</replaceable>
 	  and type <replaceable>t</replaceable> for record
        </entry>
-       <entry>XML and SUTRS</entry>
+       <entry>&xml; and &sutrs;</entry>
       </row>
      </tbody>
     </tgroup>
@@ -467,7 +467,7 @@
       Z> elements zebra::meta::sysno
       Z> s 1+1
     </screen> 
-    displays in <literal>XML</literal> record syntax only internal
+    displays in <literal>&xml;</literal> record syntax only internal
     record system number, whereas 
     <screen>
       Z> f @attr 1=title my
@@ -498,7 +498,7 @@
       Z> s 1+1
     </screen>
     will display all indexed tokens from all indexed fields of the
-    first record, and it will display in <literal>SUTRS</literal>
+    first record, and it will display in <literal>&sutrs;</literal>
     record syntax, whereas 
     <screen>
       Z> f @attr 1=title my
@@ -508,13 +508,13 @@
       Z> elements zebra::index::title:p
       Z> s 1+1
     </screen> 
-    displays in <literal>XML</literal> record syntax only the content
+    displays in <literal>&xml;</literal> record syntax only the content
       of the zebra string index <literal>title</literal>, or
       even only the type <literal>p</literal> phrase indexed part of it.
    </para>
    <note>
     <para>
-     Trying to access numeric <literal>Bib-1</literal> use
+     Trying to access numeric <literal>&bib1;</literal> use
      attributes or trying to access non-existent zebra intern string
      access points will result in a Diagnostic 25: Specified element set
      'name not valid for specified database.

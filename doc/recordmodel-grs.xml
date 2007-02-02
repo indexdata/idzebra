@@ -1,6 +1,6 @@
  <chapter id="grs">
-  <!-- $Id: recordmodel-grs.xml,v 1.6 2007-02-02 09:58:39 marc Exp $ -->
-  <title>GRS Record Model and Filter Modules</title>
+  <!-- $Id: recordmodel-grs.xml,v 1.7 2007-02-02 11:10:08 marc Exp $ -->
+  <title>&grs1; Record Model and Filter Modules</title>
 
   <para>
    The record model described in this chapter applies to the fundamental,
@@ -11,7 +11,7 @@
 
 
   <section id="grs-filters">
-   <title>GRS Record Filters</title>
+   <title>&grs1; Record Filters</title>
    <para>
     Many basic subtypes of the <emphasis>grs</emphasis> type are
     currently available:
@@ -25,7 +25,7 @@
        <para>
         This is the canonical input format
         described <xref linkend="grs-canonical-format"/>. It is using
-        simple SGML-like syntax. 
+        simple &sgml;-like syntax. 
        </para>
       </listitem>
      </varlistentry>
@@ -34,17 +34,17 @@
       <listitem>
        <para>
         This allows &zebra; to read
-        records in the ISO2709 (MARC) encoding standard. 
+        records in the ISO2709 (&marc;) encoding standard. 
         Last parameter <replaceable>type</replaceable> names the
         <literal>.abs</literal> file (see below)
-        which describes the specific MARC structure of the input record as
+        which describes the specific &marc; structure of the input record as
         well as the indexing rules.
        </para>
        <para>The <literal>grs.marc</literal> uses an internal represtantion
-	which is not XML conformant. In particular MARC tags are
-	presented as elements with the same name. And XML elements
+	which is not &xml; conformant. In particular &marc; tags are
+	presented as elements with the same name. And &xml; elements
 	may not start with digits. Therefore this filter is only
-	suitable for systems returning GRS-1 and MARC records. For XML
+	suitable for systems returning &grs1; and &marc; records. For &xml;
 	use <literal>grs.marcxml</literal> filter instead (see below).
        </para>
        <para>
@@ -61,14 +61,14 @@
         This allows &zebra; to read ISO2709 encoded records.
         Last parameter <replaceable>type</replaceable> names the
         <literal>.abs</literal> file (see below)
-        which describes the specific MARC structure of the input record as
+        which describes the specific &marc; structure of the input record as
         well as the indexing rules.
        </para>
        <para>
 	The internal representation for <literal>grs.marcxml</literal>
-	is the same as for <ulink url="&url.marcxml;">MARCXML</ulink>.
+	is the same as for <ulink url="&url.marcxml;">&marcxml;</ulink>.
 	It slightly more complicated to work with than 
-	<literal>grs.marc</literal> but XML conformant.
+	<literal>grs.marc</literal> but &xml; conformant.
        </para>
        <para>
 	The loadable <literal>grs.marcxml</literal> filter module
@@ -81,11 +81,11 @@
       <term><literal>grs.xml</literal></term>
       <listitem>
        <para>
-        This filter reads XML records and uses
+        This filter reads &xml; records and uses
 	<ulink url="http://expat.sourceforge.net/">Expat</ulink> to
         parse them and convert them into ID&zebra;'s internal 
         <literal>grs</literal> record model.
-        Only one record per file is supported, due to the fact XML does
+        Only one record per file is supported, due to the fact &xml; does
 	not allow two documents to "follow" each other (there is no way
 	to know when a document is finished).
 	This filter is only available if &zebra; is compiled with EXPAT support.
@@ -130,14 +130,14 @@
    </para>
 
    <section id="grs-canonical-format">
-    <title>GRS Canonical Input Format</title>
+    <title>&grs1; Canonical Input Format</title>
 
     <para>
      Although input data can take any form, it is sometimes useful to
      describe the record processing capabilities of the system in terms of
      a single, canonical input format that gives access to the full
      spectrum of structure and flexibility in the system. In &zebra;, this
-     canonical format is an "SGML-like" syntax.
+     canonical format is an "&sgml;-like" syntax.
     </para>
 
     <para>
@@ -215,7 +215,7 @@
       contains only a single element (strictly speaking, that makes it an
       illegal GILS record, since the GILS profile includes several mandatory
       elements - &zebra; does not validate the contents of a record against
-      the Z39.50 profile, however - it merely attempts to match up elements
+      the &z3950; profile, however - it merely attempts to match up elements
       of a local representation with the given schema):
      </para>
 
@@ -240,7 +240,7 @@
       textual data elements which might appear in different languages, and
       images which may appear in different formats or layouts.
       The variant system in &zebra; is essentially a representation of
-      the variant mechanism of Z39.50-1995.
+      the variant mechanism of &z3950;-1995.
      </para>
 
      <para>
@@ -320,7 +320,7 @@
      <para>
       The title element above comes in two variants. Both have the IANA body
       type "text/plain", but one is in English, and the other in
-      Danish. The client, using the element selection mechanism of Z39.50,
+      Danish. The client, using the element selection mechanism of &z3950;,
       can retrieve information about the available variant forms of data
       elements, or it can select specific variants based on the requirements
       of the end-user.
@@ -331,7 +331,7 @@
    </section>
 
    <section id="grs-regx-tcl">
-    <title>GRS REGX And TCL Input Filters</title>
+    <title>&grs1; REGX And TCL Input Filters</title>
 
     <para>
      In order to handle general input formats, &zebra; allows the
@@ -583,7 +583,7 @@
   </section>
 
   <section id="grs-internal-representation">
-   <title>GRS Internal Record Representation</title>
+   <title>&grs1; Internal Record Representation</title>
 
    <para>
     When records are manipulated by the system, they're represented in a
@@ -683,7 +683,7 @@
     
     <para>
      In practice, each variant node is associated with a triple of class,
-     type, value, corresponding to the variant mechanism of Z39.50.
+     type, value, corresponding to the variant mechanism of &z3950;.
     </para>
     
    </section>
@@ -707,7 +707,7 @@
   </section>
   
   <section id="grs-conf">
-   <title>GRS Record Model Configuration</title>
+   <title>&grs1; Record Model Configuration</title>
    
    <para>
     The following sections describe the configuration files that govern
@@ -737,7 +737,7 @@
       <listitem>
 
        <para>
-        The object identifier of the Z39.50 schema associated
+        The object identifier of the &z3950; schema associated
         with the ARS, so that it can be referred to by the client.
        </para>
       </listitem>
@@ -774,7 +774,7 @@
         ask for a subset of the data elements contained in a record. Element
         set names, in the retrieval module, are mapped to <emphasis>element
          specifications</emphasis>, which contain information equivalent to the
-        <emphasis>Espec-1</emphasis> syntax of Z39.50.
+        <emphasis>Espec-1</emphasis> syntax of &z3950;.
        </para>
       </listitem>
 
@@ -788,7 +788,7 @@
       <listitem>
        <para>
         Possibly, a set of rules describing the mapping of elements to a
-        MARC representation.
+        &marc; representation.
 
        </para>
       </listitem>
@@ -796,7 +796,7 @@
       <listitem>      
        <para>
         A list of element descriptions (this is the actual ARS of the
-        schema, in Z39.50 terms), which lists the ways in which the various
+        schema, in &z3950; terms), which lists the ways in which the various
         tags can be used and organized hierarchically.
        </para>
       </listitem>
@@ -822,7 +822,7 @@
 
     <para>
      The number of different file types may appear daunting at first, but
-     each type corresponds fairly clearly to a single aspect of the Z39.50
+     each type corresponds fairly clearly to a single aspect of the &z3950;
      retrieval facilities. Further, the average database administrator,
      who is simply reusing an existing profile for which tables already
      exist, shouldn't have to worry too much about the contents of these tables.
@@ -847,14 +847,14 @@
     <title>The Abstract Syntax (.abs) Files</title>
     
     <para>
-     The name of this file type is slightly misleading in Z39.50 terms,
+     The name of this file type is slightly misleading in &z3950; terms,
      since, apart from the actual abstract syntax of the profile, it also
      includes most of the other definitions that go into a database
      profile.
     </para>
     
     <para>
-     When a record in the canonical, SGML-like format is read from a file
+     When a record in the canonical, &sgml;-like format is read from a file
      or from the database, the first tag of the file should reference the
      profile that governs the layout of the record. If the first tag of the
      record is, say, <literal>&lt;gils&gt;</literal>, the system will look
@@ -892,7 +892,7 @@
         <para>
          (m) The reference name of the OID for the profile.
          The reference names can be found in the <emphasis>util</emphasis>
-         module of YAZ.
+         module of &yaz;.
         </para>
        </listitem>
       </varlistentry>
@@ -938,7 +938,7 @@
         <para>
          (o) Points to a file containing parameters
          for representing the record contents in the ISO2709 syntax.
-         Read the description of the MARC representation facility below.
+         Read the description of the &marc; representation facility below.
         </para>
        </listitem>
       </varlistentry>
@@ -974,7 +974,7 @@
         <para>
          (o,r) Adds an element to the abstract record syntax of the schema.
          The <replaceable>path</replaceable> follows the
-         syntax which is suggested by the Z39.50 document - that is, a sequence
+         syntax which is suggested by the &z3950; document - that is, a sequence
          of tags separated by slashes (&#x2f;). Each tag is given as a
          comma-separated pair of tag type and -value surrounded by parenthesis.
          The <replaceable>name</replaceable> is the name of the element, and
@@ -1021,8 +1021,8 @@
        <term>melm <replaceable>field$subfield attributes</replaceable></term>
        <listitem>
         <para>
-	 This directive is specifically for MARC-formatted records,
-	 ingested either in the form of MARCXML documents, or in the
+	 This directive is specifically for &marc;-formatted records,
+	 ingested either in the form of &marcxml; documents, or in the
 	 ISO2709/Z39.2 format using the grs.marcxml input filter. You can
 	 specify indexing rules for any subfield, or you can leave off the
 	 <replaceable>$subfield</replaceable> part and specify default rules
@@ -1038,7 +1038,7 @@
        <listitem>
         <para>
          This directive specifies character encoding for external records.
-         For records such as XML that specifies encoding within the
+         For records such as &xml; that specifies encoding within the
          file via a header this directive is ignored.
          If neither this directive is given, nor an encoding is set
          within external records, ISO-8859-1 encoding is assumed.
@@ -1135,7 +1135,7 @@
 	    An automatically generated identifier for the record,
 	    unique within this database.  It is represented by the
 	    <literal>&lt;localControlNumber&gt;</literal> element in
-	    XML and the <literal>(1,14)</literal> tag in GRS-1.
+	    &xml; and the <literal>(1,14)</literal> tag in &grs1;.
 	   </para></listitem>
 	  </varlistentry>
 	  <varlistentry>
@@ -1237,7 +1237,7 @@
          (m) The reference name of the OID for
          the attribute set.
          The reference names can be found in the <replaceable>util</replaceable>
-         module of <replaceable>YAZ</replaceable>.
+         module of <replaceable>&yaz;</replaceable>.
         </para>
        </listitem></varlistentry>
       <varlistentry>
@@ -1250,7 +1250,7 @@
          set. For instance, many new attribute sets are defined as extensions
          to the <replaceable>bib-1</replaceable> set.
          This is an important feature of the retrieval
-         system of Z39.50, as it ensures the highest possible level of
+         system of &z3950;, as it ensures the highest possible level of
          interoperability, as those access points of your database which are
          derived from the external set (say, bib-1) can be used even by clients
          who are unaware of the new set.
@@ -1302,7 +1302,7 @@
     <para>
      This file type defines the tagset of the profile, possibly by
      referencing other tag sets (most tag sets, for instance, will include
-     tagsetG and tagsetM from the Z39.50 specification. The file may
+     tagsetG and tagsetM from the &z3950; specification. The file may
      contain the following directives.
     </para>
 
@@ -1323,7 +1323,7 @@
         <para>
          (o) The reference name of the OID for the tag set.
          The reference names can be found in the <emphasis>util</emphasis>
-         module of <emphasis>YAZ</emphasis>.
+         module of <emphasis>&yaz;</emphasis>.
          The directive is optional, since not all tag sets
          are registered outside of their schema.
         </para>
@@ -1484,7 +1484,7 @@
         <para>
          (o) The reference name of the OID for
          the variant set, if one is required. The reference names can be found
-         in the <emphasis>util</emphasis> module of <emphasis>YAZ</emphasis>.
+         in the <emphasis>util</emphasis> module of <emphasis>&yaz;</emphasis>.
         </para>
        </listitem></varlistentry>
       <varlistentry>
@@ -1542,7 +1542,7 @@
      The element set specification files describe a selection of a subset
      of the elements of a database record. The element selection mechanism
      is equivalent to the one supplied by the <emphasis>Espec-1</emphasis>
-     syntax of the Z39.50 specification.
+     syntax of the &z3950; specification.
      In fact, the internal representation of an element set
      specification is identical to the <emphasis>Espec-1</emphasis> structure,
      and we'll refer you to the description of that structure for most of
@@ -1683,14 +1683,14 @@
      a schema that differs from the native schema of the record. For
      instance, a client might only know how to process WAIS records, while
      the database record is represented in a more specific schema, such as
-     GILS. In this module, a mapping of data to one of the MARC formats is
+     GILS. In this module, a mapping of data to one of the &marc; formats is
      also thought of as a schema mapping (mapping the elements of the
-     record into fields consistent with the given MARC specification, prior
+     record into fields consistent with the given &marc; specification, prior
      to actually converting the data to the ISO2709). This use of the
-     object identifier for USMARC as a schema identifier represents an
+     object identifier for &usmarc; as a schema identifier represents an
      overloading of the OID which might not be entirely proper. However,
      it represents the dual role of schema and record syntax which
-     is assumed by the MARC family in Z39.50.
+     is assumed by the &marc; family in &z3950;.
     </para>
 
     <!--
@@ -1723,7 +1723,7 @@
          This is used, for instance, by a server receiving a request to present
          a record in a different schema from the native one.
          The name, again, is found in the <emphasis>oid</emphasis>
-         module of <emphasis>YAZ</emphasis>.
+         module of <emphasis>&yaz;</emphasis>.
         </para>
        </listitem></varlistentry>
       <varlistentry>
@@ -1740,7 +1740,7 @@
    </section>
 
    <section id="grs-mar-files">
-    <title>The MARC (ISO2709) Representation (.mar) Files</title>
+    <title>The &marc; (ISO2709) Representation (.mar) Files</title>
 
     <para>
      This file provides rules for representing a record in the ISO2709
@@ -1750,7 +1750,7 @@
 
     <!--
      NOTE: FIXME! This will be described better. We're in the process of
-      re-evaluating and most likely changing the way that MARC records are
+      re-evaluating and most likely changing the way that &marc; records are
       handled by the system.</emphasis>
     -->
 
@@ -1758,7 +1758,7 @@
   </section>
 
   <section id="grs-exchange-formats">
-   <title>GRS Exchange Formats</title>
+   <title>&grs1; Exchange Formats</title>
 
    <para>
     Converting records from the internal structure to an exchange format
@@ -1770,7 +1770,7 @@
     <itemizedlist>
      <listitem>
       <para>
-       GRS-1. The internal representation is based on GRS-1/XML, so the
+       &grs1;. The internal representation is based on &grs1;/&xml;, so the
        conversion here is straightforward. The system will create
        applied variant and supported variant lists as required, if a record
        contains variant information.
@@ -1779,34 +1779,34 @@
 
      <listitem>
       <para>
-       XML. The internal representation is based on GRS-1/XML so
-       the mapping is trivial. Note that XML schemas, preprocessing
+       &xml;. The internal representation is based on &grs1;/&xml; so
+       the mapping is trivial. Note that &xml; schemas, preprocessing
        instructions and comments are not part of the internal representation
-       and therefore will never be part of a generated XML record.
+       and therefore will never be part of a generated &xml; record.
        Future versions of the &zebra; will support that.
       </para>
      </listitem>
 
      <listitem>
       <para>
-       SUTRS. Again, the mapping is fairly straightforward. Indentation
+       &sutrs;. Again, the mapping is fairly straightforward. Indentation
        is used to show the hierarchical structure of the record. All
-       "GRS" type records support both the GRS-1 and SUTRS
+       "&grs1;" type records support both the &grs1; and &sutrs;
        representations.
-       <!-- FIXME - What is SUTRS - should be expanded here -->
+       <!-- FIXME - What is &sutrs; - should be expanded here -->
       </para>
      </listitem>
 
      <listitem>
       <para>
-       ISO2709-based formats (USMARC, etc.). Only records with a
+       ISO2709-based formats (&usmarc;, etc.). Only records with a
        two-level structure (corresponding to fields and subfields) can be
        directly mapped to ISO2709. For records with a different structuring
-       (eg., GILS), the representation in a structure like USMARC involves a
+       (eg., GILS), the representation in a structure like &usmarc; involves a
        schema-mapping (see <xref linkend="schema-mapping"/>), to an
-       "implied" USMARC schema (implied,
+       "implied" &usmarc; schema (implied,
        because there is no formal schema which specifies the use of the
-       USMARC fields outside of ISO2709). The resultant, two-level record is
+       &usmarc; fields outside of ISO2709). The resultant, two-level record is
        then mapped directly from the internal representation to ISO2709. See
        the GILS schema definition files for a detailed example of this
        approach.
@@ -1845,18 +1845,18 @@
   </section>
   
   <section id="grs-extended-marc-indexing">
-   <title>Extended indexing of MARC records</title>
+   <title>Extended indexing of &marc; records</title>
    
-   <para>Extended indexing of MARC records will help you if you need index a
+   <para>Extended indexing of &marc; records will help you if you need index a
     combination of subfields, or index only a part of the whole field,
-    or use during indexing process embedded fields of MARC record.
+    or use during indexing process embedded fields of &marc; record.
    </para>
    
-   <para>Extended indexing of MARC records additionally allows:
+   <para>Extended indexing of &marc; records additionally allows:
     <itemizedlist>
      
      <listitem>
-      <para>to index data in LEADER of MARC record</para>
+      <para>to index data in LEADER of &marc; record</para>
      </listitem>
      
      <listitem>
@@ -1868,25 +1868,25 @@
      </listitem>
      
      <listitem>
-      <para>to index linked fields for UNIMARC based formats</para>
+      <para>to index linked fields for UNI&marc; based formats</para>
      </listitem>
      
     </itemizedlist>
    </para>
    
    <note><para>In compare with simple indexing process the extended indexing
-     may increase (about 2-3 times) the time of indexing process for MARC
+     may increase (about 2-3 times) the time of indexing process for &marc;
      records.</para></note>
    
    <section id="formula">
     <title>The index-formula</title>
     
     <para>At the beginning, we have to define the term
-     <emphasis>index-formula</emphasis> for MARC records. This term helps
-     to understand the notation of extended indexing of MARC records by &zebra;.
+     <emphasis>index-formula</emphasis> for &marc; records. This term helps
+     to understand the notation of extended indexing of &marc; records by &zebra;.
      Our definition is based on the document
      <ulink url="http://www.rba.ru/rusmarc/soft/Z39-50.htm">"The table
-      of conformity for Z39.50 use attributes and RUSMARC fields"</ulink>.
+      of conformity for &z3950; use attributes and R&usmarc; fields"</ulink>.
      The document is available only in russian language.</para>
     
     <para>
@@ -1899,7 +1899,7 @@
     </screen>
     
     <para>
-     We know that &zebra; supports a Bib-1 attribute - right truncation.
+     We know that &zebra; supports a &bib1; attribute - right truncation.
      In this case, the <emphasis>index-formula</emphasis> (1) consists from 
      forms, defined in the same way as (1)</para>
     
@@ -1910,7 +1910,7 @@
     </screen>
     
     <note>
-     <para>The original MARC record may be without some elements, which included in <emphasis>index-formula</emphasis>.
+     <para>The original &marc; record may be without some elements, which included in <emphasis>index-formula</emphasis>.
      </para>
     </note>
     
@@ -1925,7 +1925,7 @@
       <varlistentry>
        <term>-</term>
        <listitem><para>The position may contain any value, defined by
-	 MARC format.
+	 &marc; format.
 	 For example, <emphasis>index-formula</emphasis></para>
 	
 	<screen>
@@ -1968,7 +1968,7 @@
      
      <note>
       <para>
-       All another operands are the same as accepted in MARC world.
+       All another operands are the same as accepted in &marc; world.
       </para>
      </note>
     </para>
@@ -1983,7 +1983,7 @@
      (<literal>.abs</literal> file). It means that names beginning with
      <literal>"mc-"</literal> are interpreted by &zebra; as
      <emphasis>index-formula</emphasis>. The database index is created and
-     linked with <emphasis>access point</emphasis> (Bib-1 use attribute)
+     linked with <emphasis>access point</emphasis> (&bib1; use attribute)
      according to this formula.</para>
     
     <para>For example, <emphasis>index-formula</emphasis></para>
@@ -2010,7 +2010,7 @@
       <varlistentry>
        <term>.</term>
        <listitem><para>The position may contain any value, defined by
-	 MARC format. For example,
+	 &marc; format. For example,
 	 <emphasis>index-formula</emphasis></para>
 	
 	<screen>
@@ -2074,7 +2074,7 @@
     </para>
     
     <note>
-     <para>All another operands are the same as accepted in MARC world.</para>
+     <para>All another operands are the same as accepted in &marc; world.</para>
     </note>
     
     <section id="grs-examples">
@@ -2107,7 +2107,7 @@
 	 elm mc-008[0-5] Date/time-added-to-db !	
 	</screen>
 	
-	<para>or for RUSMARC (this data included in 100th field)</para>
+	<para>or for R&usmarc; (this data included in 100th field)</para>
 	
 	<screen>
 	 elm mc-100___$a[0-7]_ Date/time-added-to-db !
@@ -2119,7 +2119,7 @@
 	
 	<para>using indicators while indexing</para>
 
-	<para>For RUSMARC <emphasis>index-formula</emphasis>
+	<para>For R&usmarc; <emphasis>index-formula</emphasis>
 	 <literal>70-#1$a, $g</literal> matches</para>
 	
 	<screen>
@@ -2135,10 +2135,10 @@
        
        <listitem>
 	
-	<para>indexing embedded (linked) fields for UNIMARC based
+	<para>indexing embedded (linked) fields for UNI&marc; based
 	 formats</para>
 	
-	<para>For RUSMARC <emphasis>index-formula</emphasis> 
+	<para>For R&usmarc; <emphasis>index-formula</emphasis> 
 	 <literal>4--#-$170-#1$a, $g ($c)</literal> matches</para>
 	
 	<screen><![CDATA[

@@ -1,37 +1,37 @@
 <!-- 
-   $Id: zebrasrv-virtual.xml,v 1.8 2006-09-05 12:01:31 adam Exp $
-   Description of the virtual host mechanism in YAZ GFS
+   $Id: zebrasrv-virtual.xml,v 1.9 2007-02-02 11:10:08 marc Exp $
+   Description of the virtual host mechanism in &yaz; GFS
    Included in both manual and man page for yaz-ztest
 -->
 
 <para>
- The Virtual hosts mechanism allows a YAZ frontend server to
+ The Virtual hosts mechanism allows a &yaz; frontend server to
  support multiple backends. A backend is selected on the basis of
  the TCP/IP binding (port+listening adddress) and/or the virtual host.
 </para>
 <para>
  A backend can be configured to execute in a particular working
- directory. Or the YAZ frontend may perform <ulink url="&url.cql;">CQL</ulink> to RPN conversion, thus
- allowing traditional Z39.50 backends to be offered as a  
-<ulink url="&url.sru;">SRU</ulink> service. 
- SRU Explain information for a particular backend may also be specified.
+ directory. Or the &yaz; frontend may perform <ulink url="&url.cql;">&cql;</ulink> to &rpn; conversion, thus
+ allowing traditional &z3950; backends to be offered as a  
+<ulink url="&url.sru;">&sru;</ulink> service. 
+ &sru; Explain information for a particular backend may also be specified.
 </para>
 <para>
  For the HTTP protocol, the virtual host is specified in the Host header.
- For the Z39.50 protocol, the virtual host is specified as in the
+ For the &z3950; protocol, the virtual host is specified as in the
  Initialize Request in the OtherInfo, OID 1.2.840.10003.10.1000.81.1.
 </para>
 <note>
  <para>
-  Not all Z39.50 clients allows the VHOST information to be set.
+  Not all &z3950; clients allows the VHOST information to be set.
   For those the selection of the backend must rely on the
   TCP/IP information alone (port and address).
  </para>
 </note>
 <para>
- The YAZ frontend server uses XML to describe the backend
+ The &yaz; frontend server uses &xml; to describe the backend
  configurations. Command-line option <literal>-f</literal> 
- specifies filename of the XML configuration.
+ specifies filename of the &xml; configuration.
 </para>
 <para>
  The configuration uses the root element <literal>yazgfs</literal>.
@@ -107,7 +107,7 @@
    <listitem>
     <para>
      Specifies a working directory for this backend server. If
-     specifid, the YAZ fronend changes current working directory
+     specifid, the &yaz; fronend changes current working directory
      to this directory whenever a backend of this type is
      started (backend handler bend_start), stopped (backend handler hand_stop)
      and initialized (bend_init).
@@ -128,9 +128,9 @@
   <varlistentry><term>element <literal>cql2rpn</literal> (optional)</term>
    <listitem>
     <para>
-     Specifies a filename that includes <ulink url="&url.cql;">CQL</ulink> to RPN conversion for this
-     backend server. See <ulink url="&url.cql;">CQL</ulink> section in YAZ manual.
-     If given, the backend server will only "see" a Type-1/RPN query. 
+     Specifies a filename that includes <ulink url="&url.cql;">&cql;</ulink> to &rpn; conversion for this
+     backend server. See <ulink url="&url.cql;">&cql;</ulink> section in &yaz; manual.
+     If given, the backend server will only "see" a Type-1/&rpn; query. 
     </para>
    </listitem>
   </varlistentry>
@@ -138,7 +138,7 @@
   <varlistentry><term>element <literal>explain</literal> (optional)</term>
    <listitem>
     <para>
-     Specifies <ulink url="&url.sru;">SRU</ulink> ZeeRex content for this
+     Specifies <ulink url="&url.sru;">&sru;</ulink> ZeeRex content for this
      server - copied verbatim to the client.
      As things are now, some of the Explain content seems redundant
      because host information, etc. is also stored elsewhere.
@@ -154,7 +154,7 @@
 </para>
  
 <para>
- The XML below configures a server that accepts connections from
+ The &xml; below configures a server that accepts connections from
  two ports, TCP/IP port 9900 and a local UNIX file socket.
  We name the TCP/IP server <literal>public</literal> and the
  other server <literal>internal</literal>.
@@ -200,7 +200,7 @@
 </para>
 <para>
  For <literal>"server2"</literal> elements for 
-<ulink url="&url.cql;">CQL</ulink> to RPN conversion
+<ulink url="&url.cql;">&cql;</ulink> to &rpn; conversion
  is supported and explain information has been added (a short one here
  to keep the example small).
 </para>

@@ -1,5 +1,5 @@
 <chapter id="quick-start">
- <!-- $Id: quickstart.xml,v 1.12 2007-02-02 09:58:39 marc Exp $ -->
+ <!-- $Id: quickstart.xml,v 1.13 2007-02-02 11:10:08 marc Exp $ -->
  <title>Quick Start </title>
 
  <para>
@@ -39,14 +39,14 @@
   named <literal>Default</literal>.
   The database contains records structured according to
   the GILS profile, and the server will
-  return records in USMARC, GRS-1, or SUTRS format depending
+  return records in &usmarc;, &grs1;, or &sutrs; format depending
   on what the client asks for.
  </para>
  
  <para>
-  To test the server, you can use any Z39.50 client.
+  To test the server, you can use any &z3950; client.
   For instance, you can use the demo command-line client that comes
-  with YAZ:
+  with &yaz;:
  </para>
  <para>
   <screen>
@@ -66,7 +66,7 @@
  </para>
  
  <para>
-  The default retrieval syntax for the client is USMARC, and the
+  The default retrieval syntax for the client is &usmarc;, and the
   default element set is <literal>F</literal> (``full record''). To
   try other formats and element sets for the same record, try:
  </para>
@@ -85,9 +85,9 @@
  
  <note>
   <para>You may notice that more fields are returned when your
-   client requests SUTRS, GRS-1 or XML records.
+   client requests &sutrs;, &grs1; or &xml; records.
    This is normal - not all of the GILS data elements have mappings in
-   the USMARC record format.
+   the &usmarc; record format.
   </para>
  </note>
  <para>

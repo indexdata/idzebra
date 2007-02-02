@@ -1,5 +1,5 @@
  <chapter id="record-model-alvisxslt">
-  <!-- $Id: recordmodel-alvisxslt.xml,v 1.14 2007-02-02 09:58:39 marc Exp $ -->
+  <!-- $Id: recordmodel-alvisxslt.xml,v 1.15 2007-02-02 11:10:08 marc Exp $ -->
   <title>ALVIS &xml; Record Model and Filter Module</title>
   
 
@@ -22,7 +22,7 @@
   <section id="record-model-alvisxslt-filter">
    <title>ALVIS Record Filter</title>
    <para>
-    The experimental, loadable  Alvis &xml;/XSLT filter module
+    The experimental, loadable  Alvis &xml;/&xslt; filter module
    <literal>mod-alvis.so</literal> is packaged in the GNU/Debian package
     <literal>libidzebra1.4-mod-alvis</literal>.
     It is invoked by the <filename>zebra.cfg</filename> configuration statement
@@ -31,12 +31,12 @@
     </screen>
     In this example on all data files with suffix 
     <filename>*.xml</filename>, where the
-    Alvis XSLT filter configuration file is found in the
+    Alvis &xslt; filter configuration file is found in the
     path <filename>db/filter_alvis_conf.xml</filename>.
    </para>
-   <para>The Alvis XSLT filter configuration file must be
+   <para>The Alvis &xslt; filter configuration file must be
     valid &xml;. It might look like this (This example is
-    used for indexing and display of OAI harvested records):
+    used for indexing and display of &oai; harvested records):
     <screen>
     &lt;?xml version="1.0" encoding="UTF-8"?&gt;
       &lt;schemaInfo&gt;
@@ -44,7 +44,7 @@
         &lt;schema name="index" identifier="http://indexdata.dk/zebra/xslt/1"
             stylesheet="xsl/oai2index.xsl" /&gt;
         &lt;schema name="dc" stylesheet="xsl/oai2dc.xsl" /&gt;
-        &lt;!-- use split level 2 when indexing whole OAI Record lists --&gt;
+        &lt;!-- use split level 2 when indexing whole &oai; Record lists --&gt;
         &lt;split level="2"/&gt;
       &lt;/schemaInfo&gt;
     </screen> 
@@ -57,9 +57,9 @@
     names defined in the <literal>name</literal> attributes must be
     unique, these are the literal <literal>schema</literal> or 
     <literal>element set</literal> names used in 
-      <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>,
-      <ulink url="&url.sru;">SRU</ulink> and
-    Z39.50 protocol queries.
+      <ulink url="http://www.loc.gov/standards/sru/srw/">&srw;</ulink>,
+      <ulink url="&url.sru;">&sru;</ulink> and
+    &z3950; protocol queries.
     The paths in the <literal>stylesheet</literal> attributes
     are relative to zebras working directory, or absolute to file
     system root.
@@ -68,10 +68,10 @@
     The <literal>&lt;split level="2"/&gt;</literal> decides where the
     &xml; Reader shall split the
     collections of records into individual records, which then are
-    loaded into DOM, and have the indexing XSLT stylesheet applied.
+    loaded into &dom;, and have the indexing &xslt; stylesheet applied.
    </para>
    <para>
-    There must be exactly one indexing XSLT stylesheet, which is
+    There must be exactly one indexing &xslt; stylesheet, which is
     defined by the magic attribute  
     <literal>identifier="http://indexdata.dk/zebra/xslt/1"</literal>.
    </para>
@@ -80,24 +80,24 @@
     <title>ALVIS Internal Record Representation</title>   
     <para>When indexing, an &xml; Reader is invoked to split the input
     files into suitable record &xml; pieces. Each record piece is then
-    transformed to an &xml; DOM structure, which is essentially the
-    record model. Only XSLT transformations can be applied during
+    transformed to an &xml; &dom; structure, which is essentially the
+    record model. Only &xslt; transformations can be applied during
     index, search and retrieval. Consequently, output formats are
-    restricted to whatever XSLT can deliver from the record &xml;
+    restricted to whatever &xslt; can deliver from the record &xml;
     structure, be it other &xml; formats, HTML, or plain text. In case
-    you have <literal>libxslt1</literal> running with EXSLT support,
+    you have <literal>libxslt1</literal> running with E&xslt; support,
     you can use this functionality inside the Alvis
-    filter configuration XSLT stylesheets.
+    filter configuration &xslt; stylesheets.
     </para>
    </section>
 
    <section id="record-model-alvisxslt-canonical">
     <title>ALVIS Canonical Indexing Format</title>   
-    <para>The output of the indexing XSLT stylesheets must contain
+    <para>The output of the indexing &xslt; stylesheets must contain
     certain elements in the magic 
      <literal>xmlns:z="http://indexdata.dk/zebra/xslt/1"</literal>
-    namespace. The output of the XSLT indexing transformation is then
-    parsed using DOM methods, and the contained instructions are
+    namespace. The output of the &xslt; indexing transformation is then
+    parsed using &dom; methods, and the contained instructions are
     performed on the <emphasis>magic elements and their
     subtrees</emphasis>.
     </para>
@@ -128,7 +128,7 @@
      </screen>
     </para>
     <para>This means the following: From the original &xml; file 
-     <literal>one-record.xml</literal> (or from the &xml; record DOM of the
+     <literal>one-record.xml</literal> (or from the &xml; record &dom; of the
      same form coming from a splitted input file), the indexing
      stylesheet produces an indexing &xml; record, which is defined by
      the <literal>record</literal> element in the magic namespace
@@ -187,8 +187,8 @@
      the same character normalization map <literal>w</literal>. 
     </para>
     <para>
-     Finally, this example configuration can be queried using PQF
-     queries, either transported by Z39.50, (here using a yaz-client) 
+     Finally, this example configuration can be queried using &pqf;
+     queries, either transported by &z3950;, (here using a yaz-client) 
      <screen>
       <![CDATA[
       Z> open localhost:9999
@@ -205,21 +205,21 @@
      or the proprietary
      extentions <literal>x-pquery</literal> and
      <literal>x-pScanClause</literal> to
-     SRU, and SRW
+     &sru;, and &srw;
      <screen>
       <![CDATA[
       http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=%40attr+1%3Ddc_creator+%40attr+4%3D6+%22the
       http://localhost:9999/?version=1.1&operation=scan&x-pScanClause=@attr+1=dc_date+@attr+4=2+a
       ]]>
      </screen>
-     See <xref linkend="zebrasrv-sru"/> for more information on SRU/SRW
-     configuration, and <xref linkend="gfs-config"/> or the YAZ
-     <ulink url="&url.yaz.cql;">CQL section</ulink>
-     for the details or the YAZ frontend server.
+     See <xref linkend="zebrasrv-sru"/> for more information on &sru;/&srw;
+     configuration, and <xref linkend="gfs-config"/> or the &yaz;
+     <ulink url="&url.yaz.cql;">&cql; section</ulink>
+     for the details or the &yaz; frontend server.
     </para>
     <para>
      Notice that there are no <filename>*.abs</filename>,
-     <filename>*.est</filename>, <filename>*.map</filename>, or other GRS-1
+     <filename>*.est</filename>, <filename>*.map</filename>, or other &grs1;
      filter configuration files involves in this process, and that the
      literal index names are used during search and retrieval.
     </para>
@@ -236,7 +236,7 @@
     <para>
      As mentioned above, there can be only one indexing
      stylesheet, and configuration of the indexing process is a synonym
-     of writing an XSLT stylesheet which produces &xml; output containing the
+     of writing an &xslt; stylesheet which produces &xml; output containing the
      magic elements discussed in  
      <xref linkend="record-model-alvisxslt-internal"/>. 
      Obviously, there are million of different ways to accomplish this
@@ -247,29 +247,29 @@
      Stylesheets can be written in the <emphasis>pull</emphasis> or
      the <emphasis>push</emphasis> style: <emphasis>pull</emphasis>
      means that the output &xml; structure is taken as starting point of
-     the internal structure of the XSLT stylesheet, and portions of
+     the internal structure of the &xslt; stylesheet, and portions of
      the input &xml; are <emphasis>pulled</emphasis> out and inserted
      into the right spots of the output &xml; structure. On the other
-     side, <emphasis>push</emphasis> XSLT stylesheets are recursavly
+     side, <emphasis>push</emphasis> &xslt; stylesheets are recursavly
      calling their template definitions, a process which is commanded
      by the input &xml; structure, and avake to produce some output &xml;
      whenever some special conditions in the input styelsheets are
      met. The <emphasis>pull</emphasis> type is well-suited for input
      &xml; with strong and well-defined structure and semantcs, like the
-     following OAI indexing example, whereas the
+     following &oai; indexing example, whereas the
      <emphasis>push</emphasis> type might be the only possible way to
      sort out deeply recursive input &xml; formats.
     </para>
     <para> 
      A <emphasis>pull</emphasis> stylesheet example used to index
-     OAI harvested records could use some of the following template
+     &oai; harvested records could use some of the following template
      definitions:
      <screen>
       <![CDATA[
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
        xmlns:z="http://indexdata.dk/zebra/xslt/1"
-       xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
-       xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" 
+       xmlns:oai="http://www.openarchives.org/&oai;/2.0/" 
+       xmlns:oai_dc="http://www.openarchives.org/&oai;/2.0/oai_dc/" 
        xmlns:dc="http://purl.org/dc/elements/1.1/"
        version="1.0">
 
@@ -282,12 +282,12 @@
          <xsl:template match="/">    
           <z:record z:id="{normalize-space(oai:record/oai:header/oai:identifier)}" 
            z:type="update">
-           <!-- you might want to use z:rank="{some XSLT function here}" --> 
+           <!-- you might want to use z:rank="{some &xslt; function here}" --> 
            <xsl:apply-templates/>
           </z:record>
          </xsl:template>
 
-         <!-- OAI indexing templates -->
+         <!-- &oai; indexing templates -->
          <xsl:template match="oai:record/oai:header/oai:identifier">
           <z:index name="oai_identifier" type="0">
            <xsl:value-of select="."/>
@@ -312,7 +312,7 @@
     <para>
      Notice also,
      that the names and types of the indexes can be defined in the
-     indexing XSLT stylesheet <emphasis>dynamically according to
+     indexing &xslt; stylesheet <emphasis>dynamically according to
      content in the original &xml; records</emphasis>, which has
      opportunities for great power and wizardery as well as grande
      disaster.  
@@ -375,14 +375,14 @@
    <title>ALVIS Exchange Formats</title>
    <para>
      An exchange format can be anything which can be the outcome of an
-     XSLT transformation, as far as the stylesheet is registered in
-     the main Alvis XSLT filter configuration file, see
+     &xslt; transformation, as far as the stylesheet is registered in
+     the main Alvis &xslt; filter configuration file, see
      <xref linkend="record-model-alvisxslt-filter"/>.
      In principle anything that can be expressed in  &xml;, HTML, and
      TEXT can be the output of a <literal>schema</literal> or 
     <literal>element set</literal> directive during search, as long as
      the information comes from the 
-     <emphasis>original input record &xml; DOM tree</emphasis>
+     <emphasis>original input record &xml; &dom; tree</emphasis>
      (and not the transformed and <emphasis>indexed</emphasis> &xml;!!).
     </para>
     <para>
@@ -421,15 +421,15 @@
   </section>
 
   <section id="record-model-alvisxslt-example">
-   <title>ALVIS Filter OAI Indexing Example</title>
+   <title>ALVIS Filter &oai; Indexing Example</title>
    <para>
      The sourcecode tarball contains a working Alvis filter example in
      the directory <filename>examples/alvis-oai/</filename>, which
      should get you started.  
     </para>
     <para>
-     More example data can be harvested from any OAI complient server,
-     see details at the  OAI 
+     More example data can be harvested from any &oai; complient server,
+     see details at the  &oai; 
      <ulink url="http://www.openarchives.org/">
       http://www.openarchives.org/</ulink> web site, and the community
       links at 
@@ -450,7 +450,7 @@
 
 <!--
 
-c)  Main "alvis" XSLT filter config file:
+c)  Main "alvis" &xslt; filter config file:
   cat db/filter_alvis_conf.xml 
 
   <?xml version="1.0" encoding="UTF8"?>
@@ -470,7 +470,7 @@ c)  Main "alvis" XSLT filter config file:
 
   The split level decides where the SAX parser shall split the
   collections of records into individual records, which then are
-  loaded into DOM, and have the indexing XSLT stylesheet applied.
+  loaded into &dom;, and have the indexing &xslt; stylesheet applied.
 
   The indexing stylesheet is found by it's identifier.
 
@@ -487,11 +487,11 @@ c)  Main "alvis" XSLT filter config file:
   and so on.
 
 - in db/ a cql2pqf.txt yaz-client config file 
-  which is also used in the yaz-server <ulink url="&url.cql;">CQL</ulink>-to-PQF process
+  which is also used in the yaz-server <ulink url="&url.cql;">&cql;</ulink>-to-&pqf; process
 
    see: http://www.indexdata.com/yaz/doc/tools.tkl#tools.cql.map
 
-- in db/ an indexing XSLT stylesheet. This is a PULL-type XSLT thing,
+- in db/ an indexing &xslt; stylesheet. This is a PULL-type XSLT thing,
   as it constructs the new &xml; structure by pulling data out of the
   respective elements/attributes of the old structure.
 

@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.29 2007-02-02 09:58:39 marc Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.30 2007-02-02 11:10:08 marc Exp $ -->
   <title>Query Model</title>
   
   <section id="querymodel-overview">
@@ -11,18 +11,18 @@
     <para>
      &zebra; is born as a networking Information Retrieval engine adhering
      to the international standards 
-     <ulink url="&url.z39.50;">Z39.50</ulink> and
-     <ulink url="&url.sru;">SRU</ulink>,
+     <ulink url="&url.z39.50;">&z3950;</ulink> and
+     <ulink url="&url.sru;">&sru;</ulink>,
      and implement the 
-     type-1 Reverse Polish Notation (RPN) query
+     type-1 Reverse Polish Notation (&rpn;) query
      model defined there.
      Unfortunately, this model has only defined a binary
      encoded representation, which is used as transport packaging in
-     the Z39.50 protocol layer. This representation is not human
+     the &z3950; protocol layer. This representation is not human
      readable, nor defines any convenient way to specify queries. 
     </para>
     <para>
-     Since the type-1 (RPN)
+     Since the type-1 (&rpn;)
      query structure has no direct, useful string
      representation, every client application needs to provide some
      form of mapping from a local query notation or representation to it.
@@ -30,33 +30,33 @@
     
     
     <section id="querymodel-query-languages-pqf">
-     <title>Prefix Query Format (PQF)</title>
+     <title>Prefix Query Format (&pqf;)</title>
      <para>
       Index Data has defined a textual representation in the 
       <ulink url="&url.yaz.pqf;">Prefix Query Format</ulink>, short
-      <emphasis>PQF</emphasis>, which maps 
+      <emphasis>&pqf;</emphasis>, which maps 
       one-to-one to binary encoded  
-      <emphasis>type-1 RPN</emphasis> queries.
-      PQF has been adopted by other
-      parties developing Z39.50 software, and is often referred to as
+      <emphasis>type-1 &rpn;</emphasis> queries.
+      &pqf; has been adopted by other
+      parties developing &z3950; software, and is often referred to as
       <emphasis>Prefix Query Notation</emphasis>, or in short 
-      PQN. See       
+      &pqn;. See       
       <xref linkend="querymodel-rpn"/> for further explanations and
       descriptions of &zebra;'s capabilities.  
      </para>
     </section>    
     
     <section id="querymodel-query-languages-cql">
-     <title>Common Query Language (CQL)</title>
+     <title>Common Query Language (&cql;)</title>
      <para>
-      The query model of the type-1 RPN,
-      expressed in PQF/PQN is natively supported. 
-      On the other hand, the default SRU
+      The query model of the type-1 &rpn;,
+      expressed in &pqf;/&pqn; is natively supported. 
+      On the other hand, the default &sru;
       web services <emphasis>Common Query Language</emphasis>
-      <ulink url="&url.cql;">CQL</ulink> is not natively supported.
+      <ulink url="&url.cql;">&cql;</ulink> is not natively supported.
      </para>
      <para>
-      &zebra; can be configured to understand and map CQL to PQF. See
+      &zebra; can be configured to understand and map &cql; to &pqf;. See
       <xref linkend="querymodel-cql-to-pqf"/>.
      </para>
     </section>    
@@ -67,7 +67,7 @@
     <title>Operation types</title>
     <para>
      &zebra; supports all of the three different
-     Z39.50/SRU operations defined in the
+     &z3950;/&sru; operations defined in the
      standards: explain, search, 
      and scan. A short description of the
      functionality and purpose of each is quite in order here. 
@@ -76,7 +76,7 @@
     <section id="querymodel-operation-type-explain">
      <title>Explain Operation</title>
      <para>
-      The <emphasis>syntax</emphasis> of Z39.50/SRU queries is
+      The <emphasis>syntax</emphasis> of &z3950;/&sru; queries is
       well known to any client, but the specific
       <emphasis>semantics</emphasis> - taking into account a
       particular servers functionalities and abilities - must be
@@ -89,15 +89,15 @@
       of the general query model are supported.      
      </para>
      <para>
-      The Z39.50 embeds the explain operation
+      The &z3950; embeds the explain operation
       by performing a 
       search in the magic 
       <literal>IR-Explain-1</literal> database;
       see <xref linkend="querymodel-exp1"/>. 
      </para>
      <para>
-      In SRU, explain is an entirely  separate
-      operation, which returns an ZeeRex XML record according to the 
+      In &sru;, explain is an entirely  separate
+      operation, which returns an ZeeRex &xml; record according to the 
       structure defined by the protocol.
      </para>
      <para>
@@ -117,7 +117,7 @@
       simple free text searches to nested complex boolean queries,
       targeting specific indexes, and possibly enhanced with many
       query semantic specifications. Search interactions are the heart
-      and soul of Z39.50/SRU servers.
+      and soul of &z3950;/&sru; servers.
      </para>
     </section>
 
@@ -145,24 +145,24 @@
 
   
   <section id="querymodel-rpn">
-   <title>RPN queries and semantics</title>
+   <title>&rpn; queries and semantics</title>
    <para>
-    The <ulink url="&url.yaz.pqf;">PQF grammar</ulink>
-    is documented in the YAZ manual, and shall not be
-    repeated here. This textual PQF representation
+    The <ulink url="&url.yaz.pqf;">&pqf; grammar</ulink>
+    is documented in the &yaz; manual, and shall not be
+    repeated here. This textual &pqf; representation
     is not transmistted to &zebra; during search, but it is in the
-    client mapped to the equivalent Z39.50 binary 
+    client mapped to the equivalent &z3950; binary 
     query parse tree. 
    </para>
    
    <section id="querymodel-rpn-tree">
-    <title>RPN tree structure</title>
+    <title>&rpn; tree structure</title>
     <para>
-     The RPN parse tree - or the equivalent textual representation in PQF -
+     The &rpn; parse tree - or the equivalent textual representation in &pqf; -
      may start with one specification of the 
      <emphasis>attribute set</emphasis> used. Following is a query
      tree, which 
-     consists of <emphasis>atomic query parts (APT)</emphasis> or
+     consists of <emphasis>atomic query parts (&apt;)</emphasis> or
      <emphasis>named result sets</emphasis>, eventually
      paired by <emphasis>boolean binary operators</emphasis>, and 
      finally  <emphasis>recursively combined </emphasis> into 
@@ -184,7 +184,7 @@
        <thead>
 	<row>
          <entry>Attribute set</entry>
-         <entry>PQF notation (Short hand)</entry>
+         <entry>&pqf; notation (Short hand)</entry>
          <entry>Status</entry>
          <entry>Notes</entry>
         </row>
@@ -201,10 +201,10 @@
          <entry>predefined</entry>
         </row>
         <row>
-         <entry>Bib-1</entry>
+         <entry>&bib1;</entry>
          <entry><literal>bib-1</literal></entry>
-         <entry>Standard PQF query language attribute set which defines the
-          semantics of Z39.50 searching. In addition, all of the
+         <entry>Standard &pqf; query language attribute set which defines the
+          semantics of &z3950; searching. In addition, all of the
           non-use attributes (types 2-12) define the hard-wired 
           &zebra; internal query
           processing.</entry>
@@ -213,15 +213,15 @@
         <row>
          <entry>GILS</entry>
          <entry><literal>gils</literal></entry>
-         <entry>Extension to the Bib-1 attribute set.</entry>
+         <entry>Extension to the &bib1; attribute set.</entry>
          <entry>predefined</entry>
         </row>
         <!--
         <row>
-	<entry>IDXPATH</entry>
+	<entry>&idxpath;</entry>
 	<entry><literal>idxpath</literal></entry>
-	<entry>Hardwired XPATH like attribute set, only available for
-	indexing with the GRS record model</entry>
+	<entry>Hardwired &xpath; like attribute set, only available for
+	indexing with the &grs1; record model</entry>
 	<entry>deprecated</entry>
        </row>
         -->
@@ -238,7 +238,7 @@
      <note>
       <para>
        The &zebra; internal query processing is modeled after 
-       the Bib-1 attribute set, and the non-use
+       the &bib1; attribute set, and the non-use
        attributes type 2-6 are hard-wired in. It is therefore essential
        to be familiar with <xref linkend="querymodel-bib1-nonuse"/>. 
       </para>
@@ -317,7 +317,7 @@
       <emphasis>retrieval</emphasis>, taking proximity into account:
       The hit set is a subset of the corresponding
       AND query        
-      (see the <ulink url="&url.yaz.pqf;">PQF grammar</ulink> for
+      (see the <ulink url="&url.yaz.pqf;">&pqf; grammar</ulink> for
       details on the proximity operator):
       <screen>
        Z> find @prox 0 3 0 2 k 2 information retrieval
@@ -338,23 +338,23 @@
     
     
     <section id="querymodel-atomic-queries">
-     <title>Atomic queries (APT)</title>
+     <title>Atomic queries (&apt;)</title>
      <para>
       Atomic queries are the query parts which work on one access point
       only. These consist of <emphasis>an attribute list</emphasis>
       followed by a <emphasis>single term</emphasis> or a
       <emphasis>quoted term list</emphasis>, and are often called 
-      <emphasis>Attributes-Plus-Terms (APT)</emphasis> queries.
+      <emphasis>Attributes-Plus-Terms (&apt;)</emphasis> queries.
      </para>
      <para>
-      Atomic (APT) queries are always leaf nodes in the PQF query tree. 
+      Atomic (&apt;) queries are always leaf nodes in the &pqf; query tree. 
       UN-supplied non-use attributes types 2-12 are either inherited from
       higher nodes in the query tree, or are set to &zebra;'s default values.
       See <xref linkend="querymodel-bib1"/> for details. 
      </para>
      
      <table id="querymodel-atomic-queries-table" frame="top">
-      <title>Atomic queries (APT)</title>
+      <title>Atomic queries (&apt;)</title>
       <tgroup cols="3">
        <thead>
         <row>
@@ -407,7 +407,7 @@
 
      <para>
       The <emphasis>scan</emphasis> operation is only supported with 
-      atomic APT queries, as it is bound to one access point at a
+      atomic &apt; queries, as it is bound to one access point at a
       time. Boolean query trees are not allowed during
       <emphasis>scan</emphasis>.
       </para>
@@ -429,8 +429,8 @@
      <para>
       Named result sets are supported in &zebra;, and result sets can be
       used as operands without limitations. It follows that named
-      result sets are leaf nodes in the PQF query tree, exactly as
-      atomic APT queries are.
+      result sets are leaf nodes in the &pqf; query tree, exactly as
+      atomic &apt; queries are.
      </para>
      <para>      
       After the execution of a search, the result set is available at
@@ -460,10 +460,10 @@
      
      <note>
       <para>
-       Named result sets are only supported by the Z39.50 protocol.
-       The SRU web service is stateless, and therefore the notion of
+       Named result sets are only supported by the &z3950; protocol.
+       The &sru; web service is stateless, and therefore the notion of
        named result sets does not exist when accessing a &zebra; server by
-       the SRU protocol.
+       the &sru; protocol.
       </para>
      </note>
     </section>
@@ -501,7 +501,7 @@
      <para>
       It is possible to search
       in any silly string index - if it's defined in your
-      indexation rules and can be parsed by the PQF parser. 
+      indexation rules and can be parsed by the &pqf; parser. 
       This is definitely not the recommended use of
       this facility, as it might confuse your users with some very
       unexpected results.
@@ -512,14 +512,14 @@
      <para>
       See also <xref linkend="querymodel-pqf-apt-mapping"/> for details, and 
       <xref linkend="zebrasrv-sru"/>
-      for the SRU PQF query extension using string names as a fast
+      for the &sru; &pqf; query extension using string names as a fast
       debugging facility.
      </para>
     </section>
     
     <section id="querymodel-use-xpath">
      <title>&zebra;'s special access point of type 'XPath' 
-      for GRS filters</title>
+      for &grs1; filters</title>
      <para>
       As we have seen above, it is possible (albeit seldom a great
       idea) to emulate 
@@ -531,15 +531,15 @@
       be defined at indexation time, no new undefined
       XPath queries can entered at search time, and second, it might
       confuse users very much that an XPath-alike index name in fact
-      gets populated from a possible entirely different XML element
+      gets populated from a possible entirely different &xml; element
       than it pretends to access. 
      </para>
      <para>
-      When using the GRS Record Model
+      When using the &grs1; Record Model
       (see  <xref linkend="grs"/>), we have the
       possibility to embed <emphasis>life</emphasis> 
       XPath expressions
-      in the PQF queries, which are here called
+      in the &pqf; queries, which are here called
       <emphasis>use (type 1)</emphasis> <emphasis>xpath</emphasis>
       attributes. You must enable the 
       <literal>xpath enable</literal> directive in your 
@@ -549,14 +549,14 @@
       <para>
        Only a <emphasis>very</emphasis> restricted subset of the 
        <ulink url="http://www.w3.org/TR/xpath">XPath 1.0</ulink> 
-       standard is supported as the GRS record model is simpler than
-       a full XML DOM structure. See the following examples for 
+       standard is supported as the &grs1; record model is simpler than
+       a full &xml; &dom; structure. See the following examples for 
        possibilities.
       </para>
      </note>
      <para>
       Finding all documents which have the term "content" 
-      inside a text node found in a specific XML DOM
+      inside a text node found in a specific &xml; &dom;
       <emphasis>subtree</emphasis>, whose starting element is 
       addressed by XPath. 
       <screen>
@@ -586,7 +586,7 @@
      <para>     
       Filter the addressing XPath by a predicate working on exact
       string values in
-      attributes (in the XML sense) can be done: return all those docs which
+      attributes (in the &xml; sense) can be done: return all those docs which
       have the term "english" contained in one of all text sub nodes of
       the subtree defined by the XPath
       <literal>/record/title[@lang='en']</literal>. And similar
@@ -607,8 +607,8 @@
       </screen> 
      </para>
      <para>
-      Escaping PQF keywords and other non-parseable XPath constructs
-      with <literal>'{ }'</literal> to prevent client-side PQF parsing
+      Escaping &pqf; keywords and other non-parseable XPath constructs
+      with <literal>'{ }'</literal> to prevent client-side &pqf; parsing
       syntax errors:
       <screen>
        Z> find @attr {1=/root/first[@attr='danish']} content
@@ -630,7 +630,7 @@
    <section id="querymodel-exp1">
     <title>Explain Attribute Set</title>
     <para>
-     The Z39.50 standard defines the  
+     The &z3950; standard defines the  
      <ulink url="&url.z39.50.explain;">Explain</ulink> attribute set
      Exp-1, which is used to discover information 
      about a server's search semantics and functional capabilities
@@ -644,11 +644,11 @@
     </para>
     <para>
      In addition, the non-Use
-     Bib-1 attributes, that is, the types 
+     &bib1; attributes, that is, the types 
      <emphasis>Relation</emphasis>, <emphasis>Position</emphasis>,
      <emphasis>Structure</emphasis>, <emphasis>Truncation</emphasis>, 
      and <emphasis>Completeness</emphasis> are imported from 
-     the Bib-1 attribute set, and may be used
+     the &bib1; attribute set, and may be used
      within any explain query. 
     </para>
     
@@ -669,7 +669,7 @@
      </para>
      <para>
       See <filename>tab/explain.att</filename> and the 
-      <ulink url="&url.z39.50;">Z39.50</ulink> standard
+      <ulink url="&url.z39.50;">&z3950;</ulink> standard
       for more information.
      </para>
     </section>
@@ -678,11 +678,11 @@
      <title>Explain searches with yaz-client</title>
      <para>
       Classic Explain only defines retrieval of Explain information
-      via ASN.1. Practically no Z39.50 clients supports this. Fortunately
+      via ASN.1. Practically no &z3950; clients supports this. Fortunately
       they don't have to - &zebra; allows retrieval of this information
       in other formats:
-      <literal>SUTRS</literal>, <literal>XML</literal>, 
-      <literal>GRS-1</literal> and  <literal>ASN.1</literal> Explain.
+      <literal>&sutrs;</literal>, <literal>&xml;</literal>, 
+      <literal>&grs1;</literal> and  <literal>ASN.1</literal> Explain.
      </para>
      
      <para>
@@ -743,7 +743,7 @@
       <literal>Default</literal>.
       This query is very useful to study the internal &zebra; indexes.
       If records have been indexed using the <literal>alvis</literal>
-      XSLT filter, the string representation names of the known indexes can be
+      &xslt; filter, the string representation names of the known indexes can be
       found.
       <screen>
        Z> base IR-Explain-1
@@ -760,13 +760,13 @@
    </section>
    
    <section id="querymodel-bib1">
-    <title>Bib-1 Attribute Set</title>
+    <title>&bib1; Attribute Set</title>
     <para>
      Most of the information contained in this section is an excerpt of
-     the ATTRIBUTE SET BIB-1 (Z39.50-1995) SEMANTICS
-     found at <ulink url="&url.z39.50.attset.bib1.1995;">. The Bib-1
+     the ATTRIBUTE SET &bib1; (&z3950;-1995) SEMANTICS
+     found at <ulink url="&url.z39.50.attset.bib1.1995;">. The &bib1;
       Attribute Set Semantics</ulink> from 1995, also in an updated 
-     <ulink url="&url.z39.50.attset.bib1;">Bib-1
+     <ulink url="&url.z39.50.attset.bib1;">&bib1;
       Attribute Set</ulink> 
      version from 2003. Index Data is not the copyright holder of this
      information, except for the configuration details, the listing of
@@ -788,7 +788,7 @@
      <filename>tab/gils.att</filename>.
      </para>
     <para>
-      For example, some few Bib-1 use
+      For example, some few &bib1; use
       attributes from the  <filename>tab/bib1.att</filename> are:
       <screen>
        att 1               Personal-name
@@ -979,7 +979,7 @@
       <emphasis>AlwaysMatches (103)</emphasis> is a
       great way to discover how many documents have been indexed in a
       given field. The search term is ignored, but needed for correct
-      PQF syntax. An empty search term may be supplied.
+      &pqf; syntax. An empty search term may be supplied.
       <screen>
        Z> find @attr 1=Title  @attr 2=103  ""
        Z> find @attr 1=Title  @attr 2=103  @attr 4=1 ""
@@ -1159,7 +1159,7 @@
      is supported, and maps to the boolean <literal>AND</literal>
      combination of words supplied. The word list is useful when
      google-like bag-of-word queries need to be translated from a GUI
-     query language to PQF.  For example, the following queries
+     query language to &pqf;.  For example, the following queries
      are equivalent:
      <screen>
       Z> find @attr 1=Title @attr 4=6 "mozart amadeus"
@@ -1213,7 +1213,7 @@
      </para>
      <note>
       <para>
-       The exact mapping between PQF queries and &zebra; internal indexes
+       The exact mapping between &pqf; queries and &zebra; internal indexes
        and index types is explained in 
        <xref linkend="querymodel-pqf-apt-mapping"/>.
       </para>
@@ -1408,14 +1408,14 @@
      </para>
      <para>
       The <literal>Complete subfield (2)</literal> is a reminiscens
-      from the  happy <literal>MARC</literal>
+      from the  happy <literal>&marc;</literal>
       binary format days. &zebra; does not support it, but maps silently
       to <literal>Complete field (3)</literal>.
      </para>
 
      <note>
       <para>
-       The exact mapping between PQF queries and &zebra; internal indexes
+       The exact mapping between &pqf; queries and &zebra; internal indexes
        and index types is explained in 
        <xref linkend="querymodel-pqf-apt-mapping"/>.
       </para>
@@ -1427,7 +1427,7 @@
 
 
   <section id="querymodel-zebra">
-   <title>Extended &zebra; RPN Features</title>
+   <title>Extended &zebra; &rpn; Features</title>
    <para>
     The &zebra; internal query engine has been extended to specific needs
     not covered by the <literal>bib-1</literal> attribute set query
@@ -1478,7 +1478,7 @@
    <section id="querymodel-zebra-attr-search">
     <title>&zebra; specific Search Extensions to all Attribute Sets</title>
     <para>
-     &zebra; extends the Bib-1 attribute types, and these extensions are
+     &zebra; extends the &bib1; attribute types, and these extensions are
      recognized regardless of attribute 
      set used in a <literal>search</literal> operation query.
     </para>
@@ -1562,9 +1562,9 @@
       The possible values after attribute <literal>type 7</literal> are
       <literal>1</literal> ascending and 
       <literal>2</literal> descending. 
-      The attributes+term (APT) node is separate from the
+      The attributes+term (&apt;) node is separate from the
       rest and must be <literal>@or</literal>'ed. 
-      The term associated with APT is the sorting level in integers,
+      The term associated with &apt; is the sorting level in integers,
       where <literal>0</literal> means primary sort, 
       <literal>1</literal> means secondary sort, and so forth.
       See also <xref linkend="administration-ranking"/>.
@@ -1603,7 +1603,7 @@
      a scan-like facility. Requires a client that can do named result
      sets since the search generates two result sets. The value for
      attribute 8 is the name of a result set (string). The terms in
-     the named term set are returned as SUTRS records. 
+     the named term set are returned as &sutrs; records. 
     </para>
     <para>
      For example, searching  for u in title, right truncated, and
@@ -1624,7 +1624,7 @@
      <title>&zebra; Extension Rank Weight Attribute (type 9)</title>
      <para>
       Rank weight is a way to pass a value to a ranking algorithm - so
-      that one APT has one value - while another as a different one. 
+      that one &apt; has one value - while another as a different one. 
       See also <xref linkend="administration-ranking"/>.
      </para>
      <para>
@@ -1642,7 +1642,7 @@
       &zebra; supports the searchResult-1 facility. 
       If the Term Reference Attribute (type 10) is
       given, that specifies a subqueryId value returned as part of the
-      search result. It is a way for a client to name an APT part of a
+      search result. It is a way for a client to name an &apt; part of a
       query. 
      </para>
      <!--
@@ -1665,13 +1665,13 @@
      <title>Local Approximative Limit Attribute (type 11)</title>
      <para>
       &zebra; computes - unless otherwise configured -
-      the exact hit count for every APT
+      the exact hit count for every &apt;
       (leaf) in the query tree. These hit counts are returned as part of
-      the searchResult-1 facility in the binary encoded Z39.50 search
+      the searchResult-1 facility in the binary encoded &z3950; search
       response packages.
      </para>
      <para>
-      By setting an estimation limit size of the resultset of the APT
+      By setting an estimation limit size of the resultset of the &apt;
       leaves, &zebra; stoppes processing the result set when the limit
       length is reached.
       Hit counts under this limit are still precise, but hit counts over it
@@ -1716,7 +1716,7 @@
      </para>
      <para>
       The attribute (12) can occur anywhere in the query tree.
-      Unlike regular attributes it does not relate to the leaf (APT)
+      Unlike regular attributes it does not relate to the leaf (&apt;)
       - but to the whole query.
      </para>
      <warning>
@@ -1821,14 +1821,14 @@
    </section>
    
    <section id="querymodel-idxpath">
-    <title>&zebra; special IDXPATH Attribute Set for GRS indexing</title>
+    <title>&zebra; special &idxpath; Attribute Set for &grs1; indexing</title>
     <para>
      The attribute-set <literal>idxpath</literal> consists of a single 
      Use (type 1) attribute. All non-use attributes behave as normal. 
     </para>
     <para>
      This feature is enabled when defining the
-     <literal>xpath enable</literal> option in the GRS filter
+     <literal>xpath enable</literal> option in the &grs1; filter
      <filename>*.abs</filename> configuration files. If one wants to use
      the special <literal>idxpath</literal> numeric attribute set, the
      main &zebra; configuration file <filename>zebra.cfg</filename>
@@ -1843,10 +1843,10 @@
     </warning>
 
     <section id="querymodel-idxpath-use">
-    <title>IDXPATH Use Attributes (type = 1)</title>
+    <title>&idxpath; Use Attributes (type = 1)</title>
      <para>
-      This attribute set allows one to search GRS filter indexed
-      records by XPATH like structured index names. 
+      This attribute set allows one to search &grs1; filter indexed
+      records by &xpath; like structured index names. 
      </para>
 
      <warning>
@@ -1857,11 +1857,11 @@
      </warning>
      
      <table id="querymodel-idxpath-use-table" frame="top">
-      <title>&zebra; specific IDXPATH Use Attributes (type 1)</title>
+      <title>&zebra; specific &idxpath; Use Attributes (type 1)</title>
       <tgroup cols="4">
        <thead>
         <row>
-         <entry>IDXPATH</entry>
+         <entry>&idxpath;</entry>
          <entry>Value</entry>
          <entry>String Index</entry>
          <entry>Notes</entry>
@@ -1869,31 +1869,31 @@
        </thead>
        <tbody>
         <row>
-         <entry>XPATH Begin</entry>
+         <entry>&xpath; Begin</entry>
          <entry>1</entry>
          <entry>_XPATH_BEGIN</entry>
          <entry>deprecated</entry>
         </row>
         <row>
-         <entry>XPATH End</entry>
+         <entry>&xpath; End</entry>
          <entry>2</entry>
          <entry>_XPATH_END</entry>
          <entry>deprecated</entry>
         </row>
         <row>
-         <entry>XPATH CData</entry>
+         <entry>&xpath; CData</entry>
          <entry>1016</entry>
          <entry>_XPATH_CDATA</entry>
          <entry>deprecated</entry>
         </row>
         <row>
-         <entry>XPATH Attribute Name</entry>
+         <entry>&xpath; Attribute Name</entry>
          <entry>3</entry>
          <entry>_XPATH_ATTR_NAME</entry>
          <entry>deprecated</entry>
         </row>
         <row>
-         <entry>XPATH Attribute CData</entry>
+         <entry>&xpath; Attribute CData</entry>
          <entry>1015</entry>
          <entry>_XPATH_ATTR_CDATA</entry>
          <entry>deprecated</entry>
@@ -1916,7 +1916,7 @@
       </screen>
      </para>
      <para>
-      Search for all documents where specific nested XPATH 
+      Search for all documents where specific nested &xpath; 
       <literal>/c1/c2/../cn</literal> exists. Notice the very
       counter-intuitive <emphasis>reverse</emphasis> notation!
       <screen>
@@ -1940,8 +1940,8 @@
       </screen>
      </para>
      <para>
-       Search for all documents with have an XML element node
-       including an XML  attribute named <emphasis>creator</emphasis> 
+       Search for all documents with have an &xml; element node
+       including an &xml;  attribute named <emphasis>creator</emphasis> 
       <screen> 
        Z> find @attrset idxpath @attr 1=3 @attr 4=3 creator 
        Z> find @attr 1=_XPATH_ATTR_NAME @attr 4=3 creator 
@@ -1971,10 +1971,10 @@
 
 
    <section id="querymodel-pqf-apt-mapping">
-    <title>Mapping from PQF atomic APT queries to &zebra; internal 
+    <title>Mapping from &pqf; atomic &apt; queries to &zebra; internal 
      register indexes</title>
     <para>
-     The rules for PQF APT mapping are rather tricky to grasp in the
+     The rules for &pqf; &apt; mapping are rather tricky to grasp in the
      first place. We deal first with the rules for deciding which
      internal register or string index to use, according to the use
      attribute or access point specified in the query. Thereafter we
@@ -1983,12 +1983,12 @@
     </para>
 
    <section id="querymodel-pqf-apt-mapping-accesspoint">
-    <title>Mapping of PQF APT access points</title>
+    <title>Mapping of &pqf; &apt; access points</title>
     <para>
       &zebra; understands four fundamental different types of access
       points, of which only the  
       <emphasis>numeric use attribute</emphasis> type access points
-      are defined by the  <ulink url="&url.z39.50;">Z39.50</ulink>
+      are defined by the  <ulink url="&url.z39.50;">&z3950;</ulink>
       standard.
       All other access point types are &zebra; specific, and non-portable.
     </para>
@@ -2024,10 +2024,10 @@
         <entry>hardwired internal string index name</entry>
        </row>
        <row>
-        <entry>XPATH special index</entry>
+        <entry>&xpath; special index</entry>
         <entry>XPath</entry>
         <entry>/.*</entry>
-        <entry>special xpath search for GRS indexed records</entry>
+        <entry>special xpath search for &grs1; indexed records</entry>
        </row>
        </tbody>
       </tgroup>
@@ -2045,14 +2045,14 @@
       <emphasis>Numeric use attributes</emphasis> are mapped 
       to the &zebra; internal
       string index according to the attribute set definition in use.
-      The default attribute set is <literal>Bib-1</literal>, and may be
-      omitted in the PQF query.
+      The default attribute set is <literal>&bib1;</literal>, and may be
+      omitted in the &pqf; query.
      </para>
      
      <para>
       According to normalization and numeric
       use attribute mapping, it follows that the following
-      PQF queries are considered equivalent (assuming the default
+      &pqf; queries are considered equivalent (assuming the default
       configuration has not been altered):
       <screen>
       Z> find  @attr 1=Body-of-text serenade
@@ -2060,7 +2060,7 @@
       Z> find  @attr 1=BodyOfText serenade
       Z> find  @attr 1=bO-d-Y-of-tE-x-t serenade
       Z> find  @attr 1=1010 serenade
-      Z> find  @attrset Bib-1 @attr 1=1010 serenade
+      Z> find  @attrset &bib1; @attr 1=1010 serenade
       Z> find  @attrset bib1 @attr 1=1010 serenade
       Z> find  @attrset Bib1 @attr 1=1010 serenade
       Z> find  @attrset b-I-b-1 @attr 1=1010 serenade
@@ -2076,7 +2076,7 @@
       fields as specified in the <literal>.abs</literal> file which
       describes the profile of the records which have been loaded.
       If no use attribute is provided, a default of 
-      Bib-1 Use Any (1016) is assumed.
+      &bib1; Use Any (1016) is assumed.
       The predefined use attribute sets
       can be reconfigured by  tweaking the configuration files
       <filename>tab/*.att</filename>, and 
@@ -2090,9 +2090,9 @@
       ignored. The above mentioned name normalization applies.
       String index names are defined in the
       used indexing  filter configuration files, for example in the
-      <literal>GRS</literal> 
+      <literal>&grs1;</literal> 
       <filename>*.abs</filename> configuration files, or in the
-      <literal>alvis</literal> filter XSLT indexing stylesheets.
+      <literal>alvis</literal> filter &xslt; indexing stylesheets.
      </para>
 
      <para>
@@ -2105,12 +2105,12 @@
      </para>
 
      <para>
-      Finally, <literal>XPATH</literal> access points are only
-      available using the <literal>GRS</literal> filter for indexing.
+      Finally, <literal>&xpath;</literal> access points are only
+      available using the <literal>&grs1;</literal> filter for indexing.
       These access point names must start with the character
       <literal>'/'</literal>, they are <emphasis>not
       normalized</emphasis>, but passed unaltered to the &zebra; internal
-      XPATH engine. See <xref linkend="querymodel-use-xpath"/>.
+      &xpath; engine. See <xref linkend="querymodel-use-xpath"/>.
 
      </para>
 
@@ -2119,7 +2119,7 @@
 
 
    <section id="querymodel-pqf-apt-mapping-structuretype">
-     <title>Mapping of PQF APT structure and completeness to 
+     <title>Mapping of &pqf; &apt; structure and completeness to 
       register type</title>
     <para>
       Internally &zebra; has in it's default configuration several
@@ -2220,7 +2220,7 @@
      against the contents of the phrase (long word) register, if one
      exists for the given <emphasis>Use</emphasis> attribute.
      A phrase register is created for those fields in the
-     GRS <filename>*.abs</filename> file that contains a
+     &grs1; <filename>*.abs</filename> file that contains a
      <literal>p</literal>-specifier.
       <screen>
        Z> scan @attr 1=Title @attr 4=1 @attr 6=3 beethoven 
@@ -2247,7 +2247,7 @@
      contains multiple words, the term will only match if all of the words
      are found immediately adjacent, and in the given order.
      The word search is performed on those fields that are indexed as
-     type <literal>w</literal> in the GRS <filename>*.abs</filename> file.
+     type <literal>w</literal> in the &grs1; <filename>*.abs</filename> file.
       <screen>
        Z> scan @attr 1=Title @attr 4=1 @attr 6=1 beethoven 
        ...
@@ -2274,14 +2274,14 @@
      natural-language, relevance-ranked query.
      This search type uses the word register, i.e. those fields
      that are indexed as type <literal>w</literal> in the
-     GRS <filename>*.abs</filename> file.
+     &grs1; <filename>*.abs</filename> file.
     </para>
 
     <para>
      If the <emphasis>Structure</emphasis> attribute is
      <emphasis>Numeric String</emphasis> the term is treated as an integer.
      The search is performed on those fields that are indexed
-     as type <literal>n</literal> in the GRS 
+     as type <literal>n</literal> in the &grs1; 
       <filename>*.abs</filename> file.
     </para>
 
@@ -2452,20 +2452,20 @@
 
 
   <section id="querymodel-cql-to-pqf">
-   <title>Server Side CQL to PQF Query Translation</title>
+   <title>Server Side &cql; to &pqf; Query Translation</title>
    <para>
     Using the
     <literal>&lt;cql2rpn&gt;l2rpn.txt&lt;/cql2rpn&gt;</literal>
-      YAZ Frontend Virtual
+      &yaz; Frontend Virtual
     Hosts option, one can configure
-    the YAZ Frontend CQL-to-PQF
+    the &yaz; Frontend &cql;-to-&pqf;
     converter, specifying the interpretation of various 
-    <ulink url="&url.cql;">CQL</ulink>
+    <ulink url="&url.cql;">&cql;</ulink>
     indexes, relations, etc. in terms of Type-1 query attributes.
     <!-- The  yaz-client config file -->  
    </para>
    <para>
-    For example, using server-side CQL-to-PQF conversion, one might
+    For example, using server-side &cql;-to-&pqf; conversion, one might
     query a zebra server like this:
     <screen>
     <![CDATA[
@@ -2475,7 +2475,7 @@
      ]]>
     </screen>
      and - if properly configured - even static relevance ranking can
-     be performed using CQL query syntax:
+     be performed using &cql; query syntax:
     <screen>
     <![CDATA[
      Z> find text = /relevant (plant and soil)
@@ -2485,7 +2485,7 @@
 
    <para>
     By the way, the same configuration can be used to 
-    search using client-side CQL-to-PQF conversion:
+    search using client-side &cql;-to-&pqf; conversion:
     (the only difference is <literal>querytype cql2rpn</literal> 
     instead of 
     <literal>querytype cql</literal>, and the call specifying a local
@@ -2501,7 +2501,7 @@
 
    <para>
     Exhaustive information can be found in the
-    Section "Specification of CQL to RPN mappings" in the YAZ manual.
+    Section "Specification of &cql; to &rpn; mappings" in the &yaz; manual.
     <ulink url="&url.yaz.cql2pqf;"/>,
      and shall therefore not be repeated here.
    </para> 
