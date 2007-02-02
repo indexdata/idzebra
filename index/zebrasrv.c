@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.9 2007-01-17 15:35:48 adam Exp $
+/* $Id: zebrasrv.c,v 1.10 2007-02-02 13:48:13 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -776,7 +776,7 @@ static void bend_start (struct statserv_options_block *sob)
 	zebra_stop((ZebraService) sob->handle);
     res_set(default_res, "profilePath", DEFAULT_PROFILE_PATH);
     res_set(default_res, "modulePath", DEFAULT_MODULE_PATH);
-    sob->handle = zebra_start(sob->configname);
+    sob->handle = zebra_start_res(sob->configname, default_res, 0);
     res_close(default_res);
     if (!sob->handle)
     {
