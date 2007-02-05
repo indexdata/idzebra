@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.48 2007-02-05 14:05:26 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.49 2007-02-05 14:32:31 marc Exp $ -->
  <title>Introduction</title>
  
  <section id="overview">
@@ -1012,73 +1012,6 @@
      for details.
    </para>
   </section>  
-
-
- <section id="future">
-  <title>Future Directions</title>
-  
-  <para>
-   These are some of the plans that we have for the software in the near
-   and far future, ordered approximately as we expect to work on them.
-  </para>
-  
-  <para>
-   <itemizedlist>
-
-    <listitem>
-     <para>
-       Improved support for &xml; in search and retrieval. Eventually,
-       the goal is for &zebra; to pull double duty as a flexible
-       information retrieval engine and high-performance &xml;
-       repository.  The recent addition of XPath searching is one
-       example of the kind of enhancement we're working on.
-     </para>
-     <para>
-       There is also the experimental <literal>ALVIS &xslt;</literal>
-       &xml; input filter, which unleashes the full power of &dom; based
-       &xslt; transformations during indexing and record retrieval. Work
-       on this filter has been sponsored by the ALVIS EU project
-       <ulink url="http://www.alvis.info/alvis/"/>. We expect this filter to
-       mature soon, as it is planned to be included in the version 2.0
-       release of &zebra;. 
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
-       Finalisation and documentation of &zebra;'s C programming
-       &api;, allowing updates, database management and other functions
-       not readily expressed in &z3950;.  We will also consider
-       exposing the &api; through &soap;.
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
-       Improved free-text searching. We're first and foremost octet jockeys and
-       we're actively looking for organisations or people who'd like
-       to contribute experience in relevance ranking and text
-       searching.
-     </para>
-    </listitem>
-
-   </itemizedlist>
-  </para>
-  
-  <para>
-   Programmers thrive on user feedback. If you are interested in a
-   facility that you don't see mentioned here, or if there's something
-   you think we could do better, please drop us a mail.  Better still,
-   implement it and send us the patches.
-  </para>
-  <para>
-   If you think it's all really neat, you're welcome to drop us a line
-   saying that, too. You can email us on
-   <email>info@indexdata.dk</email>
-   or check the contact info at the end of this manual.
-  </para>
-  
- </section>
 </chapter>
  <!-- Keep this comment at the end of the file
  Local variables:
