@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.47 2007-02-05 14:02:27 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.48 2007-02-05 14:05:26 marc Exp $ -->
  <title>Introduction</title>
  
  <section id="overview">
@@ -20,10 +20,12 @@
         code is open to anybody to read and change under the GPL license.  
       </para>
       <para>
-        &zebra; is a networked component which acts as a reliable &z3950; server 
+        &zebra; is a networked component which acts as a 
+        reliable &z3950; server 
         for both record/document search, presentation, insert, update and 
         delete operations. In addition, it understands the &sru; family of 
-        webservices, which exist in &rest; &get;/&post; and truly &soap; flavors.
+        webservices, which exist in &rest; &get;/&post; and truly
+        &soap; flavors. 
       </para>
       <para>
         &zebra; is available as MS Windows 2003 Server (32 bit) self-extracting
@@ -264,7 +266,7 @@
        <entry>term suggestions</entry>
        <entry><literal>Scan</literal> on a given named index returns all the 
           indexed terms in lexicographical order near the given start
-       term. This can be used to create drop-down menues and search 
+       term. This can be used to create drop-down menus and search 
        suggestions.</entry>
        <entry><xref linkend="querymodel-operation-type-scan"/> and 
        <xref linkend="querymodel-atomic-queries"/>
@@ -586,7 +588,7 @@
       <row>
        <entry>Data size</entry>
        <entry>100 GB of record data</entry>
-       <entry>&zebra; based applications have sucessfully indexed up
+       <entry>&zebra; based applications have successfully indexed up
        to 100 GB of record data</entry>
        <entry></entry>
       </row>
@@ -653,17 +655,17 @@
        <entry>Linux</entry>
        <entry></entry>
        <entry>GNU Linux (32 and 64bit), journaling Reiser or (better)
-       JFS filesystem 
-        on disks. NFS filesystems are not supported.
+       JFS file system 
+        on disks. NFS file systems are not supported.
        GNU/Debian Linux packages are available</entry> 
        <entry><xref linkend="installation-debian"/></entry>
       </row>
       <row>
        <entry>Unix</entry>
-       <entry>tarball</entry>
+       <entry>tar-ball</entry>
        <entry>&zebra; is written in portable C, so it runs on most
        Unix-like systems.
-       Usual tarball install possible on many major Unix systems</entry>
+       Usual tar-ball install possible on many major Unix systems</entry>
        <entry><xref linkend="installation-unix"/></entry>
       </row>
       <row>
@@ -686,7 +688,7 @@
   <para>
    &zebra; has been deployed in numerous applications, in both the
    academic and commercial worlds, in application domains as diverse
-   as bibliographic catalogues, geospatial information, structured
+   as bibliographic catalogues, Geo-spatial information, structured
    vocabulary browsing, government information locators, civic
    information systems, environmental observations, museum information
    and web indexes.
