@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.46 2007-02-05 13:35:12 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.47 2007-02-05 14:02:27 marc Exp $ -->
  <title>Introduction</title>
  
  <section id="overview">
@@ -101,6 +101,10 @@
    <table id="table-features-document" frame="top">
     <title>&zebra; document model</title>
     <tgroup cols="4">
+     <colspec colwidth="1*" colname="feature"/>
+     <colspec colwidth="1*" colname="availability"/>
+     <colspec colwidth="3*" colname="notes"/>
+     <colspec colwidth="2*" colname="references"/>
      <thead>
       <row>
        <entry>Feature</entry>
@@ -150,6 +154,10 @@
    <table id="table-features-search" frame="top">
     <title>&zebra; search functionality</title>
     <tgroup cols="4">
+     <colspec colwidth="1*" colname="feature"/>
+     <colspec colwidth="1*" colname="availability"/>
+     <colspec colwidth="3*" colname="notes"/>
+     <colspec colwidth="2*" colname="references"/>
      <thead>
       <row>
        <entry>Feature</entry>
@@ -238,6 +246,10 @@
    <table id="table-features-scan" frame="top">
     <title>&zebra; index scanning</title>
     <tgroup cols="4">
+     <colspec colwidth="1*" colname="feature"/>
+     <colspec colwidth="1*" colname="availability"/>
+     <colspec colwidth="3*" colname="notes"/>
+     <colspec colwidth="2*" colname="references"/>
      <thead>
       <row>
        <entry>Feature</entry>
@@ -286,6 +298,10 @@
    <table id="table-features-presentation" frame="top">
     <title>&zebra; document presentation</title>
     <tgroup cols="4">
+     <colspec colwidth="1*" colname="feature"/>
+     <colspec colwidth="1*" colname="availability"/>
+     <colspec colwidth="3*" colname="notes"/>
+     <colspec colwidth="2*" colname="references"/>
      <thead>
       <row>
        <entry>Feature</entry>
@@ -379,6 +395,10 @@
    <table id="table-features-sort-rank" frame="top">
     <title>&zebra; sorting and ranking</title>
     <tgroup cols="4">
+     <colspec colwidth="1*" colname="feature"/>
+     <colspec colwidth="1*" colname="availability"/>
+     <colspec colwidth="3*" colname="notes"/>
+     <colspec colwidth="2*" colname="references"/>
      <thead>
       <row>
        <entry>Feature</entry>
@@ -433,6 +453,10 @@
    <table id="table-features-updates" frame="top">
     <title>&zebra; live updates</title>
     <tgroup cols="4">
+     <colspec colwidth="1*" colname="feature"/>
+     <colspec colwidth="1*" colname="availability"/>
+     <colspec colwidth="3*" colname="notes"/>
+     <colspec colwidth="2*" colname="references"/>
      <thead>
       <row>
        <entry>Feature</entry>
@@ -482,6 +506,10 @@
    <table id="table-features-protocol" frame="top">
     <title>&zebra; networked protocols</title>
     <tgroup cols="4">
+     <colspec colwidth="1*" colname="feature"/>
+     <colspec colwidth="1*" colname="availability"/>
+     <colspec colwidth="3*" colname="notes"/>
+     <colspec colwidth="2*" colname="references"/>
      <thead>
       <row>
        <entry>Feature</entry>
@@ -536,6 +564,10 @@
    <table id="table-features-scalability" frame="top">
     <title>&zebra; data size and scalability</title>
     <tgroup cols="4">
+     <colspec colwidth="1*" colname="feature"/>
+     <colspec colwidth="1*" colname="availability"/>
+     <colspec colwidth="3*" colname="notes"/>
+     <colspec colwidth="2*" colname="references"/>
      <thead>
       <row>
        <entry>Feature</entry>
@@ -604,6 +636,10 @@
    <table id="table-features-platforms" frame="top">
     <title>&zebra; supported platforms</title>
     <tgroup cols="4">
+     <colspec colwidth="1*" colname="feature"/>
+     <colspec colwidth="1*" colname="availability"/>
+     <colspec colwidth="3*" colname="notes"/>
+     <colspec colwidth="2*" colname="references"/>
      <thead>
       <row>
        <entry>Feature</entry>
