@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.248 2007-01-22 18:15:03 adam Exp $
+/* $Id: extract.c,v 1.249 2007-02-06 09:34:56 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -59,8 +59,18 @@ static void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
 static void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid);
 static void extract_token_add (RecWord *p);
 
+static void check_log_limit(ZebraHandle zh)
+{
+    if (zh->records_processed + zh->records_skipped == zh->m_file_verbose_limit)
+    {
+        yaz_log(YLOG_LOG, "More than %d file log entries. Omitting rest",
+                zh->m_file_verbose_limit);
+    }
+}
+
 static void logRecord (ZebraHandle zh)
 {
+    check_log_limit(zh);
     ++zh->records_processed;
     if (!(zh->records_processed % 1000))
     {
@@ -351,8 +361,11 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
     }
     if (!zh->m_record_type)
     {
-	if (zh->records_processed < zh->m_file_verbose_limit)
+        check_log_limit(zh);
+	if (zh->records_processed + zh->records_skipped
+            < zh->m_file_verbose_limit)
             yaz_log (YLOG_LOG, "? %s", fname);
+        zh->records_skipped++;
         return 0;
     }
     /* determine match criteria */
@@ -521,7 +534,8 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
     Record rec;
     off_t start_offset = 0, end_offset = 0;
     const char *pr_fname = fname;  /* filename to print .. */
-    int show_progress = zh->records_processed < zh->m_file_verbose_limit ? 1:0;
+    int show_progress = zh->records_processed + zh->records_skipped 
+        < zh->m_file_verbose_limit ? 1:0;
 
     zebra_init_log_level();
 

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.194 2007-01-17 15:35:48 adam Exp $
+/* $Id: index.h,v 1.195 2007-02-06 09:34:56 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -213,6 +213,7 @@ struct zebra_session {
     zint records_updated;
     zint records_deleted;
     zint records_processed;
+    zint records_skipped;
     char *record_encoding;
 
     yaz_iconv_t iconv_to_utf8;

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.247 2007-01-17 15:35:48 adam Exp $
+/* $Id: zebraapi.c,v 1.248 2007-02-06 09:34:56 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1716,7 +1716,7 @@ static void read_res_for_transaction(ZebraHandle zh)
     v = res_get_prefix(zh->res, "openRW", group, "1");
     zh->m_flag_rw = atoi(v);
 
-    v = res_get_prefix(zh->res, "fileVerboseLimit", group, "100000");
+    v = res_get_prefix(zh->res, "fileVerboseLimit", group, "1000");
     zh->m_file_verbose_limit = atoi(v);
 }
 
@@ -1775,6 +1775,7 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
         zh->records_updated = 0;
         zh->records_deleted = 0;
         zh->records_processed = 0;
+        zh->records_skipped = 0;
         
 #if HAVE_SYS_TIMES_H
         times (&zh->tms1);
