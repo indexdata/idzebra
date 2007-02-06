@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.82 2007-01-15 15:10:16 adam Exp $
+/* $Id: kinput.c,v 1.83 2007-02-06 09:32:50 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -818,11 +818,12 @@ void zebra_index_merge (ZebraHandle zh)
     xfree (kf);
     if (hi->no_iterations)
     { /* do not log if nothing happened */
-        yaz_log(YLOG_LOG, "Iterations     %9" ZINT_FORMAT0, hi->no_iterations);
-        yaz_log(YLOG_LOG, "Distinct words %9" ZINT_FORMAT0, hi->no_diffs);
-        yaz_log(YLOG_LOG, "Updates        %9" ZINT_FORMAT0, hi->no_updates);
-        yaz_log(YLOG_LOG, "Deletions      %9" ZINT_FORMAT0, hi->no_deletions);
-        yaz_log(YLOG_LOG, "Insertions     %9" ZINT_FORMAT0, hi->no_insertions);
+        yaz_log(YLOG_LOG, "Iterations: isam/dict " 
+                ZINT_FORMAT "/" ZINT_FORMAT,
+                hi->no_iterations, hi->no_diffs);
+        yaz_log(YLOG_LOG, "Dict: inserts/updates/deletions: "
+                ZINT_FORMAT "/" ZINT_FORMAT "/" ZINT_FORMAT,
+                hi->no_insertions, hi->no_updates, hi->no_deletions);
     }
     key_block_destroy(&zh->reg->key_block);
     key_heap_destroy(hi, nkeys);
