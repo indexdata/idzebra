@@ -1,4 +1,4 @@
-/* $Id: key_block.c,v 1.8 2007-01-15 15:10:16 adam Exp $
+/* $Id: key_block.c,v 1.9 2007-02-06 09:33:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -212,7 +212,7 @@ zebra_key_block_t key_block_create(int mem, const char *key_tmp_dir,
         p->alt_buf = (char**) xmalloc (mem);
 #endif
     }
-    yaz_log(YLOG_LOG, "key_block_create t=%d", p->use_threads);
+    yaz_log(YLOG_DEBUG, "key_block_create t=%d", p->use_threads);
     return p;
 }
 
@@ -310,7 +310,7 @@ void key_block_flush_int(zebra_key_block_t p,
     struct encode_info encode_info;
 
     (p->key_file_no)++;
-    yaz_log(YLOG_LOG, "sorting section %d", (p->key_file_no));
+    yaz_log(YLOG_DEBUG, "sorting section %d", (p->key_file_no));
 
 #if USE_SHELLSORT
     shellsort(key_buf + ptr_top - ptr_i, ptr_i,
@@ -326,7 +326,7 @@ void key_block_flush_int(zebra_key_block_t p,
         yaz_log (YLOG_FATAL|YLOG_ERRNO, "fopen %s", out_fname);
         zebra_exit("key_block_flush");
     }
-    yaz_log(YLOG_LOG, "writing section %d", p->key_file_no);
+    yaz_log(YLOG_DEBUG, "writing section %d", p->key_file_no);
     prevcp = cp = (key_buf)[ptr_top - ptr_i];
     
     encode_key_init (&encode_info);
@@ -351,7 +351,7 @@ void key_block_flush_int(zebra_key_block_t p,
         yaz_log (YLOG_FATAL|YLOG_ERRNO, "fclose %s", out_fname);
         zebra_exit("key_block_flush");
     }
-    yaz_log(YLOG_LOG, "finished section %d", p->key_file_no);
+    yaz_log(YLOG_DEBUG, "finished section %d", p->key_file_no);
 }
 
 void key_block_flush(zebra_key_block_t p, int is_final)
