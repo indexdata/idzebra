@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.62 2007-02-02 12:07:33 adam Exp $
+## $Id: Makefile.am,v 1.63 2007-02-07 12:08:54 adam Exp $
 
 aux_libs = \
  ../rset/libidzebra-rset.la \
@@ -46,6 +46,11 @@ mod_alvis_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
 mod_alvis_la_LADD =
 mod_alvis_la_LIBADD = $(zebralib) $(mod_alvis_la_LADD)
 
+mod_dom_la_SOURCES = mod_dom.c
+mod_dom_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
+mod_dom_la_LADD =
+mod_dom_la_LIBADD = $(zebralib) $(mod_dom_la_LADD)
+
 mod_text_la_SOURCES = rectext.c
 mod_text_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
 mod_text_la_LADD =
@@ -58,6 +63,7 @@ EXTRA_LTLIBRARIES = \
 	mod-grs-marc.la  \
 	mod-safari.la \
 	mod-alvis.la \
+	mod-dom.la \
 	mod-text.la
 
 EXTRA_libidzebra_2_0_la_SOURCES = \
@@ -66,6 +72,7 @@ EXTRA_libidzebra_2_0_la_SOURCES = \
  $(mod_grs_marc_la_SOURCES) \
  $(mod_safari_la_SOURCES) \
  $(mod_alvis_la_SOURCES) \
+ $(mod_dom_la_SOURCES) \
  $(mod_text_la_SOURCES)
 
 lib_LTLIBRARIES = $(zebralib)

@@ -1,3 +1,8 @@
+Implemented new filter 'dom'. See test/xslt/dom-config*xml for examples. 
+This, like alvis, performs indexing and retrieval using XSLT. But Unlike
+alvis, it allows multiple XSLT steps to be performed and does ISO2709
+reading. Bug #843.
+
 --- 2.0.10 2007/01/24
 
 Staticrank indexing is now an index register type defined in default.idx

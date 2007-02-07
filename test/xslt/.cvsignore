@@ -3,6 +3,7 @@
 Makefile
 Makefile.in
 xslt[0-9]
+dom[0-9]
 *.mf
 *.LCK
 *.log

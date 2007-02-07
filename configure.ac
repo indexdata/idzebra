@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2007
-dnl $Id: configure.ac,v 1.49 2007-01-24 18:00:39 adam Exp $
+dnl $Id: configure.ac,v 1.50 2007-02-07 12:08:54 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.11],[zebra-help@indexdata.dk])
@@ -293,7 +293,6 @@ AC_DEFINE(IDZEBRA_STATIC_GRS_SGML)
 ZEBRA_MODULE(text,shared,    [  --enable-mod-text       Text filter])
 ZEBRA_MODULE(grs-regx,shared,[  --enable-mod-grs-regx   REGX/TCL filter])
 ZEBRA_MODULE(grs-marc,shared,[  --enable-mod-grs-marc   MARC filter])
-ZEBRA_MODULE(safari,shared,  [  --enable-mod-safari Safari filter (DBC)])
 if test "$ac_cv_header_expat_h" = "yes"; then
     def="shared"
 else
@@ -322,8 +321,10 @@ AC_PREPROC_IFELSE(
    [def="shared"],
    [def="disabled"])
 CPPFLAGS=$oldCPPFLAGS
+ZEBRA_MODULE(dom,[$def],   [  --enable-mod-dom        XML/XSLT filter (Requires libxslt)])
+ZEBRA_MODULE(alvis,[$def], [  --enable-mod-alvis      ALVIS filter (Requires libxslt)])
+ZEBRA_MODULE(safari,shared,[  --enable-mod-safari     Safari filter (DBC)])
 
-ZEBRA_MODULE(alvis,[$def],   [  --enable-mod-alvis      ALVIS filter (Requires libxslt)])
 dnl ------ ANSI C Header files
 AC_STDC_HEADERS
 if test "$ac_cv_header_stdc" = "no"; then

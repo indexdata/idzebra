@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.5 2007-01-15 15:10:17 adam Exp $
+/* $Id: recctrl.c,v 1.6 2007-02-07 12:08:54 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -113,6 +113,14 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     {
 	extern RecType idzebra_filter_alvis[];
 	recTypeClass_add (&rts, idzebra_filter_alvis, nmem, 0);
+    }
+#endif
+
+#ifdef IDZEBRA_STATIC_DOM
+    if (1)
+    {
+	extern RecType idzebra_filter_dom[];
+	recTypeClass_add (&rts, idzebra_filter_dom, nmem, 0);
     }
 #endif
 

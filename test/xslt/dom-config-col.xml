@@ -1,0 +1,14 @@
+<dom>
+  <!-- $Id: dom-config-col.xml,v 1.1 2007-02-07 12:08:54 adam Exp $ -->
+  <extract name="index">
+      <xslt stylesheet="index.xsl"/>
+  </extract>
+  <retrieve name="F">
+    <xslt stylesheet="id.xsl"/>
+  </retrieve>
+  <input syntax="xml">
+    <xmlreader level="1"/>
+  </input>
+</dom>
+
+   
