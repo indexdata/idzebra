@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.28 2006-08-14 12:18:46 adam Exp $
+## $Id: Makefile.am,v 1.29 2007-02-07 12:50:13 marc Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -46,3 +46,5 @@ showdox:
 	doxygen
 	firefox -new-window file:///`pwd`/$(top_srcdir)/dox/html/index.html &
 
+
+.PHONY: cvs2cl dox showdox
