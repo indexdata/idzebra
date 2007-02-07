@@ -22,7 +22,7 @@ Description: IDZebra virtual package (the works)
 Package: libidzebra-2.0-modules
 Section: libs
 Architecture: any
-Depends: libidzebra-2.0-mod-grs-xml, libidzebra-2.0-mod-grs-regx, libidzebra-2.0-mod-grs-marc, libidzebra-2.0-mod-alvis, libidzebra-2.0-mod-text
+Depends: libidzebra-2.0-mod-alvis, libidzebra-2.0-mod-dom, libidzebra-2.0-mod-grs-xml, libidzebra-2.0-mod-grs-regx, libidzebra-2.0-mod-grs-marc, libidzebra-2.0-mod-text
 Description: IDZebra modules 
  This virtual package contains all base IDZebra filter modules.
  .
@@ -89,7 +89,23 @@ Architecture: any
 Depends: ${shlibs:Depends}
 Description: IDZebra filter alvis (XSLT filter for XML)
  This package includes the alvis filter which uses libxslt1 to
- transform XML records by XSLT into XML indexable records.
+ transform XML records by XSLT into XML indexable records. 
+ DEPRECIATED, better use the libidzebra-2.0-mod-dom indexing filter.
+ .
+ IDZebra is a high-performance, general-purpose structured text indexing
+ and retrieval engine. It reads structured records in a variety of input
+ formats (eg. email, XML, MARC) and allows access to them through exact
+ boolean search expressions and relevance-ranked free-text queries.
+
+Package: libidzebra-2.0-mod-dom
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: IDZebra filter 'dom' (XML DOM internal document model with XSLT)
+ This package includes the 'dom' filter which uses libxslt1 to
+ transform XML records by XSLT into XML indexable records. It can read and 
+ index any binary MARC syntax as well, and is therefore a modern replacement
+ for the 'alvis' and the family of 'grs' filters. 
  .
  IDZebra is a high-performance, general-purpose structured text indexing
  and retrieval engine. It reads structured records in a variety of input
@@ -116,6 +132,7 @@ Depends: ${shlibs:Depends}
 Description: IDZebra filter grs.marc (ISO2709 MARC reader)
  This package includes the grs.marc and grs.marcxml filters that allows
  IDZebra to read MARC records based on ISO2709.
+ DEPRECIATED, better use the libidzebra-2.0-mod-dom indexing filter.
  .
  IDZebra is a high-performance, general-purpose structured text indexing
  and retrieval engine. It reads structured records in a variety of input
@@ -141,6 +158,7 @@ Depends: ${shlibs:Depends}
 Description: IDZebra filter grs.xml (XML filter)
  This package includes the grs.xml filter which uses Expat to
  parse records in XML and turn them into IDZebra's internal grs node.
+ DEPRECIATED, better use the libidzebra-2.0-mod-dom indexing filter.
  .
  IDZebra is a high-performance, general-purpose structured text indexing
  and retrieval engine. It reads structured records in a variety of input
