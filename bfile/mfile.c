@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.74 2007-01-15 15:10:14 adam Exp $
+/* $Id: mfile.c,v 1.75 2007-02-10 18:37:42 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -366,6 +366,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
                 yaz_log(YLOG_WARN, "metafile %s already open", name);
                 return 0;
             }
+            break;
 	}
     if (!mnew)
     {
