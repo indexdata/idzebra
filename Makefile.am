@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.29 2007-02-07 12:50:13 marc Exp $
+## $Id: Makefile.am,v 1.30 2007-02-10 12:46:54 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -13,7 +13,7 @@ aclocal_DATA = m4/idzebra-2.0.m4
 SPEC_FILE=idzebra.spec
 
 EXTRA_DIST= README NEWS $(SPEC_FILE) $(SPEC_FILE).in \
- idzebra-config-2.0.in m4/idzebra-2.0.m4 m4/yaz.m4 Doxyfile.in
+ idzebra-config-2.0.in m4/idzebra-2.0.m4 m4/yaz.m4 buildconf.sh Doxyfile.in
 
 dist-hook:
 	if test -x /usr/bin/cvs2cl -a -d CVS; then cvs2cl ; fi
