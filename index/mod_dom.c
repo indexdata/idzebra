@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.2 2007-02-12 10:33:51 adam Exp $
+/* $Id: mod_dom.c,v 1.3 2007-02-12 13:24:31 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -100,6 +100,136 @@ struct filter_info {
 
 #define XML_STRCMP(a,b)   strcmp((char*)a, b)
 #define XML_STRLEN(a) strlen((char*)a)
+
+
+
+static void format_pi_zebra_err(char *err_str, const char *pi_str, const char *look)
+{
+  strncpy(err_str, pi_str, look - pi_str); 
+  strncpy(err_str + (look - pi_str), "->", 2);
+  strcpy(err_str + (look - pi_str + 2) , look);
+}
+
+
+/*
+use PI parsing like this
+
+  if (!parse_pi_zebra_20(pi_str, err_str))
+    printf("ERROR '%s'\n", err_str);
+
+*/
+
+static int parse_pi_zebra_20(const char *pi_str, char *err_str)
+{
+  const char *look = pi_str;
+  const char *bval;
+  const char *eval;
+
+  char value[256];
+  char index[256];
+  char type[256];
+
+  *value = '\0';
+  *index = '\0';
+  *type = '\0';
+
+  // parsing record instruction
+  if (0 == strncmp(look, "record", 6)){
+    look += 6;
+    printf("record\n");
+
+    if (*look && 0 == strncmp(look, " id=", 4)){
+      look += 4;
+      bval = look;
+      printf(" id=");
+      while (*look && ' ' != *look)
+        look++;
+      eval = look;
+      strncpy(value, bval, eval - bval);
+      value[eval - bval] = '\0';
+      
+      printf("%s\n", value);
+    } 
+    
+    if (*look && 0 == strncmp(look, " rank=", 6)){
+      look += 6;
+      bval = look;
+      printf(" rank=");
+      while (*look && ' ' != *look)
+        look++;
+      eval = look;
+      strncpy(value, bval, eval - bval);
+      value[eval - bval] = '\0';
+      
+      printf("%s\n", value);
+    }
+
+    if (!*look){
+      return 1;
+    } 
+    format_pi_zebra_err(err_str, pi_str, look);    
+  } 
+   
+  // parsing index instruction
+  else   if (0 == strncmp(look, "index", 5)){
+    look += 5;
+    printf("index\n");
+
+    // parsing all index name/type pairs
+    while (*look && ' ' == *look && *(look+1)){
+      look++;
+
+      // index name must not start with ';' or ' '
+      if (!*look || ':' == *look || ' ' == *look){
+        format_pi_zebra_err(err_str, pi_str, look);
+        return 0;
+      }
+
+      // setting name and type to zero
+      *index = '\0';
+      *type = '\0';
+
+      // parsing one index name
+      bval = look;
+      while (*look && ':' != *look && ' ' != *look){
+        look++;
+      }
+      eval = look;
+      strncpy(index, bval, eval - bval);
+      index[eval - bval] = '\0';
+      
+
+      // parsing one index type, if existing
+      if (':' == *look){
+        look++;
+
+        bval = look;
+        while (*look && ' ' != *look){
+          look++;
+        }
+        eval = look;
+        strncpy(type, bval, eval - bval);
+        type[eval - bval] = '\0';
+      }
+
+      printf(" %s:%s\n", index, type);
+    } 
+
+    if (!*look){
+      return 1;
+    } 
+    format_pi_zebra_err(err_str, pi_str, look);    
+  } 
+
+
+  // remaining unparsed rest of PI
+  else {
+    format_pi_zebra_err(err_str, pi_str, look);
+  }
+  
+  return 0;
+}
+
 
 static void set_param_str(const char **params, const char *name,
 			  const char *value, ODR odr)
