@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.11 2007-01-15 15:10:16 adam Exp $
+/* $Id: alvis.c,v 1.12 2007-02-12 10:33:51 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -507,7 +507,7 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
 				       p /* I/O handler */,
 				       0 /* URL */, 
 				       0 /* encoding */,
-				       XML_PARSE_XINCLUDE);
+				       XML_PARSE_XINCLUDE|XML_PARSE_NOENT);
     }
     if (!tinfo->reader)
 	return RECCTRL_EXTRACT_ERROR_GENERIC;
@@ -550,7 +550,7 @@ static int extract_full(struct filter_info *tinfo, struct recExtractCtrl *p)
        xmlDocPtr doc = xmlReadIO(ioread_ex, ioclose_ex, p /* I/O handler */,
                                  0 /* URL */,
                                  0 /* encoding */,
-                                 XML_PARSE_XINCLUDE);
+                                 XML_PARSE_XINCLUDE|XML_PARSE_NOENT);
        if (!doc)
        {
            return RECCTRL_EXTRACT_ERROR_GENERIC;
@@ -694,7 +694,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     doc = xmlReadIO(ioread_ret, ioclose_ret, p /* I/O handler */,
 		    0 /* URL */,
 		    0 /* encoding */,
-		    XML_PARSE_XINCLUDE);
+		    XML_PARSE_XINCLUDE|XML_PARSE_NOENT);
     if (!doc)
     {
 	p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;

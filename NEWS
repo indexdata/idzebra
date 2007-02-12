@@ -1,3 +1,5 @@
+Fixed bug #884: Entity declarations in input are lost at retrieval time.
+
 Implemented new filter 'dom'. See test/xslt/dom-config*xml for examples. 
 This, like alvis, performs indexing and retrieval using XSLT. But Unlike
 alvis, it allows multiple XSLT steps to be performed and does ISO2709

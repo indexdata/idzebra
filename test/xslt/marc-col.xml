@@ -1,3 +1,6 @@
+<!DOCTYPE x [
+  <!ENTITY com  "computer">
+]>
 <collection xmlns="http://www.loc.gov/MARC21/slim">
 <record xmlns="http://www.loc.gov/MARC21/slim">
   <rank>1</rank>
@@ -20,7 +23,7 @@
     <subfield code="a">Jack Collins</subfield>
   </datafield>
   <datafield tag="245" ind1="1" ind2="0">
-    <subfield code="a">How to program a computer</subfield>
+    <subfield code="a">How to program a &com;</subfield>
   </datafield>
   <datafield tag="260" ind1="1" ind2=" ">
     <subfield code="a">Penguin</subfield>
