@@ -1,8 +1,9 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:m="http://www.loc.gov/MARC21/slim"
   xmlns:z="http://indexdata.dk/zebra/xslt/1"
+  exclude-result-prefixes="m z"
   version="1.0">
-  <!-- $Id: index.xsl,v 1.5 2005-08-18 12:50:19 adam Exp $ -->
+  <!-- $Id: index.xsl,v 1.6 2007-02-12 13:58:12 marc Exp $ -->
   <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
   
 
