@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.4 2007-02-13 11:37:02 marc Exp $
+/* $Id: mod_dom.c,v 1.5 2007-02-13 12:19:37 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -894,8 +894,6 @@ static int convert_extract_doc(struct filter_info *tinfo,
     /* input conversion */
     perform_convert(tinfo, input->convert, params, &doc, 0);
 
-    /* (*p->init)(p, &recWord); */
-
     if (tinfo->store)
     {
         /* store conversion */
@@ -920,28 +918,8 @@ static int convert_extract_doc(struct filter_info *tinfo,
     /* extract conversion */
     perform_convert(tinfo, tinfo->extract->convert, params, &doc, 0);
 
-    if (doc)
-    {
-
+    if (doc){
         extract_doc_alvis(tinfo, p, doc);
-        
-        /*
-        xmlNodePtr root_ptr;
-	if (p->flagShowRecords)
-	{
-	    xmlDocDumpMemory(doc, &buf_out, &len_out);
-	    fwrite(buf_out, len_out, 1, stdout);
-	    xmlFree(buf_out);
-	}
-	root_ptr = xmlDocGetRootElement(doc);
-	if (root_ptr)
-	    index_record(tinfo, p, root_ptr, &recWord);
-        else
-        {
-	    yaz_log(YLOG_WARN, "No root for index XML record");
-        }
-        */
-
 	xmlFreeDoc(doc);
     }
 
