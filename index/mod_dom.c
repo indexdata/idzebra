@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.3 2007-02-12 13:24:31 marc Exp $
+/* $Id: mod_dom.c,v 1.4 2007-02-13 11:37:02 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -847,14 +847,44 @@ static void index_record(struct filter_info *tinfo,struct recExtractCtrl *ctrl,
          yaz_log(YLOG_WARN, "dom filter: unknown record type '%s'", 
                  type_str);
 }
-    
-static int extract_doc(struct filter_info *tinfo, struct filter_input *input,
-                       struct recExtractCtrl *p, xmlDocPtr doc)
+
+
+static void extract_doc_alvis(struct filter_info *tinfo, 
+                              struct recExtractCtrl *recctr, 
+                              xmlDocPtr doc)
 {
-    RecWord recWord;
-    const char *params[10];
+    if (doc){
+        RecWord recWord;
+        xmlChar *buf_out;
+        int len_out;
+        xmlNodePtr root_ptr;
+
+        (*recctr->init)(recctr, &recWord);
+        
+	if (recctr->flagShowRecords){
+            xmlDocDumpMemory(doc, &buf_out, &len_out);
+	    fwrite(buf_out, len_out, 1, stdout);
+	    xmlFree(buf_out);
+	}
+	root_ptr = xmlDocGetRootElement(doc);
+	if (root_ptr)
+	    index_record(tinfo, recctr, root_ptr, &recWord);
+        else
+                yaz_log(YLOG_WARN, "No root for index XML record");
+    }
+}
+
+
+static int convert_extract_doc(struct filter_info *tinfo, 
+                               struct filter_input *input,
+                               struct recExtractCtrl *p, 
+                               xmlDocPtr doc)
+
+{
+    /* RecWord recWord; */
     xmlChar *buf_out;
     int len_out;
+    const char *params[10];
     xsltStylesheetPtr last_xsp = 0;
     xmlDocPtr store_doc = 0;
 
@@ -864,7 +894,7 @@ static int extract_doc(struct filter_info *tinfo, struct filter_input *input,
     /* input conversion */
     perform_convert(tinfo, input->convert, params, &doc, 0);
 
-    (*p->init)(p, &recWord);
+    /* (*p->init)(p, &recWord); */
 
     if (tinfo->store)
     {
@@ -889,8 +919,13 @@ static int extract_doc(struct filter_info *tinfo, struct filter_input *input,
 
     /* extract conversion */
     perform_convert(tinfo, tinfo->extract->convert, params, &doc, 0);
+
     if (doc)
     {
+
+        extract_doc_alvis(tinfo, p, doc);
+        
+        /*
         xmlNodePtr root_ptr;
 	if (p->flagShowRecords)
 	{
@@ -905,8 +940,11 @@ static int extract_doc(struct filter_info *tinfo, struct filter_input *input,
         {
 	    yaz_log(YLOG_WARN, "No root for index XML record");
         }
+        */
+
 	xmlFreeDoc(doc);
-    }    
+    }
+
     return RECCTRL_EXTRACT_OK;
 }
 
@@ -946,7 +984,7 @@ static int extract_xml_split(struct filter_info *tinfo,
                 
                 xmlDocSetRootElement(doc, ptr2);
                 
-                return extract_doc(tinfo, input, p, doc);
+                return convert_extract_doc(tinfo, input, p, doc);
             }
             else
             {
@@ -976,7 +1014,7 @@ static int extract_xml_full(struct filter_info *tinfo,
         {
             return RECCTRL_EXTRACT_ERROR_GENERIC;
         }
-        return extract_doc(tinfo, input, p, doc);
+        return convert_extract_doc(tinfo, input, p, doc);
     }
     else
         return RECCTRL_EXTRACT_EOF;
@@ -1030,7 +1068,7 @@ static int extract_iso2709(struct filter_info *tinfo,
         yaz_marc_write_xml(input->u.marc.handle, &root_ptr, 0, 0, 0);
         rdoc = xmlNewDoc((const xmlChar*) "1.0");
         xmlDocSetRootElement(rdoc, root_ptr);
-        return extract_doc(tinfo, input, p, rdoc);        
+        return convert_extract_doc(tinfo, input, p, rdoc);        
     }
     return RECCTRL_EXTRACT_OK;
 }

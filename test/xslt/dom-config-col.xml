@@ -1,6 +1,7 @@
 <dom>
-  <!-- $Id: dom-config-col.xml,v 1.1 2007-02-07 12:08:54 adam Exp $ -->
+  <!-- $Id: dom-config-col.xml,v 1.2 2007-02-13 11:37:03 marc Exp $ -->
   <extract name="index">
+      <!-- <xslt stylesheet="dom-index.xsl"/> -->
       <xslt stylesheet="index.xsl"/>
   </extract>
   <retrieve name="F">

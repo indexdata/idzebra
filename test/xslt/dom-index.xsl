@@ -2,12 +2,17 @@
   xmlns:m="http://www.loc.gov/MARC21/slim"
   exclude-result-prefixes="m"
   version="1.0">
-  <!-- $Id: dom-index.xsl,v 1.1 2007-02-12 14:00:20 marc Exp $ -->
+  <!-- $Id: dom-index.xsl,v 1.2 2007-02-13 11:37:03 marc Exp $ -->
   <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
   
 
   <xsl:template match="text()"/>
 
+  <!--
+  <xsl:template match="processing-instruction()">
+    <xsl:copy-of select="."/>
+  </xsl:template>
+  -->
 
   <xsl:template match="/m:record">
     <xsl:processing-instruction name="zebra-2.0">
@@ -37,6 +42,8 @@
     <title>
         <xsl:value-of select="."/>
     </title>
+    <!-- comment -->
+    <?zebra-2.0 xyz?>
   </xsl:template>
 
 </xsl:stylesheet>
