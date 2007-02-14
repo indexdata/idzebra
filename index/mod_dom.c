@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.9 2007-02-14 16:31:37 marc Exp $
+/* $Id: mod_dom.c,v 1.10 2007-02-14 16:38:41 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -867,9 +867,9 @@ void set_record_info(struct filter_info *tinfo,
                      struct recExtractCtrl *recctr, 
                      xmlChar * id_p, 
                      xmlChar * rank_p, 
-                     xmlChar * action_p)
+                     xmlChar * type_p)
 {
-    printf("RECORD id=%s rank=%s action=%s\n", id_p, rank_p, action_p);
+    printf("RECORD id=%s rank=%s type=%s\n", id_p, rank_p, type_p);
 }
 
 
@@ -900,7 +900,7 @@ void process_xml_element_zebra_node(struct filter_info *tinfo,
         else if (0 == XML_STRCMP(node->name, "record")){
             xmlChar *id_p = 0;
             xmlChar *rank_p = 0;
-            xmlChar *action_p = 0;
+            xmlChar *type_p = 0;
 
             struct _xmlAttr *attr;
             for (attr = node->properties; attr; attr = attr->next){
@@ -908,23 +908,23 @@ void process_xml_element_zebra_node(struct filter_info *tinfo,
                     ;
                 else if (attr_content_xml(attr, "rank", &rank_p))
                     ;
-                else if (attr_content_xml(attr, "acton", &action_p))
+                else if (attr_content_xml(attr, "type", &type_p))
                     ;
                 else
                     // printf("%s: dom filter: s% bad attribute %s",
                     // tinfo->fname, xmlGetNodePath(node)), nodeattr->name);
                     printf("dom filter: %s bad attribute @%s,"
-                           " expected @id|@rank|@action\n",
+                           " expected @id|@rank|@type\n",
                            xmlGetNodePath(node), attr->name);
 
-                if (action_p && 0 != strcmp("update", (const char *)action_p))
+                if (type_p && 0 != strcmp("update", (const char *)type_p))
                     printf("dom filter: %s attribute @%s,"
-                           " only implemented '@action=\"update\"\n",
+                           " only implemented '@type=\"update\"\n",
                            xmlGetNodePath(node), attr->name);
           
 
             }
-            set_record_info(tinfo, recctr, id_p, rank_p, action_p);
+            set_record_info(tinfo, recctr, id_p, rank_p, type_p);
         } else {
             //  printf("%s: dom filter: s% bad attribute %s",
             //  tinfo->fname, xmlGetNodePath(node)), nodeattr->name);
@@ -958,11 +958,11 @@ void process_xml_pi_node(struct filter_info *tinfo,
         if (0 == strncmp((const char *)look, "record", 6)){
             xmlChar id[256];
             xmlChar rank[256];
-            xmlChar action[256];
+            xmlChar type[256];
 
             *id = '\0';
             *rank = '\0';
-            *action = '\0';
+            *type = '\0';
       
             look += 6;
       
@@ -1004,7 +1004,7 @@ void process_xml_pi_node(struct filter_info *tinfo,
                 printf ("ERROR %s: content '%s'; can not parse '%s'\n", 
                         xmlGetNodePath(node), pi_p, look);
             } else {
-                /* set_record_info(id, rank, action); */
+                /* set_record_info(id, rank, type); */
                 set_record_info(tinfo, recctr, id, rank, 0);
             }
 
