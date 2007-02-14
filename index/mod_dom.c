@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.7 2007-02-14 15:42:24 marc Exp $
+/* $Id: mod_dom.c,v 1.8 2007-02-14 16:16:15 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -775,8 +775,12 @@ static const char *zebra_pi_name = ZEBRA_PI_NAME;
 
 
 /* DOM filter style indexing */
-void index_value_of(xmlNodePtr node, xmlChar * index_p){
-  xmlChar *text = xmlNodeGetContent(node);
+void index_value_of(struct filter_info *tinfo, 
+                    struct recExtractCtrl *recctr, 
+                    xmlNodePtr node, 
+                    xmlChar * index_p)
+{
+    xmlChar *text = xmlNodeGetContent(node);
 
   xmlChar *look = index_p;
   xmlChar *bval;
@@ -834,13 +838,20 @@ void index_value_of(xmlNodePtr node, xmlChar * index_p){
 
 
 /* DOM filter style indexing */
-void set_record_info(xmlChar * id_p, xmlChar * rank_p, xmlChar * action_p){
+void set_record_info(struct filter_info *tinfo, 
+                     struct recExtractCtrl *recctr, 
+                     xmlChar * id_p, 
+                     xmlChar * rank_p, 
+                     xmlChar * action_p)
+{
   printf("RECORD id=%s rank=%s action=%s\n", id_p, rank_p, action_p);
 }
 
 
 /* DOM filter style indexing */
-void process_xml_element_zebra_node(xmlNodePtr node, xmlChar **record_p)
+void process_xml_element_zebra_node(struct filter_info *tinfo, 
+                                    struct recExtractCtrl *recctr, 
+                                    xmlNodePtr node)
 {
   if (node->type == XML_ELEMENT_NODE 
       && node->ns && 0 == XML_STRCMP(node->ns->href, zebra_xslt_ns)){
@@ -851,7 +862,7 @@ void process_xml_element_zebra_node(xmlNodePtr node, xmlChar **record_p)
       struct _xmlAttr *attr;      
       for (attr = node->properties; attr; attr = attr->next){
         if (attr_content_xml(attr, "name", &index_p)){
-          index_value_of(node, index_p);        
+          index_value_of(tinfo, recctr, node, index_p);        
         }  
         else
           //   printf("%s: dom filter: s% bad attribute %s",
@@ -887,7 +898,7 @@ void process_xml_element_zebra_node(xmlNodePtr node, xmlChar **record_p)
           
 
       }
-      set_record_info(id_p, rank_p, action_p);
+      set_record_info(tinfo, recctr, id_p, rank_p, action_p);
     } else {
       //   printf("%s: dom filter: s% bad attribute %s",
       //        tinfo->fname, xmlGetNodePath(node)), nodeattr->name);
@@ -901,10 +912,13 @@ void process_xml_element_zebra_node(xmlNodePtr node, xmlChar **record_p)
 
 
 /* DOM filter style indexing */
-void process_xml_pi_node(xmlNodePtr node, xmlChar **record_pp, 
-                        xmlChar **index_pp)
+void process_xml_pi_node(struct filter_info *tinfo, 
+                         struct recExtractCtrl *recctr, 
+                         xmlNodePtr node,
+                         xmlChar **index_pp)
 {
-  printf("PI     %s\n", xmlGetNodePath(node));
+
+    /* printf("PI     %s\n", xmlGetNodePath(node)); */
 
   /* if right PI name, continue parsing PI */
   if (0 == strcmp(zebra_pi_name, (const char *)node->name)){
@@ -965,7 +979,7 @@ void process_xml_pi_node(xmlNodePtr node, xmlChar **record_pp,
                 xmlGetNodePath(node), pi_p, look);
       } else {
         /* set_record_info(id, rank, action); */
-        set_record_info(id, rank, 0);
+        set_record_info(tinfo, recctr, id, rank, 0);
       }
 
     } 
@@ -991,31 +1005,33 @@ void process_xml_pi_node(xmlNodePtr node, xmlChar **record_pp,
 }
 
 /* DOM filter style indexing */
-void process_xml_element_node(xmlNodePtr node, xmlChar **record_pp)
+void process_xml_element_node(struct filter_info *tinfo, 
+                              struct recExtractCtrl *recctr, 
+                              xmlNodePtr node)
 {
   /* remember indexing instruction from PI to next element node */
   xmlChar *index_p = 0;
 
-  printf("ELEM   %s\n", xmlGetNodePath(node));
+  /* printf("ELEM   %s\n", xmlGetNodePath(node)); */
 
   /* check if we are an element node in the special zebra namespace 
      and either set record data or index value-of node content*/
-  process_xml_element_zebra_node(node, record_pp);
+  process_xml_element_zebra_node(tinfo, recctr, node);
   
   /* loop through kid nodes */
   for (node = node->children; node; node = node->next)
     {
       /* check and set PI record and index index instructions */
       if (node->type == XML_PI_NODE){
-        process_xml_pi_node(node, record_pp, &index_p);
+        process_xml_pi_node(tinfo, recctr, node, &index_p);
       }
       else if (node->type == XML_ELEMENT_NODE){
         /* if there was a PI index instruction before this element node */
         if (index_p){
-          index_value_of(node, index_p);            
+          index_value_of(tinfo, recctr, node, index_p);            
           index_p = 0;
         }
-        process_xml_element_node(node, record_pp);
+        process_xml_element_node(tinfo, recctr, node);
       }
       else
         continue;
@@ -1024,14 +1040,16 @@ void process_xml_element_node(xmlNodePtr node, xmlChar **record_pp)
 
 
 
+
+
 /* DOM filter style indexing */
-void process_xml_doc_node(xmlDocPtr doc)
+void extract_dom_doc_node(struct filter_info *tinfo, 
+                          struct recExtractCtrl *recctr, 
+                          xmlDocPtr doc)
 {
-    xmlChar *record_pp;
-    
     printf("DOC    %s\n", xmlGetNodePath((xmlNodePtr)doc));
 
-    process_xml_element_node((xmlNodePtr)doc, &record_pp);
+    process_xml_element_node(tinfo, recctr, (xmlNodePtr)doc);
 }
 
 
@@ -1080,7 +1098,9 @@ static int convert_extract_doc(struct filter_info *tinfo,
     /* extract conversion */
     perform_convert(tinfo, tinfo->extract->convert, params, &doc, 0);
 
+    /* finally, do the indexing */
     if (doc){
+        extract_dom_doc_node(tinfo, p, doc);
         extract_doc_alvis(tinfo, p, doc);
 	xmlFreeDoc(doc);
     }
