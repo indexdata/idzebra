@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.6 2007-02-14 15:23:33 marc Exp $
+/* $Id: mod_dom.c,v 1.7 2007-02-14 15:42:24 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -756,7 +756,7 @@ static void extract_doc_alvis(struct filter_info *tinfo,
 static int attr_content_xml(struct _xmlAttr *attr, const char *name,
                         xmlChar **dst_content)
 {
-    if (0 == strcmp(attr->name, name) && attr->children 
+    if (0 == XML_STRCMP(attr->name, name) && attr->children 
         && attr->children->type == XML_TEXT_NODE)
     {
         *dst_content = (attr->children->content);
@@ -778,12 +778,12 @@ static const char *zebra_pi_name = ZEBRA_PI_NAME;
 void index_value_of(xmlNodePtr node, xmlChar * index_p){
   xmlChar *text = xmlNodeGetContent(node);
 
-  const char *look = index_p;
-  const char *bval;
-  const char *eval;
+  xmlChar *look = index_p;
+  xmlChar *bval;
+  xmlChar *eval;
 
-  char index[256];
-  char type[256];
+  xmlChar index[256];
+  xmlChar type[256];
 
   /* parsing all index name/type pairs - may not start with ' ' or ':' */
   while (*look && ' ' != *look && ':' != *look){
@@ -798,7 +798,7 @@ void index_value_of(xmlNodePtr node, xmlChar * index_p){
       look++;
     }
     eval = look;
-    strncpy(index, bval, eval - bval);
+    strncpy((char *)index, (const char *)bval, eval - bval);
     index[eval - bval] = '\0';
     
     
@@ -811,7 +811,7 @@ void index_value_of(xmlNodePtr node, xmlChar * index_p){
         look++;
       }
       eval = look;
-      strncpy(type, bval, eval - bval);
+      strncpy((char *)type, (const char *)bval, eval - bval);
       type[eval - bval] = '\0';
     }
 
@@ -842,12 +842,10 @@ void set_record_info(xmlChar * id_p, xmlChar * rank_p, xmlChar * action_p){
 /* DOM filter style indexing */
 void process_xml_element_zebra_node(xmlNodePtr node, xmlChar **record_p)
 {
-  xmlChar *err_p = 0;
-
   if (node->type == XML_ELEMENT_NODE 
-      && node->ns && 0 == strcmp(node->ns->href, zebra_xslt_ns)){
+      && node->ns && 0 == XML_STRCMP(node->ns->href, zebra_xslt_ns)){
     
-    if (0 == strcmp(node->name, "index")){
+    if (0 == XML_STRCMP(node->name, "index")){
       xmlChar *index_p = 0;
 
       struct _xmlAttr *attr;      
@@ -862,7 +860,7 @@ void process_xml_element_zebra_node(xmlNodePtr node, xmlChar **record_p)
                   xmlGetNodePath(node), attr->name);
       }
     }
-    else if (0 == strcmp(node->name, "record")){
+    else if (0 == XML_STRCMP(node->name, "record")){
       xmlChar *id_p = 0;
       xmlChar *rank_p = 0;
       xmlChar *action_p = 0;
@@ -882,7 +880,7 @@ void process_xml_element_zebra_node(xmlNodePtr node, xmlChar **record_p)
                  " expected @id|@rank|@action\n",
                  xmlGetNodePath(node), attr->name);
 
-        if (action_p && 0 != strcmp("update", action_p))
+        if (action_p && 0 != strcmp("update", (const char *)action_p))
           printf("dom filter: %s attribute @%s,"
                  " only implemented '@action=\"update\"\n",
                  xmlGetNodePath(node), attr->name);
@@ -901,6 +899,96 @@ void process_xml_element_zebra_node(xmlNodePtr node, xmlChar **record_p)
   }
 }
 
+
+/* DOM filter style indexing */
+void process_xml_pi_node(xmlNodePtr node, xmlChar **record_pp, 
+                        xmlChar **index_pp)
+{
+  printf("PI     %s\n", xmlGetNodePath(node));
+
+  /* if right PI name, continue parsing PI */
+  if (0 == strcmp(zebra_pi_name, (const char *)node->name)){
+    xmlChar *pi_p =  node->content;
+    xmlChar *look = pi_p;
+    
+    xmlChar *bval;
+    xmlChar *eval;
+
+    /* parsing PI record instructions */
+    if (0 == strncmp((const char *)look, "record", 6)){
+      xmlChar id[256];
+      xmlChar rank[256];
+      xmlChar action[256];
+
+      *id = '\0';
+      *rank = '\0';
+      *action = '\0';
+      
+      look += 6;
+      
+      /* eat whitespace */
+      while (*look && ' ' == *look && *(look+1))
+        look++;
+
+      /* parse possible id */
+      if (*look && 0 == strncmp((const char *)look, "id=", 3)){
+        look += 3;
+        bval = look;
+        while (*look && ' ' != *look)
+          look++;
+        eval = look;
+        strncpy((char *)id, (const char *)bval, eval - bval);
+        id[eval - bval] = '\0';
+      }
+      
+      /* eat whitespace */
+      while (*look && ' ' == *look && *(look+1))
+        look++;
+      
+      /* parse possible rank */
+      if (*look && 0 == strncmp((const char *)look, "rank=", 5)){
+        look += 6;
+        bval = look;
+        while (*look && ' ' != *look)
+          look++;
+        eval = look;
+        strncpy((char *)rank, (const char *)bval, eval - bval);
+        rank[eval - bval] = '\0';
+      }
+
+      /* eat whitespace */
+      while (*look && ' ' == *look && *(look+1))
+        look++;
+
+      if (look && '\0' != *look){
+        printf ("ERROR %s: content '%s'; can not parse '%s'\n", 
+                xmlGetNodePath(node), pi_p, look);
+      } else {
+        /* set_record_info(id, rank, action); */
+        set_record_info(id, rank, 0);
+      }
+
+    } 
+   
+    /* parsing index instruction */
+    else   if (0 == strncmp((const char *)look, "index", 5)){
+      look += 5;
+      
+      /* eat whitespace */
+      while (*look && ' ' == *look && *(look+1))
+        look++;
+
+      /* export index instructions to outside */
+      *index_pp = look;
+
+      /* nor record, neither index */ 
+    } else {
+    
+      printf ("ERROR %s: content '%s'; can not parse '%s'\n", 
+              xmlGetNodePath(node), pi_p, look);
+    }  
+  }
+}
 
 /* DOM filter style indexing */
 void process_xml_element_node(xmlNodePtr node, xmlChar **record_pp)
@@ -935,106 +1023,13 @@ void process_xml_element_node(xmlNodePtr node, xmlChar **record_pp)
 }
 
 
-/* DOM filter style indexing */
-int process_xml_pi_node(xmlNodePtr node, xmlChar **record_pp, 
-                        xmlChar **index_pp)
-{
-  printf("PI     %s\n", xmlGetNodePath(node));  
-
-  /* if right PI name, continue parsing PI */
-  if (0 == strcmp("zebra-2.0", node->name)){
-    xmlChar *pi_p =  node->content;
-    xmlChar *look = pi_p;
-    
-    xmlChar *bval;
-    xmlChar *eval;
-
-    xmlChar *index_p = 0;
-
-
-    /* parsing PI record instructions */
-    if (0 == strncmp(look, "record", 6)){
-      xmlChar id[256];
-      xmlChar rank[256];
-      xmlChar action[256];
-
-      *id = '\0';
-      *rank = '\0';
-      *action = '\0';
-      
-      look += 6;
-      
-      /* eat whitespace */
-      while (*look && ' ' == *look && *(look+1))
-        look++;
-
-      /* parse possible id */
-      if (*look && 0 == strncmp(look, "id=", 3)){
-        look += 3;
-        bval = look;
-        while (*look && ' ' != *look)
-          look++;
-        eval = look;
-        strncpy(id, bval, eval - bval);
-        id[eval - bval] = '\0';
-      }
-      
-      /* eat whitespace */
-      while (*look && ' ' == *look && *(look+1))
-        look++;
-      
-      /* parse possible rank */
-      if (*look && 0 == strncmp(look, "rank=", 5)){
-        look += 6;
-        bval = look;
-        while (*look && ' ' != *look)
-          look++;
-        eval = look;
-        strncpy(rank, bval, eval - bval);
-        rank[eval - bval] = '\0';
-      }
-
-      /* eat whitespace */
-      while (*look && ' ' == *look && *(look+1))
-        look++;
-
-      if (look && '\0' != *look){
-        printf ("ERROR %s: content '%s'; can not parse '%s'\n", 
-                xmlGetNodePath(node), pi_p, look);
-      } else {
-        /* set_record_info(id, rank, action); */
-        set_record_info(id, rank, 0);
-      }
-
-    } 
-   
-    /* parsing index instruction */
-    else   if (0 == strncmp(look, "index", 5)){
-      look += 5;
-      
-      /* eat whitespace */
-      while (*look && ' ' == *look && *(look+1))
-        look++;
-
-      /* export index instructions to outside */
-      *index_pp = look;
-
-      /* nor record, neither index */ 
-    } else {
-    
-      printf ("ERROR %s: content '%s'; can not parse '%s'\n", 
-              xmlGetNodePath(node), pi_p, look);
-    }  
-  }
-}
-
 
 /* DOM filter style indexing */
 void process_xml_doc_node(xmlDocPtr doc)
 {
     xmlChar *record_pp;
     
-    printf("DOC    %s\n", xmlGetNodePath(doc));
+    printf("DOC    %s\n", xmlGetNodePath((xmlNodePtr)doc));
 
     process_xml_element_node((xmlNodePtr)doc, &record_pp);
 }
