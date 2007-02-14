@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.10 2007-02-14 16:38:41 marc Exp $
+/* $Id: mod_dom.c,v 1.11 2007-02-14 16:43:37 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -800,10 +800,10 @@ static const char *zebra_pi_name = ZEBRA_PI_NAME;
 
 
 /* DOM filter style indexing */
-void index_value_of(struct filter_info *tinfo, 
-                    struct recExtractCtrl *recctr, 
-                    xmlNodePtr node, 
-                    xmlChar * index_p)
+static void index_value_of(struct filter_info *tinfo, 
+                           struct recExtractCtrl *recctr, 
+                           xmlNodePtr node, 
+                           xmlChar * index_p)
 {
     xmlChar *text = xmlNodeGetContent(node);
 
@@ -863,20 +863,20 @@ void index_value_of(struct filter_info *tinfo,
 
 
 /* DOM filter style indexing */
-void set_record_info(struct filter_info *tinfo, 
-                     struct recExtractCtrl *recctr, 
-                     xmlChar * id_p, 
-                     xmlChar * rank_p, 
-                     xmlChar * type_p)
+static void set_record_info(struct filter_info *tinfo, 
+                            struct recExtractCtrl *recctr, 
+                            xmlChar * id_p, 
+                            xmlChar * rank_p, 
+                            xmlChar * type_p)
 {
     printf("RECORD id=%s rank=%s type=%s\n", id_p, rank_p, type_p);
 }
 
 
 /* DOM filter style indexing */
-void process_xml_element_zebra_node(struct filter_info *tinfo, 
-                                    struct recExtractCtrl *recctr, 
-                                    xmlNodePtr node)
+static void process_xml_element_zebra_node(struct filter_info *tinfo, 
+                                           struct recExtractCtrl *recctr, 
+                                           xmlNodePtr node)
 {
     if (node->type == XML_ELEMENT_NODE 
         && node->ns && 0 == XML_STRCMP(node->ns->href, zebra_xslt_ns)){
@@ -938,10 +938,10 @@ void process_xml_element_zebra_node(struct filter_info *tinfo,
 
 
 /* DOM filter style indexing */
-void process_xml_pi_node(struct filter_info *tinfo, 
-                         struct recExtractCtrl *recctr, 
-                         xmlNodePtr node,
-                         xmlChar **index_pp)
+static void process_xml_pi_node(struct filter_info *tinfo, 
+                                struct recExtractCtrl *recctr, 
+                                xmlNodePtr node,
+                                xmlChar **index_pp)
 {
 
     /* printf("PI     %s\n", xmlGetNodePath(node)); */
@@ -1031,9 +1031,9 @@ void process_xml_pi_node(struct filter_info *tinfo,
 }
 
 /* DOM filter style indexing */
-void process_xml_element_node(struct filter_info *tinfo, 
-                              struct recExtractCtrl *recctr, 
-                              xmlNodePtr node)
+static void process_xml_element_node(struct filter_info *tinfo, 
+                                     struct recExtractCtrl *recctr, 
+                                     xmlNodePtr node)
 {
     /* remember indexing instruction from PI to next element node */
     xmlChar *index_p = 0;
@@ -1066,9 +1066,9 @@ void process_xml_element_node(struct filter_info *tinfo,
 
 
 /* DOM filter style indexing */
-void extract_dom_doc_node(struct filter_info *tinfo, 
-                          struct recExtractCtrl *recctr, 
-                          xmlDocPtr doc)
+static void extract_dom_doc_node(struct filter_info *tinfo, 
+                                 struct recExtractCtrl *recctr, 
+                                 xmlDocPtr doc)
 {
     /* printf("DOC    %s\n", xmlGetNodePath((xmlNodePtr)doc)); */
 
