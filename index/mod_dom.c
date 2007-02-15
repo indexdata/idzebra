@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.14 2007-02-15 14:44:48 marc Exp $
+/* $Id: mod_dom.c,v 1.15 2007-02-15 15:08:41 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -674,7 +674,8 @@ static int attr_content_xml(struct _xmlAttr *attr, const char *name,
 
 /* DOM filter style indexing */
 static void index_value_of(struct filter_info *tinfo, 
-                           struct recExtractCtrl *extctr, 
+                           struct recExtractCtrl *extctr,
+                           RecWord* recword, 
                            xmlNodePtr node, 
                            xmlChar * index_p)
 {
@@ -693,10 +694,8 @@ static void index_value_of(struct filter_info *tinfo,
             xmlChar type[256];
 
             /* assingning text to be indexed */
-            RecWord recWord;
-            (*extctr->init)(extctr, &recWord);
-            recWord.term_buf = (const char *)text;
-            recWord.term_len = text_len;
+            recword->term_buf = (const char *)text;
+            recword->term_len = text_len;
 
             /* parsing all index name/type pairs */
             /* may not start with ' ' or ':' */
@@ -734,10 +733,10 @@ static void index_value_of(struct filter_info *tinfo,
                         "INDEX  '%s:%s' '%s'", 
                         tinfo->fname, index, type, text);
 
-                recWord.index_name = (const char *)index;
+                recword->index_name = (const char *)index;
                 if (type && *type)
-                    recWord.index_type = *type;
-                (extctr->tokenAdd)(&recWord);
+                    recword->index_type = *type;
+                (extctr->tokenAdd)(recword);
 
                 /* eat whitespaces */
                 if (*look && ' ' == *look && *(look+1)){
@@ -768,7 +767,7 @@ static void set_record_info(struct filter_info *tinfo,
         extctr->staticrank = atozint((const char *)rank_p);
 
     /*     if (!strcmp("update", type_str)) */
-    /*         index_node(tinfo, ctrl, ptr, recWord); */
+    /*         index_node(tinfo, ctrl, ptr, recword); */
     /*     else if (!strcmp("delete", type_str)) */
     /*         yaz_log(YLOG_WARN, "dom filter delete: to be implemented"); */
     /*     else */
@@ -781,6 +780,7 @@ static void set_record_info(struct filter_info *tinfo,
 /* DOM filter style indexing */
 static void process_xml_element_zebra_node(struct filter_info *tinfo, 
                                            struct recExtractCtrl *extctr, 
+                                           RecWord* recword, 
                                            xmlNodePtr node)
 {
     if (node->type == XML_ELEMENT_NODE 
@@ -792,7 +792,7 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
             struct _xmlAttr *attr;      
             for (attr = node->properties; attr; attr = attr->next){
                 if (attr_content_xml(attr, "name", &index_p)){
-                    index_value_of(tinfo, extctr, node, index_p);        
+                    index_value_of(tinfo, extctr, recword,node, index_p);
                 }  
                 else
                     yaz_log(YLOG_WARN,"%s dom filter: "
@@ -933,16 +933,15 @@ static void process_xml_pi_node(struct filter_info *tinfo,
 /* DOM filter style indexing */
 static void process_xml_element_node(struct filter_info *tinfo, 
                                      struct recExtractCtrl *extctr, 
+                                     RecWord* recword, 
                                      xmlNodePtr node)
 {
     /* remember indexing instruction from PI to next element node */
     xmlChar *index_p = 0;
 
-    /* yaz_log(YLOG_DEBUG,"ELEM   %s\n", xmlGetNodePath(node)); */
-
     /* check if we are an element node in the special zebra namespace 
        and either set record data or index value-of node content*/
-    process_xml_element_zebra_node(tinfo, extctr, node);
+    process_xml_element_zebra_node(tinfo, extctr, recword, node);
   
     /* loop through kid nodes */
     for (node = node->children; node; node = node->next)
@@ -954,10 +953,10 @@ static void process_xml_element_node(struct filter_info *tinfo,
             else if (node->type == XML_ELEMENT_NODE){
                 /* if there was a PI index instruction before this element */
                 if (index_p){
-                    index_value_of(tinfo, extctr, node, index_p);            
+                    index_value_of(tinfo, extctr, recword, node, index_p);
                     index_p = 0;
                 }
-                process_xml_element_node(tinfo, extctr, node);
+                process_xml_element_node(tinfo, extctr, recword,node);
             }
             else
                 continue;
@@ -970,17 +969,20 @@ static void extract_dom_doc_node(struct filter_info *tinfo,
                                  struct recExtractCtrl *extctr, 
                                  xmlDocPtr doc)
 {
-    /* yaz_log(YLOG_DEBUG,"DOC    %s\n", xmlGetNodePath((xmlNodePtr)doc)); */
-
     xmlChar *buf_out;
     int len_out;
+
+    /* only need to do the initialization once, reuse recword for all terms */
+    RecWord recword;
+    (*extctr->init)(extctr, &recword);
+
     if (extctr->flagShowRecords){
         xmlDocDumpMemory(doc, &buf_out, &len_out);
         fwrite(buf_out, len_out, 1, stdout);
         xmlFree(buf_out);
     }
 
-    process_xml_element_node(tinfo, extctr, (xmlNodePtr)doc);
+    process_xml_element_node(tinfo, extctr, &recword, (xmlNodePtr)doc);
 }
 
 
