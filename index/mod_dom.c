@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.13 2007-02-15 14:33:41 marc Exp $
+/* $Id: mod_dom.c,v 1.14 2007-02-15 14:44:48 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -41,12 +41,6 @@
 
 #include <idzebra/util.h>
 #include <idzebra/recctrl.h>
-
-
-
-/* Alvis style indexing */
-#define ZEBRA_SCHEMA_XSLT_NS "http://indexdata.dk/zebra/xslt/1"
-static const char *zebra_xslt_ns = ZEBRA_SCHEMA_XSLT_NS;
 
 /* DOM filter style indexing */
 #define ZEBRA_DOM_NS "http://indexdata.com/zebra-2.0"
@@ -661,144 +655,6 @@ static int ioread_ex(void *context, char *buffer, int len)
 static int ioclose_ex(void *context)
 {
     return 0;
-}
-
-
-
-/* Alvis style indexing */
-static void index_cdata(struct filter_info *tinfo, struct recExtractCtrl *ctrl,
-			xmlNodePtr ptr,	RecWord *recWord)
-{
-    for(; ptr; ptr = ptr->next)
-        {
-            index_cdata(tinfo, ctrl, ptr->children, recWord);
-            if (ptr->type != XML_TEXT_NODE)
-                continue;
-            recWord->term_buf = (const char *)ptr->content;
-            recWord->term_len = XML_STRLEN(ptr->content);
-            (*ctrl->tokenAdd)(recWord);
-        }
-}
-
-/* Alvis style indexing */
-static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
-		       xmlNodePtr ptr, RecWord *recWord)
-{
-    for(; ptr; ptr = ptr->next)
-        {
-            index_node(tinfo, ctrl, ptr->children, recWord);
-            if (ptr->type != XML_ELEMENT_NODE || !ptr->ns ||
-                XML_STRCMP(ptr->ns->href, zebra_xslt_ns))
-                continue;
-            if (!XML_STRCMP(ptr->name, "index"))
-                {
-                    const char *name_str = 0;
-                    const char *type_str = 0;
-                    const char *xpath_str = 0;
-                    struct _xmlAttr *attr;
-                    for (attr = ptr->properties; attr; attr = attr->next)
-                        {
-                            if (attr_content(attr, "name", &name_str))
-                                ;
-                            else if (attr_content(attr, "xpath", &xpath_str))
-                                ;
-                            else if (attr_content(attr, "type", &type_str))
-                                ;
-                            else
-                                yaz_log(YLOG_WARN, "%s: dom filter: "
-                                        "bad attribute %s for <index>",
-                                        tinfo->fname, attr->name);
-                        }
-                    if (name_str)
-                        {
-                            /* save default type */
-                            int prev_type = recWord->index_type; 
-
-                            /* type was given */
-                            if (type_str && *type_str)
-                                recWord->index_type = *type_str; 
-
-                            recWord->index_name = name_str;
-                            index_cdata(tinfo, ctrl, ptr->children, recWord);
-
-                            /* restore it again */
-                            recWord->index_type = prev_type;     
-                        }
-                }
-        }
-}
-
-/* Alvis style indexing */
-static void index_record(struct filter_info *tinfo,struct recExtractCtrl *ctrl,
-			 xmlNodePtr ptr, RecWord *recWord)
-{
-    const char *type_str = "update";
-
-    if (ptr && ptr->type == XML_ELEMENT_NODE && ptr->ns &&
-	!XML_STRCMP(ptr->ns->href, zebra_xslt_ns)
-	&& !XML_STRCMP(ptr->name, "record"))
-        {
-            const char *id_str = 0;
-            const char *rank_str = 0;
-            struct _xmlAttr *attr;
-            for (attr = ptr->properties; attr; attr = attr->next)
-                {
-                    if (attr_content(attr, "type", &type_str))
-                        ;
-                    else if (attr_content(attr, "id", &id_str))
-                        ;
-                    else if (attr_content(attr, "rank", &rank_str))
-                        ;
-                    else
-                        yaz_log(YLOG_WARN, "%s: dom filter: "
-                                "bad attribute %s for <record>",
-                                tinfo->fname, attr->name);
-                }
-            if (id_str)
-                sscanf(id_str, "%255s", ctrl->match_criteria);
-
-            if (rank_str)
-                ctrl->staticrank = atozint(rank_str);
-            ptr = ptr->children;
-        }
-
-    if (!strcmp("update", type_str))
-        index_node(tinfo, ctrl, ptr, recWord);
-    else if (!strcmp("delete", type_str))
-        yaz_log(YLOG_WARN, "%s dom filter: "
-                "delete: to be implemented");
-    else
-        yaz_log(YLOG_WARN, "dom filter: "
-                "unknown record type '%s'", 
-                type_str);
-}
-
-
-/* Alvis style indexing */
-static void extract_doc_alvis(struct filter_info *tinfo, 
-                              struct recExtractCtrl *extctr, 
-                              xmlDocPtr doc)
-{
-    if (doc){
-        RecWord recWord;
-        xmlChar *buf_out;
-        int len_out;
-        xmlNodePtr root_ptr;
-
-        (*extctr->init)(extctr, &recWord);
-        
-	if (extctr->flagShowRecords){
-            xmlDocDumpMemory(doc, &buf_out, &len_out);
-	    fwrite(buf_out, len_out, 1, stdout);
-	    xmlFree(buf_out);
-	}
-	root_ptr = xmlDocGetRootElement(doc);
-	if (root_ptr)
-	    index_record(tinfo, extctr, root_ptr, &recWord);
-        else
-            yaz_log(YLOG_WARN, "%s dom filter: "
-                    "No root for index XML record");
-    }
 }
 
 
