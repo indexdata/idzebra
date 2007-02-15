@@ -1,8 +1,7 @@
 <dom>
-  <!-- $Id: dom-config-col.xml,v 1.2 2007-02-13 11:37:03 marc Exp $ -->
+  <!-- $Id: dom-config-col.xml,v 1.3 2007-02-15 13:01:00 marc Exp $ -->
   <extract name="index">
-      <!-- <xslt stylesheet="dom-index.xsl"/> -->
-      <xslt stylesheet="index.xsl"/>
+      <xslt stylesheet="dom-index-pi.xsl"/>
   </extract>
   <retrieve name="F">
     <xslt stylesheet="id.xsl"/>
@@ -11,5 +10,3 @@
     <xmlreader level="1"/>
   </input>
 </dom>
-
-   

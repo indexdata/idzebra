@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.11 2007-02-14 16:43:37 marc Exp $
+/* $Id: mod_dom.c,v 1.12 2007-02-15 13:01:00 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -41,6 +41,22 @@
 
 #include <idzebra/util.h>
 #include <idzebra/recctrl.h>
+
+
+
+/* Alvis style indexing */
+#define ZEBRA_SCHEMA_XSLT_NS "http://indexdata.dk/zebra/xslt/1"
+static const char *zebra_xslt_ns = ZEBRA_SCHEMA_XSLT_NS;
+
+/* DOM filter style indexing */
+#define ZEBRA_DOM_NS "http://indexdata.com/zebra-2.0"
+static const char *zebra_dom_ns = ZEBRA_DOM_NS;
+
+/* DOM filter style indexing */
+#define ZEBRA_PI_NAME "zebra-2.0"
+static const char *zebra_pi_name = ZEBRA_PI_NAME;
+
+
 
 struct convert_s {
     const char *stylesheet;
@@ -638,9 +654,6 @@ static int ioclose_ex(void *context)
 }
 
 
-/* Alvis style indexing */
-#define ZEBRA_SCHEMA_XSLT_NS "http://indexdata.dk/zebra/xslt/1"
-static const char *zebra_xslt_ns = ZEBRA_SCHEMA_XSLT_NS;
 
 /* Alvis style indexing */
 static void index_cdata(struct filter_info *tinfo, struct recExtractCtrl *ctrl,
@@ -752,7 +765,7 @@ static void index_record(struct filter_info *tinfo,struct recExtractCtrl *ctrl,
 
 /* Alvis style indexing */
 static void extract_doc_alvis(struct filter_info *tinfo, 
-                              struct recExtractCtrl *recctr, 
+                              struct recExtractCtrl *extctr, 
                               xmlDocPtr doc)
 {
     if (doc){
@@ -761,16 +774,16 @@ static void extract_doc_alvis(struct filter_info *tinfo,
         int len_out;
         xmlNodePtr root_ptr;
 
-        (*recctr->init)(recctr, &recWord);
+        (*extctr->init)(extctr, &recWord);
         
-	if (recctr->flagShowRecords){
+	if (extctr->flagShowRecords){
             xmlDocDumpMemory(doc, &buf_out, &len_out);
 	    fwrite(buf_out, len_out, 1, stdout);
 	    xmlFree(buf_out);
 	}
 	root_ptr = xmlDocGetRootElement(doc);
 	if (root_ptr)
-	    index_record(tinfo, recctr, root_ptr, &recWord);
+	    index_record(tinfo, extctr, root_ptr, &recWord);
         else
             yaz_log(YLOG_WARN, "No root for index XML record");
     }
@@ -790,96 +803,116 @@ static int attr_content_xml(struct _xmlAttr *attr, const char *name,
     return 0;
 }
 
-/* DOM filter style indexing */
-/* #define ZEBRA_XSLT_NS "http://indexdata.com/zebra-2.0" */
-/* static const char *zebra_xslt_ns = ZEBRA_XSLT_NS; */
-
-/* DOM filter style indexing */
-#define ZEBRA_PI_NAME "zebra-2.0"
-static const char *zebra_pi_name = ZEBRA_PI_NAME;
-
 
 /* DOM filter style indexing */
 static void index_value_of(struct filter_info *tinfo, 
-                           struct recExtractCtrl *recctr, 
+                           struct recExtractCtrl *extctr, 
                            xmlNodePtr node, 
                            xmlChar * index_p)
 {
     xmlChar *text = xmlNodeGetContent(node);
+    size_t text_len = strlen((const char *)text);
 
-    xmlChar *look = index_p;
-    xmlChar *bval;
-    xmlChar *eval;
 
-    xmlChar index[256];
-    xmlChar type[256];
+    /* if there is no text, we do not need to proceed */
+    if (text_len)
+        {            
+            xmlChar *look = index_p;
+            xmlChar *bval;
+            xmlChar *eval;
 
-    /* parsing all index name/type pairs - may not start with ' ' or ':' */
-    while (*look && ' ' != *look && ':' != *look){
+            xmlChar index[256];
+            xmlChar type[256];
+
+            /* assingning text to be indexed */
+            RecWord recWord;
+            (*extctr->init)(extctr, &recWord);
+            recWord.term_buf = (const char *)text;
+            recWord.term_len = text_len;
+
+            /* parsing all index name/type pairs */
+            /* may not start with ' ' or ':' */
+            while (*look && ' ' != *look && ':' != *look){
     
-        /* setting name and type to zero */
-        *index = '\0';
-        *type = '\0';
+                /* setting name and type to zero */
+                *index = '\0';
+                *type = '\0';
     
-        /* parsing one index name */
-        bval = look;
-        while (*look && ':' != *look && ' ' != *look){
-            look++;
-        }
-        eval = look;
-        strncpy((char *)index, (const char *)bval, eval - bval);
-        index[eval - bval] = '\0';
+                /* parsing one index name */
+                bval = look;
+                while (*look && ':' != *look && ' ' != *look){
+                    look++;
+                }
+                eval = look;
+                strncpy((char *)index, (const char *)bval, eval - bval);
+                index[eval - bval] = '\0';
     
     
-        /* parsing one index type, if existing */
-        if (':' == *look){
-            look++;
+                /* parsing one index type, if existing */
+                if (':' == *look){
+                    look++;
       
-            bval = look;
-            while (*look && ' ' != *look){
-                look++;
+                    bval = look;
+                    while (*look && ' ' != *look){
+                        look++;
+                    }
+                    eval = look;
+                    strncpy((char *)type, (const char *)bval, eval - bval);
+                    type[eval - bval] = '\0';
+                }
+
+                /* actually indexing the text given */
+                /* printf("INDEX  '%s:%s' '%s'\n", index, type, text); */
+
+                recWord.index_name = (const char *)index;
+                if (type && *type)
+                    recWord.index_type = *type;
+                (extctr->tokenAdd)(&recWord);
+
+                /* eat whitespaces */
+                if (*look && ' ' == *look && *(look+1)){
+                    look++;
+                } 
             }
-            eval = look;
-            strncpy((char *)type, (const char *)bval, eval - bval);
-            type[eval - bval] = '\0';
         }
-
-        printf("INDEX  '%s:%s' '%s'\n", index, type, text);
     
-        if (*look && ' ' == *look && *(look+1)){
-            look++;
-        } 
-    }
-
-    xmlFree(text);
-
-    /*   //recWord->term_buf = (const char *)ptr->content; */
-    /*   //recWord->term_len = XML_STRLEN(ptr->content); */
-    /*   //  if (type_str && *type_str) */
-    /*   //  recWord->index_type = *type_str; /\* type was given *\/ */
-    /*   //  recWord->index_name = name_str; */
-    /*   // recWord->index_type = prev_type;     /\* restore it again *\/ */
+    xmlFree(text); 
 }
 
 
 /* DOM filter style indexing */
 static void set_record_info(struct filter_info *tinfo, 
-                            struct recExtractCtrl *recctr, 
+                            struct recExtractCtrl *extctr, 
                             xmlChar * id_p, 
                             xmlChar * rank_p, 
                             xmlChar * type_p)
 {
     printf("RECORD id=%s rank=%s type=%s\n", id_p, rank_p, type_p);
+    
+    if (id_p)
+        sscanf((const char *)id_p, "%255s", extctr->match_criteria);
+
+    if (rank_p)
+        extctr->staticrank = atozint((const char *)rank_p);
+
+    /*     if (!strcmp("update", type_str)) */
+    /*         index_node(tinfo, ctrl, ptr, recWord); */
+    /*     else if (!strcmp("delete", type_str)) */
+    /*         yaz_log(YLOG_WARN, "dom filter delete: to be implemented"); */
+    /*     else */
+    /*         yaz_log(YLOG_WARN, "dom filter: unknown record type '%s'",  */
+    /*                 type_str); */
+
 }
 
 
 /* DOM filter style indexing */
 static void process_xml_element_zebra_node(struct filter_info *tinfo, 
-                                           struct recExtractCtrl *recctr, 
+                                           struct recExtractCtrl *extctr, 
                                            xmlNodePtr node)
 {
     if (node->type == XML_ELEMENT_NODE 
-        && node->ns && 0 == XML_STRCMP(node->ns->href, zebra_xslt_ns)){
+        && node->ns && 0 == XML_STRCMP(node->ns->href, zebra_dom_ns)){
     
         if (0 == XML_STRCMP(node->name, "index")){
             xmlChar *index_p = 0;
@@ -887,7 +920,7 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
             struct _xmlAttr *attr;      
             for (attr = node->properties; attr; attr = attr->next){
                 if (attr_content_xml(attr, "name", &index_p)){
-                    index_value_of(tinfo, recctr, node, index_p);        
+                    index_value_of(tinfo, extctr, node, index_p);        
                 }  
                 else
                     // printf("%s: dom filter: s% bad attribute %s",
@@ -924,13 +957,13 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
           
 
             }
-            set_record_info(tinfo, recctr, id_p, rank_p, type_p);
+            set_record_info(tinfo, extctr, id_p, rank_p, type_p);
         } else {
             //  printf("%s: dom filter: s% bad attribute %s",
             //  tinfo->fname, xmlGetNodePath(node)), nodeattr->name);
             printf("dom filter: %s bad element <%s>,"
                    " expected <record>|<index> in namespace '%s'\n",
-                   xmlGetNodePath(node), node->name, zebra_xslt_ns);
+                   xmlGetNodePath(node), node->name, zebra_dom_ns);
       
         }
     }
@@ -939,7 +972,7 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
 
 /* DOM filter style indexing */
 static void process_xml_pi_node(struct filter_info *tinfo, 
-                                struct recExtractCtrl *recctr, 
+                                struct recExtractCtrl *extctr, 
                                 xmlNodePtr node,
                                 xmlChar **index_pp)
 {
@@ -1005,7 +1038,7 @@ static void process_xml_pi_node(struct filter_info *tinfo,
                         xmlGetNodePath(node), pi_p, look);
             } else {
                 /* set_record_info(id, rank, type); */
-                set_record_info(tinfo, recctr, id, rank, 0);
+                set_record_info(tinfo, extctr, id, rank, 0);
             }
 
         } 
@@ -1032,7 +1065,7 @@ static void process_xml_pi_node(struct filter_info *tinfo,
 
 /* DOM filter style indexing */
 static void process_xml_element_node(struct filter_info *tinfo, 
-                                     struct recExtractCtrl *recctr, 
+                                     struct recExtractCtrl *extctr, 
                                      xmlNodePtr node)
 {
     /* remember indexing instruction from PI to next element node */
@@ -1042,22 +1075,22 @@ static void process_xml_element_node(struct filter_info *tinfo,
 
     /* check if we are an element node in the special zebra namespace 
        and either set record data or index value-of node content*/
-    process_xml_element_zebra_node(tinfo, recctr, node);
+    process_xml_element_zebra_node(tinfo, extctr, node);
   
     /* loop through kid nodes */
     for (node = node->children; node; node = node->next)
         {
             /* check and set PI record and index index instructions */
             if (node->type == XML_PI_NODE){
-                process_xml_pi_node(tinfo, recctr, node, &index_p);
+                process_xml_pi_node(tinfo, extctr, node, &index_p);
             }
             else if (node->type == XML_ELEMENT_NODE){
                 /* if there was a PI index instruction before this element */
                 if (index_p){
-                    index_value_of(tinfo, recctr, node, index_p);            
+                    index_value_of(tinfo, extctr, node, index_p);            
                     index_p = 0;
                 }
-                process_xml_element_node(tinfo, recctr, node);
+                process_xml_element_node(tinfo, extctr, node);
             }
             else
                 continue;
@@ -1067,12 +1100,20 @@ static void process_xml_element_node(struct filter_info *tinfo,
 
 /* DOM filter style indexing */
 static void extract_dom_doc_node(struct filter_info *tinfo, 
-                                 struct recExtractCtrl *recctr, 
+                                 struct recExtractCtrl *extctr, 
                                  xmlDocPtr doc)
 {
     /* printf("DOC    %s\n", xmlGetNodePath((xmlNodePtr)doc)); */
 
-    process_xml_element_node(tinfo, recctr, (xmlNodePtr)doc);
+    xmlChar *buf_out;
+    int len_out;
+    if (extctr->flagShowRecords){
+        xmlDocDumpMemory(doc, &buf_out, &len_out);
+        fwrite(buf_out, len_out, 1, stdout);
+        xmlFree(buf_out);
+    }
+
+    process_xml_element_node(tinfo, extctr, (xmlNodePtr)doc);
 }
 
 
@@ -1084,7 +1125,6 @@ static int convert_extract_doc(struct filter_info *tinfo,
                                xmlDocPtr doc)
 
 {
-    /* RecWord recWord; */
     xmlChar *buf_out;
     int len_out;
     const char *params[10];
@@ -1092,7 +1132,7 @@ static int convert_extract_doc(struct filter_info *tinfo,
     xmlDocPtr store_doc = 0;
 
     params[0] = 0;
-    set_param_str(params, "schema", zebra_xslt_ns, tinfo->odr_record);
+    set_param_str(params, "schema", zebra_dom_ns, tinfo->odr_record);
 
     /* input conversion */
     perform_convert(tinfo, input->convert, params, &doc, 0);
@@ -1124,7 +1164,7 @@ static int convert_extract_doc(struct filter_info *tinfo,
     /* finally, do the indexing */
     if (doc){
         extract_dom_doc_node(tinfo, p, doc);
-        extract_doc_alvis(tinfo, p, doc);
+        /* extract_doc_alvis(tinfo, p, doc); */
 	xmlFreeDoc(doc);
     }
 
@@ -1295,7 +1335,7 @@ static int ioclose_ret(void *context)
 
 static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
-    /* const char *esn = zebra_xslt_ns; */
+    /* const char *esn = zebra_dom_ns; */
     const char *esn = 0;
     const char *params[32];
     struct filter_info *tinfo = clientData;

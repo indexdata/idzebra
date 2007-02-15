@@ -2,7 +2,7 @@
   xmlns:m="http://www.loc.gov/MARC21/slim"
   exclude-result-prefixes="m"
   version="1.0">
-  <!-- $Id: dom-index.xsl,v 1.2 2007-02-13 11:37:03 marc Exp $ -->
+  <!-- $Id: dom-index-pi.xsl,v 1.1 2007-02-15 13:01:00 marc Exp $ -->
   <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
   
 
@@ -29,9 +29,9 @@
 
   <xsl:template match="m:controlfield[@tag='001']">
 
+    <xsl:processing-instruction 
+        name="zebra-2.0">index control:w</xsl:processing-instruction>
     <control>
-      <xsl:processing-instruction 
-          name="zebra-2.0">index control</xsl:processing-instruction>
       <xsl:value-of select="normalize-space(.)"/>
     </control>
   </xsl:template>
@@ -42,8 +42,6 @@
     <title>
         <xsl:value-of select="."/>
     </title>
-    <!-- comment -->
-    <?zebra-2.0 xyz?>
   </xsl:template>
 
 </xsl:stylesheet>

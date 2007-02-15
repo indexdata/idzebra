@@ -1,7 +1,7 @@
 <dom>
-  <!-- $Id: dom-config-marc.xml,v 1.1 2007-02-07 12:08:54 adam Exp $ -->
+  <!-- $Id: dom-config-marc.xml,v 1.2 2007-02-15 13:01:00 marc Exp $ -->
   <extract name="index">
-      <xslt stylesheet="index.xsl"/>
+      <xslt stylesheet="dom-index-element.xsl"/>
   </extract>
   <retrieve name="F">
     <xslt stylesheet="id.xsl"/>
