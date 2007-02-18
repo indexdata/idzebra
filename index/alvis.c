@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.12 2007-02-12 10:33:51 adam Exp $
+/* $Id: alvis.c,v 1.13 2007-02-18 21:50:52 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -345,6 +345,7 @@ static void filter_destroy(void *clientData)
 {
     struct filter_info *tinfo = clientData;
     destroy_schemas(tinfo);
+    xfree(tinfo->full_name);
     if (tinfo->reader)
 	xmlFreeTextReader(tinfo->reader);
     odr_destroy(tinfo->odr);
