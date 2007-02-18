@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.15 2007-02-15 15:08:41 marc Exp $
+/* $Id: mod_dom.c,v 1.16 2007-02-18 21:53:22 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -164,68 +164,68 @@ static int attr_content(struct _xmlAttr *attr, const char *name,
 {
     if (!XML_STRCMP(attr->name, name) && attr->children 
         && attr->children->type == XML_TEXT_NODE)
-        {
-            *dst_content = (const char *)(attr->children->content);
-            return 1;
-        }
+    {
+        *dst_content = (const char *)(attr->children->content);
+        return 1;
+    }
     return 0;
 }
 
 static void destroy_xsp(struct convert_s *c)
 {
     while(c)
-        {
-            if (c->stylesheet_xsp)
-                xsltFreeStylesheet(c->stylesheet_xsp);
-            c = c->next;
-        }
+    {
+        if (c->stylesheet_xsp)
+            xsltFreeStylesheet(c->stylesheet_xsp);
+        c = c->next;
+    }
 }
 
 static void destroy_dom(struct filter_info *tinfo)
 {
     if (tinfo->extract)
-        {
-            destroy_xsp(tinfo->extract->convert);
-            tinfo->extract = 0;
-        }
+    {
+        destroy_xsp(tinfo->extract->convert);
+        tinfo->extract = 0;
+    }
     if (tinfo->store)
-        {
-            destroy_xsp(tinfo->store->convert);
-            tinfo->store = 0;
-        }
+    {
+        destroy_xsp(tinfo->store->convert);
+        tinfo->store = 0;
+    }
     if (tinfo->input_list)
+    {
+        struct filter_input *i_ptr;
+        for (i_ptr = tinfo->input_list; i_ptr; i_ptr = i_ptr->next)
         {
-            struct filter_input *i_ptr;
-            for (i_ptr = tinfo->input_list; i_ptr; i_ptr = i_ptr->next)
-                {
-                    switch(i_ptr->type)
-                        {
-                        case DOM_INPUT_XMLREADER:
-                            if (i_ptr->u.xmlreader.reader)
-                                xmlFreeTextReader(i_ptr->u.xmlreader.reader);
-                            break;
-                        case DOM_INPUT_MARC:
-                            yaz_iconv_close(i_ptr->u.marc.iconv);
-                            yaz_marc_destroy(i_ptr->u.marc.handle);
-                            break;
-                        }
-                    destroy_xsp(i_ptr->convert);
-                }
-            tinfo->input_list = 0;
+            switch(i_ptr->type)
+            {
+            case DOM_INPUT_XMLREADER:
+                if (i_ptr->u.xmlreader.reader)
+                    xmlFreeTextReader(i_ptr->u.xmlreader.reader);
+                break;
+            case DOM_INPUT_MARC:
+                yaz_iconv_close(i_ptr->u.marc.iconv);
+                yaz_marc_destroy(i_ptr->u.marc.handle);
+                break;
+            }
+            destroy_xsp(i_ptr->convert);
         }
+        tinfo->input_list = 0;
+    }
     if (tinfo->retrieve_list)
-        {
-            struct filter_retrieve *r_ptr;
-            for (r_ptr = tinfo->retrieve_list; r_ptr; r_ptr = r_ptr->next)
-                destroy_xsp(r_ptr->convert);
-            tinfo->retrieve_list = 0;
-        }
+    {
+        struct filter_retrieve *r_ptr;
+        for (r_ptr = tinfo->retrieve_list; r_ptr; r_ptr = r_ptr->next)
+            destroy_xsp(r_ptr->convert);
+        tinfo->retrieve_list = 0;
+    }
 
     if (tinfo->doc_config)
-        {
-            xmlFreeDoc(tinfo->doc_config);
-            tinfo->doc_config = 0;
-        }
+    {
+        xmlFreeDoc(tinfo->doc_config);
+        tinfo->doc_config = 0;
+    }
     odr_reset(tinfo->odr_config);
 }
 
@@ -234,77 +234,84 @@ static ZEBRA_RES parse_convert(struct filter_info *tinfo, xmlNodePtr ptr,
 {
     *l = 0;
     for(; ptr; ptr = ptr->next)
+    {
+        if (ptr->type != XML_ELEMENT_NODE)
+            continue;
+        if (!XML_STRCMP(ptr->name, "xslt"))
         {
-            if (ptr->type != XML_ELEMENT_NODE)
-                continue;
-            if (!XML_STRCMP(ptr->name, "xslt"))
+            struct _xmlAttr *attr;
+            struct convert_s *p 
+                = odr_malloc(tinfo->odr_config, sizeof(*p));
+            
+            p->next = 0;
+            p->stylesheet = 0;
+            p->stylesheet_xsp = 0;
+            
+            for (attr = ptr->properties; attr; attr = attr->next)
+                if (attr_content(attr, "stylesheet", &p->stylesheet))
+                    ;
+                else
                 {
-                    struct _xmlAttr *attr;
-                    struct convert_s *p 
-                        = odr_malloc(tinfo->odr_config, sizeof(*p));
-
-                    p->next = 0;
-                    p->stylesheet = 0;
-                    p->stylesheet_xsp = 0;
-
-                    for (attr = ptr->properties; attr; attr = attr->next)
-                        if (attr_content(attr, "stylesheet", &p->stylesheet))
-                            ;
-                        else
-                            yaz_log(YLOG_WARN, "%s: dom filter: "
-                                    "%s bad attribute @%s, "
-                                    "expected @stylesheet",
-                                    tinfo->fname, 
-                                    xmlGetNodePath(ptr), attr->name);
-                    if (p->stylesheet)
-                        {
-                            char tmp_xslt_full_name[1024];
-                            if (!yaz_filepath_resolve(p->stylesheet, 
-                                                      tinfo->profile_path,
-                                                      NULL, 
-                                                      tmp_xslt_full_name))
-                                {
-                                    yaz_log(YLOG_WARN, "%s: dom filter: "
-                                            "stylesheet %s not found in "
-                                            "path %s",
-                                            tinfo->fname,
-                                            p->stylesheet, 
-                                            tinfo->profile_path);
-                                    return ZEBRA_FAIL;
-                                }
-                
-                            p->stylesheet_xsp
-                                = xsltParseStylesheetFile((const xmlChar*) 
-                                                          tmp_xslt_full_name);
-                            if (!p->stylesheet_xsp)
-                                {
-                                    yaz_log(YLOG_WARN, "%s: dom filter: "
-                                            "could not parse xslt "
-                                            "stylesheet %s",
-                                            tinfo->fname, tmp_xslt_full_name);
-                                    return ZEBRA_FAIL;
-                                }
-                        }
-                    else
-                        {
-                            yaz_log(YLOG_WARN, "%s: dom filter: "
-                                    "%s missing attribute 'stylesheet' ", 
-                                    tinfo->fname, xmlGetNodePath(ptr));
-                            return ZEBRA_FAIL;
-                        }
-                    *l = p;
-                    l = &p->next;
+                    xmlChar *node_path = xmlGetNodePath(ptr);
+                    yaz_log(YLOG_WARN, "%s: dom filter: "
+                            "%s bad attribute @%s, "
+                            "expected @stylesheet",
+                            tinfo->fname, 
+                            node_path, attr->name);
+                    xmlFree(node_path);
                 }
-            else
+            if (p->stylesheet)
+            {
+                char tmp_xslt_full_name[1024];
+                if (!yaz_filepath_resolve(p->stylesheet, 
+                                          tinfo->profile_path,
+                                          NULL, 
+                                          tmp_xslt_full_name))
                 {
-                    yaz_log(YLOG_LOG, 
-                            "%s: dom filter: "
-                            "%s bad node '%s'",
-                            tinfo->fname, xmlGetNodePath(ptr), ptr->name);
+                    yaz_log(YLOG_WARN, "%s: dom filter: "
+                            "stylesheet %s not found in "
+                            "path %s",
+                            tinfo->fname,
+                            p->stylesheet, 
+                            tinfo->profile_path);
                     return ZEBRA_FAIL;
                 }
-        
+                
+                p->stylesheet_xsp
+                    = xsltParseStylesheetFile((const xmlChar*) 
+                                              tmp_xslt_full_name);
+                if (!p->stylesheet_xsp)
+                {
+                    yaz_log(YLOG_WARN, "%s: dom filter: "
+                            "could not parse xslt "
+                            "stylesheet %s",
+                            tinfo->fname, tmp_xslt_full_name);
+                    return ZEBRA_FAIL;
+                }
+            }
+            else
+            {
+                xmlChar *node_path = xmlGetNodePath(ptr);
+                yaz_log(YLOG_WARN, "%s: dom filter: "
+                        "%s missing attribute 'stylesheet' ", 
+                        tinfo->fname, node_path);
+                xmlFree(node_path);
+                return ZEBRA_FAIL;
+            }
+            *l = p;
+            l = &p->next;
         }
+        else
+        {
+            xmlChar *node_path = xmlGetNodePath(ptr);
+            yaz_log(YLOG_LOG, 
+                    "%s: dom filter: "
+                    "%s bad node '%s'",
+                    tinfo->fname, node_path, ptr->name);
+            xmlFree(node_path);
+            return ZEBRA_FAIL;
+        }
+    }
     return ZEBRA_OK;
 }
 
@@ -315,14 +322,14 @@ static ZEBRA_RES perform_convert(struct filter_info *tinfo,
                                  xsltStylesheetPtr *last_xsp)
 {
     for (; convert; convert = convert->next)
-        {
-            xmlDocPtr res_doc = xsltApplyStylesheet(convert->stylesheet_xsp,
-                                                    *doc, params);
-            if (last_xsp)
-                *last_xsp = convert->stylesheet_xsp;
-            xmlFreeDoc(*doc);
-            *doc = res_doc;
-        }
+    {
+        xmlDocPtr res_doc = xsltApplyStylesheet(convert->stylesheet_xsp,
+                                                *doc, params);
+        if (last_xsp)
+            *last_xsp = convert->stylesheet_xsp;
+        xmlFreeDoc(*doc);
+        *doc = res_doc;
+    }
     return ZEBRA_OK;
 }
 
@@ -346,89 +353,101 @@ static ZEBRA_RES parse_input(struct filter_info *tinfo, xmlNodePtr ptr,
                              const char *name)
 {
     for (; ptr; ptr = ptr->next)
+    {
+        if (ptr->type != XML_ELEMENT_NODE)
+            continue;
+        if (!XML_STRCMP(ptr->name, "marc"))
         {
-            if (ptr->type != XML_ELEMENT_NODE)
-                continue;
-            if (!XML_STRCMP(ptr->name, "marc"))
-                {
-                    yaz_iconv_t iconv = 0;
-                    const char *input_charset = "marc-8";
-                    struct _xmlAttr *attr;
+            yaz_iconv_t iconv = 0;
+            const char *input_charset = "marc-8";
+            struct _xmlAttr *attr;
             
-                    for (attr = ptr->properties; attr; attr = attr->next)
-                        {
-                            if (attr_content(attr, "charset", &input_charset))
-                                ;
-                            else
-                                yaz_log(YLOG_WARN, "%s: dom filter: "
-                                        "%s bad attribute @%s,"
-                                        " expected @charset",
-                                        tinfo->fname, 
-                                        xmlGetNodePath(ptr), attr->name);
-                        }
-                    iconv = yaz_iconv_open("utf-8", input_charset);
-                    if (!iconv)
-                        {
-                            yaz_log(YLOG_WARN, "%s: dom filter: "
-                                    "%s unsupported @charset '%s'", 
-                                    tinfo->fname, xmlGetNodePath(ptr),
-                                    input_charset);
-                            return ZEBRA_FAIL;
-                        }
-                    else
-                        {
-                            struct filter_input *p 
-                                = new_input(tinfo, DOM_INPUT_MARC);
-                            p->u.marc.handle = yaz_marc_create();
-                            p->u.marc.iconv = iconv;
-                
-                            yaz_marc_iconv(p->u.marc.handle, p->u.marc.iconv);
-                
-                            ptr = ptr->next;
-                
-                            parse_convert(tinfo, ptr, &p->convert);
-                        }
-                    break;
-
-                }
-            else if (!XML_STRCMP(ptr->name, "xmlreader"))
+            for (attr = ptr->properties; attr; attr = attr->next)
+            {
+                if (attr_content(attr, "charset", &input_charset))
+                    ;
+                else
                 {
-                    struct filter_input *p 
-                        = new_input(tinfo, DOM_INPUT_XMLREADER);
-                    struct _xmlAttr *attr;
-                    const char *level_str = 0;
-
-                    p->u.xmlreader.split_level = 0;
-                    p->u.xmlreader.reader = 0;
-
-                    for (attr = ptr->properties; attr; attr = attr->next)
-                        {
-                            if (attr_content(attr, "level", &level_str))
-                                ;
-                            else
-                                yaz_log(YLOG_WARN, "%s: dom filter: "
-                                        "%s bad attribute @%s,"
-                                        " expected @level",
-                                        tinfo->fname, xmlGetNodePath(ptr),
-                                        attr->name);
-                        }
-                    if (level_str)
-                        p->u.xmlreader.split_level = atoi(level_str);
-                
-                    ptr = ptr->next;
-
-                    parse_convert(tinfo, ptr, &p->convert);
-                    break;
-                }
-            else
-                {
+                    xmlChar *node_path = xmlGetNodePath(ptr);
                     yaz_log(YLOG_WARN, "%s: dom filter: "
-                            "%s bad element <%s>,"
-                            " expected <marc>|<xmlreader>",
-                            tinfo->fname, xmlGetNodePath(ptr), ptr->name);
-                    return ZEBRA_FAIL;
+                            "%s bad attribute @%s,"
+                            " expected @charset",
+                            tinfo->fname, 
+                            node_path, attr->name);
+                    xmlFree(node_path);
                 }
+            }
+            iconv = yaz_iconv_open("utf-8", input_charset);
+            if (!iconv)
+            {
+                xmlChar *node_path = xmlGetNodePath(ptr);
+                yaz_log(YLOG_WARN, "%s: dom filter: "
+                        "%s unsupported @charset '%s'", 
+                        tinfo->fname, node_path,
+                        input_charset);
+                xmlFree(node_path);
+                return ZEBRA_FAIL;
+            }
+            else
+            {
+                struct filter_input *p 
+                    = new_input(tinfo, DOM_INPUT_MARC);
+                p->u.marc.handle = yaz_marc_create();
+                p->u.marc.iconv = iconv;
+                
+                yaz_marc_iconv(p->u.marc.handle, p->u.marc.iconv);
+                
+                ptr = ptr->next;
+                
+                parse_convert(tinfo, ptr, &p->convert);
+            }
+            break;
+
         }
+        else if (!XML_STRCMP(ptr->name, "xmlreader"))
+        {
+            struct filter_input *p 
+                = new_input(tinfo, DOM_INPUT_XMLREADER);
+            struct _xmlAttr *attr;
+            const char *level_str = 0;
+
+            p->u.xmlreader.split_level = 0;
+            p->u.xmlreader.reader = 0;
+
+            for (attr = ptr->properties; attr; attr = attr->next)
+            {
+                if (attr_content(attr, "level", &level_str))
+                    ;
+                else
+                {
+                    xmlChar *node_path = xmlGetNodePath(ptr);
+                    yaz_log(YLOG_WARN, "%s: dom filter: "
+                            "%s bad attribute @%s,"
+                            " expected @level",
+                            tinfo->fname, node_path,
+                            attr->name);
+                    xmlFree(node_path);
+                }
+            }
+            if (level_str)
+                p->u.xmlreader.split_level = atoi(level_str);
+                
+            ptr = ptr->next;
+
+            parse_convert(tinfo, ptr, &p->convert);
+            break;
+        }
+        else
+        {
+            xmlChar *node_path = xmlGetNodePath(ptr);
+            yaz_log(YLOG_WARN, "%s: dom filter: "
+                    "%s bad element <%s>,"
+                    " expected <marc>|<xmlreader>",
+                    tinfo->fname, node_path, ptr->name);
+            xmlFree(node_path);
+            return ZEBRA_FAIL;
+        }
+    }
     return ZEBRA_OK;
 }
 
@@ -451,149 +470,164 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
     
     doc = xmlParseFile(tinfo->full_name);
     if (!doc)
-        {
-            yaz_log(YLOG_WARN, "%s: dom filter: "
-                    "failed to parse config file %s",
-                    tinfo->fname, tinfo->full_name);
-            return ZEBRA_FAIL;
-        }
+    {
+        yaz_log(YLOG_WARN, "%s: dom filter: "
+                "failed to parse config file %s",
+                tinfo->fname, tinfo->full_name);
+        return ZEBRA_FAIL;
+    }
     /* save because we store ptrs to the content */ 
     tinfo->doc_config = doc;
     
     ptr = xmlDocGetRootElement(doc);
     if (!ptr || ptr->type != XML_ELEMENT_NODE 
         || XML_STRCMP(ptr->name, "dom"))
-        {
-            yaz_log(YLOG_WARN, "%s: dom filter: "
-                    "%s bad root element <%s>,"
-                    " expected root element <dom>", 
-                    tinfo->fname, xmlGetNodePath(ptr), ptr->name);  
-            return ZEBRA_FAIL;
-        }
+    {
+        xmlChar *node_path = xmlGetNodePath(ptr);
+        yaz_log(YLOG_WARN, "%s: dom filter: "
+                "%s bad root element <%s>,"
+                " expected root element <dom>", 
+                tinfo->fname, node_path, ptr->name);  
+        xmlFree(node_path);
+        return ZEBRA_FAIL;
+    }
 
     for (ptr = ptr->children; ptr; ptr = ptr->next)
+    {
+        if (ptr->type != XML_ELEMENT_NODE)
+            continue;
+        if (!XML_STRCMP(ptr->name, "extract"))
         {
-            if (ptr->type != XML_ELEMENT_NODE)
-                continue;
-            if (!XML_STRCMP(ptr->name, "extract"))
-                {
-                    /*
-                      <extract name="index">
-                      <xslt stylesheet="first.xsl"/>
-                      <xslt stylesheet="second.xsl"/>
-                      </extract>
-                    */
-                    struct _xmlAttr *attr;
-                    struct filter_extract *f =
-                        odr_malloc(tinfo->odr_config, sizeof(*f));
+            /*
+              <extract name="index">
+              <xslt stylesheet="first.xsl"/>
+              <xslt stylesheet="second.xsl"/>
+              </extract>
+            */
+            struct _xmlAttr *attr;
+            struct filter_extract *f =
+                odr_malloc(tinfo->odr_config, sizeof(*f));
             
-                    tinfo->extract = f;
-                    f->name = 0;
-                    f->convert = 0;
-                    for (attr = ptr->properties; attr; attr = attr->next)
-                        {
-                            if (attr_content(attr, "name", &f->name))
-                                ;
-                            else
-                                yaz_log(YLOG_WARN, "%s: dom filter: "
-                                        "%s bad attribute @%s"
-                                        " expected @name",
-                                        tinfo->fname, 
-                                        xmlGetNodePath(ptr),attr->name);
-
-                        }
-                    parse_convert(tinfo, ptr->children, &f->convert);
-                }
-            else if (!XML_STRCMP(ptr->name, "retrieve"))
-                {  
-                    /* 
-                       <retrieve name="F">
-                       <xslt stylesheet="some.xsl"/>
-                       <xslt stylesheet="some.xsl"/>
-                       </retrieve>
-                    */
-                    struct _xmlAttr *attr;
-                    struct filter_retrieve **fp = &tinfo->retrieve_list;
-                    struct filter_retrieve *f =
-                        odr_malloc(tinfo->odr_config, sizeof(*f));
-            
-                    while (*fp)
-                        fp = &(*fp)->next;
-
-                    *fp = f;
-                    f->name = 0;
-                    f->identifier = 0;
-                    f->convert = 0;
-                    f->next = 0;
-
-                    for (attr = ptr->properties; attr; attr = attr->next)
-                        {
-                            if (attr_content(attr, "identifier", 
-                                             &f->identifier))
-                                ;
-                            else if (attr_content(attr, "name", &f->name))
-                                ;
-                            else
-                                yaz_log(YLOG_WARN, "%s: dom filter: "
-                                        "%s bad attribute @%s"
-                                        " expected @identifier|@name",
-                                        tinfo->fname, 
-                                        xmlGetNodePath(ptr),attr->name);
-                        }
-                    parse_convert(tinfo, ptr->children, &f->convert);
-                }
-            else if (!XML_STRCMP(ptr->name, "store"))
+            tinfo->extract = f;
+            f->name = 0;
+            f->convert = 0;
+            for (attr = ptr->properties; attr; attr = attr->next)
+            {
+                if (attr_content(attr, "name", &f->name))
+                    ;
+                else
                 {
-                    /*
-                      <store name="F">
-                      <xslt stylesheet="some.xsl"/>
-                      <xslt stylesheet="some.xsl"/>
-                      </retrieve>
-                    */
-                    struct filter_store *f =
-                        odr_malloc(tinfo->odr_config, sizeof(*f));
-            
-                    tinfo->store = f;
-                    f->convert = 0;
-                    parse_convert(tinfo, ptr->children, &f->convert);
-                }
-            else if (!XML_STRCMP(ptr->name, "input"))
-                {
-                    /*
-                      <input syntax="xml">
-                      <xmlreader level="1"/>
-                      </input>
-                      <input syntax="usmarc">
-                      <marc inputcharset="marc-8"/>
-                      </input>
-                    */
-                    struct _xmlAttr *attr;
-                    const char  *syntax = 0;
-                    const char *name = 0;
-                    for (attr = ptr->properties; attr; attr = attr->next)
-                        {
-                            if (attr_content(attr, "syntax", &syntax))
-                                ;
-                            else if (attr_content(attr, "name", &name))
-                                ;
-                            else
-                                yaz_log(YLOG_WARN, "%s: dom filter: "
-                                        "%s bad attribute @%s"
-                                        " expected @syntax|@name",
-                                        tinfo->fname, 
-                                        xmlGetNodePath(ptr),attr->name);
-                        }
-                    parse_input(tinfo, ptr->children, syntax, name);
-                }
-            else
-                {
+                    xmlChar *node_path = xmlGetNodePath(ptr);
                     yaz_log(YLOG_WARN, "%s: dom filter: "
-                            "%s bad element <%s>,"
-                            " expected <extract>|<input>|<retrieve>|<store>",
-                            tinfo->fname, xmlGetNodePath(ptr), ptr->name);
-                    return ZEBRA_FAIL;
+                            "%s bad attribute @%s"
+                            " expected @name",
+                            tinfo->fname, 
+                            node_path, attr->name);
+                    xmlFree(node_path);
                 }
+            }
+            parse_convert(tinfo, ptr->children, &f->convert);
         }
+        else if (!XML_STRCMP(ptr->name, "retrieve"))
+        {  
+            /* 
+               <retrieve name="F">
+               <xslt stylesheet="some.xsl"/>
+               <xslt stylesheet="some.xsl"/>
+               </retrieve>
+            */
+            struct _xmlAttr *attr;
+            struct filter_retrieve **fp = &tinfo->retrieve_list;
+            struct filter_retrieve *f =
+                odr_malloc(tinfo->odr_config, sizeof(*f));
+            
+            while (*fp)
+                fp = &(*fp)->next;
+
+            *fp = f;
+            f->name = 0;
+            f->identifier = 0;
+            f->convert = 0;
+            f->next = 0;
+
+            for (attr = ptr->properties; attr; attr = attr->next)
+            {
+                if (attr_content(attr, "identifier", 
+                                 &f->identifier))
+                    ;
+                else if (attr_content(attr, "name", &f->name))
+                    ;
+                else
+                {
+                    xmlChar *node_path = xmlGetNodePath(ptr);
+                    yaz_log(YLOG_WARN, "%s: dom filter: "
+                            "%s bad attribute @%s"
+                            " expected @identifier|@name",
+                            tinfo->fname, 
+                            node_path, attr->name);
+                    xmlFree(node_path);
+                }
+            }
+            parse_convert(tinfo, ptr->children, &f->convert);
+        }
+        else if (!XML_STRCMP(ptr->name, "store"))
+        {
+            /*
+              <store name="F">
+              <xslt stylesheet="some.xsl"/>
+              <xslt stylesheet="some.xsl"/>
+              </retrieve>
+            */
+            struct filter_store *f =
+                odr_malloc(tinfo->odr_config, sizeof(*f));
+            
+            tinfo->store = f;
+            f->convert = 0;
+            parse_convert(tinfo, ptr->children, &f->convert);
+        }
+        else if (!XML_STRCMP(ptr->name, "input"))
+        {
+            /*
+              <input syntax="xml">
+              <xmlreader level="1"/>
+              </input>
+              <input syntax="usmarc">
+              <marc inputcharset="marc-8"/>
+              </input>
+            */
+            struct _xmlAttr *attr;
+            const char  *syntax = 0;
+            const char *name = 0;
+            for (attr = ptr->properties; attr; attr = attr->next)
+            {
+                if (attr_content(attr, "syntax", &syntax))
+                    ;
+                else if (attr_content(attr, "name", &name))
+                    ;
+                else
+                {
+                    xmlChar *node_path = xmlGetNodePath(ptr);
+                    yaz_log(YLOG_WARN, "%s: dom filter: "
+                            "%s bad attribute @%s"
+                            " expected @syntax|@name",
+                            tinfo->fname, 
+                            node_path, attr->name);
+                    xmlFree(node_path);
+                }
+            }
+            parse_input(tinfo, ptr->children, syntax, name);
+        }
+        else
+        {
+            xmlChar *node_path = xmlGetNodePath(ptr);
+            yaz_log(YLOG_WARN, "%s: dom filter: "
+                    "%s bad element <%s>,"
+                    " expected <extract>|<input>|<retrieve>|<store>",
+                    tinfo->fname, node_path, ptr->name);
+            xmlFree(node_path);
+            return ZEBRA_FAIL;
+        }
+    }
     return ZEBRA_OK;
 }
 
@@ -606,16 +640,16 @@ static struct filter_retrieve *lookup_retrieve(struct filter_info *tinfo,
     if (!est)
         return f;
     for (; f; f = f->next)
-        { 
-            /* find requested schema */
-            if (est) 
-                {    
-                    if (f->identifier && !strcmp(f->identifier, est))
-                        return f;
-                    if (f->name && !strcmp(f->name, est))
-                        return f;
-                } 
-        }
+    { 
+        /* find requested schema */
+        if (est) 
+        {    
+            if (f->identifier && !strcmp(f->identifier, est))
+                return f;
+            if (f->name && !strcmp(f->name, est))
+                return f;
+        } 
+    }
     return 0;
 }
 
@@ -623,10 +657,10 @@ static ZEBRA_RES filter_config(void *clientData, Res res, const char *args)
 {
     struct filter_info *tinfo = clientData;
     if (!args || !*args)
-        {
-            yaz_log(YLOG_WARN, "dom filter: need config file");
-            return ZEBRA_FAIL;
-        }
+    {
+        yaz_log(YLOG_WARN, "dom filter: need config file");
+        return ZEBRA_FAIL;
+    }
 
     if (tinfo->fname && !strcmp(args, tinfo->fname))
 	return ZEBRA_OK;
@@ -664,10 +698,10 @@ static int attr_content_xml(struct _xmlAttr *attr, const char *name,
 {
     if (0 == XML_STRCMP(attr->name, name) && attr->children 
         && attr->children->type == XML_TEXT_NODE)
-        {
-            *dst_content = (attr->children->content);
-            return 1;
-        }
+    {
+        *dst_content = (attr->children->content);
+        return 1;
+    }
     return 0;
 }
 
@@ -685,65 +719,69 @@ static void index_value_of(struct filter_info *tinfo,
 
     /* if there is no text, we do not need to proceed */
     if (text_len)
-        {            
-            xmlChar *look = index_p;
-            xmlChar *bval;
-            xmlChar *eval;
+    {            
+        xmlChar *look = index_p;
+        xmlChar *bval;
+        xmlChar *eval;
 
-            xmlChar index[256];
-            xmlChar type[256];
+        xmlChar index[256];
+        xmlChar type[256];
 
-            /* assingning text to be indexed */
-            recword->term_buf = (const char *)text;
-            recword->term_len = text_len;
+        /* assingning text to be indexed */
+        recword->term_buf = (const char *)text;
+        recword->term_len = text_len;
 
-            /* parsing all index name/type pairs */
-            /* may not start with ' ' or ':' */
-            while (*look && ' ' != *look && ':' != *look){
+        /* parsing all index name/type pairs */
+        /* may not start with ' ' or ':' */
+        while (*look && ' ' != *look && ':' != *look)
+        {
+            /* setting name and type to zero */
+            *index = '\0';
+            *type = '\0';
     
-                /* setting name and type to zero */
-                *index = '\0';
-                *type = '\0';
+            /* parsing one index name */
+            bval = look;
+            while (*look && ':' != *look && ' ' != *look)
+            {
+                look++;
+            }
+            eval = look;
+            strncpy((char *)index, (const char *)bval, eval - bval);
+            index[eval - bval] = '\0';
     
-                /* parsing one index name */
+    
+            /* parsing one index type, if existing */
+            if (':' == *look)
+            {
+                look++;
+      
                 bval = look;
-                while (*look && ':' != *look && ' ' != *look){
+                while (*look && ' ' != *look)
+                {
                     look++;
                 }
                 eval = look;
-                strncpy((char *)index, (const char *)bval, eval - bval);
-                index[eval - bval] = '\0';
-    
-    
-                /* parsing one index type, if existing */
-                if (':' == *look){
-                    look++;
-      
-                    bval = look;
-                    while (*look && ' ' != *look){
-                        look++;
-                    }
-                    eval = look;
-                    strncpy((char *)type, (const char *)bval, eval - bval);
-                    type[eval - bval] = '\0';
-                }
-
-                /* actually indexing the text given */
-                yaz_log(YLOG_DEBUG, "%s dom filter: "
-                        "INDEX  '%s:%s' '%s'", 
-                        tinfo->fname, index, type, text);
-
-                recword->index_name = (const char *)index;
-                if (type && *type)
-                    recword->index_type = *type;
-                (extctr->tokenAdd)(recword);
-
-                /* eat whitespaces */
-                if (*look && ' ' == *look && *(look+1)){
-                    look++;
-                } 
+                strncpy((char *)type, (const char *)bval, eval - bval);
+                type[eval - bval] = '\0';
             }
+
+            /* actually indexing the text given */
+            yaz_log(YLOG_DEBUG, "%s dom filter: "
+                    "INDEX  '%s:%s' '%s'", 
+                    tinfo->fname, index, type, text);
+
+            recword->index_name = (const char *)index;
+            if (type && *type)
+                recword->index_type = *type;
+            (extctr->tokenAdd)(recword);
+
+            /* eat whitespaces */
+            if (*look && ' ' == *look && *(look+1))
+            {
+                look++;
+            } 
         }
+    }
     
     xmlFree(text); 
 }
@@ -783,58 +821,78 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
                                            RecWord* recword, 
                                            xmlNodePtr node)
 {
-    if (node->type == XML_ELEMENT_NODE 
-        && node->ns && 0 == XML_STRCMP(node->ns->href, zebra_dom_ns)){
-    
-        if (0 == XML_STRCMP(node->name, "index")){
+    if (node->type == XML_ELEMENT_NODE && node->ns && node->ns->href
+        && 0 == XML_STRCMP(node->ns->href, zebra_dom_ns))
+    {
+         if (0 == XML_STRCMP(node->name, "index"))
+         {
             xmlChar *index_p = 0;
 
             struct _xmlAttr *attr;      
-            for (attr = node->properties; attr; attr = attr->next){
-                if (attr_content_xml(attr, "name", &index_p)){
+            for (attr = node->properties; attr; attr = attr->next)
+            {
+                if (attr_content_xml(attr, "name", &index_p))
+                {
                     index_value_of(tinfo, extctr, recword,node, index_p);
                 }  
                 else
+                {
+                    xmlChar *node_path = xmlGetNodePath(node);
                     yaz_log(YLOG_WARN,"%s dom filter: "
                             "%s bad attribute @%s, expected @name",
-                            tinfo->fname, xmlGetNodePath(node), attr->name);
+                            tinfo->fname, node_path, attr->name);
+                    xmlFree(node_path);
+                }
             }
         }
-        else if (0 == XML_STRCMP(node->name, "record")){
+        else if (0 == XML_STRCMP(node->name, "record"))
+        {
             xmlChar *id_p = 0;
             xmlChar *rank_p = 0;
             xmlChar *type_p = 0;
 
             struct _xmlAttr *attr;
-            for (attr = node->properties; attr; attr = attr->next){
+            for (attr = node->properties; attr; attr = attr->next)
+            {
                 if (attr_content_xml(attr, "id", &id_p))
                     ;
                 else if (attr_content_xml(attr, "rank", &rank_p))
                     ;
                 else if (attr_content_xml(attr, "type", &type_p))
-                   ;
+                    ;
                 else
+                {
+                    xmlChar *node_path = xmlGetNodePath(node);
                     yaz_log(YLOG_WARN,"%s dom filter: "
                             "%s bad attribute @%s,"
-                           " expected @id|@rank|@type",
-                           tinfo->fname, xmlGetNodePath(node), attr->name);
+                            " expected @id|@rank|@type",
+                            tinfo->fname, node_path, attr->name);
+                    xmlFree(node_path);
+                }
 
                 if (type_p && 0 != strcmp("update", (const char *)type_p))
+                {
+                    xmlChar *node_path = xmlGetNodePath(node);
                     yaz_log(YLOG_WARN,"%s dom filter: "
                             "%s attribute @%s,"
                             " only implemented '@type='update'",
-                            tinfo->fname, xmlGetNodePath(node), attr->name);
+                            tinfo->fname, node_path, attr->name);
+                    xmlFree(node_path);
+                }
           
 
             }
             set_record_info(tinfo, extctr, id_p, rank_p, type_p);
-        } else {
+        } 
+        else
+        {
+            xmlChar *node_path = xmlGetNodePath(node);
             yaz_log(YLOG_WARN,"%s dom filter: "
                     "%s bad element <%s>,"
                     " expected <record>|<index> in namespace '%s'",
-                    tinfo->fname, xmlGetNodePath(node), 
+                    tinfo->fname, node_path, 
                     node->name, zebra_dom_ns);
-      
+            xmlFree(node_path);
         }
     }
 }
@@ -846,11 +904,9 @@ static void process_xml_pi_node(struct filter_info *tinfo,
                                 xmlNodePtr node,
                                 xmlChar **index_pp)
 {
-
-    /* yaz_log(YLOG_DEBUG,"PI     %s\n", xmlGetNodePath(node)); */
-
     /* if right PI name, continue parsing PI */
-    if (0 == strcmp(zebra_pi_name, (const char *)node->name)){
+    if (0 == strcmp(zebra_pi_name, (const char *)node->name))
+    {
         xmlChar *pi_p =  node->content;
         xmlChar *look = pi_p;
     
@@ -858,7 +914,8 @@ static void process_xml_pi_node(struct filter_info *tinfo,
         xmlChar *eval;
 
         /* parsing PI record instructions */
-        if (0 == strncmp((const char *)look, "record", 6)){
+        if (0 == strncmp((const char *)look, "record", 6))
+        {
             xmlChar id[256];
             xmlChar rank[256];
             xmlChar type[256];
@@ -874,7 +931,8 @@ static void process_xml_pi_node(struct filter_info *tinfo,
                 look++;
 
             /* parse possible id */
-            if (*look && 0 == strncmp((const char *)look, "id=", 3)){
+            if (*look && 0 == strncmp((const char *)look, "id=", 3))
+            {
                 look += 3;
                 bval = look;
                 while (*look && ' ' != *look)
@@ -889,7 +947,8 @@ static void process_xml_pi_node(struct filter_info *tinfo,
                 look++;
       
             /* parse possible rank */
-            if (*look && 0 == strncmp((const char *)look, "rank=", 5)){
+            if (*look && 0 == strncmp((const char *)look, "rank=", 5))
+            {
                 look += 6;
                 bval = look;
                 while (*look && ' ' != *look)
@@ -904,16 +963,20 @@ static void process_xml_pi_node(struct filter_info *tinfo,
                 look++;
 
             if (look && '\0' != *look)
+            {
+                xmlChar *node_path = xmlGetNodePath(node);
                 yaz_log(YLOG_WARN,"%s dom filter: "
                         "%s content '%s', can not parse '%s'",
-                        tinfo->fname, xmlGetNodePath(node), pi_p, look);
+                        tinfo->fname, node_path, pi_p, look);
+                xmlFree(node_path);
+            }
             else 
                 set_record_info(tinfo, extctr, id, rank, 0);
 
         } 
-   
         /* parsing index instruction */
-        else   if (0 == strncmp((const char *)look, "index", 5)){
+        else if (0 == strncmp((const char *)look, "index", 5))
+        {
             look += 5;
       
             /* eat whitespace */
@@ -924,9 +987,13 @@ static void process_xml_pi_node(struct filter_info *tinfo,
             *index_pp = look;
         } 
         else 
+        {
+            xmlChar *node_path = xmlGetNodePath(node);
             yaz_log(YLOG_WARN,"%s dom filter: "
                     "%s content '%s', can not parse '%s'",
-                    tinfo->fname, xmlGetNodePath(node), pi_p, look);
+                    tinfo->fname, node_path, pi_p, look);
+            xmlFree(node_path);
+        }
     }
 }
 
@@ -945,22 +1012,25 @@ static void process_xml_element_node(struct filter_info *tinfo,
   
     /* loop through kid nodes */
     for (node = node->children; node; node = node->next)
+    {
+        /* check and set PI record and index index instructions */
+        if (node->type == XML_PI_NODE)
         {
-            /* check and set PI record and index index instructions */
-            if (node->type == XML_PI_NODE){
-                process_xml_pi_node(tinfo, extctr, node, &index_p);
-            }
-            else if (node->type == XML_ELEMENT_NODE){
-                /* if there was a PI index instruction before this element */
-                if (index_p){
-                    index_value_of(tinfo, extctr, recword, node, index_p);
-                    index_p = 0;
-                }
-                process_xml_element_node(tinfo, extctr, recword,node);
-            }
-            else
-                continue;
+            process_xml_pi_node(tinfo, extctr, node, &index_p);
         }
+        else if (node->type == XML_ELEMENT_NODE)
+        {
+            /* if there was a PI index instruction before this element */
+            if (index_p)
+            {
+                index_value_of(tinfo, extctr, recword, node, index_p);
+                index_p = 0;
+            }
+            process_xml_element_node(tinfo, extctr, recword,node);
+        }
+        else
+            continue;
+    }
 }
 
 
@@ -976,7 +1046,8 @@ static void extract_dom_doc_node(struct filter_info *tinfo,
     RecWord recword;
     (*extctr->init)(extctr, &recword);
 
-    if (extctr->flagShowRecords){
+    if (extctr->flagShowRecords)
+    {
         xmlDocDumpMemory(doc, &buf_out, &len_out);
         fwrite(buf_out, len_out, 1, stdout);
         xmlFree(buf_out);
@@ -1007,12 +1078,12 @@ static int convert_extract_doc(struct filter_info *tinfo,
     perform_convert(tinfo, input->convert, params, &doc, 0);
 
     if (tinfo->store)
-        {
-            /* store conversion */
-            store_doc = xmlCopyDoc(doc, 1);
-            perform_convert(tinfo, tinfo->store->convert,
-                            params, &store_doc, &last_xsp);
-        }
+    {
+        /* store conversion */
+        store_doc = xmlCopyDoc(doc, 1);
+        perform_convert(tinfo, tinfo->store->convert,
+                        params, &store_doc, &last_xsp);
+    }
     
     if (last_xsp)
         xsltSaveResultToString(&buf_out, &len_out, 
@@ -1031,7 +1102,8 @@ static int convert_extract_doc(struct filter_info *tinfo,
     perform_convert(tinfo, tinfo->extract->convert, params, &doc, 0);
 
     /* finally, do the indexing */
-    if (doc){
+    if (doc)
+    {
         extract_dom_doc_node(tinfo, p, doc);
         /* extract_doc_alvis(tinfo, p, doc); */
 	xmlFreeDoc(doc);
@@ -1047,47 +1119,47 @@ static int extract_xml_split(struct filter_info *tinfo,
     int ret;
 
     if (p->first_record)
-        {
-            if (input->u.xmlreader.reader)
-                xmlFreeTextReader(input->u.xmlreader.reader);
-            input->u.xmlreader.reader = xmlReaderForIO(ioread_ex, ioclose_ex,
-                                                       p /* I/O handler */,
-                                                       0 /* URL */, 
-                                                       0 /* encoding */,
-                                                       XML_PARSE_XINCLUDE|
-                                                       XML_PARSE_NOENT);
-        }
+    {
+        if (input->u.xmlreader.reader)
+            xmlFreeTextReader(input->u.xmlreader.reader);
+        input->u.xmlreader.reader = xmlReaderForIO(ioread_ex, ioclose_ex,
+                                                   p /* I/O handler */,
+                                                   0 /* URL */, 
+                                                   0 /* encoding */,
+                                                   XML_PARSE_XINCLUDE|
+                                                   XML_PARSE_NOENT);
+    }
     if (!input->u.xmlreader.reader)
 	return RECCTRL_EXTRACT_ERROR_GENERIC;
 
     ret = xmlTextReaderRead(input->u.xmlreader.reader);
     while (ret == 1)
+    {
+        int type = xmlTextReaderNodeType(input->u.xmlreader.reader);
+        int depth = xmlTextReaderDepth(input->u.xmlreader.reader);
+        if (type == XML_READER_TYPE_ELEMENT && 
+            input->u.xmlreader.split_level == depth)
         {
-            int type = xmlTextReaderNodeType(input->u.xmlreader.reader);
-            int depth = xmlTextReaderDepth(input->u.xmlreader.reader);
-            if (type == XML_READER_TYPE_ELEMENT && 
-                input->u.xmlreader.split_level == depth)
-                {
-                    xmlNodePtr ptr
-                        = xmlTextReaderExpand(input->u.xmlreader.reader);
-                    if (ptr)
-                        {
-                            xmlNodePtr ptr2 = xmlCopyNode(ptr, 1);
-                            xmlDocPtr doc = xmlNewDoc((const xmlChar*) "1.0");
+            xmlNodePtr ptr
+                = xmlTextReaderExpand(input->u.xmlreader.reader);
+            if (ptr)
+            {
+                xmlNodePtr ptr2 = xmlCopyNode(ptr, 1);
+                xmlDocPtr doc = xmlNewDoc((const xmlChar*) "1.0");
                 
-                            xmlDocSetRootElement(doc, ptr2);
+                xmlDocSetRootElement(doc, ptr2);
                 
-                            return convert_extract_doc(tinfo, input, p, doc);
-                        }
-                    else
-                        {
-                            xmlFreeTextReader(input->u.xmlreader.reader);
-                            input->u.xmlreader.reader = 0;
-                            return RECCTRL_EXTRACT_ERROR_GENERIC;
-                        }
-                }
-            ret = xmlTextReaderRead(input->u.xmlreader.reader);
+                return convert_extract_doc(tinfo, input, p, doc);
+            }
+            else
+            {
+                xmlFreeTextReader(input->u.xmlreader.reader);
+                input->u.xmlreader.reader = 0;
+                return RECCTRL_EXTRACT_ERROR_GENERIC;
+            }
         }
+        ret = xmlTextReaderRead(input->u.xmlreader.reader);
+    }
     xmlFreeTextReader(input->u.xmlreader.reader);
     input->u.xmlreader.reader = 0;
     return RECCTRL_EXTRACT_EOF;
@@ -1098,18 +1170,18 @@ static int extract_xml_full(struct filter_info *tinfo,
                             struct recExtractCtrl *p)
 {
     if (p->first_record) /* only one record per stream */
+    {
+        xmlDocPtr doc = xmlReadIO(ioread_ex, ioclose_ex, 
+                                  p /* I/O handler */,
+                                  0 /* URL */,
+                                  0 /* encoding */,
+                                  XML_PARSE_XINCLUDE|XML_PARSE_NOENT);
+        if (!doc)
         {
-            xmlDocPtr doc = xmlReadIO(ioread_ex, ioclose_ex, 
-                                      p /* I/O handler */,
-                                      0 /* URL */,
-                                      0 /* encoding */,
-                                      XML_PARSE_XINCLUDE|XML_PARSE_NOENT);
-            if (!doc)
-                {
-                    return RECCTRL_EXTRACT_ERROR_GENERIC;
-                }
-            return convert_extract_doc(tinfo, input, p, doc);
+            return RECCTRL_EXTRACT_ERROR_GENERIC;
         }
+        return convert_extract_doc(tinfo, input, p, doc);
+    }
     else
         return RECCTRL_EXTRACT_EOF;
 }
@@ -1125,51 +1197,51 @@ static int extract_iso2709(struct filter_info *tinfo,
     if (p->stream->readf(p->stream, buf, 5) != 5)
         return RECCTRL_EXTRACT_EOF;
     while (*buf < '0' || *buf > '9')
-        {
-            int i;
+    {
+        int i;
 
-            yaz_log(YLOG_WARN, "%s dom filter: "
-                    "MARC: Skipping bad byte %d (0x%02X)",
-                    tinfo->fname, *buf & 0xff, *buf & 0xff);
-            for (i = 0; i<4; i++)
-                buf[i] = buf[i+1];
+        yaz_log(YLOG_WARN, "%s dom filter: "
+                "MARC: Skipping bad byte %d (0x%02X)",
+                tinfo->fname, *buf & 0xff, *buf & 0xff);
+        for (i = 0; i<4; i++)
+            buf[i] = buf[i+1];
 
-            if (p->stream->readf(p->stream, buf+4, 1) != 1)
-                return RECCTRL_EXTRACT_EOF;
-        }
+        if (p->stream->readf(p->stream, buf+4, 1) != 1)
+            return RECCTRL_EXTRACT_EOF;
+    }
     record_length = atoi_n (buf, 5);
     if (record_length < 25)
-        {
-            yaz_log (YLOG_WARN, "%s dom filter: "
-                     "MARC record length < 25, is %d", 
-                     tinfo->fname, record_length);
-            return RECCTRL_EXTRACT_ERROR_GENERIC;
-        }
+    {
+        yaz_log (YLOG_WARN, "%s dom filter: "
+                 "MARC record length < 25, is %d", 
+                 tinfo->fname, record_length);
+        return RECCTRL_EXTRACT_ERROR_GENERIC;
+    }
     read_bytes = p->stream->readf(p->stream, buf+5, record_length-5);
     if (read_bytes < record_length-5)
-        {
-            yaz_log (YLOG_WARN, "%s dom filter: "
-                     "Couldn't read whole MARC record",
-                     tinfo->fname);
-            return RECCTRL_EXTRACT_ERROR_GENERIC;
-        }
+    {
+        yaz_log (YLOG_WARN, "%s dom filter: "
+                 "Couldn't read whole MARC record",
+                 tinfo->fname);
+        return RECCTRL_EXTRACT_ERROR_GENERIC;
+    }
     r = yaz_marc_read_iso2709(input->u.marc.handle,  buf, record_length);
     if (r < record_length)
-        {
-            yaz_log (YLOG_WARN, "%s dom filter: "
-                     "Parsing of MARC record failed r=%d length=%d",
-                     tinfo->fname, r, record_length);
-            return RECCTRL_EXTRACT_ERROR_GENERIC;
-        }
+    {
+        yaz_log (YLOG_WARN, "%s dom filter: "
+                 "Parsing of MARC record failed r=%d length=%d",
+                 tinfo->fname, r, record_length);
+        return RECCTRL_EXTRACT_ERROR_GENERIC;
+    }
     else
-        {
-            xmlDocPtr rdoc;
-            xmlNode *root_ptr;
-            yaz_marc_write_xml(input->u.marc.handle, &root_ptr, 0, 0, 0);
-            rdoc = xmlNewDoc((const xmlChar*) "1.0");
-            xmlDocSetRootElement(rdoc, root_ptr);
-            return convert_extract_doc(tinfo, input, p, rdoc);        
-        }
+    {
+        xmlDocPtr rdoc;
+        xmlNode *root_ptr;
+        yaz_marc_write_xml(input->u.marc.handle, &root_ptr, 0, 0, 0);
+        rdoc = xmlNewDoc((const xmlChar*) "1.0");
+        xmlDocSetRootElement(rdoc, root_ptr);
+        return convert_extract_doc(tinfo, input, p, rdoc);        
+    }
     return RECCTRL_EXTRACT_OK;
 }
 
@@ -1183,16 +1255,16 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 
     odr_reset(tinfo->odr_record);
     switch(input->type)
-        {
-        case DOM_INPUT_XMLREADER:
-            if (input->u.xmlreader.split_level == 0)
-                return extract_xml_full(tinfo, input, p);
-            else
-                return extract_xml_split(tinfo, input, p);
-            break;
-        case DOM_INPUT_MARC:
-            return extract_iso2709(tinfo, input, p);
-        }
+    {
+    case DOM_INPUT_XMLREADER:
+        if (input->u.xmlreader.split_level == 0)
+            return extract_xml_full(tinfo, input, p);
+        else
+            return extract_xml_split(tinfo, input, p);
+        break;
+    case DOM_INPUT_MARC:
+        return extract_iso2709(tinfo, input, p);
+    }
     return RECCTRL_EXTRACT_ERROR_GENERIC;
 }
 
@@ -1218,27 +1290,27 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     xsltStylesheetPtr last_xsp = 0;
 
     if (p->comp)
+    {
+        if (p->comp->which == Z_RecordComp_simple
+            && p->comp->u.simple->which == Z_ElementSetNames_generic)
         {
-            if (p->comp->which == Z_RecordComp_simple
-                && p->comp->u.simple->which == Z_ElementSetNames_generic)
-                {
-                    esn = p->comp->u.simple->u.generic;
-                }
-            else if (p->comp->which == Z_RecordComp_complex 
-                     && p->comp->u.complex->generic->elementSpec
-                     && p->comp->u.complex->generic->elementSpec->which ==
-                     Z_ElementSpec_elementSetName)
-                {
-                    esn = p->comp->u.complex->generic->elementSpec->u.elementSetName;
-                }
+            esn = p->comp->u.simple->u.generic;
         }
+        else if (p->comp->which == Z_RecordComp_complex 
+                 && p->comp->u.complex->generic->elementSpec
+                 && p->comp->u.complex->generic->elementSpec->which ==
+                 Z_ElementSpec_elementSetName)
+        {
+            esn = p->comp->u.complex->generic->elementSpec->u.elementSetName;
+        }
+    }
     retrieve = lookup_retrieve(tinfo, esn);
     if (!retrieve)
-        {
-            p->diagnostic =
-                YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
-            return 0;
-        }
+    {
+        p->diagnostic =
+            YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+        return 0;
+    }
 
     params[0] = 0;
     set_param_int(params, "id", p->localno, p->odr);
@@ -1266,54 +1338,54 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 		    0 /* encoding */,
 		    XML_PARSE_XINCLUDE|XML_PARSE_NOENT);
     if (!doc)
-        {
-            p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
-            return 0;
-        }
+    {
+        p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+        return 0;
+    }
 
     /* retrieve conversion */
     perform_convert(tinfo, retrieve->convert, params, &doc, &last_xsp);
     if (!doc)
-        {
-            p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
-        }
+    {
+        p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+    }
     else if (p->input_format == VAL_NONE || p->input_format == VAL_TEXT_XML)
-        {
-            xmlChar *buf_out;
-            int len_out;
+    {
+        xmlChar *buf_out;
+        int len_out;
 
-            if (last_xsp)
-                xsltSaveResultToString(&buf_out, &len_out, doc, last_xsp);
-            else
-                xmlDocDumpMemory(doc, &buf_out, &len_out);            
+        if (last_xsp)
+            xsltSaveResultToString(&buf_out, &len_out, doc, last_xsp);
+        else
+            xmlDocDumpMemory(doc, &buf_out, &len_out);            
 
-            p->output_format = VAL_TEXT_XML;
-            p->rec_len = len_out;
-            p->rec_buf = odr_malloc(p->odr, p->rec_len);
-            memcpy(p->rec_buf, buf_out, p->rec_len);
-            xmlFree(buf_out);
-        }
+        p->output_format = VAL_TEXT_XML;
+        p->rec_len = len_out;
+        p->rec_buf = odr_malloc(p->odr, p->rec_len);
+        memcpy(p->rec_buf, buf_out, p->rec_len);
+        xmlFree(buf_out);
+    }
     else if (p->output_format == VAL_SUTRS)
-        {
-            xmlChar *buf_out;
-            int len_out;
+    {
+        xmlChar *buf_out;
+        int len_out;
 
-            if (last_xsp)
-                xsltSaveResultToString(&buf_out, &len_out, doc, last_xsp);
-            else
-                xmlDocDumpMemory(doc, &buf_out, &len_out);            
+        if (last_xsp)
+            xsltSaveResultToString(&buf_out, &len_out, doc, last_xsp);
+        else
+            xmlDocDumpMemory(doc, &buf_out, &len_out);            
         
-            p->output_format = VAL_SUTRS;
-            p->rec_len = len_out;
-            p->rec_buf = odr_malloc(p->odr, p->rec_len);
-            memcpy(p->rec_buf, buf_out, p->rec_len);
+        p->output_format = VAL_SUTRS;
+        p->rec_len = len_out;
+        p->rec_buf = odr_malloc(p->odr, p->rec_len);
+        memcpy(p->rec_buf, buf_out, p->rec_len);
 	
-            xmlFree(buf_out);
-        }
+        xmlFree(buf_out);
+    }
     else
-        {
-            p->diagnostic = YAZ_BIB1_RECORD_SYNTAX_UNSUPP;
-        }
+    {
+        p->diagnostic = YAZ_BIB1_RECORD_SYNTAX_UNSUPP;
+    }
     xmlFreeDoc(doc);
     return 0;
 }

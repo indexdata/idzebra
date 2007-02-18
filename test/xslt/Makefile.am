@@ -1,11 +1,13 @@
-# $Id: Makefile.am,v 1.11 2007-02-07 12:08:54 adam Exp $
+# $Id: Makefile.am,v 1.12 2007-02-18 21:53:22 adam Exp $
 
 check_PROGRAMS = xslt1 xslt2 xslt3 xslt4 xslt5 dom1
 TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST=zebra.cfg zebrastaticrank.cfg \
  marc-col.xml marc-one.xml marc-col.mrc \
- marc-missing-ns.xml index.xsl id.xsl \
+ marc-missing-ns.xml \
+ index.xsl id.xsl \
+ dom-index-element.xsl  dom-index-pi.xsl \
  marcschema-col.xml marcschema-one.xml snippet.xsl \
  dom-config-col.xml dom-config-one.xml dom-config-marc.xml
 
