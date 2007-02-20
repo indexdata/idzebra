@@ -1,5 +1,5 @@
 <chapter id="record-model-domxml">
-  <!-- $Id: recordmodel-domxml.xml,v 1.3 2007-02-20 14:57:00 marc Exp $ -->
+  <!-- $Id: recordmodel-domxml.xml,v 1.4 2007-02-20 15:02:18 marc Exp $ -->
   <title>&dom; &xml; Record Model and Filter Module</title>
 
   <para>
@@ -85,10 +85,11 @@
         <row>
          <entry><literal>retrieve</literal></entry>
          <entry>third</entry>
-         <entry>document retrieve transformations from storage to output
-          syntax and format</entry>
+         <entry>multiple document retrieve transformations from
+          storage to different output
+          formats are possible</entry>
          <entry>&zebra; internal storage &dom; &xml; document</entry>
-         <entry>requested output syntax and format</entry>
+         <entry>output &xml; syntax and requested format</entry>
         </row>
        </tbody>
       </tgroup>
@@ -125,17 +126,21 @@
     <![CDATA[
     <?xml version="1.0" encoding="UTF8"?>
     <dom xmlns="http://indexdata.com/zebra-2.0">
-      <input syntax="xml">
+      <input>
         <xmlreader level="1"/>
+        <!-- <marc inputcharset="marc-8"/> -->
       </input>
-      <extract name="index">
+      <extrac>
          <xslt stylesheet="common2index.xsl"/>
       </extract>
-      <store name="index">
+      <store>
          <xslt stylesheet="common2store.xsl"/>
       </store>
       <retrieve name="dc">
         <xslt stylesheet="store2dc.xsl"/>
+      </retrieve>
+      <retrieve name="mods">
+        <xslt stylesheet="store2mods.xsl"/>
       </retrieve>
     </dom>
     ]]>
