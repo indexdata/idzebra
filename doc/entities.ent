@@ -1,4 +1,4 @@
-<!-- $Id: entities.ent,v 1.4 2006-09-05 12:01:31 adam Exp $ -->
+<!-- $Id: entities.ent,v 1.5 2007-02-20 14:28:31 marc Exp $ -->
 <!ENTITY chap-introduction SYSTEM "introduction.xml">
 <!ENTITY chap-installation SYSTEM "installation.xml">
 <!ENTITY chap-quickstart SYSTEM "quickstart.xml">
@@ -7,8 +7,9 @@
 <!ENTITY chap-administration SYSTEM "administration.xml">
 <!ENTITY chap-querymodel SYSTEM "querymodel.xml">
 <!ENTITY chap-zebraidx SYSTEM "zebraidx.xml">
-<!ENTITY chap-recordmodel-grs SYSTEM "recordmodel-grs.xml">
 <!ENTITY chap-recordmodel-alvisxslt SYSTEM "recordmodel-alvisxslt.xml">
+<!ENTITY chap-recordmodel-domxml SYSTEM "recordmodel-domxml.xml">
+<!ENTITY chap-recordmodel-grs SYSTEM "recordmodel-grs.xml">
 <!ENTITY chap-field-structure SYSTEM "field-structure.xml">
 <!ENTITY app-license SYSTEM "license.xml">
 <!ENTITY app-indexdata SYSTEM "indexdata.xml">

@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.20 2007-02-02 11:10:08 marc Exp $ -->
+  <!-- $Id: architecture.xml,v 1.21 2007-02-20 14:28:31 marc Exp $ -->
   <title>Overview of &zebra; Architecture</title>
 
   <section id="architecture-representation">
@@ -207,9 +207,64 @@
      modules. 
     </para>
 
+   <section id="componentmodulesdom">
+    <title>&dom; &xml; Record Model and Filter Module</title>
+     <para>
+      The &dom; &xml; filter uses a standard &dom; &xml; structure as
+      internal data model, and can thus parse, index, and display 
+      any &xml; document.
+    </para>
+    <para>
+      A parser for binary &marc; records based on the ISO2709 library
+      standard is provided, it transforms these to the internal
+      &marcxml; &dom; representation.  
+    </para>
+    <para>
+      The internal &dom; &xml; representation can be fed into four
+      different pipelines, consisting of arbitraily many sucessive
+      &xslt; transformations; these are for  
+     <itemizedlist>
+       <listitem><para>input parsing and initial
+          transformations,</para></listitem>
+       <listitem><para>indexing term extraction
+          transformations</para></listitem>
+       <listitem><para>transformations before internal document
+          storage, and </para></listitem>
+       <listitem><para>retrieve transformations from storage to output
+          format</para></listitem>
+      </itemizedlist>
+    </para>
+    <para>
+      The &dom; &xml; filter pipelines use &xslt; (and if  supported on
+      your platform, even &exslt;), it brings thus full &xpath;
+      support to the indexing, storage and display rules of not only
+      &xml; documents, but also binary &marc; records.
+    </para>
+    <para>
+      Finally, the &dom; &xml; filter allows for static ranking at index
+      time, and to to sort hit lists according to predefined
+      static ranks.
+    </para>
+    <para>
+      Details on the experimental &dom; &xml; filter are found in 
+      <xref linkend="record-model-domxml"/>.
+      </para>
+     <para>
+      The Debian package <literal>libidzebra-2.0-mod-dom</literal>
+      contains the &dom; filter module.
+     </para>
+    </section>
 
    <section id="componentmodulesalvis">
     <title>ALVIS &xml; Record Model and Filter Module</title>
+     <note>
+      <para>
+        The functionality of this record model has been improved and
+        replaced by the &dom; &xml; record model. See 
+        <xref linkend="componentmodulesdom"/>.
+      </para>
+     </note>
+
      <para>
       The Alvis filter for &xml; files is an &xslt; based input
       filter. 
@@ -252,6 +307,13 @@
 
    <section id="componentmodulesgrs">
     <title>&grs1; Record Model and Filter Modules</title>
+     <note>
+      <para>
+        The functionality of this record model has been improved and
+        replaced by the &dom; &xml; record model. See 
+        <xref linkend="componentmodulesdom"/>.
+      </para>
+     </note>
     <para>
     The &grs1; filter modules described in 
     <xref linkend="grs"/>

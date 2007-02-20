@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.63 2007-01-15 20:04:34 adam Exp $
+## $Id: Makefile.am,v 1.64 2007-02-20 14:28:31 marc Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -17,6 +17,7 @@ XMLFILES =  \
    marc_indexing.xml \
    querymodel.xml \
    quickstart.xml \
+   recordmodel-domxml.xml \
    recordmodel-alvisxslt.xml \
    recordmodel-grs.xml \
    manref.xml \
