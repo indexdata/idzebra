@@ -1,5 +1,5 @@
 <chapter id="record-model-domxml">
-  <!-- $Id: recordmodel-domxml.xml,v 1.1 2007-02-20 14:28:31 marc Exp $ -->
+  <!-- $Id: recordmodel-domxml.xml,v 1.2 2007-02-20 14:53:25 marc Exp $ -->
   <title>&dom; &xml; Record Model and Filter Module</title>
 
   <para>
@@ -108,9 +108,8 @@
 
    <para>
     The experimental, loadable  &dom; &xml;/&xslt; filter module
-   <literal>mod-dom.so</literal> is packaged in the GNU/Debian package
-    <literal>libidzebra2.0-mod-dom</literal>.
-    It is invoked by the <filename>zebra.cfg</filename> configuration statement
+   <literal>mod-dom.so</literal> 
+    is invoked by the <filename>zebra.cfg</filename> configuration statement
     <screen>
      recordtype.xml: dom.db/filter_dom_conf.xml
     </screen>
@@ -120,25 +119,28 @@
     path <filename>db/filter_dom_conf.xml</filename>.
    </para>
 
-
-
-
-
    <para>The &dom; &xslt; filter configuration file must be
-    valid &xml;. It might look like this (This example is
-    used for indexing and display of &oai; harvested records):
-    <screen>
-    &lt;?xml version="1.0" encoding="UTF-8"?&gt;
-      &lt;schemaInfo&gt;
-        &lt;schema name="identity" stylesheet="xsl/identity.xsl" /&gt;
-        &lt;schema name="index" identifier="http://indexdata.dk/zebra/xslt/1"
-            stylesheet="xsl/oai2index.xsl" /&gt;
-        &lt;schema name="dc" stylesheet="xsl/oai2dc.xsl" /&gt;
-        &lt;!-- use split level 2 when indexing whole &oai; Record lists --&gt;
-        &lt;split level="2"/&gt;
-      &lt;/schemaInfo&gt;
-    </screen> 
+    valid &xml;. It might look like this:
+    <screen> 
+    <![CDATA[
+    <dom>
+      <input syntax="xml">
+        <xmlreader level="1"/>
+      </input>
+      <extract name="index">
+         <xslt stylesheet="common2index.xsl"/>
+      </extract>
+      <store name="index">
+         <xslt stylesheet="common2store.xsl"/>
+      </store>
+      <retrieve name="dc">
+        <xslt stylesheet="store2dc.xsl"/>
+      </retrieve>
+    </dom>
+    ]]>
+    </screen>
    </para>
+
    <para>
     All named stylesheets defined inside
     <literal>schema</literal> element tags 
@@ -167,7 +169,7 @@
    </para>
 
    <section id="record-model-domxml-internal">
-    <title>&dom; Internal Record Representation</title>   
+    <title>&dom; filter internal record representation</title>   
     <para>When indexing, an &xml; Reader is invoked to split the input
     files into suitable record &xml; pieces. Each record piece is then
     transformed to an &xml; &dom; structure, which is essentially the
