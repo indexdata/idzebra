@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.66 2007-02-21 14:15:45 marc Exp $
+## $Id: Makefile.am,v 1.67 2007-02-21 17:03:23 adam Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -65,7 +65,7 @@ index.tkl: $(XMLFILES)
 	rm -f *.tkl
 	$(TKL_COMPILE) $(srcdir)/zebra.xml
 
-zebra.pdf: $(XMLFILES)
+zebra.pdf: $(XMLFILES) domfilter.pdf
 	for i in $(PNGFILES); do \
 		if test ! -f $$i; then cp $(srcdir)/$$i .; fi; \
 	done
