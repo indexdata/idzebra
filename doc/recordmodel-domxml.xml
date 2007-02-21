@@ -1,5 +1,5 @@
 <chapter id="record-model-domxml">
-  <!-- $Id: recordmodel-domxml.xml,v 1.5 2007-02-21 12:29:52 marc Exp $ -->
+  <!-- $Id: recordmodel-domxml.xml,v 1.6 2007-02-21 13:38:22 marc Exp $ -->
   <title>&dom; &xml; Record Model and Filter Module</title>
 
   <para>
@@ -79,26 +79,25 @@
          <entry>first</entry>
          <entry>input parsing and initial
           transformations to common &xml; format</entry>
-         <entry>raw &xml; record buffers, &xml;  streams and 
+         <entry>Input raw &xml; record buffers, &xml;  streams and 
                 binary &marc; buffers</entry>
-         <entry>single &dom; &xml; documents suitable for indexing and
-                internal storage</entry>
+         <entry>Common &xml; &dom;</entry>
         </row>
         <row>
          <entry><literal>extract</literal></entry>
          <entry>second</entry>
          <entry>indexing term extraction
           transformations</entry>
-         <entry>common single &dom; &xml; format</entry>
-         <entry>&zebra; internal indexing &dom; &xml; document</entry>
+         <entry>Common &xml; &dom;</entry>
+         <entry>Indexing &xml; &dom;</entry>
         </row>
         <row>
          <entry><literal>store</literal></entry>
          <entry>second</entry>
          <entry> transformations before internal document
           storage</entry>
-         <entry>common single &dom; &xml; format</entry>
-         <entry>&zebra; internal storage &dom; &xml; document</entry>
+         <entry>Common &xml; &dom;</entry>
+         <entry>Storage &xml; &dom;</entry>
         </row>
         <row>
          <entry><literal>retrieve</literal></entry>
@@ -106,8 +105,8 @@
          <entry>multiple document retrieve transformations from
           storage to different output
           formats are possible</entry>
-         <entry>&zebra; internal storage &dom; &xml; document</entry>
-         <entry>output &xml; syntax and requested format</entry>
+         <entry>Storage &xml; &dom;</entry>
+         <entry>Output &xml; syntax in requested formats</entry>
         </row>
        </tbody>
       </tgroup>
@@ -132,9 +131,9 @@
     <screen>
      recordtype.xml: dom.db/filter_dom_conf.xml
     </screen>
-    In this example on all data files with suffix 
-    <filename>*.xml</filename>, where the
-    &dom; &xslt; filter configuration file is found in the
+    In this example the &dom; &xml; filter is configured to work 
+    on all data files with suffix 
+    <filename>*.xml</filename>, where the configuration file is found in the
     path <filename>db/filter_dom_conf.xml</filename>.
    </para>
 
@@ -164,33 +163,82 @@
     ]]>
     </screen>
    </para>
-
    <para>
-    All named stylesheets defined inside
-    <literal>schema</literal> element tags 
-    are for presentation after search, including
-    the indexing stylesheet (which is a great debugging help). The
-    names defined in the <literal>name</literal> attributes must be
-    unique, these are the literal <literal>schema</literal> or 
-    <literal>element set</literal> names used in 
+     The root &xml; element <literal>&lt;dom&gt;</literal> and all other &dom;
+     &xml; filter elements are residing in the namespace 
+     <literal>http://indexdata.com/zebra-2.0</literal>.
+   </para>
+   <para>
+    All pipeline definition elements - i.e. the
+     <literal>&lt;input&gt;</literal>,
+     <literal>&lt;extact&gt;</literal>,
+     <literal>&lt;store&gt;</literal>, and 
+     <literal>&lt;retrieve&gt;</literal> elements - are optional.
+     Missing pipeline definitions are just interpreted
+     do-nothing identity pipelines.
+   </para>
+   <para>
+    All pipeine definition elements may contain zero or more 
+    <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
+    &xslt; transformation instructions, which are performed
+    sequentially from top to bottom.
+    The paths in the <literal>stylesheet</literal> attributes
+    are relative to zebras working directory, or absolute to the file
+    system root.
+   </para>
+
+
+   <section id="record-model-domxml-pipeline-input">
+    <title>Input pipeline</title>   
+   <para>
+    The <literal>&lt;input&gt;</literal> pipeline definition element
+    may contain either one &xml; Reader definition
+    <literal><![CDATA[<xmlreader level="1"/>]]></literal>, used to split
+    an &xml; collection input stream into individual &xml; &dom;
+    documents at the prescribed element level, 
+    or one &marc; binary
+    parsing instruction
+    <literal><![CDATA[<marc inputcharset="marc-8"/>]]></literal>, which defines
+    a conversion to &marcxml; format &dom; trees. The allowed values
+    of the <literal>inputcharset</literal> attribute depend on your
+    local <productname>iconv</productname> set-up.
+   </para>
+   <para>
+    Both input parsers deliver individual &dom; &xml; documents to the
+    following chain of zero or more  
+    <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
+    &xslt; transformations. At the end of this pipeline, the documents
+    are in the common format, used to feed both the 
+     <literal>&lt;extact&gt;</literal> and 
+     <literal>&lt;store&gt;</literal> pipelines.
+   </para>
+   </section>
+
+   <section id="record-model-domxml-pipeline-extract">
+    <title>Extract pipeline</title>   
+   </section>
+
+   <section id="record-model-domxml-pipeline-store">
+    <title>Store pipeline</title>   
+   </section>
+
+   <section id="record-model-domxml-pipeline-retrieve">
+    <title>Retrieve pipeline</title>   
+
+    <para>
+     All named stylesheets defined inside
+     <literal>schema</literal> element tags 
+     are for presentation after search, including
+     the indexing stylesheet (which is a great debugging help). The
+     names defined in the <literal>name</literal> attributes must be
+     unique, these are the literal <literal>schema</literal> or 
+     <literal>element set</literal> names used in 
       <ulink url="http://www.loc.gov/standards/sru/srw/">&srw;</ulink>,
       <ulink url="&url.sru;">&sru;</ulink> and
     &z3950; protocol queries.
-    The paths in the <literal>stylesheet</literal> attributes
-    are relative to zebras working directory, or absolute to file
-    system root.
    </para>
-   <para>
-    The <literal>&lt;split level="2"/&gt;</literal> decides where the
-    &xml; Reader shall split the
-    collections of records into individual records, which then are
-    loaded into &dom;, and have the indexing &xslt; stylesheet applied.
-   </para>
-   <para>
-    There must be exactly one indexing &xslt; stylesheet, which is
-    defined by the magic attribute  
-    <literal>identifier="http://indexdata.dk/zebra/xslt/1"</literal>.
-   </para>
+   </section>
+
 
    <section id="record-model-domxml-internal">
     <title>&dom; filter internal record representation</title>   
