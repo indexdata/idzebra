@@ -1,5 +1,5 @@
 <chapter id="record-model-domxml">
-  <!-- $Id: recordmodel-domxml.xml,v 1.7 2007-02-21 14:15:07 marc Exp $ -->
+  <!-- $Id: recordmodel-domxml.xml,v 1.8 2007-02-21 15:03:30 marc Exp $ -->
   <title>&dom; &xml; Record Model and Filter Module</title>
 
   <para>
@@ -267,7 +267,53 @@
 
 
    <section id="record-model-domxml-canonical-index">
-    <title>Canonical Indexing Format</title>   
+    <title>Canonical Indexing Format</title>
+
+    <para>
+     &dom; &xml; indexing comes in two flavors: pure
+     processing-instruction governed plain &xml; documents, and - very
+     similar to the Alvis filter indexing format - &xml; documents
+     containing &xml; <literal>&lt;record&gt;</literal> and
+     <literal>&lt;index&gt;</literal> instructions from the magic
+     namespace <literal>xmlns:z="http://indexdata.dk/zebra-2.0"</literal>. 
+    </para>
+
+   <section id="record-model-domxml-canonical-index-pi">
+    <title>Processing-instruction governed indexing format</title>
+ 
+      <para>The output of the processing instruction driven 
+      indexing &xslt; stylesheets must contain
+      processing instructions named 
+       <literal>zebra-2.0</literal>. 
+      The output of the &xslt; indexing transformation is then
+      parsed using &dom; methods, and the contained instructions are
+      performed on the <emphasis>elements and their
+      subtrees directly following the processing instructions</emphasis>.
+      </para>
+      <para>
+     For example, the output of the command
+     <screen>  
+       xsltproc dom-index-pi.xsl marc-one.xml
+     </screen> 
+     might look like this:
+     <screen>
+      <![CDATA[
+      <?xml version="1.0" encoding="UTF-8"?>
+      <?zebra-2.0 record id=11224466 rank=42?>
+      <record>
+        <?zebra-2.0 index control:w?>
+        <control>11224466</control>
+        <?zebra-2.0 index title:w title:p title:s any:w?>
+        <title>How to program a computer</title>
+      </record>
+      ]]>
+     </screen>
+    </para>
+   </section>
+
+   <section id="record-model-domxml-canonical-index-element">
+    <title>Magic element governed indexing format</title>
+   
     <para>The output of the indexing &xslt; stylesheets must contain
     certain elements in the magic 
      <literal>xmlns:z="http://indexdata.dk/zebra-2.0"</literal>
@@ -278,30 +324,34 @@
     </para>
     <para>
     For example, the output of the command
-     <screen>  
-      xsltproc xsl/oai2index.xsl one-record.xml
+     <screen>   
+      xsltproc dom-index-element.xsl marc-one.xml 
      </screen> 
      might look like this:
      <screen>
-      &lt;?xml version="1.0" encoding="UTF-8"?&gt;
-      &lt;z:record xmlns:z="http://indexdata.dk/zebra/xslt/1" 
-           z:id="oai:JTRS:CP-3290---Volume-I" 
-           z:rank="47896"
-           z:type="update"&gt;
-       &lt;z:index name="oai_identifier" type="0"&gt;
-                oai:JTRS:CP-3290---Volume-I&lt;/z:index&gt;
-       &lt;z:index name="oai_datestamp" type="0"&gt;2004-07-09&lt;/z:index&gt;
-       &lt;z:index name="oai_setspec" type="0"&gt;jtrs&lt;/z:index&gt;
-       &lt;z:index name="dc_all" type="w"&gt;
-          &lt;z:index name="dc_title" type="w"&gt;Proceedings of the 4th 
-                International Conference and Exhibition:
-                World Congress on Superconductivity - Volume I&lt;/z:index&gt;
-          &lt;z:index name="dc_creator" type="w"&gt;Kumar Krishen and *Calvin
-                Burnham, Editors&lt;/z:index&gt;
-       &lt;/z:index&gt;
-     &lt;/z:record&gt;
+      <![CDATA[
+      <?xml version="1.0" encoding="UTF-8"?>
+      <z:record xmlns:z="http://indexdata.com/zebra-2.0" 
+                z:id="11224466" z:rank="42">
+          <z:index name="control">11224466</z:index>
+          <z:index name="title:w title:p title:s any:w">
+                    How to program a computer</z:index>
+      </z:record>
+      ]]>
      </screen>
     </para>
+   </section>
+
+
+   <section id="record-model-domxml-canonical-index-semantics">
+    <title>Semantics of the indexing formats</title>
+
+    <para>
+     Both indexing formats are defined with equal semantics and
+     behaviour in mind. 
+    </para>
+
+    
     <para>This means the following: From the original &xml; file 
      <literal>one-record.xml</literal> (or from the &xml; record &dom; of the
      same form coming from a splitted input file), the indexing
@@ -321,24 +371,30 @@
      <literal>insert</literal>, <literal>update</literal>, and 
      <literal>delete</literal>. 
     </para>
-    <para>In this example, the following literal indexes are constructed:
+    
+
+    <para>In these examples, the following literal indexes are constructed:
      <screen>
-       oai_identifier
-       oai_datestamp
-       oai_setspec
-       dc_all
-       dc_title
-       dc_creator
+       any:w
+       control:w
+       title:w
+       title:p
+       title:s
      </screen>
-     where the indexing type is defined in the 
-     <literal>type</literal> attribute 
-     (any value from the standard configuration
-     file <filename>default.idx</filename> will do). Finally, any 
+     where the indexing type is defined after the 
+     literal <literal>':'</literal> charaacter.  
+     Any value from the standard configuration
+     file <filename>default.idx</filename> will do.
+     Finally, any 
      <literal>text()</literal> node content recursively contained
-     inside the <literal>index</literal> will be filtered through the
+     inside the <literal>&lt;z:index&gt;</literal> element, or any
+     element following a <literal>index</literal> processing instruction,
+     will be filtered through the
      appropriate charmap for character normalization, and will be
-     inserted in the index.
+     inserted in the named indexes.
     </para>
+
+    
     <para>
      Specific to this example, we see that the single word
      <literal>oai:JTRS:CP-3290---Volume-I</literal> will be literal,
@@ -398,6 +454,9 @@
      filter configuration files involves in this process, and that the
      literal index names are used during search and retrieval.
     </para>
+    
+   </section>
+
    </section>
   </section>
 
