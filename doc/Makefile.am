@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.64 2007-02-20 14:28:31 marc Exp $
+## $Id: Makefile.am,v 1.65 2007-02-21 12:29:52 marc Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -28,14 +28,16 @@ XMLFILES =  \
 
 HTMLFILES =  index.html
 
-PNGFILES=zebra.png
+PNGFILES=zebra.png domfilter.png
 EPSFILES=zebra.eps
+PDFFILES=zebra.pdf domfilter.pdf
+
 
 MANFILES=zebraidx$(PACKAGE_SUFFIX).1 \
 	zebrasrv$(PACKAGE_SUFFIX).8 \
 	idzebra-config$(PACKAGE_SUFFIX).1
 
-doc_DATA = $(HTMLFILES) $(PNGFILES)
+doc_DATA = $(HTMLFILES) $(PNGFILES) $(PDFFILES)
 man_MANS = $(MANFILES)
 
 EXTRA_DIST = $(XMLFILES) $(XMLMAN) \
@@ -104,4 +106,13 @@ install-data-hook:
 
 uninstall-hook:
 	rm -r $(DESTDIR)/$(docdir)
+
+domfilter.png: domfilter.svg
+	inkscape --export-png=$@ --export-width=600 --export-area-drawing $?
+
+domfilter.eps: domfilter.svg
+	inkscape --export-eps=$@ --export-bbox-page $?
+
+.eps.pdf:
+	epstopdf -hires $?
 

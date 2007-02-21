@@ -1,5 +1,5 @@
 <chapter id="record-model-domxml">
-  <!-- $Id: recordmodel-domxml.xml,v 1.4 2007-02-20 15:02:18 marc Exp $ -->
+  <!-- $Id: recordmodel-domxml.xml,v 1.5 2007-02-21 12:29:52 marc Exp $ -->
   <title>&dom; &xml; Record Model and Filter Module</title>
 
   <para>
@@ -14,7 +14,7 @@
   
   
   <section id="record-model-domxml-filter">
-   <title>&dom; Record Filter</title>
+   <title>&dom; Record Filter Architecture</title>
 
      <para>
       The &dom; &xml; filter uses a standard &dom; &xml; structure as
@@ -30,17 +30,35 @@
       &marcxml; &dom; representation. Other binary document parsers
       are planned to follow.  
     </para>
-   </section>
-
-
-   <section id="record-model-domxml-architecture">
-    <title>&dom; &xml; filter architecture</title>   
 
     <para>
-      The internal &dom; &xml; representation can be fed into four
-      different pipelines, consisting of arbitraily many sucessive
-      &xslt; transformations.
+      The &dom; filter architecture consists of four
+      different pipelines, each being a chain of arbitraily many sucessive
+      &xslt; transformations of the internal &dom; &xml;
+      representations of documents.
     </para>
+
+    <figure id="record-model-domxml-architecture-fig">
+      <title>&dom; &xml; filter architecture</title>
+      <mediaobject>
+       <imageobject>
+         <imagedata fileref="domfilter.pdf" format="PDF" scale="50"/>
+        </imageobject>
+        <imageobject>
+          <imagedata fileref="domfilter.png" format="PNG"/>
+        </imageobject>
+        <textobject>
+        <!-- Fall back if none of the images can be used -->
+        <phrase>
+          [Here there should be a diagram showing the &dom; &xml;
+           filter architecture, but is seems that your
+           tool chain has not been able to include the diagram in this
+           document.]
+         </phrase>
+        </textobject>
+      </mediaobject>
+     </figure>
+
 
     <table id="record-model-domxml-architecture-table" frame="top">
       <title>&dom; &xml; filter pipelines overview</title>

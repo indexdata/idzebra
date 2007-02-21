@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="50cm" height="28cm" viewBox="-2 1 50 28">
+  <rect style="fill: #ffffff" x="7.19944" y="4.89707" width="32.9412" height="17.0588"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="7.19944" y="4.89707" width="32.9412" height="17.0588"/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="10.4936" y1="4.89707" x2="10.4936" y2="21.9559"/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="36.8465" y1="4.89707" x2="36.8465" y2="21.9559"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="23.67" y="13.5765"></text>
+  <path style="fill: #ffffff" d="M -1.05 6.19 L 3.80355,6.19 L 3.80355,9.58429 C 2.83284,9.01857 2.34749,9.01857 1.37678,9.58429 C 0.406066,10.15 -0.0792893,10.15 -1.05,9.58429 L -1.05,6.19z"/>
+  <path style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" d="M -1.05 6.19 L 3.80355,6.19 L 3.80355,9.58429 C 2.83284,9.01857 2.34749,9.01857 1.37678,9.58429 C 0.406066,10.15 -0.0792893,10.15 -1.05,9.58429 L -1.05,6.19"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="1.37678" y="7.75429">XML Stream</text>
+  <path style="fill: #ffffff" d="M 0.01 8.25 L 4.86355,8.25 L 4.86355,11.6443 C 3.89284,11.0786 3.40749,11.0786 2.43678,11.6443 C 1.46607,12.21 0.980711,12.21 0.01,11.6443 L 0.01,8.25z"/>
+  <path style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" d="M 0.01 8.25 L 4.86355,8.25 L 4.86355,11.6443 C 3.89284,11.0786 3.40749,11.0786 2.43678,11.6443 C 1.46607,12.21 0.980711,12.21 0.01,11.6443 L 0.01,8.25"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="2.43678" y="9.81429">XML Doc</text>
+  <path style="fill: #ffffff" d="M 0.96 10.5 L 5.81355,10.5 L 5.81355,13.8943 C 4.84284,13.3286 4.35749,13.3286 3.38678,13.8943 C 2.41607,14.46 1.93071,14.46 0.96,13.8943 L 0.96,10.5z"/>
+  <path style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" d="M 0.96 10.5 L 5.81355,10.5 L 5.81355,13.8943 C 4.84284,13.3286 4.35749,13.3286 3.38678,13.8943 C 2.41607,14.46 1.93071,14.46 0.96,13.8943 L 0.96,10.5"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="3.38678" y="11.6643">MARC</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="3.38678" y="12.4643">Records</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 1.2; font-family: sans; font-style: normal; font-weight: 700" x="24.9324" y="2.58825">DOM XML Filter Architecture</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 1.2; font-family: sans; font-style: normal; font-weight: 700" x="24.9324" y="3.78825"></text>
+  <path style="fill: #ffffff" d="M 23.3009 6.49589 L 26.958,6.49589 L 26.958,9.38442 C 26.2265,8.903 25.8608,8.903 25.1294,9.38442 C 24.398,9.86584 24.0323,9.86584 23.3009,9.38442 L 23.3009,6.49589z"/>
+  <path style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" d="M 23.3009 6.49589 L 26.958,6.49589 L 26.958,9.38442 C 26.2265,8.903 25.8608,8.903 25.1294,9.38442 C 24.398,9.86584 24.0323,9.86584 23.3009,9.38442 L 23.3009,6.49589"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="25.1294" y="7.44945">Common</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="25.1294" y="8.24945">XML DOM</text>
+  <path style="fill: #ffffff" d="M 17.5038 17.1665 L 22.3324,17.1665 L 22.3324,20.055 C 21.3666,19.5736 20.8838,19.5736 19.9181,20.055 C 18.9524,20.5364 18.4695,20.5364 17.5038,20.055 L 17.5038,17.1665z"/>
+  <path style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" d="M 17.5038 17.1665 L 22.3324,17.1665 L 22.3324,20.055 C 21.3666,19.5736 20.8838,19.5736 19.9181,20.055 C 18.9524,20.5364 18.4695,20.5364 17.5038,20.055 L 17.5038,17.1665"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="19.9181" y="18.12">Indexing</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="19.9181" y="18.92">XML DOM</text>
+  <path style="fill: #ffffff" d="M 27.6382 17.2194 L 32.2668,17.2194 L 32.2668,20.1079 C 31.3411,19.6265 30.8782,19.6265 29.9525,20.1079 C 29.0268,20.5894 28.5639,20.5894 27.6382,20.1079 L 27.6382,17.2194z"/>
+  <path style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" d="M 27.6382 17.2194 L 32.2668,17.2194 L 32.2668,20.1079 C 31.3411,19.6265 30.8782,19.6265 29.9525,20.1079 C 29.0268,20.5894 28.5639,20.5894 27.6382,20.1079 L 27.6382,17.2194"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="29.9525" y="18.173">Storage</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="29.9525" y="18.973">XML DOM</text>
+  <rect style="fill: #ffffff" x="12.05" y="8.30001" width="3.7" height="2.7"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="12.05" y="8.30001" width="3.7" height="2.7"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="13.9" y="9.40001">&lt;input&gt;</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="13.9" y="10.2">pipeline</text>
+  <rect style="fill: #ffffff" x="17.6824" y="12.0912" width="4.3" height="2.7"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="17.6824" y="12.0912" width="4.3" height="2.7"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="19.8324" y="13.1912">&lt;extract&gt;</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="19.8324" y="13.9912">pipeline</text>
+  <rect style="fill: #ffffff" x="31.6765" y="12.3059" width="4.5" height="2.7"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="31.6765" y="12.3059" width="4.5" height="2.7"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="33.9265" y="13.4059">&lt;retrieve&gt;</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="33.9265" y="14.2059">pipeline</text>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="6.06775" y1="9.89707" x2="10.6945" y2="9.73934"/>
+  <polygon style="fill: #000000" points="10.7031,9.98919 11.1942,9.7223 10.686,9.48948 "/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="6.65598" y1="12.0735" x2="10.8512" y2="10.3955"/>
+  <polygon style="fill: #000000" points="10.944,10.6276 11.3154,10.2098 10.7584,10.1633 "/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="4.77363" y1="7.4853" x2="10.7136" y2="9.1053"/>
+  <polygon style="fill: #000000" points="10.6478,9.34649 11.196,9.23685 10.7794,8.8641 "/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="16.7148" y1="9.54413" x2="22.0649" y2="8.15311"/>
+  <polygon style="fill: #000000" points="22.1278,8.39507 22.5488,8.0273 22.0019,7.91116 "/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="22.8325" y1="9.83825" x2="20.8226" y2="11.2821"/>
+  <polygon style="fill: #000000" points="20.6767,11.079 20.4165,11.5738 20.9685,11.4851 "/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="19.8465" y1="15.25" x2="19.8373" y2="16.2883"/>
+  <polygon style="fill: #000000" points="19.5873,16.2861 19.8329,16.7882 20.0873,16.2905 "/>
+  <rect style="fill: #ffffff" x="25.9575" y="12.253" width="3.75" height="2.7"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="25.9575" y="12.253" width="3.75" height="2.7"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="27.8325" y="13.353">&lt;store&gt;</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="27.8325" y="14.153">pipeline</text>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="25.8325" y1="9.95589" x2="27.1685" y2="11.3267"/>
+  <polygon style="fill: #000000" points="26.9895,11.5012 27.5175,11.6848 27.3475,11.1522 "/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="28.656" y1="15.3677" x2="29.1314" y2="16.3977"/>
+  <polygon style="fill: #000000" points="28.9044,16.5025 29.3409,16.8517 29.3584,16.2929 "/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="31.1266" y1="16.6618" x2="32.5821" y2="15.4792"/>
+  <polygon style="fill: #000000" points="32.7397,15.6732 32.9701,15.1639 32.4244,15.2852 "/>
+  <path style="fill: #ffffff" d="M 42.2805 12.1324 L 46.1994,12.1324 L 46.1994,14.6534 C 45.4156,14.2332 45.0238,14.2332 44.24,14.6534 C 43.4562,15.0735 43.0643,15.0735 42.2805,14.6534 L 42.2805,12.1324z"/>
+  <path style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" d="M 42.2805 12.1324 L 46.1994,12.1324 L 46.1994,14.6534 C 45.4156,14.2332 45.0238,14.2332 44.24,14.6534 C 43.4562,15.0735 43.0643,15.0735 42.2805,14.6534 L 42.2805,12.1324"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="44.24" y="13.3328">XML Doc</text>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="36.8465" y1="13.25" x2="41.0051" y2="13.6659"/>
+  <polygon style="fill: #000000" points="40.9802,13.9146 41.5026,13.7156 41.03,13.4171 "/>
+  <path style="fill: #ffffff" d="M 43.2024 13.7118 L 47.1214,13.7118 L 47.1214,16.2328 C 46.3376,15.8126 45.9457,15.8126 45.1619,16.2328 C 44.3781,16.653 43.9862,16.653 43.2024,16.2328 L 43.2024,13.7118z"/>
+  <path style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" d="M 43.2024 13.7118 L 47.1214,13.7118 L 47.1214,16.2328 C 46.3376,15.8126 45.9457,15.8126 45.1619,16.2328 C 44.3781,16.653 43.9862,16.653 43.2024,16.2328 L 43.2024,13.7118"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="45.1619" y="14.9122">XML Doc</text>
+  <path style="fill: #ffffff" d="M 44.32 15.2412 L 48.239,15.2412 L 48.239,17.7622 C 47.4552,17.342 47.0633,17.342 46.2795,17.7622 C 45.4957,18.1824 45.1038,18.1824 44.32,17.7622 L 44.32,15.2412z"/>
+  <path style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" d="M 44.32 15.2412 L 48.239,15.2412 L 48.239,17.7622 C 47.4552,17.342 47.0633,17.342 46.2795,17.7622 C 45.4957,18.1824 45.1038,18.1824 44.32,17.7622 L 44.32,15.2412"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="46.2795" y="16.4416">XML Doc</text>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="36.7877" y1="13.7794" x2="41.606" y2="14.9443"/>
+  <polygon style="fill: #000000" points="41.5473,15.1873 42.092,15.0618 41.6648,14.7013 "/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="36.9641" y1="14.3677" x2="43.3332" y2="16.8173"/>
+  <polygon style="fill: #000000" points="43.2434,17.0506 43.7998,16.9968 43.4229,16.5839 "/>
+  <path style="fill: #ffffff" d="M 17.3106 26.5504 C 18.372,26.1486 18.9027,26.0147 19.9641,26.0147 C 21.0256,26.0147 21.5563,26.1486 22.6177,26.5504 L 22.6177,28.6932 C 21.5563,29.095 21.0256,29.2289 19.9641,29.2289 C 18.9027,29.2289 18.372,29.095 17.3106,28.6932 L 17.3106,26.5504z"/>
+  <path style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" d="M 17.3106 26.5504 C 18.372,26.1486 18.9027,26.0147 19.9641,26.0147 C 21.0256,26.0147 21.5563,26.1486 22.6177,26.5504 L 22.6177,28.6932 C 21.5563,29.095 21.0256,29.2289 19.9641,29.2289 C 18.9027,29.2289 18.372,29.095 17.3106,28.6932 L 17.3106,26.5504"/>
+  <path style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" d="M 17.3106 26.5504 C 18.372,26.9522 18.9027,27.0861 19.9641,27.0861 C 21.0256,27.0861 21.5563,26.9522 22.6177,26.5504"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="19.9641" y="28.0397">Zebra Indexes</text>
+  <path style="fill: #ffffff" d="M 27.2018 26.3739 C 28.2832,25.9722 28.8239,25.8382 29.9053,25.8382 C 30.9867,25.8382 31.5275,25.9722 32.6089,26.3739 L 32.6089,28.5168 C 31.5275,28.9185 30.9867,29.0525 29.9053,29.0525 C 28.8239,29.0525 28.2832,28.9185 27.2018,28.5168 L 27.2018,26.3739z"/>
+  <path style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" d="M 27.2018 26.3739 C 28.2832,25.9722 28.8239,25.8382 29.9053,25.8382 C 30.9867,25.8382 31.5275,25.9722 32.6089,26.3739 L 32.6089,28.5168 C 31.5275,28.9185 30.9867,29.0525 29.9053,29.0525 C 28.8239,29.0525 28.2832,28.9185 27.2018,28.5168 L 27.2018,26.3739"/>
+  <path style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" d="M 27.2018 26.3739 C 28.2832,26.7757 28.8239,26.9097 29.9053,26.9097 C 30.9867,26.9097 31.5275,26.7757 32.6089,26.3739"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: sans; font-style: normal; font-weight: normal" x="29.9053" y="27.8632">Zebra Storage</text>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="20.023" y1="20.6618" x2="20.023" y2="24.9941"/>
+  <polygon style="fill: #000000" points="19.773,24.9941 20.023,25.4941 20.273,24.9941 "/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="29.9053" y1="21.0353" x2="29.9053" y2="24.7588"/>
+  <polygon style="fill: #000000" points="30.1553,21.0353 29.9053,20.5353 29.6553,21.0353 "/>
+  <polygon style="fill: #000000" points="29.6553,24.7588 29.9053,25.2588 30.1553,24.7588 "/>
+</svg>
