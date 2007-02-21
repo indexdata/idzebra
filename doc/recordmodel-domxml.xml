@@ -1,5 +1,5 @@
 <chapter id="record-model-domxml">
-  <!-- $Id: recordmodel-domxml.xml,v 1.6 2007-02-21 13:38:22 marc Exp $ -->
+  <!-- $Id: recordmodel-domxml.xml,v 1.7 2007-02-21 14:15:07 marc Exp $ -->
   <title>&dom; &xml; Record Model and Filter Module</title>
 
   <para>
@@ -216,50 +216,61 @@
 
    <section id="record-model-domxml-pipeline-extract">
     <title>Extract pipeline</title>   
+     <para>
+       The <literal>&lt;extact&gt;</literal> pipeline takes documents
+       from any common &dom; &xml; format to the &zebra; specific
+        indexing &dom; &xml; format.
+       It may consist of zero ore more 
+       <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
+       &xslt; transformations, and the outcome is handled to the
+       &zebra; core to drive the proces of building the inverted
+       indexes. See
+       <xref linkend="record-model-domxml-canonical-index"/> for
+       details.
+     </para>
    </section>
 
    <section id="record-model-domxml-pipeline-store">
     <title>Store pipeline</title>   
-   </section>
+       The <literal>&lt;store&gt;</literal> pipeline takes documents
+       from any common &dom; &xml; format to the &zebra; specific
+        storage &dom; &xml; format.
+       It may consist of zero ore more 
+       <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
+       &xslt; transformations, and the outcome is handled to the
+       &zebra; core for deposition into the internal storage system.
+    </section>
 
    <section id="record-model-domxml-pipeline-retrieve">
     <title>Retrieve pipeline</title>   
-
     <para>
-     All named stylesheets defined inside
-     <literal>schema</literal> element tags 
-     are for presentation after search, including
-     the indexing stylesheet (which is a great debugging help). The
-     names defined in the <literal>name</literal> attributes must be
-     unique, these are the literal <literal>schema</literal> or 
+      Finally, there may be one or more 
+      <literal>&lt;retrieve&gt;</literal> pipeline definitions, each
+      of them again consisting of zero or more
+      <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
+       &xslt; transformations. These are used for document
+      presentation after search, and take the internal storage &dom;
+      &xml; to the requested output formats during record present
+      requests.  
+    </para>
+    <para>
+     The  possible multiple 
+     <literal>&lt;retrieve&gt;</literal> pipeline definitions
+     are distinguished by their unique <literal>name</literal>
+     attributes, these are the literal <literal>schema</literal> or 
      <literal>element set</literal> names used in 
       <ulink url="http://www.loc.gov/standards/sru/srw/">&srw;</ulink>,
       <ulink url="&url.sru;">&sru;</ulink> and
-    &z3950; protocol queries.
+      &z3950; protocol queries.
    </para>
    </section>
 
 
-   <section id="record-model-domxml-internal">
-    <title>&dom; filter internal record representation</title>   
-    <para>When indexing, an &xml; Reader is invoked to split the input
-    files into suitable record &xml; pieces. Each record piece is then
-    transformed to an &xml; &dom; structure, which is essentially the
-    record model. Only &xslt; transformations can be applied during
-    index, search and retrieval. Consequently, output formats are
-    restricted to whatever &xslt; can deliver from the record &xml;
-    structure, be it other &xml; formats, HTML, or plain text. In case
-    you have <literal>libxslt1</literal> running with E&xslt; support,
-    you can use this functionality inside the &dom;
-    filter configuration &xslt; stylesheets.
-    </para>
-   </section>
-
-   <section id="record-model-domxml-canonical">
-    <title>&dom; Canonical Indexing Format</title>   
+   <section id="record-model-domxml-canonical-index">
+    <title>Canonical Indexing Format</title>   
     <para>The output of the indexing &xslt; stylesheets must contain
     certain elements in the magic 
-     <literal>xmlns:z="http://indexdata.dk/zebra/xslt/1"</literal>
+     <literal>xmlns:z="http://indexdata.dk/zebra-2.0"</literal>
     namespace. The output of the &xslt; indexing transformation is then
     parsed using &dom; methods, and the contained instructions are
     performed on the <emphasis>magic elements and their
