@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.67 2007-02-21 17:03:23 adam Exp $
+## $Id: Makefile.am,v 1.68 2007-02-22 08:59:30 adam Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -37,7 +37,7 @@ MANFILES=zebraidx$(PACKAGE_SUFFIX).1 \
 	zebrasrv$(PACKAGE_SUFFIX).8 \
 	idzebra-config$(PACKAGE_SUFFIX).1
 
-doc_DATA = $(HTMLFILES) $(PNGFILES) $(PDFFILES)
+doc_DATA = $(HTMLFILES) $(PNGFILES)
 man_MANS = $(MANFILES)
 
 EXTRA_DIST = $(XMLFILES) $(XMLMAN) \
@@ -108,7 +108,7 @@ uninstall-hook:
 	rm -r $(DESTDIR)/$(docdir)
 
 domfilter.png: domfilter.svg
-	inkscape --export-png=$@ --export-width=600 --export-area-drawing $?
+	inkscape --export-png=$@ --export-width=600 $?
 
 domfilter.eps: domfilter.svg
 	inkscape --export-eps=$@ --export-bbox-page $?
