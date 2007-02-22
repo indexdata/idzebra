@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.69 2007-02-22 12:10:09 marc Exp $
+## $Id: Makefile.am,v 1.70 2007-02-22 12:22:04 marc Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -26,11 +26,11 @@ XMLFILES =  \
    zebrasrv-synopsis.xml \
    zebrasrv-virtual.xml 
 
-HTMLFILES =  index.html
+HTMLFILES = index.html
 
-PNGFILES=zebra.png domfilter.png
-EPSFILES=zebra.eps domfilter.eps
-PDFFILES=zebra.pdf domfilter.pdf
+PNGFILES = zebra.png domfilter.png
+EPSFILES = zebra.eps domfilter.eps
+PDFFILES = zebra.pdf domfilter.pdf
 
 
 MANFILES=zebraidx$(PACKAGE_SUFFIX).1 \
@@ -57,7 +57,7 @@ idzebra-config$(PACKAGE_SUFFIX).1: idzebra-config.xml
 	$(MAN_COMPILE) $(srcdir)/idzebra-config.xml
 	mv idzebra-config.1 idzebra-config$(PACKAGE_SUFFIX).1
 
-$(HTMLFILES): $(XMLFILES)
+$(HTMLFILES): $(XMLFILES) $(PNGFILES)
 	rm -f *.html
 	$(HTML_COMPILE) $(srcdir)/zebra.xml
 
