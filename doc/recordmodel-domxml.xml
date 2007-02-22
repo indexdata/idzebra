@@ -1,11 +1,11 @@
 <chapter id="record-model-domxml">
-  <!-- $Id: recordmodel-domxml.xml,v 1.8 2007-02-21 15:03:30 marc Exp $ -->
+  <!-- $Id: recordmodel-domxml.xml,v 1.9 2007-02-22 15:44:19 marc Exp $ -->
   <title>&dom; &xml; Record Model and Filter Module</title>
 
   <para>
    The record model described in this chapter applies to the fundamental,
    structured &xml;
-   record type <literal>dom</literal>, introduced in
+   record type <literal>&dom;</literal>, introduced in
    <xref linkend="componentmodulesdom"/>. The &dom; &xml; record model
    is experimental, and it's inner workings might change in future
    releases of the &zebra; Information Server.
@@ -19,7 +19,7 @@
      <para>
       The &dom; &xml; filter uses a standard &dom; &xml; structure as
       internal data model, and can therefore parse, index, and display 
-      any &xml; document type. It is wellsuited to work on 
+      any &xml; document type. It is well suited to work on 
       standardized &xml;-based formats such as Dublin Core, MODS, METS,
       MARCXML, OAI-PMH, RSS, and performs equally  well on any other
       non-standard &xml; format. 
@@ -33,7 +33,7 @@
 
     <para>
       The &dom; filter architecture consists of four
-      different pipelines, each being a chain of arbitraily many sucessive
+      different pipelines, each being a chain of arbitrarily many successive
       &xslt; transformations of the internal &dom; &xml;
       representations of documents.
     </para>
@@ -166,19 +166,19 @@
    <para>
      The root &xml; element <literal>&lt;dom&gt;</literal> and all other &dom;
      &xml; filter elements are residing in the namespace 
-     <literal>http://indexdata.com/zebra-2.0</literal>.
+     <literal>xmlns="http://indexdata.dk/zebra-2.0"</literal>.
    </para>
    <para>
     All pipeline definition elements - i.e. the
      <literal>&lt;input&gt;</literal>,
-     <literal>&lt;extact&gt;</literal>,
+     <literal>&lt;extract&gt;</literal>,
      <literal>&lt;store&gt;</literal>, and 
      <literal>&lt;retrieve&gt;</literal> elements - are optional.
      Missing pipeline definitions are just interpreted
      do-nothing identity pipelines.
    </para>
    <para>
-    All pipeine definition elements may contain zero or more 
+    All pipeline definition elements may contain zero or more 
     <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
     &xslt; transformation instructions, which are performed
     sequentially from top to bottom.
@@ -209,7 +209,7 @@
     <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
     &xslt; transformations. At the end of this pipeline, the documents
     are in the common format, used to feed both the 
-     <literal>&lt;extact&gt;</literal> and 
+     <literal>&lt;extract&gt;</literal> and 
      <literal>&lt;store&gt;</literal> pipelines.
    </para>
    </section>
@@ -217,13 +217,13 @@
    <section id="record-model-domxml-pipeline-extract">
     <title>Extract pipeline</title>   
      <para>
-       The <literal>&lt;extact&gt;</literal> pipeline takes documents
+       The <literal>&lt;extract&gt;</literal> pipeline takes documents
        from any common &dom; &xml; format to the &zebra; specific
         indexing &dom; &xml; format.
        It may consist of zero ore more 
        <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
        &xslt; transformations, and the outcome is handled to the
-       &zebra; core to drive the proces of building the inverted
+       &zebra; core to drive the process of building the inverted
        indexes. See
        <xref linkend="record-model-domxml-canonical-index"/> for
        details.
@@ -233,8 +233,8 @@
    <section id="record-model-domxml-pipeline-store">
     <title>Store pipeline</title>   
        The <literal>&lt;store&gt;</literal> pipeline takes documents
-       from any common &dom; &xml; format to the &zebra; specific
-        storage &dom; &xml; format.
+       from any common &dom;  &xml; format to the &zebra; specific
+        storage &dom;  &xml; format.
        It may consist of zero ore more 
        <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
        &xslt; transformations, and the outcome is handled to the
@@ -275,7 +275,7 @@
      similar to the Alvis filter indexing format - &xml; documents
      containing &xml; <literal>&lt;record&gt;</literal> and
      <literal>&lt;index&gt;</literal> instructions from the magic
-     namespace <literal>xmlns:z="http://indexdata.dk/zebra-2.0"</literal>. 
+     namespace <literal>xmlns:z="http://indexdata.dk/zebra-2.0"</literal>.
     </para>
 
    <section id="record-model-domxml-canonical-index-pi">
@@ -301,9 +301,9 @@
       <?xml version="1.0" encoding="UTF-8"?>
       <?zebra-2.0 record id=11224466 rank=42?>
       <record>
-        <?zebra-2.0 index control:w?>
+        <?zebra-2.0 index control:0?>
         <control>11224466</control>
-        <?zebra-2.0 index title:w title:p title:s any:w?>
+        <?zebra-2.0 index any:w title:w title:p title:s?>
         <title>How to program a computer</title>
       </record>
       ]]>
@@ -333,8 +333,8 @@
       <?xml version="1.0" encoding="UTF-8"?>
       <z:record xmlns:z="http://indexdata.com/zebra-2.0" 
                 z:id="11224466" z:rank="42">
-          <z:index name="control">11224466</z:index>
-          <z:index name="title:w title:p title:s any:w">
+          <z:index name="control:0">11224466</z:index>
+          <z:index name="any:w title:w title:p title:s">
                     How to program a computer</z:index>
       </z:record>
       ]]>
@@ -348,41 +348,94 @@
 
     <para>
      Both indexing formats are defined with equal semantics and
-     behaviour in mind. 
+     behavior in mind: 
+     <itemizedlist>
+       <listitem>
+         <para>&zebra; specific instructions are either
+         processing instructions named
+         <literal>zebra-2.0</literal> or
+         elements contained in the namespace
+         <literal>xmlns:z="http://indexdata.dk/zebra-2.0"</literal>.
+         </para>
+       </listitem>
+       <listitem>
+         <para>There must be exactly one <literal>record</literal>
+           instruction, which sets the scope for the following,
+           possibly nested <literal>index</literal> instructions. 
+         </para>
+       </listitem>
+       <listitem>
+         <para>The unique <literal>record</literal> instruction
+	    may have additional attributes <literal>id</literal> and
+            <literal>rank</literal>, where the value of the opaque ID
+            may be any string not containing the whitespace character 
+            <literal>' '</literal>, and the rank value must be a
+            non-negative integer. See 
+            <xref linkend="administration-ranking"/>
+         </para>
+       </listitem>
+       <listitem>
+         <para> Multiple and possible nested <literal>index</literal>
+         instructions must contain at least one 
+         <literal>indexname:indextype</literal>
+         pair, and may contain multiple such pairs separated by the 
+         whitespace character  <literal>' '</literal>. In each index
+         pair, the name and the type of the index is separated by a 
+         colon character <literal>':'</literal>.
+         </para>  
+       </listitem>
+       <listitem>
+         <para>
+         Any index name consisting of ASCII letters, and following the
+         standard &zebra; rules will do, see 
+         <xref linkend="querymodel-pqf-apt-mapping-accesspoint"/>.
+         </para>  
+       </listitem>
+       <listitem>
+         <para> 
+         Index types are restricted to the values defined in
+         the standard configuration
+         file <filename>default.idx</filename>, see
+         <xref linkend="querymodel-bib1"/> and 
+         <xref linkend="fields-and-charsets"/> for details.
+         </para>
+       </listitem>
+      </itemizedlist>
     </para>
 
     
-    <para>This means the following: From the original &xml; file 
-     <literal>one-record.xml</literal> (or from the &xml; record &dom; of the
-     same form coming from a splitted input file), the indexing
-     stylesheet produces an indexing &xml; record, which is defined by
-     the <literal>record</literal> element in the magic namespace
-     <literal>xmlns:z="http://indexdata.dk/zebra/xslt/1"</literal>.
+    <para>The examples work as follows: 
+     From the original &xml; file 
+     <literal>marc-one.xml</literal> (or from the &xml; record &dom; of the
+     same form coming from an <literal>&lt;input&gt;</literal>
+     pipeline),
+     the indexing
+     pipeline <literal>&lt;extract&gt;</literal>
+     produces an indexing &xml; record, which is defined by
+     the <literal>record</literal> instruction
      &zebra; uses the content of 
-     <literal>z:id="oai:JTRS:CP-3290---Volume-I"</literal> as internal
+     <literal>z:id="11224466"</literal> 
+     or
+     <literal>id=11224466</literal> 
+     as internal
      record ID, and - in case static ranking is set - the content of 
-     <literal>z:rank="47896"</literal> as static rank. Following the
-     discussion in <xref linkend="administration-ranking"/>
-     we see that this records is internally ordered
-     lexicographically according to the value of the string
-     <literal>oai:JTRS:CP-3290---Volume-I47896</literal>.
-     The type of action performed during indexing is defined by
-     <literal>z:type="update"&gt;</literal>, with recognized values
-     <literal>insert</literal>, <literal>update</literal>, and 
-     <literal>delete</literal>. 
+     <literal>rank=42</literal>
+     or
+     <literal>z:rank="42"</literal>
+     as static rank.
     </para>
     
 
     <para>In these examples, the following literal indexes are constructed:
      <screen>
        any:w
-       control:w
+       control:0
        title:w
        title:p
        title:s
      </screen>
      where the indexing type is defined after the 
-     literal <literal>':'</literal> charaacter.  
+     literal <literal>':'</literal> character.  
      Any value from the standard configuration
      file <filename>default.idx</filename> will do.
      Finally, any 
@@ -390,32 +443,8 @@
      inside the <literal>&lt;z:index&gt;</literal> element, or any
      element following a <literal>index</literal> processing instruction,
      will be filtered through the
-     appropriate charmap for character normalization, and will be
+     appropriate char map for character normalization, and will be
      inserted in the named indexes.
-    </para>
-
-    
-    <para>
-     Specific to this example, we see that the single word
-     <literal>oai:JTRS:CP-3290---Volume-I</literal> will be literal,
-     byte for byte without any form of character normalization,
-     inserted into the index named <literal>oai:identifier</literal>,
-     the text 
-     <literal>Kumar Krishen and *Calvin Burnham, Editors</literal>
-     will be inserted using the <literal>w</literal> character
-     normalization defined in <filename>default.idx</filename> into
-     the index <literal>dc:creator</literal> (that is, after character
-     normalization the index will keep the inidividual words 
-     <literal>kumar</literal>, <literal>krishen</literal>, 
-     <literal>and</literal>, <literal>calvin</literal>,
-     <literal>burnham</literal>, and <literal>editors</literal>), and
-     finally both the texts
-     <literal>Proceedings of the 4th International Conference and Exhibition:
-      World Congress on Superconductivity - Volume I</literal> 
-     and
-     <literal>Kumar Krishen and *Calvin Burnham, Editors</literal> 
-     will be inserted into the index <literal>dc:all</literal> using
-     the same character normalization map <literal>w</literal>. 
     </para>
     <para>
      Finally, this example configuration can be queried using &pqf;
@@ -426,21 +455,24 @@
       Z> elem dc
       Z> form xml
       Z>
-      Z> f @attr 1=dc_creator Kumar
-      Z> scan @attr 1=dc_creator adam
+      Z> find @attr 1=control @attr 4=3 11224466
+      Z> scan @attr 1=control @attr 4=3 ""
       Z>
-      Z> f @attr 1=dc_title @attr 4=2 "proceeding congress superconductivity"
-      Z> scan @attr 1=dc_title abc
+      Z> find @attr 1=title program
+      Z> scan @attr 1=title ""
+      Z>
+      Z> find @attr 1=title @attr 4=2 "How to program a computer"
+      Z> scan @attr 1=title @attr 4=2 ""
       ]]>
      </screen>
      or the proprietary
-     extentions <literal>x-pquery</literal> and
+     extensions <literal>x-pquery</literal> and
      <literal>x-pScanClause</literal> to
      &sru;, and &srw;
      <screen>
       <![CDATA[
-      http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=%40attr+1%3Ddc_creator+%40attr+4%3D6+%22the
-      http://localhost:9999/?version=1.1&operation=scan&x-pScanClause=@attr+1=dc_date+@attr+4=2+a
+      http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=@attr 1=title program
+      http://localhost:9999/?version=1.1&operation=scan&x-pScanClause=@attr 1=title ""
       ]]>
      </screen>
      See <xref linkend="zebrasrv-sru"/> for more information on &sru;/&srw;
@@ -453,6 +485,13 @@
      <filename>*.est</filename>, <filename>*.map</filename>, or other &grs1;
      filter configuration files involves in this process, and that the
      literal index names are used during search and retrieval.
+    </para>
+    <para>
+     In case that we want to support the usual
+     <literal>bib-1</literal> &z3950; numeric access points, it is a
+     good idea to choose string index names defined in the default
+     configuration file <filename>tab/bib1.att</filename>, see   
+     <xref linkend="attset-files"/>
     </para>
     
    </section>
@@ -468,14 +507,14 @@
   <section id="record-model-domxml-index">
    <title>&dom; Indexing Configuration</title>
     <para>
-     As mentioned above, there can be only one indexing
-     stylesheet, and configuration of the indexing process is a synonym
+     As mentioned above, there can be only one indexing pipeline,
+     and configuration of the indexing process is a synonym
      of writing an &xslt; stylesheet which produces &xml; output containing the
-     magic elements discussed in  
-     <xref linkend="record-model-domxml-internal"/>. 
+     magic processing instructions or elements discussed in  
+     <xref linkend="record-model-domxml-canonical-index"/>. 
      Obviously, there are million of different ways to accomplish this
-     task, and some comments and code snippets are in order to lead
-     our paduans on the right track to the  good side of the force.
+     task, and some comments and code snippets are in order to
+     enlighten the wary.
     </para>
     <para>
      Stylesheets can be written in the <emphasis>pull</emphasis> or
@@ -483,13 +522,15 @@
      means that the output &xml; structure is taken as starting point of
      the internal structure of the &xslt; stylesheet, and portions of
      the input &xml; are <emphasis>pulled</emphasis> out and inserted
-     into the right spots of the output &xml; structure. On the other
-     side, <emphasis>push</emphasis> &xslt; stylesheets are recursavly
+     into the right spots of the output &xml; structure. 
+     On the other
+     side, <emphasis>push</emphasis> &xslt; stylesheets are recursively
      calling their template definitions, a process which is commanded
-     by the input &xml; structure, and avake to produce some output &xml;
-     whenever some special conditions in the input styelsheets are
+     by the input &xml; structure, and is triggered to produce 
+     some output &xml;
+     whenever some special conditions in the input stylesheets are
      met. The <emphasis>pull</emphasis> type is well-suited for input
-     &xml; with strong and well-defined structure and semantcs, like the
+     &xml; with strong and well-defined structure and semantics, like the
      following &oai; indexing example, whereas the
      <emphasis>push</emphasis> type might be the only possible way to
      sort out deeply recursive input &xml; formats.
@@ -501,29 +542,34 @@
      <screen>
       <![CDATA[
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-       xmlns:z="http://indexdata.dk/zebra/xslt/1"
+       xmlns:z="http://indexdata.dk/zebra-2.0"
        xmlns:oai="http://www.openarchives.org/&oai;/2.0/" 
        xmlns:oai_dc="http://www.openarchives.org/&oai;/2.0/oai_dc/" 
        xmlns:dc="http://purl.org/dc/elements/1.1/"
        version="1.0">
 
+       <!-- Example pull and magic element style Zebra indexing --> 
        <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
 
         <!-- disable all default text node output -->
         <xsl:template match="text()"/>
 
-         <!-- match on oai xml record root -->
+        <!-- disable all default recursive element node transversal -->
+        <xsl:template match="node()"/>
+
+         <!-- match only on oai xml record root -->
          <xsl:template match="/">    
-          <z:record z:id="{normalize-space(oai:record/oai:header/oai:identifier)}" 
-           z:type="update">
-           <!-- you might want to use z:rank="{some &xslt; function here}" --> 
+          <z:record z:id="{normalize-space(oai:record/oai:header/oai:identifier)}">
+           <!-- you may use z:rank="{some XSLT; function here}" -->
+
+           <!-- explicetly calling defined templates -->
            <xsl:apply-templates/>
           </z:record>
          </xsl:template>
 
-         <!-- &oai; indexing templates -->
+         <!-- OAI indexing templates -->
          <xsl:template match="oai:record/oai:header/oai:identifier">
-          <z:index name="oai_identifier" type="0">
+          <z:index name="oai_identifier;0">
            <xsl:value-of select="."/>
           </z:index>    
          </xsl:template>
@@ -532,7 +578,7 @@
 
          <!-- DC specific indexing templates -->
          <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:title">
-          <z:index name="dc_title" type="w">
+          <z:index name="dc_any:w dc_title:w dc_title:p dc_title:s ">
            <xsl:value-of select="."/>
           </z:index>
          </xsl:template>
@@ -548,19 +594,19 @@
      that the names and types of the indexes can be defined in the
      indexing &xslt; stylesheet <emphasis>dynamically according to
      content in the original &xml; records</emphasis>, which has
-     opportunities for great power and wizardery as well as grande
+     opportunities for great power and wizardry as well as grande
      disaster.  
     </para>
     <para>
      The following excerpt of a <emphasis>push</emphasis> stylesheet
      <emphasis>might</emphasis> 
      be a good idea according to your strict control of the &xml;
-     input format (due to rigerours checking against well-defined and
+     input format (due to rigorous checking against well-defined and
      tight RelaxNG or &xml; Schema's, for example):
      <screen>
       <![CDATA[
       <xsl:template name="element-name-indexes">     
-       <z:index name="{name()}" type="w">
+       <z:index name="{name()}:w">
         <xsl:value-of select="'1'"/>
        </z:index>
       </xsl:template>
@@ -582,7 +628,7 @@
       <![CDATA[  
       <!-- match on oai xml record root -->
       <xsl:template match="/">    
-       <z:record z:type="update">
+       <z:record>
       
         <!-- create dynamic index name from input content --> 
         <xsl:variable name="dynamic_content">
@@ -590,7 +636,7 @@
         </xsl:variable>
         
         <!-- create zillions of indexes with unknown names -->
-        <z:index name="{$dynamic_content}" type="w">
+        <z:index name="{$dynamic_content}:w">
          <xsl:value-of select="oai:record/oai:metadata/oai_dc:dc"/>
         </z:index>          
        </z:record>
@@ -598,10 +644,10 @@
       </xsl:template>
       ]]>
      </screen>
-     Don't be tempted to cross
-     the line to the dark side of the force, paduan; this leads
-     to suffering and pain, and universal
-     disentigration of your project schedule.
+     Don't be tempted to play too smart tricks with the power of
+     &xslt;, the above example will create zillions of
+     indexes with unpredictable names, resulting in severe &zebra;
+     index pollution..
     </para>
   </section>
 
@@ -654,15 +700,16 @@
 
   </section>
 
+  <!--
   <section id="record-model-domxml-example">
    <title>&dom; Filter &oai; Indexing Example</title>
    <para>
-     The sourcecode tarball contains a working &dom; filter example in
+     The source code tarball contains a working &dom; filter example in
      the directory <filename>examples/dom-oai/</filename>, which
      should get you started.  
     </para>
     <para>
-     More example data can be harvested from any &oai; complient server,
+     More example data can be harvested from any &oai; compliant server,
      see details at the  &oai; 
      <ulink url="http://www.openarchives.org/">
       http://www.openarchives.org/</ulink> web site, and the community
@@ -675,77 +722,12 @@
       http://www.oaforum.org/tutorial/</ulink>.
     </para>
    </section>
+   -->
 
   </section>
 
   
  </chapter>
-
-
-<!--
-
-c)  Main "dom" &xslt; filter config file:
-  cat db/filter_dom_conf.xml 
-
-  <?xml version="1.0" encoding="UTF8"?>
-  <schemaInfo>
-    <schema name="dom" stylesheet="db/dom2dom.xsl" />
-    <schema name="index" identifier="http://indexdata.dk/zebra/xslt/1"
-            stylesheet="db/dom2index.xsl" />
-    <schema name="dc" stylesheet="db/dom2dc.xsl" />
-    <schema name="dc-short" stylesheet="db/dom2dc_short.xsl" />
-    <schema name="snippet" snippet="25" stylesheet="db/dom2snippet.xsl" />
-    <schema name="help" stylesheet="db/dom2help.xsl" />
-    <split level="1"/>
-  </schemaInfo>
-
-  the paths are relative to the directory where zebra.init is placed
-  and is started up.
-
-  The split level decides where the SAX parser shall split the
-  collections of records into individual records, which then are
-  loaded into &dom;, and have the indexing &xslt; stylesheet applied.
-
-  The indexing stylesheet is found by it's identifier.
-
-  All the other stylesheets are for presentation after search.
-
-- in data/ a short sample of harvested carnivorous plants
-  ZEBRA_INDEX_DIRS=data/carnivor_20050118_2200_short-346.xml
-
-- in root also one single data record - nice for testing the xslt
-  stylesheets,
-  
-  xsltproc db/dom2index.xsl carni*.xml
-
-  and so on.
-
-- in db/ a cql2pqf.txt yaz-client config file 
-  which is also used in the yaz-server <ulink url="&url.cql;">&cql;</ulink>-to-&pqf; process
-
-   see: http://www.indexdata.com/yaz/doc/tools.tkl#tools.cql.map
-
-- in db/ an indexing &xslt; stylesheet. This is a PULL-type XSLT thing,
-  as it constructs the new &xml; structure by pulling data out of the
-  respective elements/attributes of the old structure.
-
-  Notice the special zebra namespace, and the special elements in this
-  namespace which indicate to the zebra indexer what to do.
-
-  <z:record id="67ht7" rank="675" type="update">
-  indicates that a new record with given id and static rank has to be updated. 
-
-  <z:index name="title" type="w">
-   encloses all the text/&xml; which shall be indexed in the index named
-   "title" and of index type "w" (see  file default.idx in your zebra
-   installation) 
-
-
-   </para>
-
-   <para>
--->
-
 
 
 

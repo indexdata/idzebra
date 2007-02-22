@@ -1,14 +1,16 @@
- <chapter id="record-model-alvisxslt">
-  <!-- $Id: recordmodel-alvisxslt.xml,v 1.16 2007-02-20 14:28:31 marc Exp $ -->
+<chapter id="record-model-alvisxslt">
+  <!-- $Id: recordmodel-alvisxslt.xml,v 1.17 2007-02-22 15:44:19 marc Exp $ -->
   <title>ALVIS &xml; Record Model and Filter Module</title>
 
-     <note>
+     <warning>
       <para>
         The functionality of this record model has been improved and
-        replaced by the DOM &xml; record model. See 
-        <xref linkend="record-model-domxml"/>.
+        replaced by the DOM &xml; record model, see 
+        <xref linkend="record-model-domxml"/>.  The Alvis &xml; record
+        model is considered obsolete, and will eventually be removed
+        from future releases of the &zebra; software. 
       </para>
-     </note>  
+     </warning>  
 
   <para>
    The record model described in this chapter applies to the fundamental,
@@ -134,7 +136,7 @@
     </para>
     <para>This means the following: From the original &xml; file 
      <literal>one-record.xml</literal> (or from the &xml; record &dom; of the
-     same form coming from a splitted input file), the indexing
+     same form coming from a split input file), the indexing
      stylesheet produces an indexing &xml; record, which is defined by
      the <literal>record</literal> element in the magic namespace
      <literal>xmlns:z="http://indexdata.dk/zebra/xslt/1"</literal>.
@@ -166,7 +168,7 @@
      file <filename>default.idx</filename> will do). Finally, any 
      <literal>text()</literal> node content recursively contained
      inside the <literal>index</literal> will be filtered through the
-     appropriate charmap for character normalization, and will be
+     appropriate char map for character normalization, and will be
      inserted in the index.
     </para>
     <para>
@@ -179,7 +181,7 @@
      will be inserted using the <literal>w</literal> character
      normalization defined in <filename>default.idx</filename> into
      the index <literal>dc:creator</literal> (that is, after character
-     normalization the index will keep the inidividual words 
+     normalization the index will keep the individual words 
      <literal>kumar</literal>, <literal>krishen</literal>, 
      <literal>and</literal>, <literal>calvin</literal>,
      <literal>burnham</literal>, and <literal>editors</literal>), and
@@ -208,7 +210,7 @@
       ]]>
      </screen>
      or the proprietary
-     extentions <literal>x-pquery</literal> and
+     extensions <literal>x-pquery</literal> and
      <literal>x-pScanClause</literal> to
      &sru;, and &srw;
      <screen>
@@ -246,7 +248,7 @@
      <xref linkend="record-model-alvisxslt-internal"/>. 
      Obviously, there are million of different ways to accomplish this
      task, and some comments and code snippets are in order to lead
-     our paduans on the right track to the  good side of the force.
+     our Padawan's on the right track to the  good side of the force.
     </para>
     <para>
      Stylesheets can be written in the <emphasis>pull</emphasis> or
@@ -255,12 +257,12 @@
      the internal structure of the &xslt; stylesheet, and portions of
      the input &xml; are <emphasis>pulled</emphasis> out and inserted
      into the right spots of the output &xml; structure. On the other
-     side, <emphasis>push</emphasis> &xslt; stylesheets are recursavly
+     side, <emphasis>push</emphasis> &xslt; stylesheets are recursively
      calling their template definitions, a process which is commanded
-     by the input &xml; structure, and avake to produce some output &xml;
-     whenever some special conditions in the input styelsheets are
+     by the input &xml; structure, and are triggered to produce some output &xml;
+     whenever some special conditions in the input stylesheets are
      met. The <emphasis>pull</emphasis> type is well-suited for input
-     &xml; with strong and well-defined structure and semantcs, like the
+     &xml; with strong and well-defined structure and semantics, like the
      following &oai; indexing example, whereas the
      <emphasis>push</emphasis> type might be the only possible way to
      sort out deeply recursive input &xml; formats.
@@ -319,14 +321,14 @@
      that the names and types of the indexes can be defined in the
      indexing &xslt; stylesheet <emphasis>dynamically according to
      content in the original &xml; records</emphasis>, which has
-     opportunities for great power and wizardery as well as grande
+     opportunities for great power and wizardry as well as grande
      disaster.  
     </para>
     <para>
      The following excerpt of a <emphasis>push</emphasis> stylesheet
      <emphasis>might</emphasis> 
      be a good idea according to your strict control of the &xml;
-     input format (due to rigerours checking against well-defined and
+     input format (due to rigorous checking against well-defined and
      tight RelaxNG or &xml; Schema's, for example):
      <screen>
       <![CDATA[
@@ -370,9 +372,9 @@
       ]]>
      </screen>
      Don't be tempted to cross
-     the line to the dark side of the force, paduan; this leads
+     the line to the dark side of the force, Padawan; this leads
      to suffering and pain, and universal
-     disentigration of your project schedule.
+     disintegration of your project schedule.
     </para>
   </section>
 
@@ -428,12 +430,12 @@
   <section id="record-model-alvisxslt-example">
    <title>ALVIS Filter &oai; Indexing Example</title>
    <para>
-     The sourcecode tarball contains a working Alvis filter example in
+     The source code tarball contains a working Alvis filter example in
      the directory <filename>examples/alvis-oai/</filename>, which
      should get you started.  
     </para>
     <para>
-     More example data can be harvested from any &oai; complient server,
+     More example data can be harvested from any &oai; compliant server,
      see details at the  &oai; 
      <ulink url="http://www.openarchives.org/">
       http://www.openarchives.org/</ulink> web site, and the community
@@ -451,72 +453,6 @@
 
   
  </chapter>
-
-
-<!--
-
-c)  Main "alvis" &xslt; filter config file:
-  cat db/filter_alvis_conf.xml 
-
-  <?xml version="1.0" encoding="UTF8"?>
-  <schemaInfo>
-    <schema name="alvis" stylesheet="db/alvis2alvis.xsl" />
-    <schema name="index" identifier="http://indexdata.dk/zebra/xslt/1"
-            stylesheet="db/alvis2index.xsl" />
-    <schema name="dc" stylesheet="db/alvis2dc.xsl" />
-    <schema name="dc-short" stylesheet="db/alvis2dc_short.xsl" />
-    <schema name="snippet" snippet="25" stylesheet="db/alvis2snippet.xsl" />
-    <schema name="help" stylesheet="db/alvis2help.xsl" />
-    <split level="1"/>
-  </schemaInfo>
-
-  the paths are relative to the directory where zebra.init is placed
-  and is started up.
-
-  The split level decides where the SAX parser shall split the
-  collections of records into individual records, which then are
-  loaded into &dom;, and have the indexing &xslt; stylesheet applied.
-
-  The indexing stylesheet is found by it's identifier.
-
-  All the other stylesheets are for presentation after search.
-
-- in data/ a short sample of harvested carnivorous plants
-  ZEBRA_INDEX_DIRS=data/carnivor_20050118_2200_short-346.xml
-
-- in root also one single data record - nice for testing the xslt
-  stylesheets,
-  
-  xsltproc db/alvis2index.xsl carni*.xml
-
-  and so on.
-
-- in db/ a cql2pqf.txt yaz-client config file 
-  which is also used in the yaz-server <ulink url="&url.cql;">&cql;</ulink>-to-&pqf; process
-
-   see: http://www.indexdata.com/yaz/doc/tools.tkl#tools.cql.map
-
-- in db/ an indexing &xslt; stylesheet. This is a PULL-type XSLT thing,
-  as it constructs the new &xml; structure by pulling data out of the
-  respective elements/attributes of the old structure.
-
-  Notice the special zebra namespace, and the special elements in this
-  namespace which indicate to the zebra indexer what to do.
-
-  <z:record id="67ht7" rank="675" type="update">
-  indicates that a new record with given id and static rank has to be updated. 
-
-  <z:index name="title" type="w">
-   encloses all the text/&xml; which shall be indexed in the index named
-   "title" and of index type "w" (see  file default.idx in your zebra
-   installation) 
-
-
-   </para>
-
-   <para>
--->
-
 
 
 
