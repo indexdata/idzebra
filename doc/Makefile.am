@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.68 2007-02-22 08:59:30 adam Exp $
+## $Id: Makefile.am,v 1.69 2007-02-22 12:10:09 marc Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -29,7 +29,7 @@ XMLFILES =  \
 HTMLFILES =  index.html
 
 PNGFILES=zebra.png domfilter.png
-EPSFILES=zebra.eps
+EPSFILES=zebra.eps domfilter.eps
 PDFFILES=zebra.pdf domfilter.pdf
 
 
