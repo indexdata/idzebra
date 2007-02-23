@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.17 2007-02-23 11:10:37 adam Exp $
+/* $Id: mod_dom.c,v 1.18 2007-02-23 11:16:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -380,12 +380,12 @@ static ZEBRA_RES parse_input(struct filter_info *tinfo, xmlNodePtr ptr,
             
             for (attr = ptr->properties; attr; attr = attr->next)
             {
-                if (attr_content(attr, "charset", &input_charset))
+                if (attr_content(attr, "inputcharset", &input_charset))
                     ;
                 else
                 {
                     dom_log(YLOG_WARN, tinfo, ptr,
-                            "bad attribute @%s, expected @charset",
+                            "bad attribute @%s, expected @inputcharset",
                             attr->name);
                 }
             }
