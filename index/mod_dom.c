@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.18 2007-02-23 11:16:39 adam Exp $
+/* $Id: mod_dom.c,v 1.19 2007-02-23 11:35:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -114,6 +114,9 @@ struct filter_info {
 
 #define XML_STRCMP(a,b)   strcmp((char*)a, b)
 #define XML_STRLEN(a) strlen((char*)a)
+
+
+#define FOR_EACH_ELEMENT(ptr) for (; ptr; ptr = ptr->next) if (ptr->type == XML_ELEMENT_NODE)
 
 static void dom_log(int level, struct filter_info *tinfo, xmlNodePtr ptr,
                     const char *fmt, ...)
@@ -264,10 +267,7 @@ static ZEBRA_RES parse_convert(struct filter_info *tinfo, xmlNodePtr ptr,
                                struct convert_s **l)
 {
     *l = 0;
-    for(; ptr; ptr = ptr->next)
-    {
-        if (ptr->type != XML_ELEMENT_NODE)
-            continue;
+    FOR_EACH_ELEMENT(ptr) {
         if (!XML_STRCMP(ptr->name, "xslt"))
         {
             struct _xmlAttr *attr;
@@ -312,20 +312,20 @@ static ZEBRA_RES parse_convert(struct filter_info *tinfo, xmlNodePtr ptr,
                             tmp_xslt_full_name);
                     return ZEBRA_FAIL;
                 }
-            }
-            else
-            {
-                dom_log(YLOG_WARN, tinfo, ptr,
-                        "missing attribute 'stylesheet' ");
-                return ZEBRA_FAIL;
-            }
-            *l = p;
-            l = &p->next;
+                }
+                else
+                {
+                    dom_log(YLOG_WARN, tinfo, ptr,
+                            "missing attribute 'stylesheet' ");
+                    return ZEBRA_FAIL;
+                }
+                *l = p;
+                l = &p->next;
         }
         else
         {
             dom_log(YLOG_WARN, tinfo, ptr,
-                    "bad node '%s'", ptr->name);
+                    "bad element '%s', expected <xslt>", ptr->name);
             return ZEBRA_FAIL;
         }
     }
@@ -368,10 +368,7 @@ static struct filter_input *new_input(struct filter_info *tinfo, int type)
 static ZEBRA_RES parse_input(struct filter_info *tinfo, xmlNodePtr ptr,
                              const char *syntax, const char *name)
 {
-    for (; ptr; ptr = ptr->next)
-    {
-        if (ptr->type != XML_ELEMENT_NODE)
-            continue;
+    FOR_EACH_ELEMENT(ptr) {
         if (!XML_STRCMP(ptr->name, "marc"))
         {
             yaz_iconv_t iconv = 0;
@@ -490,10 +487,8 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
         return ZEBRA_FAIL;
     }
 
-    for (ptr = ptr->children; ptr; ptr = ptr->next)
-    {
-        if (ptr->type != XML_ELEMENT_NODE)
-            continue;
+    ptr = ptr->children;
+    FOR_EACH_ELEMENT(ptr) {
         if (!XML_STRCMP(ptr->name, "extract"))
         {
             /*
