@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.19 2007-02-23 11:35:08 adam Exp $
+/* $Id: mod_dom.c,v 1.20 2007-02-23 14:59:12 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -130,20 +130,18 @@ static void dom_log(int level, struct filter_info *tinfo, xmlNodePtr ptr,
 {
     va_list ap;
     char buf[4096];
-    xmlChar *node_path = 0;
-
-    if (ptr)
-        node_path = xmlGetNodePath(ptr);
 
     va_start(ap, fmt);
     yaz_vsnprintf(buf, sizeof(buf)-1, fmt, ap);
-    yaz_log(level, "%s: dom filter %s%s: %s",
-            tinfo->fname ? tinfo->fname : "none", 
-            node_path ? "in " : "", 
-            node_path ? (const char *) node_path : "", buf);
-
-    if (node_path)
-        xmlFree(node_path);
+    if (ptr)
+    {
+        yaz_log(level, "%s:%ld: %s", tinfo->fname ? tinfo->fname : "none", 
+                xmlGetLineNo(ptr), buf);
+    }
+    else
+    {
+        yaz_log(level, "%s: %s", tinfo->fname ? tinfo->fname : "none", buf);
+    }
     va_end(ap);
 }
 
@@ -465,7 +463,7 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
     
     yaz_log(YLOG_LOG, "%s dom filter: "
             "loading config file %s", tinfo->fname, tinfo->full_name);
-    
+
     doc = xmlParseFile(tinfo->full_name);
     if (!doc)
     {
