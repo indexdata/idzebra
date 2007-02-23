@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.70 2007-02-22 12:22:04 marc Exp $
+## $Id: Makefile.am,v 1.71 2007-02-23 09:35:17 adam Exp $
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 SUBDIRS = common
@@ -41,7 +41,7 @@ doc_DATA = $(HTMLFILES) $(PNGFILES)
 man_MANS = $(MANFILES)
 
 EXTRA_DIST = $(XMLFILES) $(XMLMAN) \
-	$(doc_DATA) $(EPSFILES) $(man_MANS) \
+	$(doc_DATA) zebra.eps $(man_MANS) \
 	marc_indexing.xml entities.ent local.ent.in domfilter.svg
 
 zebraidx$(PACKAGE_SUFFIX).1: zebraidx.xml
