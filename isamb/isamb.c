@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.91 2007-01-15 15:10:17 adam Exp $
+/* $Id: isamb.c,v 1.92 2007-02-24 16:46:22 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -291,17 +291,20 @@ ISAMB isamb_open2(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 	    if (memcmp(hbuf, "isamb", 5))
 	    {
 		yaz_log(YLOG_WARN, "bad isamb header for file %s", fname);
+                isamb_close(isamb);
 		return 0;
 	    }
 	    if (sscanf(hbuf+5, "%d %d %d", &major, &minor, &len) != 3)
 	    {
 		yaz_log(YLOG_WARN, "bad isamb header for file %s", fname);
+                isamb_close(isamb);
 		return 0;
 	    }
 	    if (major != ISAMB_MAJOR_VERSION)
 	    {
 		yaz_log(YLOG_WARN, "bad major version for file %s %d, must be %d",
 		     fname, major, ISAMB_MAJOR_VERSION);
+                isamb_close(isamb);
 		return 0;
 	    }
 	    for (left = len - sizes[i]; left > 0; left = left - sizes[i])
@@ -312,6 +315,7 @@ ISAMB isamb_open2(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 		    yaz_log(YLOG_WARN, "truncated isamb header for " 
 			 "file=%s len=%d pos=%d",
 			 fname, len, pos);
+                    isamb_close(isamb);
 		    return 0;
 		}
 	    }
