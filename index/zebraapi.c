@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.248 2007-02-06 09:34:56 adam Exp $
+/* $Id: zebraapi.c,v 1.249 2007-02-24 17:05:40 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1635,9 +1635,9 @@ int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
     \param seqno sequence number
     
     val is one of:
-    d=writing to shadow(dirty)
-    o=no writing, 
-    c=commit
+    d=writing to shadow(shadow enabled); writing to register (shadow disabled)
+    o=reading only
+    c=commit (writing to register, reading from shadow, shadow mode only)
 */
 static void zebra_set_state (ZebraHandle zh, int val, int seqno)
 {
@@ -1798,6 +1798,11 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
         if (val != 'o')
         {
             /* either we didn't finish commit or shadow is dirty */
+            if (!rval)
+            {
+                yaz_log(YLOG_WARN, "previous transaction did not finish "
+                        "(shadow disabled)");
+            }
             zebra_unlock (zh->lock_shadow);
             zebra_unlock (zh->lock_normal);
             if (zebra_commit (zh))
@@ -2083,6 +2088,7 @@ static ZEBRA_RES zebra_commit_ex(ZebraHandle zh, int clean_only)
 
     if (val == 'd')
     {
+        /* shadow area is dirty and so we must throw it away */
         yaz_log(YLOG_WARN, "previous transaction didn't reach commit");
         clean_only = 1;
     }
