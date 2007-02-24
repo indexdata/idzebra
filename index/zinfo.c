@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.76 2007-01-15 15:10:17 adam Exp $
+/* $Id: zinfo.c,v 1.77 2007-02-24 16:47:16 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -409,11 +409,23 @@ ZebraExplainInfo zebraExplain_open(
 #endif
 	node_tgtinfo = data1_search_tag(zei->dh, zei->data1_target,
 					 "/targetInfo");
+        if (!node_tgtinfo)
+        {
+	    yaz_log(YLOG_FATAL, "Node node_tgtinfo missing");
+	    nmem_destroy(zei->nmem);
+	    return 0;
+        }
 	zebraExplain_mergeAccessInfo(zei, node_tgtinfo,
 				      &zei->accessInfo);
 
 	node_zebra = data1_search_tag(zei->dh, node_tgtinfo->child,
 				       "zebraInfo");
+        if (!node_zebra)
+        {
+	    yaz_log(YLOG_FATAL, "Node node_zebra missing");
+	    nmem_destroy(zei->nmem);
+	    return 0;
+        }
 	np = 0;
 	if (node_zebra)
 	{
