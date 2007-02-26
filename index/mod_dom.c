@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.20 2007-02-23 14:59:12 adam Exp $
+/* $Id: mod_dom.c,v 1.21 2007-02-26 16:12:24 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -693,6 +693,7 @@ static void index_value_of(struct filter_info *tinfo,
     xmlChar *text = xmlNodeGetContent(node);
     size_t text_len = strlen((const char *)text);
 
+    yaz_log(YLOG_LOG, "Indexing :%.*s:", text_len, text);
 
     /* if there is no text, we do not need to proceed */
     if (text_len)
@@ -745,7 +746,9 @@ static void index_value_of(struct filter_info *tinfo,
             /* actually indexing the text given */
             dom_log(YLOG_DEBUG, tinfo, 0, 
                     "INDEX '%s:%s' '%s'", 
-                    index, type, text);
+                    index ? (const char *) index : "null",
+                    type ? (const char *) type : "null", 
+                    text ? (const char *) text : "null");
 
             recword->index_name = (const char *)index;
             if (type && *type)
@@ -773,7 +776,9 @@ static void set_record_info(struct filter_info *tinfo,
 {
     dom_log(YLOG_DEBUG, tinfo, 0,
             "RECORD id=%s rank=%s type=%s", 
-            id_p, rank_p, type_p);
+            id_p ? (const char *) id_p : "null",
+            rank_p ? (const char *) rank_p : "null",
+            type_p ? (const char *) type_p : "null");
     
     if (id_p)
         sscanf((const char *)id_p, "%255s", extctr->match_criteria);
