@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.23 2007-02-28 14:46:41 marc Exp $
+/* $Id: mod_dom.c,v 1.24 2007-02-28 16:46:19 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -331,6 +331,7 @@ static ZEBRA_RES parse_convert(struct filter_info *tinfo, xmlNodePtr ptr,
 }
 
 static ZEBRA_RES perform_convert(struct filter_info *tinfo, 
+                                 struct recExtractCtrl *extctr,
                                  struct convert_s *convert,
                                  const char **params,
                                  xmlDocPtr *doc,
@@ -346,7 +347,6 @@ static ZEBRA_RES perform_convert(struct filter_info *tinfo,
             *last_xsp = convert->stylesheet_xsp;
         
         xmlFreeDoc(*doc);
-        /* *doc = res_doc; */
 
         /* now saving into buffer and re-reading into DOM to avoid annoing
            XSLT problem with thrown-out indentation text nodes */
@@ -359,11 +359,13 @@ static ZEBRA_RES perform_convert(struct filter_info *tinfo,
 
         *doc =  xmlParseDoc(buf_out);
 
-         yaz_log(YLOG_DEBUG, "%s: %s \n %s", 
-                 tinfo->fname ? tinfo->fname : "none ", 
-                 convert->stylesheet,
-                 buf_out);
-
+        /* writing debug info out */
+        if (extctr->flagShowRecords)
+            yaz_log(YLOG_LOG, "%s: XSLT %s \n %s", 
+                    tinfo->fname ? tinfo->fname : "(none)", 
+                    convert->stylesheet,
+                    buf_out);
+        
         xmlFree(buf_out);
     }
     return ZEBRA_OK;
@@ -712,9 +714,7 @@ static void index_value_of(struct filter_info *tinfo,
                            xmlChar * index_p)
 {
     xmlChar *text = xmlNodeGetContent(node);
-    size_t text_len = strlen((const char *)text);
-
-    /*dom_log(YLOG_DEBUG, tinfo, node, "Indexing: '%s' '%s'", index_p, text);*/
+    size_t text_len = strlen((const char *)text);    
 
     /* if there is no text, we do not need to proceed */
     if (text_len)
@@ -764,13 +764,15 @@ static void index_value_of(struct filter_info *tinfo,
                 type[eval - bval] = '\0';
             }
 
-            /* actually indexing the text given */
-            dom_log(YLOG_DEBUG, tinfo, 0, 
-                    "INDEX '%s:%s' '%s'", 
-                    index ? (const char *) index : "null",
-                    type ? (const char *) type : "null", 
-                    text ? (const char *) text : "null");
+            /* writing debug out */
+            if (extctr->flagShowRecords)
+                dom_log(YLOG_LOG, tinfo, 0, 
+                        "INDEX '%s:%s' '%s'", 
+                        index ? (const char *) index : "null",
+                        type ? (const char *) type : "null", 
+                        text ? (const char *) text : "null");
 
+            /* actually indexing the text given */
             recword->index_name = (const char *)index;
             if (type && *type)
                 recword->index_type = *type;
@@ -795,12 +797,16 @@ static void set_record_info(struct filter_info *tinfo,
                             xmlChar * rank_p, 
                             xmlChar * type_p)
 {
-    dom_log(YLOG_DEBUG, tinfo, 0,
-            "RECORD id=%s rank=%s type=%s", 
-            id_p ? (const char *) id_p : "null",
-            rank_p ? (const char *) rank_p : "null",
-            type_p ? (const char *) type_p : "null");
+
+    /* writing debug info out */
+    if (extctr->flagShowRecords)
+        dom_log(YLOG_LOG, tinfo, 0,
+                "RECORD id=%s rank=%s type=%s", 
+                id_p ? (const char *) id_p : "(null)",
+                rank_p ? (const char *) rank_p : "(null)",
+                type_p ? (const char *) type_p : "(null)");
     
+
     if (id_p)
         sscanf((const char *)id_p, "%255s", extctr->match_criteria);
 
@@ -1032,12 +1038,14 @@ static void extract_dom_doc_node(struct filter_info *tinfo,
     RecWord recword;
     (*extctr->init)(extctr, &recword);
 
+    /*
     if (extctr->flagShowRecords)
     {
         xmlDocDumpMemory(doc, &buf_out, &len_out);
         fwrite(buf_out, len_out, 1, stdout);
         xmlFree(buf_out);
     }
+    */
 
     process_xml_element_node(tinfo, extctr, &recword, (xmlNodePtr)doc);
 }
@@ -1061,13 +1069,13 @@ static int convert_extract_doc(struct filter_info *tinfo,
     set_param_str(params, "schema", zebra_dom_ns, tinfo->odr_record);
 
     /* input conversion */
-    perform_convert(tinfo, input->convert, params, &doc, 0);
+    perform_convert(tinfo, p, input->convert, params, &doc, 0);
 
     if (tinfo->store)
     {
         /* store conversion */
         store_doc = xmlCopyDoc(doc, 1);
-        perform_convert(tinfo, tinfo->store->convert,
+        perform_convert(tinfo, p, tinfo->store->convert,
                         params, &store_doc, &last_xsp);
     }
     
@@ -1076,8 +1084,10 @@ static int convert_extract_doc(struct filter_info *tinfo,
                                store_doc ? store_doc : doc, last_xsp);
     else
         xmlDocDumpMemory(store_doc ? store_doc : doc, &buf_out, &len_out);
-    if (p->flagShowRecords)
-	fwrite(buf_out, len_out, 1, stdout);
+  
+    /* if (p->flagShowRecords)
+       fwrite(buf_out, len_out, 1, stdout); */
+
     (*p->setStoreData)(p, buf_out, len_out);
     xmlFree(buf_out);
 
@@ -1085,7 +1095,7 @@ static int convert_extract_doc(struct filter_info *tinfo,
         xmlFreeDoc(store_doc);
 
     /* extract conversion */
-    perform_convert(tinfo, tinfo->extract->convert, params, &doc, 0);
+    perform_convert(tinfo, p, tinfo->extract->convert, params, &doc, 0);
 
     /* finally, do the indexing */
     if (doc)
@@ -1133,6 +1143,18 @@ static int extract_xml_split(struct filter_info *tinfo,
                 xmlDocPtr doc = xmlNewDoc((const xmlChar*) "1.0");
                 
                 xmlDocSetRootElement(doc, ptr2);
+                
+                /* writing debug info out */
+                if (p->flagShowRecords){
+                    xmlChar *buf_out = 0;
+                    int len_out = 0;
+                    xmlDocDumpMemory(doc, &buf_out, &len_out);
+                    yaz_log(YLOG_LOG, "%s: XMLREADER depth: %i\n%s", 
+                            tinfo->fname ? tinfo->fname : "(none)",
+                            depth,
+                            buf_out); 
+                    xmlFree(buf_out);
+                }
                 
                 return convert_extract_doc(tinfo, input, p, doc);
             }
@@ -1327,7 +1349,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     }
 
     /* retrieve conversion */
-    perform_convert(tinfo, retrieve->convert, params, &doc, &last_xsp);
+    perform_convert(tinfo, 0, retrieve->convert, params, &doc, &last_xsp);
     if (!doc)
     {
         p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
