@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.21 2007-02-26 16:12:24 adam Exp $
+/* $Id: mod_dom.c,v 1.22 2007-02-28 13:16:24 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -693,7 +693,7 @@ static void index_value_of(struct filter_info *tinfo,
     xmlChar *text = xmlNodeGetContent(node);
     size_t text_len = strlen((const char *)text);
 
-    yaz_log(YLOG_LOG, "Indexing :%.*s:", text_len, text);
+    /*dom_log(YLOG_DEBUG, tinfo, node, "Indexing: '%s' '%s'", index_p, text);*/
 
     /* if there is no text, we do not need to proceed */
     if (text_len)
