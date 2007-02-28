@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.64 2007-02-02 12:16:38 adam Exp $
+/* $Id: retrieve.c,v 1.65 2007-02-28 18:43:06 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -596,10 +596,10 @@ int zebra_record_fetch(ZebraHandle zh, zint sysno, int score,
     yaz_log(YLOG_DEBUG, "retrieve localno=" ZINT_FORMAT " score=%d",
             sysno, score);
 
-    zebra_create_record_stream(zh, &rec, &stream);
-    
+    return_code = zebra_create_record_stream(zh, &rec, &stream);
+
+    if (rec)
     {
-	/* snippets code */
 	zebra_snippets *snippet;
 	zebra_rec_keys_t reckeys = zebra_rec_keys_open();
         RecType rt;
@@ -671,10 +671,10 @@ int zebra_record_fetch(ZebraHandle zh, zint sysno, int score,
 
 	zebra_snippets_destroy(snippet);
         zebra_snippets_destroy(retrieveCtrl.doc_snippet);
-     }
 
-    stream.destroy(&stream);
-    rec_free(&rec);
+        stream.destroy(&stream);
+        rec_free(&rec);
+    }
 
     return return_code;
 }
