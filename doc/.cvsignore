@@ -1,5 +1,8 @@
 Makefile
 Makefile.in
+domfilter.eps
+domfilter.png
+domfilter.pdf
 zebra.tex
 zebra.out
 zebra.log

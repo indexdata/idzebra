@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.22 2007-02-28 13:16:24 marc Exp $
+/* $Id: mod_dom.c,v 1.23 2007-02-28 14:46:41 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -338,12 +338,33 @@ static ZEBRA_RES perform_convert(struct filter_info *tinfo,
 {
     for (; convert; convert = convert->next)
     {
+        xmlChar *buf_out = 0;
+        int len_out = 0;
         xmlDocPtr res_doc = xsltApplyStylesheet(convert->stylesheet_xsp,
                                                 *doc, params);
         if (last_xsp)
             *last_xsp = convert->stylesheet_xsp;
+        
         xmlFreeDoc(*doc);
-        *doc = res_doc;
+        /* *doc = res_doc; */
+
+        /* now saving into buffer and re-reading into DOM to avoid annoing
+           XSLT problem with thrown-out indentation text nodes */
+        if (res_doc){
+            xsltSaveResultToString(&buf_out, &len_out, res_doc,
+                                   convert->stylesheet_xsp); 
+            xmlFreeDoc(res_doc);
+        }
+
+
+        *doc =  xmlParseDoc(buf_out);
+
+         yaz_log(YLOG_DEBUG, "%s: %s \n %s", 
+                 tinfo->fname ? tinfo->fname : "none ", 
+                 convert->stylesheet,
+                 buf_out);
+
+        xmlFree(buf_out);
     }
     return ZEBRA_OK;
 }
@@ -1068,11 +1089,10 @@ static int convert_extract_doc(struct filter_info *tinfo,
 
     /* finally, do the indexing */
     if (doc)
-    {
         extract_dom_doc_node(tinfo, p, doc);
-        /* extract_doc_alvis(tinfo, p, doc); */
+
+    if (doc)
 	xmlFreeDoc(doc);
-    }
 
     return RECCTRL_EXTRACT_OK;
 }
