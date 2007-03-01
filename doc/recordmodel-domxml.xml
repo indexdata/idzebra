@@ -1,5 +1,5 @@
 <chapter id="record-model-domxml">
-  <!-- $Id: recordmodel-domxml.xml,v 1.9 2007-02-22 15:44:19 marc Exp $ -->
+  <!-- $Id: recordmodel-domxml.xml,v 1.10 2007-03-01 11:21:20 marc Exp $ -->
   <title>&dom; &xml; Record Model and Filter Module</title>
 
   <para>
@@ -400,6 +400,19 @@
          <xref linkend="fields-and-charsets"/> for details.
          </para>
        </listitem>
+       <listitem>
+         <para> 
+         &dom; input documents which are not resulting in both one
+         unique valid 
+         <literal>record</literal> instruction and one or more valid 
+         <literal>index</literal> instructions can not be searched and
+         found. Therefore,
+         invalid document processing is aborted, and any content of
+         the <literal>&lt;extract&gt;</literal> and 
+         <literal>&lt;store&gt;</literal> pipelines is discarted.
+          A warning is issued in the logs. 
+         </para>
+       </listitem>
       </itemizedlist>
     </para>
 
@@ -651,6 +664,25 @@
     </para>
   </section>
 
+  <section id="record-model-domxml-debug">
+   <title>Debuggig &dom; Filter Configurations</title>
+   <para>
+    It can be very hard to debug a &dom; filter setup due to the many
+    sucessive &marc; syntax translations, &xml; stream splitting and 
+    &xslt; transformations involved. As an aid, you have always the
+    power of the <literal>-s</literal> command line switch to the 
+    <literal>zebraidz</literal> indexing command at your hand: 
+    <screen>
+     zebraidx -s -c zebra.cfg update some_record_stream.xml
+    </screen>
+    This command line simulates indexing and dumps a lot of debug
+    information in the logs, telling exactly which transformations
+    have been applied, how the documents look like after each
+    transformation, and which record ids and terms are send to the indexer.
+   </para>
+  </section>
+
+  <!--
   <section id="record-model-domxml-elementset">
    <title>&dom; Exchange Formats</title>
    <para>
@@ -675,7 +707,7 @@
        xmlns:z="http://indexdata.dk/zebra/xslt/1"
        version="1.0">
 
-       <!-- register internal zebra parameters -->       
+       <!- - register internal zebra parameters - ->       
        <xsl:param name="id" select="''"/>
        <xsl:param name="filename" select="''"/>
        <xsl:param name="score" select="''"/>
@@ -683,7 +715,7 @@
            
        <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
 
-       <!-- use then for display of internal information -->
+       <!- - use then for display of internal information - ->
        <xsl:template match="/">
          <z:zebra>
            <id><xsl:value-of select="$id"/></id>
@@ -699,6 +731,7 @@
     </para>
 
   </section>
+  -->
 
   <!--
   <section id="record-model-domxml-example">
