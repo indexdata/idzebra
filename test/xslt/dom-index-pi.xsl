@@ -2,7 +2,7 @@
   xmlns:m="http://www.loc.gov/MARC21/slim"
   exclude-result-prefixes="m"
   version="1.0">
-  <!-- $Id: dom-index-pi.xsl,v 1.1 2007-02-15 13:01:00 marc Exp $ -->
+  <!-- $Id: dom-index-pi.xsl,v 1.2 2007-03-01 10:35:46 adam Exp $ -->
   <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
   
 
@@ -17,7 +17,7 @@
   <xsl:template match="/m:record">
     <xsl:processing-instruction name="zebra-2.0">
       <xsl:text>record id=</xsl:text>
-      <xsl:value-of select="normalize-space(m:controlfield[@tag='001'])"/>
+      <xsl:value-of select="translate(normalize-space(m:controlfield[@tag='001']),' ','_')"/>
       <xsl:text> rank=</xsl:text>
       <xsl:value-of select="normalize-space(m:rank)"/>
     </xsl:processing-instruction>

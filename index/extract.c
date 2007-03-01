@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.249 2007-02-06 09:34:56 adam Exp $
+/* $Id: extract.c,v 1.250 2007-03-01 10:35:46 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -576,37 +576,47 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         extract_set_store_data_prepare(&extractCtrl);
         
         r = (*recType->extract)(recTypeClientData, &extractCtrl);
-        
-        if (r == RECCTRL_EXTRACT_EOF)
-            return ZEBRA_FAIL;
-        else if (r == RECCTRL_EXTRACT_ERROR_GENERIC)
+
+        switch (r)
         {
+        case RECCTRL_EXTRACT_EOF:
+            return ZEBRA_FAIL;
+        case RECCTRL_EXTRACT_ERROR_GENERIC:
             /* error occured during extraction ... */
             yaz_log (YLOG_WARN, "extract error: generic");
             return ZEBRA_FAIL;
-        }
-        else if (r == RECCTRL_EXTRACT_ERROR_NO_SUCH_FILTER)
-        {
+        case RECCTRL_EXTRACT_ERROR_NO_SUCH_FILTER:
             /* error occured during extraction ... */
             yaz_log (YLOG_WARN, "extract error: no such filter");
             return ZEBRA_FAIL;
+        case RECCTRL_EXTRACT_SKIP:
+            if (show_progress)
+                yaz_log (YLOG_LOG, "skip %s %s " ZINT_FORMAT,
+                         recordType, pr_fname, (zint) start_offset);
+            *more = 1;
+            
+            end_offset = stream->endf(stream, 0);
+            if (end_offset)
+                stream->seekf(stream, end_offset);
+
+            return ZEBRA_OK;
+        case RECCTRL_EXTRACT_OK:
+            break;
+        default:
+            yaz_log (YLOG_WARN, "extract error: unknown error: %d", r);
+            return ZEBRA_FAIL;
         }
-        
+        end_offset = stream->endf(stream, 0);
+        if (end_offset)
+            stream->seekf(stream, end_offset);
+        else
+            end_offset = stream->tellf(stream);
+
         all_matches_add(&extractCtrl);
         
         if (extractCtrl.match_criteria[0])
             match_criteria = extractCtrl.match_criteria;
-
-
-        end_offset = stream->endf(stream, 0);
-
-        if (!end_offset)
-            end_offset = stream->tellf(stream);
-        else
-            stream->seekf(stream, end_offset);
-
     }
-
 
     *more = 1;
     if (!sysno)

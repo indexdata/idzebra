@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.24 2007-02-28 16:46:19 marc Exp $
+/* $Id: mod_dom.c,v 1.25 2007-03-01 10:35:46 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -108,6 +108,7 @@ struct filter_info {
     struct filter_retrieve *retrieve_list;
     struct filter_input *input_list;
     struct filter_store *store;
+    int record_info_invoked;
 };
 
 
@@ -183,6 +184,7 @@ static void *filter_init(Res res, RecType recType)
     tinfo->input_list = 0;
     tinfo->store = 0;
     tinfo->doc_config = 0;
+    tinfo->record_info_invoked = 0;
 
 #if YAZ_HAVE_EXSLT
     exsltRegisterAll(); 
@@ -713,86 +715,102 @@ static void index_value_of(struct filter_info *tinfo,
                            xmlNodePtr node, 
                            xmlChar * index_p)
 {
-    xmlChar *text = xmlNodeGetContent(node);
-    size_t text_len = strlen((const char *)text);    
+    if (tinfo->record_info_invoked == 1)
+    {
+        xmlChar *text = xmlNodeGetContent(node);
+        size_t text_len = strlen((const char *)text);
+        
+        yaz_log(YLOG_LOG, "Indexing :%.*s:", text_len, text);
+        
+        /* if there is no text, we do not need to proceed */
+        if (text_len)
+        {            
+            xmlChar *look = index_p;
+            xmlChar *bval;
+            xmlChar *eval;
 
-    /* if there is no text, we do not need to proceed */
-    if (text_len)
-    {            
-        xmlChar *look = index_p;
-        xmlChar *bval;
-        xmlChar *eval;
+            xmlChar index[256];
+            xmlChar type[256];
 
-        xmlChar index[256];
-        xmlChar type[256];
+            /* assingning text to be indexed */
+            recword->term_buf = (const char *)text;
+            recword->term_len = text_len;
 
-        /* assingning text to be indexed */
-        recword->term_buf = (const char *)text;
-        recword->term_len = text_len;
-
-        /* parsing all index name/type pairs */
-        /* may not start with ' ' or ':' */
-        while (*look && ' ' != *look && ':' != *look)
-        {
-            /* setting name and type to zero */
-            *index = '\0';
-            *type = '\0';
-    
-            /* parsing one index name */
-            bval = look;
-            while (*look && ':' != *look && ' ' != *look)
+            /* parsing all index name/type pairs */
+            /* may not start with ' ' or ':' */
+            while (*look && ' ' != *look && ':' != *look)
             {
-                look++;
-            }
-            eval = look;
-            strncpy((char *)index, (const char *)bval, eval - bval);
-            index[eval - bval] = '\0';
+                /* setting name and type to zero */
+                *index = '\0';
+                *type = '\0';
     
-    
-            /* parsing one index type, if existing */
-            if (':' == *look)
-            {
-                look++;
-      
+                /* parsing one index name */
                 bval = look;
-                while (*look && ' ' != *look)
+                while (*look && ':' != *look && ' ' != *look)
                 {
                     look++;
                 }
                 eval = look;
-                strncpy((char *)type, (const char *)bval, eval - bval);
-                type[eval - bval] = '\0';
-            }
+                strncpy((char *)index, (const char *)bval, eval - bval);
+                index[eval - bval] = '\0';
+    
+    
+                /* parsing one index type, if existing */
+                if (':' == *look)
+                {
+                    look++;
+      
+                    bval = look;
+                    while (*look && ' ' != *look)
+                    {
+                        look++;
+                    }
+                    eval = look;
+                    strncpy((char *)type, (const char *)bval, eval - bval);
+                    type[eval - bval] = '\0';
+                }
 
-            /* writing debug out */
-            if (extctr->flagShowRecords)
-                dom_log(YLOG_LOG, tinfo, 0, 
+                /* actually indexing the text given */
+                dom_log(YLOG_DEBUG, tinfo, 0, 
                         "INDEX '%s:%s' '%s'", 
                         index ? (const char *) index : "null",
                         type ? (const char *) type : "null", 
                         text ? (const char *) text : "null");
 
-            /* actually indexing the text given */
-            recword->index_name = (const char *)index;
-            if (type && *type)
-                recword->index_type = *type;
-            (extctr->tokenAdd)(recword);
+                recword->index_name = (const char *)index;
+                if (type && *type)
+                    recword->index_type = *type;
 
-            /* eat whitespaces */
-            if (*look && ' ' == *look && *(look+1))
-            {
-                look++;
-            } 
+                /* writing debug out */
+                if (extctr->flagShowRecords)
+                    dom_log(YLOG_LOG, tinfo, 0, 
+                            "INDEX '%s:%s' '%s'", 
+                            index ? (const char *) index : "null",
+                            type ? (const char *) type : "null", 
+                            text ? (const char *) text : "null");
+                
+                /* actually indexing the text given */
+                recword->index_name = (const char *)index;
+                if (type && *type)
+                    recword->index_type = *type;
+                (extctr->tokenAdd)(recword);
+
+                /* eat whitespaces */
+                if (*look && ' ' == *look && *(look+1))
+                {
+                    look++;
+                } 
+            }
         }
+        xmlFree(text); 
     }
-    
-    xmlFree(text); 
 }
 
 
 /* DOM filter style indexing */
 static void set_record_info(struct filter_info *tinfo, 
                             struct recExtractCtrl *extctr, 
+                            xmlNodePtr node, 
                             xmlChar * id_p, 
                             xmlChar * rank_p, 
                             xmlChar * type_p)
@@ -820,6 +838,12 @@ static void set_record_info(struct filter_info *tinfo,
     /*     else */
     /*         dom_log(YLOG_WARN, tinfo, ptr, "dom filter: unknown record type '%s'",  */
     /*                 type_str); */
+    if (tinfo->record_info_invoked == 1)
+    {
+        /* warn about multiple only once */
+        dom_log(YLOG_WARN, tinfo, node, "multiple record elements");
+    }
+    tinfo->record_info_invoked++;
 
 }
 
@@ -881,7 +905,7 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
                             attr->name);
                 }
             }
-            set_record_info(tinfo, extctr, id_p, rank_p, type_p);
+            set_record_info(tinfo, extctr, node, id_p, rank_p, type_p);
         } 
         else
         {
@@ -965,7 +989,7 @@ static void process_xml_pi_node(struct filter_info *tinfo,
                         pi_p, look);
             }
             else 
-                set_record_info(tinfo, extctr, id, rank, 0);
+                set_record_info(tinfo, extctr, node, id, rank, 0);
 
         } 
         /* parsing index instruction */
@@ -1031,9 +1055,6 @@ static void extract_dom_doc_node(struct filter_info *tinfo,
                                  struct recExtractCtrl *extctr, 
                                  xmlDocPtr doc)
 {
-    xmlChar *buf_out;
-    int len_out;
-
     /* only need to do the initialization once, reuse recword for all terms */
     RecWord recword;
     (*extctr->init)(extctr, &recword);
@@ -1046,7 +1067,7 @@ static void extract_dom_doc_node(struct filter_info *tinfo,
         xmlFree(buf_out);
     }
     */
-
+    tinfo->record_info_invoked = 0;
     process_xml_element_node(tinfo, extctr, &recword, (xmlNodePtr)doc);
 }
 
@@ -1104,6 +1125,8 @@ static int convert_extract_doc(struct filter_info *tinfo,
     if (doc)
 	xmlFreeDoc(doc);
 
+    if (tinfo->record_info_invoked == 0)
+        return RECCTRL_EXTRACT_SKIP;
     return RECCTRL_EXTRACT_OK;
 }
 
