@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.25 2007-03-01 10:35:46 adam Exp $
+/* $Id: mod_dom.c,v 1.26 2007-03-03 21:39:10 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -348,25 +348,25 @@ static ZEBRA_RES perform_convert(struct filter_info *tinfo,
         if (last_xsp)
             *last_xsp = convert->stylesheet_xsp;
         
-        xmlFreeDoc(*doc);
+        if (!res_doc)
+            break;
 
         /* now saving into buffer and re-reading into DOM to avoid annoing
            XSLT problem with thrown-out indentation text nodes */
-        if (res_doc){
-            xsltSaveResultToString(&buf_out, &len_out, res_doc,
-                                   convert->stylesheet_xsp); 
-            xmlFreeDoc(res_doc);
-        }
+        xsltSaveResultToString(&buf_out, &len_out, res_doc,
+                               convert->stylesheet_xsp); 
+        xmlFreeDoc(res_doc);
 
+        xmlFreeDoc(*doc);
 
-        *doc =  xmlParseDoc(buf_out);
+        *doc = xmlParseMemory((const char *) buf_out, len_out);
 
         /* writing debug info out */
         if (extctr->flagShowRecords)
-            yaz_log(YLOG_LOG, "%s: XSLT %s \n %s", 
+            yaz_log(YLOG_LOG, "%s: XSLT %s\n %.*s", 
                     tinfo->fname ? tinfo->fname : "(none)", 
                     convert->stylesheet,
-                    buf_out);
+                    len_out, buf_out);
         
         xmlFree(buf_out);
     }
@@ -720,8 +720,6 @@ static void index_value_of(struct filter_info *tinfo,
         xmlChar *text = xmlNodeGetContent(node);
         size_t text_len = strlen((const char *)text);
         
-        yaz_log(YLOG_LOG, "Indexing :%.*s:", text_len, text);
-        
         /* if there is no text, we do not need to proceed */
         if (text_len)
         {            
@@ -1059,14 +1057,6 @@ static void extract_dom_doc_node(struct filter_info *tinfo,
     RecWord recword;
     (*extctr->init)(extctr, &recword);
 
-    /*
-    if (extctr->flagShowRecords)
-    {
-        xmlDocDumpMemory(doc, &buf_out, &len_out);
-        fwrite(buf_out, len_out, 1, stdout);
-        xmlFree(buf_out);
-    }
-    */
     tinfo->record_info_invoked = 0;
     process_xml_element_node(tinfo, extctr, &recword, (xmlNodePtr)doc);
 }
@@ -1168,14 +1158,14 @@ static int extract_xml_split(struct filter_info *tinfo,
                 xmlDocSetRootElement(doc, ptr2);
                 
                 /* writing debug info out */
-                if (p->flagShowRecords){
+                if (p->flagShowRecords)
+                {
                     xmlChar *buf_out = 0;
                     int len_out = 0;
                     xmlDocDumpMemory(doc, &buf_out, &len_out);
-                    yaz_log(YLOG_LOG, "%s: XMLREADER depth: %i\n%s", 
+                    yaz_log(YLOG_LOG, "%s: XMLREADER depth: %i\n%.*s", 
                             tinfo->fname ? tinfo->fname : "(none)",
-                            depth,
-                            buf_out); 
+                            depth, len_out, buf_out); 
                     xmlFree(buf_out);
                 }
                 
