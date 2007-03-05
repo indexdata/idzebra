@@ -1,0 +1,12 @@
+<dom>
+  <!-- $Id: dom-config-skipped.xml,v 1.1 2007-03-05 13:02:11 marc Exp $ -->
+  <extract name="index">
+      <xslt stylesheet="dom-index-skipped.xsl"/>
+  </extract>
+  <retrieve name="F">
+    <xslt stylesheet="id.xsl"/>
+  </retrieve>
+  <input syntax="xml">
+    <xmlreader level="1"/>
+  </input>
+</dom>

@@ -1,4 +1,5 @@
-/* $Id: mod_dom.c,v 1.26 2007-03-03 21:39:10 adam Exp $
+
+/* $Id: mod_dom.c,v 1.27 2007-03-05 13:02:11 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1057,7 +1058,6 @@ static void extract_dom_doc_node(struct filter_info *tinfo,
     RecWord recword;
     (*extctr->init)(extctr, &recword);
 
-    tinfo->record_info_invoked = 0;
     process_xml_element_node(tinfo, extctr, &recword, (xmlNodePtr)doc);
 }
 
@@ -1076,6 +1076,14 @@ static int convert_extract_doc(struct filter_info *tinfo,
     xsltStylesheetPtr last_xsp = 0;
     xmlDocPtr store_doc = 0;
 
+    /* per default do not ingest record */
+    tinfo->record_info_invoked = 0;
+
+    /* exit if empty document given */
+    if (!doc)
+        return RECCTRL_EXTRACT_SKIP;
+
+    /* we actuallu have a document which needs to be processed further */
     params[0] = 0;
     set_param_str(params, "schema", zebra_dom_ns, tinfo->odr_record);
 
@@ -1090,14 +1098,12 @@ static int convert_extract_doc(struct filter_info *tinfo,
                         params, &store_doc, &last_xsp);
     }
     
+    /* saving either store doc or original doc in case no store doc exists */
     if (last_xsp)
         xsltSaveResultToString(&buf_out, &len_out, 
                                store_doc ? store_doc : doc, last_xsp);
     else
         xmlDocDumpMemory(store_doc ? store_doc : doc, &buf_out, &len_out);
-  
-    /* if (p->flagShowRecords)
-       fwrite(buf_out, len_out, 1, stdout); */
 
     (*p->setStoreData)(p, buf_out, len_out);
     xmlFree(buf_out);
@@ -1108,15 +1114,17 @@ static int convert_extract_doc(struct filter_info *tinfo,
     /* extract conversion */
     perform_convert(tinfo, p, tinfo->extract->convert, params, &doc, 0);
 
+
     /* finally, do the indexing */
-    if (doc)
+    if (doc){
         extract_dom_doc_node(tinfo, p, doc);
-
-    if (doc)
 	xmlFreeDoc(doc);
-
+    }
+    
+    /* there was nothing to index, so there is no inserted/updated record */
     if (tinfo->record_info_invoked == 0)
         return RECCTRL_EXTRACT_SKIP;
+
     return RECCTRL_EXTRACT_OK;
 }
 
@@ -1145,13 +1153,20 @@ static int extract_xml_split(struct filter_info *tinfo,
     {
         int type = xmlTextReaderNodeType(input->u.xmlreader.reader);
         int depth = xmlTextReaderDepth(input->u.xmlreader.reader);
+
         if (type == XML_READER_TYPE_ELEMENT && 
             input->u.xmlreader.split_level == depth)
         {
-            xmlNodePtr ptr
+            /* per default do not ingest record */
+            tinfo->record_info_invoked = 0;
+
+           xmlNodePtr ptr
                 = xmlTextReaderExpand(input->u.xmlreader.reader);
+
             if (ptr)
-            {
+                {
+                /* we have a new document */
+
                 xmlNodePtr ptr2 = xmlCopyNode(ptr, 1);
                 xmlDocPtr doc = xmlNewDoc((const xmlChar*) "1.0");
                 

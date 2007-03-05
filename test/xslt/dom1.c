@@ -1,4 +1,4 @@
-/* $Id: dom1.c,v 1.1 2007-02-07 12:08:54 adam Exp $
+/* $Id: dom1.c,v 1.2 2007-03-05 13:02:11 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -61,6 +61,7 @@ void tst(int argc, char **argv)
     zh = index_some(zs, "dom.bad.xml", "marc-col.xml");
     zebra_close(zh);
     
+    /* testing XMLREADER input with PI stylesheet */ 
     zh = index_some(zs, "dom.dom-config-col.xml", "marc-col.xml");
     YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 3));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 1));
@@ -68,6 +69,7 @@ void tst(int argc, char **argv)
     YAZ_CHECK(tl_query_x(zh, "@attr 1=4 computer", 0, 121));
     zebra_close(zh);
 
+    /* testing XMLREADER input with ELEMENT stylesheet */ 
     zh = index_some(zs, "dom.dom-config-one.xml", "marc-one.xml");
     YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 1));
@@ -75,12 +77,23 @@ void tst(int argc, char **argv)
     YAZ_CHECK(tl_query_x(zh, "@attr 1=4 computer", 0, 121));
     zebra_close(zh);
 
+    /* testing MARC input with ELEMENT stylesheet */ 
     zh = index_some(zs, "dom.dom-config-marc.xml", "marc-col.mrc");
     YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 3));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 1));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=titl computer", 0, 114));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=4 computer", 0, 121));
     zebra_close(zh);
+
+    /* testing XMLREADER input with ELEMENT stylesheet and skipped records */ 
+    zh = index_some(zs, "dom.dom-config-skipped.xml", "marc-col.xml");
+    YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=control 11224467", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=control 73090924", 0));
+
+    zebra_close(zh);
+
 
     YAZ_CHECK(tl_close_down(0, zs));
 }
