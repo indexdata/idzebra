@@ -1,5 +1,5 @@
 
-/* $Id: mod_dom.c,v 1.28 2007-03-06 08:48:57 adam Exp $
+/* $Id: mod_dom.c,v 1.29 2007-03-06 12:09:44 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1157,12 +1157,12 @@ static int extract_xml_split(struct filter_info *tinfo,
         if (type == XML_READER_TYPE_ELEMENT && 
             input->u.xmlreader.split_level == depth)
         {
+            xmlNodePtr ptr;
+
             /* per default do not ingest record */
             tinfo->record_info_invoked = 0;
-
-           xmlNodePtr ptr
-                = xmlTextReaderExpand(input->u.xmlreader.reader);
-
+            
+            ptr = xmlTextReaderExpand(input->u.xmlreader.reader);
             if (ptr)
                 {
                 /* we have a new document */
