@@ -1,17 +1,29 @@
-# $Id: Makefile.am,v 1.14 2007-03-06 08:23:24 adam Exp $
+# $Id: Makefile.am,v 1.15 2007-03-06 09:24:34 marc Exp $
 
 check_PROGRAMS = xslt1 xslt2 xslt3 xslt4 xslt5 dom1
 TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST= \
- zebra.cfg zebrastaticrank.cfg zebra-dom.cfg \
- marc-col.xml marc-one.xml marc-col.mrc \
- marc-missing-ns.xml \
- index.xsl id.xsl \
- dom-index-element.xsl  dom-index-pi.xsl dom-index-skipped.xsl \
- marcschema-col.xml marcschema-one.xml snippet.xsl \
- dom-config-col.xml dom-config-one.xml dom-config-marc.xml \
- dom-config-skipped.xml
+     dom-config-col.xml \
+     dom-config-marc.xml \
+     dom-config-one.xml \
+     dom-config-skipped.xml \
+     dom-index-element.xsl \
+     dom-index-pi.xsl \
+     dom-index-skipped.xsl \
+     id.xsl \
+     index.xsl \
+     marc-col.mrc \
+     marc-col.xml \
+     marc-missing-ns.xml \
+     marc-one.xml \
+     marcschema-col.xml \
+     marcschema-one.xml \
+     snippet.xsl \
+     zebra-dom.cfg \
+     zebra.cfg \
+     zebrastaticrank.cfg
+
 
 
 xslt1_SOURCES = xslt1.c
