@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.65 2007-02-28 18:43:06 adam Exp $
+/* $Id: retrieve.c,v 1.66 2007-03-06 12:40:18 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -224,8 +224,8 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
     size_t retrieval_index_len; 
     const char *retrieval_type;
     size_t retrieval_type_len;
-    WRBUF wrbuf = 0;
     zebra_rec_keys_t keys;
+    int ret_code = 0;
     
     /* set output variables before processing possible error states */
     /* *rec_lenp = 0; */
@@ -271,12 +271,18 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
     zebra_rec_keys_set_buf(keys, rec->info[recInfo_delKeys],
                            rec->size[recInfo_delKeys], 0);
 
-    wrbuf = wrbuf_alloc();
-    if (zebra_rec_keys_rewind(keys)){
+    if (!zebra_rec_keys_rewind(keys))
+    {
+        ret_code = 
+            YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+    }
+    else
+    {
         size_t slen;
         const char *str;
         struct it_key key_in;
-
+        WRBUF wrbuf = wrbuf_alloc();
+    
         if (input_format == VAL_TEXT_XML)
         {
             *output_format = VAL_TEXT_XML;
@@ -350,13 +356,13 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
         }
         if (input_format == VAL_TEXT_XML)
             wrbuf_printf(wrbuf, "</record>\n");
+        *rec_lenp = wrbuf_len(wrbuf);
+        *rec_bufp = odr_malloc(odr, *rec_lenp);
+        memcpy(*rec_bufp, wrbuf_buf(wrbuf), *rec_lenp);
+        wrbuf_free(wrbuf, 1);
     }
-    *rec_lenp = wrbuf_len(wrbuf);
-    *rec_bufp = odr_malloc(odr, *rec_lenp);
-    memcpy(*rec_bufp, wrbuf_buf(wrbuf), *rec_lenp);
-    wrbuf_free(wrbuf, 1);
     zebra_rec_keys_close(keys);
-    return 0;
+    return ret_code;
 }
 
 
