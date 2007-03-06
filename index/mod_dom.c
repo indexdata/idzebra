@@ -1,5 +1,5 @@
 
-/* $Id: mod_dom.c,v 1.27 2007-03-05 13:02:11 marc Exp $
+/* $Id: mod_dom.c,v 1.28 2007-03-06 08:48:57 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -363,7 +363,7 @@ static ZEBRA_RES perform_convert(struct filter_info *tinfo,
         *doc = xmlParseMemory((const char *) buf_out, len_out);
 
         /* writing debug info out */
-        if (extctr->flagShowRecords)
+        if (extctr && extctr->flagShowRecords)
             yaz_log(YLOG_LOG, "%s: XSLT %s\n %.*s", 
                     tinfo->fname ? tinfo->fname : "(none)", 
                     convert->stylesheet,
