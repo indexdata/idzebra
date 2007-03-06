@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.8 2007-01-17 12:59:38 adam Exp $
+/* $Id: rpnsearch.c,v 1.9 2007-03-06 12:21:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1886,21 +1886,35 @@ static ZEBRA_RES rpn_search_APT_local(ZebraHandle zh,
 				      RSET *rset,
 				      struct rset_key_control *kc)
 {
-    RSFD rsfd;
-    struct it_key key;
-    int sys;
-    *rset = rset_create_temp(rset_nmem, kc, kc->scope,
-                             res_get (zh->res, "setTmpDir"),0 );
-    rsfd = rset_open(*rset, RSETF_WRITE);
+    Record rec;
+    zint sysno = atozint(termz);
     
-    sys = atoi(termz);
-    if (sys <= 0)
-        sys = 1;
-    key.mem[0] = sys;
-    key.mem[1] = 1;
-    key.len = 2;
-    rset_write (rsfd, &key);
-    rset_close (rsfd);
+    if (sysno <= 0)
+        sysno = 0;
+    rec = rec_get(zh->reg->records, sysno);
+    if (!rec)
+        sysno = 0;
+
+    rec_free(&rec);
+
+    if (sysno <= 0)
+    {
+        *rset = rset_create_null(rset_nmem, kc, 0);
+    }
+    else
+    {
+        RSFD rsfd;
+        struct it_key key;
+        *rset = rset_create_temp(rset_nmem, kc, kc->scope,
+                                 res_get(zh->res, "setTmpDir"), 0);
+        rsfd = rset_open(*rset, RSETF_WRITE);
+        
+        key.mem[0] = sysno;
+        key.mem[1] = 1;
+        key.len = 2;
+        rset_write(rsfd, &key);
+        rset_close(rsfd);
+    }
     return ZEBRA_OK;
 }
 
