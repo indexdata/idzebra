@@ -1,5 +1,5 @@
 
-/* $Id: mod_dom.c,v 1.29 2007-03-06 12:09:44 adam Exp $
+/* $Id: mod_dom.c,v 1.30 2007-03-07 14:18:35 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1142,8 +1142,9 @@ static int extract_xml_split(struct filter_info *tinfo,
                                                    p /* I/O handler */,
                                                    0 /* URL */, 
                                                    0 /* encoding */,
-                                                   XML_PARSE_XINCLUDE|
-                                                   XML_PARSE_NOENT);
+                                                   XML_PARSE_XINCLUDE
+                                                   | XML_PARSE_NOENT
+                                                   | XML_PARSE_NONET);
     }
     if (!input->u.xmlreader.reader)
 	return RECCTRL_EXTRACT_ERROR_GENERIC;
@@ -1210,7 +1211,9 @@ static int extract_xml_full(struct filter_info *tinfo,
                                   p /* I/O handler */,
                                   0 /* URL */,
                                   0 /* encoding */,
-                                  XML_PARSE_XINCLUDE|XML_PARSE_NOENT);
+                                  XML_PARSE_XINCLUDE
+                                  | XML_PARSE_NOENT
+                                  | XML_PARSE_NONET);
         if (!doc)
         {
             return RECCTRL_EXTRACT_ERROR_GENERIC;
@@ -1369,7 +1372,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     doc = xmlReadIO(ioread_ret, ioclose_ret, p /* I/O handler */,
 		    0 /* URL */,
 		    0 /* encoding */,
-		    XML_PARSE_XINCLUDE|XML_PARSE_NOENT);
+		    XML_PARSE_XINCLUDE | XML_PARSE_NOENT | XML_PARSE_NONET);
     if (!doc)
     {
         p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
