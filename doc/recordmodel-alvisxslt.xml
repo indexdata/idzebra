@@ -1,5 +1,5 @@
 <chapter id="record-model-alvisxslt">
-  <!-- $Id: recordmodel-alvisxslt.xml,v 1.17 2007-02-22 15:44:19 marc Exp $ -->
+  <!-- $Id: recordmodel-alvisxslt.xml,v 1.18 2007-03-07 13:05:20 marc Exp $ -->
   <title>ALVIS &xml; Record Model and Filter Module</title>
 
      <warning>
@@ -118,8 +118,7 @@
       &lt;?xml version="1.0" encoding="UTF-8"?&gt;
       &lt;z:record xmlns:z="http://indexdata.dk/zebra/xslt/1" 
            z:id="oai:JTRS:CP-3290---Volume-I" 
-           z:rank="47896"
-           z:type="update"&gt;
+           z:rank="47896"&gt;
        &lt;z:index name="oai_identifier" type="0"&gt;
                 oai:JTRS:CP-3290---Volume-I&lt;/z:index&gt;
        &lt;z:index name="oai_datestamp" type="0"&gt;2004-07-09&lt;/z:index&gt;
@@ -148,10 +147,10 @@
      we see that this records is internally ordered
      lexicographically according to the value of the string
      <literal>oai:JTRS:CP-3290---Volume-I47896</literal>.
-     The type of action performed during indexing is defined by
+     <!-- The type of action performed during indexing is defined by
      <literal>z:type="update"&gt;</literal>, with recognized values
      <literal>insert</literal>, <literal>update</literal>, and 
-     <literal>delete</literal>. 
+     <literal>delete</literal>. --> 
     </para>
     <para>In this example, the following literal indexes are constructed:
      <screen>
@@ -287,8 +286,7 @@
 
          <!-- match on oai xml record root -->
          <xsl:template match="/">    
-          <z:record z:id="{normalize-space(oai:record/oai:header/oai:identifier)}" 
-           z:type="update">
+          <z:record z:id="{normalize-space(oai:record/oai:header/oai:identifier)}">
            <!-- you might want to use z:rank="{some &xslt; function here}" --> 
            <xsl:apply-templates/>
           </z:record>
@@ -355,7 +353,7 @@
       <![CDATA[  
       <!-- match on oai xml record root -->
       <xsl:template match="/">    
-       <z:record z:type="update">
+       <z:record>
       
         <!-- create dynamic index name from input content --> 
         <xsl:variable name="dynamic_content">
