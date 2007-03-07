@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.62 2006-12-15 21:11:37 adam Exp $
+# $Id: makefile,v 1.63 2007-03-07 21:25:29 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -193,9 +193,15 @@ libxslt:
 !if $(HAVE_LIBXSLT)
 MOD_ALVIS_OBJS= $(OBJDIR)\alvis.obj
 MOD_ALVIS_CFLAGS=/DIDZEBRA_STATIC_ALVIS=1
+
+MOD_DOM_OBJS= $(OBJDIR)\mod_dom.obj
+MOD_DOM_CFLAGS=/DIDZEBRA_STATIC_DOM=1
 !else
 MOD_ALVIS_OBJS=
 MOD_ALVIS_CFLAGS=
+
+MOD_DOM_OBJS=
+MOD_DOM_CFLAGS=
 !endif
 
 ### C and CPP compiler  (the same thing)
@@ -225,6 +231,7 @@ COMMON_C_OPTIONS=          \
   /DIDZEBRA_STATIC_GRS_MARC=1 \
   /DIDZEBRA_STATIC_GRS_DANBIB=1 \
   $(MOD_ALVIS_CFLAGS) \
+  $(MOD_DOM_CFLAGS) \
   /DIDZEBRA_STATIC_SAFARI=1 \
   $(BZIP2DEF)
 
@@ -315,6 +322,7 @@ TSTFLOCK_OBJS= \
 
 ZEBRALIB_OBJS= \
         $(MOD_ALVIS_OBJS) \
+        $(MOD_DOM_OBJS) \
 	$(OBJDIR)\atoi_zn.obj \
 	$(OBJDIR)\attribute.obj \
 	$(OBJDIR)\attrfind.obj \
