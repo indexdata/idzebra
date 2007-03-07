@@ -1,3 +1,11 @@
+--- 2.0.12 2007/03/07
+
+Fixed bug with indexing of attributes for rec.grs-class of filters.
+If X-Path was enabled xelm a/@b would be ignored.
+
+Fixed bug in register system where 'no more space' messages was produced
+even though there was plenty of space.
+
 Fixed bug #884: Entity declarations in input are lost at retrieval time.
 
 Implemented new filter 'dom'. See test/xslt/dom-config*xml for examples. 
