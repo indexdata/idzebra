@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.15 2007-02-02 12:16:38 adam Exp $
+/* $Id: recgrs.c,v 1.16 2007-03-07 21:08:36 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -537,7 +537,6 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
     char tag_path_full[1024];
     int termlist_only = 1;
     data1_termlist *tl;
-    int xpdone = 0;
 
     if (!n->root->u.root.absyn 
         || 
@@ -552,7 +551,6 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
     case DATA1N_data:
         wrd->term_buf = n->u.data.data;
         wrd->term_len = n->u.data.len;
-        xpdone = 0;
 
 	mk_tag_path_full(tag_path_full, sizeof(tag_path_full), n);
 	
@@ -599,7 +597,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
 	}
 	/* xpath indexing is done, if there was no termlist given, 
 	   or no ! in the termlist, and default indexing is enabled... */
-	if (!p->flagShowRecords && !xpdone && !termlist_only)
+	if (!p->flagShowRecords && !termlist_only)
 	{
 	    wrd->index_name = xpath_index;
 	    wrd->index_type = 'w';
@@ -607,8 +605,6 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
 	}
         break;
     case DATA1N_tag:
-        if (termlist_only)
-            return;
 	mk_tag_path_full(tag_path_full, sizeof(tag_path_full), n);
 
         wrd->index_type = '0';
@@ -628,7 +624,8 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
         {
             data1_xattr *xp;
 
-            (*p->tokenAdd)(wrd);   /* index element pag (AKA tag path) */
+            if (!termlist_only)
+                (*p->tokenAdd)(wrd);   /* index element pag (AKA tag path) */
             
             if (xpath_is_start == 1) /* only for the starting tag... */
             {
@@ -643,35 +640,38 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                     /* this could be cached as well */
                     sprintf (attr_tag_path_full, "@%s/%s",
                              xp->name, tag_path_full);
-                    
+
                     tll[i] = xpath_termlist_by_tagpath(attr_tag_path_full,n);
                     
-                    /* attribute  (no value) */
-                    wrd->index_type = '0';
-                    wrd->index_name = ZEBRA_XPATH_ATTR_NAME;
-                    wrd->term_buf = xp->name;
-                    wrd->term_len = strlen(xp->name);
-                    
-                    wrd->seqno--;
-                    (*p->tokenAdd)(wrd);
-                    
-                    if (xp->value 
-                        &&
-                        strlen(xp->name) + strlen(xp->value) < sizeof(comb)-2)
+                    if (!termlist_only)
                     {
-                        /* attribute value exact */
-                        strcpy (comb, xp->name);
-                        strcat (comb, "=");
-                        strcat (comb, xp->value);
-                        
-                        wrd->index_name = ZEBRA_XPATH_ATTR_NAME;
+                        /* attribute  (no value) */
                         wrd->index_type = '0';
-                        wrd->term_buf = comb;
-                        wrd->term_len = strlen(comb);
-                        wrd->seqno--;
+                        wrd->index_name = ZEBRA_XPATH_ATTR_NAME;
+                        wrd->term_buf = xp->name;
+                        wrd->term_len = strlen(xp->name);
                         
+                        wrd->seqno--;
                         (*p->tokenAdd)(wrd);
-                    }                
+                        
+                        if (xp->value 
+                            &&
+                            strlen(xp->name) + strlen(xp->value) < sizeof(comb)-2)
+                        {
+                            /* attribute value exact */
+                            strcpy (comb, xp->name);
+                            strcat (comb, "=");
+                            strcat (comb, xp->value);
+                            
+                            wrd->index_name = ZEBRA_XPATH_ATTR_NAME;
+                            wrd->index_type = '0';
+                            wrd->term_buf = comb;
+                            wrd->term_len = strlen(comb);
+                            wrd->seqno--;
+                            
+                            (*p->tokenAdd)(wrd);
+                        }
+                    }     
                     i++;
                 }
                 
@@ -683,7 +683,6 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                     
                     sprintf (attr_tag_path_full, "@%s/%s",
                              xp->name, tag_path_full);
-                    
                     if ((tl = tll[i]))
                     {
                         /* If there is a termlist given (=xelm directive) */
@@ -712,7 +711,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                     /* if there was no termlist for the given path, 
                        or the termlist didn't have a ! element, index 
                        the attribute as "w" */
-                    if ((!xpdone) && (!termlist_only))
+                    if (!xpdone && !termlist_only)
                     {
                         index_xpath_attr (attr_tag_path_full, xp->name,
                                           xp->value,  "w", p, wrd);
