@@ -1,5 +1,5 @@
 
-/* $Id: mod_dom.c,v 1.30 2007-03-07 14:18:35 marc Exp $
+/* $Id: mod_dom.c,v 1.31 2007-03-08 17:19:12 marc Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -77,6 +77,7 @@ struct filter_retrieve {
     struct filter_retrieve *next;
 };
 
+#define DOM_INPUT_DOM 0
 #define DOM_INPUT_XMLREADER 1
 #define DOM_INPUT_MARC 2
 struct filter_input {
@@ -86,14 +87,17 @@ struct filter_input {
     int type;
     union {
         struct {
-            const char *input_charset;
-            yaz_marc_t handle;
-            yaz_iconv_t iconv;
-        } marc;
+            int dummy;
+        } dom;
         struct {
             xmlTextReaderPtr reader;
             int split_level;
         } xmlreader;
+        struct {
+            const char *input_charset;
+            yaz_marc_t handle;
+            yaz_iconv_t iconv;
+        } marc;
     } u;
     struct filter_input *next;
 };
@@ -235,6 +239,8 @@ static void destroy_dom(struct filter_info *tinfo)
         {
             switch(i_ptr->type)
             {
+            case DOM_INPUT_DOM:
+                break;
             case DOM_INPUT_XMLREADER:
                 if (i_ptr->u.xmlreader.reader)
                     xmlFreeTextReader(i_ptr->u.xmlreader.reader);
@@ -462,10 +468,16 @@ static ZEBRA_RES parse_input(struct filter_info *tinfo, xmlNodePtr ptr,
             parse_convert(tinfo, ptr, &p->convert);
             break;
         }
+        else if (!XML_STRCMP(ptr->name, "xslt")){
+            struct filter_input *p 
+                = new_input(tinfo, DOM_INPUT_DOM);
+            parse_convert(tinfo, ptr, &p->convert);
+            break;
+        }
         else
         {
             dom_log(YLOG_WARN, tinfo, ptr,
-                    "bad element <%s>, expected <marc>|<xmlreader>",
+                    "bad element <%s>, expected <marc>|<xmlreader>|<xslt>",
                     ptr->name);
             return ZEBRA_FAIL;
         }
@@ -631,6 +643,13 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
             return ZEBRA_FAIL;
         }
     }
+
+    /* adding an empty DOM dummy type if no <input> list has been defined */
+    if (! tinfo->input_list){
+          struct filter_input *p 
+                = new_input(tinfo, DOM_INPUT_DOM);
+    }
+    
     return ZEBRA_OK;
 }
 
@@ -1179,7 +1198,7 @@ static int extract_xml_split(struct filter_info *tinfo,
                     xmlChar *buf_out = 0;
                     int len_out = 0;
                     xmlDocDumpMemory(doc, &buf_out, &len_out);
-                    yaz_log(YLOG_LOG, "%s: XMLREADER depth: %i\n%.*s", 
+                    yaz_log(YLOG_LOG, "%s: XMLREADER level: %i\n%.*s", 
                             tinfo->fname ? tinfo->fname : "(none)",
                             depth, len_out, buf_out); 
                     xmlFree(buf_out);
@@ -1286,12 +1305,16 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
     struct filter_info *tinfo = clientData;
     struct filter_input *input = tinfo->input_list;
 
-    if (!input)
-        return RECCTRL_EXTRACT_ERROR_GENERIC;
 
+    if (!input)
+        return RECCTRL_EXTRACT_ERROR_GENERIC; 
+    
     odr_reset(tinfo->odr_record);
     switch(input->type)
     {
+    case DOM_INPUT_DOM:
+        return extract_xml_full(tinfo, input, p);
+        break;
     case DOM_INPUT_XMLREADER:
         if (input->u.xmlreader.split_level == 0)
             return extract_xml_full(tinfo, input, p);

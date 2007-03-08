@@ -1,9 +1,13 @@
 <dom>
-  <!-- $Id: dom-config-one.xml,v 1.3 2007-03-08 11:24:50 marc Exp $ -->
+  <!-- $Id: dom-config-one.xml,v 1.4 2007-03-08 17:19:13 marc Exp $ -->
+
+  <!--
   <input syntax="xml">
     <xmlreader level="0"/>
     <xslt stylesheet="id.xsl"/>
   </input>
+  -->
+
   <extract name="index">
     <xslt stylesheet="dom-index-element-chop.xsl"/>
     <!-- <xslt stylesheet="dom-index-element.xsl"/> -->
