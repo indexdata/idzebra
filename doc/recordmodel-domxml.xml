@@ -1,7 +1,7 @@
 <chapter id="record-model-domxml">
-  <!-- $Id: recordmodel-domxml.xml,v 1.10 2007-03-01 11:21:20 marc Exp $ -->
+  <!-- $Id: recordmodel-domxml.xml,v 1.11 2007-03-08 11:24:50 marc Exp $ -->
   <title>&dom; &xml; Record Model and Filter Module</title>
-
+  
   <para>
    The record model described in this chapter applies to the fundamental,
    structured &xml;
@@ -602,9 +602,109 @@
       ]]>
      </screen>
     </para>
+  </section>
+
+
+  <section id="record-model-domxml-index-marc">
+   <title>&dom; Indexing &marcxml;</title>
     <para>
-     Notice also,
-     that the names and types of the indexes can be defined in the
+      The &dom; filter allows indexing of both binary &marc; records
+      and &marcxml; records, depending on it's configuration.
+      A typical &marcxml; record might look like this:
+      <screen>  
+      <![CDATA[
+      <record xmlns="http://www.loc.gov/MARC21/slim">
+       <rank>42</rank>
+       <leader>00366nam  22001698a 4500</leader>
+       <controlfield tag="001">   11224466   </controlfield>
+       <controlfield tag="003">DLC  </controlfield>
+       <controlfield tag="005">00000000000000.0  </controlfield>
+       <controlfield tag="008">910710c19910701nju           00010 eng    </controlfield>
+       <datafield tag="010" ind1=" " ind2=" ">
+         <subfield code="a">   11224466 </subfield>
+       </datafield>
+       <datafield tag="040" ind1=" " ind2=" ">
+         <subfield code="a">DLC</subfield>
+         <subfield code="c">DLC</subfield>
+       </datafield>
+       <datafield tag="050" ind1="0" ind2="0">
+         <subfield code="a">123-xyz</subfield>
+       </datafield>
+       <datafield tag="100" ind1="1" ind2="0">
+         <subfield code="a">Jack Collins</subfield>
+       </datafield>
+       <datafield tag="245" ind1="1" ind2="0">
+         <subfield code="a">How to program a computer</subfield>
+       </datafield>
+       <datafield tag="260" ind1="1" ind2=" ">
+         <subfield code="a">Penguin</subfield>
+       </datafield>
+       <datafield tag="263" ind1=" " ind2=" ">
+         <subfield code="a">8710</subfield>
+       </datafield>
+       <datafield tag="300" ind1=" " ind2=" ">
+         <subfield code="a">p. cm.</subfield>
+       </datafield>
+      </record>
+      ]]>
+      </screen>
+    </para>
+
+    <para>
+      It is easily possible to make string manipulation in the &dom;
+      filter. For example, if you want to drop some leading articles
+      in the indexing of sort fields, you might want to pick out the 
+      &marcxml; indicator attributes to chop of leading substrings. If
+      the above &xml; example would have an indicator
+      <literal>ind2="8"</literal> in the title field 
+      <literal>245</literal>, i.e.
+      <screen>  
+      <![CDATA[
+       <datafield tag="245" ind1="1" ind2="8">
+         <subfield code="a">How to program a computer</subfield>
+       </datafield>
+      ]]>
+      </screen>
+      one could write a template taking into account this information
+      to chop the first <literal>8</literal> characters from the
+      sorting index <literal>title:s</literal> like this:
+      <screen>  
+      <![CDATA[
+      <xsl:template match="m:datafield[@tag='245']">
+        <xsl:variable name="chop">
+          <xsl:choose>
+            <xsl:when test="not(number(@ind2))">0</xsl:when>
+            <xsl:otherwise><xsl:value-of select="number(@ind2)"/></xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>  
+
+        <z:index name="title:w title:p any:w">
+           <xsl:value-of select="m:subfield[@code='a']"/>
+        </z:index>
+
+        <z:index name="title:s">
+          <xsl:value-of select="substring(m:subfield[@code='a'], $chop)"/>
+        </z:index>
+
+      </xsl:template> 
+      ]]>
+      </screen>
+      The output of the above &marcxml; and &xslt; excerpt would then be:
+      <screen>  
+      <![CDATA[
+        <z:index name="title:w title:p any:w">How to program a computer</z:index>
+        <z:index name="title:s">program a computer</z:index>
+      ]]>
+      </screen>
+      and the record would be sorted in the title index under 'P', not 'H'.
+    </para>
+  </section>
+
+
+  <section id="record-model-domxml-index-wizzard">
+   <title>&dom; Indexing Wizardry</title>
+    <para>
+     The names and types of the indexes can be defined in the
      indexing &xslt; stylesheet <emphasis>dynamically according to
      content in the original &xml; records</emphasis>, which has
      opportunities for great power and wizardry as well as grande
