@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.6 2007-01-15 15:10:16 adam Exp $
+/* $Id: marcread.c,v 1.7 2007-03-08 13:18:35 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -78,24 +78,35 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
         yaz_log (YLOG_WARN, "MARC record length < 25, is %d", record_length);
         return NULL;
     }
-    /* read remaining part - attempt to read one byte furhter... */
-    read_bytes = p->stream->readf(p->stream, buf+5, record_length-4);
+
+    read_bytes = p->stream->readf(p->stream, buf+5, record_length-5);
     if (read_bytes < record_length-5)
     {
         yaz_log (YLOG_WARN, "Couldn't read whole MARC record");
         return NULL;
     }
-    if (read_bytes == record_length - 4)
+    /* skip until we meet a record separator */
+    while (buf[record_length-1] != ISO2709_RS)
+    {
+        if (record_length > sizeof(buf)-2)
+            break;
+        read_bytes = p->stream->readf(p->stream, buf+record_length, 1);
+        if (read_bytes != 1)
+            break;
+        record_length++;
+    }
+    /* read one byte ahead to see if there is more ... */
+    read_bytes = p->stream->readf(p->stream, buf+record_length, 1);
+    if (read_bytes == 1)
     {
         off_t cur_offset = p->stream->tellf(p->stream);
-	if (cur_offset <= 27)
-	    return NULL;
 	if (p->stream->endf)
         {
             off_t end_offset = cur_offset - 1;
 	    p->stream->endf(p->stream, &end_offset);
         }
     }
+
     absynName = mi->type;
     res_root = data1_mk_root (p->dh, p->mem, absynName);
     if (!res_root)
