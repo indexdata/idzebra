@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.112.2.8 2006-12-05 21:14:40 adam Exp $
+/* $Id: main.c,v 1.112.2.9 2007-03-08 14:33:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -38,10 +38,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #if HAVE_TCL_H
 #include <tcl.h>
-#endif
-
-#if HAVE_EXPAT_H
-#include <expat.h>
 #endif
 
 #include <yaz/options.h>
@@ -233,14 +229,6 @@ int main (int argc, char **argv)
 #endif
 #if HAVE_TCL_H
 	    printf("Using: Tcl %s\n", TCL_VERSION);
-#endif
-#if HAVE_EXPAT_H
-	    if (1)
-	    {
-		XML_Expat_Version v = XML_ExpatVersionInfo();
-		printf ("Using: Expat %d.%d.%d\n",
-			v.major, v.minor, v.micro);
-	    }
 #endif
         }
         else if (ret == 'v')
