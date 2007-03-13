@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.249 2007-02-24 17:05:40 adam Exp $
+/* $Id: zebraapi.c,v 1.250 2007-03-13 13:46:11 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1482,7 +1482,7 @@ ZEBRA_RES zebra_admin_exchange_record(ZebraHandle zh,
                                       &sysno, 
                                       0, /* match */
                                       0, /* fname */
-                                      0, /* force update */
+                                      1, /* force update */
                                       1  /* allow update */
 	);
     if (res == ZEBRA_FAIL)
@@ -2305,7 +2305,7 @@ void zebra_set_shadow_enable (ZebraHandle zh, int value)
 ZEBRA_RES zebra_add_record(ZebraHandle zh,
                            const char *buf, int buf_size)
 {
-    return zebra_update_record(zh, 0, 0 /* sysno */, 0, 0, buf, buf_size, 0);
+    return zebra_update_record(zh, 0, 0 /* sysno */, 0, 0, buf, buf_size, 1);
 }
 
 ZEBRA_RES zebra_insert_record(ZebraHandle zh, 
@@ -2331,7 +2331,7 @@ ZEBRA_RES zebra_insert_record(ZebraHandle zh,
                                       recordType,
                                       sysno,   
                                       match, fname,
-                                      0, 
+                                      1, 
                                       0); /* allow_update */
     if (zebra_end_trans(zh) != ZEBRA_OK)
     {

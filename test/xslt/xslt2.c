@@ -1,4 +1,4 @@
-/* $Id: xslt2.c,v 1.12 2007-01-15 15:10:26 adam Exp $
+/* $Id: xslt2.c,v 1.13 2007-03-13 13:46:11 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -71,7 +71,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_init_data(zh, records_array));
 
     /* only get hits from first record .. */
-    YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 3));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 1));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=titl computer", 0, 114));
     

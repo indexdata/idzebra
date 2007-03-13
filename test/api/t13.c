@@ -1,4 +1,4 @@
-/* $Id: t13.c,v 1.12 2007-01-15 15:10:20 adam Exp $
+/* $Id: t13.c,v 1.13 2007-03-13 13:46:11 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -102,7 +102,7 @@ static void tst_no_config(void)
 				     &sysno, 0 /* match */,
 				     0 /* fname */,
 				     xml_buf, strlen(xml_buf),
-				     0 /* force_update */),
+				     1 /* force_update */),
 	      ZEBRA_OK);
 
     zebra_close(zh);

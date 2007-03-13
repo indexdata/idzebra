@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.10 2007-02-02 13:48:13 adam Exp $
+/* $Id: zebrasrv.c,v 1.11 2007-03-13 13:46:11 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -712,7 +712,6 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				}
 				break;
 			    case 2:
-			    case 4:
 				r = zebra_update_record(
 				    zh,
 				    0, /* recordType */
@@ -721,7 +720,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    0, /* fname */
 				    (const char *) rec->u.octet_aligned->buf,
 				    rec->u.octet_aligned->len,
-				    1);
+				    0  /* force_update=0: action is a replace, so abort update if no corresponding record exists */
+				    );
 				if (r == ZEBRA_FAIL)
 				{
 				    rr->errcode =
@@ -744,6 +744,24 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    rr->errcode =
 					YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
 				    rr->errstring = "delete_record failed";
+				}
+				break;
+			    case 4:
+				r = zebra_update_record(
+				    zh,
+				    0, /* recordType */
+				    sysno,
+				    0, /* match */
+				    0, /* fname */
+				    (const char *) rec->u.octet_aligned->buf,
+				    rec->u.octet_aligned->len,
+				    1  /* force_update=1: action is a specialUpdate, so allow replace or insert */
+				    );
+				if (r == ZEBRA_FAIL)
+				{
+				    rr->errcode =
+					YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
+				    rr->errstring = "update_record failed";
 				}
 				break;
 			    }				
