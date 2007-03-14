@@ -1,0 +1,25 @@
+<sample xmlns:zs="http://indexdata.com/zebra-2.0">
+<rec>
+  <zs:record id="id1"/>
+  <zs:index name="title">a 1</zs:index>
+</rec>
+
+<rec>
+  <zs:record id="id2"/>
+  <zs:index name="title">a 2</zs:index>
+</rec>
+
+<rec>
+  <zs:record id="id3"/>
+  <zs:index name="title">a 3</zs:index>
+</rec>
+
+<rec>
+  <zs:record id="id1" type="delete"/>
+</rec>
+
+<rec>
+  <zs:record id="id2" type="replace"/>
+  <zs:index name="title">b</zs:index>
+</rec>
+</sample>

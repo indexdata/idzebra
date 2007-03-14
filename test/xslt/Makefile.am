@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.16 2007-03-08 11:24:50 marc Exp $
+# $Id: Makefile.am,v 1.17 2007-03-14 14:16:14 adam Exp $
 
 check_PROGRAMS = xslt1 xslt2 xslt3 xslt4 xslt5 dom1
 TESTS = $(check_PROGRAMS)
@@ -12,6 +12,8 @@ EXTRA_DIST= \
      dom-index-element-chop.xsl \
      dom-index-pi.xsl \
      dom-index-skipped.xsl \
+     dom-config-del.xml \
+     del-col.xml \
      id.xsl \
      index.xsl \
      marc-col.mrc \

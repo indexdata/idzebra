@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.252 2007-03-14 11:48:32 adam Exp $
+/* $Id: extract.c,v 1.253 2007-03-14 14:16:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -600,13 +600,21 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         extractCtrl.handle = zh;
         extractCtrl.match_criteria[0] = '\0';
         extractCtrl.staticrank = 0;
+        extractCtrl.action = action;
 
         init_extractCtrl(zh, &extractCtrl);
-        
+
         extract_set_store_data_prepare(&extractCtrl);
         
         r = (*recType->extract)(recTypeClientData, &extractCtrl);
 
+        yaz_log(YLOG_LOG, "Old action=%d new action=%d", action,
+                extractCtrl.action);
+        if (action == action_update)
+        {
+            action = extractCtrl.action;
+        }
+        
         switch (r)
         {
         case RECCTRL_EXTRACT_EOF:
@@ -916,6 +924,8 @@ ZEBRA_RES zebra_extract_explain(void *handle, Record rec, data1_node *n)
     extractCtrl.flagShowRecords = 0;
     extractCtrl.match_criteria[0] = '\0';
     extractCtrl.staticrank = 0;
+    extractCtrl.action = action_update;
+
     extractCtrl.handle = handle;
     extractCtrl.first_record = 1;
     

@@ -1,4 +1,4 @@
-/* $Id: dom1.c,v 1.2 2007-03-05 13:02:11 marc Exp $
+/* $Id: dom1.c,v 1.3 2007-03-14 14:16:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -23,19 +23,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/test.h>
 #include "testlib.h"
 
-ZebraHandle index_some(ZebraService zs,
-                       const char *filter, const char *file)
+
+void index_more(ZebraHandle zh, const char *filter, const char *file)
 {
     char path[256];
     char profile_path[256];
-
-    ZebraHandle zh = zebra_open(zs, 0);
-
-    tl_check_filter(zs, "dom");
-
-    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
-
-    zebra_init(zh);
 
     sprintf(profile_path, "%.80s:%.80s/../../tab", 
             tl_get_srcdir(), tl_get_srcdir());
@@ -49,6 +41,20 @@ ZebraHandle index_some(ZebraService zs,
     YAZ_CHECK(zebra_repository_update(zh, path) == ZEBRA_OK);
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);
+}
+
+ZebraHandle index_some(ZebraService zs,
+                       const char *filter, const char *file)
+{
+    ZebraHandle zh = zebra_open(zs, 0);
+
+    tl_check_filter(zs, "dom");
+
+    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
+
+    zebra_init(zh);
+
+    index_more(zh, filter, file);
     return zh;
 }
 
@@ -60,7 +66,8 @@ void tst(int argc, char **argv)
 
     zh = index_some(zs, "dom.bad.xml", "marc-col.xml");
     zebra_close(zh);
-    
+
+   
     /* testing XMLREADER input with PI stylesheet */ 
     zh = index_some(zs, "dom.dom-config-col.xml", "marc-col.xml");
     YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 3));
@@ -91,6 +98,14 @@ void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 0));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224467", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 73090924", 0));
+
+    /* testing XMLREADER input with type attributes (insert,delete,..) */ 
+    zh = index_some(zs, "dom.dom-config-del.xml", "del-col.xml");
+    YAZ_CHECK(tl_query(zh, "@attr 1=title a", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title 1", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title 2", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title 3", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title b", 1));
 
     zebra_close(zh);
 

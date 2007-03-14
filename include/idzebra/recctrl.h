@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.32 2007-03-14 11:48:31 adam Exp $
+/* $Id: recctrl.h,v 1.33 2007-03-14 14:16:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -107,6 +107,7 @@ struct recExtractCtrl {
     void      (*schemaAdd)(struct recExtractCtrl *p, Odr_oid *oid);
     data1_handle dh;
     void      *handle;
+    enum zebra_recctrl_action_t action;
 };
 
 /* Retrieve record control */
