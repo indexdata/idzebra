@@ -1,3 +1,8 @@
+Changed record update API . It is now handled by function
+zebra_record_update which does insert/replace/delete/update of 
+records . This function replaces zebra_record_{insert,delete} and
+zebra_admin_exchange_record.
+
 --- 2.0.12 2007/03/07
 
 Fixed bug with indexing of attributes for rec.grs-class of filters.

@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.46 2007-01-17 15:35:47 adam Exp $
+/* $Id: api.h,v 1.47 2007-03-14 11:48:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -36,6 +36,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/proto.h>
 #include <idzebra/res.h>
 #include <idzebra/version.h>
+#include <idzebra/recctrl.h>
 
 YAZ_BEGIN_CDECL
 
@@ -364,13 +365,6 @@ YAZ_EXPORT
 ZEBRA_RES zebra_admin_import_end(ZebraHandle zh);
 
 YAZ_EXPORT 
-ZEBRA_RES zebra_admin_exchange_record(ZebraHandle zh,
-				      const char *rec_buf,
-				      size_t rec_len,
-				      const char *recid_buf, size_t recid_len,
-				      int action);
-
-YAZ_EXPORT 
 ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw
     ) ZEBRA_GCC_ATTR((warn_unused_result));
 
@@ -403,30 +397,35 @@ ZEBRA_RES zebra_repository_delete(ZebraHandle zh, const char *path);
 YAZ_EXPORT 
 ZEBRA_RES zebra_repository_show(ZebraHandle zh, const char *path);
 
+/** \brief Simple update record
+    \param zh session handle
+    \param buf record buffer
+    \param buf_size record buffer size
+
+    This function is a simple wrapper or zebra_update_record with
+    action=action_update (insert or replace) .
+*/
+YAZ_EXPORT
 YAZ_EXPORT 
 ZEBRA_RES zebra_add_record(ZebraHandle zh, const char *buf, int buf_size);
 			       
-YAZ_EXPORT 
-ZEBRA_RES zebra_insert_record(ZebraHandle zh, 
-			      const char *recordType,
-			      zint *sysno, const char *match,
-			      const char *fname,
-			      const char *buf, int buf_size,
-			      int force_update);
+/** \brief Updates record
+    \param zh session handle
+    \param action (insert,replace,delete or update (replace/insert)
+    \param recordType filter type (0 indicates default)
+    \param sysno system id (0 may be passed for no known id)
+    \param match match criteria (0 may be passed for no known criteria)
+    \param fname filename to be printed for logging (0 may be passed)
+    \param buf record buffer
+    \param buf_size record buffer size
+*/
 YAZ_EXPORT
 ZEBRA_RES zebra_update_record(ZebraHandle zh, 
-			      const char *recordType,
-			      zint *sysno, const char *match,
-			      const char *fname,
-			      const char *buf, int buf_size,
-			      int force_update);
-YAZ_EXPORT 
-ZEBRA_RES zebra_delete_record(ZebraHandle zh, 
-			      const char *recordType,
-			      zint *sysno, const char *match,
+                              enum zebra_recctrl_action_t action,
+                              const char *recordType,
+                              zint *sysno, const char *match,
                               const char *fname,
-			      const char *buf, int buf_size,
-			      int force_update);
+                              const char *buf, int buf_size);
 
 YAZ_EXPORT 
 ZEBRA_RES zebra_sort(ZebraHandle zh, ODR stream,

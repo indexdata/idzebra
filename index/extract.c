@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.251 2007-03-13 13:46:11 adam Exp $
+/* $Id: extract.c,v 1.252 2007-03-14 11:48:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -321,14 +321,12 @@ static void all_matches_add(struct recExtractCtrl *ctrl)
 
 ZEBRA_RES zebra_extract_records_stream(ZebraHandle zh, 
                                        struct ZebraRecStream *stream,
-                                       int delete_flag,
+                                       enum zebra_recctrl_action_t action,
                                        int test_mode, 
                                        const char *recordType,
                                        zint *sysno,
                                        const char *match_criteria,
                                        const char *fname,
-                                       int force_update,
-                                       int allow_update,
                                        RecType recType,
                                        void *recTypeClientData);
 
@@ -432,14 +430,13 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
         zebra_create_stream_fd(streamp, fd, 0);
     }
     r = zebra_extract_records_stream(zh, streamp,
-                                     deleteFlag,
+                                     deleteFlag ? 
+                                     action_delete : action_update,
                                      0, /* tst_mode */
                                      zh->m_record_type,
                                      sysno,
                                      0, /*match_criteria */
                                      fname,
-                                     1, /* force_update */
-                                     1, /* allow_update */
                                      recType, recTypeClientData);
     if (streamp)
         stream.destroy(streamp);
@@ -456,14 +453,12 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
 
 ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh, 
                                       const char *buf, size_t buf_size,
-                                      int delete_flag,
+                                      enum zebra_recctrl_action_t action,
                                       int test_mode, 
                                       const char *recordType,
                                       zint *sysno,
                                       const char *match_criteria,
-                                      const char *fname,
-                                      int force_update,
-                                      int allow_update)
+                                      const char *fname)
 {
     struct ZebraRecStream stream;
     ZEBRA_RES res;
@@ -500,14 +495,12 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
     zebra_create_stream_mem(&stream, buf, buf_size);
 
     res = zebra_extract_records_stream(zh, &stream,
-                                       delete_flag,
+                                       action,
                                        test_mode, 
                                        recordType,
                                        sysno,
                                        match_criteria,
                                        fname,
-                                       force_update,
-                                       allow_update,
                                        recType, clientData);
     stream.destroy(&stream);
     return res;
@@ -515,14 +508,12 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
 
 ZEBRA_RES zebra_extract_records_stream(ZebraHandle zh, 
                                        struct ZebraRecStream *stream,
-                                       int delete_flag,
+                                       enum zebra_recctrl_action_t action,
                                        int test_mode, 
                                        const char *recordType,
                                        zint *sysno,
                                        const char *match_criteria,
                                        const char *fname,
-                                       int force_update,
-                                       int allow_update,
                                        RecType recType,
                                        void *recTypeClientData)
 {
@@ -531,14 +522,12 @@ ZEBRA_RES zebra_extract_records_stream(ZebraHandle zh,
     {
         int more = 0;
         res = zebra_extract_record_stream(zh, stream,
-                                          delete_flag,
+                                          action,
                                           test_mode, 
                                           recordType,
                                           sysno,
                                           match_criteria,
                                           fname,
-                                          force_update,
-                                          allow_update,
                                           recType, recTypeClientData, &more);
         if (!more)
         {
@@ -556,14 +545,12 @@ ZEBRA_RES zebra_extract_records_stream(ZebraHandle zh,
 
 ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh, 
                                       struct ZebraRecStream *stream,
-                                      int delete_flag,
+                                      enum zebra_recctrl_action_t action,
                                       int test_mode, 
                                       const char *recordType,
                                       zint *sysno,
                                       const char *match_criteria,
                                       const char *fname,
-                                      int force_update,
-                                      int allow_update,
                                       RecType recType,
                                       void *recTypeClientData,
                                       int *more)
@@ -703,14 +690,14 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
     if (! *sysno)
     {
         /* new record */
-        if (delete_flag)
+        if (action == action_delete)
         {
 	    yaz_log (YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
 			 pr_fname, (zint) start_offset);
             yaz_log (YLOG_WARN, "cannot delete record above (seems new)");
             return ZEBRA_FAIL;
         }
-	else if (!force_update)
+	else if (action == action_replace)
 	{
 	    yaz_log (YLOG_LOG, "update %s %s " ZINT_FORMAT, recordType,
 			 pr_fname, (zint) start_offset);
@@ -749,7 +736,7 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         /* record already exists */
 	zebra_rec_keys_t delkeys = zebra_rec_keys_open();
 	zebra_rec_keys_t sortKeys = zebra_rec_keys_open();
-	if (!allow_update)
+	if (action == action_insert)
 	{
 	    yaz_log (YLOG_LOG, "skipped %s %s " ZINT_FORMAT, 
 			 recordType, pr_fname, (zint) start_offset);
@@ -778,7 +765,7 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 	extract_flush_sort_keys(zh, *sysno, 0, sortKeys);
         extract_flush_record_keys(zh, *sysno, 0, delkeys,
                                   recordAttr->staticrank);
-        if (delete_flag)
+        if (action == action_delete)
         {
             /* record going to be deleted */
             if (zebra_rec_keys_empty(delkeys))
@@ -806,7 +793,7 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
             return ZEBRA_OK;
         }
         else
-        {
+        {   /* update or special_update */
 	    if (show_progress)
                 yaz_log(YLOG_LOG, "update %s %s " ZINT_FORMAT, recordType,
                         pr_fname, (zint) start_offset);

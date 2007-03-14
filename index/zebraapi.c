@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.250 2007-03-13 13:46:11 adam Exp $
+/* $Id: zebraapi.c,v 1.251 2007-03-14 11:48:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1400,109 +1400,17 @@ ZEBRA_RES zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
 		Odr_oct *oct = fragment->u.notExternallyTagged;
 		sysno = 0;
 		
-		if (zebra_update_record(zh, 
-					0, /* record Type */
-					&sysno,
-					0, /* match */
-					0, /* fname */
-					(const char *) oct->buf, oct->len,
-					0) == ZEBRA_FAIL)
+		if (zebra_update_record(
+                        zh, 
+                        action_update,
+                        0, /* record Type */
+                        &sysno,
+                        0, /* match */
+                        0, /* fname */
+                        (const char *) oct->buf, oct->len) == ZEBRA_FAIL)
 		    res = ZEBRA_FAIL;
 	    }
 	}
-    }
-    return res;
-}
-
-ZEBRA_RES zebra_admin_exchange_record(ZebraHandle zh,
-				      const char *rec_buf,
-				      size_t rec_len,
-				      const char *recid_buf, size_t recid_len,
-				      int action)
-    /* 1 = insert. Fail it already exists */
-    /* 2 = replace. Fail it does not exist */
-    /* 3 = delete. Fail if does not exist */
-    /* 4 = update. Insert/replace */
-{
-    ZEBRA_RES res;
-    zint sysno = 0;
-    char *rinfo = 0;
-    char recid_z[256];
-    int db_ord;
-    ZEBRA_CHECK_HANDLE(zh);
-    assert(action>0 && action <=4);
-    assert(rec_buf);
-
-    yaz_log(log_level, "zebra_admin_exchange_record ac=%d", action);
-
-    if (!recid_buf || recid_len <= 0 || recid_len >= sizeof(recid_z))
-    {
-	zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED,
-		       "no record ID or empty record ID");
-        return ZEBRA_FAIL;
-    }
-
-    memcpy (recid_z, recid_buf, recid_len);
-    recid_z[recid_len] = 0;
-
-    if (zebra_begin_trans(zh, 1) == ZEBRA_FAIL)
-	return ZEBRA_FAIL;
-
-    db_ord = zebraExplain_get_database_ord(zh->reg->zei);
-    rinfo = dict_lookup_ord(zh->reg->matchDict, db_ord, recid_z);
-    if (rinfo)
-    {
-        if (action == 1)  /* fail if insert */
-        {
-	    if (zebra_end_trans(zh) != ZEBRA_OK)
-		yaz_log(YLOG_WARN, "zebra_end_trans failed");
-	    zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED,
-			   "Cannot insert record: already exist");
-	    return ZEBRA_FAIL;
-	}
-
-        memcpy (&sysno, rinfo+1, sizeof(sysno));
-    }
-    else
-    {
-        if (action == 2 || action == 3) /* fail if delete or update */
-        {
-	    if (zebra_end_trans(zh) != ZEBRA_OK)
-		yaz_log(YLOG_WARN, "zebra_end_trans failed");
-	    zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED,
-			   "Cannot delete/update record: does not exist");
-            return ZEBRA_FAIL;
-	}
-	action = 1;  /* make it an insert (if it's an update).. */
-    }
-    res = zebra_buffer_extract_record(zh, rec_buf, rec_len,
-                                      action == 3 ? 1 : 0 /* delete flag */,
-                                      0, /* test mode */
-                                      0, /* recordType */
-                                      &sysno, 
-                                      0, /* match */
-                                      0, /* fname */
-                                      1, /* force update */
-                                      1  /* allow update */
-	);
-    if (res == ZEBRA_FAIL)
-    {
-	zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED,
-		       "Unable to parse record");
-    }
-    if (action == 1)
-    {
-        dict_insert_ord(zh->reg->matchDict, db_ord, recid_z,
-			sizeof(sysno), &sysno);
-    }
-    else if (action == 3)
-    {
-        dict_delete_ord(zh->reg->matchDict, db_ord, recid_z);
-    }
-    if (zebra_end_trans(zh) != ZEBRA_OK)
-    {
-	yaz_log(YLOG_WARN, "zebra_end_trans failed");
-	res = ZEBRA_FAIL;
     }
     return res;
 }
@@ -2305,48 +2213,20 @@ void zebra_set_shadow_enable (ZebraHandle zh, int value)
 ZEBRA_RES zebra_add_record(ZebraHandle zh,
                            const char *buf, int buf_size)
 {
-    return zebra_update_record(zh, 0, 0 /* sysno */, 0, 0, buf, buf_size, 1);
-}
-
-ZEBRA_RES zebra_insert_record(ZebraHandle zh, 
-			      const char *recordType,
-			      zint *sysno, const char *match,
-			      const char *fname,
-			      const char *buf, int buf_size, int force_update)
-{
-    ZEBRA_RES res;
-    ASSERTZH;
-    assert(sysno);
-    assert(buf);
-    yaz_log(log_level, "zebra_insert_record sysno=" ZINT_FORMAT, *sysno);
-
-    if (buf_size < 1)
-	buf_size = strlen(buf);
-
-    if (zebra_begin_trans(zh, 1) == ZEBRA_FAIL)
-	return ZEBRA_FAIL;
-    res = zebra_buffer_extract_record(zh, buf, buf_size, 
-                                      0, /* delete_flag  */
-                                      0, /* test_mode */
-                                      recordType,
-                                      sysno,   
-                                      match, fname,
-                                      1, 
-                                      0); /* allow_update */
-    if (zebra_end_trans(zh) != ZEBRA_OK)
-    {
-	yaz_log(YLOG_WARN, "zebra_end_trans failed");
-	res = ZEBRA_FAIL;
-    }
-    return res; 
+    return zebra_update_record(zh, action_update, 
+                               0 /* record type */,
+                               0 /* sysno */ ,
+                               0 /* match */, 
+                               0 /* fname */,
+                               buf, buf_size);
 }
 
 ZEBRA_RES zebra_update_record(ZebraHandle zh, 
+                              enum zebra_recctrl_action_t action,
                               const char *recordType,
                               zint *sysno, const char *match,
                               const char *fname,
-                              const char *buf, int buf_size,
-                              int force_update)
+                              const char *buf, int buf_size)
 {
     ZEBRA_RES res;
 
@@ -2358,60 +2238,24 @@ ZEBRA_RES zebra_update_record(ZebraHandle zh,
     if (sysno)
 	yaz_log(log_level, " sysno=" ZINT_FORMAT, *sysno);
 
-    if (buf_size < 1) buf_size = strlen(buf);
+    if (buf_size < 1)
+        buf_size = strlen(buf);
 
     if (zebra_begin_trans(zh, 1) == ZEBRA_FAIL)
 	return ZEBRA_FAIL;
     res = zebra_buffer_extract_record(zh, buf, buf_size, 
-                                      0, /* delete_flag */
+                                      action,
                                       0, /* test_mode */
                                       recordType,
                                       sysno,   
-                                      match, fname,
-                                      force_update, 
-                                      1); /* allow_update */
+                                      match, 
+                                      fname);
     if (zebra_end_trans(zh) != ZEBRA_OK)
     {
 	yaz_log(YLOG_WARN, "zebra_end_trans failed");
 	res = ZEBRA_FAIL;
     }
     return res; 
-}
-
-ZEBRA_RES zebra_delete_record(ZebraHandle zh, 
-                              const char *recordType,
-                              zint *sysno, const char *match,
-                              const char *fname,
-                              const char *buf, int buf_size,
-                              int force_update) 
-{
-    ZEBRA_RES res;
-
-    ZEBRA_CHECK_HANDLE(zh);
-
-    assert(buf);
-    yaz_log(log_level, "zebra_delete_record");
-    if (sysno)
-	yaz_log(log_level, " sysno=" ZINT_FORMAT, *sysno);
-
-    if (buf_size < 1) buf_size = strlen(buf);
-
-    if (zebra_begin_trans(zh, 1) == ZEBRA_FAIL)
-	return ZEBRA_FAIL;
-    res = zebra_buffer_extract_record(zh, buf, buf_size,
-                                      1, /* delete_flag */
-                                      0, /* test_mode */
-                                      recordType,
-                                      sysno,
-                                      match,fname,
-                                      force_update,
-                                      1); /* allow_update */
-    if (zebra_end_trans(zh) != ZEBRA_OK)
-    {
-	yaz_log(YLOG_WARN, "zebra_end_trans failed");
-	res = ZEBRA_FAIL;
-    }
-    return res;
 }
 
 /* ---------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.11 2007-03-13 13:46:11 adam Exp $
+/* $Id: zebrasrv.c,v 1.12 2007-03-14 11:48:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -652,120 +652,56 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
                     }
                     if (rec->which == Z_External_octet)
                     {
-                        int action = 0;
+                        enum zebra_recctrl_action_t action = action_update;
+                        char recid_str[256];
+                        const char *match_criteria = 0;
+                        ZEBRA_RES res;
 
                         if (*toKeep->action ==
                             Z_IUOriginPartToKeep_recordInsert)
-                            action = 1;
-                        if (*toKeep->action ==
+                            action = action_insert;
+                        else if (*toKeep->action ==
                             Z_IUOriginPartToKeep_recordReplace)
-                            action = 2;
-                        if (*toKeep->action ==
+                            action = action_replace;
+                        else if (*toKeep->action ==
                             Z_IUOriginPartToKeep_recordDelete)
-                            action = 3;
-                        if (*toKeep->action ==
+                            action = action_delete;
+                        else if (*toKeep->action ==
                             Z_IUOriginPartToKeep_specialUpdate)
-                            action = 4;
-
-                        if (!action)
+                            action = action_update;
+                        else
                         {
                             rr->errcode =
 				YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
                             rr->errstring = "unsupported ES Update action";
                             break;
                         }
-                        else if (opaque_recid)
+                        
+                        if (opaque_recid)
 			{
-                            int r = zebra_admin_exchange_record (
-                                zh,
-                                (const char *) rec->u.octet_aligned->buf,
-                                rec->u.octet_aligned->len,
-                                (const char *) opaque_recid->buf,
-				opaque_recid->len,
-                                action);
-                            if (r)
+                            size_t l = opaque_recid->len;
+                            if (l >= sizeof(recid_str))
                             {
-				zebra_result(zh, &rr->errcode,
-					     &rr->errstring);
+                                rr->errcode = YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
+                                rr->errstring = "opaque record ID too large";
                                 break;
                             }
-			}
-			else
-			{
-			    ZEBRA_RES r = ZEBRA_FAIL;
-			    switch(action) {
-			    case 1:
-				r = zebra_insert_record(
-				    zh,
-				    0, /* recordType */
-				    sysno,
-				    0, /* match */
-				    0, /* fname */
-				    (const char *) rec->u.octet_aligned->buf,
-				    rec->u.octet_aligned->len,
-				    0);
-				if (r == ZEBRA_FAIL)
-				{
-				    rr->errcode =
-					YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
-				    rr->errstring = "insert_record failed";
-				}
-				break;
-			    case 2:
-				r = zebra_update_record(
-				    zh,
-				    0, /* recordType */
-				    sysno,
-				    0, /* match */
-				    0, /* fname */
-				    (const char *) rec->u.octet_aligned->buf,
-				    rec->u.octet_aligned->len,
-				    0  /* force_update=0: action is a replace, so abort update if no corresponding record exists */
-				    );
-				if (r == ZEBRA_FAIL)
-				{
-				    rr->errcode =
-					YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
-				    rr->errstring = "update_record failed";
-				}
-				break;
-			    case 3:
-				r = zebra_delete_record(
-				    zh,
-				    0, /* recordType */
-				    sysno,
-				    0, /* match */
-				    0, /* fname */
-				    (const char *) rec->u.octet_aligned->buf,
-				    rec->u.octet_aligned->len,
-				    0);
-				if (r == ZEBRA_FAIL)
-				{
-				    rr->errcode =
-					YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
-				    rr->errstring = "delete_record failed";
-				}
-				break;
-			    case 4:
-				r = zebra_update_record(
-				    zh,
-				    0, /* recordType */
-				    sysno,
-				    0, /* match */
-				    0, /* fname */
-				    (const char *) rec->u.octet_aligned->buf,
-				    rec->u.octet_aligned->len,
-				    1  /* force_update=1: action is a specialUpdate, so allow replace or insert */
-				    );
-				if (r == ZEBRA_FAIL)
-				{
-				    rr->errcode =
-					YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
-				    rr->errstring = "update_record failed";
-				}
-				break;
-			    }				
-			}
+                            memcpy(recid_str, opaque_recid->buf, l);
+                            recid_str[l] = '\0';
+                            match_criteria = recid_str;
+                        }
+                        res = zebra_update_record(
+                            zh, action,
+                            0, /* recordType */
+                            sysno, match_criteria, 0, /* fname */
+                            (const char *) rec->u.octet_aligned->buf,
+                            rec->u.octet_aligned->len);
+                        if (res == ZEBRA_FAIL)
+                        {
+                            rr->errcode =
+                                YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
+                            rr->errstring = "update_record failed";
+                        }
                     }
 		}
                 if (zebra_end_trans (zh) != ZEBRA_OK)

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.195 2007-02-06 09:34:56 adam Exp $
+/* $Id: index.h,v 1.196 2007-03-14 11:48:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -320,25 +320,21 @@ void zebra_index_merge(ZebraHandle zh);
 
 ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh, 
                                       const char *buf, size_t buf_size,
-                                      int delete_flag,
+                                      enum zebra_recctrl_action_t action,
                                       int test_mode, 
                                       const char *recordType,
                                       zint *sysno,
                                       const char *match_criteria,
-                                      const char *fname,
-                                      int force_update,
-                                      int allow_update);
+                                      const char *fname);
 
 ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh, 
                                       struct ZebraRecStream *stream,
-                                      int delete_flag,
+                                      enum zebra_recctrl_action_t action,
                                       int test_mode, 
                                       const char *recordType,
                                       zint *sysno,
                                       const char *match_criteria,
                                       const char *fname,
-                                      int force_update,
-                                      int allow_update,
                                       RecType recType,
                                       void *recTypeClientData,
                                       int *more);

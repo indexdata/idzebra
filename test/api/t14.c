@@ -1,4 +1,4 @@
-/* $Id: t14.c,v 1.6 2007-01-15 15:10:20 adam Exp $
+/* $Id: t14.c,v 1.7 2007-03-14 11:48:32 adam Exp $
    Copyright (C) 2004-2007
    Index Data ApS
 
@@ -30,16 +30,24 @@ static void create_search_drop(ZebraHandle zh)
     YAZ_CHECK(zebra_create_database (zh, "Default") == ZEBRA_OK);
 
     /* bug #447 */
-    YAZ_CHECK(zebra_admin_exchange_record (
-		  zh, rec, strlen(rec),
-		  opaque_id, strlen(opaque_id),
-		  1) == ZEBRA_OK); /* insert */
-
-    YAZ_CHECK(zebra_admin_exchange_record (
-	zh, rec, strlen(rec),
-	opaque_id, strlen(opaque_id),
-	4) == ZEBRA_OK); /* update/insert */
-
+    YAZ_CHECK(zebra_update_record(
+		  zh, action_update,
+                  0 /* record type */,
+                  0 /* sysno */,
+                  opaque_id,
+                  0 /* fname */,
+                  rec, strlen(rec))
+              == ZEBRA_OK); /* insert really */
+    
+    YAZ_CHECK(zebra_update_record(
+		  zh, action_update,
+                  0 /* record type */,
+                  0 /* sysno */,
+                  opaque_id,
+                  0 /* fname */,
+                  rec, strlen(rec))
+              == ZEBRA_OK); /* replace really */
+    
     YAZ_CHECK(tl_query(zh, "@attr 1=4 some", 1));
 
     zebra_drop_database(zh, "Default");

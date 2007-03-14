@@ -1,4 +1,4 @@
-/* $Id: t13.c,v 1.13 2007-03-13 13:46:11 adam Exp $
+/* $Id: t13.c,v 1.14 2007-03-14 11:48:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -97,12 +97,12 @@ static void tst_no_config(void)
     
     zebra_set_resource(zh, "profilePath", "${srcdir:-.}/../../tab");
     
-    YAZ_CHECK_EQ(zebra_insert_record(zh /* handle */,
+    YAZ_CHECK_EQ(zebra_update_record(zh /* handle */,
+                                     action_insert,
 				     "grs.sgml" /* record type */,
 				     &sysno, 0 /* match */,
 				     0 /* fname */,
-				     xml_buf, strlen(xml_buf),
-				     1 /* force_update */),
+				     xml_buf, strlen(xml_buf)),
 	      ZEBRA_OK);
 
     zebra_close(zh);

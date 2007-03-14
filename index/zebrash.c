@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.42 2007-01-15 15:10:17 adam Exp $
+/* $Id: zebrash.c,v 1.43 2007-03-14 11:48:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -355,14 +355,14 @@ static int cmd_record_insert( char *args[], WRBUF outbuff)
     int rc;
     char *rec=restargs(args,1);
     
-    rc = zebra_insert_record(zh,
+    rc = zebra_update_record(zh,
+                             action_insert,
 			     0,  /* record type */
 			     &sysno,
 			     0,  /* match */
 			     0,  /* fname */
 			     rec,
-			     strlen(rec),
-			     0);
+			     strlen(rec));
     if (0==rc)
     {
         wrbuf_printf(outbuff,"ok sysno=" ZINT_FORMAT "\n",sysno);
@@ -383,8 +383,12 @@ static int cmd_exchange_record( char *args[], WRBUF outbuff)
 	onecommand("help exchange_record", outbuff, "");
 	return -90;
     }
-    rc=zebra_admin_exchange_record(zh, rec, strlen(rec),
-        id, strlen(id), atoi(action));
+
+    rc = zebra_update_record(zh, action_update, 0 /* record_type */,
+                             0 /* sysno */,
+                             id /* match */,
+                             0 /* fname */,
+                             rec, strlen(rec));
     return rc;
 }
 
