@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.6 2007-01-15 15:10:17 adam Exp $
+/* $Id: regxread.c,v 1.7 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -646,7 +646,7 @@ int readFileSpec (struct lexSpec *spec)
         }
     }
     fclose (spec_inf);
-    wrbuf_free(lineBuf, 1);
+    wrbuf_destroy(lineBuf);
 
     for (lc = spec->context; lc; lc = lc->next)
     {

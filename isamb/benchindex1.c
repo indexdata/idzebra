@@ -1,4 +1,4 @@
-/* $Id: benchindex1.c,v 1.9 2007-01-15 15:10:17 adam Exp $
+/* $Id: benchindex1.c,v 1.10 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -490,7 +490,7 @@ void index_marc_from_file(ISAMB isb,
         index_block_check_flush(b, isb, dict, no_docs);
     }
     index_block_flush(b, isb, dict, no_docs);
-    wrbuf_free(wrbuf, 1);
+    wrbuf_destroy(wrbuf);
     yaz_marc_destroy(mt);
     index_block_destroy(&b);
 }

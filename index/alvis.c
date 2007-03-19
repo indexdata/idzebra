@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.14 2007-03-07 14:18:35 marc Exp $
+/* $Id: alvis.c,v 1.15 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -632,10 +632,10 @@ static const char *snippet_doc(struct recRetrieveCtrl *p, int text_mode,
     else
 	wrbuf_printf(wrbuf, "</snippet>\n");
 
-    xml_doc_str = odr_strdup(p->odr, wrbuf_buf(wrbuf));
+    xml_doc_str = odr_strdup(p->odr, wrbuf_cstr(wrbuf));
 
     zebra_snippets_destroy(res);
-    wrbuf_free(wrbuf, 1);
+    wrbuf_destroy(wrbuf);
     return xml_doc_str;
 }
 

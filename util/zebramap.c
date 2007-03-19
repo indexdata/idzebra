@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.56 2007-01-22 18:15:04 adam Exp $
+/* $Id: zebramap.c,v 1.57 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -77,7 +77,7 @@ void zebra_maps_close(ZebraMaps zms)
 	    chrmaptab_destroy(zm->maptab);
 	zm = zm->next;
     }
-    wrbuf_free(zms->wrbuf_1, 1);
+    wrbuf_destroy(zms->wrbuf_1);
     nmem_destroy(zms->nmem);
     xfree(zms);
 }

@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.9 2007-03-06 12:21:04 adam Exp $
+/* $Id: rpnsearch.c,v 1.10 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -2175,26 +2175,25 @@ ZEBRA_RES rpn_search_xpath(ZebraHandle zh,
                         cp++;
                     }
                 }
-                wrbuf_puts(wbuf, "");
                 rset_attr = xpath_trunc(
-                    zh, stream, '0', wrbuf_buf(wbuf), ZEBRA_XPATH_ATTR_NAME, 
+                    zh, stream, '0', wrbuf_cstr(wbuf), ZEBRA_XPATH_ATTR_NAME, 
                     rset_nmem, kc);
-                wrbuf_free(wbuf, 1);
+                wrbuf_destroy(wbuf);
             } 
             else 
             {
                 if (!first_path)
                 {
-                    wrbuf_free(xpath_rev, 1);
+                    wrbuf_destroy(xpath_rev);
                     continue;
                 }
             }
-            yaz_log(log_level_rpn, "xpath_rev (%d) = %.*s", level, 
-                    wrbuf_len(xpath_rev), wrbuf_buf(xpath_rev));
+            yaz_log(log_level_rpn, "xpath_rev (%d) = %s", level, 
+                    wrbuf_cstr(xpath_rev));
             if (wrbuf_len(xpath_rev))
             {
                 rset_start_tag = xpath_trunc(zh, stream, '0', 
-                                             wrbuf_buf(xpath_rev),
+                                             wrbuf_cstr(xpath_rev),
                                              ZEBRA_XPATH_ELM_BEGIN, 
                                              rset_nmem, kc);
                 if (always_matches)
@@ -2202,7 +2201,7 @@ ZEBRA_RES rpn_search_xpath(ZebraHandle zh,
                 else
                 {
                     rset_end_tag = xpath_trunc(zh, stream, '0', 
-                                               wrbuf_buf(xpath_rev),
+                                               wrbuf_cstr(xpath_rev),
                                                ZEBRA_XPATH_ELM_END, 
                                                rset_nmem, kc);
                     
@@ -2211,7 +2210,7 @@ ZEBRA_RES rpn_search_xpath(ZebraHandle zh,
                                                rset_end_tag, rset_attr);
                 }
             }
-            wrbuf_free(xpath_rev, 1);
+            wrbuf_destroy(xpath_rev);
             first_path = 0;
         }
     }

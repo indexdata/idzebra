@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.43 2007-03-14 11:48:32 adam Exp $
+/* $Id: zebrash.c,v 1.44 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -419,14 +419,14 @@ static int cmd_find( char *args[], WRBUF outbuff)
     wrbuf_puts(qry,restargs(args,1));
     if (!zh)
 	onecommand("quickstart", outbuff, "");
-    wrbuf_printf(outbuff, "find %s\n",wrbuf_buf(qry));
-    rc = zebra_search_PQF(zh, wrbuf_buf(qry), setname, &hits);
+    wrbuf_printf(outbuff, "find %s\n",wrbuf_cstr(qry));
+    rc = zebra_search_PQF(zh, wrbuf_cstr(qry), setname, &hits);
     if (0==rc)
     {
         wrbuf_printf(outbuff, ZINT_FORMAT " hits found\n", hits);
         nextrecno = 1;
     }
-    wrbuf_free(qry, 1);
+    wrbuf_destroy(qry);
     return rc;
 }
 
@@ -812,7 +812,7 @@ void shell(void)
 	/* get rid of \n in line */
 	if ((nl_cp = strchr(buf, '\n')))
 	    *nl_cp = '\0';
-	strncpy(prevout, wrbuf_buf(outbuff), MAX_OUT_BUFF);
+	strncpy(prevout, wrbuf_cstr(outbuff), MAX_OUT_BUFF);
         wrbuf_rewind(outbuff);
 	rc=onecommand(buf, outbuff, prevout);
 	if (rc==0)
@@ -825,9 +825,9 @@ void shell(void)
 	    wrbuf_printf(outbuff, "   command returned %d\n",rc);
 	} 
 	Zerrors(outbuff);
-	printf("%s\n", wrbuf_buf(outbuff));
+	printf("%s\n", wrbuf_cstr(outbuff));
     } /* while */
-    wrbuf_free(outbuff,1);
+    wrbuf_destroy(outbuff);
 } /* shell() */
 
 

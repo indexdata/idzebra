@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.251 2007-03-14 11:48:32 adam Exp $
+/* $Id: zebraapi.c,v 1.252 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1513,9 +1513,9 @@ ZEBRA_RES zebra_create_database (ZebraHandle zh, const char *db)
     return zebra_end_trans (zh);
 }
 
-int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
-		       const char *input_str, int input_len,
-		       char *output_str, int output_len)
+int zebra_string_norm(ZebraHandle zh, unsigned reg_id,
+		      const char *input_str, int input_len,
+		      char *output_str, int output_len)
 {
     WRBUF wrbuf;
     ASSERTZH;

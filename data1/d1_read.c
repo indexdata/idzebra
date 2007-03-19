@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.22 2007-01-15 15:10:14 adam Exp $
+/* $Id: d1_read.c,v 1.23 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -592,7 +592,6 @@ data1_xattr *data1_read_xattr (data1_handle dh, NMEM m,
     for (;;)
     {
 	data1_xattr *p;
-	int len;
 	while (*amp || (c && d1_isspace(c)))
 	    c = ampr (get_byte, fh, amp);
 	if (*amp == 0 && (c == 0 || c == '>' || c == '/'))
@@ -609,10 +608,7 @@ data1_xattr *data1_read_xattr (data1_handle dh, NMEM m,
 	    wrbuf_putc (wrbuf, c);
 	    c = ampr (get_byte, fh, amp);
 	}
-	wrbuf_putc (wrbuf, '\0');
-	len = wrbuf_len(wrbuf);
-	p->name = (char*) nmem_malloc (m, len);
-	strcpy (p->name, wrbuf_buf(wrbuf));
+	p->name = nmem_strdup (m, wrbuf_cstr(wrbuf));
 	if (c == '=')
 	{
 	    c = ampr (get_byte, fh, amp);
@@ -649,10 +645,7 @@ data1_xattr *data1_read_xattr (data1_handle dh, NMEM m,
 		    c = ampr (get_byte, fh, amp);
 	        }
             }
-	    wrbuf_putc (wrbuf, '\0');
-	    len = wrbuf_len(wrbuf);
-	    p->value = (char*) nmem_malloc (m, len);
-	    strcpy (p->value, wrbuf_buf(wrbuf));
+	    p->value = nmem_strdup(m, wrbuf_cstr(wrbuf));
 	}
     }
     *ch = c;
@@ -965,7 +958,7 @@ data1_node *data1_read_node (data1_handle dh, const char **buf, NMEM m)
     data1_node *node;
 
     node = data1_read_nodex(dh, m, getc_mem, (void *) (buf), wrbuf);
-    wrbuf_free (wrbuf, 1);
+    wrbuf_destroy(wrbuf);
     return node;
 }
 
@@ -1075,8 +1068,7 @@ static void data1_iconv_s (data1_handle dh, NMEM m, data1_node *n,
                         conv_item(m, t, wrbuf, p->value, strlen(p->value))
                         == 0)
                     {
-                        wrbuf_puts (wrbuf, "");
-                        p->value = nmem_strdup (m, wrbuf->buf);
+                        p->value = nmem_strdup(m, wrbuf_cstr(wrbuf));
                     }
                 }
             }
@@ -1124,12 +1116,12 @@ int data1_iconv (data1_handle dh, NMEM m, data1_node *n,
         yaz_iconv_t t = yaz_iconv_open(tocode, fromcode);
         if (!t)
 	{
-            wrbuf_free(wrbuf, 1);
+            wrbuf_destroy(wrbuf);
             return -1;
 	}
         data1_iconv_s(dh, m, n, t, wrbuf, tocode);
         yaz_iconv_close(t);
-        wrbuf_free(wrbuf, 1);
+        wrbuf_destroy(wrbuf);
     }
     return 0;
 }

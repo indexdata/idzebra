@@ -1,4 +1,4 @@
-/* $Id: d1_handle.c,v 1.14 2007-01-15 15:10:14 adam Exp $
+/* $Id: d1_handle.c,v 1.15 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -89,7 +89,7 @@ void data1_destroy (data1_handle dh)
     */
     data1_absyn_destroy(dh);
 
-    wrbuf_free (dh->wrbuf, 1);
+    wrbuf_destroy(dh->wrbuf);
     if (dh->tab_path)
 	xfree (dh->tab_path);
     if (dh->tab_root)

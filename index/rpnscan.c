@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.5 2007-01-15 15:10:17 adam Exp $
+/* $Id: rpnscan.c,v 1.6 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -150,7 +150,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
     RSET rset = 0;
     for (i = 0; i < ord_no; i++)
     {
-        if (ar[i].isam_p && strcmp(wrbuf_buf(ar[i].term), term) == 0)
+        if (ar[i].isam_p && strcmp(wrbuf_cstr(ar[i].term), term) == 0)
         {
             RSET rset_t = rset_trunc(
                     zh, &ar[i].isam_p, 1,
@@ -265,7 +265,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
                 ar[i].pos_to_save = -1;
 
                 strcpy(termz, ar[i].prefix);
-                strcat(termz, wrbuf_buf(ar[i].term));
+                strcat(termz, wrbuf_cstr(ar[i].term));
                 dict_scan(zh->reg->dict, termz, &before, &after,
                           ar+i, scan_handle2);
             }
@@ -274,8 +274,8 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
         for (i = 0; i < ord_no; i++)
         {
             if (ar[i].isam_p 
-                && (hi == 0 || strcmp(wrbuf_buf(ar[i].term), hi) > 0))
-                hi = wrbuf_buf(ar[i].term);
+                && (hi == 0 || strcmp(wrbuf_cstr(ar[i].term), hi) > 0))
+                hi = wrbuf_cstr(ar[i].term);
         }
         if (!hi)
             break;
@@ -329,7 +329,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
                 ar[i].pos_to_save = 1;
 
                 strcpy(termz, ar[i].prefix);
-                strcat(termz, wrbuf_buf(ar[i].term));
+                strcat(termz, wrbuf_cstr(ar[i].term));
                 dict_scan(zh->reg->dict, termz, &before, &after,
                           ar+i, scan_handle2);
             }
@@ -338,8 +338,8 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
         for (i = 0; i < ord_no; i++)
         {
             if (ar[i].isam_p 
-                && (lo == 0 || strcmp(wrbuf_buf(ar[i].term), lo) < 0))
-                lo = wrbuf_buf(ar[i].term);
+                && (lo == 0 || strcmp(wrbuf_cstr(ar[i].term), lo) < 0))
+                lo = wrbuf_cstr(ar[i].term);
         }
         if (!lo)
             break;

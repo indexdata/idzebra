@@ -1,4 +1,4 @@
-/* $Id: orddict.c,v 1.5 2007-01-15 15:10:16 adam Exp $
+/* $Id: orddict.c,v 1.6 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -42,8 +42,8 @@ WRBUF zebra_mk_ord_str(int ord, const char *str)
 char *dict_lookup_ord(Dict d, int ord, const char *str)
 {
     WRBUF w = zebra_mk_ord_str(ord, str);
-    char *rinfo = dict_lookup(d, wrbuf_buf(w));
-    wrbuf_free(w, 1);
+    char *rinfo = dict_lookup(d, wrbuf_cstr(w));
+    wrbuf_destroy(w);
     return rinfo;
 }
 
@@ -51,16 +51,16 @@ int dict_insert_ord(Dict d, int ord, const char *p,
 		    int userlen, void *userinfo)
 {
     WRBUF w = zebra_mk_ord_str(ord, p);
-    int r = dict_insert(d, wrbuf_buf(w), userlen, userinfo);
-    wrbuf_free(w, 1);
+    int r = dict_insert(d, wrbuf_cstr(w), userlen, userinfo);
+    wrbuf_destroy(w);
     return r;
 }
 
 int dict_delete_ord(Dict d, int ord, const char *p)
 {
     WRBUF w = zebra_mk_ord_str(ord, p);
-    int r = dict_delete(d, wrbuf_buf(w));
-    wrbuf_free(w, 1);
+    int r = dict_delete(d, wrbuf_cstr(w));
+    wrbuf_destroy(w);
     return r;
 }
 
@@ -68,8 +68,8 @@ int dict_delete_subtree_ord(Dict d, int ord, void *client,
 			    int (*f)(const char *info, void *client))
 {
     WRBUF w = zebra_mk_ord_str(ord, "");
-    int r = dict_delete_subtree(d, wrbuf_buf(w), client, f);
-    wrbuf_free(w, 1);
+    int r = dict_delete_subtree(d, wrbuf_cstr(w), client, f);
+    wrbuf_destroy(w);
     return r;
 }
 /*

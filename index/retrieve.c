@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.66 2007-03-06 12:40:18 adam Exp $
+/* $Id: retrieve.c,v 1.67 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -208,7 +208,7 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
         *rec_lenp = wrbuf_len(wrbuf);
         *rec_bufp = odr_malloc(odr, *rec_lenp);
         memcpy(*rec_bufp, wrbuf_buf(wrbuf), *rec_lenp);
-        wrbuf_free(wrbuf, 1);
+        wrbuf_destroy(wrbuf);
         return 0;
     }
 }
@@ -359,7 +359,7 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
         *rec_lenp = wrbuf_len(wrbuf);
         *rec_bufp = odr_malloc(odr, *rec_lenp);
         memcpy(*rec_bufp, wrbuf_buf(wrbuf), *rec_lenp);
-        wrbuf_free(wrbuf, 1);
+        wrbuf_destroy(wrbuf);
     }
     zebra_rec_keys_close(keys);
     return ret_code;
@@ -428,10 +428,10 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
         }
 	*rec_lenp = wrbuf_len(wrbuf);
         if (*rec_lenp)
-            *rec_bufp = odr_strdup(odr, wrbuf_buf(wrbuf));
+            *rec_bufp = odr_strdup(odr, wrbuf_cstr(wrbuf));
         else
             ret = YAZ_BIB1_NO_SYNTAXES_AVAILABLE_FOR_THIS_REQUEST;
-        wrbuf_free(wrbuf, 1);
+        wrbuf_destroy(wrbuf);
         return ret;
     }
 
@@ -527,11 +527,11 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
         }
 	*rec_lenp = wrbuf_len(wrbuf);
         if (*rec_lenp)
-            *rec_bufp = odr_strdup(odr, wrbuf_buf(wrbuf));
+            *rec_bufp = odr_strdup(odr, wrbuf_cstr(wrbuf));
         else
             ret = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
 
-        wrbuf_free(wrbuf, 1);
+        wrbuf_destroy(wrbuf);
         rec_free(&rec);
         return ret;
     }

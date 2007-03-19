@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.7 2007-03-08 13:18:35 adam Exp $
+/* $Id: marcread.c,v 1.8 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -772,14 +772,14 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
 
 		field = cat_field(p, pf, buf, field);
 		
-		pb = wrbuf_buf(buf);
+		pb = wrbuf_cstr(buf);
 		for (pb = strtok(pb, "\n"); pb; pb = strtok(NULL, "\n"))
 		{
-			if (!is_empty(pb))
-			{
-		    		new = data1_mk_tag_n(p->dh, p->mem, mc_stmnt, strlen(mc_stmnt), 0, top);
-		    		data1_mk_text_n(p->dh, p->mem, pb, strlen(pb), new);
-			}
+                    if (!is_empty(pb))
+                    {
+                        new = data1_mk_tag_n(p->dh, p->mem, mc_stmnt, strlen(mc_stmnt), 0, top);
+                        data1_mk_text_n(p->dh, p->mem, pb, strlen(pb), new);
+                    }
 		}
 	    }
 	    else
@@ -790,7 +790,7 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
     }
     mc_destroy_field(pf);
     mc_destroy_context(c);
-    wrbuf_free(buf, 1);
+    wrbuf_destroy(buf);
 }
 
 data1_node *grs_read_marcxml(struct grs_read_info *p)

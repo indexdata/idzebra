@@ -1,4 +1,4 @@
-/* $Id: sgmlread.c,v 1.4 2007-01-15 15:10:17 adam Exp $
+/* $Id: sgmlread.c,v 1.5 2007-03-19 21:50:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -99,9 +99,9 @@ static void grs_destroy_sgml(void *clientData)
 {
     struct sgml_getc_info *p = (struct sgml_getc_info *) clientData;
 
-    wrbuf_free(p->wrbuf, 1);
-    xfree (p->buf);
-    xfree (p);
+    wrbuf_destroy(p->wrbuf);
+    xfree(p->buf);
+    xfree(p);
 }
 
 static int grs_extract_sgml(void *clientData, struct recExtractCtrl *ctrl)
