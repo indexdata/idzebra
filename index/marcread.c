@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.8 2007-03-19 21:50:39 adam Exp $
+/* $Id: marcread.c,v 1.9 2007-03-19 21:57:25 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -772,7 +772,8 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
 
 		field = cat_field(p, pf, buf, field);
 		
-		pb = wrbuf_cstr(buf);
+		wrbuf_cstr(buf);
+                pb = wrbuf_buf(buf);
 		for (pb = strtok(pb, "\n"); pb; pb = strtok(NULL, "\n"))
 		{
                     if (!is_empty(pb))
