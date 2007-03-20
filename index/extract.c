@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.253 2007-03-14 14:16:14 adam Exp $
+/* $Id: extract.c,v 1.254 2007-03-20 22:07:21 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -608,8 +608,6 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         
         r = (*recType->extract)(recTypeClientData, &extractCtrl);
 
-        yaz_log(YLOG_LOG, "Old action=%d new action=%d", action,
-                extractCtrl.action);
         if (action == action_update)
         {
             action = extractCtrl.action;
