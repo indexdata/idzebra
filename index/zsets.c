@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.119 2007-01-17 15:35:48 adam Exp $
+/* $Id: zsets.c,v 1.120 2007-03-20 22:07:35 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1207,7 +1207,11 @@ ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
 		    if (ret == (size_t)(-1))
 			*termlen = 0;
 		    else
+                    {
+		        yaz_iconv(zh->iconv_from_utf8, 0, 0, 
+                                  &outbuf, &outleft);
 			*termlen = outbuf - termbuf;
+                    }
 		}
 		else
 		{

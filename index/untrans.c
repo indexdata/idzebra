@@ -1,4 +1,4 @@
-/* $Id: untrans.c,v 1.2 2007-01-15 15:10:17 adam Exp $
+/* $Id: untrans.c,v 1.3 2007-03-20 22:07:35 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -71,7 +71,10 @@ void zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream, int reg_type,
         if (ret == (size_t)(-1))
             len = 0;
         else
+        {
+            yaz_iconv (zh->iconv_from_utf8, 0, 0, &outbuf, &outleft);
             len = outbuf - term_dst;
+        }
         *dst = nmem_malloc(stream, len + 1);
         if (len > 0)
             memcpy (*dst, term_dst, len);

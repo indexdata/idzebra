@@ -1,4 +1,4 @@
-/* $Id: zaptterm.c,v 1.2 2007-01-15 15:10:17 adam Exp $
+/* $Id: zaptterm.c,v 1.3 2007-03-20 22:07:35 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -57,6 +57,7 @@ ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 		    0);
                 return ZEBRA_FAIL;
             }
+            yaz_iconv(zh->iconv_to_utf8, 0, 0, &outbuf, &outleft);
             *outbuf = 0;
         }
         else

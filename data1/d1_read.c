@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.23 2007-03-19 21:50:39 adam Exp $
+/* $Id: d1_read.c,v 1.24 2007-03-20 22:07:35 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1013,14 +1013,15 @@ static int conv_item (NMEM m, yaz_iconv_t t,
     {
         char *outbuf = wrbuf->buf + wrbuf->pos;
         size_t outlen = wrbuf->size - wrbuf->pos;
-        if (yaz_iconv (t, &inbuf, &inlen, &outbuf, &outlen) ==
+        if (yaz_iconv(t, &inbuf, &inlen, &outbuf, &outlen) ==
             (size_t)(-1) && yaz_iconv_error(t) != YAZ_ICONV_E2BIG)
         {
             /* bad data. stop and skip conversion entirely */
             return -1;
         }
         else if (inlen == 0)
-        {   /* finished converting */
+        {   /* finished converting, flush it */
+            yaz_iconv(t, 0, 0, &outbuf, &outlen);
             wrbuf->pos = wrbuf->size - outlen;
             break;
         }
