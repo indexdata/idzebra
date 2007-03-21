@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.57 2007-03-19 21:50:39 adam Exp $
+/* $Id: zebramap.c,v 1.58 2007-03-21 13:47:12 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -438,6 +438,7 @@ int zebra_maps_attr(ZebraMaps zms, Z_AttributesPlusTerm *zapt,
     AttrType use;
     int completeness_value;
     int structure_value;
+    const char *structure_str = 0;
     int relation_value;
     int sort_relation_value;
     int weight_value;
@@ -451,7 +452,7 @@ int zebra_maps_attr(ZebraMaps zms, Z_AttributesPlusTerm *zapt,
     attr_init_APT(&use, zapt, 1);
 
     completeness_value = attr_find(&completeness, NULL);
-    structure_value = attr_find(&structure, NULL);
+    structure_value = attr_find_ex(&structure, NULL, &structure_str);
     relation_value = attr_find(&relation, NULL);
     sort_relation_value = attr_find(&sort_relation, NULL);
     weight_value = attr_find(&weight, NULL);
@@ -516,6 +517,12 @@ int zebra_maps_attr(ZebraMaps zms, Z_AttributesPlusTerm *zapt,
     case 5:  /* date */
         *reg_id = 'd';
         *search_type = "phrase";
+        break;
+    case -2:
+        if (structure_str && *structure_str)
+            *reg_id = *structure_str;
+        else
+            return -1;
         break;
     default:
 	return -1;

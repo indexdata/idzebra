@@ -1,3 +1,6 @@
+For RPN queries the index type (w,p,..) may be specified verbatim
+as structure attribute with string value, e.g. @attr 4=w .
+
 Changed record update API . It is now handled by function
 zebra_record_update which does insert/replace/delete/update of 
 records . This function replaces zebra_record_{insert,delete} and
