@@ -1,5 +1,5 @@
 <chapter id="record-model-domxml">
-  <!-- $Id: recordmodel-domxml.xml,v 1.12 2007-03-08 11:29:16 marc Exp $ -->
+  <!-- $Id: recordmodel-domxml.xml,v 1.13 2007-03-21 19:37:00 adam Exp $ -->
   <title>&dom; &xml; Record Model and Filter Module</title>
   
   <para>
@@ -365,13 +365,66 @@
          </para>
        </listitem>
        <listitem>
-         <para>The unique <literal>record</literal> instruction
-	    may have additional attributes <literal>id</literal> and
-            <literal>rank</literal>, where the value of the opaque ID
-            may be any string not containing the whitespace character 
-            <literal>' '</literal>, and the rank value must be a
+         <para>
+            The unique <literal>record</literal> instruction
+	    may have additional attributes <literal>id</literal>,
+            <literal>rank</literal> and <literal>type</literal>.
+            Attribute <literal>id</literal> is the value of the opaque ID
+            and may be any string not containing the whitespace character 
+            <literal>' '</literal>.
+            The <literal>rank</literal> attribute value must be a
             non-negative integer. See 
-            <xref linkend="administration-ranking"/>
+            <xref linkend="administration-ranking"/> .
+            The <literal>type</literal> attribute specifies how the record
+            is to be treated. The following values may be given for 
+            <literal>type</literal>:
+            <variablelist>
+             <varlistentry>
+              <term><literal>insert</literal></term>
+              <listitem>
+               <para>
+                The record is inserted. If the record already exists, it is
+                skipped (i.e. not replaced).
+               </para>
+              </listitem>
+             </varlistentry>
+             <varlistentry>
+              <term><literal>replace</literal></term>
+              <listitem>
+               <para>
+                The record is replaced. If the record does not already exist,
+                it is skipped (i.e. not inserted).
+               </para>
+              </listitem>
+             </varlistentry>
+             <varlistentry>
+              <term><literal>delete</literal></term>
+              <listitem>
+               <para>
+                The record is deleted. If the record does not already exist,
+                it is skipped (i.e. nothing is deleted).
+               </para>
+              </listitem>
+             </varlistentry>
+             <varlistentry>
+              <term><literal>update</literal></term>
+              <listitem>
+               <para>
+                The record is inserted or replaced depending on whether the
+                record exists or not. This is the default behavior but may
+                be effectively changed by "outside" the scope of the DOM
+                filter by zebraidx commands or extended services updates.
+               </para>
+              </listitem>
+             </varlistentry>
+            </variablelist>
+          Note that the value of <literal>type</literal> is only used to
+          determine the action if and only if the Zebra indexer is running
+          in "update" mode (i.e zebraidx update) or if the specialUpdate
+          action of the
+          <link linkend="administration-extended-services-z3950">Extended
+          Service Update</link> is used.
+          For this reason a specialUpdate may end up deleting records!
          </para>
        </listitem>
        <listitem>
@@ -415,7 +468,6 @@
        </listitem>
       </itemizedlist>
     </para>
-
     
     <para>The examples work as follows: 
      From the original &xml; file 
