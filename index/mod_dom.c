@@ -1,5 +1,5 @@
 
-/* $Id: mod_dom.c,v 1.32 2007-03-14 14:16:14 adam Exp $
+/* $Id: mod_dom.c,v 1.33 2007-04-02 16:57:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -822,7 +822,7 @@ static void set_record_info(struct filter_info *tinfo,
                             const char * type_p)
 {
     /* writing debug info out */
-    if (1 || extctr->flagShowRecords)
+    if (extctr && extctr->flagShowRecords)
         dom_log(YLOG_LOG, tinfo, node,
                 "RECORD id=%s rank=%s type=%s", 
                 id_p ? (const char *) id_p : "(null)",
