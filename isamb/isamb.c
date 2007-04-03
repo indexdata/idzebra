@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.92 2007-02-24 16:46:22 adam Exp $
+/* $Id: isamb.c,v 1.93 2007-04-03 16:54:46 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -331,7 +331,11 @@ ISAMB isamb_open2(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
                 decode_ptr(&src, &isamb->root_ptr);
 	}
         assert (isamb->file[i].head.block_size >= isamb->file[i].head.block_offset);
-        isamb->file[i].head_dirty = 0;
+        /* must rewrite the header if root ptr is in use (bug #1017) */
+        if (use_root_ptr && writeflag)
+            isamb->file[i].head_dirty = 1;
+        else
+            isamb->file[i].head_dirty = 0;
         assert(isamb->file[i].head.block_size == sizes[i]);
     }
 #if ISAMB_DEBUG
@@ -454,6 +458,7 @@ void isamb_close (ISAMB isamb)
     yaz_log(YLOG_DEBUG, "isamb_close returned "ZINT_FORMAT" values, "
 		   "skipped "ZINT_FORMAT,
          isamb->skipped_numbers, isamb->returned_numbers);
+
     for (i = 0; i<isamb->no_cat; i++)
     {
         flush_blocks (isamb, i);
