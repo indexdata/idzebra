@@ -1,4 +1,4 @@
-/* $Id: key_block.c,v 1.9 2007-02-06 09:33:31 adam Exp $
+/* $Id: key_block.c,v 1.10 2007-04-07 22:24:12 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -302,15 +302,20 @@ void key_block_write(zebra_key_block_t p, zint sysno, struct it_key *key_in,
 
 
 void key_block_flush_int(zebra_key_block_t p,
-                         char **key_buf, size_t ptr_top,  size_t ptr_i)
+                         char **key_buf, size_t ptr_top, size_t ptr_i)
 {
     FILE *outf;
     char out_fname[200];
     char *prevcp, *cp;
     struct encode_info encode_info;
 
+    if (ptr_i == 0)
+        return ;
+        
     (p->key_file_no)++;
     yaz_log(YLOG_DEBUG, "sorting section %d", (p->key_file_no));
+
+    assert(ptr_i > 0);
 
 #if USE_SHELLSORT
     shellsort(key_buf + ptr_top - ptr_i, ptr_i,
