@@ -1,3 +1,9 @@
+Fixed memory leak that occurred for each deleted record.
+
+Optimize updates of records where content is almost identical to previous
+version of record. This makes updating of the internal explain database
+faster too.
+
 For RPN queries the index type (w,p,..) may be specified verbatim as
 structure attribute with string value, e.g. @attr 4=w .
 
