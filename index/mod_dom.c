@@ -1,5 +1,4 @@
-
-/* $Id: mod_dom.c,v 1.33 2007-04-02 16:57:08 adam Exp $
+/* $Id: mod_dom.c,v 1.34 2007-04-07 22:18:46 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
