@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.17 2007-04-16 08:44:32 adam Exp $
+/* $Id: recgrs.c,v 1.18 2007-04-16 21:54:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1078,8 +1078,6 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     NMEM mem;
     struct grs_read_info gri;
     const char *tagname;
-    const int *xml_oid = yaz_oid_xml();
-    const int *grs1_oid = yaz_oid_grs1();
 
     const int *requested_schema = 0;
     data1_marctab *marctab;
@@ -1145,11 +1143,11 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 
     if (!p->input_format)
     {  /* SUTRS is default input_format */
-        p->input_format = yaz_oid_sutrs();
+        p->input_format = yaz_oid_recsyn_sutrs;
     }
     assert(p->input_format);
 
-    if (!oid_oidcmp(p->input_format, xml_oid))
+    if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_xml))
         zebra_xml_metadata (p, top, mem);
 
 #if 0
@@ -1214,7 +1212,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
         }
     yaz_log(YLOG_DEBUG, "grs_retrieve: schemaIdentifier");
     if (node->u.root.absyn && node->u.root.absyn->oid 
-        && !oid_oidcmp(p->input_format, grs1_oid))
+        && !oid_oidcmp(p->input_format, yaz_oid_recsyn_grs_1))
     {
         char oid_str[OID_STR_MAX];
         char *dot_str = oid_oid_to_dotstring(node->u.root.absyn->oid, oid_str);
@@ -1247,7 +1245,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     p->output_format = p->input_format;
 
     assert(p->input_format);
-    if (!oid_oidcmp(p->input_format, yaz_oid_xml()))
+    if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_xml))
     {
 #if 0
         data1_pr_tree (p->dh, node, stdout);
@@ -1267,7 +1265,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	    p->rec_buf = new_buf;
 	}
     }
-    else if (!oid_oidcmp(p->input_format, yaz_oid_grs1()))
+    else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_grs_1))
     {
 	data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
 	dummy = 0;
@@ -1277,7 +1275,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	else
 	    p->rec_len = -1;
     }
-    else if (!oid_oidcmp(p->input_format, yaz_oid_explain()))
+    else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_explain))
     {
 	/* ensure our data1 tree is UTF-8 */
 	data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
@@ -1288,7 +1286,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	else
 	    p->rec_len = -1;
     }
-    else if (!oid_oidcmp(p->input_format, yaz_oid_summary()))
+    else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_summary))
     {
 	/* ensure our data1 tree is UTF-8 */
 	data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
@@ -1298,7 +1296,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	else
 	    p->rec_len = -1;
     }
-    else if (!oid_oidcmp(p->input_format, yaz_oid_sutrs()))
+    else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_sutrs))
     {
 	if (p->encoding)
             data1_iconv (p->dh, mem, node, p->encoding,
@@ -1313,7 +1311,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	    p->rec_buf = new_buf;
 	}
     }
-    else if (!oid_oidcmp(p->input_format, yaz_oid_soif()))
+    else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_soif))
     {
 	if (p->encoding)
             data1_iconv (p->dh, mem, node, p->encoding,

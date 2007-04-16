@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.253 2007-04-16 08:44:32 adam Exp $
+/* $Id: zebraapi.c,v 1.254 2007-04-16 21:54:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1120,7 +1120,7 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 	    if (poset[i].term)
 	    {
 		recs[i].errCode = 0;
-		recs[i].format = yaz_oid_sutrs();
+		recs[i].format = yaz_oid_recsyn_sutrs;
 		recs[i].len = strlen(poset[i].term);
 		recs[i].buf = poset[i].term;
 		recs[i].base = poset[i].db;
@@ -1199,7 +1199,7 @@ ZEBRA_RES zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
     }
     else
     {
-	res = zebra_scan(zh, stream, zapt, yaz_oid_attset_bib1(),
+	res = zebra_scan(zh, stream, zapt, yaz_oid_attset_bib_1,
 			 position, num_entries, entries, is_partial,
 			 setname);
     }

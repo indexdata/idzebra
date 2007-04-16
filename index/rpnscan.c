@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.7 2007-04-16 08:44:32 adam Exp $
+/* $Id: rpnscan.c,v 1.8 2007-04-16 21:54:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -398,7 +398,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     *is_partial = 0;
 
     if (!attributeset)
-        attributeset = yaz_oid_attset_bib1();
+        attributeset = yaz_oid_attset_bib_1;
 
     if (!limit_set) /* no limit set given already */
     {

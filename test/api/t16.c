@@ -1,4 +1,4 @@
-/* $Id: t16.c,v 1.10 2007-04-16 08:44:32 adam Exp $
+/* $Id: t16.c,v 1.11 2007-04-16 21:54:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -105,33 +105,35 @@ static void tst(int argc, char **argv)
     YAZ_CHECK_EQ(res, ZEBRA_OK);
     YAZ_CHECK_EQ(hits, 1);
     
-    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::data", yaz_oid_xml(),
+    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::data", yaz_oid_recsyn_xml,
                                      "mismatch"), ZEBRA_FAIL);
 
-    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::data", yaz_oid_sutrs(),
+    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::data", yaz_oid_recsyn_sutrs,
                                      myrec[0]), ZEBRA_OK);
 
-    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::data", yaz_oid_xml(),
+    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::data", yaz_oid_recsyn_xml,
                                      myrec[0]), ZEBRA_OK);
-
-    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::meta::sysno", yaz_oid_sutrs(),
+    
+    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::meta::sysno", 
+                                     yaz_oid_recsyn_sutrs,
                                      "2"), ZEBRA_OK);
 
-    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::meta::sysno", yaz_oid_xml(),
+    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::meta::sysno", 
+                                     yaz_oid_recsyn_xml,
                                      zebra_xml_sysno), ZEBRA_OK);
     
-    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::meta", yaz_oid_xml(),
+    YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::meta", yaz_oid_recsyn_xml,
                                      zebra_xml_meta), ZEBRA_OK);
     
     YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::index::title:p", 
-                                     yaz_oid_xml(),
+                                     yaz_oid_recsyn_xml,
                                      zebra_xml_index_title_p), ZEBRA_OK);
     
     YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::nonexistent", 
-                                     yaz_oid_xml(), ""), ZEBRA_OK);
+                                     yaz_oid_recsyn_xml, ""), ZEBRA_OK);
     
     YAZ_CHECK_EQ(fetch_first_compare(zh, "zebra::index::nonexistent", 
-                                     yaz_oid_xml(), ""), ZEBRA_OK);
+                                     yaz_oid_recsyn_xml, ""), ZEBRA_OK);
     
     YAZ_CHECK(tl_close_down(zh, zs));
 }

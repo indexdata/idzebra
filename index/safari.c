@@ -1,4 +1,4 @@
-/* $Id: safari.c,v 1.6 2007-04-16 08:44:32 adam Exp $
+/* $Id: safari.c,v 1.7 2007-04-16 21:54:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -262,7 +262,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
             filter_ptr = p-filter_buf;
         }
     }
-    p->output_format = yaz_oid_sutrs();
+    p->output_format = yaz_oid_recsyn_sutrs;
     p->rec_buf = filter_buf;
     p->rec_len = filter_ptr; 
     return 0;

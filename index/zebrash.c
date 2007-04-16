@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.45 2007-04-16 08:44:32 adam Exp $
+/* $Id: zebrash.c,v 1.46 2007-04-16 21:54:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -449,8 +449,8 @@ static int cmd_show( char *args[], WRBUF outbuff)
     for (i=0;i<nrecs;i++)
         recs[i].position=start+i;
 
-    rc = zebra_records_retrieve (zh, odr, setname,
-				 pcomp, yaz_oid_xml(), nrecs,recs);
+    rc = zebra_records_retrieve(zh, odr, setname,
+				pcomp, yaz_oid_recsyn_xml, nrecs,recs);
     if (0==rc)
     {
         for (i=0;i<nrecs;i++)

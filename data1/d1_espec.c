@@ -1,4 +1,4 @@
-/* $Id: d1_espec.c,v 1.14 2007-04-16 08:44:31 adam Exp $
+/* $Id: d1_espec.c,v 1.15 2007-04-16 21:54:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -37,7 +37,7 @@ static Z_Variant *read_variant(int argc, char **argv, NMEM nmem,
     Z_Variant *r = (Z_Variant *)nmem_malloc(nmem, sizeof(*r));
     int i;
 
-    r->globalVariantSetId = odr_oiddup_nmem(nmem, yaz_oid_variant1());
+    r->globalVariantSetId = odr_oiddup_nmem(nmem, yaz_oid_varset_variant_1);
     if (argc)
 	r->triples = (Z_Triple **)nmem_malloc(nmem, sizeof(Z_Triple*) * argc);
     else

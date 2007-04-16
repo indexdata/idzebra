@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.16 2007-04-16 08:44:31 adam Exp $
+/* $Id: alvis.c,v 1.17 2007-04-16 21:54:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -730,7 +730,8 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     {
 	p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
     }
-    else if (!p->input_format || !oid_oidcmp(p->input_format, yaz_oid_xml()))
+    else if (!p->input_format 
+             || !oid_oidcmp(p->input_format, yaz_oid_recsyn_xml))
     {
 	xmlChar *buf_out;
 	int len_out;
@@ -741,13 +742,13 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
         else
 	    xmlDocDumpMemory(resDoc, &buf_out, &len_out);            
 
-	p->output_format = yaz_oid_xml();
+	p->output_format = yaz_oid_recsyn_xml;
 	p->rec_len = len_out;
 	p->rec_buf = odr_malloc(p->odr, p->rec_len);
 	memcpy(p->rec_buf, buf_out, p->rec_len);
 	xmlFree(buf_out);
     }
-    else if (!oid_oidcmp(p->output_format, yaz_oid_sutrs()))
+    else if (!oid_oidcmp(p->output_format, yaz_oid_recsyn_sutrs))
     {
 	xmlChar *buf_out;
 	int len_out;
@@ -758,7 +759,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
         else
 	    xmlDocDumpMemory(resDoc, &buf_out, &len_out);            
 
-	p->output_format = yaz_oid_sutrs();
+	p->output_format = yaz_oid_recsyn_sutrs;
 	p->rec_len = len_out;
 	p->rec_buf = odr_malloc(p->odr, p->rec_len);
 	memcpy(p->rec_buf, buf_out, p->rec_len);

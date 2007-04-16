@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.13 2007-04-16 08:44:32 adam Exp $
+/* $Id: zebrasrv.c,v 1.14 2007-04-16 21:54:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -197,7 +197,8 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
     r->search_info->list[0]->which = Z_OtherInfo_externallyDefinedInfo;
     ext = odr_malloc (r->stream, sizeof(*ext));
     r->search_info->list[0]->information.externallyDefinedInfo = ext;
-    ext->direct_reference = odr_oiddup(r->stream, yaz_oid_search_result_1());
+    ext->direct_reference = odr_oiddup(r->stream,
+                                       yaz_oid_userinfo_searchresult_1);
     ext->indirect_reference = 0;
     ext->descriptor = 0;
     ext->which = Z_External_searchResult1;

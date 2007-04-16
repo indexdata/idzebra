@@ -1,4 +1,4 @@
-/* $Id: d1_doespec.c,v 1.13 2007-04-16 08:44:31 adam Exp $
+/* $Id: d1_doespec.c,v 1.14 2007-04-16 21:54:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -283,7 +283,7 @@ static int match_children_here (data1_handle dh, data1_node *n,
 		    Z_Variant *vreq =
 			e->elements[i]->u.simpleElement->variantRequest;
 
-                    const int *var_oid = yaz_oid_variant1();
+                    const int *var_oid = yaz_oid_varset_variant_1;
 		    if (!vreq)
 			vreq = e->defaultVariantRequest;
 

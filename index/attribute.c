@@ -1,4 +1,4 @@
-/* $Id: attribute.c,v 1.29 2007-04-16 08:44:31 adam Exp $
+/* $Id: attribute.c,v 1.30 2007-04-16 21:54:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -193,7 +193,7 @@ ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,
     if (zebra_attr_list_get_ord(
             zh, sortAttributes->list,
             zinfo_index_category_sort,
-            -1 /* any index */, yaz_oid_attset_bib1(), ord) == ZEBRA_OK)
+            -1 /* any index */, yaz_oid_attset_bib_1, ord) == ZEBRA_OK)
         return ZEBRA_OK;
     return ZEBRA_FAIL;
 }

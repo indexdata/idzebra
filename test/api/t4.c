@@ -1,4 +1,4 @@
-/* $Id: t4.c,v 1.23 2007-04-16 08:44:32 adam Exp $
+/* $Id: t4.c,v 1.24 2007-04-16 21:54:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -96,7 +96,7 @@ static void tst(int argc, char **argv)
 	    retrievalRecord[j].position = j+1;
 
         ret = zebra_records_retrieve(zh, odr_output, setname, 0,
-				     yaz_oid_xml(), number_to_fetch,
+				     yaz_oid_recsyn_xml, number_to_fetch,
 				     retrievalRecord);
 	if (ret != ZEBRA_OK)
 	{

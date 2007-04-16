@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.68 2007-04-16 08:44:32 adam Exp $
+/* $Id: retrieve.c,v 1.69 2007-04-16 21:54:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -133,8 +133,8 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
     int ord;
 
     /* only accept XML and SUTRS requests */
-    if (oid_oidcmp(input_format, yaz_oid_xml()) 
-        && oid_oidcmp(input_format, yaz_oid_sutrs()))
+    if (oid_oidcmp(input_format, yaz_oid_recsyn_xml) 
+        && oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
     {
         yaz_log(YLOG_WARN, "unsupported format for element set zebra::%s", 
                 elemsetname);
@@ -184,9 +184,9 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
         zebra_term_untrans(zh, index_type, dst_buf, str);
         
 
-        if (!oid_oidcmp(input_format, yaz_oid_xml()))
+        if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
         {
-            *output_format = yaz_oid_xml();
+            *output_format = yaz_oid_recsyn_xml;
             wrbuf_printf(wrbuf, ZEBRA_XML_HEADER_STR
                          " sysno=\"" ZINT_FORMAT "\""
                          " set=\"zebra::index%s/\">\n",
@@ -199,9 +199,9 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
             wrbuf_printf(wrbuf, "</index>\n");
             wrbuf_printf(wrbuf, "</record>\n");
         }
-        else if (!oid_oidcmp(input_format, yaz_oid_sutrs()))
+        else if (!oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
         {
-            *output_format = yaz_oid_sutrs();
+            *output_format = yaz_oid_recsyn_sutrs;
             
             wrbuf_printf(wrbuf, "%s %c %s\n", string_index, index_type,
                          dst_buf);
@@ -232,8 +232,8 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
     /* *rec_lenp = 0; */
 
     /* only accept XML and SUTRS requests */
-    if (oid_oidcmp(input_format, yaz_oid_xml())
-        && oid_oidcmp(input_format, yaz_oid_sutrs()))
+    if (oid_oidcmp(input_format, yaz_oid_recsyn_xml)
+        && oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
     {
         yaz_log(YLOG_WARN, "unsupported format for element set zebra::%s", 
                 elemsetname);
@@ -284,7 +284,7 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
         struct it_key key_in;
         WRBUF wrbuf = wrbuf_alloc();
     
-        if (!oid_oidcmp(input_format, yaz_oid_xml()))
+        if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
         {
             *output_format = input_format;
             wrbuf_printf(wrbuf, ZEBRA_XML_HEADER_STR
@@ -292,7 +292,7 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
                          " set=\"zebra::index%s/\">\n",
                          sysno, elemsetname);
         }
-        else if (!oid_oidcmp(input_format, yaz_oid_sutrs()))
+        else if (!oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
             *output_format = input_format;
 
         while (zebra_rec_keys_read(keys, &str, &slen, &key_in))
@@ -324,7 +324,7 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
                     zebra_term_untrans(zh, index_type, dst_buf, str);
                     if (strlen(dst_buf))
                     {
-                        if (!oid_oidcmp(input_format, yaz_oid_xml()))
+                        if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
                         {
                             wrbuf_printf(wrbuf, "  <index name=\"%s\"", 
                                          string_index);
@@ -357,7 +357,7 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
                 }
             }
         }
-        if (!oid_oidcmp(input_format, yaz_oid_xml()))
+        if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
             wrbuf_printf(wrbuf, "</record>\n");
         *rec_lenp = wrbuf_len(wrbuf);
         *rec_bufp = odr_malloc(odr, *rec_lenp);
@@ -417,12 +417,12 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
     {
         int ret = 0;
         WRBUF wrbuf = wrbuf_alloc();
-        if (!oid_oidcmp(input_format, yaz_oid_sutrs()))
+        if (!oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
         {
             wrbuf_printf(wrbuf, ZINT_FORMAT, sysno);
             *output_format = input_format;
         } 
-        else if (!oid_oidcmp(input_format, yaz_oid_xml()))
+        else if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
         {
             wrbuf_printf(wrbuf, ZEBRA_XML_HEADER_STR
                          " sysno=\"" ZINT_FORMAT "\"/>\n",
@@ -475,8 +475,8 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
     }
 
     /* only accept XML and SUTRS requests from now */
-    if (oid_oidcmp(input_format, yaz_oid_xml())
-        && oid_oidcmp(input_format, yaz_oid_sutrs()))
+    if (oid_oidcmp(input_format, yaz_oid_recsyn_xml)
+        && oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
     {
         yaz_log(YLOG_WARN, "unsupported format for element set zebra::%s", 
                 elemsetname);
@@ -491,7 +491,7 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
         WRBUF wrbuf = wrbuf_alloc();
         RecordAttr *recordAttr = rec_init_attr(zh->reg->zei, rec); 
 
-        if (!oid_oidcmp(input_format, yaz_oid_xml()))
+        if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
         {
             *output_format = input_format;
             
@@ -511,7 +511,7 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
                          recordAttr->recordSize,
                          elemsetname);
         }
-        else if (!oid_oidcmp(input_format, yaz_oid_sutrs()))
+        else if (!oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
         {
             *output_format = input_format;
             wrbuf_printf(wrbuf, "sysno " ZINT_FORMAT "\n", sysno);
