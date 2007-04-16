@@ -1,4 +1,4 @@
-/* $Id: d1_attset.c,v 1.13 2007-01-15 15:10:14 adam Exp $
+/* $Id: d1_attset.c,v 1.14 2007-04-16 08:44:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdlib.h>
 
 #include <yaz/log.h>
+#include <yaz/oid_db.h>
 #include <idzebra/data1.h>
 
 data1_att *data1_getattbyname(data1_handle dh, data1_attset *s, const char *name)
@@ -52,7 +53,7 @@ data1_attset *data1_empty_attset(data1_handle dh)
     data1_attset *res = (data1_attset*) nmem_malloc(mem,sizeof(*res));
 
     res->name = 0;
-    res->reference = VAL_NONE;
+    res->oid = 0;
     res->atts = 0;
     res->children = 0;
     res->next = 0;
@@ -132,7 +133,10 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 		continue;
 	    }
 	    name = argv[1];
-	    if ((res->reference = oid_getvalbyname(name)) == VAL_NONE)
+
+            res->oid  = yaz_string_to_oid_nmem(yaz_oid_std(),
+                                               CLASS_ATTSET, name, mem);
+	    if (!res->oid)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Unknown reference oid '%s'",
 			file, lineno, name);

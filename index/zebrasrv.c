@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.12 2007-03-14 11:48:32 adam Exp $
+/* $Id: zebrasrv.c,v 1.13 2007-04-16 08:44:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -197,8 +197,7 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
     r->search_info->list[0]->which = Z_OtherInfo_externallyDefinedInfo;
     ext = odr_malloc (r->stream, sizeof(*ext));
     r->search_info->list[0]->information.externallyDefinedInfo = ext;
-    ext->direct_reference =
-        yaz_oidval_to_z3950oid (r->stream, CLASS_USERINFO, VAL_SEARCHRES1);
+    ext->direct_reference = odr_oiddup(r->stream, yaz_oid_search_result_1());
     ext->indirect_reference = 0;
     ext->descriptor = 0;
     ext->which = Z_External_searchResult1;
@@ -314,7 +313,7 @@ int bend_search(void *handle, bend_search_rr *r)
 }
 
 
-int bend_fetch (void *handle, bend_fetch_rr *r)
+int bend_fetch(void *handle, bend_fetch_rr *r)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     ZebraRetrievalRecord retrievalRecord;
@@ -343,7 +342,7 @@ int bend_fetch (void *handle, bend_fetch_rr *r)
 	r->basename = retrievalRecord.base;
 	r->record = retrievalRecord.buf;
 	r->len = retrievalRecord.len;
-	r->output_format = retrievalRecord.format;
+	r->output_format = odr_oiddup(r->stream, retrievalRecord.format);
     }
     return 0;
 }
@@ -596,7 +595,6 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 		for (i = 0; notToKeep && i < notToKeep->num; i++)
 		{
 		    Z_External *rec = notToKeep->elements[i]->record;
-                    struct oident *oident = 0;
                     Odr_oct *opaque_recid = 0;
 		    zint *sysno = 0;
 		    zint sysno_tmp;
@@ -616,10 +614,14 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
                     }
 		    if (rec->direct_reference)
 		    {
-			oident = oid_getentbyoid(rec->direct_reference);
-			if (oident)
+                        char oid_name_str[OID_STR_MAX];
+                        const char *oid_name =
+                            yaz_oid_to_string_buf(
+                                rec->direct_reference,
+                                0, oid_name_str);
+                        if (oid_name)
 			    yaz_log (YLOG_LOG, "record %d type %s", i,
-				     oident->desc);
+                                     oid_name);
 		    }
 		    switch (rec->which)
 		    {
@@ -643,13 +645,6 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				     rec->u.octet_aligned->len,
 				     rec->u.octet_aligned->buf);
 		    }
-                    if (oident && oident->value != VAL_TEXT_XML 
-                        && oident->value != VAL_SUTRS)
-                    {
-                        rr->errcode = YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
-                        rr->errstring = "only XML update supported";
-                        break;
-                    }
                     if (rec->which == Z_External_octet)
                     {
                         enum zebra_recctrl_action_t action = action_update;

@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.33 2007-03-14 14:16:14 adam Exp $
+/* $Id: recctrl.h,v 1.34 2007-04-16 08:44:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -25,7 +25,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <sys/types.h>
 #include <yaz/proto.h>
-#include <yaz/oid.h>
 #include <yaz/odr.h>
 #include <idzebra/res.h>
 #include <idzebra/data1.h>
@@ -116,7 +115,7 @@ struct recRetrieveCtrl {
     /* Input parameters ... */
     Res       res;		      /* Resource pool                     */
     ODR       odr;                    /* ODR used to create response       */
-    oid_value input_format;           /* Preferred record syntax           */
+    const int*input_format;           /* Preferred record syntax OID       */
     Z_RecordComposition *comp;        /* formatting instructions           */
     char      *encoding;              /* preferred character encoding      */
     zint      localno;                /* local id of record                */
@@ -129,11 +128,11 @@ struct recRetrieveCtrl {
     zebra_snippets *doc_snippet;
     
     /* response */
-    oid_value  output_format;
-    void       *rec_buf;
+    const int *output_format;               /* output format OID */
+    void *     rec_buf;
     int        rec_len;
     int        diagnostic;
-    char       *addinfo;
+    char *     addinfo;
 };
 
 typedef struct recType *RecType;

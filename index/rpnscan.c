@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.6 2007-03-19 21:50:39 adam Exp $
+/* $Id: rpnscan.c,v 1.7 2007-04-16 08:44:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -37,6 +37,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <attrfind.h>
 #include <charmap.h>
 #include <rset.h>
+#include <yaz/oid_db.h>
 
 #define RPN_MAX_ORDS 32
 
@@ -376,7 +377,7 @@ struct scan_info {
 };
 
 ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
-		   oid_value attributeset,
+		   const int *attributeset,
 		   int num_bases, char **basenames,
 		   int *position, int *num_entries, ZebraScanEntry **list,
 		   int *is_partial, RSET limit_set)
@@ -396,8 +397,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     *list = 0;
     *is_partial = 0;
 
-    if (attributeset == VAL_NONE)
-        attributeset = VAL_BIB1;
+    if (!attributeset)
+        attributeset = yaz_oid_attset_bib1();
 
     if (!limit_set) /* no limit set given already */
     {
@@ -426,8 +427,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         }
     }
         
-    yaz_log(YLOG_DEBUG, "position = %d, num = %d set=%d",
-	    *position, *num_entries, attributeset);
+    yaz_log(YLOG_DEBUG, "position = %d, num = %d",
+	    *position, *num_entries);
         
     if (zebra_maps_attr(zh->reg->zebra_maps, zapt, &index_type, &search_type,
 			rank_type, &complete_flag, &sort_flag))

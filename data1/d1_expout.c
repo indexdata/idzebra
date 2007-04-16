@@ -1,4 +1,4 @@
-/* $Id: d1_expout.c,v 1.9 2007-01-15 15:10:14 adam Exp $
+/* $Id: d1_expout.c,v 1.10 2007-04-16 08:44:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -30,6 +30,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <yaz/log.h>
 #include <yaz/proto.h>
+#include <yaz/oid_db.h>
+#include <yaz/snprintf.h>
 #include <idzebra/data1.h>
 
 typedef struct {
@@ -113,31 +115,15 @@ static bool_t *f_bool(ExpHandle *eh, data1_node *c)
 static Odr_oid *f_oid(ExpHandle *eh, data1_node *c, oid_class oclass)
 {
     char oidstr[64];
-    int oid_this[20];
-    oid_value value_for_this;
 
     c = c->child;
     if (!is_data_tag (eh, c) || c->u.data.len > 63)
 	return 0;
-    sprintf(oidstr, "%.*s", c->u.data.len, c->u.data.data);
-    value_for_this = oid_getvalbyname(oidstr);
-    if (value_for_this == VAL_NONE)
-    {
-	Odr_oid *oid = odr_getoidbystr(eh->o, oidstr);
-	assert (oid);
-	return oid;
-    }
-    else
-    {
-	struct oident ident;
+    yaz_snprintf(oidstr, sizeof(oidstr)-1, 
+                 "%.*s", c->u.data.len, c->u.data.data);
 
-	ident.oclass = oclass;
-	ident.proto = PROTO_Z3950;
-	ident.value = value_for_this;
-	
-	oid_ent_to_oid (&ident, oid_this);
-    }
-    return odr_oiddup (eh->o, oid_this);
+    return yaz_string_to_oid_odr(yaz_oid_std(),
+                                 CLASS_GENERAL, oidstr, eh->o);
 }
 
 static Z_IntUnit *f_intunit(ExpHandle *eh, data1_node *c)

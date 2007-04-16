@@ -1,4 +1,4 @@
-/* $Id: d1_marc.c,v 1.17 2007-01-15 15:10:14 adam Exp $
+/* $Id: d1_marc.c,v 1.18 2007-04-16 08:44:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 
 #include <yaz/log.h>
-#include <yaz/oid.h>
+#include <yaz/oid_db.h>
 #include <yaz/marcdisp.h>
 #include <yaz/readconf.h>
 #include <yaz/xmalloc.h>
@@ -47,7 +47,7 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 	return 0;
 
     res->name = 0;
-    res->reference = VAL_NONE;
+    res->oid = 0;
     res->next = 0;
     res->length_data_entry = 4;
     res->length_starting = 5;
@@ -81,7 +81,10 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 			*argv);
 		continue;
 	    }
-	    if ((res->reference = oid_getvalbyname(argv[1])) == VAL_NONE)
+            res->oid = yaz_string_to_oid_nmem(yaz_oid_std(),
+                                              CLASS_TAGSET, argv[1], 
+                                              mem);
+	    if (!res->oid)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Unknown tagset reference '%s'",
 			file, lineno, argv[1]);

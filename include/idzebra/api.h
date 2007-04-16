@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.47 2007-03-14 11:48:31 adam Exp $
+/* $Id: api.h,v 1.48 2007-04-16 08:44:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -32,7 +32,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define IDZEBRA_API_H
 
 #include <yaz/odr.h>
-#include <yaz/oid.h>
 #include <yaz/proto.h>
 #include <idzebra/res.h>
 #include <idzebra/version.h>
@@ -56,7 +55,7 @@ typedef struct {
     int position;        /* position of record in result set (1,2,..) */
     char *buf;           /* record buffer (void pointer really) */
     int len;             /* length */
-    oid_value format;    /* record syntax */
+    const int *format;   /* record syntax */
     char *base; 
     zint sysno;
     int  score;
@@ -221,7 +220,7 @@ YAZ_EXPORT
 ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 				 const char *setname,
 				 Z_RecordComposition *comp,
-				 oid_value input_format,
+				 const int *input_format,
 				 int num_recs,
 				 ZebraRetrievalRecord *recs);
 /** \brief Deletes one or more resultsets 
@@ -288,7 +287,7 @@ ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
 */
 YAZ_EXPORT ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream,
 				Z_AttributesPlusTerm *zapt,
-				oid_value attributeset,
+				const int *attributeset,
 				int *position, int *num_entries,
 				ZebraScanEntry **entries,
 				int *is_partial,

@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.44 2007-03-19 21:50:39 adam Exp $
+/* $Id: zebrash.c,v 1.45 2007-04-16 08:44:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -45,6 +45,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/sortspec.h>
 #include <yaz/options.h>
 #include <yaz/wrbuf.h>
+#include <yaz/oid_db.h>
 
 #define MAX_NO_ARGS 32
 #define MAX_OUT_BUFF 4096
@@ -440,17 +441,16 @@ static int cmd_show( char *args[], WRBUF outbuff)
     ODR odr;
     Z_RecordComposition *pcomp=0;
     int i;
-    oid_value format;
 
-    odr=odr_createmem(ODR_ENCODE);
+    odr = odr_createmem(ODR_ENCODE);
     recs= odr_malloc(odr,sizeof(ZebraRetrievalRecord)*nrecs);
     rc =z_RecordComposition(odr, &pcomp, 0,"recordComposition");
-    format=oid_getvalbyname ("xml"); /*FIXME - let the user specify*/
+
     for (i=0;i<nrecs;i++)
         recs[i].position=start+i;
 
     rc = zebra_records_retrieve (zh, odr, setname,
-				 pcomp, format, nrecs,recs);
+				 pcomp, yaz_oid_xml(), nrecs,recs);
     if (0==rc)
     {
         for (i=0;i<nrecs;i++)

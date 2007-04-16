@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.16 2007-03-07 21:08:36 adam Exp $
+/* $Id: recgrs.c,v 1.17 2007-04-16 08:44:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <ctype.h>
 
 #include <yaz/log.h>
-#include <yaz/oid.h>
+#include <yaz/oid_db.h>
 #include <yaz/diagbib1.h>
 
 #include <d1_absyn.h>
@@ -883,19 +883,10 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, RecWord *wrd)
 
 int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
 {
-    oident oe;
-    int oidtmp[OID_SIZE];
     RecWord wrd;
 
-    oe.proto = PROTO_Z3950;
-    oe.oclass = CLASS_SCHEMA;
-    if (n->u.root.absyn)
-    {
-        oe.value = n->u.root.absyn->reference;
-        
-        if ((oid_ent_to_oid (&oe, oidtmp)))
-            (*p->schemaAdd)(p, oidtmp);
-    }
+    if (n->u.root.absyn && n->u.root.absyn->oid)
+        (*p->schemaAdd)(p, n->u.root.absyn->oid);
     (*p->init)(p, &wrd);
 
     /* data1_pr_tree(p->dh, n, stdout); */ 
@@ -909,8 +900,6 @@ static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
 {
     data1_node *n;
     struct grs_read_info gri;
-    oident oe;
-    int oidtmp[OID_SIZE];
     RecWord wrd;
 
     gri.stream = p->stream;
@@ -921,18 +910,8 @@ static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
     n = (*grs_read)(&gri);
     if (!n)
         return RECCTRL_EXTRACT_EOF;
-    oe.proto = PROTO_Z3950;
-    oe.oclass = CLASS_SCHEMA;
-#if 0
-    if (!n->u.root.absyn)
-        return RECCTRL_EXTRACT_ERROR;
-#endif
-    if (n->u.root.absyn)
-    {
-        oe.value = n->u.root.absyn->reference;
-        if ((oid_ent_to_oid (&oe, oidtmp)))
-            (*p->schemaAdd)(p, oidtmp);
-    }
+    if (n->u.root.absyn && n->u.root.absyn->oid)
+        (*p->schemaAdd)(p, n->u.root.absyn->oid);
     data1_concat_text(p->dh, mem, n);
 
     /* ensure our data1 tree is UTF-8 */
@@ -1099,8 +1078,10 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     NMEM mem;
     struct grs_read_info gri;
     const char *tagname;
+    const int *xml_oid = yaz_oid_xml();
+    const int *grs1_oid = yaz_oid_grs1();
 
-    int requested_schema = VAL_NONE;
+    const int *requested_schema = 0;
     data1_marctab *marctab;
     int dummy;
     
@@ -1162,8 +1143,14 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	dnew->u.data.len = strlen(dnew->u.data.data);
     }
 
-    if (p->input_format == VAL_TEXT_XML)
-       zebra_xml_metadata (p, top, mem);
+    if (!p->input_format)
+    {  /* SUTRS is default input_format */
+        p->input_format = yaz_oid_sutrs();
+    }
+    assert(p->input_format);
+
+    if (!oid_oidcmp(p->input_format, xml_oid))
+        zebra_xml_metadata (p, top, mem);
 
 #if 0
     data1_pr_tree (p->dh, node, stdout);
@@ -1173,19 +1160,18 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
         p->comp->u.complex->generic->which == Z_Schema_oid &&
         p->comp->u.complex->generic->schema.oid)
     {
-	oident *oe = oid_getentbyoid (p->comp->u.complex->generic->schema.oid);
-	if (oe)
-	    requested_schema = oe->value;
+        requested_schema = p->comp->u.complex->generic->schema.oid;
     }
     /* If schema has been specified, map if possible, then check that
      * we got the right one 
      */
-    if (requested_schema != VAL_NONE)
+    if (requested_schema)
     {
 	yaz_log(YLOG_DEBUG, "grs_retrieve: schema mapping");
 	for (map = node->u.root.absyn->maptabs; map; map = map->next)
 	{
-	    if (map->target_absyn_ref == requested_schema)
+	    // if (map->target_absyn_ref == requested_schema)
+	    if (!oid_oidcmp(map->oid, requested_schema))
 	    {
 		onode = node;
 		if (!(node = data1_map_record(p->dh, onode, map, mem)))
@@ -1197,10 +1183,10 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 		break;
 	    }
 	}
-	if (node->u.root.absyn &&
-	    requested_schema != node->u.root.absyn->reference)
+	if (node->u.root.absyn 
+            && oid_oidcmp(requested_schema, node->u.root.absyn->oid))
 	{
-	    p->diagnostic = 238;
+	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
 	    nmem_destroy (mem);
 	    return 0;
 	}
@@ -1214,7 +1200,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     if (node->u.root.absyn)
         for (map = node->u.root.absyn->maptabs; map; map = map->next)
         {
-            if (map->target_absyn_ref == p->input_format)
+            if (!oid_oidcmp(map->oid, p->input_format))
             {
                 onode = node;
                 if (!(node = data1_map_record(p->dh, onode, map, mem)))
@@ -1227,40 +1213,18 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
             }
         }
     yaz_log(YLOG_DEBUG, "grs_retrieve: schemaIdentifier");
-    if (node->u.root.absyn &&
-	node->u.root.absyn->reference != VAL_NONE &&
-	p->input_format == VAL_GRS1)
+    if (node->u.root.absyn && node->u.root.absyn->oid 
+        && !oid_oidcmp(p->input_format, grs1_oid))
     {
-	oident oe;
-	Odr_oid *oid;
-	int oidtmp[OID_SIZE];
-	
-	oe.proto = PROTO_Z3950;
-	oe.oclass = CLASS_SCHEMA;
-	oe.value = node->u.root.absyn->reference;
-	
-	if ((oid = oid_ent_to_oid (&oe, oidtmp)))
-	{
-	    char tmp[128];
-	    data1_handle dh = p->dh;
-	    char *p = tmp;
-	    int *ii;
-	    
-	    for (ii = oid; *ii >= 0; ii++)
-	    {
-		if (p != tmp)
-			*(p++) = '.';
-		sprintf(p, "%d", *ii);
-		p += strlen(p);
-	    }
-	    if ((dnew = data1_mk_tag_data_wd(dh, top, 
-                                             "schemaIdentifier", mem)))
-	    {
-		dnew->u.data.what = DATA1I_oid;
-		dnew->u.data.data = (char *) nmem_malloc(mem, p - tmp);
-		memcpy(dnew->u.data.data, tmp, p - tmp);
-		dnew->u.data.len = p - tmp;
-	    }
+        char oid_str[OID_STR_MAX];
+        char *dot_str = oid_oid_to_dotstring(node->u.root.absyn->oid, oid_str);
+        
+        if (dot_str && (dnew = data1_mk_tag_data_wd(p->dh, top, 
+                                                    "schemaIdentifier", mem)))
+        {
+            dnew->u.data.what = DATA1I_oid;
+            dnew->u.data.data = (char *) nmem_strdup(mem, dot_str);
+            dnew->u.data.len = strlen(dot_str);
 	}
     }
 
@@ -1279,10 +1243,12 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     data1_pr_tree (p->dh, node, stdout);
 #endif
     yaz_log(YLOG_DEBUG, "grs_retrieve: transfer syntax mapping");
-    switch (p->output_format = (p->input_format != VAL_NONE ?
-				p->input_format : VAL_SUTRS))
+
+    p->output_format = p->input_format;
+
+    assert(p->input_format);
+    if (!oid_oidcmp(p->input_format, yaz_oid_xml()))
     {
-    case VAL_TEXT_XML:
 #if 0
         data1_pr_tree (p->dh, node, stdout);
 #endif
@@ -1293,97 +1259,103 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 
 	if (!(p->rec_buf = data1_nodetoidsgml(p->dh, node, selected,
 					      &p->rec_len)))
-	    p->diagnostic = 238;
+	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
 	else
 	{
 	    char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
 	    memcpy (new_buf, p->rec_buf, p->rec_len);
 	    p->rec_buf = new_buf;
 	}
-	break;
-    case VAL_GRS1:
+    }
+    else if (!oid_oidcmp(p->input_format, yaz_oid_grs1()))
+    {
 	data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
 	dummy = 0;
 	if (!(p->rec_buf = data1_nodetogr(p->dh, node, selected,
 					  p->odr, &dummy)))
-	    p->diagnostic = 238; /* not available in requested syntax */
+	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
 	else
 	    p->rec_len = -1;
-	break;
-    case VAL_EXPLAIN:
+    }
+    else if (!oid_oidcmp(p->input_format, yaz_oid_explain()))
+    {
 	/* ensure our data1 tree is UTF-8 */
 	data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
 	
 	if (!(p->rec_buf = data1_nodetoexplain(p->dh, node, selected,
 					       p->odr)))
-	    p->diagnostic = 238;
+	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
 	else
 	    p->rec_len = -1;
-	break;
-    case VAL_SUMMARY:
+    }
+    else if (!oid_oidcmp(p->input_format, yaz_oid_summary()))
+    {
 	/* ensure our data1 tree is UTF-8 */
 	data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
 	if (!(p->rec_buf = data1_nodetosummary(p->dh, node, selected,
 					       p->odr)))
-	    p->diagnostic = 238;
+	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
 	else
 	    p->rec_len = -1;
-	break;
-    case VAL_SUTRS:
+    }
+    else if (!oid_oidcmp(p->input_format, yaz_oid_sutrs()))
+    {
 	if (p->encoding)
             data1_iconv (p->dh, mem, node, p->encoding,
 			 data1_get_encoding(p->dh, node));
 	if (!(p->rec_buf = data1_nodetobuf(p->dh, node, selected,
 					   &p->rec_len)))
-	    p->diagnostic = 238;
+	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
 	else
 	{
 	    char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
 	    memcpy (new_buf, p->rec_buf, p->rec_len);
 	    p->rec_buf = new_buf;
 	}
-	break;
-    case VAL_SOIF:
+    }
+    else if (!oid_oidcmp(p->input_format, yaz_oid_soif()))
+    {
 	if (p->encoding)
             data1_iconv (p->dh, mem, node, p->encoding,
 			 data1_get_encoding(p->dh, node));
 	if (!(p->rec_buf = data1_nodetosoif(p->dh, node, selected,
 					    &p->rec_len)))
-	    p->diagnostic = 238;
+	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
 	else
 	{
 	    char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
 	    memcpy (new_buf, p->rec_buf, p->rec_len);
 	    p->rec_buf = new_buf;
 	}
-	break;
-    default:
+    }
+    else
+    {
 	if (!node->u.root.absyn)
-	{
-	    p->diagnostic = 238;
-	    break;
-	}
-	for (marctab = node->u.root.absyn->marc; marctab;
-	     marctab = marctab->next)
-	    if (marctab->reference == p->input_format)
-		break;
-	if (!marctab)
-	{
-	    p->diagnostic = 238;
-	    break;
-	}
-	if (p->encoding)
-            data1_iconv (p->dh, mem, node, p->encoding,
-			 data1_get_encoding(p->dh, node));
-	if (!(p->rec_buf = data1_nodetomarc(p->dh, marctab, node,
-					selected, &p->rec_len)))
-	    p->diagnostic = 238;
-	else
-	{
-	    char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
-	    memcpy (new_buf, p->rec_buf, p->rec_len);
-		p->rec_buf = new_buf;
-	}
+	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
+        else
+        {
+            for (marctab = node->u.root.absyn->marc; marctab;
+                 marctab = marctab->next)
+                if (marctab->oid && !oid_oidcmp(marctab->oid, p->input_format))
+                    break;
+            if (!marctab)
+                p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
+            else
+            {
+                if (p->encoding)
+                    data1_iconv (p->dh, mem, node, p->encoding,
+                                 data1_get_encoding(p->dh, node));
+                if (!(p->rec_buf = data1_nodetomarc(p->dh, marctab, node,
+                                                    selected, &p->rec_len)))
+                    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
+                else
+                {
+                    char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
+                    memcpy (new_buf, p->rec_buf, p->rec_len);
+                    p->rec_buf = new_buf;
+                }
+            }
+        }
     }
     nmem_destroy(mem);
     return 0;

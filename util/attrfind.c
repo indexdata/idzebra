@@ -1,4 +1,4 @@
-/* $Id: attrfind.c,v 1.2 2007-01-15 15:10:26 adam Exp $
+/* $Id: attrfind.c,v 1.3 2007-04-16 08:44:33 adam Exp $
    Copyright (C) 2005-2007
    Index Data ApS
 
@@ -42,7 +42,7 @@ void attr_init_AttrList(AttrType *src, Z_AttributeList *list, int type)
     src->minor = 0;
 }
 
-int attr_find_ex(AttrType *src, oid_value *attributeSetP, 
+int attr_find_ex(AttrType *src, const int **attribute_set_oid,
 		 const char **string_value)
 {
     int num_attributes;
@@ -59,25 +59,15 @@ int attr_find_ex(AttrType *src, oid_value *attributeSetP,
             {
             case Z_AttributeValue_numeric:
                 ++(src->major);
-                if (element->attributeSet && attributeSetP)
-                {
-                    oident *attrset;
-
-                    attrset = oid_getentbyoid(element->attributeSet);
-                    *attributeSetP = attrset->value;
-                }
+                if (element->attributeSet && attribute_set_oid)
+                    *attribute_set_oid = element->attributeSet;
                 return *element->value.numeric;
                 break;
             case Z_AttributeValue_complex:
                 if (src->minor >= element->value.complex->num_list)
                     break;
-                if (element->attributeSet && attributeSetP)
-                {
-                    oident *attrset;
-                    
-                    attrset = oid_getentbyoid(element->attributeSet);
-                    *attributeSetP = attrset->value;
-                }
+                if (element->attributeSet && attribute_set_oid)
+                    *attribute_set_oid = element->attributeSet;
                 if (element->value.complex->list[src->minor]->which ==  
                     Z_StringOrNumeric_numeric)
                 {
@@ -106,9 +96,9 @@ int attr_find_ex(AttrType *src, oid_value *attributeSetP,
     return -1;
 }
 
-int attr_find(AttrType *src, oid_value *attributeSetP)
+int attr_find(AttrType *src, const int **attribute_set_id)
 {
-    return attr_find_ex(src, attributeSetP, 0);
+    return attr_find_ex(src, attribute_set_id, 0);
 }
 
 

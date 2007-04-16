@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.42 2007-01-15 15:10:20 adam Exp $
+/* $Id: testlib.c,v 1.43 2007-04-16 08:44:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -35,6 +35,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <assert.h>
 #include <yaz/log.h>
 #include <yaz/pquery.h>
+#include <yaz/oid_db.h>
 #include <idzebra/api.h>
 #include "testlib.h"
 
@@ -323,7 +324,7 @@ int tl_ranking_query(ZebraHandle zh, char *query,
 
     odr_output = odr_createmem(ODR_ENCODE);    
     rc = zebra_records_retrieve(zh, odr_output, setname, 0,
-                                VAL_TEXT_XML, exphits, retrievalRecord);
+                                yaz_oid_xml(), exphits, retrievalRecord);
     if (rc != ZEBRA_OK)
         ret = 0;
     else if (!strstr(retrievalRecord[0].buf, firstrec))

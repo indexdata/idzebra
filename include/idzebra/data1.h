@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.21 2007-01-15 20:08:24 adam Exp $
+/* $Id: data1.h,v 1.22 2007-04-16 08:44:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -26,7 +26,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 
 #include <yaz/nmem.h>
-#include <yaz/oid.h>
 #include <yaz/proto.h>
 #include <yaz/yaz-util.h>
 
@@ -72,7 +71,7 @@ struct data1_attset_child {
 struct data1_attset
 {
     char *name;          /* symbolic name */
-    oid_value reference;   /* external ID of attset */
+    int *oid;            /* attribute set OID */
     data1_att *atts;          /* attributes */
     data1_attset_child *children;  /* included attset */
     data1_attset *next;       /* next in cache */
@@ -112,7 +111,7 @@ typedef struct data1_mapunit
 typedef struct data1_maptab
 {
     char *name;
-    oid_value target_absyn_ref;
+    int *oid;  /* target abstract syntax  */
     char *target_absyn_name;
     data1_mapunit *map;
     struct data1_maptab *next;
@@ -146,7 +145,7 @@ typedef enum data1_datatype
 typedef struct data1_marctab
 {
     char *name;
-    oid_value reference;
+    int *oid; /* MARC OID */
 
     char record_status[2];
     char implementation_codes[5];
@@ -197,7 +196,7 @@ typedef struct data1_varclass
 typedef struct data1_varset
 {
     char *name;
-    oid_value reference;
+    int *oid; /* variant OID */
     data1_varclass *classes;
 } data1_varset;
 
@@ -230,7 +229,7 @@ struct data1_tagset
 {
     int type;                        /* type of tagset in current context */
     char *name;                      /* symbolic name */
-    oid_value reference;
+    int *oid;                        /* variant OID */
     data1_tag *tags;                 /* tags defined by this set */
     data1_tagset *children;          /* children */
     data1_tagset *next;              /* sibling */
@@ -542,7 +541,8 @@ YAZ_EXPORT void data1_absyn_trav (data1_handle dh, void *handle,
 				  void (*fh)(data1_handle dh,
 					     void *h, data1_absyn *a));
 
-YAZ_EXPORT data1_attset *data1_attset_search_id (data1_handle dh, int id);
+YAZ_EXPORT data1_attset *data1_attset_search_id (data1_handle dh,
+                                                 const int *oid);
 
 YAZ_EXPORT char *data1_getNodeValue(data1_node* node, char* pTagPath);
 YAZ_EXPORT data1_node *data1_LookupNode(data1_node* node, char* pTagPath);

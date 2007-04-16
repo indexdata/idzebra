@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.77 2007-02-24 16:47:16 adam Exp $
+/* $Id: zinfo.c,v 1.78 2007-04-16 08:44:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -252,7 +252,7 @@ void zebraExplain_mergeOids (ZebraExplainInfo zei, data1_node *n,
 	if (!ao)
 	{
 	    ao = (zebAccessObject) nmem_malloc(zei->nmem, sizeof(*ao));
-	    ao->handle = NULL;
+	    ao->handle = 0;
 	    ao->sysno = 1;
 	    ao->oid = oid;
 	    ao->next = *op;
@@ -270,8 +270,8 @@ void zebraExplain_mergeAccessInfo(ZebraExplainInfo zei, data1_node *n,
     {
 	*accessInfo = (zebAccessInfo)
 	    nmem_malloc(zei->nmem, sizeof(**accessInfo));
-	(*accessInfo)->attributeSetIds = NULL;
-	(*accessInfo)->schemas = NULL;
+	(*accessInfo)->attributeSetIds = 0;
+	(*accessInfo)->schemas = 0;
     }
     else
     {
@@ -356,20 +356,20 @@ ZebraExplainInfo zebraExplain_open(
     zei->updateFunc = updateFunc;
     zei->dirty = 0;
     zei->ordinalDatabase = 1;
-    zei->curDatabaseInfo = NULL;
+    zei->curDatabaseInfo = 0;
     zei->records = records;
     zei->nmem = nmem;
     zei->dh = dh;
     
     data1_get_absyn (zei->dh, "explain", DATA1_XPATH_INDEXING_DISABLE);
 
-    zei->attsets = NULL;
+    zei->attsets = 0;
     zei->res = res;
     zei->categoryList = (struct zebraCategoryListInfo *)
 	nmem_malloc(zei->nmem, sizeof(*zei->categoryList));
     zei->categoryList->sysno = 0;
     zei->categoryList->dirty = 0;
-    zei->categoryList->data1_categoryList = NULL;
+    zei->categoryList->data1_categoryList = 0;
 
     if ( atoi(res_get_def(res, "notimestamps", "0") )== 0)
     {
@@ -436,9 +436,9 @@ ZebraExplainInfo zebraExplain_open(
 	}
 	for(; np; np = np->next)
 	{
-	    data1_node *node_name = NULL;
-	    data1_node *node_id = NULL;
-	    data1_node *node_aid = NULL;
+	    data1_node *node_name = 0;
+	    data1_node *node_id = 0;
+	    data1_node *node_aid = 0;
 	    data1_node *np2;
 	    if (np->which != DATA1N_tag || strcmp(np->u.tag.tag, "database"))
 		continue;
@@ -459,7 +459,7 @@ ZebraExplainInfo zebraExplain_open(
 		nmem_malloc(zei->nmem, sizeof(**zdip));
             (*zdip)->readFlag = 1;
             (*zdip)->dirty = 0;
-	    (*zdip)->data1_database = NULL;
+	    (*zdip)->data1_database = 0;
 	    (*zdip)->recordCount = 0;
 	    (*zdip)->recordBytes = 0;
 	    zebraExplain_mergeAccessInfo (zei, 0, &(*zdip)->accessInfo);
@@ -477,7 +477,7 @@ ZebraExplainInfo zebraExplain_open(
 							node_aid->u.data.len);
 	    (*zdip)->attributeDetails->readFlag = 1;
 	    (*zdip)->attributeDetails->dirty = 0;
-	    (*zdip)->attributeDetails->SUInfo = NULL;
+	    (*zdip)->attributeDetails->SUInfo = 0;
 
 	    zdip = &(*zdip)->next;
 	}
@@ -501,7 +501,7 @@ ZebraExplainInfo zebraExplain_open(
 	    assert (np && np->which == DATA1N_data);
 	    zei->runNumber = atoi_zn(np->u.data.data, np->u.data.len);
             yaz_log(YLOG_DEBUG, "read runnumber=" ZINT_FORMAT, zei->runNumber);
-	    *zdip = NULL;
+	    *zdip = 0;
 	}
 	rec_free(&trec);
     }
@@ -509,7 +509,7 @@ ZebraExplainInfo zebraExplain_open(
     {
 	data1_node *node_tgtinfo;
 
-	*zdip = NULL;
+	*zdip = 0;
 	if (writeFlag)
 	{
 	    char *sgml_buf;
@@ -603,12 +603,12 @@ static void zebraExplain_readAttributeDetails(ZebraExplainInfo zei,
 				  "attrlist");
     for (np = node_list->child; np; np = np->next)
     {
-	data1_node *node_str = NULL;
-	data1_node *node_ordinal = NULL;
-	data1_node *node_type = NULL;
-	data1_node *node_cat = NULL;
-        data1_node *node_doc_occurrences = NULL;
-        data1_node *node_term_occurrences = NULL;
+	data1_node *node_str = 0;
+	data1_node *node_ordinal = 0;
+	data1_node *node_type = 0;
+	data1_node *node_cat = 0;
+        data1_node *node_doc_occurrences = 0;
+        data1_node *node_term_occurrences = 0;
 	data1_node *np2;
 
 	if (np->which != DATA1N_tag || strcmp(np->u.tag.tag, "attr"))
@@ -703,7 +703,7 @@ static void zebraExplain_readAttributeDetails(ZebraExplainInfo zei,
 					 node_ordinal->u.data.len);
         zsuip = &(*zsuip)->next;
     }
-    *zsuip = NULL;
+    *zsuip = 0;
     zad->readFlag = 0;
     rec_free(&rec);
 }
@@ -963,7 +963,7 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
     zdi->attributeDetails->readFlag = 0;
     zdi->attributeDetails->sysno = 0;
     zdi->attributeDetails->dirty = 1;
-    zdi->attributeDetails->SUInfo = NULL;
+    zdi->attributeDetails->SUInfo = 0;
     zdi->attributeDetails->data1_tree =
 	data1_read_sgml (zei->dh, zei->nmem,
 			 "<explain><attributeDetails>AttributeDetails\n"
@@ -996,7 +996,7 @@ static void zebraExplain_writeCategoryList (ZebraExplainInfo zei,
 	"TargetInfo",
 	"DatabaseInfo",
 	"AttributeDetails",
-	NULL
+	0
     };
 
     assert (zcl);
@@ -1235,11 +1235,10 @@ static void zebraExplain_writeAttributeSet (ZebraExplainInfo zei,
     Record drec;
     data1_node *node_root, *node_attinfo, *node_attributes, *node_atttype;
     data1_node *node_values;
-    struct oident *entp;
-    struct data1_attset *attset = NULL;
-    
-    if ((entp = oid_getentbyoid (o->oid)))
-	attset = data1_attset_search_id (zei->dh, entp->value);
+    struct data1_attset *attset = 0;
+
+    if (o->oid)
+	attset = data1_attset_search_id (zei->dh, o->oid);
 	    
 #if ZINFO_DEBUG
     yaz_log(YLOG_LOG, "zebraExplain_writeAttributeSet %s",
@@ -1522,30 +1521,13 @@ zebAccessObject zebraExplain_announceOid (ZebraExplainInfo zei,
     if (!ao)
     {
 	ao = (zebAccessObject) nmem_malloc (zei->nmem, sizeof(*ao));
-	ao->handle = NULL;
+	ao->handle = 0;
 	ao->sysno = 0;
 	ao->oid = odr_oiddup_nmem (zei->nmem, oid);
 	ao->next = *op;
 	*op = ao;
     }
     return ao;
-}
-
-void zebraExplain_addAttributeSet (ZebraExplainInfo zei, int set)
-{
-    oident oe;
-    int oid[OID_SIZE];
-
-    oe.proto = PROTO_Z3950;
-    oe.oclass = CLASS_ATTSET;
-    oe.value = (enum oid_value) set;
-
-    if (oid_ent_to_oid (&oe, oid))
-    {
-	zebraExplain_announceOid (zei, &zei->accessInfo->attributeSetIds, oid);
-	zebraExplain_announceOid (zei, &zei->curDatabaseInfo->
-				  accessInfo->attributeSetIds, oid);
-    }
 }
 
 struct zebSUInfoB *zebraExplain_add_sui_info(ZebraExplainInfo zei,

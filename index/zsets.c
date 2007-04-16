@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.120 2007-03-20 22:07:35 adam Exp $
+/* $Id: zsets.c,v 1.121 2007-04-16 08:44:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -100,7 +100,6 @@ static ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
                                  Z_RPNQuery *rpn, ZebraSet sset)
 {
     RSET rset = 0;
-    oident *attrset;
     Z_SortKeySpecList *sort_sequence;
     int sort_status, i;
     ZEBRA_RES res = ZEBRA_OK;
@@ -114,11 +113,9 @@ static ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
     for (i = 0; i<sort_sequence->num_specs; i++)
         sort_sequence->specs[i] = 0;
     
-    attrset = oid_getentbyoid (rpn->attributeSetId);
-
     rpn_get_top_approx_limit(zh, rpn->RPNStructure, &sset->approx_limit);
 
-    res = rpn_search_top(zh, rpn->RPNStructure, attrset->value,
+    res = rpn_search_top(zh, rpn->RPNStructure, rpn->attributeSetId,
 			 nmem, rset_nmem,
 			 sort_sequence,
 			 sset->num_bases, sset->basenames,

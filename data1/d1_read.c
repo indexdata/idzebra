@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.24 2007-03-20 22:07:35 adam Exp $
+/* $Id: d1_read.c,v 1.25 2007-04-16 08:44:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -174,6 +174,7 @@ data1_node *data1_mk_root (data1_handle dh, NMEM nmem, const char *name)
 {
     data1_absyn *absyn = data1_get_absyn(dh, name, 1);
     data1_node *res;
+
     if (!absyn)
     {
         yaz_log(YLOG_WARN, "Unable to acquire abstract syntax " "for '%s'",

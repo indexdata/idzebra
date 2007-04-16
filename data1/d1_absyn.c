@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.34 2007-01-22 18:15:02 adam Exp $
+/* $Id: d1_absyn.c,v 1.35 2007-04-16 08:44:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 
 #include <yaz/log.h>
-#include <yaz/oid.h>
+#include <yaz/oid_db.h>
 #include <idzebra/data1.h>
 #include <idzebra/recctrl.h>
 #include <zebra_xpath.h>
@@ -250,13 +250,13 @@ data1_attset *data1_attset_search_name (data1_handle dh, const char *name)
     return 0;
 }
 
-data1_attset *data1_attset_search_id (data1_handle dh, int id)
+data1_attset *data1_attset_search_id(data1_handle dh, const int *oid)
 {
     data1_attset_cache p = *data1_attset_cache_get (dh);
 
     while (p)
     {
-	if (id == p->attset->reference)
+	if (p->attset->oid && !oid_oidcmp(oid, p->attset->oid))
 	    return p->attset;
 	p = p->next;
     }
@@ -700,7 +700,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
     
     res = (data1_absyn *) nmem_malloc(data1_nmem_get(dh), sizeof(*res));
     res->name = 0;
-    res->reference = VAL_NONE;
+    res->oid = 0;
     res->tagset = 0;
     res->encoding = 0;
     res->xpath_indexing = 
@@ -1022,7 +1022,10 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 		continue;
 	    }
 	    name = argv[1];
-	    if ((res->reference = oid_getvalbyname(name)) == VAL_NONE)
+            res->oid = yaz_string_to_oid_nmem(yaz_oid_std(),
+                                              CLASS_SCHEMA, name, 
+                                              data1_nmem_get(dh));
+            if (!res->oid)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Unknown tagset ref '%s'", 
 		     file, lineno, name);

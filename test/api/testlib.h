@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.24 2007-01-15 20:08:26 adam Exp $
+/* $Id: testlib.h,v 1.25 2007-04-16 08:44:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/log.h>
 #include <idzebra/api.h>
 #include <yaz/test.h>
+#include <yaz/oid_db.h>
 
 /** 
  * tl_start_up : Does all the usual start functions

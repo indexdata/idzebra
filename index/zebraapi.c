@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.252 2007-03-19 21:50:39 adam Exp $
+/* $Id: zebraapi.c,v 1.253 2007-04-16 08:44:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -40,6 +40,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "orddict.h"
 #include <charmap.h>
 #include <idzebra/api.h>
+#include <yaz/oid_db.h>
 
 #define DEFAULT_APPROX_LIMIT 2000000000
 
@@ -1075,7 +1076,7 @@ ZEBRA_RES zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
 ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 				 const char *setname,
 				 Z_RecordComposition *comp,
-				 oid_value input_format, int num_recs,
+				 const int *input_format, int num_recs,
 				 ZebraRetrievalRecord *recs)
 {
     ZebraMetaRecord *poset;
@@ -1119,7 +1120,7 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 	    if (poset[i].term)
 	    {
 		recs[i].errCode = 0;
-		recs[i].format = VAL_SUTRS;
+		recs[i].format = yaz_oid_sutrs();
 		recs[i].len = strlen(poset[i].term);
 		recs[i].buf = poset[i].term;
 		recs[i].base = poset[i].db;
@@ -1169,7 +1170,7 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 		recs[i].buf = 0;  /* no record and no error issued */
 		recs[i].len = 0;
 		recs[i].errCode = 0;
-		recs[i].format = VAL_NONE;
+		recs[i].format = 0;
 		recs[i].sysno = 0;
 	    }
 	}
@@ -1197,15 +1198,17 @@ ZEBRA_RES zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
 	zh->errCode = YAZ_BIB1_SCAN_MALFORMED_SCAN;
     }
     else
-	res = zebra_scan(zh, stream, zapt, VAL_BIB1,
+    {
+	res = zebra_scan(zh, stream, zapt, yaz_oid_attset_bib1(),
 			 position, num_entries, entries, is_partial,
 			 setname);
+    }
     yaz_pqf_destroy (pqf_parser);
     return res;
 }
 
 ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
-		     oid_value attributeset,
+		     const int *attributeset,
 		     int *position,
 		     int *num_entries, ZebraScanEntry **entries,
 		     int *is_partial,
@@ -2280,7 +2283,7 @@ ZEBRA_RES zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
 
     yaz_log(log_level, "zebra_search_PQF s=%s q=%s", setname, pqf_query);
     
-    query = p_query_rpn (odr, PROTO_Z3950, pqf_query);
+    query = p_query_rpn(odr, pqf_query);
     
     if (!query)
     {

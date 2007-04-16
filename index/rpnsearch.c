@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.10 2007-03-19 21:50:39 adam Exp $
+/* $Id: rpnsearch.c,v 1.11 2007-04-16 08:44:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -703,7 +703,7 @@ void string_rel_add_char(char **term_p, const char *src, int *indx)
  */
 static int string_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			   const char **term_sub, char *term_dict,
-			   oid_value attributeSet,
+			   const int *attributeSet,
 			   int reg_type, int space_split, char *term_dst,
 			   int *error_code)
 {
@@ -897,7 +897,7 @@ static int string_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
 static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			     const char **term_sub, 
-			     oid_value attributeSet, NMEM stream,
+			     const int *attributeSet, NMEM stream,
 			     struct grep_info *grep_info,
 			     int reg_type, int complete_flag,
 			     int num_bases, char **basenames,
@@ -955,7 +955,7 @@ static ZEBRA_RES term_limits_APT(ZebraHandle zh,
 static ZEBRA_RES term_trunc(ZebraHandle zh,
 			    Z_AttributesPlusTerm *zapt,
 			    const char **term_sub, 
-			    oid_value attributeSet, NMEM stream,
+			    const int *attributeSet, NMEM stream,
 			    struct grep_info *grep_info,
 			    int reg_type, int complete_flag,
 			    int num_bases, char **basenames,
@@ -995,7 +995,7 @@ static ZEBRA_RES term_trunc(ZebraHandle zh,
 
 static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			     const char **term_sub, 
-			     oid_value attributeSet, NMEM stream,
+			     const int *attributeSet, NMEM stream,
 			     struct grep_info *grep_info,
 			     int reg_type, int complete_flag,
 			     int num_bases, char **basenames,
@@ -1288,7 +1288,7 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
 static ZEBRA_RES term_list_trunc(ZebraHandle zh,
 				 Z_AttributesPlusTerm *zapt,
 				 const char *termz,
-				 oid_value attributeSet,
+				 const int *attributeSet,
 				 NMEM stream,
 				 int reg_type, int complete_flag,
 				 const char *rank_type,
@@ -1350,7 +1350,7 @@ static ZEBRA_RES term_list_trunc(ZebraHandle zh,
 
 static ZEBRA_RES rpn_search_APT_position(ZebraHandle zh,
                                          Z_AttributesPlusTerm *zapt,
-                                         oid_value attributeSet,
+                                         const int *attributeSet,
                                          int reg_type,
                                          int num_bases, char **basenames,
                                          NMEM rset_nmem,
@@ -1442,7 +1442,7 @@ static ZEBRA_RES rpn_search_APT_position(ZebraHandle zh,
 static ZEBRA_RES rpn_search_APT_phrase(ZebraHandle zh,
 				       Z_AttributesPlusTerm *zapt,
 				       const char *termz_org,
-				       oid_value attributeSet,
+				       const int *attributeSet,
 				       NMEM stream,
 				       int reg_type, int complete_flag,
 				       const char *rank_type,
@@ -1502,7 +1502,7 @@ static ZEBRA_RES rpn_search_APT_phrase(ZebraHandle zh,
 static ZEBRA_RES rpn_search_APT_or_list(ZebraHandle zh,
 					Z_AttributesPlusTerm *zapt,
 					const char *termz_org,
-					oid_value attributeSet,
+					const int *attributeSet,
 					NMEM stream,
 					int reg_type, int complete_flag,
 					const char *rank_type,
@@ -1569,7 +1569,7 @@ static ZEBRA_RES rpn_search_APT_or_list(ZebraHandle zh,
 static ZEBRA_RES rpn_search_APT_and_list(ZebraHandle zh,
 					 Z_AttributesPlusTerm *zapt,
 					 const char *termz_org,
-					 oid_value attributeSet,
+					 const int *attributeSet,
 					 NMEM stream,
 					 int reg_type, int complete_flag,
 					 const char *rank_type, 
@@ -1638,7 +1638,7 @@ static ZEBRA_RES rpn_search_APT_and_list(ZebraHandle zh,
 static int numeric_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			    const char **term_sub,
 			    char *term_dict,
-			    oid_value attributeSet,
+			    const int *attributeSet,
 			    struct grep_info *grep_info,
 			    int *max_pos,
 			    int reg_type,
@@ -1723,7 +1723,7 @@ static int numeric_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
 static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			      const char **term_sub, 
-			      oid_value attributeSet, NMEM stream,
+			      const int *attributeSet, NMEM stream,
 			      struct grep_info *grep_info,
 			      int reg_type, int complete_flag,
 			      int num_bases, char **basenames,
@@ -1800,7 +1800,7 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
 					Z_AttributesPlusTerm *zapt,
 					const char *termz,
-					oid_value attributeSet,
+					const int *attributeSet,
 					NMEM stream,
 					int reg_type, int complete_flag,
 					const char *rank_type, 
@@ -1880,7 +1880,7 @@ static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
 static ZEBRA_RES rpn_search_APT_local(ZebraHandle zh,
 				      Z_AttributesPlusTerm *zapt,
 				      const char *termz,
-				      oid_value attributeSet,
+				      const int *attributeSet,
 				      NMEM stream,
 				      const char *rank_type, NMEM rset_nmem,
 				      RSET *rset,
@@ -1919,7 +1919,7 @@ static ZEBRA_RES rpn_search_APT_local(ZebraHandle zh,
 }
 
 static ZEBRA_RES rpn_sort_spec(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-			       oid_value attributeSet, NMEM stream,
+			       const int *attributeSet, NMEM stream,
 			       Z_SortKeySpecList *sort_sequence,
 			       const char *rank_type,
 			       NMEM rset_nmem,
@@ -1931,8 +1931,6 @@ static ZEBRA_RES rpn_sort_spec(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     AttrType sort_relation_type;
     Z_SortKeySpec *sks;
     Z_SortKey *sk;
-    int oid[OID_SIZE];
-    oident oe;
     char termz[20];
     
     attr_init_APT(&sort_relation_type, zapt, 7);
@@ -1956,12 +1954,6 @@ static ZEBRA_RES rpn_sort_spec(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         i = 0;
     sprintf(termz, "%d", i);
 
-    oe.proto = PROTO_Z3950;
-    oe.oclass = CLASS_ATTSET;
-    oe.value = attributeSet;
-    if (!oid_ent_to_oid (&oe, oid))
-        return ZEBRA_FAIL;
-
     sks = (Z_SortKeySpec *) nmem_malloc(stream, sizeof(*sks));
     sks->sortElement = (Z_SortElement *)
         nmem_malloc(stream, sizeof(*sks->sortElement));
@@ -1972,7 +1964,7 @@ static ZEBRA_RES rpn_sort_spec(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     sk->u.sortAttributes = (Z_SortAttributes *)
         nmem_malloc(stream, sizeof(*sk->u.sortAttributes));
 
-    sk->u.sortAttributes->id = oid;
+    sk->u.sortAttributes->id = odr_oiddup_nmem(stream, attributeSet);
     sk->u.sortAttributes->list = zapt->attributes;
 
     sks->sortRelation = (int *)
@@ -1997,11 +1989,11 @@ static ZEBRA_RES rpn_sort_spec(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
 
 static int rpn_check_xpath(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-                           oid_value attributeSet,
+                           const int *attributeSet,
                            struct xpath_location_step *xpath, int max,
                            NMEM mem)
 {
-    oid_value curAttributeSet = attributeSet;
+    const int *curAttributeSet = attributeSet;
     AttrType use;
     const char *use_string = 0;
     
@@ -2221,7 +2213,7 @@ ZEBRA_RES rpn_search_xpath(ZebraHandle zh,
 #define MAX_XPATH_STEPS 10
 
 static ZEBRA_RES rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-				oid_value attributeSet, NMEM stream,
+				const int *attributeSet, NMEM stream,
 				Z_SortKeySpecList *sort_sequence,
 				int num_bases, char **basenames, 
 				NMEM rset_nmem,
@@ -2346,7 +2338,7 @@ static ZEBRA_RES rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 }
 
 static ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
-				      oid_value attributeSet, 
+				      const int *attributeSet, 
 				      NMEM stream, NMEM rset_nmem,
 				      Z_SortKeySpecList *sort_sequence,
 				      int num_bases, char **basenames,
@@ -2386,7 +2378,7 @@ ZEBRA_RES rpn_get_top_approx_limit(ZebraHandle zh, Z_RPNStructure *zs,
 }
 
 ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
-			 oid_value attributeSet, 
+			 const int *attributeSet, 
 			 NMEM stream, NMEM rset_nmem,
 			 Z_SortKeySpecList *sort_sequence,
 			 int num_bases, char **basenames,
@@ -2423,7 +2415,7 @@ ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
 }
 
 ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
-			       oid_value attributeSet, 
+			       const int *attributeSet, 
 			       NMEM stream, NMEM rset_nmem,
 			       Z_SortKeySpecList *sort_sequence,
 			       int num_bases, char **basenames,

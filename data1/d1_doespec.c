@@ -1,4 +1,4 @@
-/* $Id: d1_doespec.c,v 1.12 2007-01-15 15:10:14 adam Exp $
+/* $Id: d1_doespec.c,v 1.13 2007-04-16 08:44:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -20,12 +20,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+/** \file d1_doespec.c
+ *  \brief handle Z39.50 variant-1 specs
+ *   
+ *  See http://www.loc.gov/z3950/agency/defns/variant1.html
+ */
 #include <assert.h>
 #include <stdlib.h>
 
 #include <yaz/log.h>
-#include <yaz/oid.h>
 #include <yaz/proto.h>
+#include <yaz/oid_db.h>
 #include <idzebra/data1.h>
 
 static int match_children(data1_handle dh, data1_node *n,
@@ -45,23 +50,18 @@ static int match_children_wildpath(data1_handle dh, data1_node *n,
  * set is the set to look for, universal set is the set that applies to a
  * triple with an unknown set.
  */
-static Z_Triple *find_triple(Z_Variant *var, oid_value universalset,
-    oid_value set, int zclass, int type)
+static Z_Triple *find_triple(Z_Variant *var, const int *universal_oid,
+                             const int *var_oid, int zclass, int type)
 {
     int i;
-    oident *defaultsetent = oid_getentbyoid(var->globalVariantSetId);
-    oid_value defaultset = defaultsetent ? defaultsetent->value :
-    	universalset;
 
     for (i = 0; i < var->num_triples; i++)
     {
-	oident *cursetent =
-	    oid_getentbyoid(var->triples[i]->variantSetId);
-	oid_value curset = cursetent ? cursetent->value : defaultset;
-
-	if (set == curset &&
-	    *var->triples[i]->zclass == zclass &&
-	    *var->triples[i]->type == type)
+        const int *cur_oid = var->triples[i]->variantSetId;
+        if (!cur_oid)
+            cur_oid = var->globalVariantSetId;
+        if (cur_oid && var_oid 
+            && !oid_oidcmp(var_oid, cur_oid) && *var->triples[i]->type == type)
 	    return var->triples[i];
     }
     return 0;
@@ -106,9 +106,9 @@ static void mark_subtree(data1_node *n, int make_variantlist, int no_data,
 }
 
 
-static void match_triple (data1_handle dh, Z_Variant *vreq,
-			  oid_value defsetval,
-			  oid_value var1, data1_node *n)
+static void match_triple(data1_handle dh, Z_Variant *vreq,
+                         const int *def_oid,
+                         const int *var_oid, data1_node *n)
 {
     data1_node **c;
 
@@ -127,7 +127,7 @@ static void match_triple (data1_handle dh, Z_Variant *vreq,
 	if ((*c)->u.variant.type->zclass->zclass == 4 &&
 	    (*c)->u.variant.type->type == 1)
 	{
-	    if ((r = find_triple(vreq, defsetval, var1, 4, 1)) &&
+	    if ((r = find_triple(vreq, def_oid, var_oid, 4, 1)) &&
 		(r->which == Z_Triple_internationalString))
 	    {
 		const char *string_value =
@@ -142,7 +142,7 @@ static void match_triple (data1_handle dh, Z_Variant *vreq,
 	}
 	else
 	{
-	    match_triple (dh, vreq, defsetval, var1, *c);
+	    match_triple(dh, vreq, def_oid, var_oid, *c);
 	    c = &(*c)->next;
 	}
     }
@@ -282,10 +282,8 @@ static int match_children_here (data1_handle dh, data1_node *n,
 
 		    Z_Variant *vreq =
 			e->elements[i]->u.simpleElement->variantRequest;
-		    oident *defset = oid_getentbyoid(e->defaultVariantSetId);
-		    oid_value defsetval = defset ? defset->value : VAL_NONE;
-		    oid_value var1 = oid_getvalbyname("Variant-1");
 
+                    const int *var_oid = yaz_oid_variant1();
 		    if (!vreq)
 			vreq = e->defaultVariantRequest;
 
@@ -296,21 +294,25 @@ static int match_children_here (data1_handle dh, data1_node *n,
 			/*
 			 * 6,5: meta-data requested, variant list.
 			 */
-			if (find_triple(vreq, defsetval, var1, 6, 5))
+			if (find_triple(vreq, e->defaultVariantSetId, 
+                                        var_oid, 6, 5))
 			    show_variantlist = 1;
 			/*
 			 * 9,1: Miscellaneous, no data requested.
 			 */
-			if (find_triple(vreq, defsetval, var1, 9, 1))
+			if (find_triple(vreq, e->defaultVariantSetId,
+                                        var_oid, 9, 1))
 			    no_data = 1;
 
 			/* howmuch */
-			if ((r = find_triple(vreq, defsetval, var1, 5, 5)))
+			if ((r = find_triple(vreq, e->defaultVariantSetId,
+                                             var_oid, 5, 5)))
 			    if (r->which == Z_Triple_integer)
 				get_bytes = *r->value.integer;
 
 			if (!show_variantlist)
-			    match_triple (dh, vreq, defsetval, var1, c);
+			    match_triple(dh, vreq, e->defaultVariantSetId,
+                                         var_oid, c);
 		    }
 		    mark_subtree(c, show_variantlist, no_data, get_bytes, vreq,
 				 select_flag);

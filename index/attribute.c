@@ -1,4 +1,4 @@
-/* $Id: attribute.c,v 1.28 2007-01-15 15:10:16 adam Exp $
+/* $Id: attribute.c,v 1.29 2007-04-16 08:44:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <idzebra/util.h>
 #include <attrfind.h>
 #include "index.h"
+#include <yaz/oid_db.h>
 
 static data1_att *getatt(data1_attset *p, int att)
 {
@@ -45,7 +46,7 @@ static data1_att *getatt(data1_attset *p, int att)
     return 0;
 }
 
-static int att_getentbyatt(ZebraHandle zi, oid_value set, int att,
+static int att_getentbyatt(ZebraHandle zi, const int *set, int att,
                            const char **name)
 {
     data1_att *r;
@@ -69,7 +70,7 @@ ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
                                   Z_AttributeList *attr_list,
                                   zinfo_index_category_t cat,
                                   int index_type,
-                                  oid_value curAttributeSet,
+                                  const int *curAttributeSet,
                                   int *ord)
 {
     int use_value = -1;
@@ -123,7 +124,7 @@ ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
                             Z_AttributesPlusTerm *zapt,
                             int index_type,
                             const char *xpath_use,
-                            oid_value curAttributeSet,
+                            const int *curAttributeSet,
                             int *ord)
 {
     ZEBRA_RES res = ZEBRA_OK;
@@ -181,16 +182,18 @@ ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,
 {
     AttrType structure;
     int structure_value;
+
     attr_init_AttrList(&structure, sortAttributes->list, 4);
 
     *numerical = 0;
     structure_value = attr_find(&structure, 0);
     if (structure_value == 109)
         *numerical = 1;
-    
-    if (zebra_attr_list_get_ord(zh, sortAttributes->list,
-                                zinfo_index_category_sort,
-                                -1 /* any index */, VAL_BIB1, ord)== ZEBRA_OK)
+
+    if (zebra_attr_list_get_ord(
+            zh, sortAttributes->list,
+            zinfo_index_category_sort,
+            -1 /* any index */, yaz_oid_attset_bib1(), ord) == ZEBRA_OK)
         return ZEBRA_OK;
     return ZEBRA_FAIL;
 }

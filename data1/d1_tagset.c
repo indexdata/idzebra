@@ -1,4 +1,4 @@
-/* $Id: d1_tagset.c,v 1.9 2007-01-15 15:10:14 adam Exp $
+/* $Id: d1_tagset.c,v 1.10 2007-04-16 08:44:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <yaz/log.h>
 #include <idzebra/data1.h>
+#include <yaz/oid_db.h>
 
 /*
  * We'll probably want to add some sort of hashed index to these lookup-
@@ -108,7 +109,7 @@ data1_tagset *data1_empty_tagset (data1_handle dh)
     data1_tagset *res =
 	(data1_tagset *) nmem_malloc(data1_nmem_get (dh), sizeof(*res));
     res->name = 0;
-    res->reference = VAL_NONE;
+    res->oid = 0;
     res->tags = 0;
     res->type = 0;
     res->children = 0;
@@ -211,7 +212,9 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
 		continue;
 	    }
 	    name = argv[1];
-	    if ((res->reference = oid_getvalbyname(name)) == VAL_NONE)
+            res->oid = yaz_string_to_oid_nmem(yaz_oid_std(),
+                                              CLASS_TAGSET, name, mem);
+	    if (!res->oid)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Unknown tagset ref '%s'",
 			file, lineno, name);

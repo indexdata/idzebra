@@ -1,4 +1,4 @@
-/* $Id: d1_map.c,v 1.15 2007-01-15 15:10:14 adam Exp $
+/* $Id: d1_map.c,v 1.16 2007-04-16 08:44:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 
 #include <yaz/log.h>
-#include <yaz/oid.h>
+#include <yaz/oid_db.h>
 #include <yaz/readconf.h>
 #include <yaz/tpath.h>
 #include <d1_absyn.h>
@@ -45,7 +45,7 @@ data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
 	return 0;
 
     res->name = 0;
-    res->target_absyn_ref = VAL_NONE;
+    res->oid = 0;
     res->map = 0;
     mapp = &res->map;
     res->next = 0;
@@ -59,8 +59,9 @@ data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
 			file, lineno);
 		continue;
 	    }
-	    if ((res->target_absyn_ref = oid_getvalbyname(argv[1]))
-		== VAL_NONE)
+            res->oid = yaz_string_to_oid_nmem(yaz_oid_std(),
+                                              CLASS_RECSYN, argv[1], mem);
+	    if (!res->oid)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Unknown reference '%s'",
 			file, lineno, argv[1]);

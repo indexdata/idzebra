@@ -1,4 +1,4 @@
-/* $Id: d1_espec.c,v 1.13 2007-01-15 15:10:14 adam Exp $
+/* $Id: d1_espec.c,v 1.14 2007-04-16 08:44:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -29,20 +29,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/odr.h>
 #include <yaz/proto.h>
 #include <idzebra/data1.h>
+#include <yaz/oid_db.h>
 
 static Z_Variant *read_variant(int argc, char **argv, NMEM nmem,
 			       const char *file, int lineno)
 {
     Z_Variant *r = (Z_Variant *)nmem_malloc(nmem, sizeof(*r));
-    oident var1;
     int i;
-    int oid[OID_SIZE];
 
-    var1.proto = PROTO_Z3950;
-    var1.oclass = CLASS_VARSET;
-    var1.value = VAL_VAR1;
-    r->globalVariantSetId = odr_oiddup_nmem(nmem, oid_ent_to_oid(&var1, oid));
-
+    r->globalVariantSetId = odr_oiddup_nmem(nmem, yaz_oid_variant1());
     if (argc)
 	r->triples = (Z_Triple **)nmem_malloc(nmem, sizeof(Z_Triple*) * argc);
     else
