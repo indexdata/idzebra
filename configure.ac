@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2007
-dnl $Id: configure.ac,v 1.53 2007-03-08 12:57:35 adam Exp $
+dnl $Id: configure.ac,v 1.54 2007-04-17 20:27:14 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.13],[zebra-help@indexdata.dk])
@@ -32,16 +32,8 @@ if test "$ac_cv_lib_crypt_crypt" = "yes"; then
     AC_CHECK_HEADERS(crypt.h)
 fi
 dnl
-dnl ------ threads
-AC_ARG_ENABLE(threads, [  --disable-threads       disable threads],[enable_threads=$enableval],[enable_threads=yes])
-if test "$enable_threads" = "yes"; then
-    yazflag=threads
-else
-    yazflag=""
-fi
-dnl
 dnl ------ YAZ
-YAZ_INIT($yazflag,2.1.49)
+YAZ_INIT([server],2.1.99)
 if test "$YAZVERSION" = "NONE"; then
     AC_MSG_ERROR([YAZ development libraries required])
 fi

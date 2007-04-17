@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.14 2007-04-16 21:54:37 adam Exp $
+/* $Id: zebrasrv.c,v 1.15 2007-04-17 20:27:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -399,7 +399,6 @@ void bend_close (void *handle)
 {
     zebra_close ((ZebraHandle) handle);
     xmalloc_trav("bend_close");
-    nmem_print_list();
 }
 
 int bend_sort (void *handle, bend_sort_rr *rr)

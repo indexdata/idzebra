@@ -1,4 +1,4 @@
-/* $Id: zebraidx.c,v 1.4 2007-01-15 15:10:17 adam Exp $
+/* $Id: zebraidx.c,v 1.5 2007-04-17 20:27:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -65,8 +65,6 @@ int main (int argc, char **argv)
 #endif
     ZebraService zs = 0;
     ZebraHandle zh = 0;
-
-    nmem_init ();
 
 #ifdef WIN32
 #else
@@ -280,7 +278,6 @@ int main (int argc, char **argv)
 
     res_close(res);
     res_close(default_res);
-    nmem_exit();
     exit (0);
     return 0;
 }
