@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.44 2007-04-16 21:54:37 adam Exp $
+/* $Id: testlib.c,v 1.45 2007-04-18 11:37:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -43,7 +43,6 @@ int log_level = YLOG_LOG;
 
 /* 
  * tl_start_up : do common start things, and a zebra_start
- *    - nmem_init
  *    - build the name of logfile from argv[0], and open it
  *      if no argv passed, do not open a log
  *    - read zebra.cfg from env var srcdir if it exists; otherwise current dir 
@@ -59,7 +58,6 @@ ZebraService tl_start_up(char *cfgname, int argc, char **argv)
     setrlimit(RLIMIT_CPU, &rlim);
 #endif
 #endif
-    nmem_init();
     return tl_zebra_start(cfgname);
 }
 
@@ -94,7 +92,6 @@ int tl_close_down(ZebraHandle zh, ZebraService zs)
     if (zs)
         zebra_stop(zs);
 
-    nmem_exit();
     xmalloc_trav("x");
     return 1;
 }
