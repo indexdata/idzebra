@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.255 2007-04-07 22:26:27 adam Exp $
+/* $Id: extract.c,v 1.256 2007-04-25 08:22:01 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1196,7 +1196,7 @@ void extract_flush_record_keys2(ZebraHandle zh, zint sysno,
                             &ins_key_in, 1, ins_str, ins_slen,
                             ins_rank, zh->m_staticrank);
     }
-    yaz_log(YLOG_LOG, "normal=%d optimized=%d", normal, optimized);
+    yaz_log(log_level_extract, "normal=%d optimized=%d", normal, optimized);
 }
 
 void extract_flush_record_keys(ZebraHandle zh, zint sysno, int cmd,
@@ -1517,9 +1517,9 @@ static void extract_token_add(RecWord *p)
     ZebraHandle zh = p->extractCtrl->handle;
     WRBUF wrbuf;
 
-    if (log_level_extract)
+    if (log_level_details)
     {
-        yaz_log(log_level_extract, "extract_token_add "
+        yaz_log(log_level_details, "extract_token_add "
                 "type=%c index=%s seqno=" ZINT_FORMAT " s=%.*s",
                 p->index_type, p->index_name, 
                 p->seqno, p->term_len, p->term_buf);
