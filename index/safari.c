@@ -1,4 +1,4 @@
-/* $Id: safari.c,v 1.8 2007-04-25 08:18:01 adam Exp $
+/* $Id: safari.c,v 1.9 2007-04-25 09:38:21 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -130,18 +130,22 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 	return RECCTRL_EXTRACT_EOF;
     sscanf(line, "%255s", p->match_criteria);
     
-    recWord.index_type = '0';
     while (fi_gets(fi, line, sizeof(line)-1))
     {
 	int nor = 0;
 	char field[40];
-	char *cp;
+	const char *cp = line;
 #if 0
 	yaz_log(YLOG_LOG, "safari line: %s", line);
 #endif
+        if (*cp >= '0' && *cp <= '9')
+            recWord.index_type = '0'; /* the default is 0 (raw) */
+        else
+            recWord.index_type = *cp++; /* type given */
+
         if (tinfo->segments)
         {
-            if (sscanf(line, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT 
+            if (sscanf(cp, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT 
                        ZINT_FORMAT " %39s %n",
                        &recWord.record_id, &recWord.section_id, 
                        &recWord.segment,
@@ -154,7 +158,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
         }
         else
         {
-            if (sscanf(line, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT " %39s %n",
+            if (sscanf(cp, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT " %39s %n",
                        &recWord.record_id, &recWord.section_id, &recWord.seqno,
                        field, &nor) < 4)
             {
@@ -162,7 +166,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
                 return RECCTRL_EXTRACT_ERROR_GENERIC;
             }
         }
-	for (cp = line + nor; *cp == ' '; cp++)
+	for (cp = cp + nor; *cp == ' '; cp++)
 	    ;
 	recWord.index_name = field;
 	recWord.term_buf = cp;

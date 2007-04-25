@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.15 2007-01-15 15:10:19 adam Exp $
+/* $Id: safari1.c,v 1.16 2007-04-25 09:38:21 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -46,6 +46,7 @@ const char *myrec[] =
     "00024339 125061 0 1 any the\n"
     "00024339 125061 0 2 any gamle\n"
     "00024339 125061 0 3 any mand\n"
+    "w 00024339 125661 0 4 any Hello\n"
     ,
     "1001\n"  /* separate record */
     "00024340 125062 0 1 any the\n"
@@ -85,6 +86,8 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @and den gamle", 0));
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @and the gamle", 1));
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @and the of", 0));
+
+    YAZ_CHECK(tl_query(zh, "@attr 1=any hello", 1));
 
     /* verify that we get these records exactly */
     ids[0] = 24338;
