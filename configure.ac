@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2007
-dnl $Id: configure.ac,v 1.54 2007-04-17 20:27:14 adam Exp $
+dnl $Id: configure.ac,v 1.55 2007-05-03 07:20:19 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.13],[zebra-help@indexdata.dk])
@@ -33,7 +33,7 @@ if test "$ac_cv_lib_crypt_crypt" = "yes"; then
 fi
 dnl
 dnl ------ YAZ
-YAZ_INIT([server],2.1.99)
+YAZ_INIT([server],3.0.0)
 if test "$YAZVERSION" = "NONE"; then
     AC_MSG_ERROR([YAZ development libraries required])
 fi
