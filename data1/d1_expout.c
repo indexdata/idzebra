@@ -1,4 +1,4 @@
-/* $Id: d1_expout.c,v 1.10 2007-04-16 08:44:31 adam Exp $
+/* $Id: d1_expout.c,v 1.11 2007-05-08 12:50:03 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -187,7 +187,7 @@ Odr_oid **f_oid_seq (ExpHandle *eh, data1_node *n, int *num, oid_class oclass)
 	    ++(*num);
     if (!*num)
 	return NULL;
-    res = (int **)odr_malloc (eh->o, sizeof(*res) * (*num));
+    res = (Odr_oid **)odr_malloc (eh->o, sizeof(*res) * (*num));
     for (c = n->child, i = 0 ; c; c = c->next)
 	if (is_numeric_tag (eh, c) == 1000)
 	    res[i++] = f_oid (eh, c, oclass);

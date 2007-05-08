@@ -1,4 +1,4 @@
-/* $Id: attribute.c,v 1.30 2007-04-16 21:54:37 adam Exp $
+/* $Id: attribute.c,v 1.31 2007-05-08 12:50:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -46,7 +46,7 @@ static data1_att *getatt(data1_attset *p, int att)
     return 0;
 }
 
-static int att_getentbyatt(ZebraHandle zi, const int *set, int att,
+static int att_getentbyatt(ZebraHandle zi, const Odr_oid *set, int att,
                            const char **name)
 {
     data1_att *r;
@@ -70,7 +70,7 @@ ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
                                   Z_AttributeList *attr_list,
                                   zinfo_index_category_t cat,
                                   int index_type,
-                                  const int *curAttributeSet,
+                                  const Odr_oid *curAttributeSet,
                                   int *ord)
 {
     int use_value = -1;
@@ -124,7 +124,7 @@ ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
                             Z_AttributesPlusTerm *zapt,
                             int index_type,
                             const char *xpath_use,
-                            const int *curAttributeSet,
+                            const Odr_oid *curAttributeSet,
                             int *ord)
 {
     ZEBRA_RES res = ZEBRA_OK;

@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.35 2007-04-16 08:44:31 adam Exp $
+/* $Id: d1_absyn.c,v 1.36 2007-05-08 12:50:03 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -250,7 +250,7 @@ data1_attset *data1_attset_search_name (data1_handle dh, const char *name)
     return 0;
 }
 
-data1_attset *data1_attset_search_id(data1_handle dh, const int *oid)
+data1_attset *data1_attset_search_id(data1_handle dh, const Odr_oid *oid)
 {
     data1_attset_cache p = *data1_attset_cache_get (dh);
 

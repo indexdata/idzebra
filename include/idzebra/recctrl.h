@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.34 2007-04-16 08:44:31 adam Exp $
+/* $Id: recctrl.h,v 1.35 2007-05-08 12:50:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -115,7 +115,7 @@ struct recRetrieveCtrl {
     /* Input parameters ... */
     Res       res;		      /* Resource pool                     */
     ODR       odr;                    /* ODR used to create response       */
-    const int*input_format;           /* Preferred record syntax OID       */
+    const Odr_oid * input_format;     /* Preferred record syntax OID       */
     Z_RecordComposition *comp;        /* formatting instructions           */
     char      *encoding;              /* preferred character encoding      */
     zint      localno;                /* local id of record                */
@@ -128,7 +128,7 @@ struct recRetrieveCtrl {
     zebra_snippets *doc_snippet;
     
     /* response */
-    const int *output_format;               /* output format OID */
+    const Odr_oid * output_format;    /* output format OID */
     void *     rec_buf;
     int        rec_len;
     int        diagnostic;

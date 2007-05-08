@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.8 2007-04-16 21:54:37 adam Exp $
+/* $Id: rpnscan.c,v 1.9 2007-05-08 12:50:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -377,7 +377,7 @@ struct scan_info {
 };
 
 ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
-		   const int *attributeset,
+		   const Odr_oid *attributeset,
 		   int num_bases, char **basenames,
 		   int *position, int *num_entries, ZebraScanEntry **list,
 		   int *is_partial, RSET limit_set)

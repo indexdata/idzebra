@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.h,v 1.12 2007-04-16 08:44:31 adam Exp $
+/* $Id: d1_absyn.h,v 1.13 2007-05-08 12:50:03 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -50,7 +50,7 @@ typedef struct data1_xpelement
 struct data1_absyn
 {
     char *name;
-    int *oid;
+    Odr_oid *oid;
     data1_tagset *tagset;
     data1_varset *varset;
     data1_esetname *esetnames;

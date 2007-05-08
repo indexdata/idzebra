@@ -1,4 +1,4 @@
-/* $Id: attrfind.c,v 1.3 2007-04-16 08:44:33 adam Exp $
+/* $Id: attrfind.c,v 1.4 2007-05-08 12:50:06 adam Exp $
    Copyright (C) 2005-2007
    Index Data ApS
 
@@ -42,7 +42,7 @@ void attr_init_AttrList(AttrType *src, Z_AttributeList *list, int type)
     src->minor = 0;
 }
 
-int attr_find_ex(AttrType *src, const int **attribute_set_oid,
+int attr_find_ex(AttrType *src, const Odr_oid **attribute_set_oid,
 		 const char **string_value)
 {
     int num_attributes;
@@ -96,7 +96,7 @@ int attr_find_ex(AttrType *src, const int **attribute_set_oid,
     return -1;
 }
 
-int attr_find(AttrType *src, const int **attribute_set_id)
+int attr_find(AttrType *src, const Odr_oid **attribute_set_id)
 {
     return attr_find_ex(src, attribute_set_id, 0);
 }

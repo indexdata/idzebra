@@ -1,4 +1,4 @@
-/* $Id: t16.c,v 1.11 2007-04-16 21:54:37 adam Exp $
+/* $Id: t16.c,v 1.12 2007-05-08 12:50:05 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -33,7 +33,7 @@ const char *myrec[] = {
 #define NUMBER_TO_FETCH_MAX 1000
 
 static ZEBRA_RES fetch_first(ZebraHandle zh, const char *element_set,
-                             const int * format, ODR odr,
+                             const Odr_oid * format, ODR odr,
                              const char **rec_buf, size_t *rec_len)
 {
     ZebraRetrievalRecord retrievalRecord[1];
@@ -61,7 +61,7 @@ static ZEBRA_RES fetch_first(ZebraHandle zh, const char *element_set,
 }
 
 static ZEBRA_RES fetch_first_compare(ZebraHandle zh, const char *element_set,
-                                     const int *format, const char *cmp_rec)
+                                     const Odr_oid *format, const char *cmp_rec)
 {
     const char *rec_buf = 0;
     size_t rec_len = 0;

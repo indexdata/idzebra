@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.69 2007-04-16 21:54:37 adam Exp $
+/* $Id: retrieve.c,v 1.70 2007-05-08 12:50:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -121,8 +121,8 @@ static int parse_zebra_elem(const char *elem,
 
 int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
                              const char *elemsetname,
-                             const int *input_format,
-                             const int **output_format,
+                             const Odr_oid *input_format,
+                             const Odr_oid **output_format,
                              char **rec_bufp, int *rec_lenp)
 {
     const char *retrieval_index;
@@ -217,8 +217,8 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
 int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
                               Record rec,
                               const char *elemsetname,
-                              const int *input_format,
-                              const int **output_format,
+                              const Odr_oid *input_format,
+                              const Odr_oid **output_format,
                               char **rec_bufp, int *rec_lenp)
 {
     const char *retrieval_index;
@@ -401,8 +401,8 @@ static void retrieve_puts_int(WRBUF wrbuf, const char *name,
 
 int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
                         const char *elemsetname,
-                        const int *input_format,
-                        const int **output_format,
+                        const Odr_oid *input_format,
+                        const Odr_oid **output_format,
                         char **rec_bufp, int *rec_lenp)
 {
     Record rec;
@@ -560,8 +560,8 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
                           
 int zebra_record_fetch(ZebraHandle zh, zint sysno, int score,
                        zebra_snippets *hit_snippet, ODR odr,
-                       const int *input_format, Z_RecordComposition *comp,
-                       const int **output_format,
+                       const Odr_oid *input_format, Z_RecordComposition *comp,
+                       const Odr_oid **output_format,
                        char **rec_bufp, int *rec_lenp, char **basenamep,
                        char **addinfo)
 {

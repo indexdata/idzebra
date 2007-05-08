@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.256 2007-04-25 08:22:01 adam Exp $
+/* $Id: extract.c,v 1.257 2007-05-08 12:50:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -553,6 +553,20 @@ ZEBRA_RES zebra_extract_records_stream(ZebraHandle zh,
 }
 
 
+static WRBUF wrbuf_hex_str(const char *cstr)
+{
+    size_t i;
+    WRBUF w = wrbuf_alloc();
+    for (i = 0; cstr[i]; i++)
+    {
+        if (cstr[i] < ' ' || cstr[i] > 126)
+            wrbuf_printf(w, "\\%02X", cstr[i] & 0xff);
+        else
+            wrbuf_putc(w, cstr[i]);
+    }
+    return w;
+}
+
 ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh, 
                                       struct ZebraRecStream *stream,
                                       enum zebra_recctrl_action_t action,
@@ -688,12 +702,20 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 	    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
 	    char *rinfo = dict_lookup_ord(zh->reg->matchDict, db_ord,
 					  matchStr);
+
+            
+            if (1)
+            {
+                WRBUF w = wrbuf_hex_str(matchStr);
+                yaz_log(YLOG_LOG, "matchStr: %s", wrbuf_cstr(w));
+                wrbuf_destroy(w);
+            }
             if (rinfo)
 	    {
 		assert(*rinfo == sizeof(*sysno));
                 memcpy (sysno, rinfo+1, sizeof(*sysno));
 	    }
-        }
+       }
     }
     if (zebra_rec_keys_empty(zh->reg->keys))
     {

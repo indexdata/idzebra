@@ -1,4 +1,4 @@
-/* $Id: attrfind.h,v 1.4 2007-04-16 08:44:31 adam Exp $
+/* $Id: attrfind.h,v 1.5 2007-05-08 12:50:03 adam Exp $
    Copyright (C) 2005-2007
    Index Data ApS
 
@@ -40,9 +40,9 @@ void attr_init_APT(AttrType *src, Z_AttributesPlusTerm *zapt, int type);
 
 void attr_init_AttrList(AttrType *src, Z_AttributeList *list, int type);
 
-int attr_find_ex(AttrType *src, const int **attribute_set_oid,
+int attr_find_ex(AttrType *src, const Odr_oid **attribute_set_oid,
                  const char **string_value);
-int attr_find(AttrType *src, const int **attribute_set_oid);
+int attr_find(AttrType *src, const Odr_oid **attribute_set_oid);
 
 YAZ_END_CDECL
 

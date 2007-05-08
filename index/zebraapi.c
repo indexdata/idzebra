@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.254 2007-04-16 21:54:37 adam Exp $
+/* $Id: zebraapi.c,v 1.255 2007-05-08 12:50:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1076,7 +1076,7 @@ ZEBRA_RES zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
 ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 				 const char *setname,
 				 Z_RecordComposition *comp,
-				 const int *input_format, int num_recs,
+				 const Odr_oid *input_format, int num_recs,
 				 ZebraRetrievalRecord *recs)
 {
     ZebraMetaRecord *poset;
@@ -1189,7 +1189,7 @@ ZEBRA_RES zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
 {
     YAZ_PQF_Parser pqf_parser = yaz_pqf_create ();
     Z_AttributesPlusTerm *zapt;
-    int *attributeSet;
+    Odr_oid *attributeSet;
     ZEBRA_RES res;
     
     if (!(zapt = yaz_pqf_scan(pqf_parser, stream, &attributeSet, query)))
@@ -1208,7 +1208,7 @@ ZEBRA_RES zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
 }
 
 ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
-		     const int *attributeset,
+		     const Odr_oid *attributeset,
 		     int *position,
 		     int *num_entries, ZebraScanEntry **entries,
 		     int *is_partial,

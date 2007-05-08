@@ -1,4 +1,4 @@
-/* $Id: d1_doespec.c,v 1.14 2007-04-16 21:54:37 adam Exp $
+/* $Id: d1_doespec.c,v 1.15 2007-05-08 12:50:03 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -50,14 +50,14 @@ static int match_children_wildpath(data1_handle dh, data1_node *n,
  * set is the set to look for, universal set is the set that applies to a
  * triple with an unknown set.
  */
-static Z_Triple *find_triple(Z_Variant *var, const int *universal_oid,
-                             const int *var_oid, int zclass, int type)
+static Z_Triple *find_triple(Z_Variant *var, const Odr_oid *universal_oid,
+                             const Odr_oid *var_oid, int zclass, int type)
 {
     int i;
 
     for (i = 0; i < var->num_triples; i++)
     {
-        const int *cur_oid = var->triples[i]->variantSetId;
+        const Odr_oid *cur_oid = var->triples[i]->variantSetId;
         if (!cur_oid)
             cur_oid = var->globalVariantSetId;
         if (cur_oid && var_oid 
@@ -107,8 +107,8 @@ static void mark_subtree(data1_node *n, int make_variantlist, int no_data,
 
 
 static void match_triple(data1_handle dh, Z_Variant *vreq,
-                         const int *def_oid,
-                         const int *var_oid, data1_node *n)
+                         const Odr_oid *def_oid,
+                         const Odr_oid *var_oid, data1_node *n)
 {
     data1_node **c;
 
@@ -283,7 +283,7 @@ static int match_children_here (data1_handle dh, data1_node *n,
 		    Z_Variant *vreq =
 			e->elements[i]->u.simpleElement->variantRequest;
 
-                    const int *var_oid = yaz_oid_varset_variant_1;
+                    const Odr_oid *var_oid = yaz_oid_varset_variant_1;
 		    if (!vreq)
 			vreq = e->defaultVariantRequest;
 

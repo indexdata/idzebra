@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.18 2007-04-16 21:54:37 adam Exp $
+/* $Id: recgrs.c,v 1.19 2007-05-08 12:50:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1079,7 +1079,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     struct grs_read_info gri;
     const char *tagname;
 
-    const int *requested_schema = 0;
+    const Odr_oid *requested_schema = 0;
     data1_marctab *marctab;
     int dummy;
     

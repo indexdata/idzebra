@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.197 2007-04-16 08:44:31 adam Exp $
+/* $Id: index.h,v 1.198 2007-05-08 12:50:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -261,7 +261,7 @@ void zebra_limit_for_rset(struct zebra_limit *zl,
 struct rset_key_control *zebra_key_control_create(ZebraHandle zh);
 
 ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
-			 const int *attributeSet, 
+			 const Odr_oid *attributeSet, 
 			 NMEM stream, NMEM rset_nmem,
 			 Z_SortKeySpecList *sort_sequence,
 			 int num_bases, char **basenames,
@@ -271,7 +271,7 @@ ZEBRA_RES rpn_get_top_approx_limit(ZebraHandle zh, Z_RPNStructure *zs,
                                    zint *approx_limit);
 
 ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
-                   const int *attributeset,
+                   const Odr_oid *attributeset,
                    int num_bases, char **basenames,
                    int *position, int *num_entries, ZebraScanEntry **list,
                    int *is_partial, RSET limit_set);
@@ -309,8 +309,8 @@ void resultSetInvalidate(ZebraHandle zh);
 
 int zebra_record_fetch(ZebraHandle zh, zint sysno, int score, 
                        zebra_snippets *hit_snippet, ODR stream,
-                       const int *input_format, Z_RecordComposition *comp,
-                       const int **output_format, char **rec_bufp,
+                       const Odr_oid *input_format, Z_RecordComposition *comp,
+                       const Odr_oid **output_format, char **rec_bufp,
                        int *rec_lenp, char **basenamep,
                        char **addinfo);
 
@@ -379,14 +379,14 @@ ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
                             Z_AttributesPlusTerm *zapt,
                             int index_type,
                             const char *xpath_use,
-                            const int *curAttributeSet,
+                            const Odr_oid *curAttributeSet,
                             int *ord);
 
 ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
                                   Z_AttributeList *attr_list,
                                   zinfo_index_category_t cat,
                                   int index_type,
-                                  const int *curAttributeSet,
+                                  const Odr_oid *curAttributeSet,
                                   int *ord);
 
 ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,

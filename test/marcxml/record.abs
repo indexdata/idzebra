@@ -1,4 +1,4 @@
-# $Id: record.abs,v 1.9 2006-09-28 08:47:10 adam Exp $
+# $Id: record.abs,v 1.10 2007-05-08 12:50:06 adam Exp $
 
 name marcxml
 attset bib1.att
@@ -11,7 +11,7 @@ marc usmarc.mar
 xpath disable
 
 xelm /record/leader				leader:w:range(data,0,5),leader2:w:range(data,5,3)
-melm 001		Identifier-Standard:w
+melm 001		Identifier-Standard:0
 melm 008		Code-Language:w
 melm 017                Number-legal-deposit,Identifier-standard
 melm 018                Identifier-standard

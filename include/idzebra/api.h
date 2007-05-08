@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.48 2007-04-16 08:44:31 adam Exp $
+/* $Id: api.h,v 1.49 2007-05-08 12:50:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -55,7 +55,7 @@ typedef struct {
     int position;        /* position of record in result set (1,2,..) */
     char *buf;           /* record buffer (void pointer really) */
     int len;             /* length */
-    const int *format;   /* record syntax */
+    const Odr_oid *format; /* record syntax */
     char *base; 
     zint sysno;
     int  score;
@@ -220,7 +220,7 @@ YAZ_EXPORT
 ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 				 const char *setname,
 				 Z_RecordComposition *comp,
-				 const int *input_format,
+				 const Odr_oid *input_format,
 				 int num_recs,
 				 ZebraRetrievalRecord *recs);
 /** \brief Deletes one or more resultsets 
@@ -287,7 +287,7 @@ ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
 */
 YAZ_EXPORT ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream,
 				Z_AttributesPlusTerm *zapt,
-				const int *attributeset,
+				const Odr_oid *attributeset,
 				int *position, int *num_entries,
 				ZebraScanEntry **entries,
 				int *is_partial,
