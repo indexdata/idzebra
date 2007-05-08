@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.63 2007-03-07 21:25:29 adam Exp $
+# $Id: makefile,v 1.64 2007-05-08 14:55:30 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -45,13 +45,13 @@ YAZINCL=$(YAZDIR)\include
 YAZLIBS=$(YAZLIB)
 YAZBINDIR=$(YAZDIR)\bin
 !if $(DEBUG)
-YAZLIB="$(YAZDIR)\lib\yazd.lib"
-YAZ_DLL_SOURCE="$(YAZBINDIR)\yazd.dll"
-YAZ_DLL_TARGET="$(BINDIR)\yazd.dll"
+YAZLIB="$(YAZDIR)\lib\yaz3d.lib"
+YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz3d.dll"
+YAZ_DLL_TARGET="$(BINDIR)\yaz3d.dll"
 !else
-YAZLIB="$(YAZDIR)\lib\yaz.lib"
-YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz.dll"
-YAZ_DLL_TARGET="$(BINDIR)\yaz.dll"
+YAZLIB="$(YAZDIR)\lib\yaz3.lib"
+YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz3.dll"
+YAZ_DLL_TARGET="$(BINDIR)\yaz3.dll"
 !endif
 
 # BZIP2 settings. Uncomment and specify if you wish to use LIBBZIP2.
