@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.257 2007-05-08 12:50:04 adam Exp $
+/* $Id: extract.c,v 1.258 2007-05-08 14:27:23 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -704,10 +704,10 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 					  matchStr);
 
             
-            if (1)
+            if (log_level_extract)
             {
                 WRBUF w = wrbuf_hex_str(matchStr);
-                yaz_log(YLOG_LOG, "matchStr: %s", wrbuf_cstr(w));
+                yaz_log(log_level_extract, "matchStr: %s", wrbuf_cstr(w));
                 wrbuf_destroy(w);
             }
             if (rinfo)
