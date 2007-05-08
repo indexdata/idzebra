@@ -1,4 +1,4 @@
-/* $Id: t11.c,v 1.9 2007-01-15 15:10:20 adam Exp $
+/* $Id: t11.c,v 1.10 2007-05-08 14:49:38 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -48,6 +48,7 @@ static void tst(int argc, char **argv)
       )
     */
 
+#if 0
     if (1)
     {
 	/* bad string use attrite, bug #647 */
@@ -145,6 +146,27 @@ static void tst(int argc, char **argv)
 	const char *ent[] = { 0 };
 	YAZ_CHECK(tl_scan(zh, "@attr 1=4 z", -22, 10, -22, 0, 1, ent));
     }
+
+#endif
+
+    if (1)
+    {
+	const char *ent[] = { "a", "b", "c", "d", "e", "f", 0 };
+
+        YAZ_CHECK(tl_query(zh, "@attr 1=4 c", 1));
+
+        /* must fail, because x is not a result set */
+	YAZ_CHECK(tl_scan(zh, "@attr 8=x @attr 1=4 a", 1, 3, 0, 0, 0, 0));
+
+#if 0
+        /* bug 1114 */
+	YAZ_CHECK(tl_scan(zh, "@attr 8=rsetname @attr 1=4 0",
+                          1, 20, 1, 6, 1, ent));
+#endif
+
+    }
+
+
     YAZ_CHECK(tl_close_down(zh, zs));
 }
 

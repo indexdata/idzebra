@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.9 2007-05-08 12:50:04 adam Exp $
+/* $Id: rpnscan.c,v 1.10 2007-05-08 14:49:38 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -243,7 +243,11 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
         
         if (trans_scan_term(zh, zapt, termz+prefix_len, index_type) == 
             ZEBRA_FAIL)
+        {
+            for (i = 0; i < ord_no; i++)
+                wrbuf_destroy(ar[i].term);
             return ZEBRA_FAIL;
+        }
         wrbuf_rewind(ar[i].term);
         wrbuf_puts(ar[i].term, termz + prefix_len);
         ar[i].isam_p = 0;
@@ -361,6 +365,9 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
 
     *list = glist;
 
+    for (i = 0; i < ord_no; i++)
+	wrbuf_destroy(ar[i].term);
+
     return ZEBRA_OK;
 }
 
@@ -416,7 +423,6 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
             
             if (termset_value_numeric != -2)
             {
-                
                 sprintf(resname, "%d", termset_value_numeric);
                 termset_name = resname;
             }
@@ -424,6 +430,14 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                 termset_name = termset_value_string;
             
             limit_set = resultSetRef (zh, termset_name);
+
+            if (!limit_set)
+            {
+                zebra_setError(zh, 
+                               YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST,
+                               termset_name);
+                return ZEBRA_FAIL;
+            }
         }
     }
         
