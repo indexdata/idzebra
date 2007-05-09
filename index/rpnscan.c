@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.10 2007-05-08 14:49:38 adam Exp $
+/* $Id: rpnscan.c,v 1.11 2007-05-09 07:07:18 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -214,6 +214,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
     struct scan2_info_entry *ar = nmem_malloc(nmem, sizeof(*ar) * ord_no);
     struct rpn_char_map_info rcmi;
     int i, dif;
+    int after_pos;
     int pos = 0;
 
     ZebraScanEntry *glist = (ZebraScanEntry *)
@@ -318,6 +319,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
         ar[i].isam_p = 0;
     }
 
+    after_pos = 1;  /* immediate term first.. */
     for (pos = *position-1; pos < *num_entries; )
     {
         const char *lo = 0;
@@ -329,7 +331,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
             {
                 char termz[IT_MAX_WORD+20];
                 int before = 0;
-                int after = (pos == *position-1) ? 1 : 2;
+                int after = after_pos;
 
                 ar[i].pos_to_save = 1;
 
@@ -339,6 +341,8 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
                           ar+i, scan_handle2);
             }
         }
+        after_pos = 2;  /* next round we grab following term */
+
         /* get minimum after scan */
         for (i = 0; i < ord_no; i++)
         {
