@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.49 2007-05-08 12:50:04 adam Exp $
+/* $Id: api.h,v 1.50 2007-05-09 07:42:46 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -404,7 +404,6 @@ ZEBRA_RES zebra_repository_show(ZebraHandle zh, const char *path);
     This function is a simple wrapper or zebra_update_record with
     action=action_update (insert or replace) .
 */
-YAZ_EXPORT
 YAZ_EXPORT 
 ZEBRA_RES zebra_add_record(ZebraHandle zh, const char *buf, int buf_size);
 			       
