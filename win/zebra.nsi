@@ -1,6 +1,6 @@
-; $Id: zebra.nsi,v 1.40 2007-03-07 21:14:16 adam Exp $
+; $Id: zebra.nsi,v 1.41 2007-05-09 07:36:06 adam Exp $
 
-!define VERSION "2.0.12"
+!define VERSION "2.0.14"
 
 ; VS 2005
 ; !define VS_RUNTIME_DLL      "c:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\msvcr80.dll"
@@ -84,7 +84,7 @@ Section "Zebra Runtime"
 	File ..\bin\zlib1.dll
 	File ..\bin\libxml2.dll
 	File ..\bin\libxslt.dll
-	File ..\bin\yaz.dll
+	File ..\bin\yaz3.dll
 	File ..\bin\libexpat.dll
 SectionEnd
 

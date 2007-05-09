@@ -1,3 +1,8 @@
+--- 2.0.14 2007/05/09
+
+Zebra uses the YAZ 3 API. Note that this changes the Zebra API
+as well. The register layout is the same however. 
+
 Fixed bug #1114: scan within set may use excessive CPU.
 
 Fixed memory leak that occurred in scan.
