@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.21 2007-05-14 12:33:33 adam Exp $
+/* $Id: t5.c,v 1.22 2007-05-14 13:21:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -104,6 +104,28 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=106 le", 0));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=106 *le", 3));
 
+    /* string relations, < */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=1 0", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=1 my", 0));
+
+    /* string relations, <= */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=2 my", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=2 mn", 0));
+
+    /* = */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=3 my", 3));
+
+    /* string relations, >= */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=4 x", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=4 tu", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=4 title", 3));
+
+    /* string relations, > */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 x", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 tu", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 title", 2));
+
+    
     /* and searches */
     YAZ_CHECK(tl_query(zh, "@and @attr 1=4 notfound @attr 1=4 x", 0)); 
     YAZ_CHECK(tl_query(zh, "@and @attr 1=4 x @attr 1=4 notfound", 0)); 
