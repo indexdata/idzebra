@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.13 2007-05-14 12:33:33 adam Exp $
+/* $Id: rpnsearch.c,v 1.14 2007-05-14 14:05:21 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -206,6 +206,33 @@ static void esc_str(char *out_buf, size_t out_size,
 
 #define REGEX_CHARS " []()|.*+?!"
 
+static void add_non_space(const char *start, const char *end,
+                          WRBUF term_dict,
+                          char *dst_term, int *dst_ptr,
+                          const char **map, int q_map_match)
+{
+    size_t sz = end - start;
+    memcpy(dst_term + *dst_ptr, start, sz);
+    (*dst_ptr) += sz;
+    if (!q_map_match)
+    {
+        while (start < end)
+        {
+            if (strchr(REGEX_CHARS, *start))
+                wrbuf_putc(term_dict, '\\');
+            wrbuf_putc(term_dict, *start);
+            start++;
+        }
+    }
+    else
+    {
+        char tmpbuf[80];
+        esc_str(tmpbuf, sizeof(tmpbuf), map[0], strlen(map[0]));
+        
+        wrbuf_puts(term_dict, map[0]);
+    }
+}
+
 /* term_100: handle term, where trunc = none(no operators at all) */
 static int term_100(ZebraMaps zebra_maps, int reg_type,
 		    const char **src, WRBUF term_dict, int space_split,
@@ -256,27 +283,10 @@ static int term_100(ZebraMaps zebra_maps, int reg_type,
                 space_start = space_end = 0;
             }
         }
-	/* add non-space char */
         i++;
-	memcpy(dst_term+j, s1, s0 - s1);
-	j += (s0 - s1);
-	if (!q_map_match)
-	{
-	    while (s1 < s0)
-	    {
-		if (strchr(REGEX_CHARS, *s1))
-		    wrbuf_putc(term_dict, '\\');
-		wrbuf_putc(term_dict, *s1);
-                s1++;
-	    }
-	}
-	else
-	{
-	    char tmpbuf[80];
-	    esc_str(tmpbuf, sizeof(tmpbuf), map[0], strlen(map[0]));
 
-	    wrbuf_puts(term_dict, map[0]);
-	}
+        add_non_space(s1, s0, term_dict, dst_term, &j,
+                      map, q_map_match);
     }
     dst_term[j] = '\0';
     *src = s0;
@@ -314,26 +324,8 @@ static int term_101(ZebraMaps zebra_maps, int reg_type,
                 break;
 
             i++;
-	    /* add non-space char */
-	    memcpy(dst_term+j, s1, s0 - s1);
-	    j += (s0 - s1);
-	    if (!q_map_match)
-	    {
-		while (s1 < s0)
-		{
-		    if (strchr(REGEX_CHARS, *s1))
-                        wrbuf_putc(term_dict, '\\');
-                    wrbuf_putc(term_dict, *s1);
-                    s1++;
-		}
-	    }
-	    else
-	    {
-		char tmpbuf[80];
-		esc_str(tmpbuf, sizeof(tmpbuf), map[0], strlen(map[0]));
-
-		wrbuf_puts(term_dict, map[0]);
-	    }
+            add_non_space(s1, s0, term_dict, dst_term, &j,
+                          map, q_map_match);
         }
     }
     dst_term[j++] = '\0';
@@ -380,27 +372,9 @@ static int term_103(ZebraMaps zebra_maps, int reg_type, const char **src,
             if (space_split && **map == *CHR_SPACE)
                 break;
 
-	    /* add non-space char */
-	    memcpy(dst_term+j, s1, s0 - s1);
-	    j += (s0 - s1);
             i++;
-	    if (!q_map_match)
-	    {
-		while (s1 < s0)
-		{
-		    if (strchr(REGEX_CHARS, *s1))
-                        wrbuf_putc(term_dict, '\\');
-                    wrbuf_putc(term_dict, *s1);
-                    s1++;
-		}
-	    }
-	    else
-	    {
-		char tmpbuf[80];
-		esc_str(tmpbuf, sizeof(tmpbuf), map[0], strlen(map[0]));
-
-		wrbuf_puts(term_dict, map[0]);
-	    }
+            add_non_space(s1, s0, term_dict, dst_term, &j,
+                          map, q_map_match);
         }
     }
     dst_term[j] = '\0';
@@ -479,26 +453,8 @@ static int term_104(ZebraMaps zebra_maps, int reg_type,
                 break;
 
             i++;
-	    /* add non-space char */
-	    memcpy(dst_term+j, s1, s0 - s1);
-	    j += (s0 - s1);
-	    if (!q_map_match)
-	    {
-		while (s1 < s0)
-		{
-		    if (strchr(REGEX_CHARS, *s1))
-                        wrbuf_putc(term_dict, '\\');
-		    wrbuf_putc(term_dict, *s1);
-                    s1++;
-		}
-	    }
-	    else
-	    {
-		char tmpbuf[80];
-		esc_str(tmpbuf, sizeof(tmpbuf), map[0], strlen(map[0]));
-		
-                wrbuf_puts(term_dict, map[0]);
-	    }
+            add_non_space(s1, s0, term_dict, dst_term, &j,
+                          map, q_map_match);
         }
     }
     dst_term[j++] = '\0';
@@ -543,26 +499,8 @@ static int term_105(ZebraMaps zebra_maps, int reg_type,
                 break;
 
             i++;
-	    /* add non-space char */
-	    memcpy(dst_term+j, s1, s0 - s1);
-	    j += (s0 - s1);
-	    if (!q_map_match)
-	    {
-		while (s1 < s0)
-		{
-		    if (strchr(REGEX_CHARS, *s1))
-                        wrbuf_putc(term_dict, '\\');
-                    wrbuf_putc(term_dict, *s1);
-                    s1++;
-		}
-	    }
-	    else
-	    {
-		char tmpbuf[80];
-		esc_str(tmpbuf, sizeof(tmpbuf), map[0], strlen(map[0]));
-		
-                wrbuf_puts(term_dict, map[0]);
-	    }
+            add_non_space(s1, s0, term_dict, dst_term, &j,
+                          map, q_map_match);
         }
     }
     if (right_truncate)
