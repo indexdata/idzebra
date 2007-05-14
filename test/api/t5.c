@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.20 2007-01-15 15:10:20 adam Exp $
+/* $Id: t5.c,v 1.21 2007-05-14 12:33:33 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -36,6 +36,73 @@ static void tst(int argc, char **argv)
     ZebraHandle zh = zebra_open(zs, 0);
 
     YAZ_CHECK(tl_init_data(zh, myrec));
+
+    /* simple term */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 notfound", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 title", 3));
+
+    /* trunc right */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=1 titl", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=1 x", 2));
+
+    /* trunc left */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=2 titl", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=2 x", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=2 le", 3));
+
+    /* trunc left&right */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=3 titl", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=3 x", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=3 le", 3));
+
+    /* trunc none */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=100 titl", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=100 x", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=100 le", 0));
+
+    /* trunc: process # in term */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=101 titl", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=101 x", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=101 le", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=101 #le", 3));
+
+    /* trunc: re-1 */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=102 titl", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=102 x", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=102 le", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=102 .*le", 3));
+
+    /* trunc: re-2 */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=103 titl", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=103 titlx", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=103 titlxx", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=103 x", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=103 le", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=103 .*le", 3));
+
+    /* trunc: CCL #=. ?=.* (?[0-9] = n times .) */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=104 titl", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=104 tit#e", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=104 x", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=104 le", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=104 ?le", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=104 ?1le", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=104 ?2le", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=104 ?3le", 3));
+
+    /* trunc: * = .*   ! = . and right truncate */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=105 titl", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=105 tit!e", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=105 x", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=105 le", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=105 *le", 3));
+
+    /* trunc: * = .*   ! = . and do not truncate */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=106 titl", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=106 tit!e", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=106 x", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=106 le", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=106 *le", 3));
 
     /* and searches */
     YAZ_CHECK(tl_query(zh, "@and @attr 1=4 notfound @attr 1=4 x", 0)); 

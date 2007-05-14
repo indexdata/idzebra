@@ -1,3 +1,5 @@
+Fixed bug #1121: Crash for some searches with customized string.chr.
+
 --- 2.0.14 2007/05/09
 
 Zebra uses the YAZ 3 API. Note that this changes the Zebra API

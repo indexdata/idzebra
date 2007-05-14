@@ -1,4 +1,4 @@
-/* $Id: t8.c,v 1.13 2007-01-15 15:10:20 adam Exp $
+/* $Id: t8.c,v 1.14 2007-05-14 12:33:33 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -69,8 +69,23 @@ static void tst(int argc, char **argv)
     /* 4=109: numeric string */
     /* 2=3: equal  2=1: less, 2=4: greater or equal 2=5 greater */
 
-    /* N>25, search attributes work */
+    /* N>=25, search attributes work */
     YAZ_CHECK(tl_query(zh,  "@attr 2=4 @attr gils 1=2040 @attr 4=109 25", 2));
+
+    /* N>49, search attributes work */
+    YAZ_CHECK(tl_query(zh,  "@attr 2=5 @attr gils 1=2040 @attr 4=109 49", 0));
+
+    /* N>=49, search attributes work */
+    YAZ_CHECK(tl_query(zh,  "@attr 2=4 @attr gils 1=2040 @attr 4=109 49", 2));
+
+    /* N>48, search attributes work */
+    YAZ_CHECK(tl_query(zh,  "@attr 2=5 @attr gils 1=2040 @attr 4=109 48", 2));
+
+    /* N<48, search attributes work */
+    YAZ_CHECK(tl_query(zh,  "@attr 2=1 @attr gils 1=2040 @attr 4=109 48", 1));
+
+    /* N<=48, search attributes work */
+    YAZ_CHECK(tl_query(zh,  "@attr 2=2 @attr gils 1=2040 @attr 4=109 48", 1));
 
     /* N=41, get rec1 only */
     YAZ_CHECK(tl_query(zh,  "@attr 2=3 @attr gils 1=2040 @attr 4=109 41", 1));
