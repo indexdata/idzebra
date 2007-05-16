@@ -1,14 +1,14 @@
-## $Id: Makefile.am,v 1.31 2007-01-05 10:45:13 adam Exp $
+## $Id: Makefile.am,v 1.32 2007-05-16 10:57:06 adam Exp $
 
 noinst_LTLIBRARIES = libidzebra-util.la
 
-check_PROGRAMS = tstcharmap tstflock tstlockscope tstpass
+check_PROGRAMS = tstcharmap tstflock tstlockscope tstpass tstres
 
 TESTS = $(check_PROGRAMS)
 
 bin_SCRIPTS = idzebra-config-2.0
 
-EXTRA_DIST = zebrasrv.rh tstcharmap.chr tstpass.txt
+EXTRA_DIST = zebrasrv.rh tstcharmap.chr tstpass.txt tstres.cfg
 
 DISTCLEANFILES = idzebra-config-2.0
 
@@ -26,6 +26,8 @@ tstcharmap_SOURCES = tstcharmap.c
 tstflock_SOURCES = tstflock.c
 
 tstlockscope_SOURCES = tstlockscope.c
+
+tstres_SOURCES = tstres.c
 
 clean-local:
 	-rm -rf *.LCK 

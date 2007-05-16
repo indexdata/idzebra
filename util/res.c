@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.57 2007-05-16 08:57:27 adam Exp $
+/* $Id: res.c,v 1.58 2007-05-16 10:57:06 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <unistd.h>
 #endif
 
+#include <yaz/tokenizer.h>
 #include <yaz/yaz-util.h>
 #include <idzebra/res.h>
 
@@ -144,12 +145,8 @@ static char *xstrdup_env(const char *src)
 
 ZEBRA_RES res_read_file(Res r, const char *fname)
 {
-    struct res_entry *resp;
-    char *line;
-    char *val_buf;
-    int val_size, val_max = 256;
-    char fr_buf[1024];
     FILE *fr;
+    int errors = 0;
 
     assert(r);
 
@@ -157,81 +154,80 @@ ZEBRA_RES res_read_file(Res r, const char *fname)
     if (!fr)
     {
         yaz_log(YLOG_WARN|YLOG_ERRNO, "Cannot open `%s'", fname);
-	return ZEBRA_FAIL;
+        errors++;
     }
-    val_buf = (char*) xmalloc(val_max);
-    while (1)
+    else
     {
-        line = fgets(fr_buf, sizeof(fr_buf)-1, fr);
-        if (!line)
-            break;
-        if (*line != '#')
+        char fr_buf[1024];
+        char *line;
+        int lineno = 1;
+        WRBUF wrbuf_val = wrbuf_alloc();
+        yaz_tok_cfg_t yt = yaz_tok_cfg_create();
+        
+        while ((line = fgets(fr_buf, sizeof(fr_buf)-1, fr)))
         {
-            int no = 0;
-            while (1)
-            {
-                if (fr_buf[no] == 0 || fr_buf[no] == '\n' )
-                {
-                    no = 0;
-                    break;
-                }
-                if (strchr(": \t", fr_buf[no]))
-                    break;
-                no++;
-            }
-            if (!no)
-                continue;
-            fr_buf[no++] = '\0';
-            resp = add_entry(r);
-            resp->name = (char*) xmalloc(no);
-            strcpy(resp->name, fr_buf);
+            yaz_tok_parse_t tp = yaz_tok_parse_buf(yt, line);
+            int t = yaz_tok_move(tp);
             
-            while (strchr(" \t", fr_buf[no]))
-                no++;
-            val_size = 0;
-            while (1)
+            if (t == YAZ_TOK_STRING)
             {
-                if (fr_buf[no] == '\0' || strchr("\n\r\f", fr_buf[no]))
+                size_t sz;
+                struct res_entry *resp;
+                const char *cp = yaz_tok_parse_string(tp);
+                const char *cp1 = strchr(cp, ':');
+
+                if (!cp1)
                 {
-                    while (val_size > 0 &&
-                              (val_buf[val_size-1] == ' ' ||
-                               val_buf[val_size-1] == '\t'))
-                        val_size--;
-                    val_buf[val_size] = '\0';
-		    resp->value = xstrdup_env(val_buf);
-                    yaz_log(YLOG_DEBUG, "(name=%s,value=%s)",
-                         resp->name, resp->value);
+                    yaz_log(YLOG_FATAL, "%s:%d missing colon after '%s'",
+                            fname, lineno, cp);
+                    errors++;
                     break;
                 }
-                else if (fr_buf[no] == '\\' && strchr("\n\r\f", fr_buf[no+1]))
+                resp = add_entry(r);
+                sz = cp1 - cp;
+                resp->name = xmalloc(sz + 1);
+                memcpy(resp->name, cp, sz);
+                resp->name[sz] = '\0';
+
+                wrbuf_rewind(wrbuf_val);
+
+                if (cp1[1])
                 {
-                    line = fgets(fr_buf, sizeof(fr_buf)-1, fr);
-                    if (!line)
-                    {
-			val_buf[val_size] = '\0';
-			resp->value = xstrdup_env(val_buf);
-                        break;
-                    }
-                    no = 0;
+                    /* name:value  */
+                    wrbuf_puts(wrbuf_val, cp1+1);
                 }
                 else
                 {
-                    val_buf[val_size++] = fr_buf[no++];
-                    if (val_size+1 >= val_max)
+                    /* name:   value */
+                    t = yaz_tok_move(tp);
+                    
+                    if (t != YAZ_TOK_STRING)
                     {
-                        char *nb;
-
-                        nb = (char*) xmalloc(val_max+=1024);
-                        memcpy(nb, val_buf, val_size);
-                        xfree(val_buf);
-                        val_buf = nb;
+                        resp->value = xstrdup("");
+                        yaz_log(YLOG_FATAL, "%s:%d missing value after '%s'",
+                                fname, lineno, resp->name);
+                        errors++;
+                        break;
                     }
+                    wrbuf_puts(wrbuf_val, yaz_tok_parse_string(tp));
                 }
+                while ((t=yaz_tok_move(tp)) == YAZ_TOK_STRING)
+                {
+                    wrbuf_putc(wrbuf_val, ' ');
+                    wrbuf_puts(wrbuf_val, yaz_tok_parse_string(tp));
+                }
+                resp->value = xstrdup_env(wrbuf_cstr(wrbuf_val));
+                /* printf("name=%s value=%s\n", resp->name, resp->value); */
             }
-        }
-    }                
-    xfree(val_buf);
-    fclose(fr);
+            lineno++;
+            yaz_tok_parse_destroy(tp);
+        }         
+        fclose(fr);
+        yaz_tok_cfg_destroy(yt);
+        wrbuf_destroy(wrbuf_val);
+    }
+    if (errors)
+        return ZEBRA_FAIL;
     return ZEBRA_OK;
 }
 
