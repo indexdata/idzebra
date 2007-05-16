@@ -1,4 +1,4 @@
-/* $Id: tstcharmap.c,v 1.7 2007-01-15 15:10:26 adam Exp $
+/* $Id: tstcharmap.c,v 1.8 2007-05-16 12:31:17 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -20,11 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <assert.h>
 #include <charmap.h>
-#include <yaz/log.h>
+#include <yaz/test.h>
 
 /* use env srcdir as base directory - or current directory if unset */
 const char *get_srcdir(void)
@@ -42,9 +39,7 @@ void tst1(void)
     chrmaptab tab = chrmaptab_create(get_srcdir() /* tabpath */,
 				     "tstcharmap.chr" /* file */,
 				     0 /* tabroot */ );
-    if (!tab)
-	exit(1);
-    
+    YAZ_CHECK(tab);
     chrmaptab_destroy(tab);
 }
 
@@ -54,21 +49,19 @@ void tst2(void)
     chrmaptab tab = chrmaptab_create(get_srcdir() /* tabpath */,
 				     "nonexist.chr" /* file */,
 				     0 /* tabroot */ );
-    
-    if (tab)
-	exit(0);
+    YAZ_CHECK(!tab);
+    chrmaptab_destroy(tab);
 }
 
 int main(int argc, char **argv)
 {
-    char logname[2048];
-    sprintf(logname, "%s.log", argv[0]);
-    yaz_log_init_file(logname);
+    YAZ_CHECK_INIT(argc, argv);
+    YAZ_CHECK_LOG();
 
     tst1();
     tst2();
 
-    exit(0);
+    YAZ_CHECK_TERM;
 }
 
 /*

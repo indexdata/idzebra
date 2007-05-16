@@ -1,4 +1,4 @@
-/* $Id: tstpass.c,v 1.2 2007-01-15 15:10:26 adam Exp $
+/* $Id: tstpass.c,v 1.3 2007-05-16 12:31:17 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -50,6 +50,7 @@ static void tst(void)
 int main (int argc, char **argv)
 {
     YAZ_CHECK_INIT(argc, argv);
+    YAZ_CHECK_LOG();
     tst();
     YAZ_CHECK_TERM;
 }

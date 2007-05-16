@@ -1,4 +1,4 @@
-/* $Id: tstflock.c,v 1.18 2007-01-15 15:10:26 adam Exp $
+/* $Id: tstflock.c,v 1.19 2007-05-16 12:31:17 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -241,14 +241,8 @@ void fork_tst(void)
 
 int main(int argc, char **argv)
 {
-    char logname[220];
     YAZ_CHECK_INIT(argc, argv);
-
-    sprintf(logname, "%.200s.log", argv[0]);
-    yaz_log_init_file(logname);
-
-    /* log time + thread id (%!) */
-    yaz_log_time_format("%c:%!");
+    YAZ_CHECK_LOG();
 
     /* ensure the flock system logs in our test */
     yaz_log_init_level(yaz_log_mask_str("flock"));

@@ -1,18 +1,36 @@
-/* $Id: tstlockscope.c,v 1.1 2006-07-02 21:22:17 adam Exp $
-   Copyright (C) 2006
+/* $Id: tstlockscope.c,v 1.2 2007-05-16 12:31:17 adam Exp $
+   Copyright (C) 1995-2007
    Index Data ApS
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 */
 
 /** \file tstlockscope.c
     \brief tests scope of fcntl locks.. Either "process"  or "thread"
 */
 
-#include <errno.h>
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <yaz/log.h>
+#include <yaz/test.h>
 #if YAZ_POSIX_THREADS
 #include <fcntl.h>
 #endif
@@ -40,27 +58,40 @@ void *run_func(void *arg)
     return 0;
 }
 
-int main(int argc, char **argv)
+void tst(void)
 {
     pthread_t child_thread;
+    int r;
     fd = open("my.LCK", (O_CREAT|O_RDWR), 0666);
+
+    YAZ_CHECK(fd != -1);
     if (fd == -1)
     {
-        fprintf(stderr, "open: %s\n", strerror(errno));
-        exit(1);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "open");
+        return;
     }
 
-    if (file_lock(fd, F_WRLCK, F_SETLKW) == -1)
+    r = file_lock(fd, F_WRLCK, F_SETLKW);
+    YAZ_CHECK(r != -1);
+    if (r == -1)
     {
-        fprintf(stderr, "fcntl: %s\n", strerror(errno));
-        exit(1);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "fcnt");
+        return;
     }
 
 #if YAZ_POSIX_THREADS
     pthread_create(&child_thread, 0 /* attr */, run_func, 0);
     pthread_join(child_thread, 0);
 #endif
-    printf("fcntl lock scope: %s\n", scope);
+    yaz_log(YLOG_LOG, "fcntl lock scope: %s", scope);
+}
+
+int main(int argc, char **argv)
+{
+    YAZ_CHECK_INIT(argc, argv);
+    YAZ_CHECK_LOG();
+    tst();
+    YAZ_CHECK_TERM;
     return 0;
 }
 

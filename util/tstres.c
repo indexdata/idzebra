@@ -1,4 +1,4 @@
-/* $Id: tstres.c,v 1.1 2007-05-16 10:57:06 adam Exp $
+/* $Id: tstres.c,v 1.2 2007-05-16 12:31:17 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -69,6 +69,7 @@ static void tst_res_read_file(void)
 int main (int argc, char **argv)
 {
     YAZ_CHECK_INIT(argc, argv);
+    YAZ_CHECK_LOG();
     tst_res_open();
     tst_res_read_file();
     YAZ_CHECK_TERM;
