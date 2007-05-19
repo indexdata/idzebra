@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.36 2007-04-16 21:54:37 adam Exp $
+/* $Id: mod_dom.c,v 1.37 2007-05-19 19:44:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -727,7 +727,7 @@ static void index_value_of(struct filter_info *tinfo,
     {
         xmlChar *text = xmlNodeGetContent(node);
         size_t text_len = strlen((const char *)text);
-        
+       
         /* if there is no text, we do not need to proceed */
         if (text_len)
         {            
@@ -777,11 +777,6 @@ static void index_value_of(struct filter_info *tinfo,
                 }
 
                 /* actually indexing the text given */
-                dom_log(YLOG_DEBUG, tinfo, 0, 
-                        "INDEX '%s:%s' '%s'", 
-                        index ? (const char *) index : "null",
-                        type ? (const char *) type : "null", 
-                        text ? (const char *) text : "null");
 
                 recword->index_name = (const char *)index;
                 if (type && *type)
@@ -1090,8 +1085,24 @@ static int convert_extract_doc(struct filter_info *tinfo,
     params[0] = 0;
     set_param_str(params, "schema", zebra_dom_ns, tinfo->odr_record);
 
+    if (p && p->flagShowRecords)
+    {
+        xmlChar *buf_out;
+        int len_out;
+#if 0 
+        FILE *outf = fopen("extract.xml", "w");
+        xmlDocDumpMemory(doc, &buf_out, &len_out);
+        fwrite(buf_out, 1, len_out, outf);
+#endif
+        yaz_log(YLOG_LOG, "Extract Doc: %.*s", len_out, buf_out);
+#if 0
+        fclose(outf);
+#endif
+    }
+
     /* input conversion */
     perform_convert(tinfo, p, input->convert, params, &doc, 0);
+
 
     if (tinfo->store)
     {
@@ -1276,7 +1287,8 @@ static int extract_iso2709(struct filter_info *tinfo,
     {
         xmlDocPtr rdoc;
         xmlNode *root_ptr;
-        yaz_marc_write_xml(input->u.marc.handle, &root_ptr, 0, 0, 0);
+        yaz_marc_write_xml(input->u.marc.handle, &root_ptr, 
+                           "http://www.loc.gov/MARC21/slim", 0, 0);
         rdoc = xmlNewDoc((const xmlChar*) "1.0");
         xmlDocSetRootElement(rdoc, root_ptr);
         return convert_extract_doc(tinfo, input, p, rdoc);        

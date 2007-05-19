@@ -3,7 +3,7 @@
   xmlns:z="http://indexdata.com/zebra-2.0"
   exclude-result-prefixes="m z"
   version="1.0">
-  <!-- $Id: dom-index-element.xsl,v 1.2 2007-02-15 15:41:16 marc Exp $ -->
+  <!-- $Id: dom-index-element.xsl,v 1.3 2007-05-19 19:44:14 adam Exp $ -->
   <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
   
 
@@ -23,9 +23,9 @@
     </z:index>
   </xsl:template>
   
-  <xsl:template match="m:datafield[@tag='245']/m:subfield[@code='a']">
+  <xsl:template match="m:datafield[@tag='245']">
     <z:index name="title:w title:p title:s any:w">
-      <xsl:value-of select="."/>
+      <xsl:value-of select="m:subfield[@code='a']"/>
     </z:index>
   </xsl:template>
 
