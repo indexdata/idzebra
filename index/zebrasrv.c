@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.15 2007-04-17 20:27:14 adam Exp $
+/* $Id: zebrasrv.c,v 1.16 2007-05-21 11:54:59 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -85,6 +85,8 @@ bend_initresult *bend_init (bend_initrequest *q)
 	return r;
     }
     r->handle = zh;
+
+    q->query_charset = odr_strdup(q->stream, zebra_get_encoding(zh));
     if (q->auth)
     {
 	if (q->auth->which == Z_IdAuthentication_open)
@@ -113,7 +115,7 @@ bend_initresult *bend_init (bend_initrequest *q)
 	r->errstring = user;
 	return r;
     }
-    if (q->charneg_request) /* characater set and langauge negotiation? */
+    if (q->charneg_request) /* characater set and language negotiation? */
     {
         char **charsets = 0;
         int num_charsets;
@@ -123,11 +125,9 @@ bend_initresult *bend_init (bend_initrequest *q)
         int i;
         NMEM nmem = nmem_create();
 
-        yaz_log (YLOG_LOG, "character set and language negotiation");
-
-        yaz_get_proposal_charneg (nmem, q->charneg_request,
-                                  &charsets, &num_charsets,
-                                  &langs, &num_langs, &selected);
+        yaz_get_proposal_charneg(nmem, q->charneg_request,
+                                 &charsets, &num_charsets,
+                                 &langs, &num_langs, &selected);
         
         for (i = 0; i < num_charsets; i++)
         {
@@ -152,21 +152,21 @@ bend_initresult *bend_init (bend_initrequest *q)
             } else {
                 right_name = charsets[i];
             }
-            if (odr_set_charset (q->decode, "UTF-8", right_name) == 0)
+            if (odr_set_charset(q->decode, "UTF-8", right_name) == 0)
             {
-                yaz_log (YLOG_LOG, "charset %d %s (proper name %s): OK", i,
-                         charsets[i], right_name);
-                odr_set_charset (q->stream, right_name, "UTF-8");
+                yaz_log(YLOG_LOG, "charset %d %s (proper name %s): OK", i,
+                        charsets[i], right_name);
+                odr_set_charset(q->stream, right_name, "UTF-8");
                 if (selected)
                     zebra_record_encoding(zh, right_name);
 		zebra_octet_term_encoding(zh, right_name);
         	q->charneg_response =
-        	    yaz_set_response_charneg (q->stream, charsets[i],
-                                              0, selected);
+        	    yaz_set_response_charneg(q->stream, charsets[i],
+                                             0, selected);
         	break;
             } else {
-                yaz_log (YLOG_LOG, "charset %d %s (proper name %s): unsupported", i,
-                         charsets[i], right_name);
+                yaz_log(YLOG_LOG, "charset %d %s (proper name %s): unsupported", i,
+                        charsets[i], right_name);
             }
         }
         nmem_destroy(nmem);

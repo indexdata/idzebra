@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.50 2007-05-09 07:42:46 adam Exp $
+/* $Id: api.h,v 1.51 2007-05-21 11:54:59 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -160,6 +160,14 @@ char *zebra_errAdd(ZebraHandle zh);
 */
 YAZ_EXPORT
 void zebra_result(ZebraHandle zh, int *code, char **addinfo);
+
+
+/** \brief Returns character set encoding for session
+    \param zh zebra session handle.
+    \returns encoding name (e.g. "iso-8859-1")
+*/
+YAZ_EXPORT
+const char *zebra_get_encoding(ZebraHandle zh);
 
 /** \brief Set limit before Zebra does approx hit count
     \param zh session handle

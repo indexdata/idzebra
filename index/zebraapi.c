@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.255 2007-05-08 12:50:04 adam Exp $
+/* $Id: zebraapi.c,v 1.256 2007-05-21 11:54:59 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -99,6 +99,12 @@ static struct zebra_register *zebra_register_open(ZebraService zs,
 						  const char *reg_path);
 static void zebra_register_close(ZebraService zs, struct zebra_register *reg);
 
+const char *zebra_get_encoding(ZebraHandle zh)
+{
+    assert(zh && zh->session_res);
+    return res_get_def(zh->session_res, "encoding", "ISO-8859-1");
+}
+
 ZebraHandle zebra_open(ZebraService zs, Res res)
 {
     ZebraHandle zh;
@@ -147,7 +153,7 @@ ZebraHandle zebra_open(ZebraService zs, Res res)
     zh->break_handler_func = 0;
     zh->break_handler_data = 0;
 
-    default_encoding = res_get_def(zh->session_res, "encoding", "ISO-8859-1");
+    default_encoding = zebra_get_encoding(zh);
 
     zh->iconv_to_utf8 =
         yaz_iconv_open ("UTF-8", default_encoding);
