@@ -1,4 +1,4 @@
-/* $Id: tstcharmap.c,v 1.8 2007-05-16 12:31:17 adam Exp $
+/* $Id: tstcharmap.c,v 1.9 2007-05-21 07:15:06 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <charmap.h>
 #include <yaz/test.h>
+#include <stdlib.h>
 
 /* use env srcdir as base directory - or current directory if unset */
 const char *get_srcdir(void)
