@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.25 2007-04-16 08:44:31 adam Exp $
+/* $Id: d1_read.c,v 1.26 2007-05-21 11:53:49 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1004,35 +1004,12 @@ data1_node *data1_read_sgml (data1_handle dh, NMEM m, const char *buf)
 }
 
 
-static int conv_item (NMEM m, yaz_iconv_t t, 
-                      WRBUF wrbuf, char *inbuf, size_t inlen)
+static int conv_item(NMEM m, yaz_iconv_t t, 
+                     WRBUF wrbuf, char *inbuf, size_t inlen)
 {
-    wrbuf_rewind (wrbuf);
-    if (wrbuf->size < 10)
-        wrbuf_grow (wrbuf, 10);
-    for (;;)
-    {
-        char *outbuf = wrbuf->buf + wrbuf->pos;
-        size_t outlen = wrbuf->size - wrbuf->pos;
-        if (yaz_iconv(t, &inbuf, &inlen, &outbuf, &outlen) ==
-            (size_t)(-1) && yaz_iconv_error(t) != YAZ_ICONV_E2BIG)
-        {
-            /* bad data. stop and skip conversion entirely */
-            return -1;
-        }
-        else if (inlen == 0)
-        {   /* finished converting, flush it */
-            yaz_iconv(t, 0, 0, &outbuf, &outlen);
-            wrbuf->pos = wrbuf->size - outlen;
-            break;
-        }
-        else
-        {
-            /* buffer too small: make sure we expand buffer */
-            wrbuf->pos = wrbuf->size - outlen;
-            wrbuf_grow(wrbuf, 20);
-        }
-    }
+    wrbuf_rewind(wrbuf);
+    wrbuf_iconv_write(wrbuf, t, inbuf, inlen);
+    wrbuf_iconv_reset(wrbuf, t);
     return 0;
 }
 
@@ -1109,8 +1086,8 @@ const char *data1_get_encoding (data1_handle dh, data1_node *n)
 }
 
 int data1_iconv (data1_handle dh, NMEM m, data1_node *n,
-                  const char *tocode, 
-                  const char *fromcode)
+                 const char *tocode, 
+                 const char *fromcode)
 {
     if (yaz_matchstr (tocode, fromcode))
     {
