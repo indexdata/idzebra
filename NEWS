@@ -1,3 +1,5 @@
+Fixed bug #1132: Missing value-of data in DOM filter.
+
 Fixed bug #1049: zebra.cfg lines with leading space are ignored.
 
 Fixed bug #1128: sortmax not honored.
