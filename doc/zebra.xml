@@ -6,12 +6,12 @@
      %local;
      <!ENTITY % entities SYSTEM "entities.ent">
      %entities;
-     <!ENTITY % common SYSTEM "common/common.ent">
-     %common;
+     <!ENTITY % idcommon SYSTEM "common/common.ent">
+     %idcommon;
 
      <!ENTITY test SYSTEM "test.xml">
 ]>
-<!-- $Id: zebra.xml,v 1.18 2007-03-01 11:18:40 marc Exp $ -->
+<!-- $Id: zebra.xml,v 1.19 2007-05-22 11:12:53 adam Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>&zebra; - User's Guide and Reference</title>

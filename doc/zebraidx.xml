@@ -5,10 +5,10 @@
      %local;
      <!ENTITY % entities SYSTEM "entities.ent">
      %entities;
-     <!ENTITY % common SYSTEM "common/common.ent">
-     %common;
+     <!ENTITY % idcommon SYSTEM "common/common.ent">
+     %idcommon;
 ]>
-<!-- $Id: zebraidx.xml,v 1.12 2007-02-02 11:10:08 marc Exp $ -->
+<!-- $Id: zebraidx.xml,v 1.13 2007-05-22 11:12:53 adam Exp $ -->
 <refentry id="zebraidx">
  <refentryinfo>
   <productname>zebra</productname>
