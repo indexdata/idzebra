@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="iso-8859-1" standalone="no" ?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook &xml; V4.2//EN" 
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook &acro.xml; V4.2//EN" 
  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 
-<!-- $Id: marc_indexing.xml,v 1.5 2007-02-02 11:10:08 marc Exp $ -->
+<!-- $Id: marc_indexing.xml,v 1.6 2007-05-24 13:44:09 adam Exp $ -->
 
 <book id="marc_indexing">
 <bookinfo>
- <title>Indexing of &marc; records by &zebra;</title>
+ <title>Indexing of &acro.marc; records by &zebra;</title>
  <abstract>
-  <simpara>&zebra; is suitable for distribution of &marc; records via &z3950;. We
-	have a several possibilities to describe the indexing process of &marc; records.
+  <simpara>&zebra; is suitable for distribution of &acro.marc; records via &acro.z3950;. We
+	have a several possibilities to describe the indexing process of &acro.marc; records.
 	This document shows these possibilities.
   </simpara>
  </abstract>
 </bookinfo>
 
 <chapter id="simple">
- <title>Simple indexing of &marc; records</title>
+ <title>Simple indexing of &acro.marc; records</title>
 <para>Simple indexing is not described yet.</para>
 </chapter>
 
 <chapter id="extended">
- <title>Extended indexing of &marc; records</title>
+ <title>Extended indexing of &acro.marc; records</title>
 
-<para>Extended indexing of &marc; records will help you if you need index a
+<para>Extended indexing of &acro.marc; records will help you if you need index a
 combination of subfields, or index only a part of the whole field,
-or use during indexing process embedded fields of &marc; record.
+or use during indexing process embedded fields of &acro.marc; record.
 </para>
 
-<para>Extended indexing of &marc; records additionally allows:
+<para>Extended indexing of &acro.marc; records additionally allows:
 <itemizedlist>
 
 <listitem>
-<para>to index data in LEADER of &marc; record</para>
+<para>to index data in LEADER of &acro.marc; record</para>
 </listitem>
 
 <listitem>
@@ -44,23 +44,23 @@ or use during indexing process embedded fields of &marc; record.
 </listitem>
 
 <listitem>
-<para>to index linked fields for UNI&marc; based formats</para>
+<para>to index linked fields for UNI&acro.marc; based formats</para>
 </listitem>
 
 </itemizedlist>
 </para>
 
 <note><para>In compare with simple indexing process the extended indexing
-may increase (about 2-3 times) the time of indexing process for &marc;
+may increase (about 2-3 times) the time of indexing process for &acro.marc;
 records.</para></note>
 
 <sect1 id="formula">
 <title>The index-formula</title>
 
 <para>At the beginning, we have to define the term <emphasis>index-formula</emphasis>
-for &marc; records. This term helps to understand the notation of extended indexing of MARC records
+for &acro.marc; records. This term helps to understand the notation of extended indexing of MARC records
 by &zebra;. Our definition is based on the document <ulink url="http://www.rba.ru/rusmarc/soft/Z39-50.htm">"The
-table of conformity for &z3950; use attributes and R&usmarc; fields"</ulink>.
+table of conformity for &acro.z3950; use attributes and R&acro.usmarc; fields"</ulink>.
 The document is available only in russian language.</para>
 
 <para>The <emphasis>index-formula</emphasis> is the combination of subfields presented in such way:</para>
@@ -69,7 +69,7 @@ The document is available only in russian language.</para>
 71-00$a, $g, $h ($c){.$b ($c)} , (1)
 </screen>
 
-<para>We know that &zebra; supports a &bib1; attribute - right truncation.
+<para>We know that &zebra; supports a &acro.bib1; attribute - right truncation.
 In this case, the <emphasis>index-formula</emphasis> (1) consists from 
 forms, defined in the same way as (1)</para>
 
@@ -79,7 +79,7 @@ forms, defined in the same way as (1)</para>
 71-00$a
 </screen>
 
-<note><para>The original &marc; record may be without some elements, which included in <emphasis>index-formula</emphasis>.</para>
+<note><para>The original &acro.marc; record may be without some elements, which included in <emphasis>index-formula</emphasis>.</para>
 </note>
 
 <para>This notation includes such operands as:
@@ -92,7 +92,7 @@ forms, defined in the same way as (1)</para>
 
 <varlistentry>
  <term>-</term>
- <listitem><para>The position may contain any value, defined by &marc; format.
+ <listitem><para>The position may contain any value, defined by &acro.marc; format.
  For example, <emphasis>index-formula</emphasis></para>
 
 <screen>
@@ -132,7 +132,7 @@ forms, defined in the same way as (1)</para>
 </varlistentry>
 </variablelist>
 
-<note><para>All another operands are the same as accepted in &marc; world.</para>
+<note><para>All another operands are the same as accepted in &acro.marc; world.</para>
 </note>
 </para>
 </sect1>
@@ -146,7 +146,7 @@ forms, defined in the same way as (1)</para>
 (<literal>.abs</literal> file). It means that names beginning with
 <literal>"mc-"</literal> are interpreted by &zebra; as
 <emphasis>index-formula</emphasis>. The database index is created and
-linked with <emphasis>access point</emphasis> (&bib1; use attribute)
+linked with <emphasis>access point</emphasis> (&acro.bib1; use attribute)
 according to this formula.</para>
 
 <para>For example, <emphasis>index-formula</emphasis></para>
@@ -172,7 +172,7 @@ mc-71.00_$a,_$g,_$h_(_$c_){.$b_(_$c_)}
 
 <varlistentry>
 <term>.</term>
-<listitem><para>The position may contain any value, defined by &marc; format. For example,
+<listitem><para>The position may contain any value, defined by &acro.marc; format. For example,
 <emphasis>index-formula</emphasis></para>
 
 <screen>
@@ -232,7 +232,7 @@ includes</para>
 </para>
 
 <note>
-<para>All another operands are the same as accepted in &marc; world.</para>
+<para>All another operands are the same as accepted in &acro.marc; world.</para>
 </note>
 
 <sect2>
@@ -265,7 +265,7 @@ elm mc-ldr[7] Bib-level   !
 elm mc-008[0-5] Date/time-added-to-db !	
 </screen>
 
-<para>or for R&usmarc; (this data included in 100th field)</para>
+<para>or for R&acro.usmarc; (this data included in 100th field)</para>
 
 <screen>
 elm mc-100___$a[0-7]_ Date/time-added-to-db !
@@ -277,7 +277,7 @@ elm mc-100___$a[0-7]_ Date/time-added-to-db !
 
 <para>using indicators while indexing</para>
 
-<para>For R&usmarc; <emphasis>index-formula</emphasis>
+<para>For R&acro.usmarc; <emphasis>index-formula</emphasis>
 <literal>70-#1$a, $g</literal> matches</para>
 
 <screen>
@@ -293,9 +293,9 @@ indexed.</para>
 
 <listitem>
 
-<para>indexing embedded (linked) fields for UNI&marc; based formats</para>
+<para>indexing embedded (linked) fields for UNI&acro.marc; based formats</para>
 
-<para>For R&usmarc; <emphasis>index-formula</emphasis> 
+<para>For R&acro.usmarc; <emphasis>index-formula</emphasis> 
 <literal>4--#-$170-#1$a, $g ($c)</literal> matches</para>
 
 <screen>

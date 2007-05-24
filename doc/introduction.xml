@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.49 2007-02-05 14:32:31 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.50 2007-05-24 13:44:09 adam Exp $ -->
  <title>Introduction</title>
  
  <section id="overview">
@@ -7,10 +7,10 @@
   
       <para>
         &zebra; is a free, fast, friendly information management system. It can
-        index records in &xml;/&sgml;, &marc;, e-mail archives and many other
+        index records in &acro.xml;/&acro.sgml;, &acro.marc;, e-mail archives and many other
         formats, and quickly find them using a combination of boolean
         searching and relevance ranking. Search-and-retrieve applications can
-        be written using &api;s in a wide variety of languages, communicating
+        be written using &acro.api;s in a wide variety of languages, communicating
         with the &zebra; server using industry-standard information-retrieval
         protocols or web services. 
       </para>
@@ -21,11 +21,11 @@
       </para>
       <para>
         &zebra; is a networked component which acts as a 
-        reliable &z3950; server 
+        reliable &acro.z3950; server 
         for both record/document search, presentation, insert, update and 
-        delete operations. In addition, it understands the &sru; family of 
-        webservices, which exist in &rest; &get;/&post; and truly
-        &soap; flavors. 
+        delete operations. In addition, it understands the &acro.sru; family of 
+        webservices, which exist in &acro.rest; &acro.get;/&acro.post; and truly
+        &acro.soap; flavors. 
       </para>
       <para>
         &zebra; is available as MS Windows 2003 Server (32 bit) self-extracting
@@ -44,7 +44,7 @@
    <ulink url="http://indexdata.dk/zebra/">&zebra;</ulink>
    is a high-performance, general-purpose structured text
    indexing and retrieval engine. It reads records in a
-   variety of input formats (eg. email, &xml;, &marc;) and provides access
+   variety of input formats (eg. email, &acro.xml;, &acro.marc;) and provides access
    to them through a powerful combination of boolean search
    expressions and relevance-ranked free-text queries.
   </para>
@@ -53,13 +53,13 @@
    &zebra; supports large databases (tens of millions of records,
    tens of gigabytes of data). It allows safe, incremental
    database updates on live systems. Because &zebra; supports
-   the industry-standard information retrieval protocol, &z3950;,
+   the industry-standard information retrieval protocol, &acro.z3950;,
    you can search &zebra; databases using an enormous variety of
    programs and toolkits, both commercial and free, which understand
    this protocol.  Application libraries are available to allow
    bespoke clients to be written in Perl, C, C++, Java, Tcl, Visual
-   Basic, Python, &php; and more - see the
-   <ulink url="&url.zoom;">&zoom; web site</ulink>
+   Basic, Python, &acro.php; and more - see the
+   <ulink url="&url.zoom;">&acro.zoom; web site</ulink>
    for more information on some of these client toolkits.
   </para>
 
@@ -118,20 +118,20 @@
      <tbody>
       <row>
        <entry>Complex semi-structured Documents</entry>
-       <entry>&xml; and &grs1; Documents</entry>
-       <entry>Both &xml; and &grs1; documents exhibit a &dom; like internal
+       <entry>&acro.xml; and &acro.grs1; Documents</entry>
+       <entry>Both &acro.xml; and &acro.grs1; documents exhibit a &acro.dom; like internal
        representation allowing for complex indexing and display rules</entry>
        <entry><xref linkend="record-model-alvisxslt"/> and 
        <xref linkend="grs"/></entry>
       </row>
       <row>
        <entry>Input document formats</entry>
-       <entry>&xml;, &sgml;, Text, ISO2709 (&marc;)</entry>
+       <entry>&acro.xml;, &acro.sgml;, Text, ISO2709 (&acro.marc;)</entry>
        <entry>
         A system of input filters driven by
         regular expressions allows most ASCII-based
         data formats to be easily processed.
-        &sgml;, &xml;, ISO2709 (&marc;), and raw text are also
+        &acro.sgml;, &acro.xml;, ISO2709 (&acro.marc;), and raw text are also
         supported.</entry>
        <entry><xref linkend="componentmodules"/></entry>
       </row>
@@ -171,25 +171,25 @@
      <tbody>
       <row>
        <entry>Query languages</entry>
-       <entry>&cql; and &rpn;/&pqf;</entry>
-       <entry>The type-1 Reverse Polish Notation (&rpn;)
-       and it's textual representation Prefix Query Format (&pqf;) are
-       supported. The Common Query Language (&cql;) can be configured as
-       a mapping from &cql; to &rpn;/&pqf;</entry>
+       <entry>&acro.cql; and &acro.rpn;/&acro.pqf;</entry>
+       <entry>The type-1 Reverse Polish Notation (&acro.rpn;)
+       and its textual representation Prefix Query Format (&acro.pqf;) are
+       supported. The Common Query Language (&acro.cql;) can be configured as
+       a mapping from &acro.cql; to &acro.rpn;/&acro.pqf;</entry>
        <entry><xref linkend="querymodel-query-languages-pqf"/> and 
        <xref linkend="querymodel-cql-to-pqf"/></entry>
       </row>
       <row>
        <entry>Complex boolean query tree</entry>
-       <entry>&cql; and &rpn;/&pqf;</entry>
-       <entry>Both &cql; and &rpn;/&pqf; allow atomic query parts (&apt;) to
+       <entry>&acro.cql; and &acro.rpn;/&acro.pqf;</entry>
+       <entry>Both &acro.cql; and &acro.rpn;/&acro.pqf; allow atomic query parts (&acro.apt;) to
        be combined into complex boolean query trees</entry>
        <entry><xref linkend="querymodel-rpn-tree"/></entry>
       </row>
       <row>
        <entry>Field search</entry>
        <entry>user defined</entry>
-       <entry>Atomic query parts (&apt;) are either general, or
+       <entry>Atomic query parts (&acro.apt;) are either general, or
        directed at user-specified document fields
       </entry>
        <entry><xref linkend="querymodel-atomic-queries"/>, 
@@ -335,21 +335,21 @@
        <entry></entry>
       </row>
       <row>
-       <entry>&xml; document transformations</entry>
-       <entry>&xslt; based</entry>
+       <entry>&acro.xml; document transformations</entry>
+       <entry>&acro.xslt; based</entry>
        <entry> Record presentation can be performed in many
-       pre-defined &xml; data 
-          formats, where the original &xml; records are on-the-fly transformed
-          through any preconfigured &xslt; transformation. It is therefore
-          trivial to present records in short/full &xml; views, transforming to
-          RSS, Dublin Core, or other &xml; based data formats, or transform
+       pre-defined &acro.xml; data 
+          formats, where the original &acro.xml; records are on-the-fly transformed
+          through any preconfigured &acro.xslt; transformation. It is therefore
+          trivial to present records in short/full &acro.xml; views, transforming to
+          RSS, Dublin Core, or other &acro.xml; based data formats, or transform
           records to XHTML snippets ready for inserting in XHTML pages.</entry>
        <entry> 
        <xref linkend="record-model-alvisxslt-elementset"/></entry>
       </row>
       <row>
        <entry>Binary record transformations</entry>
-       <entry>&marc;, &usmarc;, &marc21; and &marcxml;</entry>
+       <entry>&acro.marc;, &acro.usmarc;, &acro.marc21; and &acro.marcxml;</entry>
        <entry>post-filter record transformations</entry>
        <entry></entry>
       </row>
@@ -357,8 +357,8 @@
        <entry>Record Syntaxes</entry>
        <entry></entry>
        <entry> Multiple record syntaxes
-      for data retrieval: &grs1;, &sutrs;,
-      &xml;, ISO2709 (&marc;), etc. Records can be mapped between
+      for data retrieval: &acro.grs1;, &acro.sutrs;,
+      &acro.xml;, ISO2709 (&acro.marc;), etc. Records can be mapped between
        record syntaxes and schemas on the fly.</entry>
        <entry></entry>
       </row>
@@ -366,7 +366,7 @@
        <entry>&zebra; internal metadata</entry>
        <entry>yes</entry>
        <entry> &zebra; internal document metadata can be fetched in
-       &sutrs; and &xml; record syntaxes. Those are useful in client
+       &acro.sutrs; and &acro.xml; record syntaxes. Those are useful in client
        applications.</entry>
        <entry><xref linkend="special-retrieval"/></entry>
       </row>
@@ -374,7 +374,7 @@
        <entry>&zebra; internal raw record data</entry>
        <entry>yes</entry>
        <entry> &zebra; internal raw, binary record data can be fetched in
-       &sutrs; and &xml; record syntaxes, leveraging %zebra; to a
+       &acro.sutrs; and &acro.xml; record syntaxes, leveraging %zebra; to a
        binary storage system</entry>
        <entry><xref linkend="special-retrieval"/></entry>
       </row>
@@ -382,7 +382,7 @@
        <entry>&zebra; internal record field data</entry>
        <entry>yes</entry>
        <entry> &zebra; internal record field data can be fetched in
-       &sutrs; and &xml; record syntaxes. This makes very fast minimal
+       &acro.sutrs; and &acro.xml; record syntaxes. This makes very fast minimal
        record data displays possible.</entry>
        <entry><xref linkend="special-retrieval"/></entry>
       </row>
@@ -479,9 +479,9 @@
       </row>
       <row>
        <entry>Remote updates</entry>
-       <entry>&z3950; extended services</entry>
+       <entry>&acro.z3950; extended services</entry>
        <entry>Updates can be performed from remote locations using the
-       &z3950; extended services. Access to extended services can be
+       &acro.z3950; extended services. Access to extended services can be
        login-password protected.</entry>
        <entry><xref linkend="administration-extended-services"/> and 
               <xref linkend="zebra-cfg"/></entry>
@@ -523,14 +523,14 @@
      <tbody>
       <row>
        <entry>Fundamental operations</entry>
-       <entry>&z3950;/&sru; <literal>explain</literal>, 
+       <entry>&acro.z3950;/&acro.sru; <literal>explain</literal>, 
            <literal>search</literal>, <literal>scan</literal>, and 
            <literal>update</literal></entry>
        <entry></entry>
        <entry><xref linkend="querymodel-operation-types"/></entry>
       </row>
       <row>
-       <entry>&z3950; protocol support</entry>
+       <entry>&acro.z3950; protocol support</entry>
        <entry>yes</entry>
        <entry> Protocol facilities supported are: 
        <literal>init</literal>, <literal>search</literal>, 
@@ -539,18 +539,18 @@
        <literal>delete</literal>, <literal>scan</literal>
        (index browsing), <literal>sort</literal>, 
        <literal>close</literal> and support for the <literal>update</literal>
-       Extended Service to add or replace an existing &xml;
+       Extended Service to add or replace an existing &acro.xml;
        record. Piggy-backed presents are honored in the search
        request. Named result sets are supported.</entry>
        <entry><xref linkend="protocol-support"/></entry>
       </row>
       <row>
        <entry>Web Service support</entry>
-       <entry>&sru_gps;</entry>
+       <entry>&acro.sru;</entry>
        <entry> The protocol operations <literal>explain</literal>, 
        <literal>searchRetrieve</literal> and <literal>scan</literal>
-       are supported. <ulink url="&url.cql;">&cql;</ulink> to internal
-       query model &rpn;
+       are supported. <ulink url="&url.cql;">&acro.cql;</ulink> to internal
+       query model &acro.rpn;
        conversion is supported. Extended RPN queries
        for search/retrieve and scan are supported.</entry>
        <entry><xref linkend="zebrasrv-sru-support"/></entry>
@@ -716,7 +716,7 @@
     </para>
     <para>
      In early 2005, the Koha project development team began looking at
-     ways to improve &marc; support and overcome scalability limitations
+     ways to improve &acro.marc; support and overcome scalability limitations
      in the Koha 2.x series. After extensive evaluations of the best
      of the Open Source textual database engines - including MySQL
      full-text searching, PostgreSQL, Lucene and Plucene - the team
@@ -735,7 +735,7 @@
      and relevance-ranked free-text queries, both of which the Koha
      2.x series lack. &zebra; also supports incremental and safe
      database updates, which allow on-the-fly record
-     management. Finally, since &zebra; has at its heart the &z3950;
+     management. Finally, since &zebra; has at its heart the &acro.z3950;
      protocol, it greatly improves Koha's support for that critical
      library standard." 
     </para>
@@ -765,12 +765,12 @@
      from virtually any computer with an Internet connection, has
      template based layout allowing anyone to alter the visual
      appearance of Emilda, and is
-     &xml; based language for fast and easy portability to virtually any
+     &acro.xml; based language for fast and easy portability to virtually any
      language.
      Currently, Emilda is used at three schools in Espoo, Finland.
     </para>
     <para>
-     As a surplus, 100% &marc; compatibility has been achieved using the
+     As a surplus, 100% &acro.marc; compatibility has been achieved using the
     &zebra; Server from Index Data as backend server. 
     </para> 
    </section>
@@ -782,18 +782,18 @@
      is a netbased library service offering all
      traditional functions on a very high level plus many new
      services. Reindex.net is a comprehensive and powerful WEB system
-     based on standards such as &xml; and &z3950;.
-     updates. Reindex supports &marc21;, dan&marc; eller Dublin Core with
+     based on standards such as &acro.xml; and &acro.z3950;.
+     updates. Reindex supports &acro.marc21;, dan&acro.marc; eller Dublin Core with
      UTF8-encoding.  
     </para>
     <para>
      Reindex.net runs on GNU/Debian Linux with &zebra; and Simpleserver
      from Index 
      Data for bibliographic data. The relational database system
-     Sybase 9 &xml; is used for
+     Sybase 9 &acro.xml; is used for
      administrative data. 
-     Internally &marcxml; is used for bibliographical records. Update
-     utilizes &z3950; extended services. 
+     Internally &acro.marcxml; is used for bibliographical records. Update
+     utilizes &acro.z3950; extended services. 
     </para>
    </section>
 
@@ -858,8 +858,8 @@
      The &zebra; information retrieval indexing machine is used inside
      the Alvis framework to
      manage huge collections of natural language processed and
-     enhanced &xml; data, coming from a topic relevant web crawl.
-     In this application, &zebra; swallows and manages 37GB of &xml; data
+     enhanced &acro.xml; data, coming from a topic relevant web crawl.
+     In this application, &zebra; swallows and manages 37GB of &acro.xml; data
      in about 4 hours, resulting in search times of fractions of
      seconds. 
      </para>
@@ -881,9 +881,9 @@
    <para>
     The member libraries send in data files representing their
     periodicals, including both brief bibliographic data and summary
-    holdings.  Then 21 individual &z3950; targets are created, each
+    holdings.  Then 21 individual &acro.z3950; targets are created, each
     using &zebra;, and all mounted on the single hardware server.
-    The live service provides a web gateway allowing &z3950; searching
+    The live service provides a web gateway allowing &acro.z3950; searching
     of all of the targets or a selection of them.  &zebra;'s small
     footprint allows a relatively modest system to comfortably host
     the 21 servers.
@@ -895,7 +895,7 @@
   </section>
 
   <section id="nli">
-   <title>NLI-&z3950; - a Natural Language Interface for Libraries</title>
+   <title>NLI-&acro.z3950; - a Natural Language Interface for Libraries</title>
    <para>
     Fernuniversit&#x00E4;t Hagen in Germany have developed a natural
     language interface for access to library databases.
@@ -904,8 +904,8 @@
     In order to evaluate this interface for recall and precision, they
     chose &zebra; as the basis for retrieval effectiveness.  The &zebra;
     server contains a copy of the GIRT database, consisting of more
-    than 76000 records in &sgml; format (bibliographic records from
-    social science), which are mapped to &marc; for presentation.
+    than 76000 records in &acro.sgml; format (bibliographic records from
+    social science), which are mapped to &acro.marc; for presentation.
    </para>
    <para>
     (GIRT is the German Indexing and Retrieval Testdatabase.  It is a

@@ -8,7 +8,7 @@
      <!ENTITY % idcommon  SYSTEM "common/common.ent">
      %idcommon;
 ]>
- <!-- $Id: zebrasrv.xml,v 1.5 2007-05-22 11:12:53 adam Exp $ -->
+ <!-- $Id: zebrasrv.xml,v 1.6 2007-05-24 13:44:09 adam Exp $ -->
 <refentry id="zebrasrv">
  <refentryinfo>
   <productname>zebra</productname>
@@ -31,11 +31,11 @@
   <refsect1><title>DESCRIPTION</title>
   <para>Zebra is a high-performance, general-purpose structured text indexing
    and retrieval engine. It reads structured records in a variety of input
-   formats (eg. email, &xml;, &marc;) and allows access to them through exact
+   formats (eg. email, &acro.xml;, &acro.marc;) and allows access to them through exact
    boolean search expressions and relevance-ranked free-text queries. 
   </para>
   <para>
-   <command>zebrasrv</command> is the &z3950; and &sru; frontend
+   <command>zebrasrv</command> is the &acro.z3950; and &acro.sru; frontend
    server for the <command>Zebra</command> search engine and indexer.
   </para> 
   <para> 
@@ -60,14 +60,14 @@
  </refsect1>
  
  <refsect1 id="protocol-support">
-  <title>&z3950; Protocol Support and Behavior</title>
+  <title>&acro.z3950; Protocol Support and Behavior</title>
 
   <refsect2 id="zebrasrv-initialization">
-   <title>&z3950; Initialization</title>
+   <title>&acro.z3950; Initialization</title>
 
    <para>
     During initialization, the server will negotiate to version 3 of the
-    &z3950; protocol, and the option bits for Search, Present, Scan,
+    &acro.z3950; protocol, and the option bits for Search, Present, Scan,
     NamedResultSets, and concurrentOperations will be set, if requested by
     the client. The maximum PDU size is negotiated down to a maximum of
     1 MB by default.
@@ -76,7 +76,7 @@
   </refsect2>
 
   <refsect2 id="zebrasrv-search">
-   <title>&z3950; Search</title>
+   <title>&acro.z3950; Search</title>
    
    <para>
     The supported query type are 1 and 101. All operators are currently
@@ -96,17 +96,17 @@
    </refsect2>
    
   <refsect2 id="zebrasrv-present">
-   <title>&z3950; Present</title>
+   <title>&acro.z3950; Present</title>
    <para>
     The present facility is supported in a standard fashion. The requested
     record syntax is matched against the ones supported by the profile of
-    each record retrieved. If no record syntax is given, &sutrs; is the
+    each record retrieved. If no record syntax is given, &acro.sutrs; is the
     default. The requested element set name, again, is matched against any
     provided by the relevant record profiles.
    </para>
   </refsect2>
   <refsect2 id="zebrasrv-scan">
-   <title>&z3950; Scan</title>
+   <title>&acro.z3950; Scan</title>
    <para>
     The attribute combinations provided with the termListAndStartPoint are
     processed in the same way as operands in a query (see above).
@@ -115,10 +115,10 @@
    </para>
   </refsect2>
   <refsect2 id="zebrasrv-sort">
-   <title>&z3950; Sort</title>
+   <title>&acro.z3950; Sort</title>
 
    <para>
-    &z3950; specifies three different types of sort criteria.
+    &acro.z3950; specifies three different types of sort criteria.
     Of these Zebra supports the attribute specification type in which
     case the use attribute specifies the "Sort register".
     Sort registers are created for those fields that are of type "sort" in
@@ -128,14 +128,14 @@
    </para>
 
    <para>
-    &z3950; allows the client to specify sorting on one or more input
+    &acro.z3950; allows the client to specify sorting on one or more input
     result sets and one output result set.
     Zebra supports sorting on one result set only which may or may not
     be the same as the output result set.
    </para>
   </refsect2>
   <refsect2 id="zebrasrv-close">
-   <title>&z3950; Close</title>
+   <title>&acro.z3950; Close</title>
    <para>
     If a Close PDU is received, the server will respond with a Close PDU
     with reason=FINISHED, no matter which protocol version was negotiated
@@ -150,10 +150,10 @@
   </refsect2>
    
    <refsect2 id="zebrasrv-explain">
-    <title>&z3950; Explain</title>
+    <title>&acro.z3950; Explain</title>
     <para>
      Zebra maintains a "classic" 
-    <ulink url="&url.z39.50.explain;">&z3950; Explain</ulink> database
+    <ulink url="&url.z39.50.explain;">&acro.z3950; Explain</ulink> database
     on the side. 
     This database is called <literal>IR-Explain-1</literal> and can be
     searched using the attribute set <literal>exp-1</literal>.
@@ -176,54 +176,54 @@
   </refsect2>
  </refsect1>
  <refsect1 id="zebrasrv-sru">
-  <title>The &sru; Server</title>
+  <title>The &acro.sru; Server</title>
   <para>
-   In addition to &z3950;, Zebra supports the more recent and
-   web-friendly IR protocol <ulink url="&url.sru;">&sru;</ulink>.
-    &sru; can be carried over &soap; or a &rest;-like protocol
-    that uses HTTP &get; or &post; to request search responses.  The request
+   In addition to &acro.z3950;, Zebra supports the more recent and
+   web-friendly IR protocol <ulink url="&url.sru;">&acro.sru;</ulink>.
+    &acro.sru; can be carried over &acro.soap; or a &acro.rest;-like protocol
+    that uses HTTP &acro.get; or &acro.post; to request search responses.  The request
     itself is made of parameters such as
     <literal>query</literal>,
     <literal>startRecord</literal>,
     <literal>maximumRecords</literal>
     and
     <literal>recordSchema</literal>;
-    the response is an &xml; document containing hit-count, result-set
-    records, diagnostics, etc.  &sru; can be thought of as a re-casting
-    of &z3950; semantics in web-friendly terms; or as a standardisation
+    the response is an &acro.xml; document containing hit-count, result-set
+    records, diagnostics, etc.  &acro.sru; can be thought of as a re-casting
+    of &acro.z3950; semantics in web-friendly terms; or as a standardisation
     of the ad-hoc query parameters used by search engines such as Google
     and AltaVista; or as a superset of A9's OpenSearch (which it
     predates).
   </para>
   <para>
-   Zebra supports &z3950;, &sru; &get;, SRU &post;, SRU &soap; (&srw;)
+   Zebra supports &acro.z3950;, &acro.sru; &acro.get;, SRU &acro.post;, SRU &acro.soap; (&acro.srw;)
    - on the same port, recognising what protocol is used by each incoming
    requests and handling them accordingly.  This is a achieved through
    the use of Deep Magic; civilians are warned not to stand too close.
   </para>
  <refsect2 id="zebrasrv-sru-run">
-  <title>Running zebrasrv as an &sru; Server</title>
+  <title>Running zebrasrv as an &acro.sru; Server</title>
   <para>
    Because Zebra supports all protocols on one port, it would
-   seem to follow that the &sru; server is run in the same way as
-   the &z3950; server, as described above.  This is true, but only in
+   seem to follow that the &acro.sru; server is run in the same way as
+   the &acro.z3950; server, as described above.  This is true, but only in
    an uninterestingly vacuous way: a Zebra server run in this manner
-   will indeed recognise and accept &sru; requests; but since it
-   doesn't know how to handle the &cql; queries that these protocols
+   will indeed recognise and accept &acro.sru; requests; but since it
+   doesn't know how to handle the &acro.cql; queries that these protocols
    use, all it can do is send failure responses.
   </para>
   <note>
    <para>
-    It is possible to cheat, by having &sru; search Zebra with
-    a &pqf; query instead of &cql;, using the
+    It is possible to cheat, by having &acro.sru; search Zebra with
+    a &acro.pqf; query instead of &acro.cql;, using the
     <literal>x-pquery</literal>
     parameter instead of
     <literal>query</literal>.
     This is a
     <emphasis role="strong">non-standard extension</emphasis>
-    of &cql;, and a
+    of &acro.cql;, and a
     <emphasis role="strong">very naughty</emphasis>
-    thing to do, but it does give you a way to see Zebra serving &sru;
+    thing to do, but it does give you a way to see Zebra serving &acro.sru;
     ``right out of the box''.  If you start your favourite Zebra
     server in the usual way, on port 9999, then you can send your web
     browser to:
@@ -236,20 +236,20 @@
      &amp;maximumRecords=1
    </screen>
    <para>
-    This will display the &xml;-formatted &sru; response that includes the
+    This will display the &acro.xml;-formatted &acro.sru; response that includes the
     first record in the result-set found by the query
-    <literal>mineral</literal>.  (For clarity, the &sru; URL is shown
+    <literal>mineral</literal>.  (For clarity, the &acro.sru; URL is shown
     here broken across lines, but the lines should be joined to gether
     to make single-line URL for the browser to submit.)
    </para>
   </note>
   <para>
-   In order to turn on Zebra's support for &cql; queries, it's necessary
+   In order to turn on Zebra's support for &acro.cql; queries, it's necessary
    to have the &yaz; generic front-end (which Zebra uses) translate them
-   into the &z3950; Type-1 query format that is used internally.  And
+   into the &acro.z3950; Type-1 query format that is used internally.  And
    to do this, the generic front-end's own configuration file must be
    used.  See <xref linkend="gfs-config"/>;
-   the salient point for &sru; support is that
+   the salient point for &acro.sru; support is that
    <command>zebrasrv</command>
    must be started with the
    <literal>-f&nbsp;frontendConfigFile</literal>
@@ -257,7 +257,7 @@
    <literal>-c&nbsp;zebraConfigFile</literal>
    option,
    and that the front-end configuration file must include both a
-   reference to the Zebra configuration file and the &cql;-to-&pqf;
+   reference to the Zebra configuration file and the &acro.cql;-to-&acro.pqf;
    translator configuration file.
   </para>
   <para>
@@ -281,13 +281,13 @@
    <literal>-c</literal>
    command-line argument, and the
    <literal>&lt;cql2rpn&gt;</literal>
-   element contains the name of the &cql; properties file specifying how
-   various &cql; indexes, relations, etc. are translated into Type-1
+   element contains the name of the &acro.cql; properties file specifying how
+   various &acro.cql; indexes, relations, etc. are translated into Type-1
    queries.
   </para>
   <para>
    A zebra server running with such a configuration can then be
-   queried using proper, conformant &sru; URLs with &cql; queries:
+   queried using proper, conformant &acro.sru; URLs with &acro.cql; queries:
   </para>
   <screen>
    http://localhost:9999/Default?version=1.1
@@ -299,107 +299,107 @@
   </refsect2>
  </refsect1>
  <refsect1 id="zebrasrv-sru-support">
-  <title>&sru; Protocol Support and Behavior</title>
+  <title>&acro.sru; Protocol Support and Behavior</title>
   <para>
-   Zebra running as an &sru; server supports SRU version 1.1, including
-   &cql; version 1.1.  In particular, it provides support for the
+   Zebra running as an &acro.sru; server supports SRU version 1.1, including
+   &acro.cql; version 1.1.  In particular, it provides support for the
    following elements of the protocol.
   </para>
   
   <refsect2 id="zebrasrvr-search-and-retrieval">
-   <title>&sru; Search and Retrieval</title>
+   <title>&acro.sru; Search and Retrieval</title>
    <para>
     Zebra supports the 
-    <ulink url="&url.sru.searchretrieve;">&sru; searchRetrieve</ulink>
+    <ulink url="&url.sru.searchretrieve;">&acro.sru; searchRetrieve</ulink>
     operation.
    </para>
    <para>
-    One of the great strengths of &sru; is that it mandates a standard
-    query language, &cql;, and that all conforming implementations can
+    One of the great strengths of &acro.sru; is that it mandates a standard
+    query language, &acro.cql;, and that all conforming implementations can
     therefore be trusted to correctly interpret the same queries.  It
     is with some shame, then, that we admit that Zebra also supports
     an additional query language, our own Prefix Query Format 
-    (<ulink url="&url.yaz.pqf;">&pqf;</ulink>).
-    A &pqf; query is submitted by using the extension parameter
+    (<ulink url="&url.yaz.pqf;">&acro.pqf;</ulink>).
+    A &acro.pqf; query is submitted by using the extension parameter
     <literal>x-pquery</literal>,
     in which case the
     <literal>query</literal>
-    parameter must be omitted, which makes the request not valid &sru;.
+    parameter must be omitted, which makes the request not valid &acro.sru;.
     Please feel free to use this facility within your own
-    applications; but be aware that it is not only non-standard &sru;
+    applications; but be aware that it is not only non-standard &acro.sru;
     but not even syntactically valid, since it omits the mandatory
     <literal>query</literal> parameter.
    </para>
   </refsect2>
   
   <refsect2 id="zebrasrv-sru-scan">
-   <title>&sru; Scan</title>
+   <title>&acro.sru; Scan</title>
    <para>
-    Zebra supports <ulink url="&url.sru.scan;">&sru; scan</ulink>
+    Zebra supports <ulink url="&url.sru.scan;">&acro.sru; scan</ulink>
     operation.
-    Scanning using &cql; syntax is the default, where the
+    Scanning using &acro.cql; syntax is the default, where the
     standard <literal>scanClause</literal> parameter is used.
    </para>
    <para>
     In addition, a
-    mutant form of &sru; scan is supported, using
+    mutant form of &acro.sru; scan is supported, using
     the non-standard <literal>x-pScanClause</literal> parameter in
     place of the standard <literal>scanClause</literal> to scan on a
-    &pqf; query clause.
+    &acro.pqf; query clause.
    </para>
   </refsect2>
 
   <refsect2 id="zebrasrv-sru-explain">
-   <title>&sru; Explain</title>
+   <title>&acro.sru; Explain</title>
    <para>
-    Zebra supports <ulink url="&url.sru.explain;">&sru; explain</ulink>.
+    Zebra supports <ulink url="&url.sru.explain;">&acro.sru; explain</ulink>.
    </para>
    <para>
     The ZeeRex record explaining a database may be requested either
-    with a fully fledged &sru; request (with
+    with a fully fledged &acro.sru; request (with
     <literal>operation</literal>=<literal>explain</literal>
     and version-number specified)
-    or with a simple HTTP &get; at the server's basename.
+    or with a simple HTTP &acro.get; at the server's basename.
     The ZeeRex record returned in response is the one embedded
     in the &yaz; Frontend Server configuration file that is described in the
     <xref linkend="gfs-config"/>.
    </para>
     <para>
      Unfortunately, the data found in the 
-    &cql;-to-&pqf; text file must be added by hand-craft into the explain
+    &acro.cql;-to-&acro.pqf; text file must be added by hand-craft into the explain
     section of the &yaz; Frontend Server configuration file to be able
     to provide a suitable explain record. 
     Too bad, but this is all extreme
     new alpha stuff, and a lot of work has yet to be done ..
    </para>
    <para>
-    There is no linkeage whatsoever between the &z3950; explain model
-    and the &sru; explain response (well, at least not implemented
+    There is no linkeage whatsoever between the &acro.z3950; explain model
+    and the &acro.sru; explain response (well, at least not implemented
     in Zebra, that is ..).  Zebra does not provide a means using
-    &z3950; to obtain the ZeeRex record.
+    &acro.z3950; to obtain the ZeeRex record.
    </para>
   </refsect2>
 
   <refsect2 id="zebrasrv-non-sru-ops">
-   <title>Other &sru; operations</title>
+   <title>Other &acro.sru; operations</title>
    <para>
-    In the &z3950; protocol, Initialization, Present, Sort and Close
-    are separate operations.  In &sru;, however, these operations do not
+    In the &acro.z3950; protocol, Initialization, Present, Sort and Close
+    are separate operations.  In &acro.sru;, however, these operations do not
     exist.
    </para>
    <itemizedlist>
     <listitem>
      <para>
-      &sru; has no explicit initialization handshake phase, but
+      &acro.sru; has no explicit initialization handshake phase, but
       commences immediately with searching, scanning and explain
       operations.
      </para>
     </listitem>
     <listitem>
      <para>
-      Neither does &sru; have a close operation, since the protocol is
+      Neither does &acro.sru; have a close operation, since the protocol is
       stateless and each request is self-contained.  (It is true that
-      multiple &sru; request/response pairs may be implemented as
+      multiple &acro.sru; request/response pairs may be implemented as
       multiple HTTP request/response pairs over a single persistent
       TCP/IP connection; but the closure of that connection is not a
       protocol-level operation.)
@@ -407,12 +407,12 @@
     </listitem>
     <listitem>
      <para>
-      Retrieval in &sru; is part of the
+      Retrieval in &acro.sru; is part of the
       <literal>searchRetrieve</literal> operation, in which a search
       is submitted and the response includes a subset of the records
-      in the result set.  There is no direct analogue of &z3950;'s
+      in the result set.  There is no direct analogue of &acro.z3950;'s
       Present operation which requests records from an established
-      result set.  In &sru;, this is achieved by sending a subsequent
+      result set.  In &acro.sru;, this is achieved by sending a subsequent
       <literal>searchRetrieve</literal> request with the query
       <literal>cql.resultSetId=</literal><emphasis>id</emphasis> where 
       <emphasis>id</emphasis> is the identifier of the previously
@@ -421,24 +421,24 @@
     </listitem>
     <listitem>
      <para>
-      Sorting in &cql; is done within the
+      Sorting in &acro.cql; is done within the
       <literal>searchRetrieve</literal> operation - in v1.1, by an
       explicit <literal>sort</literal> parameter, but the forthcoming
       v1.2 or v2.0 will most likely use an extension of the query
-      language, <ulink url="&url.cql.sorting;">&cql; sorting</ulink>.
+      language, <ulink url="&url.cql.sorting;">&acro.cql; sorting</ulink>.
      </para>
     </listitem>
    </itemizedlist>
    <para>
-    It can be seen, then, that while Zebra operating as an &sru; server
+    It can be seen, then, that while Zebra operating as an &acro.sru; server
     does not provide the same set of operations as when operating as a
-    &z3950; server, it does provide equivalent functionality.
+    &acro.z3950; server, it does provide equivalent functionality.
    </para>
   </refsect2>
  </refsect1>
   
  <refsect1 id="zebrasrv-sru-examples">
-   <title>&sru; Examples</title>
+   <title>&acro.sru; Examples</title>
     <para>
     Surf into <literal>http://localhost:9999</literal>
      to get an explain response, or use
@@ -462,7 +462,7 @@
      ]]></screen>
    </para>
    <para>
-    Even search using &pqf; queries using the <emphasis>extended naughty 
+    Even search using &acro.pqf; queries using the <emphasis>extended naughty 
      parameter</emphasis> <literal>x-pquery</literal>
     <screen><![CDATA[
       http://localhost:9999/?version=1.1&operation=searchRetrieve

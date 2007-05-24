@@ -1,12 +1,12 @@
 <chapter id="record-model-alvisxslt">
-  <!-- $Id: recordmodel-alvisxslt.xml,v 1.18 2007-03-07 13:05:20 marc Exp $ -->
-  <title>ALVIS &xml; Record Model and Filter Module</title>
+  <!-- $Id: recordmodel-alvisxslt.xml,v 1.19 2007-05-24 13:44:09 adam Exp $ -->
+  <title>ALVIS &acro.xml; Record Model and Filter Module</title>
 
      <warning>
       <para>
         The functionality of this record model has been improved and
-        replaced by the DOM &xml; record model, see 
-        <xref linkend="record-model-domxml"/>.  The Alvis &xml; record
+        replaced by the DOM &acro.xml; record model, see 
+        <xref linkend="record-model-domxml"/>.  The Alvis &acro.xml; record
         model is considered obsolete, and will eventually be removed
         from future releases of the &zebra; software. 
       </para>
@@ -14,7 +14,7 @@
 
   <para>
    The record model described in this chapter applies to the fundamental,
-   structured &xml;
+   structured &acro.xml;
    record type <literal>alvis</literal>, introduced in
    <xref linkend="componentmodulesalvis"/>.
   </para>
@@ -29,7 +29,7 @@
   <section id="record-model-alvisxslt-filter">
    <title>ALVIS Record Filter</title>
    <para>
-    The experimental, loadable  Alvis &xml;/&xslt; filter module
+    The experimental, loadable  Alvis &acro.xml;/&acro.xslt; filter module
    <literal>mod-alvis.so</literal> is packaged in the GNU/Debian package
     <literal>libidzebra1.4-mod-alvis</literal>.
     It is invoked by the <filename>zebra.cfg</filename> configuration statement
@@ -38,12 +38,12 @@
     </screen>
     In this example on all data files with suffix 
     <filename>*.xml</filename>, where the
-    Alvis &xslt; filter configuration file is found in the
+    Alvis &acro.xslt; filter configuration file is found in the
     path <filename>db/filter_alvis_conf.xml</filename>.
    </para>
-   <para>The Alvis &xslt; filter configuration file must be
-    valid &xml;. It might look like this (This example is
-    used for indexing and display of &oai; harvested records):
+   <para>The Alvis &acro.xslt; filter configuration file must be
+    valid &acro.xml;. It might look like this (This example is
+    used for indexing and display of &acro.oai; harvested records):
     <screen>
     &lt;?xml version="1.0" encoding="UTF-8"?&gt;
       &lt;schemaInfo&gt;
@@ -51,7 +51,7 @@
         &lt;schema name="index" identifier="http://indexdata.dk/zebra/xslt/1"
             stylesheet="xsl/oai2index.xsl" /&gt;
         &lt;schema name="dc" stylesheet="xsl/oai2dc.xsl" /&gt;
-        &lt;!-- use split level 2 when indexing whole &oai; Record lists --&gt;
+        &lt;!-- use split level 2 when indexing whole &acro.oai; Record lists --&gt;
         &lt;split level="2"/&gt;
       &lt;/schemaInfo&gt;
     </screen> 
@@ -64,47 +64,47 @@
     names defined in the <literal>name</literal> attributes must be
     unique, these are the literal <literal>schema</literal> or 
     <literal>element set</literal> names used in 
-      <ulink url="http://www.loc.gov/standards/sru/srw/">&srw;</ulink>,
-      <ulink url="&url.sru;">&sru;</ulink> and
-    &z3950; protocol queries.
+      <ulink url="http://www.loc.gov/standards/sru/srw/">&acro.srw;</ulink>,
+      <ulink url="&url.sru;">&acro.sru;</ulink> and
+    &acro.z3950; protocol queries.
     The paths in the <literal>stylesheet</literal> attributes
     are relative to zebras working directory, or absolute to file
     system root.
    </para>
    <para>
     The <literal>&lt;split level="2"/&gt;</literal> decides where the
-    &xml; Reader shall split the
+    &acro.xml; Reader shall split the
     collections of records into individual records, which then are
-    loaded into &dom;, and have the indexing &xslt; stylesheet applied.
+    loaded into &acro.dom;, and have the indexing &acro.xslt; stylesheet applied.
    </para>
    <para>
-    There must be exactly one indexing &xslt; stylesheet, which is
+    There must be exactly one indexing &acro.xslt; stylesheet, which is
     defined by the magic attribute  
     <literal>identifier="http://indexdata.dk/zebra/xslt/1"</literal>.
    </para>
 
    <section id="record-model-alvisxslt-internal">
     <title>ALVIS Internal Record Representation</title>   
-    <para>When indexing, an &xml; Reader is invoked to split the input
-    files into suitable record &xml; pieces. Each record piece is then
-    transformed to an &xml; &dom; structure, which is essentially the
-    record model. Only &xslt; transformations can be applied during
+    <para>When indexing, an &acro.xml; Reader is invoked to split the input
+    files into suitable record &acro.xml; pieces. Each record piece is then
+    transformed to an &acro.xml; &acro.dom; structure, which is essentially the
+    record model. Only &acro.xslt; transformations can be applied during
     index, search and retrieval. Consequently, output formats are
-    restricted to whatever &xslt; can deliver from the record &xml;
-    structure, be it other &xml; formats, HTML, or plain text. In case
-    you have <literal>libxslt1</literal> running with E&xslt; support,
+    restricted to whatever &acro.xslt; can deliver from the record &acro.xml;
+    structure, be it other &acro.xml; formats, HTML, or plain text. In case
+    you have <literal>libxslt1</literal> running with E&acro.xslt; support,
     you can use this functionality inside the Alvis
-    filter configuration &xslt; stylesheets.
+    filter configuration &acro.xslt; stylesheets.
     </para>
    </section>
 
    <section id="record-model-alvisxslt-canonical">
     <title>ALVIS Canonical Indexing Format</title>   
-    <para>The output of the indexing &xslt; stylesheets must contain
+    <para>The output of the indexing &acro.xslt; stylesheets must contain
     certain elements in the magic 
      <literal>xmlns:z="http://indexdata.dk/zebra/xslt/1"</literal>
-    namespace. The output of the &xslt; indexing transformation is then
-    parsed using &dom; methods, and the contained instructions are
+    namespace. The output of the &acro.xslt; indexing transformation is then
+    parsed using &acro.dom; methods, and the contained instructions are
     performed on the <emphasis>magic elements and their
     subtrees</emphasis>.
     </para>
@@ -133,10 +133,10 @@
      &lt;/z:record&gt;
      </screen>
     </para>
-    <para>This means the following: From the original &xml; file 
-     <literal>one-record.xml</literal> (or from the &xml; record &dom; of the
+    <para>This means the following: From the original &acro.xml; file 
+     <literal>one-record.xml</literal> (or from the &acro.xml; record &acro.dom; of the
      same form coming from a split input file), the indexing
-     stylesheet produces an indexing &xml; record, which is defined by
+     stylesheet produces an indexing &acro.xml; record, which is defined by
      the <literal>record</literal> element in the magic namespace
      <literal>xmlns:z="http://indexdata.dk/zebra/xslt/1"</literal>.
      &zebra; uses the content of 
@@ -193,8 +193,8 @@
      the same character normalization map <literal>w</literal>. 
     </para>
     <para>
-     Finally, this example configuration can be queried using &pqf;
-     queries, either transported by &z3950;, (here using a yaz-client) 
+     Finally, this example configuration can be queried using &acro.pqf;
+     queries, either transported by &acro.z3950;, (here using a yaz-client) 
      <screen>
       <![CDATA[
       Z> open localhost:9999
@@ -211,21 +211,21 @@
      or the proprietary
      extensions <literal>x-pquery</literal> and
      <literal>x-pScanClause</literal> to
-     &sru;, and &srw;
+     &acro.sru;, and &acro.srw;
      <screen>
       <![CDATA[
       http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=%40attr+1%3Ddc_creator+%40attr+4%3D6+%22the
       http://localhost:9999/?version=1.1&operation=scan&x-pScanClause=@attr+1=dc_date+@attr+4=2+a
       ]]>
      </screen>
-     See <xref linkend="zebrasrv-sru"/> for more information on &sru;/&srw;
+     See <xref linkend="zebrasrv-sru"/> for more information on &acro.sru;/&acro.srw;
      configuration, and <xref linkend="gfs-config"/> or the &yaz;
-     <ulink url="&url.yaz.cql;">&cql; section</ulink>
+     <ulink url="&url.yaz.cql;">&acro.cql; section</ulink>
      for the details or the &yaz; frontend server.
     </para>
     <para>
      Notice that there are no <filename>*.abs</filename>,
-     <filename>*.est</filename>, <filename>*.map</filename>, or other &grs1;
+     <filename>*.est</filename>, <filename>*.map</filename>, or other &acro.grs1;
      filter configuration files involves in this process, and that the
      literal index names are used during search and retrieval.
     </para>
@@ -242,7 +242,7 @@
     <para>
      As mentioned above, there can be only one indexing
      stylesheet, and configuration of the indexing process is a synonym
-     of writing an &xslt; stylesheet which produces &xml; output containing the
+     of writing an &acro.xslt; stylesheet which produces &acro.xml; output containing the
      magic elements discussed in  
      <xref linkend="record-model-alvisxslt-internal"/>. 
      Obviously, there are million of different ways to accomplish this
@@ -252,30 +252,30 @@
     <para>
      Stylesheets can be written in the <emphasis>pull</emphasis> or
      the <emphasis>push</emphasis> style: <emphasis>pull</emphasis>
-     means that the output &xml; structure is taken as starting point of
-     the internal structure of the &xslt; stylesheet, and portions of
-     the input &xml; are <emphasis>pulled</emphasis> out and inserted
-     into the right spots of the output &xml; structure. On the other
-     side, <emphasis>push</emphasis> &xslt; stylesheets are recursively
+     means that the output &acro.xml; structure is taken as starting point of
+     the internal structure of the &acro.xslt; stylesheet, and portions of
+     the input &acro.xml; are <emphasis>pulled</emphasis> out and inserted
+     into the right spots of the output &acro.xml; structure. On the other
+     side, <emphasis>push</emphasis> &acro.xslt; stylesheets are recursively
      calling their template definitions, a process which is commanded
-     by the input &xml; structure, and are triggered to produce some output &xml;
+     by the input &acro.xml; structure, and are triggered to produce some output &acro.xml;
      whenever some special conditions in the input stylesheets are
      met. The <emphasis>pull</emphasis> type is well-suited for input
-     &xml; with strong and well-defined structure and semantics, like the
-     following &oai; indexing example, whereas the
+     &acro.xml; with strong and well-defined structure and semantics, like the
+     following &acro.oai; indexing example, whereas the
      <emphasis>push</emphasis> type might be the only possible way to
-     sort out deeply recursive input &xml; formats.
+     sort out deeply recursive input &acro.xml; formats.
     </para>
     <para> 
      A <emphasis>pull</emphasis> stylesheet example used to index
-     &oai; harvested records could use some of the following template
+     &acro.oai; harvested records could use some of the following template
      definitions:
      <screen>
       <![CDATA[
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
        xmlns:z="http://indexdata.dk/zebra/xslt/1"
-       xmlns:oai="http://www.openarchives.org/&oai;/2.0/" 
-       xmlns:oai_dc="http://www.openarchives.org/&oai;/2.0/oai_dc/" 
+       xmlns:oai="http://www.openarchives.org/&acro.oai;/2.0/" 
+       xmlns:oai_dc="http://www.openarchives.org/&acro.oai;/2.0/oai_dc/" 
        xmlns:dc="http://purl.org/dc/elements/1.1/"
        version="1.0">
 
@@ -287,12 +287,12 @@
          <!-- match on oai xml record root -->
          <xsl:template match="/">    
           <z:record z:id="{normalize-space(oai:record/oai:header/oai:identifier)}">
-           <!-- you might want to use z:rank="{some &xslt; function here}" --> 
+           <!-- you might want to use z:rank="{some &acro.xslt; function here}" --> 
            <xsl:apply-templates/>
           </z:record>
          </xsl:template>
 
-         <!-- &oai; indexing templates -->
+         <!-- &acro.oai; indexing templates -->
          <xsl:template match="oai:record/oai:header/oai:identifier">
           <z:index name="oai_identifier" type="0">
            <xsl:value-of select="."/>
@@ -317,17 +317,17 @@
     <para>
      Notice also,
      that the names and types of the indexes can be defined in the
-     indexing &xslt; stylesheet <emphasis>dynamically according to
-     content in the original &xml; records</emphasis>, which has
+     indexing &acro.xslt; stylesheet <emphasis>dynamically according to
+     content in the original &acro.xml; records</emphasis>, which has
      opportunities for great power and wizardry as well as grande
      disaster.  
     </para>
     <para>
      The following excerpt of a <emphasis>push</emphasis> stylesheet
      <emphasis>might</emphasis> 
-     be a good idea according to your strict control of the &xml;
+     be a good idea according to your strict control of the &acro.xml;
      input format (due to rigorous checking against well-defined and
-     tight RelaxNG or &xml; Schema's, for example):
+     tight RelaxNG or &acro.xml; Schema's, for example):
      <screen>
       <![CDATA[
       <xsl:template name="element-name-indexes">     
@@ -338,11 +338,11 @@
       ]]>
      </screen>
      This template creates indexes which have the name of the working 
-     node of any input  &xml; file, and assigns a '1' to the index.
+     node of any input  &acro.xml; file, and assigns a '1' to the index.
      The example query 
      <literal>find @attr 1=xyz 1</literal> 
      finds all files which contain at least one
-     <literal>xyz</literal> &xml; element. In case you can not control
+     <literal>xyz</literal> &acro.xml; element. In case you can not control
      which element names the input files contain, you might ask for
      disaster and bad karma using this technique.
     </para>
@@ -380,15 +380,15 @@
    <title>ALVIS Exchange Formats</title>
    <para>
      An exchange format can be anything which can be the outcome of an
-     &xslt; transformation, as far as the stylesheet is registered in
-     the main Alvis &xslt; filter configuration file, see
+     &acro.xslt; transformation, as far as the stylesheet is registered in
+     the main Alvis &acro.xslt; filter configuration file, see
      <xref linkend="record-model-alvisxslt-filter"/>.
-     In principle anything that can be expressed in  &xml;, HTML, and
+     In principle anything that can be expressed in  &acro.xml;, HTML, and
      TEXT can be the output of a <literal>schema</literal> or 
     <literal>element set</literal> directive during search, as long as
      the information comes from the 
-     <emphasis>original input record &xml; &dom; tree</emphasis>
-     (and not the transformed and <emphasis>indexed</emphasis> &xml;!!).
+     <emphasis>original input record &acro.xml; &acro.dom; tree</emphasis>
+     (and not the transformed and <emphasis>indexed</emphasis> &acro.xml;!!).
     </para>
     <para>
      In addition, internal administrative information from the &zebra;
@@ -426,15 +426,15 @@
   </section>
 
   <section id="record-model-alvisxslt-example">
-   <title>ALVIS Filter &oai; Indexing Example</title>
+   <title>ALVIS Filter &acro.oai; Indexing Example</title>
    <para>
      The source code tarball contains a working Alvis filter example in
      the directory <filename>examples/alvis-oai/</filename>, which
      should get you started.  
     </para>
     <para>
-     More example data can be harvested from any &oai; compliant server,
-     see details at the  &oai; 
+     More example data can be harvested from any &acro.oai; compliant server,
+     see details at the  &acro.oai; 
      <ulink url="http://www.openarchives.org/">
       http://www.openarchives.org/</ulink> web site, and the community
       links at 

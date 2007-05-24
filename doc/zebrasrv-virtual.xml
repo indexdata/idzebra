@@ -1,5 +1,5 @@
 <!-- 
-   $Id: zebrasrv-virtual.xml,v 1.9 2007-02-02 11:10:08 marc Exp $
+   $Id: zebrasrv-virtual.xml,v 1.10 2007-05-24 13:44:09 adam Exp $
    Description of the virtual host mechanism in &yaz; GFS
    Included in both manual and man page for yaz-ztest
 -->
@@ -11,27 +11,27 @@
 </para>
 <para>
  A backend can be configured to execute in a particular working
- directory. Or the &yaz; frontend may perform <ulink url="&url.cql;">&cql;</ulink> to &rpn; conversion, thus
- allowing traditional &z3950; backends to be offered as a  
-<ulink url="&url.sru;">&sru;</ulink> service. 
- &sru; Explain information for a particular backend may also be specified.
+ directory. Or the &yaz; frontend may perform <ulink url="&url.cql;">&acro.cql;</ulink> to &acro.rpn; conversion, thus
+ allowing traditional &acro.z3950; backends to be offered as a  
+<ulink url="&url.sru;">&acro.sru;</ulink> service. 
+ &acro.sru; Explain information for a particular backend may also be specified.
 </para>
 <para>
  For the HTTP protocol, the virtual host is specified in the Host header.
- For the &z3950; protocol, the virtual host is specified as in the
+ For the &acro.z3950; protocol, the virtual host is specified as in the
  Initialize Request in the OtherInfo, OID 1.2.840.10003.10.1000.81.1.
 </para>
 <note>
  <para>
-  Not all &z3950; clients allows the VHOST information to be set.
+  Not all &acro.z3950; clients allows the VHOST information to be set.
   For those the selection of the backend must rely on the
   TCP/IP information alone (port and address).
  </para>
 </note>
 <para>
- The &yaz; frontend server uses &xml; to describe the backend
+ The &yaz; frontend server uses &acro.xml; to describe the backend
  configurations. Command-line option <literal>-f</literal> 
- specifies filename of the &xml; configuration.
+ specifies filename of the &acro.xml; configuration.
 </para>
 <para>
  The configuration uses the root element <literal>yazgfs</literal>.
@@ -128,9 +128,9 @@
   <varlistentry><term>element <literal>cql2rpn</literal> (optional)</term>
    <listitem>
     <para>
-     Specifies a filename that includes <ulink url="&url.cql;">&cql;</ulink> to &rpn; conversion for this
-     backend server. See <ulink url="&url.cql;">&cql;</ulink> section in &yaz; manual.
-     If given, the backend server will only "see" a Type-1/&rpn; query. 
+     Specifies a filename that includes <ulink url="&url.cql;">&acro.cql;</ulink> to &acro.rpn; conversion for this
+     backend server. See <ulink url="&url.cql;">&acro.cql;</ulink> section in &yaz; manual.
+     If given, the backend server will only "see" a Type-1/&acro.rpn; query. 
     </para>
    </listitem>
   </varlistentry>
@@ -138,7 +138,7 @@
   <varlistentry><term>element <literal>explain</literal> (optional)</term>
    <listitem>
     <para>
-     Specifies <ulink url="&url.sru;">&sru;</ulink> ZeeRex content for this
+     Specifies <ulink url="&url.sru;">&acro.sru;</ulink> ZeeRex content for this
      server - copied verbatim to the client.
      As things are now, some of the Explain content seems redundant
      because host information, etc. is also stored elsewhere.
@@ -154,7 +154,7 @@
 </para>
  
 <para>
- The &xml; below configures a server that accepts connections from
+ The &acro.xml; below configures a server that accepts connections from
  two ports, TCP/IP port 9900 and a local UNIX file socket.
  We name the TCP/IP server <literal>public</literal> and the
  other server <literal>internal</literal>.
@@ -200,7 +200,7 @@
 </para>
 <para>
  For <literal>"server2"</literal> elements for 
-<ulink url="&url.cql;">&cql;</ulink> to &rpn; conversion
+<ulink url="&url.cql;">&acro.cql;</ulink> to &acro.rpn; conversion
  is supported and explain information has been added (a short one here
  to keep the example small).
 </para>

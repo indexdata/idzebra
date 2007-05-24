@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.21 2007-02-20 14:28:31 marc Exp $ -->
+  <!-- $Id: architecture.xml,v 1.22 2007-05-24 13:44:09 adam Exp $ -->
   <title>Overview of &zebra; Architecture</title>
 
   <section id="architecture-representation">
@@ -87,9 +87,9 @@
       <varlistentry>
        <term>Search Evaluation</term>
        <listitem>
-        <para>by execution of search requests expressed in &pqf;/&rpn;
+        <para>by execution of search requests expressed in &acro.pqf;/&acro.rpn;
          data structures, which are handed over from
-         the &yaz; server frontend &api;. Search evaluation includes
+         the &yaz; server frontend &acro.api;. Search evaluation includes
          construction of hit lists according to boolean combinations
          of simpler searches. Fast performance is achieved by careful
          use of index structures, and by evaluation specific index hit
@@ -112,7 +112,7 @@
        <term>Record Presentation</term>
        <listitem>
         <para>returns - possibly ranked - result sets, hit
-         numbers, and the like internal data to the &yaz; server backend &api;
+         numbers, and the like internal data to the &yaz; server backend &acro.api;
          for shipping to the client. Each individual filter module
          implements it's own specific presentation formats.
         </para>
@@ -149,7 +149,7 @@
    <section id="componentsearcher">
     <title>&zebra; Searcher/Retriever</title>
     <para>
-     This is the executable which runs the &z3950;/&sru;/&srw; server and
+     This is the executable which runs the &acro.z3950;/&acro.sru;/&acro.srw; server and
      glues together the core libraries and the filter modules to one
      great Information Retrieval server application. 
     </para>    
@@ -163,21 +163,21 @@
     <title>&yaz; Server Frontend</title>
     <para>
      The &yaz; server frontend is 
-     a full fledged stateful &z3950; server taking client
+     a full fledged stateful &acro.z3950; server taking client
      connections, and forwarding search and scan requests to the 
      &zebra; core indexer.
     </para>
     <para>
-     In addition to &z3950; requests, the &yaz; server frontend acts
+     In addition to &acro.z3950; requests, the &yaz; server frontend acts
      as HTTP server, honoring
-      <ulink url="&url.srw;">&sru; &soap;</ulink> 
+      <ulink url="&url.srw;">&acro.sru; &acro.soap;</ulink> 
      requests, and  
-     <ulink url="&url.sru;">&sru; &rest;</ulink> 
+     <ulink url="&url.sru;">&acro.sru; &acro.rest;</ulink> 
      requests. Moreover, it can
      translate incoming 
-     <ulink url="&url.cql;">&cql;</ulink>
+     <ulink url="&url.cql;">&acro.cql;</ulink>
      queries to
-     <ulink url="&url.yaz.pqf;">&pqf;</ulink>
+     <ulink url="&url.yaz.pqf;">&acro.pqf;</ulink>
       queries, if
      correctly configured. 
     </para>
@@ -185,7 +185,7 @@
      <ulink url="&url.yaz;">&yaz;</ulink>
      is an Open Source  
      toolkit that allows you to develop software using the
-     &ansi; &z3950;/ISO23950 standard for information retrieval.
+     &acro.ansi; &acro.z3950;/ISO23950 standard for information retrieval.
      It is packaged in the Debian packages     
      <literal>yaz</literal> and <literal>libyaz</literal>.
     </para>
@@ -208,21 +208,21 @@
     </para>
 
    <section id="componentmodulesdom">
-    <title>&dom; &xml; Record Model and Filter Module</title>
+    <title>&acro.dom; &acro.xml; Record Model and Filter Module</title>
      <para>
-      The &dom; &xml; filter uses a standard &dom; &xml; structure as
+      The &acro.dom; &acro.xml; filter uses a standard &acro.dom; &acro.xml; structure as
       internal data model, and can thus parse, index, and display 
-      any &xml; document.
+      any &acro.xml; document.
     </para>
     <para>
-      A parser for binary &marc; records based on the ISO2709 library
+      A parser for binary &acro.marc; records based on the ISO2709 library
       standard is provided, it transforms these to the internal
-      &marcxml; &dom; representation.  
+      &acro.marcxml; &acro.dom; representation.  
     </para>
     <para>
-      The internal &dom; &xml; representation can be fed into four
+      The internal &acro.dom; &acro.xml; representation can be fed into four
       different pipelines, consisting of arbitraily many sucessive
-      &xslt; transformations; these are for  
+      &acro.xslt; transformations; these are for  
      <itemizedlist>
        <listitem><para>input parsing and initial
           transformations,</para></listitem>
@@ -235,55 +235,55 @@
       </itemizedlist>
     </para>
     <para>
-      The &dom; &xml; filter pipelines use &xslt; (and if  supported on
-      your platform, even &exslt;), it brings thus full &xpath;
+      The &acro.dom; &acro.xml; filter pipelines use &acro.xslt; (and if  supported on
+      your platform, even &acro.exslt;), it brings thus full &acro.xpath;
       support to the indexing, storage and display rules of not only
-      &xml; documents, but also binary &marc; records.
+      &acro.xml; documents, but also binary &acro.marc; records.
     </para>
     <para>
-      Finally, the &dom; &xml; filter allows for static ranking at index
+      Finally, the &acro.dom; &acro.xml; filter allows for static ranking at index
       time, and to to sort hit lists according to predefined
       static ranks.
     </para>
     <para>
-      Details on the experimental &dom; &xml; filter are found in 
+      Details on the experimental &acro.dom; &acro.xml; filter are found in 
       <xref linkend="record-model-domxml"/>.
       </para>
      <para>
       The Debian package <literal>libidzebra-2.0-mod-dom</literal>
-      contains the &dom; filter module.
+      contains the &acro.dom; filter module.
      </para>
     </section>
 
    <section id="componentmodulesalvis">
-    <title>ALVIS &xml; Record Model and Filter Module</title>
+    <title>ALVIS &acro.xml; Record Model and Filter Module</title>
      <note>
       <para>
         The functionality of this record model has been improved and
-        replaced by the &dom; &xml; record model. See 
+        replaced by the &acro.dom; &acro.xml; record model. See 
         <xref linkend="componentmodulesdom"/>.
       </para>
      </note>
 
      <para>
-      The Alvis filter for &xml; files is an &xslt; based input
+      The Alvis filter for &acro.xml; files is an &acro.xslt; based input
       filter. 
-      It indexes element and attribute content of any thinkable &xml; format
-      using full &xpath; support, a feature which the standard &zebra;
-      &grs1; &sgml; and &xml; filters lacked. The indexed documents are
-      parsed into a standard &xml; &dom; tree, which restricts record size
+      It indexes element and attribute content of any thinkable &acro.xml; format
+      using full &acro.xpath; support, a feature which the standard &zebra;
+      &acro.grs1; &acro.sgml; and &acro.xml; filters lacked. The indexed documents are
+      parsed into a standard &acro.xml; &acro.dom; tree, which restricts record size
       according to availability of memory.
     </para>
     <para>
       The Alvis filter 
-      uses &xslt; display stylesheets, which let
+      uses &acro.xslt; display stylesheets, which let
       the &zebra; DB administrator associate multiple, different views on
-      the same &xml; document type. These views are chosen on-the-fly in
+      the same &acro.xml; document type. These views are chosen on-the-fly in
       search time.
      </para>
     <para>
       In addition, the Alvis filter configuration is not bound to the
-      arcane  &bib1; &z3950; library catalogue indexing traditions and
+      arcane  &acro.bib1; &acro.z3950; library catalogue indexing traditions and
       folklore, and is therefore easier to understand.
     </para>
     <para>
@@ -296,7 +296,7 @@
       their Pagerank algorithm.
     </para>
     <para>
-      Details on the experimental Alvis &xslt; filter are found in 
+      Details on the experimental Alvis &acro.xslt; filter are found in 
       <xref linkend="record-model-alvisxslt"/>.
       </para>
      <para>
@@ -306,34 +306,34 @@
     </section>
 
    <section id="componentmodulesgrs">
-    <title>&grs1; Record Model and Filter Modules</title>
+    <title>&acro.grs1; Record Model and Filter Modules</title>
      <note>
       <para>
         The functionality of this record model has been improved and
-        replaced by the &dom; &xml; record model. See 
+        replaced by the &acro.dom; &acro.xml; record model. See 
         <xref linkend="componentmodulesdom"/>.
       </para>
      </note>
     <para>
-    The &grs1; filter modules described in 
+    The &acro.grs1; filter modules described in 
     <xref linkend="grs"/>
-    are all based on the &z3950; specifications, and it is absolutely
-    mandatory to have the reference pages on &bib1; attribute sets on
-    you hand when configuring &grs1; filters. The GRS filters come in
+    are all based on the &acro.z3950; specifications, and it is absolutely
+    mandatory to have the reference pages on &acro.bib1; attribute sets on
+    you hand when configuring &acro.grs1; filters. The GRS filters come in
     different flavors, and a short introduction is needed here.
-    &grs1; filters of various kind have also been called ABS filters due
+    &acro.grs1; filters of various kind have also been called ABS filters due
     to the <filename>*.abs</filename> configuration file suffix.
     </para>
     <para>
       The <emphasis>grs.marc</emphasis> and 
       <emphasis>grs.marcxml</emphasis> filters are suited to parse and
-      index binary and &xml; versions of traditional library &marc; records 
+      index binary and &acro.xml; versions of traditional library &acro.marc; records 
       based on the ISO2709 standard. The Debian package for both
       filters is 
      <literal>libidzebra-2.0-mod-grs-marc</literal>.
     </para>
     <para>
-      &grs1; TCL scriptable filters for extensive user configuration come
+      &acro.grs1; TCL scriptable filters for extensive user configuration come
      in two flavors: a regular expression filter 
      <emphasis>grs.regx</emphasis> using TCL regular expressions, and
      a general scriptable TCL filter called 
@@ -342,7 +342,7 @@
      <literal>libidzebra-2.0-mod-grs-regx</literal> Debian package.
     </para>
     <para>
-      A general purpose &sgml; filter is called
+      A general purpose &acro.sgml; filter is called
      <emphasis>grs.sgml</emphasis>. This filter is not yet packaged,
      but planned to be in the  
      <literal>libidzebra-2.0-mod-grs-sgml</literal> Debian package.
@@ -352,8 +352,8 @@
       <literal>libidzebra-2.0-mod-grs-xml</literal> includes the 
       <emphasis>grs.xml</emphasis> filter which uses <ulink
       url="&url.expat;">Expat</ulink> to 
-      parse records in &xml; and turn them into ID&zebra;'s internal &grs1; node
-      trees. Have also a look at the Alvis &xml;/&xslt; filter described in
+      parse records in &acro.xml; and turn them into ID&zebra;'s internal &acro.grs1; node
+      trees. Have also a look at the Alvis &acro.xml;/&acro.xslt; filter described in
       the next session.
     </para>
    </section>
@@ -394,8 +394,8 @@
      
      <para>
       When records are accessed by the system, they are represented
-      in their local, or native format. This might be &sgml; or HTML files,
-      News or Mail archives, &marc; records. If the system doesn't already
+      in their local, or native format. This might be &acro.sgml; or HTML files,
+      News or Mail archives, &acro.marc; records. If the system doesn't already
       know how to read the type of data you need to store, you can set up an
       input filter by preparing conversion rules based on regular
       expressions and possibly augmented by a flexible scripting language
@@ -422,7 +422,7 @@
      <para>
       Before transmitting records to the client, they are first
       converted from the internal structure to a form suitable for exchange
-      over the network - according to the &z3950; standard.
+      over the network - according to the &acro.z3950; standard.
      </para>
     </listitem>
 
@@ -444,7 +444,7 @@
     In particular, the regular record filters are not invoked when
     these are in use.
     This can in some cases make the retrival faster than regular
-    retrieval operations (for &marc;, &xml; etc).
+    retrieval operations (for &acro.marc;, &acro.xml; etc).
    </para>
    <table id="special-retrieval-types">
     <title>Special Retrieval Elements</title>
@@ -460,7 +460,7 @@
       <row>
        <entry><literal>zebra::meta::sysno</literal></entry>
        <entry>Get &zebra; record system ID</entry>
-       <entry>&xml; and &sutrs;</entry>
+       <entry>&acro.xml; and &acro.sutrs;</entry>
       </row>
       <row>
        <entry><literal>zebra::data</literal></entry>
@@ -470,12 +470,12 @@
       <row>
        <entry><literal>zebra::meta</literal></entry>
        <entry>Get &zebra; record internal metadata</entry>
-       <entry>&xml; and &sutrs;</entry>
+       <entry>&acro.xml; and &acro.sutrs;</entry>
       </row>
       <row>
        <entry><literal>zebra::index</literal></entry>
        <entry>Get all indexed keys for record</entry>
-       <entry>&xml; and &sutrs;</entry>
+       <entry>&acro.xml; and &acro.sutrs;</entry>
       </row>
       <row>
        <entry>
@@ -484,7 +484,7 @@
        <entry>
 	Get indexed keys for field <replaceable>f</replaceable>	for record
        </entry>
-       <entry>&xml; and &sutrs;</entry>
+       <entry>&acro.xml; and &acro.sutrs;</entry>
       </row>
       <row>
        <entry>
@@ -494,7 +494,7 @@
 	Get indexed keys for field <replaceable>f</replaceable>
 	  and type <replaceable>t</replaceable> for record
        </entry>
-       <entry>&xml; and &sutrs;</entry>
+       <entry>&acro.xml; and &acro.sutrs;</entry>
       </row>
      </tbody>
     </tgroup>
@@ -529,7 +529,7 @@
       Z> elements zebra::meta::sysno
       Z> s 1+1
     </screen> 
-    displays in <literal>&xml;</literal> record syntax only internal
+    displays in <literal>&acro.xml;</literal> record syntax only internal
     record system number, whereas 
     <screen>
       Z> f @attr 1=title my
@@ -560,7 +560,7 @@
       Z> s 1+1
     </screen>
     will display all indexed tokens from all indexed fields of the
-    first record, and it will display in <literal>&sutrs;</literal>
+    first record, and it will display in <literal>&acro.sutrs;</literal>
     record syntax, whereas 
     <screen>
       Z> f @attr 1=title my
@@ -570,13 +570,13 @@
       Z> elements zebra::index::title:p
       Z> s 1+1
     </screen> 
-    displays in <literal>&xml;</literal> record syntax only the content
+    displays in <literal>&acro.xml;</literal> record syntax only the content
       of the zebra string index <literal>title</literal>, or
       even only the type <literal>p</literal> phrase indexed part of it.
    </para>
    <note>
     <para>
-     Trying to access numeric <literal>&bib1;</literal> use
+     Trying to access numeric <literal>&acro.bib1;</literal> use
      attributes or trying to access non-existent zebra intern string
      access points will result in a Diagnostic 25: Specified element set
      'name not valid for specified database.

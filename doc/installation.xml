@@ -1,8 +1,8 @@
-<!-- $Id: installation.xml,v 1.35 2007-02-02 11:10:08 marc Exp $ -->
+<!-- $Id: installation.xml,v 1.36 2007-05-24 13:44:09 adam Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
-   &zebra; is written in &ansi; C and was implemented with portability in mind. 
+   &zebra; is written in &acro.ansi; C and was implemented with portability in mind. 
    We primarily use <ulink url="&url.gcc;">GCC</ulink> on UNIX and 
    <ulink url="&url.vstudio;">Microsoft Visual C++</ulink> on Windows.
   </para>
@@ -30,8 +30,8 @@
       (required)</term>
      <listitem>
       <para>
-       &zebra; uses &yaz; to support <ulink url="&url.z39.50;">&z3950;</ulink> / 
-	<ulink url="&url.sru;">&sru;</ulink>.
+       &zebra; uses &yaz; to support <ulink url="&url.z39.50;">&acro.z3950;</ulink> / 
+	<ulink url="&url.sru;">&acro.sru;</ulink>.
 	Also the memory management utilites from &yaz; is used by &zebra;.
       </para>
      </listitem>
@@ -52,7 +52,7 @@
       (optional)</term>
      <listitem>
       <para>
-       &xml; parser. If you're going to index real &xml; you should
+       &acro.xml; parser. If you're going to index real &acro.xml; you should
        install this (filter grs.xml). On most systems you should be able
        to find binary Expat packages.
       </para>
@@ -103,7 +103,7 @@
    <para>
     On Unix, GCC works fine, but any native
     C compiler should be possible to use as long as it is 
-    &ansi; C compliant.
+    &acro.ansi; C compliant.
    </para>
    
    <para>
@@ -160,7 +160,7 @@
       <term><literal>zebrasrv</literal></term>
       <listitem>
        <para>
-        The &z3950; server and search engine.
+        The &acro.z3950; server and search engine.
        </para>
       </listitem>
      </varlistentry>
@@ -179,8 +179,8 @@
        <para>
 	The <literal>.so</literal>-files are &zebra; record filter modules.
 	There are modules for reading 
-	&marc; (<filename>mod-grs-marc.so</filename>),
-	&xml; (<filename>mod-grs-xml.so</filename>) , etc. 
+	&acro.marc; (<filename>mod-grs-marc.so</filename>),
+	&acro.xml; (<filename>mod-grs-xml.so</filename>) , etc. 
        </para>
       </listitem>
      </varlistentry>
@@ -453,7 +453,7 @@
     redirection to other fields. 
     For example the following snippet of
     a custom <filename>custom/bib1.att</filename> 
-    &bib1; attribute set definition file is no
+    &acro.bib1; attribute set definition file is no
     longer supported:
     <screen>
      att 1016            Any 		1016,4,1005,62
@@ -465,7 +465,7 @@
    </para>
    <para>
     Similar behaviour can be expressed in the new release by defining
-    a new index <literal>Any:w</literal> in all &grs1;
+    a new index <literal>Any:w</literal> in all &acro.grs1;
     <filename>*.abs</filename> record indexing configuration files.
     The above example configuration needs to make the changes
     from version 1.3.x indexing instructions
@@ -486,13 +486,13 @@
     <screen>
      att 1016            Body-of-text
     </screen>
-    with equivalent outcome without editing all  &grs1;
+    with equivalent outcome without editing all  &acro.grs1;
     <filename>*.abs</filename> record indexing configuration files.
    </para>
 
    <para>
     Server installations which use the special
-    <literal>&idxpath;</literal> attribute set must add the following
+    <literal>&acro.idxpath;</literal> attribute set must add the following
     line to the <filename>zebra.cfg</filename> configuration file:
     <screen>
      attset: idxpath.att

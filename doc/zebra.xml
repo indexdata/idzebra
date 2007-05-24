@@ -11,7 +11,7 @@
 
      <!ENTITY test SYSTEM "test.xml">
 ]>
-<!-- $Id: zebra.xml,v 1.19 2007-05-22 11:12:53 adam Exp $ -->
+<!-- $Id: zebra.xml,v 1.20 2007-05-24 13:44:09 adam Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>&zebra; - User's Guide and Reference</title>
@@ -30,10 +30,10 @@
   <abstract>
    <simpara>
     &zebra; is a free, fast, friendly information management system.  It
-    can index records in &xml;, &sgml;, &marc;, e-mail archives and many
+    can index records in &acro.xml;, &acro.sgml;, &acro.marc;, e-mail archives and many
     other formats, and quickly find them using a combination of
     boolean searching and relevance ranking.  Search-and-retrieve
-    applications can be written using &api;s in a wide variety of
+    applications can be written using &acro.api;s in a wide variety of
     languages, communicating with the &zebra; server using
     industry-standard information-retrieval protocols or web services.
    </simpara>
