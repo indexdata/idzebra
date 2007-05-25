@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.45 2007-05-25 13:46:01 adam Exp $
+/* $Id: charmap.c,v 1.46 2007-05-25 14:05:52 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -420,6 +420,10 @@ static int scan_to_utf8(yaz_iconv_t t, ucs4_t *from, size_t inlen,
     else
     {
         ret = yaz_iconv(t, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+        if (ret != (size_t) (-1))
+            ret = yaz_iconv(t, 0, 0, &outbuf, &outbytesleft);
+        
+            
         if (ret == (size_t) (-1))
         {
 	    yaz_log(YLOG_LOG, "from: %2X %2X %2X %2X",
@@ -454,6 +458,9 @@ static int scan_string(char *s_native,
         size_t ret;        	
 	ret = yaz_iconv(t_unicode, &inbuf, &inbytesleft,
                         &outbuf, &outbytesleft);
+        if (ret != (size_t)(-1))
+            ret = yaz_iconv(t_unicode, 0, 0, &outbuf, &outbytesleft);
+            
         if (ret == (size_t)(-1))
             return -1;
         i = (outbuf - (char*) arg)/sizeof(ucs4_t);
