@@ -1,5 +1,5 @@
  <chapter id="querymodel">
-  <!-- $Id: querymodel.xml,v 1.32 2007-05-24 13:44:09 adam Exp $ -->
+  <!-- $Id: querymodel.xml,v 1.33 2007-05-25 12:17:11 adam Exp $ -->
   <title>Query Model</title>
   
   <section id="querymodel-overview">
@@ -205,7 +205,7 @@
          <entry><literal>bib-1</literal></entry>
          <entry>Standard &acro.pqf; query language attribute set which defines the
           semantics of &acro.z3950; searching. In addition, all of the
-          non-use attributes (types 2-12) define the hard-wired 
+          non-use attributes (types 2-14) define the hard-wired 
           &zebra; internal query
           processing.</entry>
          <entry>default</entry>
@@ -1531,13 +1531,23 @@
 	<entry>search</entry>
 	<entry>2.0.8</entry>
        </row>
-      </tbody>
        <row>
 	<entry>Maximum number of truncated terms (truncmax)</entry>
 	<entry>13</entry>
 	<entry>search</entry>
 	<entry>2.0.10</entry>
        </row>
+       <row>
+	<entry>
+	 Specifies whether un-indexed fields should be ignored.
+	 A zero value (default) throws a diagnostic when an un-indexed
+	 field is specified. A non-zero value makes it return 0 hits.
+	</entry>
+	<entry>14</entry>
+	<entry>search</entry>
+	<entry>2.0.16</entry>
+       </row>
+      </tbody>
      </tgroup>
     </table>      
     
@@ -2172,7 +2182,7 @@
 	<row>
 	 <entry>numeric (@attr 4=109)</entry>
 	 <entry>ignored</entry>
-	 <entry>Numeric ('u')</entry>
+	 <entry>Numeric ('n')</entry>
 	 <entry>Special index for digital numbers</entry>
 	</row>
 	<row>

@@ -1,4 +1,4 @@
-/* $Id: attribute.c,v 1.31 2007-05-08 12:50:04 adam Exp $
+/* $Id: attribute.c,v 1.32 2007-05-25 12:17:11 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -98,7 +98,7 @@ ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
         }
         if (r == -1)
         {
-            zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE,  use_value);
+            zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, use_value);
             return ZEBRA_FAIL;
         }
     }
@@ -111,11 +111,23 @@ ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
                                         index_type, use_string);
     if (*ord == -1)
     {
-        if (use_value < 0)
-            zebra_setError(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, use_string);
-        else
-            zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, use_value);
-        return ZEBRA_FAIL;
+        /* attribute 14=1 does not issue a diagnostic even 
+           1) the attribute is numeric but listed in .att 
+           2) the use attribute is string
+        */
+        AttrType unsup;
+        int unsup_value = 0;
+        attr_init_AttrList(&unsup, attr_list, 14);
+        unsup_value = attr_find(&unsup, 0);
+
+        if (unsup_value != 1)
+        {
+            if (use_value < 0)
+                zebra_setError(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, use_string);
+            else
+                zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, use_value);
+            return ZEBRA_FAIL;
+        }
     }
     return ZEBRA_OK;
 }

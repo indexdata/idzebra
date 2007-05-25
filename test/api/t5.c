@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.22 2007-05-14 13:21:32 adam Exp $
+/* $Id: t5.c,v 1.23 2007-05-25 12:17:11 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -188,6 +188,18 @@ static void tst(int argc, char **argv)
 
     /* exl=1 distance=2 order=0 relation=3 (=), known, unit=word */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @prox 1 2 1 3 k 2 my x", 1));
+
+    /* Non-indexed numeric use, but specified in bib1.att (bug #1142) */
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=1000 x", 0, 114));
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=1000 @attr 14=0 x", 0, 114));
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=1000 @attr 14=1 x", 0, 0));
+    /* Non-indexed numeric use and unspecified in bib1.att */
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=999 x", 0, 114));
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=999 @attr 14=1 x", 0, 114));
+    /* Non-indexed string use attribute */
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=gyf  x", 0, 114));
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=gyf @attr 14=0 x", 0, 114));
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=gyf @attr 14=1 x", 0, 0));
 
     /* provoke unsupported use attribute */
     YAZ_CHECK(tl_query_x(zh, "@attr 1=999 @attr 4=1 x", 0, 114));

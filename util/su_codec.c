@@ -1,4 +1,4 @@
-/* $Id: su_codec.c,v 1.2 2007-01-15 15:10:26 adam Exp $
+/* $Id: su_codec.c,v 1.3 2007-05-25 12:17:12 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -31,6 +31,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 int key_SU_encode (int ch, char *out)
 {
     int i;
+
+    if (ch == -1)
+    {
+        /* unique value .. which is different from ch >= 0 case */
+        /* is used to generate queries with "null" hits, bug #1142 */
+        out[0] = 129;
+        return 1;
+    }
     for (i = 0; ch; i++)
     {
 	if (ch >= 64)
