@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.44 2007-01-15 15:10:26 adam Exp $
+/* $Id: charmap.c,v 1.45 2007-05-25 13:46:01 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -108,8 +108,8 @@ static chr_t_entry *set_map_string(chr_t_entry *root, NMEM nmem,
                 root->target && root->target[0] && root->target[0][0] &&
                 strcmp((const char *) root->target[0], CHR_UNKNOWN))
             {
-                yaz_log (YLOG_WARN, "duplicate entry for charmap from '%s'",
-                         from_0);
+                yaz_log(YLOG_WARN, "duplicate entry for charmap from '%s'",
+                        from_0);
             }
 	    root->target = (unsigned char **)
 		nmem_malloc(nmem, sizeof(*root->target)*2);
@@ -129,8 +129,8 @@ static chr_t_entry *set_map_string(chr_t_entry *root, NMEM nmem,
 		root->children[i] = 0;
 	}
 	if (!(root->children[(unsigned char) *from] =
-	    set_map_string(root->children[(unsigned char) *from], nmem,
-			   from + 1, len - 1, to, from_0)))
+              set_map_string(root->children[(unsigned char) *from], nmem,
+                             from + 1, len - 1, to, from_0)))
 	    return 0;
     }
     return root;
@@ -146,7 +146,7 @@ static chr_t_entry *find_entry(chr_t_entry *t, const char **from, int len)
 
 	(*from)++;
 	if ((res = find_entry(t->children[(unsigned char) *pos],
-	    from, len - 1)))
+                              from, len - 1)))
 	    return res;
 	/* no match */
 	*from = pos;
@@ -259,7 +259,7 @@ ucs4_t zebra_prim_w(ucs4_t **s)
     ucs4_t i = 0;
     char fmtstr[8];
 
-    yaz_log (YLOG_DEBUG, "prim_w %.3s", (char *) *s);
+    yaz_log(YLOG_DEBUG, "prim_w %.3s", (char *) *s);
     if (**s == '\\' && 1[*s])
     {
 	(*s)++;
@@ -325,7 +325,7 @@ ucs4_t zebra_prim_w(ucs4_t **s)
         c = **s;
         ++(*s);
     }
-    yaz_log (YLOG_DEBUG, "out %d", c);
+    yaz_log(YLOG_DEBUG, "out %d", c);
     return c;
 }
 
@@ -401,14 +401,14 @@ static void fun_add_map(const char *s, void *data, int num)
     chrwork *arg = (chrwork *) data;
 
     assert(arg->map->input);
-    yaz_log (YLOG_DEBUG, "set map %.*s", (int) strlen(s), s);
+    yaz_log(YLOG_DEBUG, "set map %.*s", (int) strlen(s), s);
     set_map_string(arg->map->input, arg->map->nmem, s, strlen(s), arg->string,
                    0);
     for (s = arg->string; *s; s++)
-	yaz_log (YLOG_DEBUG, " %3d", (unsigned char) *s);
+	yaz_log(YLOG_DEBUG, " %3d", (unsigned char) *s);
 }
 
-static int scan_to_utf8 (yaz_iconv_t t, ucs4_t *from, size_t inlen,
+static int scan_to_utf8(yaz_iconv_t t, ucs4_t *from, size_t inlen,
                         char *outbuf, size_t outbytesleft)
 {
     size_t inbytesleft = inlen * sizeof(ucs4_t);
@@ -419,12 +419,12 @@ static int scan_to_utf8 (yaz_iconv_t t, ucs4_t *from, size_t inlen,
         *outbuf++ = *from;  /* ISO-8859-1 is OK here */
     else
     {
-        ret = yaz_iconv (t, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+        ret = yaz_iconv(t, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
         if (ret == (size_t) (-1))
         {
 	    yaz_log(YLOG_LOG, "from: %2X %2X %2X %2X",
 		    from[0], from[1], from[2], from[3]);
-            yaz_log (YLOG_WARN|YLOG_ERRNO, "bad unicode sequence");
+            yaz_log(YLOG_WARN|YLOG_ERRNO, "bad unicode sequence");
             return -1;
         }
     }
@@ -488,7 +488,7 @@ static int scan_string(char *s_native,
 	    s++;
 	    for (c = begin; c <= end; c++)
 	    {
-                if (scan_to_utf8 (t_utf8, &c, 1, str, sizeof(str)-1))
+                if (scan_to_utf8(t_utf8, &c, 1, str, sizeof(str)-1))
                     return -1;
 		(*fun)(str, data, num ? (*num)++ : 0);
 	    }
@@ -499,14 +499,14 @@ static int scan_string(char *s_native,
 	    while (*s != ')' || s[-1] == '\\')
 		arg_prim[i++] = zebra_prim_w(&s);
 	    arg_prim[i] = 0;
-            if (scan_to_utf8 (t_utf8, arg_prim, zebra_ucs4_strlen(arg_prim), str, sizeof(str)-1))
+            if (scan_to_utf8(t_utf8, arg_prim, zebra_ucs4_strlen(arg_prim), str, sizeof(str)-1))
                 return -1;
 	    (*fun)(str, data, num ? (*num)++ : 0);
 	    s++;
 	    break;
 	default:
 	    c = zebra_prim_w(&s);
-            if (scan_to_utf8 (t_utf8, &c, 1, str, sizeof(str)-1))
+            if (scan_to_utf8(t_utf8, &c, 1, str, sizeof(str)-1))
                 return -1;
 	    (*fun)(str, data, num ? (*num)++ : 0);
 	}
@@ -529,7 +529,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
     unsigned endian = 31;
     const char *ucs4_native = "UCS-4";
 
-    yaz_log (YLOG_DEBUG, "maptab %s open", name);
+    yaz_log(YLOG_DEBUG, "maptab %s open", name);
     if (!(f = yaz_fopen(tabpath, name, "r", tabroot)))
     {
 	yaz_log(YLOG_WARN|YLOG_ERRNO, "%s", name);
@@ -539,9 +539,9 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
     if (*(char*) &endian == 31)      /* little endian? */
         ucs4_native = "UCS-4LE";
 
-    t_utf8 = yaz_iconv_open ("UTF-8", ucs4_native);
+    t_utf8 = yaz_iconv_open("UTF-8", ucs4_native);
 
-    nmem = nmem_create ();
+    nmem = nmem_create();
     res = (chrmaptab) nmem_malloc(nmem, sizeof(*res));
     res->nmem = nmem;
     res->input = (chr_t_entry *) nmem_malloc(res->nmem, sizeof(*res->input));
@@ -557,7 +557,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
 	    nmem_malloc(res->nmem, sizeof(*res->input));
 	res->input->children[i]->children = 0;
 	res->input->children[i]->target = (unsigned char **)
-	    nmem_malloc (res->nmem, 2 * sizeof(unsigned char *));
+	    nmem_malloc(res->nmem, 2 * sizeof(unsigned char *));
 	res->input->children[i]->target[1] = 0;
 	res->input->children[i]->target[0] = (unsigned char*) CHR_UNKNOWN;
     }
@@ -725,8 +725,8 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
 	    /* Original code */
 #if 1
             if (t_unicode != 0)
-                yaz_iconv_close (t_unicode);
-            t_unicode = yaz_iconv_open (ucs4_native, argv[1]);
+                yaz_iconv_close(t_unicode);
+            t_unicode = yaz_iconv_open(ucs4_native, argv[1]);
 #endif
 	    /*
 	     * Fix me. It is additional staff for conversion of characters from local encoding
@@ -737,7 +737,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
 #if 0
 	    if (t_utf8 != 0)
         	yaz_iconv_close(t_utf8);
-	    t_utf8 = yaz_iconv_open ("UTF-8", argv[1]);
+	    t_utf8 = yaz_iconv_open("UTF-8", argv[1]);
 #endif
         }
 	else
@@ -751,7 +751,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
 	chrmaptab_destroy(res);
 	res = 0;
     }
-    yaz_log (YLOG_DEBUG, "maptab %s close %d errors", name, errors);
+    yaz_log(YLOG_DEBUG, "maptab %s close %d errors", name, errors);
     if (t_utf8 != 0)
         yaz_iconv_close(t_utf8);
     if (t_unicode != 0)
@@ -762,7 +762,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
 void chrmaptab_destroy(chrmaptab tab)
 {
     if (tab)
-	nmem_destroy (tab->nmem);
+	nmem_destroy(tab->nmem);
 }
 
 
