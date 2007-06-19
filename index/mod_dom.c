@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.37 2007-05-19 19:44:14 adam Exp $
+/* $Id: mod_dom.c,v 1.38 2007-06-19 19:39:54 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1360,6 +1360,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     {
         p->diagnostic =
             YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+        p->addinfo = odr_strdup(p->odr, esn);
         return 0;
     }
 
