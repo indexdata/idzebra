@@ -1,5 +1,5 @@
 <chapter id="record-model-domxml">
-  <!-- $Id: recordmodel-domxml.xml,v 1.14 2007-05-24 13:44:09 adam Exp $ -->
+  <!-- $Id: recordmodel-domxml.xml,v 1.15 2007-06-26 21:01:33 adam Exp $ -->
   <title>&acro.dom; &acro.xml; Record Model and Filter Module</title>
   
   <para>
@@ -147,7 +147,7 @@
         <xmlreader level="1"/>
         <!-- <marc inputcharset="marc-8"/> -->
       </input>
-      <extrac>
+      <extract>
          <xslt stylesheet="common2index.xsl"/>
       </extract>
       <store>
