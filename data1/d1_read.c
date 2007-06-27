@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.26 2007-05-21 11:53:49 adam Exp $
+/* $Id: d1_read.c,v 1.27 2007-06-27 22:04:45 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1105,6 +1105,35 @@ int data1_iconv (data1_handle dh, NMEM m, data1_node *n,
     return 0;
 }
 
+void data1_chop_text(data1_handle dh, NMEM m, data1_node *n)
+{
+    for (; n; n = n->next)
+    {
+        if (n->which == DATA1N_data)
+        {
+            
+            int sz = n->u.data.len;
+            const char *ndata = n->u.data.data;
+            int off = 0;
+            
+            for (off = 0; off < sz; off++)
+                if (!d1_isspace(ndata[off]))
+                    break;
+            sz = sz - off;
+            ndata += off;
+            
+            while (sz && d1_isspace(ndata[sz - 1]))
+                sz--;
+
+            n->u.data.data = nmem_malloc(m, sz);
+            n->u.data.len = sz;
+            memcpy(n->u.data.data, ndata, sz);
+		
+        }
+        data1_chop_text(dh, m, n->child);
+    }
+}
+
 void data1_concat_text(data1_handle dh, NMEM m, data1_node *n)
 {
     for (; n; n = n->next)
@@ -1134,6 +1163,7 @@ void data1_concat_text(data1_handle dh, NMEM m, data1_node *n)
         data1_concat_text(dh, m, n->child);
     }
 }
+
 /*
  * Local variables:
  * c-basic-offset: 4
