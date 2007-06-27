@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.24 2007-06-27 22:04:45 adam Exp $
+/* $Id: data1.h,v 1.25 2007-06-27 22:17:20 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -100,13 +100,7 @@ typedef struct data1_maptag
     struct data1_maptag *next;
 } data1_maptag;
 
-typedef struct data1_mapunit
-{
-    int no_data;
-    char *source_element_name;
-    data1_maptag *target_path;
-    struct data1_mapunit *next;
-} data1_mapunit;
+typedef struct data1_mapunit data1_mapunit;
 
 typedef struct data1_maptab
 {
@@ -116,6 +110,7 @@ typedef struct data1_maptab
     data1_mapunit *map;
     struct data1_maptab *next;
 } data1_maptab;
+
 
 typedef struct data1_name
 {

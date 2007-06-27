@@ -1,4 +1,4 @@
-/* $Id: d1_marc.c,v 1.18 2007-04-16 08:44:31 adam Exp $
+/* $Id: d1_marc.c,v 1.19 2007-06-27 22:17:20 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -160,35 +160,22 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 }
 
 
-/*
- * Locate some data under this node. This routine should handle variants
- * prettily.
- */
-static char *get_data(data1_node *n, int *len, int chop)
+static void get_data2(data1_node *n, int *len, char *dst, size_t max)
 {
-    char *r;
+    *len = 0;
 
     while (n)
     {
         if (n->which == DATA1N_data)
         {
-            int i;
-            *len = n->u.data.len;
-	    
-	    if (chop)
+            if (dst && *len < max)
             {
-		for (i = 0; i<*len; i++)
-		    if (!d1_isspace(n->u.data.data[i]))
-			break;
-		while (*len && d1_isspace(n->u.data.data[*len - 1]))
-		    (*len)--;
-		*len = *len - i;
-		if (*len > 0)
-		    return n->u.data.data + i;
-	    }
-	    else
-		if (*len > 0)
-		    return n->u.data.data;
+                size_t copy_len = max - *len;
+                if (copy_len > n->u.data.len)
+                    copy_len = n->u.data.len;
+                memcpy(dst + *len, n->u.data.data, copy_len);
+            }
+            *len += n->u.data.len;
         }
         if (n->which == DATA1N_tag)
             n = n->child;
@@ -197,9 +184,6 @@ static char *get_data(data1_node *n, int *len, int chop)
 	else
             break;	
     }
-    r = "";
-    *len = strlen(r);
-    return r;
 }
 
 static void memint (char *p, int val, int len)
@@ -271,11 +255,7 @@ static int nodetomarc(data1_handle dh,
 	else if (!strcmp(field->u.tag.tag, "leader"))
 	{
 	    int dlen = 0;
-	    char *dbuf = get_data(subf, &dlen, 0);
-	    if (dlen > 24)
-		dlen = 24;
-	    if (dbuf && dlen > 0)
-		memcpy (leader, dbuf, dlen);
+            get_data2(subf, &dlen, leader, 24);
 	    continue;
 	}
 	else if (!strcmp(field->u.tag.tag, "controlfield"))
@@ -320,7 +300,7 @@ static int nodetomarc(data1_handle dh,
 		    continue; /* we skip comments, cdata .. */
                 len += p->identifier_length;
 	    }
-	    get_data(subf, &dlen, control_field ? 0 : 1);
+            get_data2(subf, &dlen, 0, 0);
             len += dlen;
         }
     }
@@ -413,8 +393,6 @@ static int nodetomarc(data1_handle dh,
 	}
 	for (; subf; subf = subf->next)
         {
-	    char *data;
-
             if (!control_field)
             {
                 const char *identifier = "a";
@@ -439,8 +417,7 @@ static int nodetomarc(data1_handle dh,
                 memcpy (op + data_p+1, identifier, p->identifier_length-1);
                 data_p += p->identifier_length;
             }
-	    data = get_data(subf, &dlen, control_field ? 0 : 1);
-            memcpy (op + data_p, data, dlen);
+            get_data2(subf, &dlen, op + data_p, 100000);
             data_p += dlen;
         }
         op[data_p++] = ISO2709_FS;

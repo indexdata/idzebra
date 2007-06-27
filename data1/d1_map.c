@@ -1,4 +1,4 @@
-/* $Id: d1_map.c,v 1.16 2007-04-16 08:44:31 adam Exp $
+/* $Id: d1_map.c,v 1.17 2007-06-27 22:17:20 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -29,6 +29,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/readconf.h>
 #include <yaz/tpath.h>
 #include <d1_absyn.h>
+
+struct data1_mapunit
+{
+    int no_data;
+    int no_chop;
+    char *source_element_name;
+    data1_maptag *target_path;
+    struct data1_mapunit *next;
+};
 
 data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
 {
@@ -109,6 +118,10 @@ data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
 		(*mapp)->no_data = 1;
 	    else
 		(*mapp)->no_data = 0;
+	    if (argc > 3 && !data1_matchstr(argv[3], "nochop"))
+		(*mapp)->no_chop = 1;
+	    else
+		(*mapp)->no_chop = 0;
 	    (*mapp)->source_element_name =
 		(char *)nmem_malloc(mem, strlen(argv[1])+1);
 	    strcpy((*mapp)->source_element_name, argv[1]);
@@ -160,23 +173,6 @@ data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
 
     fclose(f);
     return res;
-}
-
-/*
- * Locate node with given elementname.
- * NOTE: This is stupid - we don't find repeats this way.
- */
-static data1_node *find_node(data1_node *p, char *elementname)
-{
-    data1_node *c, *r;
-
-    for (c = p->child; c; c = c->next)
-	if (c->which == DATA1N_tag && c->u.tag.element &&
-	    !data1_matchstr(c->u.tag.element->name, elementname))
-	    return c;
-	else if ((r = find_node(c, elementname)))
-	    return r;
-    return 0;
 }
 
 /*
@@ -305,6 +301,11 @@ static int map_children(data1_handle dh, data1_node *n, data1_maptab *map,
                             cur->child =
                                 dup_child (dh, c->child,
                                            &cur->last_child, mem, cur);
+                            if (!m->no_chop)
+                            {
+                                data1_concat_text(dh, mem, cur->child);
+                                data1_chop_text(dh, mem, cur->child);
+                            }
 			}
 		    }
 		}
