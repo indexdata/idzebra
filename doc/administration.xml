@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.51 2007-05-24 13:44:09 adam Exp $ -->
+ <!-- $Id: administration.xml,v 1.52 2007-06-27 13:46:43 adam Exp $ -->
  <title>Administrating &zebra;</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -1597,16 +1597,18 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
          <entry><literal>&acro.xml; string</literal></entry>
          <entry>An &acro.xml; formatted string containing the record</entry>
         </row>
-        <row>
-         <entry><literal>syntax</literal></entry>
-         <entry><literal>'xml'</literal></entry>
-         <entry>Only &acro.xml; record syntax is supported</entry>
-        </row>
+       <row>
+	<entry><literal>syntax</literal></entry>
+	<entry><literal>'xml'</literal></entry>
+	<entry>XML/SUTRS/MARC. GRS-1 not supported.
+	 The default filter (record type) as given by recordType in
+	 zebra.cfg is used to parse the record.</entry>
+       </row>
         <row>
          <entry><literal>recordIdOpaque</literal></entry>
          <entry><literal>string</literal></entry>
          <entry>
-         Optional  client-supplied, opaque record
+         Optional client-supplied, opaque record
          identifier used under insert operations.
         </entry>
         </row>
