@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.72 2007-06-17 07:06:03 adam Exp $
+## $Id: Makefile.am,v 1.73 2007-07-10 09:41:12 adam Exp $
 SUBDIRS = common
 
 XMLMAN = zebraidx.xml zebrasrv.xml idzebra-config.xml
@@ -99,7 +99,7 @@ install-data-hook:
 	cd $(DESTDIR)$(man1dir) && ln -sf idzebra-config$(PACKAGE_SUFFIX).1 idzebra-config.1
 	if test -f index.html; then d=.; else d="$(srcdir)"; fi; \
 	for p in $$d/*.html; do \
-		$(docDATA_INSTALL) $$p $(DESTDIR)/$(docdir); \
+		$(docDATA_INSTALL) $$p $(DESTDIR)$(docdir); \
 	done
 
 uninstall-hook:
