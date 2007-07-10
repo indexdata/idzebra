@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.73 2007-07-10 09:41:12 adam Exp $
+## $Id: Makefile.am,v 1.74 2007-07-10 09:43:33 adam Exp $
 SUBDIRS = common
 
 XMLMAN = zebraidx.xml zebrasrv.xml idzebra-config.xml
@@ -103,7 +103,7 @@ install-data-hook:
 	done
 
 uninstall-hook:
-	rm -r $(DESTDIR)/$(docdir)
+	rm -r $(DESTDIR)$(docdir)
 
 domfilter.png: domfilter.svg
 	inkscape --export-png=$@ --export-width=600 $?
