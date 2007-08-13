@@ -1,5 +1,5 @@
 <chapter id="record-model-domxml">
-  <!-- $Id: recordmodel-domxml.xml,v 1.15 2007-06-26 21:01:33 adam Exp $ -->
+  <!-- $Id: recordmodel-domxml.xml,v 1.16 2007-08-13 08:53:42 adam Exp $ -->
   <title>&acro.dom; &acro.xml; Record Model and Filter Module</title>
   
   <para>
@@ -166,7 +166,7 @@
    <para>
      The root &acro.xml; element <literal>&lt;dom&gt;</literal> and all other &acro.dom;
      &acro.xml; filter elements are residing in the namespace 
-     <literal>xmlns="http://indexdata.dk/zebra-2.0"</literal>.
+     <literal>xmlns="http://indexdata.com/zebra-2.0"</literal>.
    </para>
    <para>
     All pipeline definition elements - i.e. the
@@ -275,7 +275,7 @@
      similar to the Alvis filter indexing format - &acro.xml; documents
      containing &acro.xml; <literal>&lt;record&gt;</literal> and
      <literal>&lt;index&gt;</literal> instructions from the magic
-     namespace <literal>xmlns:z="http://indexdata.dk/zebra-2.0"</literal>.
+     namespace <literal>xmlns:z="http://indexdata.com/zebra-2.0"</literal>.
     </para>
 
    <section id="record-model-domxml-canonical-index-pi">
@@ -316,7 +316,7 @@
    
     <para>The output of the indexing &acro.xslt; stylesheets must contain
     certain elements in the magic 
-     <literal>xmlns:z="http://indexdata.dk/zebra-2.0"</literal>
+     <literal>xmlns:z="http://indexdata.com/zebra-2.0"</literal>
     namespace. The output of the &acro.xslt; indexing transformation is then
     parsed using &acro.dom; methods, and the contained instructions are
     performed on the <emphasis>magic elements and their
@@ -355,7 +355,7 @@
          processing instructions named
          <literal>zebra-2.0</literal> or
          elements contained in the namespace
-         <literal>xmlns:z="http://indexdata.dk/zebra-2.0"</literal>.
+         <literal>xmlns:z="http://indexdata.com/zebra-2.0"</literal>.
          </para>
        </listitem>
        <listitem>
@@ -607,7 +607,7 @@
      <screen>
       <![CDATA[
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-       xmlns:z="http://indexdata.dk/zebra-2.0"
+       xmlns:z="http://indexdata.com/zebra-2.0"
        xmlns:oai="http://www.openarchives.org/&acro.oai;/2.0/" 
        xmlns:oai_dc="http://www.openarchives.org/&acro.oai;/2.0/oai_dc/" 
        xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -856,7 +856,7 @@
      <screen>
       <![CDATA[  
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-       xmlns:z="http://indexdata.dk/zebra/xslt/1"
+       xmlns:z="http://indexdata.com/zebra-2.0"
        version="1.0">
 
        <!- - register internal zebra parameters - ->       
