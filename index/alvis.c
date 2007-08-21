@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.17 2007-04-16 21:54:37 adam Exp $
+/* $Id: alvis.c,v 1.18 2007-08-21 07:49:18 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -50,7 +50,6 @@ struct filter_schema {
     struct filter_schema *next;
     const char *default_schema;
     /* char default_schema; */
-    const char *include_snippet;
     xsltStylesheetPtr stylesheet_xsp;
 };
 
@@ -238,7 +237,6 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 	    schema->default_schema = 0;
 	    schema->next = tinfo->schemas;
 	    schema->stylesheet_xsp = 0;
-	    schema->include_snippet = 0;
 	    tinfo->schemas = schema;
 	    for (attr = ptr->properties; attr; attr = attr->next)
 	    {
@@ -246,7 +244,6 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 		attr_content(attr, "name", &schema->name);
 		attr_content(attr, "stylesheet", &schema->stylesheet);
 		attr_content(attr, "default", &schema->default_schema);
-		attr_content(attr, "snippet", &schema->include_snippet);
 	    }
             /*yaz_log(YLOG_LOG, "XSLT add %s %s %s", 
               schema->name, schema->identifier, schema->stylesheet); */
@@ -593,53 +590,6 @@ static int ioclose_ret(void *context)
     return 0;
 }
 
-static const char *snippet_doc(struct recRetrieveCtrl *p, int text_mode,
-			       int window_size)
-{
-    const char *xml_doc_str;
-    int ord = 0;
-    WRBUF wrbuf = wrbuf_alloc();
-    zebra_snippets *res = 
-	zebra_snippets_window(p->doc_snippet, p->hit_snippet, window_size);
-    zebra_snippet_word *w = zebra_snippets_list(res);
-
-    if (text_mode)
-	wrbuf_printf(wrbuf, "\'");
-    else
-	wrbuf_printf(wrbuf, "<snippet xmlns='%s'>\n", zebra_xslt_ns);
-    for (; w; w = w->next)
-    {
-	if (ord == 0)
-	    ord = w->ord;
-	else if (ord != w->ord)
-
-	    break;
-	if (text_mode)
-	    wrbuf_printf(wrbuf, "%s%s%s ", 
-			 w->match ? "*" : "",
-			 w->term,
-			 w->match ? "*" : "");
-	else
-	{
-	    wrbuf_printf(wrbuf, " <term ord='%d' seqno='" ZINT_FORMAT "' %s>", 
-			 w->ord, w->seqno,
-			 (w->match ? "match='1'" : ""));
-	    wrbuf_xmlputs(wrbuf, w->term);
-	    wrbuf_printf(wrbuf, "</term>\n");
-	}
-    }
-    if (text_mode)
-	wrbuf_printf(wrbuf, "\'");
-    else
-	wrbuf_printf(wrbuf, "</snippet>\n");
-
-    xml_doc_str = odr_strdup(p->odr, wrbuf_cstr(wrbuf));
-
-    zebra_snippets_destroy(res);
-    wrbuf_destroy(wrbuf);
-    return xml_doc_str;
-}
-
 static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
     /* const char *esn = zebra_xslt_ns; */
@@ -649,7 +599,6 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     xmlDocPtr resDoc;
     xmlDocPtr doc;
     struct filter_schema *schema;
-    int window_size = -1;
 
     if (p->comp)
     {
@@ -674,9 +623,6 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	return 0;
     }
 
-    if (schema->include_snippet)
-	window_size = atoi(schema->include_snippet);
-
     params[0] = 0;
     set_param_int(params, "id", p->localno, p->odr);
     if (p->fname)
@@ -698,9 +644,6 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	set_param_int(params, "score", p->score, p->odr);
     set_param_int(params, "size", p->recordSize, p->odr);
 
-    if (window_size >= 0)
-	set_param_xml(params, "snippet", snippet_doc(p, 1, window_size),
-		      p->odr);
     doc = xmlReadIO(ioread_ret, ioclose_ret, p /* I/O handler */,
 		    0 /* URL */,
 		    0 /* encoding */,
@@ -711,13 +654,6 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	return 0;
     }
 
-    if (window_size >= 0)
-    {
-	xmlNodePtr node = xmlDocGetRootElement(doc);
-	const char *snippet_str = snippet_doc(p, 0, window_size);
-	xmlDocPtr snippet_doc = xmlParseMemory(snippet_str, strlen(snippet_str));
-	xmlAddChild(node, xmlDocGetRootElement(snippet_doc));
-    }
     if (!schema->stylesheet_xsp)
 	resDoc = doc;
     else
