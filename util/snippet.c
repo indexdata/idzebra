@@ -1,4 +1,4 @@
-/* $Id: snippet.c,v 1.12 2007-01-15 15:10:26 adam Exp $
+/* $Id: snippet.c,v 1.13 2007-08-21 11:06:47 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include <stddef.h>
+#include <string.h>
 #include <yaz/nmem.h>
 #include <yaz/log.h>
 #include <idzebra/snippet.h>
@@ -47,28 +48,46 @@ void zebra_snippets_destroy(zebra_snippets *l)
 }
 
 void zebra_snippets_append(zebra_snippets *l,
-			   zint seqno, int ord, const char *term)
+			   zint seqno, int ws, int ord, const char *term)
 {
-    zebra_snippets_append_match(l, seqno, ord, term, 0);
+    zebra_snippets_append_match(l, seqno, ws, ord, term, strlen(term), 0);
 }
 
+void zebra_snippets_appendn(zebra_snippets *l,
+                            zint seqno, int ws, int ord, const char *term,
+                            size_t term_len)
+{
+    zebra_snippets_append_match(l, seqno, ws, ord, term, term_len, 0);
+}
+
+
 void zebra_snippets_append_match(zebra_snippets *l,
-				 zint seqno, int ord, const char *term,
+				 zint seqno, int ws, int ord,
+                                 const char *term, size_t term_len,
 				 int match)
 {
     struct zebra_snippet_word *w = nmem_malloc(l->nmem, sizeof(*w));
 
     w->next = 0;
+    w->prev = l->tail;
     if (l->tail)
+    {
 	l->tail->next = w;
+    }
     else
+    {
 	l->front = w;
+    }
     l->tail = w;
 
     w->seqno = seqno;
+    w->ws = ws;
     w->ord = ord;
-    w->term = nmem_strdup(l->nmem, term);
+    w->term = nmem_malloc(l->nmem, term_len+1);
+    memcpy(w->term, term, term_len);
+    w->term[term_len] = '\0';
     w->match = match;
+    w->mark = 0;
 }
 
 zebra_snippet_word *zebra_snippets_list(zebra_snippets *l)
@@ -76,19 +95,28 @@ zebra_snippet_word *zebra_snippets_list(zebra_snippets *l)
     return l->front;
 }
 
-void zebra_snippets_log(zebra_snippets *l, int log_level)
+const zebra_snippet_word *zebra_snippets_constlist(const zebra_snippets *l)
+{
+    return l->front;
+}
+
+void zebra_snippets_log(const zebra_snippets *l, int log_level, int all)
 {
     zebra_snippet_word *w;
     for (w = l->front; w; w = w->next)
-	yaz_log(log_level, "term=%s%s seqno=" ZINT_FORMAT " ord=%d",
-		w->term, (w->match ? "*" : ""), w->seqno, w->ord);
+    {
+        if (all || w->mark)
+            yaz_log(log_level, "term='%s'%s mark=%d seqno=" ZINT_FORMAT " ord=%d",
+                    w->term, (w->match && !w->ws ? "*" : ""), w->mark,
+                    w->seqno, w->ord);
+    }
 }
 
-zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
+zebra_snippets *zebra_snippets_window(const zebra_snippets *doc,
+                                      const zebra_snippets *hit,
 				      int window_size)
 {
     int ord = -1;
-
     zebra_snippets *result = zebra_snippets_create();
     if (window_size == 0)
 	window_size = 1000000;
@@ -99,10 +127,10 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
 	zint first_seq_no_best_window = 0;
 	zint last_seq_no_best_window = 0;
 	int number_best_window = 0;
-	zebra_snippet_word *hit_w, *doc_w;
+	const zebra_snippet_word *hit_w, *doc_w;
 	int min_ord = 0; /* not set yet */
 
-	for (hit_w = zebra_snippets_list(hit); hit_w; hit_w = hit_w->next)
+	for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
 	    if (hit_w->ord > ord &&
 		(min_ord == 0 || hit_w->ord < min_ord))
 	    {
@@ -112,11 +140,11 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
 	    break;
 	ord = min_ord;
 
-	for (hit_w = zebra_snippets_list(hit); hit_w; hit_w = hit_w->next)
+	for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
 	{
 	    if (hit_w->ord == ord)
 	    {
-		zebra_snippet_word *look_w = hit_w;
+		const zebra_snippet_word *look_w = hit_w;
 		int number_this = 0;
 		zint seq_no_last = 0;
 		while (look_w && look_w->seqno < hit_w->seqno + window_size)
@@ -145,13 +173,13 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
 
 	window_start = (first_seq_no_best_window + last_seq_no_best_window -
 			window_size) / 2;
-	for (doc_w = zebra_snippets_list(doc); doc_w; doc_w = doc_w->next)
+	for (doc_w = zebra_snippets_constlist(doc); doc_w; doc_w = doc_w->next)
 	    if (doc_w->ord == ord
 		&& doc_w->seqno >= window_start
 		&& doc_w->seqno < window_start + window_size)
 	    {
 		int match = 0;
-		for (hit_w = zebra_snippets_list(hit); hit_w;
+		for (hit_w = zebra_snippets_constlist(hit); hit_w;
 		     hit_w = hit_w->next)
 		{
 		    if (hit_w->ord == ord && hit_w->seqno == doc_w->seqno)
@@ -162,11 +190,97 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
 		    }
 		}
 		zebra_snippets_append_match(result, doc_w->seqno,
-					    ord, doc_w->term, match);
+                                            doc_w->ws,
+					    ord, doc_w->term, 
+                                            strlen(doc_w->term), match);
 	    }
     }
     return result;
 }
+
+static void zebra_snippets_clear(zebra_snippets *sn)
+{
+    zebra_snippet_word *w;
+
+    for (w = zebra_snippets_list(sn); w; w = w->next)
+    {
+        w->mark = 0;
+        w->match = 0;
+    }
+}
+
+void zebra_snippets_ring(zebra_snippets *doc, const zebra_snippets *hit,
+                         int before, int after)
+{
+    int ord = -1;
+
+    zebra_snippets_clear(doc);
+    while (1)
+    {
+	const zebra_snippet_word *hit_w;
+	zebra_snippet_word *doc_w;
+	int min_ord = 0; /* not set yet */
+
+	for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
+	    if (hit_w->ord > ord &&
+		(min_ord == 0 || hit_w->ord < min_ord))
+	    {
+		min_ord = hit_w->ord;
+	    }
+	if (min_ord == 0)
+	    break;
+	ord = min_ord;
+
+	for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
+	{
+	    if (hit_w->ord == ord)
+	    {
+                for (doc_w = zebra_snippets_list(doc); doc_w; doc_w = doc_w->next)
+                {
+                    if (doc_w->ord == ord && doc_w->seqno == hit_w->seqno
+                        && !doc_w->ws)
+                    {
+                        doc_w->match = 1;
+                        doc_w->mark = 1;
+                        break;
+                    }
+                    
+                }
+                /* mark following terms */
+                if (doc_w)
+                {
+                    zebra_snippet_word *w = doc_w->next;
+                    while (w)
+                        if (w->ord == ord
+                            && hit_w->seqno - before < w->seqno 
+                            && hit_w->seqno + after > w->seqno)
+                        {
+                            w->mark = 1;
+                            w = w->next;
+                        }
+                        else
+                            break;
+                }
+                /* mark preceding terms */
+                if (doc_w)
+                {
+                    zebra_snippet_word *w = doc_w->prev;
+                    while (w)
+                        if (w->ord == ord
+                            && hit_w->seqno - before < w->seqno 
+                            && hit_w->seqno + after > w->seqno)
+                        {
+                            w->mark = 1;
+                            w = w->prev;
+                        }
+                        else
+                            break;
+                }
+	    }
+	}
+    }
+}
+
 			 
 /*
  * Local variables:

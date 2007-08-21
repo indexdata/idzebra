@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.22 2007-05-24 13:44:09 adam Exp $ -->
+  <!-- $Id: architecture.xml,v 1.23 2007-08-21 11:06:46 adam Exp $ -->
   <title>Overview of &zebra; Architecture</title>
 
   <section id="architecture-representation">
@@ -495,6 +495,15 @@
 	  and type <replaceable>t</replaceable> for record
        </entry>
        <entry>&acro.xml; and &acro.sutrs;</entry>
+      </row>
+      <row>
+       <entry>
+	<literal>zebra::snippet</literal>
+       </entry>
+       <entry>
+	Get snippet for record.
+       </entry>
+       <entry>&acro.xml;</entry>
       </row>
      </tbody>
     </tgroup>

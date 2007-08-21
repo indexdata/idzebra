@@ -1,4 +1,4 @@
-/* $Id: snippet.h,v 1.8 2007-01-15 20:08:24 adam Exp $
+/* $Id: snippet.h,v 1.9 2007-08-21 11:06:46 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -32,7 +32,10 @@ struct zebra_snippet_word {
     int ord;
     char *term;
     int match;
+    int mark;
+    int ws;
     struct zebra_snippet_word *next;
+    struct zebra_snippet_word *prev;
 };
 
 typedef struct zebra_snippets zebra_snippets;
@@ -46,22 +49,37 @@ void zebra_snippets_destroy(zebra_snippets *l);
 
 YAZ_EXPORT
 void zebra_snippets_append(zebra_snippets *l,
-			   zint seqno, int ord, const char *term);
+			   zint seqno, int ws, int ord, const char *term);
+
+YAZ_EXPORT
+void zebra_snippets_appendn(zebra_snippets *l,
+                            zint seqno, int ws, int ord,
+                            const char *term, size_t term_len);
 
 YAZ_EXPORT
 void zebra_snippets_append_match(zebra_snippets *l,
-				 zint seqno, int ord, const char *term,
+				 zint seqno, int ws, int ord,
+                                 const char *term, size_t term_len,
 				 int match);
 
 YAZ_EXPORT
 zebra_snippet_word *zebra_snippets_list(zebra_snippets *l);
 
 YAZ_EXPORT
-void zebra_snippets_log(zebra_snippets *l, int log_level);
+const zebra_snippet_word *zebra_snippets_constlist(const zebra_snippets *l);
 
 YAZ_EXPORT
-zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
+void zebra_snippets_log(const zebra_snippets *l, int log_level, int all);
+
+YAZ_EXPORT
+zebra_snippets *zebra_snippets_window(const zebra_snippets *doc,
+                                      const zebra_snippets *hit,
 				      int window_size);
+
+YAZ_EXPORT
+void zebra_snippets_ring(zebra_snippets *doc, const zebra_snippets *hit,
+                         int before, int after);
+
 
 YAZ_END_CDECL
 

@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.70 2007-05-08 12:50:04 adam Exp $
+/* $Id: retrieve.c,v 1.71 2007-08-21 11:06:47 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -34,14 +34,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "index.h"
 #include <yaz/diagbib1.h>
+#include <yaz/snprintf.h>
 #include <direntz.h>
 #include <yaz/oid_db.h>
 
 #define ZEBRA_XML_HEADER_STR "<record xmlns=\"http://www.indexdata.com/zebra/\""
 
 static int zebra_create_record_stream(ZebraHandle zh, 
-                               Record *rec,
-                               struct ZebraRecStream *stream)
+                                      Record *rec,
+                                      struct ZebraRecStream *stream)
 {
     RecordAttr *recordAttr = rec_init_attr(zh->reg->zei, *rec);
 
@@ -399,7 +400,131 @@ static void retrieve_puts_int(WRBUF wrbuf, const char *name,
     wrbuf_printf(wrbuf, "%s %i\n", name, value);
 }
 
-int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
+
+static void snippet_xml_record(ZebraHandle zh, WRBUF wrbuf, zebra_snippets *doc)
+{
+    const zebra_snippet_word *doc_w;
+    int mark_state = 0;
+
+    wrbuf_printf(wrbuf, "%s>\n", ZEBRA_XML_HEADER_STR);
+    for (doc_w = zebra_snippets_constlist(doc); doc_w; doc_w = doc_w->next)
+    {
+        if (doc_w->mark)
+        {
+            int index_type;
+            const char *db = 0;
+            const char *string_index = 0;
+
+            zebraExplain_lookup_ord(zh->reg->zei, doc_w->ord, 
+                                    &index_type, &db, &string_index);
+
+            if (mark_state == 0)
+            {
+                wrbuf_printf(wrbuf, "  <snippet name=\"%s\"",  string_index);
+                wrbuf_printf(wrbuf, " type=\"%c\">", index_type);
+            }
+            if (doc_w->match)
+                wrbuf_puts(wrbuf, "<s>");
+            /* not printing leading ws */
+            if (mark_state || !doc_w->ws || doc_w->match) 
+                wrbuf_xmlputs(wrbuf, doc_w->term);
+            if (doc_w->match)
+                wrbuf_puts(wrbuf, "</s>");
+        }
+        else if (mark_state == 1)
+        {
+            wrbuf_puts(wrbuf, "</snippet>\n");
+        }
+        mark_state = doc_w->mark;
+    }
+    if (mark_state == 1)
+    {
+        wrbuf_puts(wrbuf, "</snippet>\n");
+    }
+    wrbuf_printf(wrbuf, "</record>");
+}
+
+int zebra_special_snippet_fetch(ZebraHandle zh, const char *setname,
+                                zint sysno, ODR odr,
+                                const char *elemsetname,
+                                const Odr_oid *input_format,
+                                const Odr_oid **output_format,
+                                char **rec_bufp, int *rec_lenp)
+{
+    int return_code = 0;
+    Record rec;
+    
+    rec = rec_get(zh->reg->records, sysno);
+    if (!rec)
+    {
+        yaz_log(YLOG_WARN, "rec_get fail on sysno=" ZINT_FORMAT, sysno);
+        return_code = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+    }
+    else
+    {
+        const char *file_type = rec->info[recInfo_fileType];
+        void *recTypeClientData;
+        RecType rt = recType_byName(zh->reg->recTypes, zh->res,
+                                    file_type, &recTypeClientData);
+        zebra_snippets *hit_snippet = zebra_snippets_create();
+        WRBUF wrbuf = wrbuf_alloc();
+
+        zebra_snippets_hit_vector(zh, setname, sysno, hit_snippet);
+        
+        if (!rt)
+            return_code = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+        else
+        {
+            struct ZebraRecStream stream;
+            
+            return_code = zebra_create_record_stream(zh, &rec, &stream);
+            if (return_code == 0)
+            {
+                zebra_snippets *rec_snippet = zebra_snippets_create();
+                extract_snippet(zh, rec_snippet, &stream,
+                                rt, recTypeClientData);
+
+#if 0
+                /* for debugging purposes */
+                yaz_log(YLOG_LOG, "---------------------------");
+                yaz_log(YLOG_LOG, "REC SNIPPET:");
+                zebra_snippets_log(rec_snippet, YLOG_LOG, 1);
+                yaz_log(YLOG_LOG, "---------------------------");
+                yaz_log(YLOG_LOG, "HIT SNIPPET:");
+                zebra_snippets_log(hit_snippet, YLOG_LOG, 1);
+#endif
+
+                zebra_snippets_ring(rec_snippet, hit_snippet, 5, 5);
+
+#if 0
+                yaz_log(YLOG_LOG, "---------------------------");
+                yaz_log(YLOG_LOG, "RING SNIPPET:");
+                zebra_snippets_log(rec_snippet, YLOG_LOG, 1);
+#endif
+                
+                snippet_xml_record(zh, wrbuf, rec_snippet);
+
+                *output_format = yaz_oid_recsyn_xml;
+
+                
+                zebra_snippets_destroy(rec_snippet);
+            }
+            stream.destroy(&stream);
+        }
+        if (return_code == 0)
+        {
+            *rec_lenp = wrbuf_len(wrbuf);
+            *rec_bufp = odr_strdup(odr, wrbuf_cstr(wrbuf));
+        }
+        wrbuf_destroy(wrbuf);
+        rec_free(&rec);
+        zebra_snippets_destroy(hit_snippet);
+    }
+    return return_code;
+}
+
+int zebra_special_fetch(ZebraHandle zh, const char *setname,
+                        zint sysno, int score, ODR odr,
                         const char *elemsetname,
                         const Odr_oid *input_format,
                         const Odr_oid **output_format,
@@ -411,6 +536,13 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
     /* *rec_lenp = 0; */
 
 
+    if (elemsetname && 0 == strcmp(elemsetname, "snippet"))
+    {
+        return zebra_special_snippet_fetch(zh, setname, sysno, odr,
+                                           elemsetname + 7,
+                                           input_format, output_format,
+                                           rec_bufp, rec_lenp);
+    }
 
     /* processing zebra::meta::sysno elemset without fetching binary data */
     if (elemsetname && 0 == strcmp(elemsetname, "meta::sysno"))
@@ -558,7 +690,8 @@ int zebra_special_fetch(ZebraHandle zh, zint sysno, int score, ODR odr,
 }
 
                           
-int zebra_record_fetch(ZebraHandle zh, zint sysno, int score,
+int zebra_record_fetch(ZebraHandle zh, const char *setname,
+                       zint sysno, int score,
                        zebra_snippets *hit_snippet, ODR odr,
                        const Odr_oid *input_format, Z_RecordComposition *comp,
                        const Odr_oid **output_format,
@@ -579,7 +712,7 @@ int zebra_record_fetch(ZebraHandle zh, zint sysno, int score,
 
     /* processing zebra special elementset names of form 'zebra:: */
     if (elemsetname && 0 == strncmp(elemsetname, "zebra::", 7))
-        return  zebra_special_fetch(zh, sysno, score, odr,
+        return  zebra_special_fetch(zh, setname, sysno, score, odr,
                                     elemsetname + 7,
                                     input_format, output_format,
                                     rec_bufp, rec_lenp);
@@ -610,7 +743,6 @@ int zebra_record_fetch(ZebraHandle zh, zint sysno, int score,
 
     if (rec)
     {
-	zebra_snippets *snippet;
 	zebra_rec_keys_t reckeys = zebra_rec_keys_open();
         RecType rt;
         struct recRetrieveCtrl retrieveCtrl;
@@ -641,22 +773,6 @@ int zebra_record_fetch(ZebraHandle zh, zint sysno, int score,
 	zebra_rec_keys_to_snippets(zh, reckeys, retrieveCtrl.doc_snippet);
 	zebra_rec_keys_close(reckeys);
 
-#if 0
-	/* for debugging purposes */
-	yaz_log(YLOG_LOG, "DOC SNIPPET:");
-	zebra_snippets_log(retrieveCtrl.doc_snippet, YLOG_LOG);
-	yaz_log(YLOG_LOG, "HIT SNIPPET:");
-	zebra_snippets_log(retrieveCtrl.hit_snippet, YLOG_LOG);
-#endif
-	snippet = zebra_snippets_window(retrieveCtrl.doc_snippet,
-					retrieveCtrl.hit_snippet,
-					10);
-#if 0
-	/* for debugging purposes */
-	yaz_log(YLOG_LOG, "WINDOW SNIPPET:");
-	zebra_snippets_log(snippet, YLOG_LOG);
-#endif
-
         if (!(rt = recType_byName(zh->reg->recTypes, zh->res,
                                   file_type, &clientData)))
         {
@@ -679,7 +795,6 @@ int zebra_record_fetch(ZebraHandle zh, zint sysno, int score,
             *addinfo = retrieveCtrl.addinfo;
         }
 
-	zebra_snippets_destroy(snippet);
         zebra_snippets_destroy(retrieveCtrl.doc_snippet);
 
         stream.destroy(&stream);

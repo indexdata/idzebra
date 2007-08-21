@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.198 2007-05-08 12:50:04 adam Exp $
+/* $Id: index.h,v 1.199 2007-08-21 11:06:47 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -307,7 +307,8 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet, RSET rset,
 			 NMEM nmem);
 void resultSetInvalidate(ZebraHandle zh);
 
-int zebra_record_fetch(ZebraHandle zh, zint sysno, int score, 
+int zebra_record_fetch(ZebraHandle zh, const char *setname,
+                       zint sysno, int score, 
                        zebra_snippets *hit_snippet, ODR stream,
                        const Odr_oid *input_format, Z_RecordComposition *comp,
                        const Odr_oid **output_format, char **rec_bufp,
@@ -315,6 +316,10 @@ int zebra_record_fetch(ZebraHandle zh, zint sysno, int score,
                        char **addinfo);
 
 void extract_get_fname_tmp(ZebraHandle zh, char *fname, int no);
+
+void extract_snippet(ZebraHandle zh, zebra_snippets *sn,
+                     struct ZebraRecStream *stream, RecType rt,
+                     void *recTypeClientData);
 
 void zebra_index_merge(ZebraHandle zh);
 

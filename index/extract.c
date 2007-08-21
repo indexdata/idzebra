@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.258 2007-05-08 14:27:23 adam Exp $
+/* $Id: extract.c,v 1.259 2007-08-21 11:06:47 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -91,6 +91,20 @@ static void logRecord (ZebraHandle zh)
     }
 }
 
+static void init_extractCtrl(ZebraHandle zh, struct recExtractCtrl *ctrl)
+{
+    int i;
+    for (i = 0; i<256; i++)
+    {
+	if (zebra_maps_is_positioned(zh->reg->zebra_maps, i))
+	    ctrl->seqno[i] = 1;
+	else
+	    ctrl->seqno[i] = 0;
+    }
+    ctrl->flagShowRecords = !zh->m_flag_rw;
+}
+
+
 static void extract_add_index_string (RecWord *p, 
                                       zinfo_index_category_t cat,
                                       const char *str, int length);
@@ -106,6 +120,147 @@ static void extract_init(struct recExtractCtrl *p, RecWord *w)
     w->record_id = 0;
     w->section_id = 0;
     w->segment = 0;
+}
+
+struct snip_rec_info {
+    ZebraHandle zh;
+    zebra_snippets *snippets;
+};
+
+
+static void snippet_add_complete_field(RecWord *p)
+{
+
+}
+
+static void snippet_add_incomplete_field(RecWord *p, int ord)
+{
+    struct snip_rec_info *h = p->extractCtrl->handle;
+    ZebraHandle zh = h->zh;
+    const char *b = p->term_buf;
+    int remain = p->term_len;
+    int first = 1;
+    const char **map = 0;
+    const char *start = b;
+    
+    if (remain > 0)
+	map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, 0);
+
+    while (map)
+    {
+	char buf[IT_MAX_WORD+1];
+        const char *last = b;
+	int i, remain;
+
+	/* Skip spaces */
+	while (map && *map && **map == *CHR_SPACE)
+	{
+	    remain = p->term_len - (b - p->term_buf);
+            last = b;
+	    if (remain > 0)
+		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b,
+				       remain, 0);
+	    else
+		map = 0;
+	}
+	if (!map)
+	    break;
+        if (start != last)
+        {
+            zebra_snippets_appendn(h->snippets, p->seqno, 1, ord,
+                                   start, last - start);
+
+        }
+        start = last;
+
+	i = 0;
+	while (map && *map && **map != *CHR_SPACE)
+	{
+	    const char *cp = *map;
+
+	    while (i < IT_MAX_WORD && *cp)
+		buf[i++] = *(cp++);
+	    remain = p->term_len - (b - p->term_buf);
+            last = b;
+	    if (remain > 0)
+		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, 0);
+	    else
+		map = 0;
+	}
+	if (!i)
+	    return;
+
+        if (first)
+        {   
+            first = 0;
+            if (zebra_maps_is_first_in_field(zh->reg->zebra_maps, p->index_type))
+            {
+                /* first in field marker */
+                p->seqno++;
+            }
+        }
+        if (start != last)
+            zebra_snippets_appendn(h->snippets, p->seqno, 0, ord,
+                                   start, last - start);
+        start = last;
+        p->seqno++;
+    }
+
+}
+
+static void snippet_token_add(RecWord *p)
+{
+    struct snip_rec_info *h = p->extractCtrl->handle;
+    ZebraHandle zh = h->zh;
+
+    if (zebra_maps_is_index(zh->reg->zebra_maps, p->index_type))
+    {
+        ZebraExplainInfo zei = zh->reg->zei;
+        int ch = zebraExplain_lookup_attr_str(
+            zei, zinfo_index_category_index, p->index_type, p->index_name);
+
+        if (zebra_maps_is_complete (h->zh->reg->zebra_maps, p->index_type))
+            snippet_add_complete_field (p);
+        else
+            snippet_add_incomplete_field(p, ch);
+    }
+}
+
+static void snippet_schema_add(
+    struct recExtractCtrl *p, Odr_oid *oid)
+{
+
+}
+
+void extract_snippet(ZebraHandle zh, zebra_snippets *sn,
+                     struct ZebraRecStream *stream,
+                     RecType rt, void *recTypeClientData)
+{
+    struct recExtractCtrl extractCtrl;
+    struct snip_rec_info info;
+    int r;
+
+    extractCtrl.stream = stream;
+    extractCtrl.first_record = 1;
+    extractCtrl.init = extract_init;
+    extractCtrl.tokenAdd = snippet_token_add;
+    extractCtrl.schemaAdd = snippet_schema_add;
+    assert(zh->reg);
+    assert(zh->reg->dh);
+
+    extractCtrl.dh = zh->reg->dh;
+    
+    info.zh = zh;
+    info.snippets = sn;
+    extractCtrl.handle = &info;
+    extractCtrl.match_criteria[0] = '\0';
+    extractCtrl.staticrank = 0;
+    extractCtrl.action = action_insert;
+    
+    init_extractCtrl(zh, &extractCtrl);
+
+    r = (*rt->extract)(recTypeClientData, &extractCtrl);
+
 }
 
 static void searchRecordKey(ZebraHandle zh,
@@ -304,19 +459,6 @@ struct recordLogInfo {
     int recordOffset;
     struct recordGroup *rGroup;
 };
-
-static void init_extractCtrl(ZebraHandle zh, struct recExtractCtrl *ctrl)
-{
-    int i;
-    for (i = 0; i<256; i++)
-    {
-	if (zebra_maps_is_positioned(zh->reg->zebra_maps, i))
-	    ctrl->seqno[i] = 1;
-	else
-	    ctrl->seqno[i] = 0;
-    }
-    ctrl->flagShowRecords = !zh->m_flag_rw;
-}
 
 static void all_matches_add(struct recExtractCtrl *ctrl)
 {
@@ -1289,7 +1431,7 @@ ZEBRA_RES zebra_rec_keys_to_snippets(ZebraHandle zh,
 	    assert(index_type);
 	    zebra_term_untrans_iconv(zh, nmem, index_type,
 				     &dst_term, str);
-	    zebra_snippets_append(snippets, seqno, ord, dst_term);
+	    zebra_snippets_append(snippets, seqno, 0, ord, dst_term);
 	    nmem_reset(nmem);
 	}
     }
