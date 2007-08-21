@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.71 2007-08-21 11:06:47 adam Exp $
+/* $Id: retrieve.c,v 1.72 2007-08-21 13:27:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -444,17 +444,11 @@ static void snippet_xml_record(ZebraHandle zh, WRBUF wrbuf, zebra_snippets *doc)
     wrbuf_printf(wrbuf, "</record>");
 }
 
-int zebra_special_snippet_fetch(ZebraHandle zh, const char *setname,
-                                zint sysno, ODR odr,
-                                const char *elemsetname,
-                                const Odr_oid *input_format,
-                                const Odr_oid **output_format,
-                                char **rec_bufp, int *rec_lenp)
+int zebra_get_rec_snippets(ZebraHandle zh, zint sysno,
+                           zebra_snippets *snippets)
 {
     int return_code = 0;
-    Record rec;
-    
-    rec = rec_get(zh->reg->records, sysno);
+    Record rec = rec_get(zh->reg->records, sysno);
     if (!rec)
     {
         yaz_log(YLOG_WARN, "rec_get fail on sysno=" ZINT_FORMAT, sysno);
@@ -466,60 +460,73 @@ int zebra_special_snippet_fetch(ZebraHandle zh, const char *setname,
         void *recTypeClientData;
         RecType rt = recType_byName(zh->reg->recTypes, zh->res,
                                     file_type, &recTypeClientData);
-        zebra_snippets *hit_snippet = zebra_snippets_create();
-        WRBUF wrbuf = wrbuf_alloc();
 
-        zebra_snippets_hit_vector(zh, setname, sysno, hit_snippet);
-        
         if (!rt)
             return_code = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
         else
         {
             struct ZebraRecStream stream;
-            
             return_code = zebra_create_record_stream(zh, &rec, &stream);
             if (return_code == 0)
             {
-                zebra_snippets *rec_snippet = zebra_snippets_create();
-                extract_snippet(zh, rec_snippet, &stream,
+                extract_snippet(zh, snippets, &stream,
                                 rt, recTypeClientData);
 
-#if 0
-                /* for debugging purposes */
-                yaz_log(YLOG_LOG, "---------------------------");
-                yaz_log(YLOG_LOG, "REC SNIPPET:");
-                zebra_snippets_log(rec_snippet, YLOG_LOG, 1);
-                yaz_log(YLOG_LOG, "---------------------------");
-                yaz_log(YLOG_LOG, "HIT SNIPPET:");
-                zebra_snippets_log(hit_snippet, YLOG_LOG, 1);
-#endif
-
-                zebra_snippets_ring(rec_snippet, hit_snippet, 5, 5);
-
-#if 0
-                yaz_log(YLOG_LOG, "---------------------------");
-                yaz_log(YLOG_LOG, "RING SNIPPET:");
-                zebra_snippets_log(rec_snippet, YLOG_LOG, 1);
-#endif
-                
-                snippet_xml_record(zh, wrbuf, rec_snippet);
-
-                *output_format = yaz_oid_recsyn_xml;
-
-                
-                zebra_snippets_destroy(rec_snippet);
+                stream.destroy(&stream);
             }
-            stream.destroy(&stream);
         }
+        rec_free(&rec);
+    }
+    return return_code;
+}
+
+int zebra_special_snippet_fetch(ZebraHandle zh, const char *setname,
+                                zint sysno, ODR odr,
+                                const char *elemsetname,
+                                const Odr_oid *input_format,
+                                const Odr_oid **output_format,
+                                char **rec_bufp, int *rec_lenp)
+{
+    zebra_snippets *rec_snippets = zebra_snippets_create();
+    int return_code = zebra_get_rec_snippets(zh, sysno, rec_snippets);
+
+    if (!return_code)
+    {
+        WRBUF wrbuf = wrbuf_alloc();
+        zebra_snippets *hit_snippet = zebra_snippets_create();
+
+        zebra_snippets_hit_vector(zh, setname, sysno, hit_snippet);
+
+#if 0
+        /* for debugging purposes */
+        yaz_log(YLOG_LOG, "---------------------------");
+        yaz_log(YLOG_LOG, "REC SNIPPET:");
+        zebra_snippets_log(rec_snippet, YLOG_LOG, 1);
+        yaz_log(YLOG_LOG, "---------------------------");
+        yaz_log(YLOG_LOG, "HIT SNIPPET:");
+        zebra_snippets_log(hit_snippet, YLOG_LOG, 1);
+#endif
+        
+        zebra_snippets_ring(rec_snippets, hit_snippet, 5, 5);
+        
+#if 0
+        yaz_log(YLOG_LOG, "---------------------------");
+        yaz_log(YLOG_LOG, "RING SNIPPET:");
+        zebra_snippets_log(rec_snippets, YLOG_LOG, 1);
+#endif
+        snippet_xml_record(zh, wrbuf, rec_snippets);
+        
+        *output_format = yaz_oid_recsyn_xml;
+        
         if (return_code == 0)
         {
             *rec_lenp = wrbuf_len(wrbuf);
             *rec_bufp = odr_strdup(odr, wrbuf_cstr(wrbuf));
         }
         wrbuf_destroy(wrbuf);
-        rec_free(&rec);
         zebra_snippets_destroy(hit_snippet);
     }
+    zebra_snippets_destroy(rec_snippets);
     return return_code;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: snippet.h,v 1.9 2007-08-21 11:06:46 adam Exp $
+/* $Id: snippet.h,v 1.10 2007-08-21 13:27:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -80,6 +80,10 @@ YAZ_EXPORT
 void zebra_snippets_ring(zebra_snippets *doc, const zebra_snippets *hit,
                          int before, int after);
 
+
+YAZ_EXPORT
+const struct zebra_snippet_word *zebra_snippets_lookup(
+    const zebra_snippets *doc, const zebra_snippets *hit);
 
 YAZ_END_CDECL
 

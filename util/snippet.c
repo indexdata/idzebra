@@ -1,4 +1,4 @@
-/* $Id: snippet.c,v 1.13 2007-08-21 11:06:47 adam Exp $
+/* $Id: snippet.c,v 1.14 2007-08-21 13:27:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -207,6 +207,25 @@ static void zebra_snippets_clear(zebra_snippets *sn)
         w->mark = 0;
         w->match = 0;
     }
+}
+
+const struct zebra_snippet_word *zebra_snippets_lookup(
+    const zebra_snippets *doc, const zebra_snippets *hit)
+{
+    const zebra_snippet_word *hit_w;
+    for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
+    {
+	const zebra_snippet_word *doc_w;
+        for (doc_w = zebra_snippets_constlist(doc); doc_w; doc_w = doc_w->next)
+        {
+            if (doc_w->ord == hit_w->ord && doc_w->seqno == hit_w->seqno
+                && !doc_w->ws)
+            {
+                return doc_w;
+            }
+        }
+    }
+    return 0;
 }
 
 void zebra_snippets_ring(zebra_snippets *doc, const zebra_snippets *hit,

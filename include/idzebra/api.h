@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.51 2007-05-21 11:54:59 adam Exp $
+/* $Id: api.h,v 1.52 2007-08-21 13:27:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -65,6 +65,7 @@ typedef struct {
 typedef struct {
     zint occurrences;    /* scan term occurrences */
     char *term;          /* scan term string */
+    char *display_term;  /* display scan term entry */
 } ZebraScanEntry;
 
 /** \var ZebraHandle

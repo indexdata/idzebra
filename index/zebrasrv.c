@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.16 2007-05-21 11:54:59 adam Exp $
+/* $Id: zebrasrv.c,v 1.17 2007-08-21 13:27:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -383,6 +383,7 @@ static int bend_scan (void *handle, bend_scan_rr *r)
 	for (i = 0; i < r->num_entries; i++)
 	{
 	    r->entries[i].term = entries[i].term;
+	    r->entries[i].display_term = entries[i].display_term;
 	    r->entries[i].occurrences =
                 CAST_ZINT_TO_INT(entries[i].occurrences);
 	}

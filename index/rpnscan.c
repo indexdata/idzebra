@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.11 2007-05-09 07:07:18 adam Exp $
+/* $Id: rpnscan.c,v 1.12 2007-08-21 13:27:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -106,11 +106,44 @@ static void count_set(ZebraHandle zh, RSET rset, zint *count)
     *count = rset->hits_count;
 }
 
+static void get_first_snippet_from_rset(RSET rset, zebra_snippets *snippets, 
+                                        zint *sysno)
+{
+    struct it_key key;
+    RSFD rfd;
+    TERMID termid;
+
+    yaz_log(YLOG_DEBUG, "get_first_snippet_from_rset");
+
+    rfd = rset_open(rset, RSETF_READ);
+    *sysno = 0;
+    while (rset_read(rfd, &key, &termid))
+    {
+        if (key.mem[0] != *sysno)
+        {
+            if (*sysno)
+                break;
+            *sysno = key.mem[0];
+        }
+        if (termid)
+        {
+            struct ord_list *ol;
+            for (ol = termid->ol; ol; ol = ol->next)
+            {
+                zebra_snippets_append(snippets, key.mem[key.len-1], 0,
+                                      ol->ord, termid->name);
+            }
+        }
+    }
+    rset_close (rfd);
+}
+
 struct scan2_info_entry {
     WRBUF term;
     char prefix[20];
     ISAM_P isam_p;
     int pos_to_save;
+    int ord;
 };
 
 static int scan_handle2(char *name, const char *info, int pos, void *client)
@@ -153,11 +186,17 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
     {
         if (ar[i].isam_p && strcmp(wrbuf_cstr(ar[i].term), term) == 0)
         {
-            RSET rset_t = rset_trunc(
+            struct ord_list *ol = ord_list_create(nmem);
+            RSET rset_t;
+
+            ol = ord_list_append(nmem, ol, ar[i].ord);
+
+            assert(ol);
+            rset_t = rset_trunc(
                     zh, &ar[i].isam_p, 1,
                     wrbuf_buf(ar[i].term), wrbuf_len(ar[i].term),
-                    NULL, 0, zapt->term->which, nmem, 
-                    kc, kc->scope, 0, index_type, 
+                    NULL, 1, zapt->term->which, nmem, 
+                    kc, kc->scope, ol, index_type, 
                     0 /* hits_limit */,
                     0 /* term_ref_id_str */);
             if (!rset)
@@ -188,17 +227,42 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
         }
         /* count it */
         count_set(zh, rset, &count);
-        rset_delete(rset);
-        if (count > 0)
+
+        if (pos != -1)
         {
-            if (pos != -1)
+            zint sysno;
+            int code = -1;
+            zebra_snippets *rec_snippets = zebra_snippets_create();
+            zebra_snippets *hit_snippets = zebra_snippets_create();
+
+            glist[pos].term = 0;
+            glist[pos].display_term = 0;
+            
+            get_first_snippet_from_rset(rset, hit_snippets, &sysno);
+            if (sysno)
+                code = zebra_get_rec_snippets(zh, sysno, rec_snippets);
+         
+            if (code == 0)
             {
+                const struct zebra_snippet_word *w = 
+                    zebra_snippets_lookup(rec_snippets, hit_snippets);
+                if (w)
+                {
+                    glist[pos].display_term = odr_strdup(stream, w->term);
+                }
+            }
+            if (!glist[pos].term)
                 zebra_term_untrans_iconv(zh, stream->mem, index_type,
                                          &glist[pos].term, term);
-                glist[pos].occurrences = count;
-            }
-            return 1;
+            glist[pos].occurrences = count;
+            zebra_snippets_destroy(rec_snippets);
+            zebra_snippets_destroy(hit_snippets);
         }
+        rset_delete(rset);
+        if (count > 0)
+            return 1;
+        else
+            return 0;
     }
     return 0;
 }
@@ -252,6 +316,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
         wrbuf_rewind(ar[i].term);
         wrbuf_puts(ar[i].term, termz + prefix_len);
         ar[i].isam_p = 0;
+        ar[i].ord = ords[i];
     }
     /** deal with terms before position .. */
     /* the glist index starts at zero (unlike scan positions */
@@ -317,6 +382,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
         wrbuf_rewind(ar[i].term);
         wrbuf_puts(ar[i].term, termz + prefix_len);
         ar[i].isam_p = 0;
+        ar[i].ord = ords[i];
     }
 
     after_pos = 1;  /* immediate term first.. */

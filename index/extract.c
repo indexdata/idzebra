@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.259 2007-08-21 11:06:47 adam Exp $
+/* $Id: extract.c,v 1.260 2007-08-21 13:27:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -128,9 +128,75 @@ struct snip_rec_info {
 };
 
 
-static void snippet_add_complete_field(RecWord *p)
+static void snippet_add_complete_field(RecWord *p, int ord)
 {
+    struct snip_rec_info *h = p->extractCtrl->handle;
+    ZebraHandle zh = h->zh;
 
+    const char *b = p->term_buf;
+    char buf[IT_MAX_WORD+1];
+    const char **map = 0;
+    int i = 0, remain = p->term_len;
+    const char *start = b;
+    const char *last = 0;
+
+    if (remain > 0)
+	map = zebra_maps_input (zh->reg->zebra_maps, p->index_type, &b, remain, 1);
+
+    while (remain > 0 && i < IT_MAX_WORD)
+    {
+	while (map && *map && **map == *CHR_SPACE)
+	{
+	    remain = p->term_len - (b - p->term_buf);
+
+            if (i == 0)
+                start = b;  /* set to first non-ws area */
+	    if (remain > 0)
+	    {
+		int first = i ? 0 : 1;  /* first position */
+
+		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, 
+                                       &b, remain, first);
+	    }
+	    else
+		map = 0;
+	}
+	if (!map)
+	    break;
+
+	if (i && i < IT_MAX_WORD)
+	    buf[i++] = *CHR_SPACE;
+	while (map && *map && **map != *CHR_SPACE)
+	{
+	    const char *cp = *map;
+
+	    if (**map == *CHR_CUT)
+	    {
+		i = 0;
+	    }
+	    else
+	    {
+		if (i >= IT_MAX_WORD)
+		    break;
+		while (i < IT_MAX_WORD && *cp)
+		    buf[i++] = *(cp++);
+	    }
+            last = b;
+	    remain = p->term_len  - (b - p->term_buf);
+	    if (remain > 0)
+	    {
+		map = zebra_maps_input (zh->reg->zebra_maps, p->index_type, &b,
+					remain, 0);
+	    }
+	    else
+		map = 0;
+	}
+    }
+    if (!i)
+	return;
+    if (last && start != last)
+        zebra_snippets_appendn(h->snippets, p->seqno, 0, ord,
+                               start, last - start);
 }
 
 static void snippet_add_incomplete_field(RecWord *p, int ord)
@@ -220,7 +286,7 @@ static void snippet_token_add(RecWord *p)
             zei, zinfo_index_category_index, p->index_type, p->index_name);
 
         if (zebra_maps_is_complete (h->zh->reg->zebra_maps, p->index_type))
-            snippet_add_complete_field (p);
+            snippet_add_complete_field (p, ch);
         else
             snippet_add_incomplete_field(p, ch);
     }

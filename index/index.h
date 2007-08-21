@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.199 2007-08-21 11:06:47 adam Exp $
+/* $Id: index.h,v 1.200 2007-08-21 13:27:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -320,6 +320,9 @@ void extract_get_fname_tmp(ZebraHandle zh, char *fname, int no);
 void extract_snippet(ZebraHandle zh, zebra_snippets *sn,
                      struct ZebraRecStream *stream, RecType rt,
                      void *recTypeClientData);
+
+int zebra_get_rec_snippets(ZebraHandle zh, zint sysno,
+                           zebra_snippets *snippets);
 
 void zebra_index_merge(ZebraHandle zh);
 
