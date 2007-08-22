@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.23 2007-08-21 11:06:46 adam Exp $ -->
+  <!-- $Id: architecture.xml,v 1.24 2007-08-22 08:02:30 adam Exp $ -->
   <title>Overview of &zebra; Architecture</title>
 
   <section id="architecture-representation">
@@ -501,7 +501,12 @@
 	<literal>zebra::snippet</literal>
        </entry>
        <entry>
-	Get snippet for record.
+	Get snippet for record. This includes a phrase from the original
+	record at the point where a match occurs (for a query). By default
+	give terms before - and after are included in the snippet. The
+	matching terms are enclosed within element
+	<literal>&lt;s&gt;</literal>. The snippet facility requires
+	Zebra 2.0.16 or later.
        </entry>
        <entry>&acro.xml;</entry>
       </row>
