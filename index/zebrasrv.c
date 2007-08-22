@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.17 2007-08-21 13:27:04 adam Exp $
+/* $Id: zebrasrv.c,v 1.18 2007-08-22 08:13:00 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -367,8 +367,6 @@ static int bend_scan (void *handle, bend_scan_rr *r)
 	r->errstring = 0;
         return 0;
     }
-    r->entries = (struct scan_entry *)
-	odr_malloc (r->stream, sizeof(*r->entries) * r->num_entries);
     res = zebra_scan(zh, r->stream, r->term,
 		     r->attributeset,
 		     &r->term_position,
