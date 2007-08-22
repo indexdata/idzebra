@@ -1,3 +1,9 @@
+Scan now returns a displayTerm which closer to the original word/phrase
+from original record.
+
+Added snippet support. Element set name zebra::snippet will make
+Zebra return an XML record with snippets (terms around matching terms).
+
 Fixed bug #1142: Non-indexed but listed attributes issues diagnostic.
 
 Fixed bug #1131: Missing value-of data in DOM filter.
