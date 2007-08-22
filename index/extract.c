@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.260 2007-08-21 13:27:04 adam Exp $
+/* $Id: extract.c,v 1.261 2007-08-22 08:01:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -208,14 +208,14 @@ static void snippet_add_incomplete_field(RecWord *p, int ord)
     int first = 1;
     const char **map = 0;
     const char *start = b;
-    
+    const char *last = b;
+
     if (remain > 0)
 	map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, 0);
 
     while (map)
     {
 	char buf[IT_MAX_WORD+1];
-        const char *last = b;
 	int i, remain;
 
 	/* Skip spaces */
