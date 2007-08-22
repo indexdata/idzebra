@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: yazgfs.xml,v 1.1 2007-08-22 22:58:05 mike Exp $ -->
+<!-- Totally minimal SRU support, consists only of CQL->PQF mapping -->
+<yazgfs>
+ <listen id="tcp9999">tcp:@:9999</listen>
+ <server id="main" listenref="tcp9999">
+  <cql2rpn>/usr/local/share/yaz/etc/pqf.properties</cql2rpn>
+ </server>
+</yazgfs>
