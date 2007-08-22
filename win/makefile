@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.64 2007-05-08 14:55:30 adam Exp $
+# $Id: makefile,v 1.65 2007-08-22 12:36:22 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -9,7 +9,7 @@ DEBUG=0   # 0 for release, 1 for debug
 
 # EXPAT is optional. It's required for grs.xml-filters.
 HAVE_EXPAT=1
-EXPAT_DIR=c:\Expat-1.95.8
+EXPAT_DIR=c:\Program files\Expat 2.0.1
 
 # iconv is optional
 HAVE_ICONV=1
@@ -17,11 +17,11 @@ ICONV_DIR=c:\iconv-1.9.2.win32
 
 # libxslt. For alvis
 HAVE_LIBXSLT=1
-LIBXSLT_DIR=c:\libxslt-1.1.17.win32
+LIBXSLT_DIR=c:\libxslt-1.1.19.win32
 
 # libxml2. Used by libxslt
 HAVE_LIBXML2=1
-LIBXML2_DIR=c:\libxml2-2.6.26.win32
+LIBXML2_DIR=c:\libxml2-2.6.28.win32
 
 # zlib compression.  Used by libxml2
 ZLIB_DIR = c:\zlib-1.2.3.win32
@@ -129,13 +129,13 @@ dll: $(DLL)
 
 !if $(HAVE_EXPAT)
 EXPAT_DEF= /D HAVE_EXPAT_H=1 /I"$(EXPAT_DIR)\source\lib"
-EXPAT_LIB= "$(EXPAT_DIR)\libs\libexpat.lib"
-EXPAT_DLL_SOURCE= $(EXPAT_DIR)\libs\libexpat.dll
-EXPAT_DLL_TARGET=$(BINDIR)\libexpat.dll
+EXPAT_LIB= "$(EXPAT_DIR)\bin\libexpat.lib"
+EXPAT_DLL_SOURCE= "$(EXPAT_DIR)\bin\libexpat.dll"
+EXPAT_DLL_TARGET= "$(BINDIR)\libexpat.dll"
 expat: $(EXPAT_DLL_TARGET)
 
-$(EXPAT_DLL_TARGET) : "$(EXPAT_DLL_SOURCE)"
-	copy "$(EXPAT_DLL_SOURCE)" "$(EXPAT_DLL_TARGET)"
+$(EXPAT_DLL_TARGET) : $(EXPAT_DLL_SOURCE)
+	copy $(EXPAT_DLL_SOURCE) $(EXPAT_DLL_TARGET)
 !else
 EXPAT_DEF= /D HAVE_EXPAT_H=0
 EXPAT_LIB=
