@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2007
-dnl $Id: configure.ac,v 1.59 2007-05-16 10:50:03 adam Exp $
+dnl $Id: configure.ac,v 1.60 2007-08-27 17:22:22 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.15],[zebra-help@indexdata.dk])
@@ -23,6 +23,7 @@ dnl ------ Checking programs
 AC_PROG_CC
 AC_PROG_CPP
 AM_PROG_LIBTOOL
+AC_DEFINE_UNQUOTED(HOST_TRIPLET,"${host}")
 dnl
 dnl ------ headers
 AC_CHECK_HEADERS([sys/resource.h sys/time.h sys/wait.h sys/utsname.h unistd.h])

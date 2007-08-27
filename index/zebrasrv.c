@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.18 2007-08-22 08:13:00 adam Exp $
+/* $Id: zebrasrv.c,v 1.19 2007-08-27 17:22:22 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -61,6 +61,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     struct statserv_options_block *sob;
     char *user = NULL;
     char *passwd = NULL;
+    char version_str[16];
 
     r->errcode = 0;
     r->errstring = 0;
@@ -72,8 +73,10 @@ bend_initresult *bend_init (bend_initrequest *q)
     q->bend_fetch = bend_fetch;
     q->bend_scan = bend_scan;
 
+    zebra_get_version(version_str, 0);
+
     q->implementation_name = "Zebra Information Server";
-    q->implementation_version = "Zebra " ZEBRAVER;
+    q->implementation_version = odr_strdup(q->stream, version_str);
 
     yaz_log (YLOG_DEBUG, "bend_init");
 

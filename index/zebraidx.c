@@ -1,4 +1,4 @@
-/* $Id: zebraidx.c,v 1.5 2007-04-17 20:27:14 adam Exp $
+/* $Id: zebraidx.c,v 1.6 2007-08-27 17:22:22 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <yaz/log.h>
 #include <yaz/options.h>
+#include <idzebra/version.h>
 #include <idzebra/api.h>
 
 char *prog;
@@ -230,18 +231,17 @@ int main (int argc, char **argv)
         }
         else if (ret == 'V')
         {
-            printf("Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
-	    printf(" (C) 1994-2007, Index Data ApS\n");
-#ifdef WIN32
-#ifdef _DEBUG
-            printf(" WIN32 Debug\n");
-#else
-            printf(" WIN32 Release\n");
-#endif
-#endif
-#if HAVE_BZLIB_H
-            printf("Using: libbzip2, (C) 1996-1999 Julian R Seward.  All rights reserved.\n");
-#endif
+            char version_str[20];
+            char sys_str[80];
+            zebra_get_version(version_str, sys_str);
+
+            printf("Zebra %s\n", version_str);
+	    printf("(C) 1994-2007, Index Data ApS\n");
+            printf("Zebra is free software, covered by the GNU General Public License, and you are\n");
+            printf("welcome to change it and/or distribute copies of it under certain conditions.\n");
+            printf("Configured as: %s\n", sys_str);
+            if (strcmp(version_str, ZEBRAVER))
+                printf("zebraidx compiled version %s\n", ZEBRAVER);
         }
         else if (ret == 'v')
             yaz_log_init_level (yaz_log_mask_str(arg));

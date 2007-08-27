@@ -1,4 +1,4 @@
-/* $Id: version.h,v 1.23 2007-08-27 17:22:22 adam Exp $
+/* $Id: version.c,v 1.1 2007-08-27 17:22:22 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -20,29 +20,36 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-#ifndef IDZEBRA_VERSION_H
-#define IDZEBRA_VERSION_H
+/**
+ * \file version.c
+ * \brief Implements Zebra version utilities.
+ */
 
-#include <yaz/yconfig.h>
-
-YAZ_BEGIN_CDECL
-
-
-#define ZEBRAVER "2.0.15"
-
-#define ZEBRADATE "$Date: 2007-08-27 17:22:22 $"
-
-/** \brief Returns Zebra version and system info.
-    \param version_str buffer for version (at least 16 bytes)
-    \param sys_str buffer for system info (at least 80 bytes)
-    \returns version as integer
-*/
-YAZ_EXPORT
-void zebra_get_version(char *version_str, char *sys_str);
-
-YAZ_END_CDECL
-
+#if HAVE_CONFIG_H
+#include <config.h>
 #endif
+
+#include <string.h>
+#include <idzebra/version.h>
+
+void zebra_get_version(char *version_str, char *sys_str)
+{
+    if (version_str)
+        strcpy(version_str, ZEBRAVER);
+    if (sys_str)
+    {
+        strcpy(sys_str, "unknown");
+
+#ifdef WIN32
+        strcpy(sys_str, "win32");
+#endif
+
+#ifdef HOST_TRIPLET
+        strcpy(sys_str, HOST_TRIPLET);
+#endif
+    }
+}
+
 /*
  * Local variables:
  * c-basic-offset: 4
