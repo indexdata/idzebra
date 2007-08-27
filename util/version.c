@@ -1,4 +1,4 @@
-/* $Id: version.c,v 1.1 2007-08-27 17:22:22 adam Exp $
+/* $Id: version.c,v 1.2 2007-08-27 17:40:10 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -42,8 +42,11 @@ void zebra_get_version(char *version_str, char *sys_str)
 
 #ifdef WIN32
         strcpy(sys_str, "win32");
+#ifdef _MSC_VER
+        sprintf(sys_str+strlen(sys_str), "; mscver %lu",
+                 (unsigned long) _MSC_VER);
 #endif
-
+#endif
 #ifdef HOST_TRIPLET
         strcpy(sys_str, HOST_TRIPLET);
 #endif
