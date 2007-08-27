@@ -1,4 +1,4 @@
-/* $Id: version.c,v 1.2 2007-08-27 17:40:10 adam Exp $
+/* $Id: version.c,v 1.3 2007-08-27 17:43:21 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <config.h>
 #endif
 
+#include <yaz/snprintf.h>
 #include <string.h>
 #include <idzebra/version.h>
 
@@ -43,7 +44,7 @@ void zebra_get_version(char *version_str, char *sys_str)
 #ifdef WIN32
         strcpy(sys_str, "win32");
 #ifdef _MSC_VER
-        sprintf(sys_str+strlen(sys_str), "; mscver %lu",
+        yaz_snprintf(sys_str+strlen(sys_str), 25, "; mscver %lu",
                  (unsigned long) _MSC_VER);
 #endif
 #endif
