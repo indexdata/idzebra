@@ -91,7 +91,7 @@ binary-arch: build install
 	dh_fixperms
 #	dh_perl
 #	dh_python
-	dh_makeshlibs -V 'libidzebra-2.0 (>= 2.0.13)' -X mod-
+	dh_makeshlibs -V 'libidzebra-2.0 (>= 2.0.15)' -X mod-
 	dh_installdeb
 	dh_shlibdeps -L libidzebra-2.0 -l debian/libidzebra-2.0/usr/lib
 	dh_gencontrol
