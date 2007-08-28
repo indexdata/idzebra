@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2007
-dnl $Id: configure.ac,v 1.60 2007-08-27 17:22:22 adam Exp $
+dnl $Id: configure.ac,v 1.61 2007-08-28 17:57:46 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.15],[zebra-help@indexdata.dk])
@@ -239,10 +239,14 @@ if test "$bits" = "64"; then
 else
     AC_MSG_RESULT(no)
 fi
-AC_CHECK_SIZEOF([off_t])
-AC_CHECK_SIZEOF([long long])
-ZEBRA_CFLAGS="-DZEBRA_ZINT=${ac_cv_sizeof_long_long}"
-AC_DEFINE_UNQUOTED(ZEBRA_ZINT,${ac_cv_sizeof_long_long})
+AC_CHECK_TYPES([long long])
+if test "${ac_cv_type_long_long}" = "yes"; then
+    ZINT_VALUE=1
+else
+    ZINT_VALUE=0
+fi 
+ZEBRA_CFLAGS="-DZEBRA_ZINT=${ZINT_VALUE}"
+AC_DEFINE_UNQUOTED(ZEBRA_ZINT,${ZINT_VALUE})
 dnl ------ Modules
 AC_SUBST(SHARED_MODULE_LA)
 SHARED_MODULE_LA=""
