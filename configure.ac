@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2007
-dnl $Id: configure.ac,v 1.61 2007-08-28 17:57:46 adam Exp $
+dnl $Id: configure.ac,v 1.62 2007-08-28 18:12:09 adam Exp $
 dnl
 AC_PREREQ(2.59)
 AC_INIT([idzebra],[2.0.15],[zebra-help@indexdata.dk])
@@ -201,44 +201,7 @@ if test "$expat" != "no"; then
 fi
 dnl
 dnl ------- 64 bit files
-AC_MSG_CHECKING(for LFS)
-AC_TRY_RUN([#define _FILE_OFFSET_BITS 64
-#include <sys/types.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <errno.h>
-int main(int argc, char **argv)
-{
-	off_t o;
-	char tmp_str[32];
-	int fd;
-	struct flock area;
-	if (sizeof(off_t) != 8) 
-		exit (1);
-	o = 2000000000;
-	if ((o+o+o) / 3 != o)
-		exit(1);
-	fd = creat ("config.tmp", 0644);
-	if (fd < 0)
-		exit (1);
-	area.l_type = F_WRLCK;
-	area.l_whence = SEEK_SET;
-	area.l_len = area.l_start = 0L;
-	if (fcntl(fd, F_SETLKW, &area))
-		exit (1);
-	close (fd);
-	unlink ("config.tmp");
-	exit (0);
-}
-],bits=64,bits=32,bits=32)
-if test "$bits" = "64"; then
-    AC_DEFINE(_FILE_OFFSET_BITS,64)
-    AC_MSG_RESULT(yes)
-else
-    AC_MSG_RESULT(no)
-fi
+AC_SYS_LARGEFILE
 AC_CHECK_TYPES([long long])
 if test "${ac_cv_type_long_long}" = "yes"; then
     ZINT_VALUE=1
