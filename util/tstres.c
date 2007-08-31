@@ -1,4 +1,4 @@
-/* $Id: tstres.c,v 1.2 2007-05-16 12:31:17 adam Exp $
+/* $Id: tstres.c,v 1.3 2007-08-31 21:12:51 mike Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+#include <string.h>
 #include <idzebra/res.h>
 #include <yaz/test.h>
 
