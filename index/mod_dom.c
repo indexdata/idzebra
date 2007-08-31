@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.38 2007-06-19 19:39:54 adam Exp $
+/* $Id: mod_dom.c,v 1.39 2007-08-31 07:02:24 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1119,7 +1119,8 @@ static int convert_extract_doc(struct filter_info *tinfo,
     else
         xmlDocDumpMemory(store_doc ? store_doc : doc, &buf_out, &len_out);
 
-    (*p->setStoreData)(p, buf_out, len_out);
+    if (p->setStoreData)
+        (*p->setStoreData)(p, buf_out, len_out);
     xmlFree(buf_out);
 
     if (store_doc)
@@ -1308,7 +1309,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
     switch(input->type)
     {
     case DOM_INPUT_XMLREADER:
-        if (input->u.xmlreader.split_level == 0)
+        if (input->u.xmlreader.split_level == 0 || p->setStoreData == 0)
             return extract_xml_full(tinfo, input, p);
         else
             return extract_xml_split(tinfo, input, p);

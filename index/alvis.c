@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.18 2007-08-21 07:49:18 adam Exp $
+/* $Id: alvis.c,v 1.19 2007-08-31 07:02:24 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -487,7 +487,8 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
     xmlDocDumpMemory(doc, &buf_out, &len_out);
     if (p->flagShowRecords)
 	fwrite(buf_out, len_out, 1, stdout);
-    (*p->setStoreData)(p, buf_out, len_out);
+    if (p->setStoreData)
+        (*p->setStoreData)(p, buf_out, len_out);
     xmlFree(buf_out);
     
     xmlFreeDoc(doc);
@@ -573,7 +574,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
     struct filter_info *tinfo = clientData;
 
     odr_reset(tinfo->odr);
-    if (tinfo->split_level == 0)
+    if (tinfo->split_level == 0 || p->setStoreData == 0)
         return extract_full(tinfo, p);
     else
         return extract_split(tinfo, p);

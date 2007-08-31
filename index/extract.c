@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.261 2007-08-22 08:01:32 adam Exp $
+/* $Id: extract.c,v 1.262 2007-08-31 07:02:24 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -324,6 +324,8 @@ void extract_snippet(ZebraHandle zh, zebra_snippets *sn,
     extractCtrl.action = action_insert;
     
     init_extractCtrl(zh, &extractCtrl);
+
+    extractCtrl.setStoreData = 0;
 
     r = (*rt->extract)(recTypeClientData, &extractCtrl);
 
