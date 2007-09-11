@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.65 2007-08-22 12:36:22 adam Exp $
+# $Id: makefile,v 1.66 2007-09-11 15:29:35 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -426,6 +426,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\untrans.obj \
 	$(OBJDIR)\update_path.obj \
 	$(OBJDIR)\update_file.obj \
+	$(OBJDIR)\version.obj \
 	$(OBJDIR)\xmlread.obj \
 	$(OBJDIR)\xpath.obj \
 	$(OBJDIR)\zaptterm.obj \
