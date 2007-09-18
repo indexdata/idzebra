@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.12 2007-08-21 13:27:04 adam Exp $
+/* $Id: rpnscan.c,v 1.13 2007-09-18 18:57:29 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -106,12 +106,17 @@ static void count_set(ZebraHandle zh, RSET rset, zint *count)
     *count = rset->hits_count;
 }
 
-static void get_first_snippet_from_rset(RSET rset, zebra_snippets *snippets, 
+static void get_first_snippet_from_rset(ZebraHandle zh, 
+                                        RSET rset, zebra_snippets *snippets, 
                                         zint *sysno)
 {
     struct it_key key;
     RSFD rfd;
     TERMID termid;
+    size_t sysno_mem_index = 0;
+
+    if (zh->m_staticrank)
+	sysno_mem_index = 1;
 
     yaz_log(YLOG_DEBUG, "get_first_snippet_from_rset");
 
@@ -119,11 +124,11 @@ static void get_first_snippet_from_rset(RSET rset, zebra_snippets *snippets,
     *sysno = 0;
     while (rset_read(rfd, &key, &termid))
     {
-        if (key.mem[0] != *sysno)
+        if (key.mem[sysno_mem_index] != *sysno)
         {
             if (*sysno)
                 break;
-            *sysno = key.mem[0];
+            *sysno = key.mem[sysno_mem_index];
         }
         if (termid)
         {
@@ -238,7 +243,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
             glist[pos].term = 0;
             glist[pos].display_term = 0;
             
-            get_first_snippet_from_rset(rset, hit_snippets, &sysno);
+            get_first_snippet_from_rset(zh, rset, hit_snippets, &sysno);
             if (sysno)
                 code = zebra_get_rec_snippets(zh, sysno, rec_snippets);
          
