@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.24 2007-08-22 08:02:30 adam Exp $ -->
+  <!-- $Id: architecture.xml,v 1.25 2007-09-18 19:21:32 adam Exp $ -->
   <title>Overview of &zebra; Architecture</title>
 
   <section id="architecture-representation">
@@ -170,9 +170,9 @@
     <para>
      In addition to &acro.z3950; requests, the &yaz; server frontend acts
      as HTTP server, honoring
-      <ulink url="&url.srw;">&acro.sru; &acro.soap;</ulink> 
+      <ulink url="&url.sru;">&acro.sru; &acro.soap;</ulink> 
      requests, and  
-     <ulink url="&url.sru;">&acro.sru; &acro.rest;</ulink> 
+     &acro.sru; &acro.rest;
      requests. Moreover, it can
      translate incoming 
      <ulink url="&url.cql;">&acro.cql;</ulink>
