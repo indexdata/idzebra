@@ -1,3 +1,5 @@
+--- 2.0.18 2007/09/19
+
 Fixed bug with scan and staticrank enabled. Bug introduced in 2.0.16.
 
 --- 2.0.16 2007/09/12
