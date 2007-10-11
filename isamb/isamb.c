@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.47.2.8 2006-12-05 21:14:42 adam Exp $
+/* $Id: isamb.c,v 1.47.2.9 2007-10-11 06:45:33 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -620,13 +620,14 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
     void *c1 = (*b->method->code_start)(ISAMC_DECODE);
     void *c2 = (*b->method->code_start)(ISAMC_ENCODE);
     int more = 1;
-    int quater = b->file[b->no_cat-1].head.block_max / CAT_MAX;
+    int quater = b->file[b->no_cat-1].head.block_max / 4;
     char *cut = dst_buf + quater * 2;
     char *maxp = dst_buf + b->file[b->no_cat-1].head.block_max;
     char *half1 = 0;
     char *half2 = 0;
     char cut_item_buf[DST_ITEM_MAX];
     int cut_item_size = 0;
+    int inserted_dst_bytes = 0;
 
     if (p && p->size)
     {
@@ -640,6 +641,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         {
             char *dst_item = 0;
             char *lookahead_next;
+	    char *dst_0 = dst;
             int d = -1;
             
             if (lookahead_item)
@@ -676,7 +678,8 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
                 (*b->method->code_item)(ISAMC_ENCODE, c2, &dst, &dst_item);
             if (d > 0)  
             {
-                if (dst > maxp)
+		inserted_dst_bytes += (dst - dst_0);
+                if (inserted_dst_bytes >= quater)
                     lookahead_item = 0;
                 else
                 {
