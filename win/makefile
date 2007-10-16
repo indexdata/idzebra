@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.25.2.8 2006-08-14 18:01:40 adam Exp $
+# $Id: makefile,v 1.25.2.9 2007-10-16 10:10:37 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -9,7 +9,7 @@ DEBUG=0   # 0 for release, 1 for debug
 
 # EXPAT is optional. It's required for grs.xml-filters.
 HAVE_EXPAT=1
-EXPAT_DIR=c:\Expat-1.95.8
+EXPAT_DIR=c:\Program files\Expat 2.0.1
 
 # iconv is optional
 HAVE_ICONV=1
@@ -122,8 +122,8 @@ dll: $(DLL)
 
 !if $(HAVE_EXPAT)
 EXPAT_DEF= /D HAVE_EXPAT_H=1 /I"$(EXPAT_DIR)\source\lib"
-EXPAT_LIB= "$(EXPAT_DIR)\libs\libexpat.lib"
-EXPAT_DLL_SOURCE= "$(EXPAT_DIR)\libs\libexpat.dll"
+EXPAT_LIB= "$(EXPAT_DIR)\bin\libexpat.lib"
+EXPAT_DLL_SOURCE= "$(EXPAT_DIR)\bin\libexpat.dll"
 EXPAT_DLL_TARGET="$(BINDIR)\libexpat.dll"
 expat: $(EXPAT_DLL_TARGET)
 
