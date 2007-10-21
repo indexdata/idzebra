@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.39 2007-08-31 07:02:24 adam Exp $
+/* $Id: mod_dom.c,v 1.40 2007-10-21 19:39:00 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1306,10 +1306,13 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
         return RECCTRL_EXTRACT_ERROR_GENERIC;
     
     odr_reset(tinfo->odr_record);
+
+    if (p->setStoreData == 0)
+        return extract_xml_full(tinfo, input, p);
     switch(input->type)
     {
     case DOM_INPUT_XMLREADER:
-        if (input->u.xmlreader.split_level == 0 || p->setStoreData == 0)
+        if (input->u.xmlreader.split_level == 0)
             return extract_xml_full(tinfo, input, p);
         else
             return extract_xml_split(tinfo, input, p);
