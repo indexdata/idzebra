@@ -1,4 +1,4 @@
-/* $Id: rob_regexp.h,v 1.1 2007-10-23 12:26:25 adam Exp $
+/* $Id: rob_regexp.h,v 1.2 2007-10-23 12:36:22 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -21,7 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /** 
-    \brief Definitions for Zebra's index rules system
+    \file rob_regexp.h
+    \brief Rob Pike's regular expression matcher
 */
 
 #ifndef ZEBRA_ROB_REGEXP_H
@@ -31,6 +32,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 YAZ_BEGIN_CDECL
 
+/** \brief matches a regular expression against text
+    \param regexp regular expression
+    \param text the text
+    \retval 0 no match
+    \retval 1 match
+
+    Operators: c (literal char), . (any char), ^ (begin), $ (end),
+    * (zero or more)
+*/
 int zebra_rob_regexp(const char *regexp, const char *text);
 
 YAZ_END_CDECL

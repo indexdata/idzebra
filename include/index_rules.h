@@ -1,4 +1,4 @@
-/* $Id: index_rules.h,v 1.1 2007-10-23 12:26:25 adam Exp $
+/* $Id: index_rules.h,v 1.2 2007-10-23 12:36:22 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /** 
+    \file index_rules.h
     \brief Definitions for Zebra's index rules system
 */
 
@@ -32,6 +33,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 YAZ_BEGIN_CDECL
 
+/**
+   \brief zebra index rules handle (ptr)
+*/
 typedef struct zebra_index_rules_s *zebra_index_rules_t;
 
 /** \brief creates index rules handler/object from file
@@ -65,7 +69,7 @@ void zebra_index_rules_destroy(zebra_index_rules_t r);
 
 
 /** \brief creates index rules handler/object from xml Doc
-    \param fname filename
+    \param doc Libxml2 document
     \returns handle (NULL if unsuccessful)
 
     Similar to zebra_index_rules_create

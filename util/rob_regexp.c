@@ -1,4 +1,4 @@
-/* $Id: rob_regexp.c,v 1.1 2007-10-23 12:26:26 adam Exp $
+/* $Id: rob_regexp.c,v 1.2 2007-10-23 12:36:22 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -21,7 +21,8 @@
 */
 
 /** 
-    \brief Rob Pike's regular expresion parser
+    \file rob_regexp.c
+    \brief Rob Pike's regular expression matcher
     
     Taken verbatim from Beautiful code.. ANSIfied a bit.
  */
