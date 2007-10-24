@@ -1,4 +1,4 @@
-/* $Id: index_rules.c,v 1.1 2007-10-23 12:26:26 adam Exp $
+/* $Id: index_rules.c,v 1.2 2007-10-24 13:55:55 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -26,16 +26,14 @@
 #include <string.h>
 
 #include "index_rules.h"
-#include "rob_regexp.h"
+#include <yaz/match_glob.h>
 #include <yaz/xmalloc.h>
 #include <yaz/wrbuf.h>
 #include <yaz/log.h>
 
 struct zebra_index_rules_s {
-    WRBUF last_id;
 #if YAZ_HAVE_XML2
     struct zebra_index_rule *rules;
-    struct zebra_index_rule *last_rule_match;
     xmlDocPtr doc;
 #endif
 };
@@ -112,8 +110,6 @@ zebra_index_rules_t zebra_index_rules_create_doc(xmlDocPtr doc)
     const xmlNode *top = xmlDocGetRootElement(doc);
     
     r->doc = doc;
-    r->last_rule_match = 0;
-    r->last_id = wrbuf_alloc();
     *rp = 0;
     if (top && top->type == XML_ELEMENT_NODE
         && !strcmp((const char *) top->name, "indexrules"))
@@ -161,27 +157,19 @@ void zebra_index_rules_destroy(zebra_index_rules_t r)
     xmlFreeDoc(r->doc);
 
 #endif
-    wrbuf_destroy(r->last_id);
     xfree(r);
 }
 
 const char *zebra_index_rule_lookup_str(zebra_index_rules_t r, const char *id)
 {
 #if YAZ_HAVE_XML2
-    if (r->last_rule_match && !strcmp(wrbuf_cstr(r->last_id), id))
-        return r->last_rule_match->id;
-    else
-    {
-        struct zebra_index_rule *rule = r->rules;
+
+    struct zebra_index_rule *rule = r->rules;
         
-        wrbuf_rewind(r->last_id);
-        wrbuf_puts(r->last_id, id);
-        while (rule && !zebra_rob_regexp(rule->id, id))
-            rule = rule->next;
-        r->last_rule_match = rule;
-        if (rule)
-            return rule->id;
-    }
+    while (rule && !yaz_match_glob(rule->id, id))
+        rule = rule->next;
+    if (rule)
+        return rule->id;
 #endif
     return 0;
 }

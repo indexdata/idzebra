@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.34 2007-10-23 12:26:26 adam Exp $
+## $Id: Makefile.am,v 1.35 2007-10-24 13:55:55 adam Exp $
 
 noinst_LTLIBRARIES = libidzebra-util.la
 
@@ -18,7 +18,7 @@ LDADD = libidzebra-util.la $(YAZLALIB)
 
 libidzebra_util_la_SOURCES = version.c zint.c res.c charmap.c zebramap.c \
  passwddb.c zebra-lock.c dirent.c xpath.c atoi_zn.c snippet.c flock.c \
- attrfind.c exit.c it_key.c su_codec.c index_rules.c rob_regexp.c
+ attrfind.c exit.c it_key.c su_codec.c index_rules.c 
 
 tstpass_SOURCES = tstpass.c
 

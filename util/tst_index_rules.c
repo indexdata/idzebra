@@ -1,4 +1,4 @@
-/* $Id: tst_index_rules.c,v 1.1 2007-10-23 12:26:26 adam Exp $
+/* $Id: tst_index_rules.c,v 1.2 2007-10-24 13:55:55 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -28,19 +28,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 const char *xml_str = 
 "    <indexrules>"
-"      <indexrule id=\"^.*:w:el$\" position=\"1\" alwaysmatches=\"1\" firstinfield=\"1\"\n"
+"      <indexrule id=\"*:w:el\" position=\"1\" alwaysmatches=\"1\" firstinfield=\"1\"\n"
 "       locale=\"el\">\n"
 "        <!-- conversion rules for words -->\n"
 "      </indexrule>\n"
-"      <indexrule id=\"^.*:w$\" position=\"1\" alwaysmatches=\"1\" firstinfield=\"1\"\n"
+"      <indexrule id=\"*:w\" position=\"1\" alwaysmatches=\"1\" firstinfield=\"1\"\n"
 "       locale=\"en\">\n"
 "        <!-- conversion rules for words -->\n"
 "      </indexrule>\n"
-"      <indexrule id=\"^.*:p$\" position=\"0\" alwaysmatches=\"0\" firstinfield=\"0\"\n"
+"      <indexrule id=\"*:p\" position=\"0\" alwaysmatches=\"0\" firstinfield=\"0\"\n"
 "        locale=\"en\">\n"
 "        <!-- conversion rules for phrase -->\n"
 "      </indexrule>\n"
-"      <indexrule id=\"^.*:s$\" sort=\"1\" \n"
+"      <indexrule id=\"*:s\" sort=\"1\" \n"
 "        locale=\"en\">\n"
 "        <!-- conversion rules for phrase -->\n"
 "      </indexrule>\n"
@@ -72,18 +72,18 @@ void tst1(void)
         if (!rules)
             return ;
         
-        YAZ_CHECK(compare_lookup(rules, "title:s", "^.*:s$"));
+        YAZ_CHECK(compare_lookup(rules, "title:s", "*:s"));
         YAZ_CHECK(compare_lookup(rules, "title:sx", 0));
         YAZ_CHECK(compare_lookup(rules, "title:Sx", 0));
-        YAZ_CHECK(compare_lookup(rules, "any:w", "^.*:w$"));
+        YAZ_CHECK(compare_lookup(rules, "any:w", "*:w"));
         YAZ_CHECK(compare_lookup(rules, "any:w:en", 0));
-        YAZ_CHECK(compare_lookup(rules, "any:w:el", "^.*:w:el$"));
+        YAZ_CHECK(compare_lookup(rules, "any:w:el", "*:w:el"));
         
         {
             int i, iter = 3333;
             for (i = 0; i < iter; i++)
             {
-                compare_lookup(rules, "title:s", "^.*:s$");
+                compare_lookup(rules, "title:s", "*:s");
                 compare_lookup(rules, "title:sx", 0);
                 compare_lookup(rules, "title:Sx", 0);
             }
