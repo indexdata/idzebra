@@ -1,4 +1,4 @@
-/* $Id: index_types.c,v 1.1 2007-10-25 09:22:36 adam Exp $
+/* $Id: index_types.c,v 1.2 2007-10-25 19:25:00 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -20,12 +20,18 @@
    02111-1307, USA.
 */
 
+/** 
+    \file
+    \brief Implementation of Zebra's index types system
+*/
+
 #include <assert.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 
 #include "index_types.h"
+#include <yaz/icu_I18N.h>
 #include <yaz/match_glob.h>
 #include <yaz/xmalloc.h>
 #include <yaz/wrbuf.h>
@@ -33,37 +39,54 @@
 
 struct zebra_index_types_s {
 #if YAZ_HAVE_XML2
-    struct zebra_index_type *rules;
+    zebra_index_type_t rules;
     xmlDocPtr doc;
 #endif
 };
 
 #if YAZ_HAVE_XML2
-struct zebra_index_type {
+struct zebra_index_type_s {
     const xmlNode *ptr;
     const char *id;
     const char *locale;
     const char *position;
     const char *alwaysmatches;
     const char *firstinfield;
-    const char *sort;
-    struct zebra_index_type *next;
+    int sort_flag;
+    int index_flag;
+    int staticrank_flag;
+    int simple_chain;
+#if HAVE_ICU
+    struct icu_chain *chain;
+#endif
+    zebra_index_type_t next;
+    WRBUF simple_buf;
+    size_t simple_off;
 };
 
-struct zebra_index_type *parse_index_type(const xmlNode *ptr)
+static void index_type_destroy(zebra_index_type_t t);
+
+zebra_index_type_t parse_index_type(const xmlNode *ptr)
 {
     struct _xmlAttr *attr;
-    struct zebra_index_type *rule;
+    struct zebra_index_type_s *rule;
     
     rule = xmalloc(sizeof(*rule)); 
     rule->next = 0;
+#if HAVE_ICU
+    rule->chain = 0;
+#endif
     rule->ptr = ptr;
     rule->locale = 0;
     rule->id = 0;
     rule->position = 0;
     rule->alwaysmatches = 0;
     rule->firstinfield = 0;
-    rule->sort = 0;
+    rule->sort_flag = 0;
+    rule->index_flag = 1;
+    rule->staticrank_flag = 0;
+    rule->simple_chain = 0;
+    rule->simple_buf = wrbuf_alloc();
     for (attr = ptr->properties; attr; attr = attr->next)
     {
         if (attr->children && attr->children->type == XML_TEXT_NODE)
@@ -78,16 +101,70 @@ struct zebra_index_type *parse_index_type(const xmlNode *ptr)
                 rule->alwaysmatches = (const char *) attr->children->content;
             else if (!strcmp((const char *) attr->name, "firstinfield"))
                 rule->firstinfield = (const char *) attr->children->content;
+            else if (!strcmp((const char *) attr->name, "index"))
+            {
+                const char *v = (const char *) attr->children->content;
+                if (v)
+                    rule->index_flag = *v == '1';
+            }
             else if (!strcmp((const char *) attr->name, "sort"))
-                rule->sort = (const char *) attr->children->content;
+            {
+                const char *v = (const char *) attr->children->content;
+                if (v)
+                    rule->sort_flag = *v == '1';
+            }
+            else if (!strcmp((const char *) attr->name, "staticrank"))
+            {
+                const char *v = (const char *) attr->children->content;
+                if (v)
+                    rule->staticrank_flag = *v == '1';
+            }
             else
             {
-                yaz_log(YLOG_WARN, "Unsupport attribute '%s' for indexrule",
+                yaz_log(YLOG_WARN, "Unsupport attribute '%s' for indextype",
                         attr->name);
-                xfree(rule);
+                index_type_destroy(rule);
                 return 0;
             }
         }
+    }
+    ptr = ptr->children;
+    while (ptr && ptr->type != XML_ELEMENT_NODE)
+        ptr = ptr->next;
+    if (!ptr)
+    {
+        yaz_log(YLOG_WARN, "Missing rules for indexrule");
+        index_type_destroy(rule);
+        rule = 0;
+    }
+    else if (!strcmp((const char *) ptr->name, "icu_chain"))
+    {
+#if HAVE_ICU
+        UErrorCode status;
+        rule->chain = icu_chain_xml_config(ptr,
+                                           rule->locale,
+                                           rule->sort_flag,
+                                           &status);
+        if (!rule->chain)
+        {
+            index_type_destroy(rule);
+            rule = 0;
+        }
+#else
+        yaz_log(YLOG_WARN, "ICU unsupported (must be part of YAZ)");
+        xfree(rule);
+        rule = 0;
+#endif
+    }
+    else if (!strcmp((const char *) ptr->name, "simple"))
+    {
+        rule->simple_chain = 1;
+    }
+    else 
+    {
+        yaz_log(YLOG_WARN, "Unsupported mapping %s for indexrule",  ptr->name);
+        index_type_destroy(rule);
+        rule = 0;
     }
     return rule;
 }
@@ -106,7 +183,7 @@ zebra_index_types_t zebra_index_types_create_doc(xmlDocPtr doc)
 {
 #if YAZ_HAVE_XML2
     zebra_index_types_t r = xmalloc(sizeof(*r));
-    struct zebra_index_type **rp = &r->rules;
+    zebra_index_type_t *rp = &r->rules;
     const xmlNode *top = xmlDocGetRootElement(doc);
     
     r->doc = doc;
@@ -137,40 +214,125 @@ zebra_index_types_t zebra_index_types_create_doc(xmlDocPtr doc)
     }
     return r;
 #else
-    yaz_log(YLOG_WARN, "Cannot read index types %s because YAZ is without XML "
-            "support", fname);
+    yaz_log(YLOG_WARN, "XML unsupported. Cannot read index rules");
     return 0;
 /* YAZ_HAVE_XML2 */
 #endif
 }
 
-void zebra_index_types_destroy(zebra_index_types_t r)
+static void index_type_destroy(zebra_index_type_t t)
 {
-#if YAZ_HAVE_XML2
-    struct zebra_index_type *rule;
-    while (r->rules)
+    if (t)
     {
-        rule = r->rules;
-        r->rules = rule->next;
-        xfree(rule);
-    }
-    xmlFreeDoc(r->doc);
-
+#if HAVE_ICU
+        if (t->chain)
+            icu_chain_destroy(t->chain);
 #endif
-    xfree(r);
+        wrbuf_destroy(t->simple_buf);
+        xfree(t);
+    }
 }
 
-const char *zebra_index_type_lookup_str(zebra_index_types_t r, const char *id)
+void zebra_index_types_destroy(zebra_index_types_t r)
+{
+    if (r)
+    {
+#if YAZ_HAVE_XML2
+        zebra_index_type_t rule;
+        while (r->rules)
+        {
+            rule = r->rules;
+            r->rules = rule->next;
+            index_type_destroy(rule);
+        }
+        xmlFreeDoc(r->doc);
+        
+#endif
+        xfree(r);
+    }
+}
+
+zebra_index_type_t zebra_index_type_get(zebra_index_types_t types, 
+                                        const char *id)
 {
 #if YAZ_HAVE_XML2
-
-    struct zebra_index_type *rule = r->rules;
+    zebra_index_type_t rule = types->rules;
         
     while (rule && !yaz_match_glob(rule->id, id))
         rule = rule->next;
-    if (rule)
-        return rule->id;
+    return rule;
 #endif
+    return 0;
+}
+
+const char *zebra_index_type_lookup_str(zebra_index_types_t types,
+                                        const char *id)
+{
+    zebra_index_type_t t = zebra_index_type_get(types, id);
+    if (t)
+        return t->id;
+    return 0;
+}
+
+int zebra_index_type_is_index(zebra_index_type_t type)
+{
+    return type->index_flag;
+}
+
+int zebra_index_type_is_sort(zebra_index_type_t type)
+{
+    return type->sort_flag;
+}
+
+int zebra_index_type_is_staticrank(zebra_index_type_t type)
+{
+    return type->staticrank_flag;
+}
+
+#define SE_CHARS ";,.()-/?<> \r\n\t"
+
+int tokenize_simple(zebra_index_type_t type,
+                    const char **result_buf, size_t *result_len)
+{
+    char *buf = wrbuf_buf(type->simple_buf);
+    size_t len = wrbuf_len(type->simple_buf);
+    size_t i = type->simple_off;
+    size_t start;
+
+    while (i < len && strchr(SE_CHARS, buf[i]))
+        i++;
+    start = i;
+    while (i < len && !strchr(SE_CHARS, buf[i]))
+    {
+        if (buf[i] > 32 && buf[i] < 127)
+            buf[i] = tolower(buf[i]);
+        i++;
+    }
+
+    type->simple_off = i;
+    if (start != i)
+    {
+        *result_buf = buf + start;
+        *result_len = i - start;
+        return 1;
+    }
+    return 0;
+ }
+
+int zebra_index_type_tokenize(zebra_index_type_t type,
+                              const char *buf, size_t len,
+                              const char **result_buf, size_t *result_len)
+{
+    if (type->simple_chain)
+    {
+        if (buf)
+        {
+            wrbuf_rewind(type->simple_buf);
+            wrbuf_write(type->simple_buf, buf, len);
+            type->simple_off = 0;
+        }
+        return tokenize_simple(type, result_buf, result_len);
+    }
     return 0;
 }
 

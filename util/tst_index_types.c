@@ -1,4 +1,4 @@
-/* $Id: tst_index_types.c,v 1.2 2007-10-25 09:23:34 adam Exp $
+/* $Id: tst_index_types.c,v 1.3 2007-10-25 19:25:00 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -29,19 +29,19 @@ const char *xml_str =
 "    <indextypes>"
 "      <indextype id=\"*:w:el\" position=\"1\" alwaysmatches=\"1\" firstinfield=\"1\"\n"
 "       locale=\"el\">\n"
-"        <!-- conversion rules for words -->\n"
+"        <simple/>\n"
 "      </indextype>\n"
 "      <indextype id=\"*:w\" position=\"1\" alwaysmatches=\"1\" firstinfield=\"1\"\n"
 "       locale=\"en\">\n"
-"        <!-- conversion rules for words -->\n"
+"        <simple/>\n"
 "      </indextype>\n"
 "      <indextype id=\"*:p\" position=\"0\" alwaysmatches=\"0\" firstinfield=\"0\"\n"
 "        locale=\"en\">\n"
-"        <!-- conversion rules for phrase -->\n"
+"        <simple/>\n"
 "      </indextype>\n"
 "      <indextype id=\"*:s\" sort=\"1\" \n"
 "        locale=\"en\">\n"
-"        <!-- conversion rules for phrase -->\n"
+"        <simple/>\n"
 "      </indextype>\n"
 "    </indextypes>\n"
 ;
@@ -60,12 +60,14 @@ int compare_lookup(zebra_index_types_t r, const char *id,
 
 void tst1(void)
 {
+#if YAZ_HAVE_XML2
     xmlDocPtr doc = xmlParseMemory(xml_str, strlen(xml_str));
 
     YAZ_CHECK(doc);
     if (doc)
     {
         zebra_index_types_t rules = zebra_index_types_create_doc(doc);
+        zebra_index_type_t type;
         YAZ_CHECK(rules);
 
         if (!rules)
@@ -88,8 +90,62 @@ void tst1(void)
             }
         }
 
+        type = zebra_index_type_get(rules, "any:w");
+        YAZ_CHECK(type);
+        if (type)
+        {
+            const char *buf = " How are you?";
+            size_t len = strlen(buf);
+            int r = 1;
+
+            if (r)
+            {
+                const char *result_buf = 0;
+                size_t result_len = 0;
+                r = zebra_index_type_tokenize(type, buf, len,
+                                          &result_buf, &result_len);
+                YAZ_CHECK_EQ(r, 1);
+                YAZ_CHECK(result_len == 3 &&
+                          !memcmp(result_buf, "how", result_len));
+            }
+
+            if (r)
+            {
+                const char *result_buf = 0;
+                size_t result_len = 0;
+                r = zebra_index_type_tokenize(type, 0,  0,
+                                              &result_buf, &result_len);
+                YAZ_CHECK_EQ(r, 1);
+                YAZ_CHECK(result_len == 3 && 
+                          !memcmp(result_buf, "are", result_len));
+            }            
+
+            if (r)
+            {
+                const char *result_buf = 0;
+                size_t result_len = 0;
+                r = zebra_index_type_tokenize(type, 0,  0,
+                                              &result_buf, &result_len);
+                YAZ_CHECK_EQ(r, 1);
+                YAZ_CHECK(result_len == 3 && 
+                          !memcmp(result_buf, "you", result_len));
+            }            
+
+            if (r)
+            {
+                const char *result_buf = 0;
+                size_t result_len = 0;
+                r = zebra_index_type_tokenize(type, 0,  0,
+                                              &result_buf, &result_len);
+                YAZ_CHECK_EQ(r, 0);
+            }            
+        }
         zebra_index_types_destroy(rules);
     }
+#else
+    zebra_index_types_t rules = zebra_index_types_create_doc(doc);
+    YAZ_CHECK(!rules);
+#endif
 }
 
 int main(int argc, char **argv)

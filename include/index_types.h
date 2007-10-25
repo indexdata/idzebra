@@ -1,4 +1,4 @@
-/* $Id: index_types.h,v 1.1 2007-10-25 09:22:36 adam Exp $
+/* $Id: index_types.h,v 1.2 2007-10-25 19:25:00 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /** 
-    \files
+    \file
     \brief Definitions for Zebra's index types
 */
 
@@ -33,12 +33,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 YAZ_BEGIN_CDECL
 
-/**
-   \brief zebra index rules handle (ptr)
-*/
+/** \brief zebra index types handle (ptr) */
 typedef struct zebra_index_types_s *zebra_index_types_t;
 
-/** \brief creates index rules handler/object from file
+/** \brief zebra index type handle (ptr) */
+typedef struct zebra_index_type_s *zebra_index_type_t;
+
+/** \brief creates index types handler/object from file
     \param fname filename
     \returns handle (NULL if unsuccessful)
 
@@ -63,9 +64,9 @@ typedef struct zebra_index_types_s *zebra_index_types_t;
 zebra_index_types_t zebra_index_types_create(const char *fname);
 
 /** \brief destroys index rules object
-    \param r handle
+    \param types handle
  */
-void zebra_index_types_destroy(zebra_index_types_t r);
+void zebra_index_types_destroy(zebra_index_types_t types);
 
 
 /** \brief creates index types handler/object from xml Doc
@@ -78,11 +79,56 @@ zebra_index_types_t zebra_index_types_create_doc(xmlDocPtr doc);
 
 
 /** \brief lookup of index type
-    \param r rules
+    \param types types
     \param id id to search for
     \returns pattern ID
 */
-const char *zebra_index_type_lookup_str(zebra_index_types_t r, const char *id);
+const char *zebra_index_type_lookup_str(zebra_index_types_t types, 
+                                        const char *id);
+
+
+/** \brief get index type of a given ID
+    \param types types
+    \param id ID to search for
+    \returns index type handle
+*/
+zebra_index_type_t zebra_index_type_get(zebra_index_types_t types, 
+                                        const char *id);
+
+/** \brief check whether index type is of type 'index'
+    \param type index type
+    \retval 1 YES
+    \retval 0 NO
+*/
+int zebra_index_type_is_index(zebra_index_type_t type);
+
+/** \brief check whether index type is of type 'sort'
+    \param type index type
+    \retval 1 YES
+    \retval 0 NO
+*/
+int zebra_index_type_is_sort(zebra_index_type_t type);
+
+/** \brief check whether index type is of type 'staticrank'
+    \param type index type
+    \retval 1 YES
+    \retval 0 NO
+*/
+int zebra_index_type_is_staticrank(zebra_index_type_t type);
+
+
+/** \brief tokenize a term for an index type
+    \param type index type
+    \param buf term buffer (pass 0 to continue with previous buf)
+    \param len term length
+    \param result_buf resulting token buffer
+    \param result_len resulting token length
+    \retval 1 token read and result is in result_buf
+    \retval 0 no token read (no more tokens in buf)
+*/
+int zebra_index_type_tokenize(zebra_index_type_t type,
+                              const char *buf, size_t len,
+                              const char **result_buf, size_t *result_len);
 
 YAZ_END_CDECL
 
