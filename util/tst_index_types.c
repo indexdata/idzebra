@@ -1,4 +1,4 @@
-/* $Id: tst_index_rules.c,v 1.2 2007-10-24 13:55:55 adam Exp $
+/* $Id: tst_index_types.c,v 1.1 2007-10-25 09:22:36 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -22,35 +22,35 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <charmap.h>
 #include <yaz/test.h>
-#include <index_rules.h>
+#include <index_types.h>
 #include <stdlib.h>
 #include <string.h>
 
 const char *xml_str = 
-"    <indexrules>"
-"      <indexrule id=\"*:w:el\" position=\"1\" alwaysmatches=\"1\" firstinfield=\"1\"\n"
+"    <indextypes>"
+"      <indextype id=\"*:w:el\" position=\"1\" alwaysmatches=\"1\" firstinfield=\"1\"\n"
 "       locale=\"el\">\n"
 "        <!-- conversion rules for words -->\n"
-"      </indexrule>\n"
-"      <indexrule id=\"*:w\" position=\"1\" alwaysmatches=\"1\" firstinfield=\"1\"\n"
+"      </indextype>\n"
+"      <indextype id=\"*:w\" position=\"1\" alwaysmatches=\"1\" firstinfield=\"1\"\n"
 "       locale=\"en\">\n"
 "        <!-- conversion rules for words -->\n"
-"      </indexrule>\n"
-"      <indexrule id=\"*:p\" position=\"0\" alwaysmatches=\"0\" firstinfield=\"0\"\n"
+"      </indextype>\n"
+"      <indextype id=\"*:p\" position=\"0\" alwaysmatches=\"0\" firstinfield=\"0\"\n"
 "        locale=\"en\">\n"
 "        <!-- conversion rules for phrase -->\n"
-"      </indexrule>\n"
-"      <indexrule id=\"*:s\" sort=\"1\" \n"
+"      </indextype>\n"
+"      <indextype id=\"*:s\" sort=\"1\" \n"
 "        locale=\"en\">\n"
 "        <!-- conversion rules for phrase -->\n"
-"      </indexrule>\n"
-"    </indexrules>\n"
+"      </indextype>\n"
+"    </indextypes>\n"
 ;
 
-int compare_lookup(zebra_index_rules_t r, const char *id,
+int compare_lookup(zebra_index_types_t r, const char *id,
                    const char *expected_id)
 {
-    const char *got_id = zebra_index_rule_lookup_str(r, id);
+    const char *got_id = zebra_index_type_lookup_str(r, id);
     if (!got_id && !expected_id)
         return 1;  /* none expected */
 
@@ -66,7 +66,7 @@ void tst1(void)
     YAZ_CHECK(doc);
     if (doc)
     {
-        zebra_index_rules_t rules = zebra_index_rules_create_doc(doc);
+        zebra_index_types_t rules = zebra_index_types_create_doc(doc);
         YAZ_CHECK(rules);
 
         if (!rules)
@@ -89,7 +89,7 @@ void tst1(void)
             }
         }
 
-        zebra_index_rules_destroy(rules);
+        zebra_index_types_destroy(rules);
     }
 }
 
