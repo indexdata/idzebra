@@ -1,4 +1,4 @@
-/* $Id: tst_index_types.c,v 1.1 2007-10-25 09:22:36 adam Exp $
+/* $Id: tst_index_types.c,v 1.2 2007-10-25 09:23:34 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-#include <charmap.h>
 #include <yaz/test.h>
 #include <index_types.h>
 #include <stdlib.h>
