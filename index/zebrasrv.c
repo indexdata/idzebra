@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.19 2007-08-27 17:22:22 adam Exp $
+/* $Id: zebrasrv.c,v 1.20 2007-10-25 07:43:13 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -737,7 +737,7 @@ static void bend_start (struct statserv_options_block *sob)
 #ifdef WIN32
     
 #else
-    if (!sob->inetd) 
+    if (!sob->inetd && !sob->background) 
     {
 	char pidfname[4096];
         struct flock area;
@@ -784,7 +784,7 @@ static void bend_stop(struct statserv_options_block *sob)
 #ifdef WIN32
 
 #else
-    if (!sob->inetd && sob->handle) 
+    if (!sob->inetd && !sob->background && sob->handle) 
     {
 	char pidfname[4096];
 	zebra_pidfname(sob->handle, pidfname);
