@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.36 2007-05-08 12:50:03 adam Exp $
+/* $Id: d1_absyn.c,v 1.37 2007-10-28 18:41:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -864,9 +864,10 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
             data1_xpelement *xp_ele = 0;
             data1_xpelement *last_match = 0;
             
-	    if (argc < 3)
+	    if (argc != 3)
 	    {
-		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to xelm", file, lineno);
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to %s",
+                        file, lineno, cmd);
 		continue;
 	    }
 
