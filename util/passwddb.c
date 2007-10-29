@@ -1,4 +1,4 @@
-/* $Id: passwddb.c,v 1.17 2007-10-29 08:19:39 adam Exp $
+/* $Id: passwddb.c,v 1.18 2007-10-29 09:23:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -135,6 +135,8 @@ int passwd_db_auth(Passwd_db db, const char *user, const char *pass)
 	    break;
     if (!pe)
 	return -1;
+    if (!pass)
+	return -2;
     if (pe->encrypt_flag)
     {
 #if HAVE_CRYPT_H
@@ -142,8 +144,6 @@ int passwd_db_auth(Passwd_db db, const char *user, const char *pass)
         assert(pe->des);
 	if (strlen (pe->des) < 3)
 	    return -3;
-	if (!pass)
-	    return -2;
 
         if (pe->des[0] != '$') /* Not MD5? (assume DES) */
         {
