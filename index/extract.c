@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.263 2007-10-29 09:25:40 adam Exp $
+/* $Id: extract.c,v 1.264 2007-10-29 13:43:57 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -20,6 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+/** \file
+    \brief indexes records and extract tokens for indexing and sorting
+*/
+
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
@@ -31,10 +35,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 #include <fcntl.h>
 
+
 #include "index.h"
 #include "orddict.h"
 #include <direntz.h>
 #include <charmap.h>
+#include <yaz/snprintf.h>
 
 static int log_level_extract = 0;
 static int log_level_details = 0;
@@ -68,6 +74,7 @@ static void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
                                     int cmd, zebra_rec_keys_t skp);
 static void extract_schema_add(struct recExtractCtrl *p, Odr_oid *oid);
 static void extract_token_add(RecWord *p);
+static void extract_token_add2(RecWord *p);
 
 static void check_log_limit(ZebraHandle zh)
 {
@@ -828,7 +835,14 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         stream->endf(stream, &null_offset);;
 
         extractCtrl.init = extract_init;
-        extractCtrl.tokenAdd = extract_token_add;
+        if (zh->reg->index_types)
+        {
+            extractCtrl.tokenAdd = extract_token_add2;
+        }
+        else
+        {
+            extractCtrl.tokenAdd = extract_token_add;
+        }
         extractCtrl.schemaAdd = extract_schema_add;
         extractCtrl.dh = zh->reg->dh;
         extractCtrl.handle = zh;
@@ -1744,6 +1758,75 @@ static void extract_add_complete_field(RecWord *p)
     extract_add_string(p, buf, i);
 }
 
+static void extract_token_add2_index(ZebraHandle zh, zebra_index_type_t type,
+                                     RecWord *p)
+{
+    struct it_key key;
+    const char *res_buf = 0;
+    size_t res_len = 0;
+    int r = zebra_index_type_tokenize(type, p->term_buf, p->term_len,
+                                      &res_buf, &res_len);
+    int cat = zinfo_index_category_index;
+    int ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, p->index_type, p->index_name);
+    if (ch < 0)
+        ch = zebraExplain_add_attr_str(zh->reg->zei, cat, p->index_type, p->index_name);
+    while (r)
+    {
+        int i = 0;
+        key.mem[i++] = ch;
+        key.mem[i++] = p->record_id;
+        key.mem[i++] = p->section_id;
+        
+        if (zh->m_segment_indexing)
+            key.mem[i++] = p->segment;
+        key.mem[i++] = p->seqno;
+        key.len = i;
+
+        yaz_log(YLOG_LOG, "keys_write %.*s", (int) res_len, res_buf);
+        zebra_rec_keys_write(zh->reg->keys, res_buf, res_len, &key);
+        
+        p->seqno++;
+        r = zebra_index_type_tokenize(type, 0, 0, &res_buf, &res_len);
+    }
+}
+
+static void extract_token_add2(RecWord *p)
+{
+    zebra_index_type_t type;
+    ZebraHandle zh = p->extractCtrl->handle;
+    char type_tmp[2];
+    type_tmp[0] = p->index_type;
+    type_tmp[1] = '\0';
+    type = zebra_index_type_get(zh->reg->index_types, type_tmp);
+    if (type)
+    {
+        if (zebra_index_type_is_index(type))
+        {
+            extract_token_add2_index(zh, type, p);
+        }
+        else if (zebra_index_type_is_sort(type))
+        {
+            ;
+            
+        }
+    }
+}
+
+/** \brief top-level indexing handler for recctrl system
+    \param p token data to be indexed
+
+    Call sequence:
+    extract_token
+    zebra_add_{in}_complete
+    extract_add_string
+    
+    extract_add_index_string
+    or
+    extract_add_sort_string
+    or
+    extract_add_staticrank_string
+    
+*/
 static void extract_token_add(RecWord *p)
 {
     ZebraHandle zh = p->extractCtrl->handle;

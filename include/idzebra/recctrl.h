@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.35 2007-05-08 12:50:04 adam Exp $
+/* $Id: recctrl.h,v 1.36 2007-10-29 13:43:57 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 

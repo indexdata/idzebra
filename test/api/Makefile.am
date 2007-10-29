@@ -1,15 +1,15 @@
-# $Id: Makefile.am,v 1.40 2006-11-16 12:48:28 adam Exp $
+# $Id: Makefile.am,v 1.41 2007-10-29 13:43:58 adam Exp $
 
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c 
 
-simpletests = t0 t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16
+simpletests = t0 t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16 t17
 safaritests = safari1
 check_PROGRAMS = $(simpletests) $(safaritests)
 TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST=zebra.cfg zebra6.cfg zebra8.cfg zebra10.cfg zebra15.cfg safari.cfg \
-	t10.att t10.abs
+	t10.att t10.abs zebra17.cfg indextypes17.xml
 
 noinst_LIBRARIES = libtestlib.a
 
@@ -32,6 +32,7 @@ t13_SOURCES = t13.c
 t14_SOURCES = t14.c
 t15_SOURCES = t15.c
 t16_SOURCES = t16.c
+t17_SOURCES = t17.c
 
 safari1_SOURCES = safari1.c testlib.c
 
