@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.72 2007-08-21 13:27:04 adam Exp $
+/* $Id: retrieve.c,v 1.73 2007-10-29 09:25:40 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -62,8 +62,8 @@ static int zebra_create_record_stream(ZebraHandle zh,
         else
             strcpy(full_rep, (*rec)->info[recInfo_filename]);
             
-        if ((fd = open (full_rep, O_BINARY|O_RDONLY)) == -1){
-            yaz_log (YLOG_WARN|YLOG_ERRNO, "Retrieve fail; missing file: %s",
+        if ((fd = open(full_rep, O_BINARY|O_RDONLY)) == -1){
+            yaz_log(YLOG_WARN|YLOG_ERRNO, "Retrieve fail; missing file: %s",
                      full_rep);
             rec_free(rec);
             return YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
@@ -740,8 +740,8 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
     file_type = rec->info[recInfo_fileType];
     fname = rec->info[recInfo_filename];
     basename = rec->info[recInfo_databaseName];
-    *basenamep = (char *) odr_malloc (odr, strlen(basename)+1);
-    strcpy (*basenamep, basename);
+    *basenamep = (char *) odr_malloc(odr, strlen(basename)+1);
+    strcpy(*basenamep, basename);
 
     yaz_log(YLOG_DEBUG, "retrieve localno=" ZINT_FORMAT " score=%d",
             sysno, score);

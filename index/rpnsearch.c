@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.14 2007-05-14 14:05:21 adam Exp $
+/* $Id: rpnsearch.c,v 1.15 2007-10-29 09:25:41 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -134,9 +134,9 @@ static int add_isam_p(const char *name, const char *info,
         char term_tmp[IT_MAX_WORD];
         int ord = 0;
         const char *index_name;
-        int len = key_SU_decode (&ord, (const unsigned char *) name);
+        int len = key_SU_decode(&ord, (const unsigned char *) name);
         
-        zebra_term_untrans  (p->zh, p->reg_type, term_tmp, name+len);
+        zebra_term_untrans (p->zh, p->reg_type, term_tmp, name+len);
         yaz_log(log_level_rpn, "grep: %d %c %s", ord, name[len], term_tmp);
         zebraExplain_lookup_ord(p->zh->reg->zei,
                                 ord, 0 /* index_type */, &db, &index_name);
@@ -739,8 +739,8 @@ static int string_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         wrbuf_putc(term_dict, ')');
         break;
     case 5:
-        if (!term_100 (zh->reg->zebra_maps, reg_type,
-                       term_sub, term_component, space_split, term_dst))
+        if (!term_100(zh->reg->zebra_maps, reg_type,
+                      term_sub, term_component, space_split, term_dst))
         {
             wrbuf_destroy(term_component);
             return 0;
@@ -964,7 +964,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
     *ol = ord_list_create(stream);
 
-    rpn_char_map_prepare (zh->reg, reg_type, &rcmi);
+    rpn_char_map_prepare(zh->reg, reg_type, &rcmi);
     attr_init_APT(&truncation, zapt, 5);
     truncation_value = attr_find(&truncation, NULL);
     yaz_log(log_level_rpn, "truncation value %d", truncation_value);
@@ -981,7 +981,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         termp = *term_sub; /* start of term for each database */
 
 
-        if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
+        if (zebraExplain_curDatabase(zh->reg->zei, basenames[base_no]))
         {
 	    zebra_setError(zh, YAZ_BIB1_DATABASE_UNAVAILABLE,
 			   basenames[base_no]);
@@ -998,7 +998,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	bases_ok++;
 
         *ol = ord_list_append(stream, *ol, ord);
-        ord_len = key_SU_encode (ord, ord_buf);
+        ord_len = key_SU_encode(ord, ord_buf);
         
         wrbuf_putc(term_dict, '(');
 
@@ -1290,7 +1290,7 @@ static ZEBRA_RES term_list_trunc(ZebraHandle zh,
 	    int i;
 	    for (i = 0; i < *num_result_sets; i++)
 		rset_delete((*result_sets)[i]);
-	    grep_info_delete (&grep_info);
+	    grep_info_delete(&grep_info);
 	    return res;
 	}
 	if ((*result_sets)[*num_result_sets] == 0)
@@ -1358,7 +1358,7 @@ static ZEBRA_RES rpn_search_APT_position(ZebraHandle zh,
         char *val;
         ISAM_P isam_p;
 
-        if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
+        if (zebraExplain_curDatabase(zh->reg->zei, basenames[base_no]))
         {
 	    zebra_setError(zh, YAZ_BIB1_DATABASE_UNAVAILABLE,
 			   basenames[base_no]);
@@ -1369,7 +1369,7 @@ static ZEBRA_RES rpn_search_APT_position(ZebraHandle zh,
                               attributeSet, &ord) != ZEBRA_OK)
             continue;
 
-        ord_len = key_SU_encode (ord, ord_buf);
+        ord_len = key_SU_encode(ord, ord_buf);
         memcpy(term_dict, ord_buf, ord_len);
         strcpy(term_dict+ord_len, FIRST_IN_FIELD_STR);
         val = dict_lookup(zh->reg->dict, term_dict);
@@ -1623,7 +1623,7 @@ static int numeric_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             wrbuf_destroy(term_num);
             return 0;
         }
-        term_value = atoi (wrbuf_cstr(term_num));
+        term_value = atoi(wrbuf_cstr(term_num));
         gen_regular_rel(term_dict, term_value-1, 1);
         break;
     case 2:
@@ -1634,7 +1634,7 @@ static int numeric_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             wrbuf_destroy(term_num);
             return 0;
         }
-        term_value = atoi (wrbuf_cstr(term_num));
+        term_value = atoi(wrbuf_cstr(term_num));
         gen_regular_rel(term_dict, term_value, 1);
         break;
     case 4:
@@ -1645,7 +1645,7 @@ static int numeric_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             wrbuf_destroy(term_num);
             return 0;
         }
-        term_value = atoi (wrbuf_cstr(term_num));
+        term_value = atoi(wrbuf_cstr(term_num));
         gen_regular_rel(term_dict, term_value, 0);
         break;
     case 5:
@@ -1656,7 +1656,7 @@ static int numeric_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             wrbuf_destroy(term_num);
             return 0;
         }
-        term_value = atoi (wrbuf_cstr(term_num));
+        term_value = atoi(wrbuf_cstr(term_num));
         gen_regular_rel(term_dict, term_value+1, 0);
         break;
     case -1:
@@ -1668,7 +1668,7 @@ static int numeric_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             wrbuf_destroy(term_num);
             return 0; 
         }
-        term_value = atoi (wrbuf_cstr(term_num));
+        term_value = atoi(wrbuf_cstr(term_num));
         wrbuf_printf(term_dict, "(0*%d)", term_value);
 	break;
     case 103:
@@ -1712,7 +1712,7 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
     *ol = ord_list_create(stream);
 
-    rpn_char_map_prepare (zh->reg, reg_type, &rcmi);
+    rpn_char_map_prepare(zh->reg, reg_type, &rcmi);
 
     for (base_no = 0; base_no < num_bases; base_no++)
     {
@@ -1723,7 +1723,7 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
         termp = *term_sub;
 
-        if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
+        if (zebraExplain_curDatabase(zh->reg->zei, basenames[base_no]))
         {
 	    zebra_setError(zh, YAZ_BIB1_DATABASE_UNAVAILABLE,
 			   basenames[base_no]);
@@ -1739,7 +1739,7 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
         *ol = ord_list_append(stream, *ol, ord);
 
-        ord_len = key_SU_encode (ord, ord_buf);
+        ord_len = key_SU_encode(ord, ord_buf);
 
         wrbuf_putc(term_dict, '(');
         for (i = 0; i < ord_len; i++)
@@ -1924,7 +1924,7 @@ static ZEBRA_RES rpn_sort_spec(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     if (zapt->term->which != Z_Term_general)
         i = 0;
     else
-        i = atoi_n ((char *) zapt->term->u.general->buf,
+        i = atoi_n((char *) zapt->term->u.general->buf,
                     zapt->term->u.general->len);
     if (i >= sort_sequence->num_specs)
         i = 0;
@@ -2005,7 +2005,7 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
         char ord_buf[32];
         RSET rset;
         WRBUF term_dict = wrbuf_alloc();
-        int ord_len = key_SU_encode (ord, ord_buf);
+        int ord_len = key_SU_encode(ord, ord_buf);
         int term_type = Z_Term_characterString;
         const char *flags = "void";
 
@@ -2079,14 +2079,14 @@ ZEBRA_RES rpn_search_xpath(ZebraHandle zh,
       
     */
 
-    dict_grep_cmap (zh->reg->dict, 0, 0);
+    dict_grep_cmap(zh->reg->dict, 0, 0);
 
     for (base_no = 0; base_no < num_bases; base_no++)
     {
         int level = xpath_len;
         int first_path = 1;
         
-        if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
+        if (zebraExplain_curDatabase(zh->reg->zei, basenames[base_no]))
         {
 	    zebra_setError(zh, YAZ_BIB1_DATABASE_UNAVAILABLE,
 			   basenames[base_no]);

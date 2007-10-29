@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.83 2007-02-06 09:32:50 adam Exp $
+/* $Id: kinput.c,v 1.84 2007-10-29 09:25:40 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -63,28 +63,28 @@ static void pkey(const char *b, int mode)
 #endif
 
 
-void getFnameTmp (Res res, char *fname, int no)
+void getFnameTmp(Res res, char *fname, int no)
 {
     const char *pre;
     
-    pre = res_get_def (res, "keyTmpDir", ".");
-    sprintf (fname, "%s/key%d.tmp", pre, no);
+    pre = res_get_def(res, "keyTmpDir", ".");
+    sprintf(fname, "%s/key%d.tmp", pre, no);
 }
 
-void extract_get_fname_tmp (ZebraHandle zh, char *fname, int no)
+void extract_get_fname_tmp(ZebraHandle zh, char *fname, int no)
 {
     const char *pre;
     
-    pre = res_get_def (zh->res, "keyTmpDir", ".");
-    sprintf (fname, "%s/key%d.tmp", pre, no);
+    pre = res_get_def(zh->res, "keyTmpDir", ".");
+    sprintf(fname, "%s/key%d.tmp", pre, no);
 }
 
-void key_file_chunk_read (struct key_file *f)
+void key_file_chunk_read(struct key_file *f)
 {
     int nr = 0, r = 0, fd;
     char fname[1024];
-    getFnameTmp (f->res, fname, f->no);
-    fd = open (fname, O_BINARY|O_RDONLY);
+    getFnameTmp(f->res, fname, f->no);
+    fd = open(fname, O_BINARY|O_RDONLY);
 
     f->buf_ptr = 0;
     f->buf_size = 0;
@@ -95,14 +95,14 @@ void key_file_chunk_read (struct key_file *f)
     }
     if (!f->length)
     {
-        if ((f->length = lseek (fd, 0L, SEEK_END)) == (off_t) -1)
+        if ((f->length = lseek(fd, 0L, SEEK_END)) == (off_t) -1)
         {
             yaz_log(YLOG_WARN|YLOG_ERRNO, "cannot seek %s", fname);
-	    close (fd);
+	    close(fd);
 	    return ;
         }
     }
-    if (lseek (fd, f->offset, SEEK_SET) == -1)
+    if (lseek(fd, f->offset, SEEK_SET) == -1)
     {
         yaz_log(YLOG_WARN|YLOG_ERRNO, "cannot seek %s", fname);
 	close(fd);
@@ -110,7 +110,7 @@ void key_file_chunk_read (struct key_file *f)
     }
     while (f->chunk - nr > 0)
     {
-        r = read (fd, f->buf + nr, f->chunk - nr);
+        r = read(fd, f->buf + nr, f->chunk - nr);
         if (r <= 0)
             break;
         nr += r;
@@ -118,28 +118,28 @@ void key_file_chunk_read (struct key_file *f)
     if (r == -1)
     {
         yaz_log(YLOG_WARN|YLOG_ERRNO, "read of %s", fname);
-	close (fd);
+	close(fd);
 	return;
     }
     f->buf_size = nr;
     if (f->readHandler)
         (*f->readHandler)(f, f->readInfo);
-    close (fd);
+    close(fd);
 }
 
-void key_file_destroy (struct key_file *f)
+void key_file_destroy(struct key_file *f)
 {
     iscz1_stop(f->decode_handle);
-    xfree (f->buf);
-    xfree (f->prev_name);
-    xfree (f);
+    xfree(f->buf);
+    xfree(f->prev_name);
+    xfree(f);
 }
 
-struct key_file *key_file_init (int no, int chunk, Res res)
+struct key_file *key_file_init(int no, int chunk, Res res)
 {
     struct key_file *f;
 
-    f = (struct key_file *) xmalloc (sizeof(*f));
+    f = (struct key_file *) xmalloc(sizeof(*f));
     f->res = res;
     f->decode_handle = iscz1_start();
     f->no = no;
@@ -147,28 +147,28 @@ struct key_file *key_file_init (int no, int chunk, Res res)
     f->offset = 0;
     f->length = 0;
     f->readHandler = NULL;
-    f->buf = (unsigned char *) xmalloc (f->chunk);
-    f->prev_name = (char *) xmalloc (INP_NAME_MAX);
+    f->buf = (unsigned char *) xmalloc(f->chunk);
+    f->prev_name = (char *) xmalloc(INP_NAME_MAX);
     *f->prev_name = '\0';
-    key_file_chunk_read (f);
+    key_file_chunk_read(f);
     return f;
 }
 
-int key_file_getc (struct key_file *f)
+int key_file_getc(struct key_file *f)
 {
     if (f->buf_ptr < f->buf_size)
         return f->buf[(f->buf_ptr)++];
     if (f->buf_size < f->chunk)
         return EOF;
     f->offset += f->buf_size;
-    key_file_chunk_read (f);
+    key_file_chunk_read(f);
     if (f->buf_ptr < f->buf_size)
         return f->buf[(f->buf_ptr)++];
     else
         return EOF;
 }
 
-int key_file_read (struct key_file *f, char *key)
+int key_file_read(struct key_file *f, char *key)
 {
     int i, c;
     char srcbuf[128];
@@ -176,11 +176,11 @@ int key_file_read (struct key_file *f, char *key)
     char *dst;
     int j;
 
-    c = key_file_getc (f);
+    c = key_file_getc(f);
     if (c == 0)
     {
-        strcpy (key, f->prev_name);
-        i = 1+strlen (key);
+        strcpy(key, f->prev_name);
+        i = 1+strlen(key);
     }
     else if (c == EOF)
         return 0;
@@ -188,9 +188,9 @@ int key_file_read (struct key_file *f, char *key)
     {
         i = 0;
         key[i++] = c;
-        while ((key[i++] = key_file_getc (f)))
+        while ((key[i++] = key_file_getc(f)))
             ;
-        strcpy (f->prev_name, key);
+        strcpy(f->prev_name, key);
 	iscz1_reset(f->decode_handle);
     }
     c = key_file_getc(f); /* length +  insert/delete combined */
@@ -235,7 +235,7 @@ struct heap_info {
 static struct heap_info *key_heap_malloc(void)
 {  /* malloc and clear it */
     struct heap_info *hi;
-    hi = (struct heap_info *) xmalloc (sizeof(*hi));
+    hi = (struct heap_info *) xmalloc(sizeof(*hi));
     hi->info.file = 0;
     hi->info.buf = 0;
     hi->heapnum = 0;
@@ -260,14 +260,14 @@ struct heap_info *key_heap_init_file(ZebraHandle zh,
     hi = key_heap_malloc();
     hi->zh = zh;
     hi->info.file = (struct key_file **)
-        xmalloc (sizeof(*hi->info.file) * (1+nkeys));
-    hi->info.buf = (char **) xmalloc (sizeof(*hi->info.buf) * (1+nkeys));
-    hi->ptr = (int *) xmalloc (sizeof(*hi->ptr) * (1+nkeys));
+        xmalloc(sizeof(*hi->info.file) * (1+nkeys));
+    hi->info.buf = (char **) xmalloc(sizeof(*hi->info.buf) * (1+nkeys));
+    hi->ptr = (int *) xmalloc(sizeof(*hi->ptr) * (1+nkeys));
     hi->cmp = cmp;
     for (i = 0; i<= nkeys; i++)
     {
         hi->ptr[i] = i;
-        hi->info.buf[i] = (char *) xmalloc (INP_NAME_MAX);
+        hi->info.buf[i] = (char *) xmalloc(INP_NAME_MAX);
     }
     return hi;
 }
@@ -282,20 +282,20 @@ struct heap_info *key_heap_init_raw(ZebraHandle zh,
     return hi;
 }
 
-void key_heap_destroy (struct heap_info *hi, int nkeys)
+void key_heap_destroy(struct heap_info *hi, int nkeys)
 {
     int i;
     if (!hi->raw_reading)
         for (i = 0; i<=nkeys; i++)
-            xfree (hi->info.buf[i]);
+            xfree(hi->info.buf[i]);
     
-    xfree (hi->info.buf);
-    xfree (hi->ptr);
-    xfree (hi->info.file);
-    xfree (hi);
+    xfree(hi->info.buf);
+    xfree(hi->ptr);
+    xfree(hi->info.file);
+    xfree(hi);
 }
 
-static void key_heap_swap (struct heap_info *hi, int i1, int i2)
+static void key_heap_swap(struct heap_info *hi, int i1, int i2)
 {
     int swap;
 
@@ -305,13 +305,13 @@ static void key_heap_swap (struct heap_info *hi, int i1, int i2)
 }
 
 
-static void key_heap_delete (struct heap_info *hi)
+static void key_heap_delete(struct heap_info *hi)
 {
     int cur = 1, child = 2;
 
-    assert (hi->heapnum > 0);
+    assert(hi->heapnum > 0);
 
-    key_heap_swap (hi, 1, hi->heapnum);
+    key_heap_swap(hi, 1, hi->heapnum);
     hi->heapnum--;
     while (child <= hi->heapnum) {
         if (child < hi->heapnum &&
@@ -321,7 +321,7 @@ static void key_heap_delete (struct heap_info *hi)
         if ((*hi->cmp)(&hi->info.buf[hi->ptr[cur]],
                        &hi->info.buf[hi->ptr[child]]) > 0)
         {            
-            key_heap_swap (hi, cur, child);
+            key_heap_swap(hi, cur, child);
             cur = child;
             child = 2*cur;
         }
@@ -330,26 +330,26 @@ static void key_heap_delete (struct heap_info *hi)
     }
 }
 
-static void key_heap_insert (struct heap_info *hi, const char *buf, int nbytes,
+static void key_heap_insert(struct heap_info *hi, const char *buf, int nbytes,
                              struct key_file *kf)
 {
     int cur, parent;
 
     cur = ++(hi->heapnum);
-    memcpy (hi->info.buf[hi->ptr[cur]], buf, nbytes);
+    memcpy(hi->info.buf[hi->ptr[cur]], buf, nbytes);
     hi->info.file[hi->ptr[cur]] = kf;
 
     parent = cur/2;
     while (parent && (*hi->cmp)(&hi->info.buf[hi->ptr[parent]],
                                 &hi->info.buf[hi->ptr[cur]]) > 0)
     {
-        key_heap_swap (hi, cur, parent);
+        key_heap_swap(hi, cur, parent);
         cur = parent;
         parent = cur/2;
     }
 }
 
-static int heap_read_one (struct heap_info *hi, char *name, char *key)
+static int heap_read_one(struct heap_info *hi, char *name, char *key)
 {
     int n, r;
     char rbuf[INP_NAME_MAX];
@@ -358,13 +358,13 @@ static int heap_read_one (struct heap_info *hi, char *name, char *key)
     if (!hi->heapnum)
         return 0;
     n = hi->ptr[1];
-    strcpy (name, hi->info.buf[n]);
+    strcpy(name, hi->info.buf[n]);
     kf = hi->info.file[n];
     r = strlen(name);
-    memcpy (key, hi->info.buf[n] + r+1, KEY_SIZE);
-    key_heap_delete (hi);
-    if ((r = key_file_read (kf, rbuf)))
-        key_heap_insert (hi, rbuf, r, kf);
+    memcpy(key, hi->info.buf[n] + r+1, KEY_SIZE);
+    key_heap_delete(hi);
+    if ((r = key_file_read(kf, rbuf)))
+        key_heap_insert(hi, rbuf, r, kf);
     hi->no_iterations++;
     return 1;
 }
@@ -410,7 +410,7 @@ struct heap_cread_info {
     int look_level;
 };
 
-static int heap_cread_item (void *vp, char **dst, int *insertMode);
+static int heap_cread_item(void *vp, char **dst, int *insertMode);
 
 int heap_cread_item2(void *vp, char **dst, int *insertMode)
 {
@@ -429,7 +429,7 @@ int heap_cread_item2(void *vp, char **dst, int *insertMode)
 	    *insertMode = 0;
 	    p->look_level++;
 	}
-	memcpy (*dst, p->key_1, p->sz_1);
+	memcpy(*dst, p->key_1, p->sz_1);
 #if 0
 	yaz_log(YLOG_LOG, "DUP level=%d", p->look_level);
 	pkey(*dst, *insertMode);
@@ -452,7 +452,7 @@ int heap_cread_item2(void *vp, char **dst, int *insertMode)
     {        /* lookahead in 2 . Now in 1. */
         p->sz_1 = p->sz_2;
         p->mode_1 = p->mode_2;
-        memcpy (p->key_1, p->key_2, p->sz_2);
+        memcpy(p->key_1, p->key_2, p->sz_2);
     }
     if (p->mode_1)
         level = 1;     /* insert */
@@ -485,7 +485,7 @@ int heap_cread_item2(void *vp, char **dst, int *insertMode)
             /* all the same. new round .. */
             p->sz_1 = p->sz_2;
             p->mode_1 = p->mode_2;
-            memcpy (p->key_1, p->key_2, p->sz_1);
+            memcpy(p->key_1, p->key_2, p->sz_1);
             if (p->mode_1)
                 level = 1;     /* insert */
             else
@@ -504,7 +504,7 @@ int heap_cread_item2(void *vp, char **dst, int *insertMode)
 	level++;
     }
     p->look_level = level;
-    memcpy (*dst, p->key_1, p->sz_1);
+    memcpy(*dst, p->key_1, p->sz_1);
 #if 0
     pkey(*dst, *insertMode);
 #endif
@@ -512,7 +512,7 @@ int heap_cread_item2(void *vp, char **dst, int *insertMode)
     return 1;
 }
       
-int heap_cread_item (void *vp, char **dst, int *insertMode)
+int heap_cread_item(void *vp, char **dst, int *insertMode)
 {
     struct heap_cread_info *p = (struct heap_cread_info *) vp;
     struct heap_info *hi = p->hi;
@@ -520,7 +520,7 @@ int heap_cread_item (void *vp, char **dst, int *insertMode)
     if (p->first_in_list)
     {
         *insertMode = p->key[0];
-        memcpy (*dst, p->key+1, sizeof(struct it_key));
+        memcpy(*dst, p->key+1, sizeof(struct it_key));
 #if PR_KEY_LOW
         zebra_log_dict_entry(hi->zh, p->cur_name);
         pkey(*dst, *insertMode);
@@ -529,16 +529,16 @@ int heap_cread_item (void *vp, char **dst, int *insertMode)
         p->first_in_list = 0;
         return 1;
     }
-    strcpy (p->prev_name, p->cur_name);
-    if (!(p->more = heap_read_one (hi, p->cur_name, p->key)))
+    strcpy(p->prev_name, p->cur_name);
+    if (!(p->more = heap_read_one(hi, p->cur_name, p->key)))
         return 0;
-    if (*p->cur_name && strcmp (p->cur_name, p->prev_name))
+    if (*p->cur_name && strcmp(p->cur_name, p->prev_name))
     {
         p->first_in_list = 1;
         return 0;
     }
     *insertMode = p->key[0];
-    memcpy (*dst, p->key+1, sizeof(struct it_key));
+    memcpy(*dst, p->key+1, sizeof(struct it_key));
 #if PR_KEY_LOW
     zebra_log_dict_entry(hi->zh, p->cur_name);
     pkey(*dst, *insertMode);
@@ -547,9 +547,9 @@ int heap_cread_item (void *vp, char **dst, int *insertMode)
     return 1;
 }
 
-int heap_inpc (struct heap_cread_info *hci, struct heap_info *hi)
+int heap_inpc(struct heap_cread_info *hci, struct heap_info *hi)
 {
-    ISAMC_I *isamc_i = (ISAMC_I *) xmalloc (sizeof(*isamc_i));
+    ISAMC_I *isamc_i = (ISAMC_I *) xmalloc(sizeof(*isamc_i));
 
     isamc_i->clientData = hci;
     isamc_i->read_item = heap_cread_item2;
@@ -560,39 +560,39 @@ int heap_inpc (struct heap_cread_info *hci, struct heap_info *hi)
         ISAM_P isamc_p, isamc_p2;
         char *dict_info;
 
-        strcpy (this_name, hci->cur_name);
-	assert (hci->cur_name[0]);
+        strcpy(this_name, hci->cur_name);
+	assert(hci->cur_name[0]);
         hi->no_diffs++;
-        if ((dict_info = dict_lookup (hi->reg->dict, hci->cur_name)))
+        if ((dict_info = dict_lookup(hi->reg->dict, hci->cur_name)))
         {
-            memcpy (&isamc_p, dict_info+1, sizeof(ISAM_P));
+            memcpy(&isamc_p, dict_info+1, sizeof(ISAM_P));
 	    isamc_p2 = isamc_p;
-            isamc_merge (hi->reg->isamc, &isamc_p2, isamc_i);
+            isamc_merge(hi->reg->isamc, &isamc_p2, isamc_i);
             if (!isamc_p2)
             {
                 hi->no_deletions++;
-                if (!dict_delete (hi->reg->dict, this_name))
+                if (!dict_delete(hi->reg->dict, this_name))
                     abort();
             }
             else 
             {
                 hi->no_updates++;
                 if (isamc_p2 != isamc_p)
-                    dict_insert (hi->reg->dict, this_name,
+                    dict_insert(hi->reg->dict, this_name,
                                  sizeof(ISAM_P), &isamc_p2);
             }
         } 
         else
         {
 	    isamc_p = 0;
-	    isamc_merge (hi->reg->isamc, &isamc_p, isamc_i);
+	    isamc_merge(hi->reg->isamc, &isamc_p, isamc_i);
             hi->no_insertions++;
 	    if (isamc_p)
-		dict_insert (hi->reg->dict, this_name,
+		dict_insert(hi->reg->dict, this_name,
 			     sizeof(ISAM_P), &isamc_p);
         }
     }
-    xfree (isamc_i);
+    xfree(isamc_i);
     return 0;
 } 
 
@@ -605,8 +605,8 @@ int heap_inp0(struct heap_cread_info *hci, struct heap_info *hi)
 	char *dst = mybuf;
 	int mode;
 
-        strcpy (this_name, hci->cur_name);
-	assert (hci->cur_name[0]);
+        strcpy(this_name, hci->cur_name);
+	assert(hci->cur_name[0]);
         hi->no_diffs++;
 
 	while (heap_cread_item2(hci, &dst, &mode))
@@ -618,7 +618,7 @@ int heap_inp0(struct heap_cread_info *hci, struct heap_info *hi)
 
 int heap_inpb(struct heap_cread_info *hci, struct heap_info *hi)
 {
-    ISAMC_I *isamc_i = (ISAMC_I *) xmalloc (sizeof(*isamc_i));
+    ISAMC_I *isamc_i = (ISAMC_I *) xmalloc(sizeof(*isamc_i));
 
     isamc_i->clientData = hci;
     isamc_i->read_item = heap_cread_item2;
@@ -629,40 +629,40 @@ int heap_inpb(struct heap_cread_info *hci, struct heap_info *hi)
         ISAM_P isamc_p, isamc_p2;
         char *dict_info;
 
-        strcpy (this_name, hci->cur_name);
-	assert (hci->cur_name[0]);
+        strcpy(this_name, hci->cur_name);
+	assert(hci->cur_name[0]);
         hi->no_diffs++;
 
 #if 0
 	assert(hi->zh);
         zebra_log_dict_entry(hi->zh, hci->cur_name);
 #endif
-        if ((dict_info = dict_lookup (hi->reg->dict, hci->cur_name)))
+        if ((dict_info = dict_lookup(hi->reg->dict, hci->cur_name)))
         {
-            memcpy (&isamc_p, dict_info+1, sizeof(ISAM_P));
+            memcpy(&isamc_p, dict_info+1, sizeof(ISAM_P));
 	    isamc_p2 = isamc_p;
-            isamb_merge (hi->reg->isamb, &isamc_p2, isamc_i);
+            isamb_merge(hi->reg->isamb, &isamc_p2, isamc_i);
             if (!isamc_p2)
             {
                 hi->no_deletions++;
-                if (!dict_delete (hi->reg->dict, this_name))
+                if (!dict_delete(hi->reg->dict, this_name))
                     abort();
             }
             else 
             {
                 hi->no_updates++;
                 if (isamc_p2 != isamc_p)
-                    dict_insert (hi->reg->dict, this_name,
+                    dict_insert(hi->reg->dict, this_name,
                                  sizeof(ISAM_P), &isamc_p2);
             }
         } 
         else
         {
 	    isamc_p = 0;
-            isamb_merge (hi->reg->isamb, &isamc_p, isamc_i);
+            isamb_merge(hi->reg->isamb, &isamc_p, isamc_i);
             hi->no_insertions++;
 	    if (isamc_p)
-		dict_insert (hi->reg->dict, this_name,
+		dict_insert(hi->reg->dict, this_name,
 			     sizeof(ISAM_P), &isamc_p);
         }
     }
@@ -670,9 +670,9 @@ int heap_inpb(struct heap_cread_info *hci, struct heap_info *hi)
     return 0;
 } 
 
-int heap_inps (struct heap_cread_info *hci, struct heap_info *hi)
+int heap_inps(struct heap_cread_info *hci, struct heap_info *hi)
 {
-    ISAMS_I isams_i = (ISAMS_I) xmalloc (sizeof(*isams_i));
+    ISAMS_I isams_i = (ISAMS_I) xmalloc(sizeof(*isams_i));
 
     isams_i->clientData = hci;
     isams_i->read_item = heap_cread_item;
@@ -683,14 +683,14 @@ int heap_inps (struct heap_cread_info *hci, struct heap_info *hi)
         ISAM_P isams_p;
         char *dict_info;
 
-        strcpy (this_name, hci->cur_name);
-	assert (hci->cur_name[0]);
+        strcpy(this_name, hci->cur_name);
+	assert(hci->cur_name[0]);
         hi->no_diffs++;
-        if (!(dict_info = dict_lookup (hi->reg->dict, hci->cur_name)))
+        if (!(dict_info = dict_lookup(hi->reg->dict, hci->cur_name)))
         {
-            isams_p = isams_merge (hi->reg->isams, isams_i);
+            isams_p = isams_merge(hi->reg->isams, isams_i);
             hi->no_insertions++;
-            dict_insert (hi->reg->dict, this_name, sizeof(ISAM_P), &isams_p);
+            dict_insert(hi->reg->dict, this_name, sizeof(ISAM_P), &isams_p);
         }
 	else
 	{
@@ -698,7 +698,7 @@ int heap_inps (struct heap_cread_info *hci, struct heap_info *hi)
 	    break;
 	}
     }
-    xfree (isams_i);
+    xfree(isams_i);
     return 0;
 } 
 
@@ -709,7 +709,7 @@ struct progressInfo {
     off_t    totalOffset;
 };
 
-void progressFunc (struct key_file *keyp, void *info)
+void progressFunc(struct key_file *keyp, void *info)
 {
     struct progressInfo *p = (struct progressInfo *) info;
     time_t now, remaining;
@@ -737,7 +737,7 @@ void progressFunc (struct key_file *keyp, void *info)
 #define R_OK 4
 #endif
 
-void zebra_index_merge (ZebraHandle zh)
+void zebra_index_merge(ZebraHandle zh)
 {
     struct key_file **kf = 0;
     char rbuf[1024];
@@ -755,22 +755,22 @@ void zebra_index_merge (ZebraHandle zh)
         nkeys = 0;
         while (1)
         {
-            extract_get_fname_tmp  (zh, fname, nkeys+1);
-            if (access (fname, R_OK) == -1)
+            extract_get_fname_tmp (zh, fname, nkeys+1);
+            if (access(fname, R_OK) == -1)
                 break;
             nkeys++;
         }
         if (!nkeys)
             return ;
     }
-    kf = (struct key_file **) xmalloc ((1+nkeys) * sizeof(*kf));
+    kf = (struct key_file **) xmalloc((1+nkeys) * sizeof(*kf));
     progressInfo.totalBytes = 0;
     progressInfo.totalOffset = 0;
-    time (&progressInfo.startTime);
-    time (&progressInfo.lastTime);
+    time(&progressInfo.startTime);
+    time(&progressInfo.lastTime);
     for (i = 1; i<=nkeys; i++)
     {
-        kf[i] = key_file_init (i, 8192, zh->res);
+        kf[i] = key_file_init(i, 8192, zh->res);
         kf[i]->readHandler = progressFunc;
         kf[i]->readInfo = &progressInfo;
         progressInfo.totalBytes += kf[i]->length;
@@ -780,21 +780,21 @@ void zebra_index_merge (ZebraHandle zh)
     hi->reg = zh->reg;
     
     for (i = 1; i<=nkeys; i++)
-        if ((r = key_file_read (kf[i], rbuf)))
-            key_heap_insert (hi, rbuf, r, kf[i]);
+        if ((r = key_file_read(kf[i], rbuf)))
+            key_heap_insert(hi, rbuf, r, kf[i]);
 
     if (1)
     {
         struct heap_cread_info hci;
         
-        hci.key = (char *) xmalloc (KEY_SIZE);
-	hci.key_1 = (char *) xmalloc (KEY_SIZE);
-	hci.key_2 = (char *) xmalloc (KEY_SIZE);
+        hci.key = (char *) xmalloc(KEY_SIZE);
+	hci.key_1 = (char *) xmalloc(KEY_SIZE);
+	hci.key_2 = (char *) xmalloc(KEY_SIZE);
 	hci.ret = -1;
 	hci.first_in_list = 1;
 	hci.hi = hi;
 	hci.look_level = 0;
-	hci.more = heap_read_one (hi, hci.cur_name, hci.key);    
+	hci.more = heap_read_one(hi, hci.cur_name, hci.key);    
 	
 	if (zh->reg->isams)
 	    heap_inps(&hci, hi);
@@ -803,19 +803,19 @@ void zebra_index_merge (ZebraHandle zh)
 	if (zh->reg->isamb)
 	    heap_inpb(&hci, hi);
 	
-	xfree (hci.key);
-	xfree (hci.key_1);
-	xfree (hci.key_2);
+	xfree(hci.key);
+	xfree(hci.key_1);
+	xfree(hci.key_2);
     }
 	
     for (i = 1; i<=nkeys; i++)
     {
-        extract_get_fname_tmp  (zh, rbuf, i);
-        unlink (rbuf);
+        extract_get_fname_tmp (zh, rbuf, i);
+        unlink(rbuf);
     }
     for (i = 1; i<=nkeys; i++)
-        key_file_destroy (kf[i]);
-    xfree (kf);
+        key_file_destroy(kf[i]);
+    xfree(kf);
     if (hi->no_iterations)
     { /* do not log if nothing happened */
         yaz_log(YLOG_LOG, "Iterations: isam/dict " 

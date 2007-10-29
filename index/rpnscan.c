@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.13 2007-09-18 18:57:29 adam Exp $
+/* $Id: rpnscan.c,v 1.14 2007-10-29 09:25:40 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -102,7 +102,7 @@ static void count_set(ZebraHandle zh, RSET rset, zint *count)
 		break;
         }
     }
-    rset_close (rfd);
+    rset_close(rfd);
     *count = rset->hits_count;
 }
 
@@ -140,7 +140,7 @@ static void get_first_snippet_from_rset(ZebraHandle zh,
             }
         }
     }
-    rset_close (rfd);
+    rset_close(rfd);
 }
 
 struct scan2_info_entry {
@@ -160,7 +160,7 @@ static int scan_handle2(char *name, const char *info, int pos, void *client)
         return 0;
 
     len_prefix = strlen(scan_info->prefix);
-    if (memcmp (name, scan_info->prefix, len_prefix))
+    if (memcmp(name, scan_info->prefix, len_prefix))
         return 1;
 
     /* skip special terms such as first-in-field specials */
@@ -170,8 +170,8 @@ static int scan_handle2(char *name, const char *info, int pos, void *client)
     wrbuf_rewind(scan_info->term);
     wrbuf_puts(scan_info->term, name+len_prefix);
 
-    assert (*info == sizeof(ISAM_P));
-    memcpy (&scan_info->isam_p, info+1, sizeof(ISAM_P));
+    assert(*info == sizeof(ISAM_P));
+    memcpy(&scan_info->isam_p, info+1, sizeof(ISAM_P));
     return 0;
 }
 
@@ -297,7 +297,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
         *num_entries = 0;
         return ZEBRA_OK;
     }
-    rpn_char_map_prepare (zh->reg, index_type, &rcmi);
+    rpn_char_map_prepare(zh->reg, index_type, &rcmi);
 
     for (i = 0; i < ord_no; i++)
 	ar[i].term = wrbuf_alloc();
@@ -307,7 +307,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
         char termz[IT_MAX_WORD+20];
         int prefix_len = 0;
         
-        prefix_len = key_SU_encode (ords[i], termz);
+        prefix_len = key_SU_encode(ords[i], termz);
         termz[prefix_len] = 0;
         strcpy(ar[i].prefix, termz);
         
@@ -377,7 +377,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
         char termz[IT_MAX_WORD+20];
         int prefix_len = 0;
         
-        prefix_len = key_SU_encode (ords[i], termz);
+        prefix_len = key_SU_encode(ords[i], termz);
         termz[prefix_len] = 0;
         strcpy(ar[i].prefix, termz);
         
@@ -504,7 +504,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
             else
                 termset_name = termset_value_string;
             
-            limit_set = resultSetRef (zh, termset_name);
+            limit_set = resultSetRef(zh, termset_name);
 
             if (!limit_set)
             {
@@ -536,7 +536,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     {
 	int ord;
 
-	if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
+	if (zebraExplain_curDatabase(zh->reg->zei, basenames[base_no]))
 	{
 	    zebra_setError(zh, YAZ_BIB1_DATABASE_UNAVAILABLE,
 			   basenames[base_no]);

@@ -1,4 +1,4 @@
-/* $Id: zebrasrv.c,v 1.20 2007-10-25 07:43:13 adam Exp $
+/* $Id: zebrasrv.c,v 1.21 2007-10-29 09:25:41 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -45,18 +45,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/charneg.h>
 #include <idzebra/api.h>
 
-static int bend_sort (void *handle, bend_sort_rr *rr);
-static int bend_delete (void *handle, bend_delete_rr *rr);
-static int bend_esrequest (void *handle, bend_esrequest_rr *rr);
-static int bend_segment (void *handle, bend_segment_rr *rr);
-static int bend_search (void *handle, bend_search_rr *r);
-static int bend_fetch (void *handle, bend_fetch_rr *r);
-static int bend_scan (void *handle, bend_scan_rr *r);
+static int bend_sort(void *handle, bend_sort_rr *rr);
+static int bend_delete(void *handle, bend_delete_rr *rr);
+static int bend_esrequest(void *handle, bend_esrequest_rr *rr);
+static int bend_segment(void *handle, bend_segment_rr *rr);
+static int bend_search(void *handle, bend_search_rr *r);
+static int bend_fetch(void *handle, bend_fetch_rr *r);
+static int bend_scan(void *handle, bend_scan_rr *r);
 
-bend_initresult *bend_init (bend_initrequest *q)
+bend_initresult *bend_init(bend_initrequest *q)
 {
     bend_initresult *r = (bend_initresult *)
-	odr_malloc (q->stream, sizeof(*r));
+	odr_malloc(q->stream, sizeof(*r));
     ZebraHandle zh;
     struct statserv_options_block *sob;
     char *user = NULL;
@@ -78,12 +78,12 @@ bend_initresult *bend_init (bend_initrequest *q)
     q->implementation_name = "Zebra Information Server";
     q->implementation_version = odr_strdup(q->stream, version_str);
 
-    yaz_log (YLOG_DEBUG, "bend_init");
+    yaz_log(YLOG_DEBUG, "bend_init");
 
-    sob = statserv_getcontrol ();
-    if (!(zh = zebra_open (sob->handle, 0)))
+    sob = statserv_getcontrol();
+    if (!(zh = zebra_open(sob->handle, 0)))
     {
-	yaz_log (YLOG_WARN, "Failed to read config `%s'", sob->configname);
+	yaz_log(YLOG_WARN, "Failed to read config `%s'", sob->configname);
 	r->errcode = YAZ_BIB1_PERMANENT_SYSTEM_ERROR;
 	return r;
     }
@@ -94,15 +94,15 @@ bend_initresult *bend_init (bend_initrequest *q)
     {
 	if (q->auth->which == Z_IdAuthentication_open)
 	{
-	    char *openpass = xstrdup (q->auth->u.open);
-	    char *cp = strchr (openpass, '/');
+	    char *openpass = xstrdup(q->auth->u.open);
+	    char *cp = strchr(openpass, '/');
 	    if (cp)
 	    {
 		*cp = '\0';
-		user = nmem_strdup (odr_getmem (q->stream), openpass);
-		passwd = nmem_strdup (odr_getmem (q->stream), cp+1);
+		user = nmem_strdup(odr_getmem(q->stream), openpass);
+		passwd = nmem_strdup(odr_getmem(q->stream), cp+1);
 	    }
-	    xfree (openpass);
+	    xfree(openpass);
 	}
 	else if (q->auth->which == Z_IdAuthentication_idPass)
 	{
@@ -189,26 +189,26 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
     if (!no_terms)
         return;
 
-    r->search_info = odr_malloc (r->stream, sizeof(*r->search_info));
+    r->search_info = odr_malloc(r->stream, sizeof(*r->search_info));
 
     r->search_info->num_elements = 1;
     r->search_info->list =
-        odr_malloc (r->stream, sizeof(*r->search_info->list));
+        odr_malloc(r->stream, sizeof(*r->search_info->list));
     r->search_info->list[0] =
-        odr_malloc (r->stream, sizeof(**r->search_info->list));
+        odr_malloc(r->stream, sizeof(**r->search_info->list));
     r->search_info->list[0]->category = 0;
     r->search_info->list[0]->which = Z_OtherInfo_externallyDefinedInfo;
-    ext = odr_malloc (r->stream, sizeof(*ext));
+    ext = odr_malloc(r->stream, sizeof(*ext));
     r->search_info->list[0]->information.externallyDefinedInfo = ext;
     ext->direct_reference = odr_oiddup(r->stream,
                                        yaz_oid_userinfo_searchresult_1);
     ext->indirect_reference = 0;
     ext->descriptor = 0;
     ext->which = Z_External_searchResult1;
-    sr = odr_malloc (r->stream, sizeof(Z_SearchInfoReport));
+    sr = odr_malloc(r->stream, sizeof(Z_SearchInfoReport));
     ext->u.searchResult1 = sr;
     sr->num = no_terms;
-    sr->elements = odr_malloc (r->stream, sr->num *
+    sr->elements = odr_malloc(r->stream, sr->num *
                                sizeof(*sr->elements));
     for (i = 0; i<no_terms; i++)
     {
@@ -223,31 +223,31 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
 	zebra_result_set_term_info(zh, r->setname, i,
 				   &count, &approx, outbuf, &len,
 				   &term_ref_id);
-        se = sr->elements[i] = odr_malloc (r->stream, sizeof(**sr->elements));
+        se = sr->elements[i] = odr_malloc(r->stream, sizeof(**sr->elements));
         se->subqueryId = term_ref_id ? 
 	    odr_strdup(r->stream, term_ref_id) : 0;
 	    
         se->fullQuery = odr_intdup(r->stream, 0);
         se->subqueryExpression = 
-            odr_malloc (r->stream, sizeof(Z_QueryExpression));
+            odr_malloc(r->stream, sizeof(Z_QueryExpression));
         se->subqueryExpression->which = 
             Z_QueryExpression_term;
         se->subqueryExpression->u.term =
-            odr_malloc (r->stream, sizeof(Z_QueryExpressionTerm));
-        term = odr_malloc (r->stream, sizeof(Z_Term));
+            odr_malloc(r->stream, sizeof(Z_QueryExpressionTerm));
+        term = odr_malloc(r->stream, sizeof(Z_Term));
         se->subqueryExpression->u.term->queryTerm = term;
         switch (type)
         {
         case Z_Term_characterString:
             term->which = Z_Term_characterString;
-            term->u.characterString = odr_strdup (r->stream, outbuf);
+            term->u.characterString = odr_strdup(r->stream, outbuf);
             break;
         case Z_Term_general:
             term->which = Z_Term_general;
-            term->u.general = odr_malloc (r->stream, sizeof(*term->u.general));
+            term->u.general = odr_malloc(r->stream, sizeof(*term->u.general));
             term->u.general->size = term->u.general->len = len;
-            term->u.general->buf = odr_malloc (r->stream, len);
-            memcpy (term->u.general->buf, outbuf, len);
+            term->u.general->buf = odr_malloc(r->stream, len);
+            memcpy(term->u.general->buf, outbuf, len);
             break;
         default:
             term->which = Z_Term_general;
@@ -279,15 +279,15 @@ int bend_search(void *handle, bend_search_rr *r)
     zint zhits = 0;
     ZEBRA_RES res;
 
-    res = zebra_select_databases (zh, r->num_bases,
+    res = zebra_select_databases(zh, r->num_bases,
 				  (const char **) r->basenames);
     if (res != ZEBRA_OK)
     {
-        zebra_result (zh, &r->errcode, &r->errstring);
+        zebra_result(zh, &r->errcode, &r->errstring);
         return 0;
     }
     zebra_set_break_handler(zh, break_handler, r->association);
-    yaz_log (YLOG_DEBUG, "ResultSet '%s'", r->setname);
+    yaz_log(YLOG_DEBUG, "ResultSet '%s'", r->setname);
     switch (r->query->which)
     {
     case Z_Query_type_1: case Z_Query_type_101:
@@ -302,7 +302,7 @@ int bend_search(void *handle, bend_search_rr *r)
 	    if (zhits > 2147483646)
 		zhits = 2147483647;
             r->hits = CAST_ZINT_TO_INT(zhits);
-            search_terms (zh, r);
+            search_terms(zh, r);
 	}
         break;
     case Z_Query_type_2:
@@ -326,12 +326,12 @@ int bend_fetch(void *handle, bend_fetch_rr *r)
     retrievalRecord.position = r->number;
     
     r->last_in_set = 0;
-    res = zebra_records_retrieve (zh, r->stream, r->setname, r->comp,
+    res = zebra_records_retrieve(zh, r->stream, r->setname, r->comp,
 				  r->request_format, 1, &retrievalRecord);
     if (res != ZEBRA_OK)
     {
 	/* non-surrogate diagnostic */
-	zebra_result (zh, &r->errcode, &r->errstring);
+	zebra_result(zh, &r->errcode, &r->errstring);
     }
     else if (retrievalRecord.errCode)
     {
@@ -351,7 +351,7 @@ int bend_fetch(void *handle, bend_fetch_rr *r)
     return 0;
 }
 
-static int bend_scan (void *handle, bend_scan_rr *r)
+static int bend_scan(void *handle, bend_scan_rr *r)
 {
     ZebraScanEntry *entries;
     ZebraHandle zh = (ZebraHandle) handle;
@@ -362,7 +362,7 @@ static int bend_scan (void *handle, bend_scan_rr *r)
 				 (const char **) r->basenames);
     if (res != ZEBRA_OK)
     {
-        zebra_result (zh, &r->errcode, &r->errstring);
+        zebra_result(zh, &r->errcode, &r->errstring);
         return 0;
     }
     if (r->step_size != 0 && *r->step_size != 0) {
@@ -397,25 +397,25 @@ static int bend_scan (void *handle, bend_scan_rr *r)
     return 0;
 }
 
-void bend_close (void *handle)
+void bend_close(void *handle)
 {
-    zebra_close ((ZebraHandle) handle);
+    zebra_close((ZebraHandle) handle);
     xmalloc_trav("bend_close");
 }
 
-int bend_sort (void *handle, bend_sort_rr *rr)
+int bend_sort(void *handle, bend_sort_rr *rr)
 {
     ZebraHandle zh = (ZebraHandle) handle;
 
-    if (zebra_sort (zh, rr->stream,
+    if (zebra_sort(zh, rr->stream,
 		    rr->num_input_setnames, (const char **) rr->input_setnames,
 		    rr->output_setname, rr->sort_sequence, &rr->sort_status)
 	!= ZEBRA_OK)
-	zebra_result (zh, &rr->errcode, &rr->errstring);
+	zebra_result(zh, &rr->errcode, &rr->errstring);
     return 0;
 }
 
-int bend_delete (void *handle, bend_delete_rr *rr)
+int bend_delete(void *handle, bend_delete_rr *rr)
 {
     ZebraHandle zh = (ZebraHandle) handle;
 
@@ -425,7 +425,7 @@ int bend_delete (void *handle, bend_delete_rr *rr)
     return 0;
 }
 
-static void es_admin_request (bend_esrequest_rr *rr, ZebraHandle zh, Z_AdminEsRequest *r)
+static void es_admin_request(bend_esrequest_rr *rr, ZebraHandle zh, Z_AdminEsRequest *r)
 {
     ZEBRA_RES res = ZEBRA_OK;
     if (r->toKeep->databaseName)
@@ -446,15 +446,15 @@ static void es_admin_request (bend_esrequest_rr *rr, ZebraHandle zh, Z_AdminEsRe
 	break;
     case Z_ESAdminOriginPartToKeep_drop:
 	yaz_log(YLOG_LOG, "adm-drop");
-	res = zebra_drop_database (zh, r->toKeep->databaseName);
+	res = zebra_drop_database(zh, r->toKeep->databaseName);
 	break;
     case Z_ESAdminOriginPartToKeep_create:
 	yaz_log(YLOG_LOG, "adm-create %s", r->toKeep->databaseName);
-	res = zebra_create_database (zh, r->toKeep->databaseName);
+	res = zebra_create_database(zh, r->toKeep->databaseName);
 	break;
     case Z_ESAdminOriginPartToKeep_import:
 	yaz_log(YLOG_LOG, "adm-import");
-	res = zebra_admin_import_begin (zh, r->toKeep->databaseName,
+	res = zebra_admin_import_begin(zh, r->toKeep->databaseName,
 					r->toKeep->u.import->recordType);
 	break;
     case Z_ESAdminOriginPartToKeep_refresh:
@@ -488,34 +488,34 @@ static void es_admin_request (bend_esrequest_rr *rr, ZebraHandle zh, Z_AdminEsRe
 	zebra_result(zh, &rr->errcode, &rr->errstring);
 }
 
-static void es_admin (bend_esrequest_rr *rr, ZebraHandle zh, Z_Admin *r)
+static void es_admin(bend_esrequest_rr *rr, ZebraHandle zh, Z_Admin *r)
 {
     switch (r->which)
     {
     case Z_Admin_esRequest:
-	es_admin_request (rr, zh, r->u.esRequest);
+	es_admin_request(rr, zh, r->u.esRequest);
 	return;
     default:
 	break;
     }
-	yaz_log (YLOG_WARN, "adm taskpackage (unhandled)");
+	yaz_log(YLOG_WARN, "adm taskpackage (unhandled)");
     rr->errcode = YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
     rr->errstring = "adm-task package (unhandled)";
 }
 
-int bend_segment (void *handle, bend_segment_rr *rr)
+int bend_segment(void *handle, bend_segment_rr *rr)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     Z_Segment *segment = rr->segment;
 
     if (segment->num_segmentRecords)
-	zebra_admin_import_segment (zh, rr->segment);
+	zebra_admin_import_segment(zh, rr->segment);
     else
-	zebra_admin_import_end (zh);
+	zebra_admin_import_end(zh);
     return 0;
 }
 
-int bend_esrequest (void *handle, bend_esrequest_rr *rr)
+int bend_esrequest(void *handle, bend_esrequest_rr *rr)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     
@@ -526,7 +526,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 
     if (!rr->esr->taskSpecificParameters)
     {
-        yaz_log (YLOG_WARN, "No task specific parameters");
+        yaz_log(YLOG_WARN, "No task specific parameters");
     }
     else if (rr->esr->taskSpecificParameters->which == Z_External_ESAdmin)
     {
@@ -535,53 +535,53 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
     else if (rr->esr->taskSpecificParameters->which == Z_External_update)
     {
     	Z_IUUpdate *up = rr->esr->taskSpecificParameters->u.update;
-	yaz_log (YLOG_LOG, "Received DB Update");
+	yaz_log(YLOG_LOG, "Received DB Update");
 	if (up->which == Z_IUUpdate_esRequest)
 	{
 	    Z_IUUpdateEsRequest *esRequest = up->u.esRequest;
 	    Z_IUOriginPartToKeep *toKeep = esRequest->toKeep;
 	    Z_IUSuppliedRecords *notToKeep = esRequest->notToKeep;
 	    
-	    yaz_log (YLOG_LOG, "action");
+	    yaz_log(YLOG_LOG, "action");
 	    if (toKeep->action)
 	    {
 		switch (*toKeep->action)
 		{
 		case Z_IUOriginPartToKeep_recordInsert:
-		    yaz_log (YLOG_LOG, "recordInsert");
+		    yaz_log(YLOG_LOG, "recordInsert");
 		    break;
 		case Z_IUOriginPartToKeep_recordReplace:
-		    yaz_log (YLOG_LOG, "recordUpdate");
+		    yaz_log(YLOG_LOG, "recordUpdate");
 		    break;
 		case Z_IUOriginPartToKeep_recordDelete:
-		    yaz_log (YLOG_LOG, "recordDelete");
+		    yaz_log(YLOG_LOG, "recordDelete");
 		    break;
 		case Z_IUOriginPartToKeep_elementUpdate:
-		    yaz_log (YLOG_LOG, "elementUpdate");
+		    yaz_log(YLOG_LOG, "elementUpdate");
 		    break;
 		case Z_IUOriginPartToKeep_specialUpdate:
-		    yaz_log (YLOG_LOG, "specialUpdate");
+		    yaz_log(YLOG_LOG, "specialUpdate");
 		    break;
                 case Z_ESAdminOriginPartToKeep_shutdown:
-		    yaz_log (YLOG_LOG, "shutDown");
+		    yaz_log(YLOG_LOG, "shutDown");
 		    break;
 		case Z_ESAdminOriginPartToKeep_start:
-		    yaz_log (YLOG_LOG, "start");
+		    yaz_log(YLOG_LOG, "start");
 		    break;
 		default:
-		    yaz_log (YLOG_LOG, " unknown (%d)", *toKeep->action);
+		    yaz_log(YLOG_LOG, " unknown (%d)", *toKeep->action);
 		}
 	    }
 	    if (toKeep->databaseName)
 	    {
-		yaz_log (YLOG_LOG, "database: %s", toKeep->databaseName);
+		yaz_log(YLOG_LOG, "database: %s", toKeep->databaseName);
 
                 if (zebra_select_database(zh, toKeep->databaseName))
                     return 0;
 	    }
             else
             {
-                yaz_log (YLOG_WARN, "no database supplied for ES Update");
+                yaz_log(YLOG_WARN, "no database supplied for ES Update");
                 rr->errcode =
 		    YAZ_BIB1_ES_MISSING_MANDATORY_PARAMETER_FOR_SPECIFIED_FUNCTION_;
                 rr->errstring = "database";
@@ -622,28 +622,28 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
                                 rec->direct_reference,
                                 0, oid_name_str);
                         if (oid_name)
-			    yaz_log (YLOG_LOG, "record %d type %s", i,
+			    yaz_log(YLOG_LOG, "record %d type %s", i,
                                      oid_name);
 		    }
 		    switch (rec->which)
 		    {
 		    case Z_External_sutrs:
 			if (rec->u.octet_aligned->len > 170)
-			    yaz_log (YLOG_LOG, "%d bytes:\n%.168s ...",
+			    yaz_log(YLOG_LOG, "%d bytes:\n%.168s ...",
 				     rec->u.sutrs->len,
 				     rec->u.sutrs->buf);
 			else
-			    yaz_log (YLOG_LOG, "%d bytes:\n%s",
+			    yaz_log(YLOG_LOG, "%d bytes:\n%s",
 				     rec->u.sutrs->len,
 				     rec->u.sutrs->buf);
                         break;
 		    case Z_External_octet:
 			if (rec->u.octet_aligned->len > 170)
-			    yaz_log (YLOG_LOG, "%d bytes:\n%.168s ...",
+			    yaz_log(YLOG_LOG, "%d bytes:\n%.168s ...",
 				     rec->u.octet_aligned->len,
 				     rec->u.octet_aligned->buf);
 			else
-			    yaz_log (YLOG_LOG, "%d bytes\n%s",
+			    yaz_log(YLOG_LOG, "%d bytes\n%s",
 				     rec->u.octet_aligned->len,
 				     rec->u.octet_aligned->buf);
 		    }
@@ -701,7 +701,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
                         }
                     }
 		}
-                if (zebra_end_trans (zh) != ZEBRA_OK)
+                if (zebra_end_trans(zh) != ZEBRA_OK)
 		{
 		    yaz_log(YLOG_WARN, "zebra_end_trans failed for"
 			    " extended service operation");
@@ -711,7 +711,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
     }
     else
     {
-        yaz_log (YLOG_WARN, "Unknown Extended Service(%d)",
+        yaz_log(YLOG_WARN, "Unknown Extended Service(%d)",
 		 rr->esr->taskSpecificParameters->which);
         rr->errcode = YAZ_BIB1_ES_EXTENDED_SERVICE_TYPE_UNSUPP;
 	
@@ -719,7 +719,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
     return 0;
 }
 
-static void bend_start (struct statserv_options_block *sob)
+static void bend_start(struct statserv_options_block *sob)
 {
     Res default_res = res_open(0, 0);
 
@@ -731,8 +731,8 @@ static void bend_start (struct statserv_options_block *sob)
     res_close(default_res);
     if (!sob->handle)
     {
-	yaz_log (YLOG_FATAL, "Failed to read config `%s'", sob->configname);
-	exit (1);
+	yaz_log(YLOG_FATAL, "Failed to read config `%s'", sob->configname);
+	exit(1);
     }
 #ifdef WIN32
     
@@ -745,7 +745,7 @@ static void bend_start (struct statserv_options_block *sob)
 
 	zebra_pidfname(sob->handle, pidfname);
 
-        fd = open (pidfname, O_EXCL|O_WRONLY|O_CREAT, 0666);
+        fd = open(pidfname, O_EXCL|O_WRONLY|O_CREAT, 0666);
         if (fd == -1)
         {
             if (errno != EEXIST)
@@ -763,7 +763,7 @@ static void bend_start (struct statserv_options_block *sob)
         area.l_type = F_WRLCK;
         area.l_whence = SEEK_SET;
         area.l_len = area.l_start = 0L;
-        if (fcntl (fd, F_SETLK, &area) == -1)
+        if (fcntl(fd, F_SETLK, &area) == -1)
         {
             yaz_log(YLOG_ERRNO|YLOG_FATAL, "Zebra server already running");
             exit(1);
@@ -772,8 +772,8 @@ static void bend_start (struct statserv_options_block *sob)
         {
 	    char pidstr[30];
 	
-	    sprintf (pidstr, "%ld", (long) getpid ());
-	    write (fd, pidstr, strlen(pidstr));
+	    sprintf(pidstr, "%ld", (long) getpid());
+	    write(fd, pidstr, strlen(pidstr));
         }
     }
 #endif
@@ -788,7 +788,7 @@ static void bend_stop(struct statserv_options_block *sob)
     {
 	char pidfname[4096];
 	zebra_pidfname(sob->handle, pidfname);
-        unlink (pidfname);
+        unlink(pidfname);
     }
 #endif
     if (sob->handle)
@@ -798,20 +798,20 @@ static void bend_stop(struct statserv_options_block *sob)
     }
 }
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
     struct statserv_options_block *sob;
 
-    sob = statserv_getcontrol ();
-    strcpy (sob->configname, "zebra.cfg");
+    sob = statserv_getcontrol();
+    strcpy(sob->configname, "zebra.cfg");
     sob->bend_start = bend_start;
     sob->bend_stop = bend_stop;
 #ifdef WIN32
-    strcpy (sob->service_display_name, "Zebra Server");
+    strcpy(sob->service_display_name, "Zebra Server");
 #endif
-    statserv_setcontrol (sob);
+    statserv_setcontrol(sob);
 
-    return statserv_main (argc, argv, bend_init, bend_close);
+    return statserv_main(argc, argv, bend_init, bend_close);
 }
 /*
  * Local variables:

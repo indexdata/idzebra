@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.200 2007-08-21 13:27:04 adam Exp $
+/* $Id: index.h,v 1.201 2007-10-29 09:25:40 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <idzebra/util.h>
 #include <idzebra/flock.h>
 #include <sortidx.h>
-
+#include <index_types.h>
 #if HAVE_SYS_TIMES_H
 #include <sys/times.h>
 #endif
@@ -144,6 +144,7 @@ struct zebra_register {
 
     char *server_path_prefix;
     data1_handle dh;
+    zebra_index_types_t index_types;
     ZebraMaps zebra_maps;
     ZebraRankClass rank_classes;
     RecTypes recTypes;

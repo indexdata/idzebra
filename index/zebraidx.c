@@ -1,4 +1,4 @@
-/* $Id: zebraidx.c,v 1.8 2007-10-23 12:39:48 adam Exp $
+/* $Id: zebraidx.c,v 1.9 2007-10-29 09:25:41 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -43,7 +43,7 @@ char *prog;
 
 static void filter_cb(void *cd, const char *name)
 {
-    puts (name);
+    puts(name);
 }
 
 static void show_filters(ZebraService zs)
@@ -51,7 +51,7 @@ static void show_filters(ZebraService zs)
     zebra_filter_info(zs, 0, filter_cb);
 }
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
     int ret;
     int cmd = 0;
@@ -73,12 +73,12 @@ int main (int argc, char **argv)
 #ifdef WIN32
 #else
     sprintf(nbuf, "%.40s(%ld)", *argv, (long) getpid());
-    yaz_log_init_prefix (nbuf);
+    yaz_log_init_prefix(nbuf);
 #endif
     prog = *argv;
     if (argc < 2)
     {
-        fprintf (stderr, "%s [options] command <dir> ...\n"
+        fprintf(stderr, "%s [options] command <dir> ...\n"
         "Commands:\n"
         " update <dir>  Update index with files below <dir>.\n"
 	"               If <dir> is empty filenames are read from stdin.\n"
@@ -101,7 +101,7 @@ int main (int argc, char **argv)
         " -f <n>        Display information for the first <n> records.\n"
         " -V            Show version.\n", *argv
                  );
-        exit (1);
+        exit(1);
     }
     res_set(default_res, "profilePath", DEFAULT_PROFILE_PATH);
     res_set(default_res, "modulePath", DEFAULT_MODULE_PATH);
@@ -117,34 +117,34 @@ int main (int argc, char **argv)
                     zs = zebra_start_res(config, default_res, res);
                     if (!zs)
                     {
-			yaz_log (YLOG_FATAL, "Cannot read config %s", config);
-                        exit (1);
+			yaz_log(YLOG_FATAL, "Cannot read config %s", config);
+                        exit(1);
 	            }	
-                    zh = zebra_open (zs, 0);
-		    zebra_shadow_enable (zh, enable_commit);
+                    zh = zebra_open(zs, 0);
+		    zebra_shadow_enable(zh, enable_commit);
                 }
 
 		if (database &&
-		    zebra_select_database (zh, database) == ZEBRA_FAIL)
+		    zebra_select_database(zh, database) == ZEBRA_FAIL)
 		{
 		    yaz_log(YLOG_FATAL, "Could not select database %s "
 			    "errCode=%d",
 			    database, zebra_errCode(zh) );
-		    exit (1);
+		    exit(1);
 		}
-                if (!strcmp (arg, "update"))
+                if (!strcmp(arg, "update"))
                     cmd = 'u';
-                else if (!strcmp (arg, "update1"))
+                else if (!strcmp(arg, "update1"))
                     cmd = 'U';
-                else if (!strcmp (arg, "update2"))
+                else if (!strcmp(arg, "update2"))
                     cmd = 'm';
-                else if (!strcmp (arg, "dump"))
+                else if (!strcmp(arg, "dump"))
                     cmd = 's';
-                else if (!strcmp (arg, "del") || !strcmp(arg, "delete"))
+                else if (!strcmp(arg, "del") || !strcmp(arg, "delete"))
                     cmd = 'd';
-		else if (!strcmp (arg, "init"))
+		else if (!strcmp(arg, "init"))
 		{
-                    zebra_init (zh);
+                    zebra_init(zh);
 		}
 		else if (!strcmp(arg, "drop"))
 		{
@@ -154,34 +154,34 @@ int main (int argc, char **argv)
 		{
 		    cmd = 'C';
 		}
-                else if (!strcmp (arg, "commit"))
+                else if (!strcmp(arg, "commit"))
                 {
-                    zebra_commit (zh);
+                    zebra_commit(zh);
                 }
-                else if (!strcmp (arg, "clean"))
+                else if (!strcmp(arg, "clean"))
                 {
-                    zebra_clean (zh);
+                    zebra_clean(zh);
                 }
-                else if (!strcmp (arg, "stat") || !strcmp (arg, "status"))
+                else if (!strcmp(arg, "stat") || !strcmp(arg, "status"))
                 {
-                    zebra_register_statistics (zh,0);
+                    zebra_register_statistics(zh, 0);
                 }
-                else if (!strcmp (arg, "dumpdict"))
+                else if (!strcmp(arg, "dumpdict"))
                 {
-                    zebra_register_statistics (zh,1);
+                    zebra_register_statistics(zh, 1);
                 }
-                else if (!strcmp (arg, "compact"))
+                else if (!strcmp(arg, "compact"))
                 {
-                    zebra_compact (zh);
+                    zebra_compact(zh);
                 }
-                else if (!strcmp (arg, "filters"))
+                else if (!strcmp(arg, "filters"))
                 {
                     show_filters(zs);
                 }
                 else
                 {
-                    yaz_log (YLOG_FATAL, "unknown command: %s", arg);
-                    exit (1);
+                    yaz_log(YLOG_FATAL, "unknown command: %s", arg);
+                    exit(1);
                 }
             }
 	    else
@@ -190,19 +190,19 @@ int main (int argc, char **argv)
 		if (!trans_started)
 		{
 		    trans_started=1;
-                    if (zebra_begin_trans (zh, 1) != ZEBRA_OK)
+                    if (zebra_begin_trans(zh, 1) != ZEBRA_OK)
                         exit(1);
 		}
                 switch (cmd)
                 {
                 case 'u':
-                    res = zebra_repository_update (zh, arg);
+                    res = zebra_repository_update(zh, arg);
                     break;
                 case 'd':
-                    res = zebra_repository_delete (zh, arg);
+                    res = zebra_repository_delete(zh, arg);
                     break;
                 case 's':
-                    res = zebra_repository_show (zh, arg);
+                    res = zebra_repository_show(zh, arg);
                     nsections = 0;
                     break;
 		case 'C':
@@ -221,15 +221,15 @@ int main (int argc, char **argv)
                             zebra_errString(zh), add ? add : "");
                     
                     if (trans_started)
-                        if (zebra_end_trans (zh) != ZEBRA_OK)
-                            yaz_log (YLOG_WARN, "zebra_end_trans failed");
+                        if (zebra_end_trans(zh) != ZEBRA_OK)
+                            yaz_log(YLOG_WARN, "zebra_end_trans failed");
 
 
-                    zebra_close (zh);
-                    zebra_stop (zs);
+                    zebra_close(zh);
+                    zebra_stop(zs);
 		    exit(1);
 		}
-                log_event_end (NULL, NULL);
+                log_event_end(NULL, NULL);
             }
         }
         else if (ret == 'V')
@@ -250,9 +250,9 @@ int main (int argc, char **argv)
 #endif
         }
         else if (ret == 'v')
-            yaz_log_init_level (yaz_log_mask_str(arg));
+            yaz_log_init_level(yaz_log_mask_str(arg));
 	else if (ret == 'l')
-	    yaz_log_init_file (arg);
+	    yaz_log_init_file(arg);
         else if (ret == 'm')
 	    res_set(res, "memMax", arg);
         else if (ret == 'd')
@@ -272,19 +272,19 @@ int main (int argc, char **argv)
 	else if (ret == 'L')
 	    res_set(res, "followLinks", "0");
         else
-            yaz_log (YLOG_WARN, "unknown option '-%s'", arg);
+            yaz_log(YLOG_WARN, "unknown option '-%s'", arg);
     } /* while arg */
 
     if (trans_started)
-        if (zebra_end_trans (zh) != ZEBRA_OK)
-            yaz_log (YLOG_WARN, "zebra_end_trans failed");
+        if (zebra_end_trans(zh) != ZEBRA_OK)
+            yaz_log(YLOG_WARN, "zebra_end_trans failed");
 
-    zebra_close (zh);
-    zebra_stop (zs);
+    zebra_close(zh);
+    zebra_stop(zs);
 
     res_close(res);
     res_close(default_res);
-    exit (0);
+    exit(0);
     return 0;
 }
 

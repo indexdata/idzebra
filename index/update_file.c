@@ -1,4 +1,4 @@
-/* $Id: update_file.c,v 1.5 2007-01-15 15:10:17 adam Exp $
+/* $Id: update_file.c,v 1.6 2007-10-29 09:25:41 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -51,15 +51,15 @@ static void dump_file_dict(Dict dict)
     char term[1000];
     
     strcpy(term, "0");
-    dict_scan (dict, term, &before, &after, 0, dump_file_dict_func);
+    dict_scan(dict, term, &before, &after, 0, dump_file_dict_func);
 }
 #endif
 
-static int repComp (const char *a, const char *b, size_t len)
+static int repComp(const char *a, const char *b, size_t len)
 {
     if (!len)
         return 0;
-    return memcmp (a, b, len);
+    return memcmp(a, b, len);
 }
 
 static void fileDelete_r(ZebraHandle zh,
@@ -67,27 +67,27 @@ static void fileDelete_r(ZebraHandle zh,
                          const char *base, char *src)
 {
     char tmppath[1024];
-    size_t src_len = strlen (src);
+    size_t src_len = strlen(src);
 
-    while (dst && !repComp (dst->path, src, src_len+1))
+    while (dst && !repComp(dst->path, src, src_len+1))
     {
         switch (dst->kind)
         {
         case dirs_file:
-            sprintf (tmppath, "%s%s", base, dst->path);
-            zebra_extract_file (zh, &dst->sysno, tmppath, 1);
+            sprintf(tmppath, "%s%s", base, dst->path);
+            zebra_extract_file(zh, &dst->sysno, tmppath, 1);
              
-            strcpy (tmppath, dst->path);
-            dst = dirs_read (di); 
-            dirs_del (di, tmppath);
+            strcpy(tmppath, dst->path);
+            dst = dirs_read(di); 
+            dirs_del(di, tmppath);
             break;
         case dirs_dir:
-            strcpy (tmppath, dst->path);
-            dst = dirs_read (di);
-            dirs_rmdir (di, tmppath);
+            strcpy(tmppath, dst->path);
+            dst = dirs_read(di);
+            dirs_rmdir(di, tmppath);
             break;
         default:
-            dst = dirs_read (di);
+            dst = dirs_read(di);
         }
     }
 }
@@ -100,16 +100,16 @@ static void file_update_r(ZebraHandle zh,
     struct dir_entry *e_src;
     int i_src = 0;
     static char tmppath[1024];
-    size_t src_len = strlen (src);
+    size_t src_len = strlen(src);
 
-    sprintf (tmppath, "%s%s", base, src);
-    e_src = dir_open (tmppath, zh->path_reg, zh->m_follow_links);
+    sprintf(tmppath, "%s%s", base, src);
+    e_src = dir_open(tmppath, zh->path_reg, zh->m_follow_links);
     yaz_log(YLOG_LOG, "dir %s", tmppath);
 
 #if 0
-    if (!dst || repComp (dst->path, src, src_len))
+    if (!dst || repComp(dst->path, src, src_len))
 #else
-    if (!dst || strcmp (dst->path, src))
+    if (!dst || strcmp(dst->path, src))
 #endif
     {
         if (!e_src)
@@ -120,13 +120,13 @@ static void file_update_r(ZebraHandle zh,
             src[src_len] = '/';
             src[++src_len] = '\0';
         }
-        dirs_mkdir (di, src, 0);
-        if (dst && repComp (dst->path, src, src_len))
+        dirs_mkdir(di, src, 0);
+        if (dst && repComp(dst->path, src, src_len))
             dst = NULL;
     }
     else if (!e_src)
     {
-        strcpy (src, dst->path);
+        strcpy(src, dst->path);
         fileDelete_r(zh, di, dst, base, src);
         return;
     }
@@ -137,21 +137,21 @@ static void file_update_r(ZebraHandle zh,
             src[src_len] = '/';
             src[++src_len] = '\0';
         }
-        dst = dirs_read (di); 
+        dst = dirs_read(di); 
     }
-    dir_sort (e_src);
+    dir_sort(e_src);
 
     while (1)
     {
         int sd;
 
-        if (dst && !repComp (dst->path, src, src_len))
+        if (dst && !repComp(dst->path, src, src_len))
         {
             if (e_src[i_src].name)
             {
                 yaz_log(YLOG_DEBUG, "dst=%s src=%s", dst->path + src_len,
 		      e_src[i_src].name);
-                sd = strcmp (dst->path + src_len, e_src[i_src].name);
+                sd = strcmp(dst->path + src_len, e_src[i_src].name);
             }
             else
                 sd = -1;
@@ -164,72 +164,72 @@ static void file_update_r(ZebraHandle zh,
 
         if (sd == 0)
         {
-            strcpy (src + src_len, e_src[i_src].name);
-            sprintf (tmppath, "%s%s", base, src);
+            strcpy(src + src_len, e_src[i_src].name);
+            sprintf(tmppath, "%s%s", base, src);
             
-            switch (e_src[i_src].kind)
+            switch(e_src[i_src].kind)
             {
             case dirs_file:
                 if (e_src[i_src].mtime > dst->mtime)
                 {
-                    if (zebra_extract_file (zh, &dst->sysno, tmppath, 0) == ZEBRA_OK)
+                    if (zebra_extract_file(zh, &dst->sysno, tmppath, 0) == ZEBRA_OK)
                     {
-                        dirs_add (di, src, dst->sysno, e_src[i_src].mtime);
+                        dirs_add(di, src, dst->sysno, e_src[i_src].mtime);
                     }
-		    yaz_log(YLOG_DEBUG, "old: %s", ctime (&dst->mtime));
-                    yaz_log(YLOG_DEBUG, "new: %s", ctime (&e_src[i_src].mtime));
+		    yaz_log(YLOG_DEBUG, "old: %s", ctime(&dst->mtime));
+                    yaz_log(YLOG_DEBUG, "new: %s", ctime(&e_src[i_src].mtime));
                 }
-                dst = dirs_read (di);
+                dst = dirs_read(di);
                 break;
             case dirs_dir:
                 file_update_r(zh, di, dst, base, src, level+1);
-                dst = dirs_last (di);
+                dst = dirs_last(di);
                 yaz_log(YLOG_DEBUG, "last is %s", dst ? dst->path : "null");
                 break;
             default:
-                dst = dirs_read (di); 
+                dst = dirs_read(di); 
             }
             i_src++;
         }
         else if (sd > 0)
         {
             zint sysno = 0;
-            strcpy (src + src_len, e_src[i_src].name);
-            sprintf (tmppath, "%s%s", base, src);
+            strcpy(src + src_len, e_src[i_src].name);
+            sprintf(tmppath, "%s%s", base, src);
 
             switch (e_src[i_src].kind)
             {
             case dirs_file:
-                if (zebra_extract_file (zh, &sysno, tmppath, 0) == ZEBRA_OK)
-                    dirs_add (di, src, sysno, e_src[i_src].mtime);            
+                if (zebra_extract_file(zh, &sysno, tmppath, 0) == ZEBRA_OK)
+                    dirs_add(di, src, sysno, e_src[i_src].mtime);            
                 break;
             case dirs_dir:
                 file_update_r(zh, di, dst, base, src, level+1);
                 if (dst)
-                    dst = dirs_last (di);
+                    dst = dirs_last(di);
                 break;
             }
             i_src++;
         }
         else  /* sd < 0 */
         {
-            strcpy (src, dst->path);
-            sprintf (tmppath, "%s%s", base, dst->path);
+            strcpy(src, dst->path);
+            sprintf(tmppath, "%s%s", base, dst->path);
 
             switch (dst->kind)
             {
             case dirs_file:
-                zebra_extract_file (zh, &dst->sysno, tmppath, 1);
-                dirs_del (di, dst->path);
-                dst = dirs_read (di);
+                zebra_extract_file(zh, &dst->sysno, tmppath, 1);
+                dirs_del(di, dst->path);
+                dst = dirs_read(di);
                 break;
             case dirs_dir:
                 fileDelete_r(zh, di, dst, base, src);
-                dst = dirs_last (di);
+                dst = dirs_last(di);
             }
         }
     }
-    dir_free (&e_src);
+    dir_free(&e_src);
 }
 
 static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
@@ -240,20 +240,20 @@ static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
     char dst[1024];
     int src_len, ret;
 
-    assert (path);
+    assert(path);
 
     if (zh->path_reg && !yaz_is_abspath(path))
     {
-        strcpy (src, zh->path_reg);
-        strcat (src, "/");
+        strcpy(src, zh->path_reg);
+        strcat(src, "/");
     }
     else
         *src = '\0';
-    strcat (src, path);
-    ret = zebra_file_stat (src, &sbuf, zh->m_follow_links);
+    strcat(src, path);
+    ret = zebra_file_stat(src, &sbuf, zh->m_follow_links);
 
-    strcpy (src, path);
-    src_len = strlen (src);
+    strcpy(src, path);
+    src_len = strlen(src);
 
     if (ret == -1)
     {
@@ -262,20 +262,20 @@ static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
     else if (S_ISREG(sbuf.st_mode))
     {
         struct dirs_entry *e_dst;
-        di = dirs_fopen (dict, src, zh->m_flag_rw);
+        di = dirs_fopen(dict, src, zh->m_flag_rw);
 
         e_dst = dirs_read(di);
         if (e_dst)
         {
             if (sbuf.st_mtime > e_dst->mtime)
-                if (zebra_extract_file (zh, &e_dst->sysno, src, 0) == ZEBRA_OK)
-                    dirs_add (di, src, e_dst->sysno, sbuf.st_mtime);
+                if (zebra_extract_file(zh, &e_dst->sysno, src, 0) == ZEBRA_OK)
+                    dirs_add(di, src, e_dst->sysno, sbuf.st_mtime);
         }
         else
         {
             zint sysno = 0;
-            if (zebra_extract_file (zh, &sysno, src, 0) == ZEBRA_OK)
-                 dirs_add (di, src, sysno, sbuf.st_mtime);
+            if (zebra_extract_file(zh, &sysno, src, 0) == ZEBRA_OK)
+                 dirs_add(di, src, sysno, sbuf.st_mtime);
         }
         dirs_free(&di);
     }
@@ -286,9 +286,9 @@ static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
             src[src_len] = '/';
             src[++src_len] = '\0';
         }
-        di = dirs_open (dict, src, zh->m_flag_rw);
+        di = dirs_open(dict, src, zh->m_flag_rw);
         *dst = '\0';
-        file_update_r(zh, di, dirs_read (di), src, dst, 0);
+        file_update_r(zh, di, dirs_read(di), src, dst, 0);
         dirs_free (&di);
     }
     else
@@ -304,7 +304,7 @@ static ZEBRA_RES zebra_open_fmatch(ZebraHandle zh, Dict *dictp)
 
     ord = zebraExplain_get_database_ord(zh->reg->zei);
     sprintf(fmatch_fname, FMATCH_DICT, ord);
-    if (!(*dictp = dict_open_res (zh->reg->bfs, fmatch_fname, 50,
+    if (!(*dictp = dict_open_res(zh->reg->bfs, fmatch_fname, 50,
                                 zh->m_flag_rw, 0, zh->res)))
     {
         yaz_log(YLOG_FATAL, "dict_open fail of %s", fmatch_fname);
@@ -330,7 +330,7 @@ ZEBRA_RES zebra_update_file_match(ZebraHandle zh, const char *path)
 {
     Dict dict;
 
-    if (zebraExplain_curDatabase (zh->reg->zei, zh->basenames[0]))
+    if (zebraExplain_curDatabase(zh->reg->zei, zh->basenames[0]))
     {
         if (zebraExplain_newDatabase(zh->reg->zei, zh->basenames[0], 0))
             return ZEBRA_FAIL;
@@ -341,7 +341,7 @@ ZEBRA_RES zebra_update_file_match(ZebraHandle zh, const char *path)
     if (!strcmp(path, "") || !strcmp(path, "-"))
     {
         char src[1024];
-        while (scanf ("%s", src) == 1)
+        while (scanf("%s", src) == 1)
             file_update_top(zh, dict, src);
     }
     else
@@ -349,7 +349,7 @@ ZEBRA_RES zebra_update_file_match(ZebraHandle zh, const char *path)
 #if 0
     dump_file_dict(dict);
 #endif
-    dict_close (dict);
+    dict_close(dict);
     return ZEBRA_OK;
 }
 

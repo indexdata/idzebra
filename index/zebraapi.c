@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.259 2007-08-28 21:40:57 adam Exp $
+/* $Id: zebraapi.c,v 1.260 2007-10-29 09:25:41 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -381,6 +381,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     data1_set_tabroot (reg->dh, reg_path);
     reg->recTypes = recTypes_init (zs->record_classes, reg->dh);
 
+    reg->index_types = 0;
     reg->zebra_maps =
 	zebra_maps_open(res, reg_path, profilePath);
     if (!reg->zebra_maps)
@@ -419,7 +420,30 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     if (!strcmp (recordCompression, "bzip2"))
 	record_compression = REC_COMPRESS_BZIP2;
 
-    if (1)
+    {
+        const char *index_types_fname = res_get(res, "indextypes");
+        if (index_types_fname)
+        {
+            char tmp_full_name[1024];
+
+            if (!yaz_filepath_resolve(index_types_fname,
+                                      profilePath,
+                                      reg_path,
+                                      tmp_full_name))
+            {
+                yaz_log(YLOG_WARN, "Could not find %s", index_types_fname);
+                ret = ZEBRA_FAIL;
+            }
+            else
+            {
+                reg->index_types = zebra_index_types_create(
+                    tmp_full_name);
+                yaz_log(YLOG_LOG, "zebra_index_types_create returned %p", 
+                        reg->index_types);
+            }
+        }
+
+    }
     {
 	const char *index_fname = res_get_def(res, "index", "default.idx");
 	if (index_fname && *index_fname)
@@ -580,6 +604,7 @@ static void zebra_register_close(ZebraService zs, struct zebra_register *reg)
 
     recTypes_destroy (reg->recTypes);
     zebra_maps_close (reg->zebra_maps);
+    zebra_index_types_destroy(reg->index_types);
     zebraRankDestroy (reg);
     bfs_destroy (reg->bfs);
     data1_destroy (reg->dh);

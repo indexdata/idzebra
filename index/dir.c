@@ -1,4 +1,4 @@
-/* $Id: dir.c,v 1.35 2007-01-15 15:10:16 adam Exp $
+/* $Id: dir.c,v 1.36 2007-10-29 09:25:40 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -35,7 +35,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "index.h"
 
 
-int zebra_file_stat (const char *file_name, struct stat *buf,
+int zebra_file_stat(const char *file_name, struct stat *buf,
                      int follow_links)
 {
 #ifndef WIN32
@@ -45,7 +45,7 @@ int zebra_file_stat (const char *file_name, struct stat *buf,
     return stat(file_name, buf);
 }
 
-struct dir_entry *dir_open (const char *rep, const char *base,
+struct dir_entry *dir_open(const char *rep, const char *base,
                             int follow_links)
 {
     DIR *dir;
@@ -59,99 +59,99 @@ struct dir_entry *dir_open (const char *rep, const char *base,
 
     if (base && !yaz_is_abspath(rep))
     {
-        strcpy (full_rep, base);
-        strcat (full_rep, "/");
+        strcpy(full_rep, base);
+        strcat(full_rep, "/");
     }
     else
         *full_rep = '\0';
-    strcat (full_rep, rep);
+    strcat(full_rep, rep);
 
-    yaz_log (YLOG_DEBUG, "dir_open %s", full_rep);
+    yaz_log(YLOG_DEBUG, "dir_open %s", full_rep);
     if (!(dir = opendir(full_rep)))
     {
-        yaz_log (YLOG_WARN|YLOG_ERRNO, "opendir %s", rep);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "opendir %s", rep);
         return NULL;
     }
-    entry = (struct dir_entry *) xmalloc (sizeof(*entry) * entry_max);
-    strcpy (path, rep);
+    entry = (struct dir_entry *) xmalloc(sizeof(*entry) * entry_max);
+    strcpy(path, rep);
     pathpos = strlen(path);
     if (!pathpos || path[pathpos-1] != '/')
         path[pathpos++] = '/';
-    while ( (dent = readdir (dir)) )
+    while ( (dent = readdir(dir)) )
     {
         struct stat finfo;
-        if (strcmp (dent->d_name, ".") == 0 ||
-            strcmp (dent->d_name, "..") == 0)
+        if (strcmp(dent->d_name, ".") == 0 ||
+            strcmp(dent->d_name, "..") == 0)
             continue;
         if (idx == entry_max-1)
         {
             struct dir_entry *entry_n;
 
             entry_n = (struct dir_entry *)
-		xmalloc (sizeof(*entry) * (entry_max += 1000));
-            memcpy (entry_n, entry, idx * sizeof(*entry));
-            xfree (entry);
+		xmalloc(sizeof(*entry) * (entry_max += 1000));
+            memcpy(entry_n, entry, idx * sizeof(*entry));
+            xfree(entry);
             entry = entry_n;
         }
-        strcpy (path + pathpos, dent->d_name);
+        strcpy(path + pathpos, dent->d_name);
 
-        if (base && !yaz_is_abspath (path))
+        if (base && !yaz_is_abspath(path))
         {
-            strcpy (full_rep, base);
-            strcat (full_rep, "/");
-            strcat (full_rep, path);
-            zebra_file_stat (full_rep, &finfo, follow_links);
+            strcpy(full_rep, base);
+            strcat(full_rep, "/");
+            strcat(full_rep, path);
+            zebra_file_stat(full_rep, &finfo, follow_links);
         }
         else
-            zebra_file_stat (path, &finfo, follow_links);
+            zebra_file_stat(path, &finfo, follow_links);
         switch (finfo.st_mode & S_IFMT)
         {
         case S_IFREG:
             entry[idx].kind = dirs_file;
             entry[idx].mtime = finfo.st_mtime;
-            entry[idx].name = (char *) xmalloc (strlen(dent->d_name)+1);
-            strcpy (entry[idx].name, dent->d_name);
+            entry[idx].name = (char *) xmalloc(strlen(dent->d_name)+1);
+            strcpy(entry[idx].name, dent->d_name);
             idx++;
             break;
         case S_IFDIR:
             entry[idx].kind = dirs_dir;
             entry[idx].mtime = finfo.st_mtime;
-            entry[idx].name = (char *) xmalloc (strlen(dent->d_name)+2);
-            strcpy (entry[idx].name, dent->d_name);
-	    strcat (entry[idx].name, "/");
+            entry[idx].name = (char *) xmalloc(strlen(dent->d_name)+2);
+            strcpy(entry[idx].name, dent->d_name);
+	    strcat(entry[idx].name, "/");
             idx++;
             break;
         }
     }
     entry[idx].name = NULL;
-    closedir (dir);
-    yaz_log (YLOG_DEBUG, "dir_close");
+    closedir(dir);
+    yaz_log(YLOG_DEBUG, "dir_close");
     return entry;
 }
 
-static int dir_cmp (const void *p1, const void *p2)
+static int dir_cmp(const void *p1, const void *p2)
 {
-    return strcmp (((struct dir_entry *) p1)->name,
-                   ((struct dir_entry *) p2)->name);
+    return strcmp(((struct dir_entry *) p1)->name,
+                  ((struct dir_entry *) p2)->name);
 }
 
-void dir_sort (struct dir_entry *e)
+void dir_sort(struct dir_entry *e)
 {
     size_t nmemb = 0;
     while (e[nmemb].name)
         nmemb++;
-    qsort (e, nmemb, sizeof(*e), dir_cmp); 
+    qsort(e, nmemb, sizeof(*e), dir_cmp); 
 }
 
-void dir_free (struct dir_entry **e_p)
+void dir_free(struct dir_entry **e_p)
 {
     size_t i = 0;
     struct dir_entry *e = *e_p;
 
-    assert (e);
+    assert(e);
     while (e[i].name)
-        xfree (e[i++].name);
-    xfree (e);
+        xfree(e[i++].name);
+    xfree(e);
     *e_p = NULL;
 }
 /*

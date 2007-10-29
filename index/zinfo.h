@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.38 2007-01-15 20:08:25 adam Exp $
+/* $Id: zinfo.h,v 1.39 2007-10-29 09:25:41 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -56,9 +56,9 @@ ZebraExplainInfo zebraExplain_open(Records records, data1_handle dh,
                                    void *updateHandle,
                                    ZebraExplainUpdateFunc *);
 
-void zebraExplain_close (ZebraExplainInfo zei);
-int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database);
-int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
+void zebraExplain_close(ZebraExplainInfo zei);
+int zebraExplain_curDatabase(ZebraExplainInfo zei, const char *database);
+int zebraExplain_newDatabase(ZebraExplainInfo zei, const char *database,
 			      int explain_database);
 int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
 			     int set, int use);
@@ -79,14 +79,14 @@ int zebraExplain_add_attr_str(ZebraExplainInfo zei,
                               zinfo_index_category_t cat,
                               int index_type,
 			      const char *str);
-void zebraExplain_addSchema (ZebraExplainInfo zei, Odr_oid *oid);
-void zebraExplain_recordCountIncrement (ZebraExplainInfo zei, int adjust_num);
-void zebraExplain_recordBytesIncrement (ZebraExplainInfo zei, int adjust_num);
-zint zebraExplain_runNumberIncrement (ZebraExplainInfo zei, int adjust_num);
-void zebraExplain_loadAttsets (data1_handle dh, Res res);
-void zebraExplain_flush (ZebraExplainInfo zei, void *updateHandle);
+void zebraExplain_addSchema(ZebraExplainInfo zei, Odr_oid *oid);
+void zebraExplain_recordCountIncrement(ZebraExplainInfo zei, int adjust_num);
+void zebraExplain_recordBytesIncrement(ZebraExplainInfo zei, int adjust_num);
+zint zebraExplain_runNumberIncrement(ZebraExplainInfo zei, int adjust_num);
+void zebraExplain_loadAttsets(data1_handle dh, Res res);
+void zebraExplain_flush(ZebraExplainInfo zei, void *updateHandle);
 
-int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
+int zebraExplain_lookup_ord(ZebraExplainInfo zei, int ord,
 			     int *index_type, const char **db,
 			     const char **string_index);
 
@@ -108,7 +108,7 @@ typedef struct {
     zint runNumber;
     zint staticrank;
 } RecordAttr;
-RecordAttr *rec_init_attr (ZebraExplainInfo zei, Record rec);
+RecordAttr *rec_init_attr(ZebraExplainInfo zei, Record rec);
 
 YAZ_END_CDECL
 

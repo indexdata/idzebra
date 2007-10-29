@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.19 2007-05-08 12:50:04 adam Exp $
+/* $Id: recgrs.c,v 1.20 2007-10-29 09:25:40 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -396,7 +396,7 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 #endif
     char *pexpr = xmalloc(strlen(tagpath)+5);
     
-    sprintf (pexpr, "/%s\n", tagpath);
+    sprintf(pexpr, "/%s\n", tagpath);
 
     for (xpe = abs->xp_elements; xpe; xpe = xpe->next)
         xpe->match_state = -1; /* don't know if it matches yet */
@@ -418,7 +418,7 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
                 xpe1->match_state = ok;
 #endif
         }
-        assert (ok == 0 || ok == 1);
+        assert(ok == 0 || ok == 1);
         if (ok) {
 #ifdef ENHANCED_XELM 
             /* we have to check the perdicates up to the root node */
@@ -476,7 +476,7 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 */
 
 /* add xpath index for an attribute */
-static void index_xpath_attr (char *tag_path, char *name, char *value,
+static void index_xpath_attr(char *tag_path, char *name, char *value,
 			      char *structure, struct recExtractCtrl *p,
 			      RecWord *wrd)
 {
@@ -514,7 +514,7 @@ static void mk_tag_path_full(char *tag_path_full, size_t max, data1_node *n)
 	    size_t tlen = strlen(nn->u.tag.tag);
 	    if (tlen + flen > (max - 2))
 		break;
-	    memcpy (tag_path_full + flen, nn->u.tag.tag, tlen);
+	    memcpy(tag_path_full + flen, nn->u.tag.tag, tlen);
 	    flen += tlen;
 	    tag_path_full[flen++] = '/';
 	}
@@ -564,7 +564,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
 		/* need to copy recword because it may be changed */
 		RecWord wrd_tl;
 		wrd->index_type = *tl->structure;
-		memcpy (&wrd_tl, wrd, sizeof(*wrd));
+		memcpy(&wrd_tl, wrd, sizeof(*wrd));
 		if (tl->source)
 		    sp_parse(sp, n, &wrd_tl, tl->source);
                 
@@ -576,13 +576,13 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                     printf("%*sIdx: [%s]", (level + 1) * 4, "",
                            tl->structure);
                     printf("%s %s", tl->index_name, tl->source);
-                    printf (" XData:\"");
+                    printf(" XData:\"");
                     for (i = 0; i<wrd_tl.term_len && i < 40; i++)
-                        fputc (wrd_tl.term_buf[i], stdout);
-                    fputc ('"', stdout);
+                        fputc(wrd_tl.term_buf[i], stdout);
+                    fputc('"', stdout);
                     if (wrd_tl.term_len > 40)
-                        printf (" ...");
-                    fputc ('\n', stdout);
+                        printf(" ...");
+                    fputc('\n', stdout);
                 }
                 else
                 {
@@ -615,9 +615,9 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
         {
             printf("%*s tag=", (level + 1) * 4, "");
             for (i = 0; i<wrd->term_len && i < 40; i++)
-                fputc (wrd->term_buf[i], stdout);
+                fputc(wrd->term_buf[i], stdout);
             if (i == 40)
-                printf (" ..");
+                printf(" ..");
             printf("\n");
         }
         else
@@ -638,7 +638,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                     char attr_tag_path_full[1024]; 
                     
                     /* this could be cached as well */
-                    sprintf (attr_tag_path_full, "@%s/%s",
+                    sprintf(attr_tag_path_full, "@%s/%s",
                              xp->name, tag_path_full);
 
                     tll[i] = xpath_termlist_by_tagpath(attr_tag_path_full,n);
@@ -659,9 +659,9 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                             strlen(xp->name) + strlen(xp->value) < sizeof(comb)-2)
                         {
                             /* attribute value exact */
-                            strcpy (comb, xp->name);
-                            strcat (comb, "=");
-                            strcat (comb, xp->value);
+                            strcpy(comb, xp->name);
+                            strcat(comb, "=");
+                            strcat(comb, xp->value);
                             
                             wrd->index_name = ZEBRA_XPATH_ATTR_NAME;
                             wrd->index_type = '0';
@@ -681,7 +681,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                     char attr_tag_path_full[1024];
                     int xpdone = 0;
                     
-                    sprintf (attr_tag_path_full, "@%s/%s",
+                    sprintf(attr_tag_path_full, "@%s/%s",
                              xp->name, tag_path_full);
                     if ((tl = tll[i]))
                     {
@@ -691,7 +691,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
 			    if (!tl->index_name)
 			    {
                                 /* add xpath index for the attribute */
-                                index_xpath_attr (attr_tag_path_full, xp->name,
+                                index_xpath_attr(attr_tag_path_full, xp->name,
                                                   xp->value, tl->structure,
                                                   p, wrd);
                                 xpdone = 1;
@@ -713,7 +713,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                        the attribute as "w" */
                     if (!xpdone && !termlist_only)
                     {
-                        index_xpath_attr (attr_tag_path_full, xp->name,
+                        index_xpath_attr(attr_tag_path_full, xp->name,
                                           xp->value,  "w", p, wrd);
                     }
                     i++;
@@ -723,7 +723,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
     }
 }
 
-static void index_termlist (struct source_parser *sp, data1_node *par,
+static void index_termlist(struct source_parser *sp, data1_node *par,
 			    data1_node *n,
                             struct recExtractCtrl *p, int level, RecWord *wrd)
 {
@@ -759,13 +759,13 @@ static void index_termlist (struct source_parser *sp, data1_node *par,
 		printf("%*sIdx: [%s]", (level + 1) * 4, "",
 		       tlist->structure);
 		printf("%s %s", tlist->index_name, tlist->source);
-		printf (" XData:\"");
+		printf(" XData:\"");
 		for (i = 0; i<wrd->term_len && i < 40; i++)
-		    fputc (wrd->term_buf[i], stdout);
-		fputc ('"', stdout);
+		    fputc(wrd->term_buf[i], stdout);
+		fputc('"', stdout);
 		if (wrd->term_len > 40)
-		    printf (" ...");
-		fputc ('\n', stdout);
+		    printf(" ...");
+		fputc('\n', stdout);
 	    }
 	    else
 	    {
@@ -915,13 +915,13 @@ static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
     data1_concat_text(p->dh, mem, n);
 
     /* ensure our data1 tree is UTF-8 */
-    data1_iconv (p->dh, mem, n, "UTF-8", data1_get_encoding(p->dh, n));
+    data1_iconv(p->dh, mem, n, "UTF-8", data1_get_encoding(p->dh, n));
 
 
-    data1_remove_idzebra_subtree (p->dh, n);
+    data1_remove_idzebra_subtree(p->dh, n);
 
 #if 0
-    data1_pr_tree (p->dh, n, stdout);
+    data1_pr_tree(p->dh, n, stdout);
 #endif
 
     (*p->init)(p, &wrd);
@@ -936,7 +936,7 @@ int zebra_grs_extract(void *clientData, struct recExtractCtrl *p,
 		      data1_node *(*grs_read)(struct grs_read_info *))
 {
     int ret;
-    NMEM mem = nmem_create ();
+    NMEM mem = nmem_create();
     ret = grs_extract_sub(clientData, p, mem, grs_read);
     nmem_destroy(mem);
     return ret;
@@ -1031,7 +1031,7 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c,
         </root>
 */
 
-static void zebra_xml_metadata (struct recRetrieveCtrl *p, data1_node *top,
+static void zebra_xml_metadata(struct recRetrieveCtrl *p, data1_node *top,
                                 NMEM mem)
 {
     const char *idzebra_ns[3];
@@ -1043,29 +1043,29 @@ static void zebra_xml_metadata (struct recRetrieveCtrl *p, data1_node *top,
     idzebra_ns[1] = "http://www.indexdata.dk/zebra/";
     idzebra_ns[2] = 0;
 
-    data1_mk_text (p->dh, mem, i2, top);
+    data1_mk_text(p->dh, mem, i2, top);
 
-    n = data1_mk_tag (p->dh, mem, "idzebra", idzebra_ns, top);
+    n = data1_mk_tag(p->dh, mem, "idzebra", idzebra_ns, top);
 
-    data1_mk_text (p->dh, mem, "\n", top);
+    data1_mk_text(p->dh, mem, "\n", top);
 
-    data1_mk_text (p->dh, mem, i4, n);
+    data1_mk_text(p->dh, mem, i4, n);
     
-    data1_mk_tag_data_int (p->dh, n, "size", p->recordSize, mem);
+    data1_mk_tag_data_int(p->dh, n, "size", p->recordSize, mem);
 
     if (p->score != -1)
     {
-        data1_mk_text (p->dh, mem, i4, n);
-        data1_mk_tag_data_int (p->dh, n, "score", p->score, mem);
+        data1_mk_text(p->dh, mem, i4, n);
+        data1_mk_tag_data_int(p->dh, n, "score", p->score, mem);
     }
-    data1_mk_text (p->dh, mem, i4, n);
-    data1_mk_tag_data_zint (p->dh, n, "localnumber", p->localno, mem);
+    data1_mk_text(p->dh, mem, i4, n);
+    data1_mk_tag_data_zint(p->dh, n, "localnumber", p->localno, mem);
     if (p->fname)
     {
-        data1_mk_text (p->dh, mem, i4, n);
+        data1_mk_text(p->dh, mem, i4, n);
         data1_mk_tag_data_text(p->dh, n, "filename", p->fname, mem);
     }
-    data1_mk_text (p->dh, mem, i2, n);
+    data1_mk_text(p->dh, mem, i2, n);
 }
 
 int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
@@ -1094,17 +1094,17 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     if (!node)
     {
 	p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
-        nmem_destroy (mem);
+        nmem_destroy(mem);
 	return 0;
     }
     data1_concat_text(p->dh, mem, node);
 
-    data1_remove_idzebra_subtree (p->dh, node);
+    data1_remove_idzebra_subtree(p->dh, node);
 
 #if 0
-    data1_pr_tree (p->dh, node, stdout);
+    data1_pr_tree(p->dh, node, stdout);
 #endif
-    top = data1_get_root_tag (p->dh, node);
+    top = data1_get_root_tag(p->dh, node);
 
     yaz_log(YLOG_DEBUG, "grs_retrieve: size");
     tagname = data1_systag_lookup(node->u.root.absyn, "size", "size");
@@ -1148,10 +1148,10 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     assert(p->input_format);
 
     if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_xml))
-        zebra_xml_metadata (p, top, mem);
+        zebra_xml_metadata(p, top, mem);
 
 #if 0
-    data1_pr_tree (p->dh, node, stdout);
+    data1_pr_tree(p->dh, node, stdout);
 #endif
     if (p->comp && p->comp->which == Z_RecordComp_complex &&
 	p->comp->u.complex->generic &&
@@ -1175,7 +1175,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 		if (!(node = data1_map_record(p->dh, onode, map, mem)))
 		{
 		    p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
-		    nmem_destroy (mem);
+		    nmem_destroy(mem);
 		    return 0;
 		}
 		break;
@@ -1185,7 +1185,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
             && oid_oidcmp(requested_schema, node->u.root.absyn->oid))
 	{
 	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
-	    nmem_destroy (mem);
+	    nmem_destroy(mem);
 	    return 0;
 	}
     }
@@ -1204,7 +1204,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
                 if (!(node = data1_map_record(p->dh, onode, map, mem)))
                 {
                     p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
-                    nmem_destroy (mem);
+                    nmem_destroy(mem);
                     return 0;
                 }
                 break;
@@ -1238,7 +1238,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	selected = 1;
 
 #if 0
-    data1_pr_tree (p->dh, node, stdout);
+    data1_pr_tree(p->dh, node, stdout);
 #endif
     yaz_log(YLOG_DEBUG, "grs_retrieve: transfer syntax mapping");
 
@@ -1248,10 +1248,10 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_xml))
     {
 #if 0
-        data1_pr_tree (p->dh, node, stdout);
+        data1_pr_tree(p->dh, node, stdout);
 #endif
 	/* default output encoding for XML is UTF-8 */
-	data1_iconv (p->dh, mem, node,
+	data1_iconv(p->dh, mem, node,
 		     p->encoding ? p->encoding : "UTF-8",
 		     data1_get_encoding(p->dh, node));
 
@@ -1260,14 +1260,14 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
 	else
 	{
-	    char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
-	    memcpy (new_buf, p->rec_buf, p->rec_len);
+	    char *new_buf = (char*) odr_malloc(p->odr, p->rec_len);
+	    memcpy(new_buf, p->rec_buf, p->rec_len);
 	    p->rec_buf = new_buf;
 	}
     }
     else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_grs_1))
     {
-	data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
+	data1_iconv(p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
 	dummy = 0;
 	if (!(p->rec_buf = data1_nodetogr(p->dh, node, selected,
 					  p->odr, &dummy)))
@@ -1278,7 +1278,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_explain))
     {
 	/* ensure our data1 tree is UTF-8 */
-	data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
+	data1_iconv(p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
 	
 	if (!(p->rec_buf = data1_nodetoexplain(p->dh, node, selected,
 					       p->odr)))
@@ -1289,7 +1289,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_summary))
     {
 	/* ensure our data1 tree is UTF-8 */
-	data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
+	data1_iconv(p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
 	if (!(p->rec_buf = data1_nodetosummary(p->dh, node, selected,
 					       p->odr)))
 	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
@@ -1299,30 +1299,30 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_sutrs))
     {
 	if (p->encoding)
-            data1_iconv (p->dh, mem, node, p->encoding,
+            data1_iconv(p->dh, mem, node, p->encoding,
 			 data1_get_encoding(p->dh, node));
 	if (!(p->rec_buf = data1_nodetobuf(p->dh, node, selected,
 					   &p->rec_len)))
 	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
 	else
 	{
-	    char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
-	    memcpy (new_buf, p->rec_buf, p->rec_len);
+	    char *new_buf = (char*) odr_malloc(p->odr, p->rec_len);
+	    memcpy(new_buf, p->rec_buf, p->rec_len);
 	    p->rec_buf = new_buf;
 	}
     }
     else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_soif))
     {
 	if (p->encoding)
-            data1_iconv (p->dh, mem, node, p->encoding,
+            data1_iconv(p->dh, mem, node, p->encoding,
 			 data1_get_encoding(p->dh, node));
 	if (!(p->rec_buf = data1_nodetosoif(p->dh, node, selected,
 					    &p->rec_len)))
 	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
 	else
 	{
-	    char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
-	    memcpy (new_buf, p->rec_buf, p->rec_len);
+	    char *new_buf = (char*) odr_malloc(p->odr, p->rec_len);
+	    memcpy(new_buf, p->rec_buf, p->rec_len);
 	    p->rec_buf = new_buf;
 	}
     }
@@ -1341,15 +1341,15 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
             else
             {
                 if (p->encoding)
-                    data1_iconv (p->dh, mem, node, p->encoding,
+                    data1_iconv(p->dh, mem, node, p->encoding,
                                  data1_get_encoding(p->dh, node));
                 if (!(p->rec_buf = data1_nodetomarc(p->dh, marctab, node,
                                                     selected, &p->rec_len)))
                     p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
                 else
                 {
-                    char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
-                    memcpy (new_buf, p->rec_buf, p->rec_len);
+                    char *new_buf = (char*) odr_malloc(p->odr, p->rec_len);
+                    memcpy(new_buf, p->rec_buf, p->rec_len);
                     p->rec_buf = new_buf;
                 }
             }

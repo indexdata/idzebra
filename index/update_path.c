@@ -1,4 +1,4 @@
-/* $Id: update_path.c,v 1.3 2007-01-15 15:10:17 adam Exp $
+/* $Id: update_path.c,v 1.4 2007-10-29 09:25:41 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -42,12 +42,12 @@ static void repositoryExtractR(ZebraHandle zh, int deleteFlag, char *rep,
 {
     struct dir_entry *e;
     int i;
-    size_t rep_len = strlen (rep);
+    size_t rep_len = strlen(rep);
 
-    e = dir_open (rep, zh->path_reg, zh->m_follow_links);
+    e = dir_open(rep, zh->path_reg, zh->m_follow_links);
     if (!e)
         return;
-    yaz_log (YLOG_LOG, "dir %s", rep);
+    yaz_log(YLOG_LOG, "dir %s", rep);
     if (rep[rep_len-1] != '/')
         rep[rep_len] = '/';
     else
@@ -56,21 +56,21 @@ static void repositoryExtractR(ZebraHandle zh, int deleteFlag, char *rep,
     for (i=0; e[i].name; i++)
     {
 	char *ecp;
-        strcpy (rep +rep_len+1, e[i].name);
-	if ((ecp = strrchr (e[i].name, '/')))
+        strcpy(rep +rep_len+1, e[i].name);
+	if ((ecp = strrchr(e[i].name, '/')))
 	    *ecp = '\0';
 
         switch (e[i].kind)
         {
         case dirs_file:
-            zebra_extract_file (zh, NULL, rep, deleteFlag);
+            zebra_extract_file(zh, NULL, rep, deleteFlag);
             break;
         case dirs_dir:
-            repositoryExtractR (zh, deleteFlag, rep, level+1);
+            repositoryExtractR(zh, deleteFlag, rep, level+1);
             break;
         }
     }
-    dir_free (&e);
+    dir_free(&e);
 
 }
 
@@ -82,15 +82,15 @@ void repositoryShow(ZebraHandle zh, const char *path)
     Dict dict;
     struct dirs_info *di;
 
-    if (!(dict = dict_open_res (zh->reg->bfs, FMATCH_DICT, 50, 0, 0, zh->res)))
+    if (!(dict = dict_open_res(zh->reg->bfs, FMATCH_DICT, 50, 0, 0, zh->res)))
     {
-        yaz_log (YLOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
+        yaz_log(YLOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
 	return;
     }
     
     strncpy(src, path, sizeof(src)-1);
     src[sizeof(src)-1]='\0';
-    src_len = strlen (src);
+    src_len = strlen(src);
     
     if (src_len && src[src_len-1] != '/')
     {
@@ -98,12 +98,12 @@ void repositoryShow(ZebraHandle zh, const char *path)
         src[++src_len] = '\0';
     }
     
-    di = dirs_open (dict, src, zh->m_flag_rw);
+    di = dirs_open(dict, src, zh->m_flag_rw);
     
-    while ( (dst = dirs_read (di)) )
-        yaz_log (YLOG_LOG, "%s", dst->path);
-    dirs_free (&di);
-    dict_close (dict);
+    while ((dst = dirs_read(di)))
+        yaz_log(YLOG_LOG, "%s", dst->path);
+    dirs_free(&di);
+    dict_close(dict);
 }
 
 static void repositoryExtract(ZebraHandle zh,
@@ -117,24 +117,24 @@ static void repositoryExtract(ZebraHandle zh,
 
     if (zh->path_reg && !yaz_is_abspath(path))
     {
-        strcpy (src, zh->path_reg);
-        strcat (src, "/");
+        strcpy(src, zh->path_reg);
+        strcat(src, "/");
     }
     else
         *src = '\0';
-    strcat (src, path);
-    ret = zebra_file_stat (src, &sbuf, zh->m_follow_links);
+    strcat(src, path);
+    ret = zebra_file_stat(src, &sbuf, zh->m_follow_links);
 
-    strcpy (src, path);
+    strcpy(src, path);
 
     if (ret == -1)
-        yaz_log (YLOG_WARN|YLOG_ERRNO, "Cannot access path %s", src);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "Cannot access path %s", src);
     else if (S_ISREG(sbuf.st_mode))
-        zebra_extract_file (zh, NULL, src, deleteFlag);
+        zebra_extract_file(zh, NULL, src, deleteFlag);
     else if (S_ISDIR(sbuf.st_mode))
-	repositoryExtractR (zh, deleteFlag, src, 0);
+	repositoryExtractR(zh, deleteFlag, src, 0);
     else
-        yaz_log (YLOG_WARN, "Skipping path %s", src);
+        yaz_log(YLOG_WARN, "Skipping path %s", src);
 }
 
 static void repositoryExtractG(ZebraHandle zh, const char *path, 
@@ -153,14 +153,14 @@ static void repositoryExtractG(ZebraHandle zh, const char *path,
 
 ZEBRA_RES zebra_update_from_path(ZebraHandle zh, const char *path)
 {
-    assert (path);
+    assert(path);
     repositoryExtractG(zh, path, 0);
     return ZEBRA_OK;
 }
 
 ZEBRA_RES zebra_delete_from_path(ZebraHandle zh, const char *path)
 {
-    assert (path);
+    assert(path);
     repositoryExtractG(zh, path, 1);
     return ZEBRA_OK;
 }

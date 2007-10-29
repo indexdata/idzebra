@@ -1,4 +1,4 @@
-/* $Id: rectext.c,v 1.6 2007-04-16 21:54:37 adam Exp $
+/* $Id: rectext.c,v 1.7 2007-10-29 09:25:40 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -33,7 +33,7 @@ struct filter_info {
     char *sep;
 };
 
-static void *filter_init (Res res, RecType recType)
+static void *filter_init(Res res, RecType recType)
 {
     struct filter_info *tinfo = (struct filter_info *) xmalloc(sizeof(*tinfo));
     tinfo->sep = 0;
@@ -50,11 +50,11 @@ static ZEBRA_RES filter_config(void *clientData, Res res, const char *args)
     return ZEBRA_OK;
 }
 
-static void filter_destroy (void *clientData)
+static void filter_destroy(void *clientData)
 {
     struct filter_info *tinfo = clientData;
-    xfree (tinfo->sep);
-    xfree (tinfo);
+    xfree(tinfo->sep);
+    xfree(tinfo);
 }
 
 struct buf_info {
@@ -64,18 +64,18 @@ struct buf_info {
     int max;
 };
 
-static struct buf_info *buf_open (struct recExtractCtrl *p)
+static struct buf_info *buf_open(struct recExtractCtrl *p)
 {
-    struct buf_info *fi = (struct buf_info *) xmalloc (sizeof(*fi));
+    struct buf_info *fi = (struct buf_info *) xmalloc(sizeof(*fi));
 
     fi->p = p;
-    fi->buf = (char *) xmalloc (4096);
+    fi->buf = (char *) xmalloc(4096);
     fi->offset = 1;
     fi->max = 1;
     return fi;
 }
 
-static int buf_getchar (struct filter_info *tinfo, struct buf_info *fi, char *dst)
+static int buf_getchar(struct filter_info *tinfo, struct buf_info *fi, char *dst)
 {
     if (fi->offset >= fi->max)
     {
@@ -97,19 +97,19 @@ static int buf_getchar (struct filter_info *tinfo, struct buf_info *fi, char *ds
     return 1;
 }
 
-static void buf_close (struct buf_info *fi)
+static void buf_close(struct buf_info *fi)
 {
-    xfree (fi->buf);
-    xfree (fi);
+    xfree(fi->buf);
+    xfree(fi);
 }
 
-static int filter_extract (void *clientData, struct recExtractCtrl *p)
+static int filter_extract(void *clientData, struct recExtractCtrl *p)
 {
     struct filter_info *tinfo = clientData;
     char w[512];
     RecWord recWord;
     int r;
-    struct buf_info *fi = buf_open (p);
+    struct buf_info *fi = buf_open(p);
     int no_read = 0;
 
 #if 0
@@ -121,11 +121,11 @@ static int filter_extract (void *clientData, struct recExtractCtrl *p)
     {
         int i = 0;
             
-        r = buf_getchar (tinfo, fi, w);
+        r = buf_getchar(tinfo, fi, w);
         while (r > 0 && i < 511 && w[i] != '\n' && w[i] != '\r')
         {
             i++;
-            r = buf_getchar (tinfo, fi, w + i); 
+            r = buf_getchar(tinfo, fi, w + i); 
 	}
         if (i)
         {
@@ -135,13 +135,13 @@ static int filter_extract (void *clientData, struct recExtractCtrl *p)
             (*p->tokenAdd)(&recWord);
         }
     } while (r > 0);
-    buf_close (fi);
+    buf_close(fi);
     if (no_read == 0)
 	return RECCTRL_EXTRACT_EOF;
     return RECCTRL_EXTRACT_OK;
 }
 
-static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
+static int filter_retrieve(void *clientData, struct recRetrieveCtrl *p)
 {
     int r, filter_ptr = 0;
     static char *filter_buf = NULL;
@@ -177,11 +177,11 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
             char *nb;
 
             filter_size = 2*filter_size + 8192;
-            nb = (char *) xmalloc (filter_size);
+            nb = (char *) xmalloc(filter_size);
             if (filter_buf)
             {
-                memcpy (nb, filter_buf, filter_ptr);
-                xfree (filter_buf);
+                memcpy(nb, filter_buf, filter_ptr);
+                xfree(filter_buf);
             }
             filter_buf = nb;
         }
@@ -189,15 +189,15 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
         {
             if (p->score >= 0)
             {
-                sprintf (filter_buf, "Rank: %d\n", p->score);
+                sprintf(filter_buf, "Rank: %d\n", p->score);
                 filter_ptr = strlen(filter_buf);
             }
-            sprintf (filter_buf + filter_ptr, "Local Number: " ZINT_FORMAT "\n",
+            sprintf(filter_buf + filter_ptr, "Local Number: " ZINT_FORMAT "\n",
 		     p->localno);
             filter_ptr = strlen(filter_buf);
 	    if (p->fname)
 	    {
-		sprintf (filter_buf + filter_ptr, "Filename: %s\n", p->fname);
+		sprintf(filter_buf + filter_ptr, "Filename: %s\n", p->fname);
 		filter_ptr = strlen(filter_buf);
 	    }
 	    strcpy(filter_buf+filter_ptr++, "\n");
@@ -212,9 +212,9 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     filter_buf[filter_ptr] = '\0';
     if (elementSetName)
     {
-        if (!strcmp (elementSetName, "B"))
+        if (!strcmp(elementSetName, "B"))
             no_lines = 4;
-        if (!strcmp (elementSetName, "M"))
+        if (!strcmp(elementSetName, "M"))
             no_lines = 20;
     }
     if (no_lines)
@@ -222,7 +222,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
         char *p = filter_buf;
         int i = 0;
 
-        while (++i <= no_lines && (p = strchr (p, '\n')))
+        while (++i <= no_lines && (p = strchr(p, '\n')))
             p++;
         if (p)
         {
