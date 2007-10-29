@@ -1,4 +1,4 @@
-/* $Id: zebramap.h,v 1.23 2007-10-29 16:57:51 adam Exp $
+/* $Id: zebramap.h,v 1.24 2007-10-29 22:22:06 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -31,54 +31,54 @@ YAZ_BEGIN_CDECL
 typedef struct zebra_maps *ZebraMaps;
 
 YAZ_EXPORT
-ZebraMaps zebra_maps_open (Res res, const char *base_path,
-			   const char *profile_path);
+ZebraMaps zebra_maps_open(Res res, const char *base_path,
+                          const char *profile_path);
 YAZ_EXPORT
 ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname);
 
 YAZ_EXPORT
-void zebra_maps_close (ZebraMaps zm);
+void zebra_maps_close(ZebraMaps zm);
 
 YAZ_EXPORT
-const char **zebra_maps_input (ZebraMaps zms, unsigned reg_id,
-			       const char **from, int len, int first);
+const char **zebra_maps_input(ZebraMaps zms, unsigned reg_id,
+                              const char **from, int len, int first);
 
 YAZ_EXPORT
-const char **zebra_maps_search (ZebraMaps zms, unsigned reg_id,
-				const char **from, int len, int *q_map_match);
+const char **zebra_maps_search(ZebraMaps zms, unsigned reg_id,
+                               const char **from, int len, int *q_map_match);
 
 YAZ_EXPORT
 const char *zebra_maps_output(ZebraMaps, unsigned reg_id, const char **from);
 
 YAZ_EXPORT
-int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
-		     const char **reg_id, char **search_type, char *rank_type,
-		     int *complete_flag, int *sort_flag);
+int zebra_maps_attr(ZebraMaps zms, Z_AttributesPlusTerm *zapt,
+                    const char **reg_id, char **search_type, char *rank_type,
+                    int *complete_flag, int *sort_flag);
 
 YAZ_EXPORT
-int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes,
-                     int *numerical);
+int zebra_maps_sort(ZebraMaps zms, Z_SortAttributes *sortAttributes,
+                    int *numerical);
 
 YAZ_EXPORT
-int zebra_maps_is_complete (ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_complete(ZebraMaps zms, unsigned reg_id);
 
 YAZ_EXPORT
-int zebra_maps_is_sort (ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_sort(ZebraMaps zms, unsigned reg_id);
 
 YAZ_EXPORT
-int zebra_maps_is_index (ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_index(ZebraMaps zms, unsigned reg_id);
 
 YAZ_EXPORT
-int zebra_maps_is_staticrank (ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_staticrank(ZebraMaps zms, unsigned reg_id);
 
 YAZ_EXPORT
-int zebra_maps_is_alwaysmatches (ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_alwaysmatches(ZebraMaps zms, unsigned reg_id);
 
 YAZ_EXPORT
-int zebra_maps_is_positioned (ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_positioned(ZebraMaps zms, unsigned reg_id);
 
 YAZ_EXPORT
-int zebra_maps_is_first_in_field (ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_first_in_field(ZebraMaps zms, unsigned reg_id);
 
 YAZ_EXPORT
 WRBUF zebra_replace(ZebraMaps zms, unsigned reg_id, const char *ex_list,
