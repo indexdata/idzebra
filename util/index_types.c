@@ -1,4 +1,4 @@
-/* $Id: index_types.c,v 1.2 2007-10-25 19:25:00 adam Exp $
+/* $Id: index_types.c,v 1.3 2007-10-29 08:20:16 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -31,7 +31,9 @@
 #include <string.h>
 
 #include "index_types.h"
+#if HAVE_ICU
 #include <yaz/icu_I18N.h>
+#endif
 #include <yaz/match_glob.h>
 #include <yaz/xmalloc.h>
 #include <yaz/wrbuf.h>
