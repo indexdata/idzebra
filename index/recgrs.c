@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.20 2007-10-29 09:25:40 adam Exp $
+/* $Id: recgrs.c,v 1.21 2007-10-29 16:57:52 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -481,20 +481,20 @@ static void index_xpath_attr(char *tag_path, char *name, char *value,
 			      RecWord *wrd)
 {
     wrd->index_name = ZEBRA_XPATH_ELM_BEGIN;
-    wrd->index_type = '0';
+    wrd->index_type = "0";
     wrd->term_buf = tag_path;
     wrd->term_len = strlen(tag_path);
     (*p->tokenAdd)(wrd);
     
     if (value) {
 	wrd->index_name = ZEBRA_XPATH_ATTR_CDATA;
-        wrd->index_type = 'w';
+        wrd->index_type = "w";
         wrd->term_buf = value;
         wrd->term_len = strlen(value);
         (*p->tokenAdd)(wrd);
     }
     wrd->index_name = ZEBRA_XPATH_ELM_END;
-    wrd->index_type = '0';
+    wrd->index_type = "0";
     wrd->term_buf = tag_path;
     wrd->term_len = strlen(tag_path);
     (*p->tokenAdd)(wrd);
@@ -563,7 +563,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
 	    {
 		/* need to copy recword because it may be changed */
 		RecWord wrd_tl;
-		wrd->index_type = *tl->structure;
+		wrd->index_type = tl->structure;
 		memcpy(&wrd_tl, wrd, sizeof(*wrd));
 		if (tl->source)
 		    sp_parse(sp, n, &wrd_tl, tl->source);
@@ -600,14 +600,14 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
 	if (!p->flagShowRecords && !termlist_only)
 	{
 	    wrd->index_name = xpath_index;
-	    wrd->index_type = 'w';
+	    wrd->index_type = "w";
 	    (*p->tokenAdd)(wrd);
 	}
         break;
     case DATA1N_tag:
 	mk_tag_path_full(tag_path_full, sizeof(tag_path_full), n);
 
-        wrd->index_type = '0';
+        wrd->index_type = "0";
         wrd->term_buf = tag_path_full;
         wrd->term_len = strlen(tag_path_full);
 	wrd->index_name = xpath_index;
@@ -646,7 +646,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                     if (!termlist_only)
                     {
                         /* attribute  (no value) */
-                        wrd->index_type = '0';
+                        wrd->index_type = "0";
                         wrd->index_name = ZEBRA_XPATH_ATTR_NAME;
                         wrd->term_buf = xp->name;
                         wrd->term_len = strlen(xp->name);
@@ -664,7 +664,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                             strcat(comb, xp->value);
                             
                             wrd->index_name = ZEBRA_XPATH_ATTR_NAME;
-                            wrd->index_type = '0';
+                            wrd->index_type = "0";
                             wrd->term_buf = comb;
                             wrd->term_len = strlen(comb);
                             wrd->seqno--;
@@ -700,7 +700,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                                 if (xp->value) 
 				{
 				    wrd->index_name = tl->index_name;
-                                    wrd->index_type = *tl->structure;
+                                    wrd->index_type = tl->structure;
                                     wrd->term_buf = xp->value;
                                     wrd->term_len = strlen(xp->value);
                                     (*p->tokenAdd)(wrd);
@@ -769,7 +769,7 @@ static void index_termlist(struct source_parser *sp, data1_node *par,
 	    }
 	    else
 	    {
-		wrd->index_type = *tlist->structure;
+		wrd->index_type = tlist->structure;
 		wrd->index_name = tlist->index_name;
 		(*p->tokenAdd)(wrd);
 	    }

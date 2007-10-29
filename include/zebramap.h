@@ -1,4 +1,4 @@
-/* $Id: zebramap.h,v 1.22 2007-01-22 18:15:03 adam Exp $
+/* $Id: zebramap.h,v 1.23 2007-10-29 16:57:51 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -52,7 +52,7 @@ const char *zebra_maps_output(ZebraMaps, unsigned reg_id, const char **from);
 
 YAZ_EXPORT
 int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
-		     unsigned *reg_id, char **search_type, char *rank_type,
+		     const char **reg_id, char **search_type, char *rank_type,
 		     int *complete_flag, int *sort_flag);
 
 YAZ_EXPORT

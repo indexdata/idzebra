@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.122 2007-08-21 11:06:47 adam Exp $
+/* $Id: zsets.c,v 1.123 2007-10-29 16:57:53 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -542,7 +542,7 @@ struct sortKeyInfo {
     int relation;
     int ord;
     int numerical;
-    int index_type;
+    const char *index_type;
 };
 
 void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
@@ -579,10 +579,10 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
                 char this_entry_org[1024];
                 char other_entry_org[1024];
                 double diff;
-                int index_type = criteria[j].index_type;
-                zebra_term_untrans(zh, index_type, this_entry_org,
+                const char *index_type = criteria[j].index_type;
+                zebra_term_untrans(zh, *index_type, this_entry_org,
                                    this_entry_buf);
-                zebra_term_untrans(zh, index_type, other_entry_org,
+                zebra_term_untrans(zh, *index_type, other_entry_org,
                                    other_entry_buf);
                 diff = atof(this_entry_org) - atof(other_entry_org);
                 
@@ -885,7 +885,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
             sort_criteria[i].ord = 
                 zebraExplain_lookup_attr_str(zh->reg->zei,
                                              zinfo_index_category_sort,
-                                             -1, sk->u.sortField);
+                                             0, sk->u.sortField);
             if (sks->which != Z_SortKeySpec_null
                 && sort_criteria[i].ord == -1)
             {

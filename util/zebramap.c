@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.58 2007-03-21 13:47:12 adam Exp $
+/* $Id: zebramap.c,v 1.59 2007-10-29 16:57:54 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -427,7 +427,7 @@ int zebra_maps_sort(ZebraMaps zms, Z_SortAttributes *sortAttributes,
 }
 
 int zebra_maps_attr(ZebraMaps zms, Z_AttributesPlusTerm *zapt,
-		    unsigned *reg_id, char **search_type, char *rank_type,
+		    const char **index_type, char **search_type, char *rank_type,
 		    int *complete_flag, int *sort_flag)
 {
     AttrType completeness;
@@ -462,7 +462,7 @@ int zebra_maps_attr(ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 	*complete_flag = 1;
     else
 	*complete_flag = 0;
-    *reg_id = 0;
+    *index_type = 0;
 
     *sort_flag =(sort_relation_value > 0) ? 1 : 0;
     *search_type = "phrase";
@@ -474,9 +474,9 @@ int zebra_maps_attr(ZebraMaps zms, Z_AttributesPlusTerm *zapt,
         sprintf(rank_type, "rank,w=%d,u=%d", weight_value, use_value);
     }
     if (*complete_flag)
-	*reg_id = 'p';
+	*index_type = "p";
     else
-	*reg_id = 'w';
+	*index_type = "w";
     switch (structure_value)
     {
     case 6:   /* word list */
@@ -496,31 +496,31 @@ int zebra_maps_attr(ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 	break;
     case 107: /* local-number */
 	*search_type = "local";
-	*reg_id = 0;
+	*index_type = 0;
 	break;
     case 109: /* numeric string */
-	*reg_id = 'n';
+	*index_type = "n";
 	*search_type = "numeric";
         break;
     case 104: /* urx */
-	*reg_id = 'u';
+	*index_type = "u";
 	*search_type = "phrase";
 	break;
     case 3:   /* key */
-        *reg_id = '0';
+        *index_type = "0";
         *search_type = "phrase";
         break;
     case 4:  /* year */
-        *reg_id = 'y';
+        *index_type = "y";
         *search_type = "phrase";
         break;
     case 5:  /* date */
-        *reg_id = 'd';
+        *index_type = "d";
         *search_type = "phrase";
         break;
     case -2:
         if (structure_str && *structure_str)
-            *reg_id = *structure_str;
+            *index_type = structure_str;
         else
             return -1;
         break;

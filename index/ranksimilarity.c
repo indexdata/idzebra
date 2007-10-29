@@ -1,4 +1,4 @@
-/* $Id: ranksimilarity.c,v 1.12 2007-01-15 15:10:16 adam Exp $
+/* $Id: ranksimilarity.c,v 1.13 2007-10-29 16:57:52 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -225,7 +225,7 @@ static void *begin (struct zebra_register *reg,
           
          for (; ol; ol = ol->next)
             {
-              int index_type = 0;
+              const char *index_type = 0;
               const char *db = 0;
               const char *string_index = 0;
 
@@ -239,13 +239,13 @@ static void *begin (struct zebra_register *reg,
                   += zebraExplain_ord_get_term_occurrences(reg->zei, ol->ord);
 
               if (string_index)
-		yaz_log(log_level, 
-                        "begin()    index: ord=%d type=%c db=%s str-index=%s",
-                        ol->ord, index_type, db, string_index);
+                  yaz_log(log_level, 
+                          "begin()    index: ord=%d type=%s db=%s str-index=%s",
+                          ol->ord, index_type, db, string_index);
               else
-		yaz_log(log_level, 
-                        "begin()    index: ord=%d type=%c db=%s",
-                        ol->ord, index_type, db);
+                  yaz_log(log_level, 
+                          "begin()    index: ord=%d type=%s db=%s",
+                          ol->ord, index_type, db);
             }
      
           si->entries[i].no_docs_fieldindex = no_docs_fieldindex;

@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.39 2007-10-29 09:25:41 adam Exp $
+/* $Id: zinfo.h,v 1.40 2007-10-29 16:57:53 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -73,11 +73,11 @@ int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
     
 int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, 
                                  zinfo_index_category_t cat,
-                                 int index_type,
+                                 const char *index_type,
 				 const char *str);
 int zebraExplain_add_attr_str(ZebraExplainInfo zei, 
                               zinfo_index_category_t cat,
-                              int index_type,
+                              const char *index_type,
 			      const char *str);
 void zebraExplain_addSchema(ZebraExplainInfo zei, Odr_oid *oid);
 void zebraExplain_recordCountIncrement(ZebraExplainInfo zei, int adjust_num);
@@ -87,7 +87,7 @@ void zebraExplain_loadAttsets(data1_handle dh, Res res);
 void zebraExplain_flush(ZebraExplainInfo zei, void *updateHandle);
 
 int zebraExplain_lookup_ord(ZebraExplainInfo zei, int ord,
-			     int *index_type, const char **db,
+			     const char **index_type, const char **db,
 			     const char **string_index);
 
 int zebraExplain_ord_adjust_occurrences(ZebraExplainInfo zei, int ord,

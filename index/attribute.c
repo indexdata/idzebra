@@ -1,4 +1,4 @@
-/* $Id: attribute.c,v 1.32 2007-05-25 12:17:11 adam Exp $
+/* $Id: attribute.c,v 1.33 2007-10-29 16:57:52 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -69,7 +69,7 @@ static int att_getentbyatt(ZebraHandle zi, const Odr_oid *set, int att,
 ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
                                   Z_AttributeList *attr_list,
                                   zinfo_index_category_t cat,
-                                  int index_type,
+                                  const char *index_type,
                                   const Odr_oid *curAttributeSet,
                                   int *ord)
 {
@@ -134,7 +134,7 @@ ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
 
 ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
                             Z_AttributesPlusTerm *zapt,
-                            int index_type,
+                            const char *index_type,
                             const char *xpath_use,
                             const Odr_oid *curAttributeSet,
                             int *ord)
@@ -172,14 +172,14 @@ ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
                                             xpath_use);
         if (*ord == -1)
         {
-            yaz_log(YLOG_LOG, "zebra_apt_get_ord FAILED xpath=%s index_type=%c",
+            yaz_log(YLOG_LOG, "zebra_apt_get_ord FAILED xpath=%s index_type=%s",
                     xpath_use, index_type);
             zebra_setError(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, 0);
             res = ZEBRA_FAIL;
         }
         else
         {
-            yaz_log(YLOG_LOG, "zebra_apt_get_ord OK xpath=%s index_type=%c",
+            yaz_log(YLOG_LOG, "zebra_apt_get_ord OK xpath=%s index_type=%s",
                     xpath_use, index_type);
             
         }
@@ -205,7 +205,7 @@ ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,
     if (zebra_attr_list_get_ord(
             zh, sortAttributes->list,
             zinfo_index_category_sort,
-            -1 /* any index */, yaz_oid_attset_bib_1, ord) == ZEBRA_OK)
+            0 /* any index */, yaz_oid_attset_bib_1, ord) == ZEBRA_OK)
         return ZEBRA_OK;
     return ZEBRA_FAIL;
 }

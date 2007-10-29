@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.36 2007-10-29 13:43:57 adam Exp $
+/* $Id: recctrl.h,v 1.37 2007-10-29 16:57:51 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -50,7 +50,7 @@ YAZ_BEGIN_CDECL
 /** Indexing token */
 typedef struct {
     /** index type ('w', 'p', .. */
-    unsigned index_type;
+    const char *index_type;
     /** index name, e.g. "title" */
     const char *index_name;
     /** token char data */

@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.73 2007-10-29 09:25:40 adam Exp $
+/* $Id: retrieve.c,v 1.74 2007-10-29 16:57:53 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -131,6 +131,7 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
     const char *retrieval_type;
     size_t retrieval_type_len;
     char retrieval_index_cstr[256];
+    char retrieval_type_cstr[256];
     int ord;
 
     /* only accept XML and SUTRS requests */
@@ -161,9 +162,12 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
     memcpy(retrieval_index_cstr, retrieval_index, retrieval_index_len);
     retrieval_index_cstr[retrieval_index_len] = '\0';
 
+    memcpy(retrieval_type_cstr, retrieval_type, retrieval_type_len);
+    retrieval_type_cstr[retrieval_type_len] = '\0';
+
     ord = zebraExplain_lookup_attr_str(zh->reg->zei,
                                        zinfo_index_category_sort,
-                                       retrieval_type[0],
+                                       retrieval_type_cstr,
                                        retrieval_index_cstr);
     if (ord == -1)
         return -1;  /* is not a sort index */
@@ -171,7 +175,7 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
     {
         char dst_buf[IT_MAX_WORD];
         char str[IT_MAX_WORD];
-        int index_type;
+        const char *index_type;
         const char *db = 0;
         const char *string_index = 0;
         WRBUF wrbuf = wrbuf_alloc();
@@ -182,8 +186,7 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
 
         zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db, &string_index);
         
-        zebra_term_untrans(zh, index_type, dst_buf, str);
-        
+        zebra_term_untrans(zh, *index_type, dst_buf, str);
 
         if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
         {
@@ -195,7 +198,7 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
 
             wrbuf_printf(wrbuf, "  <index name=\"%s\"", 
                          string_index);
-            wrbuf_printf(wrbuf, " type=\"%c\">", index_type);
+            wrbuf_printf(wrbuf, " type=\"%s\">", index_type);
             wrbuf_xmlputs(wrbuf, dst_buf);
             wrbuf_printf(wrbuf, "</index>\n");
             wrbuf_printf(wrbuf, "</record>\n");
@@ -204,7 +207,7 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
         {
             *output_format = yaz_oid_recsyn_sutrs;
             
-            wrbuf_printf(wrbuf, "%s %c %s\n", string_index, index_type,
+            wrbuf_printf(wrbuf, "%s %s %s\n", string_index, index_type,
                          dst_buf);
         }
         *rec_lenp = wrbuf_len(wrbuf);
@@ -228,6 +231,7 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
     size_t retrieval_type_len;
     zebra_rec_keys_t keys;
     int ret_code = 0;
+    char retrieval_type_cstr[256];
     
     /* set output variables before processing possible error states */
     /* *rec_lenp = 0; */
@@ -247,11 +251,12 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
                      &retrieval_type,  &retrieval_type_len))
         return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
 
-    if (retrieval_type_len != 0 && retrieval_type_len != 1)
+    if (retrieval_type_len)
     {
-        return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+        memcpy(retrieval_type_cstr, retrieval_type, retrieval_type_len);
+        retrieval_type_cstr[retrieval_type_len] = '\0';
     }
-
+    
     if (retrieval_index_len)
     {
         char retrieval_index_cstr[256];
@@ -263,8 +268,8 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
             
             if (zebraExplain_lookup_attr_str(zh->reg->zei,
                                              zinfo_index_category_index,
-                                             (retrieval_type_len == 0 ? -1 : 
-                                              retrieval_type[0]),
+                                             (retrieval_type_len == 0 ? 0 : 
+                                              retrieval_type_cstr),
                                              retrieval_index_cstr) == -1)
                 return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
         }
@@ -300,7 +305,7 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
         {
             int i;
             int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
-            int index_type;
+            const char *index_type;
             const char *db = 0;
             const char *string_index = 0;
             size_t string_index_len;
@@ -319,10 +324,9 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
             {
                 /* process only if type is not defined, or is matching */
                 if (retrieval_type == 0 
-                    || (retrieval_type_len == 1 
-                        && retrieval_type[0] == index_type))
+                    || !strcmp(retrieval_type_cstr, index_type))
                 {
-                    zebra_term_untrans(zh, index_type, dst_buf, str);
+                    zebra_term_untrans(zh, *index_type, dst_buf, str);
                     if (strlen(dst_buf))
                     {
                         if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
@@ -330,7 +334,7 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
                             wrbuf_printf(wrbuf, "  <index name=\"%s\"", 
                                          string_index);
                             
-                            wrbuf_printf(wrbuf, " type=\"%c\"", index_type);
+                            wrbuf_printf(wrbuf, " type=\"%s\"", index_type);
                             
                             wrbuf_printf(wrbuf, " seq=\"" ZINT_FORMAT "\">", 
                                          key_in.mem[key_in.len -1]);
@@ -342,7 +346,7 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
                         {
                             wrbuf_printf(wrbuf, "%s ", string_index);
                             
-                            wrbuf_printf(wrbuf, "%c", index_type);
+                            wrbuf_printf(wrbuf, "%s", index_type);
                             
                             for (i = 1; i < key_in.len; i++)
                                 wrbuf_printf(wrbuf, " " ZINT_FORMAT, 
@@ -411,7 +415,7 @@ static void snippet_xml_record(ZebraHandle zh, WRBUF wrbuf, zebra_snippets *doc)
     {
         if (doc_w->mark)
         {
-            int index_type;
+            const char *index_type;
             const char *db = 0;
             const char *string_index = 0;
 
@@ -421,7 +425,7 @@ static void snippet_xml_record(ZebraHandle zh, WRBUF wrbuf, zebra_snippets *doc)
             if (mark_state == 0)
             {
                 wrbuf_printf(wrbuf, "  <snippet name=\"%s\"",  string_index);
-                wrbuf_printf(wrbuf, " type=\"%c\">", index_type);
+                wrbuf_printf(wrbuf, " type=\"%s\">", index_type);
             }
             if (doc_w->match)
                 wrbuf_puts(wrbuf, "<s>");

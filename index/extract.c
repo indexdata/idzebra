@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.264 2007-10-29 13:43:57 adam Exp $
+/* $Id: extract.c,v 1.265 2007-10-29 16:57:52 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -122,7 +122,7 @@ static void extract_init(struct recExtractCtrl *p, RecWord *w)
 {
     w->seqno = 1;
     w->index_name = "any";
-    w->index_type = 'w';
+    w->index_type = "w";
     w->extractCtrl = p;
     w->record_id = 0;
     w->section_id = 0;
@@ -148,7 +148,7 @@ static void snippet_add_complete_field(RecWord *p, int ord)
     const char *last = 0;
 
     if (remain > 0)
-	map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, 1);
+	map = zebra_maps_input(zh->reg->zebra_maps, *p->index_type, &b, remain, 1);
 
     while (remain > 0 && i < IT_MAX_WORD)
     {
@@ -162,7 +162,7 @@ static void snippet_add_complete_field(RecWord *p, int ord)
 	    {
 		int first = i ? 0 : 1;  /* first position */
 
-		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, 
+		map = zebra_maps_input(zh->reg->zebra_maps, *p->index_type, 
                                        &b, remain, first);
 	    }
 	    else
@@ -192,7 +192,7 @@ static void snippet_add_complete_field(RecWord *p, int ord)
 	    remain = p->term_len  - (b - p->term_buf);
 	    if (remain > 0)
 	    {
-		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b,
+		map = zebra_maps_input(zh->reg->zebra_maps, *p->index_type, &b,
 					remain, 0);
 	    }
 	    else
@@ -218,7 +218,7 @@ static void snippet_add_incomplete_field(RecWord *p, int ord)
     const char *last = b;
 
     if (remain > 0)
-	map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, 0);
+	map = zebra_maps_input(zh->reg->zebra_maps, *p->index_type, &b, remain, 0);
 
     while (map)
     {
@@ -231,7 +231,7 @@ static void snippet_add_incomplete_field(RecWord *p, int ord)
 	    remain = p->term_len - (b - p->term_buf);
             last = b;
 	    if (remain > 0)
-		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b,
+		map = zebra_maps_input(zh->reg->zebra_maps, *p->index_type, &b,
 				       remain, 0);
 	    else
 		map = 0;
@@ -256,7 +256,7 @@ static void snippet_add_incomplete_field(RecWord *p, int ord)
 	    remain = p->term_len - (b - p->term_buf);
             last = b;
 	    if (remain > 0)
-		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, 0);
+		map = zebra_maps_input(zh->reg->zebra_maps, *p->index_type, &b, remain, 0);
 	    else
 		map = 0;
 	}
@@ -266,7 +266,7 @@ static void snippet_add_incomplete_field(RecWord *p, int ord)
         if (first)
         {   
             first = 0;
-            if (zebra_maps_is_first_in_field(zh->reg->zebra_maps, p->index_type))
+            if (zebra_maps_is_first_in_field(zh->reg->zebra_maps, *p->index_type))
             {
                 /* first in field marker */
                 p->seqno++;
@@ -286,13 +286,13 @@ static void snippet_token_add(RecWord *p)
     struct snip_rec_info *h = p->extractCtrl->handle;
     ZebraHandle zh = h->zh;
 
-    if (zebra_maps_is_index(zh->reg->zebra_maps, p->index_type))
+    if (zebra_maps_is_index(zh->reg->zebra_maps, *p->index_type))
     {
         ZebraExplainInfo zei = zh->reg->zei;
         int ch = zebraExplain_lookup_attr_str(
             zei, zinfo_index_category_index, p->index_type, p->index_name);
 
-        if(zebra_maps_is_complete (h->zh->reg->zebra_maps, p->index_type))
+        if(zebra_maps_is_complete (h->zh->reg->zebra_maps, *p->index_type))
             snippet_add_complete_field(p, ch);
         else
             snippet_add_incomplete_field(p, ch);
@@ -351,11 +351,11 @@ static void searchRecordKey(ZebraHandle zh,
         ws[i] = NULL;
 
     if (ch < 0)
-        ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, '0', index_name);
+        ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, "0", index_name);
     if (ch < 0)
-        ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, 'p', index_name);
+        ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, "p", index_name);
     if (ch < 0)
-        ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, 'w', index_name);
+        ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, "w", index_name);
 
     if (ch < 0)
 	return ;
@@ -540,7 +540,7 @@ static void all_matches_add(struct recExtractCtrl *ctrl)
     RecWord word;
     extract_init(ctrl, &word);
     word.index_name = "_ALLRECORDS";
-    word.index_type = 'w';
+    word.index_type = "w";
     word.seqno = 1;
     extract_add_index_string(&word, zinfo_index_category_alwaysmatches,
                               "", 0);
@@ -1272,13 +1272,14 @@ void extract_rec_keys_log(ZebraHandle zh, int is_insert,
             char keystr[200]; /* room for zints to print */
             char *dst_term = 0;
             int ord = CAST_ZINT_TO_INT(key.mem[0]);
-            int index_type, i;
+            const char *index_type;
+            int i;
             const char *string_index;
             
             zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type,
                                     0/* db */, &string_index);
             assert(index_type);
-            zebra_term_untrans_iconv(zh, nmem, index_type,
+            zebra_term_untrans_iconv(zh, nmem, *index_type,
                                      &dst_term, str);
             *keystr = '\0';
             for (i = 0; i<key.len; i++)
@@ -1306,12 +1307,12 @@ void extract_rec_keys_log(ZebraHandle zh, int is_insert,
                 {
                     sprintf(dst_buf + strlen(dst_buf), " %d", str[i] & 0xff);
                 }
-                yaz_log(level, "%s%c %s %s", keystr, index_type,
+                yaz_log(level, "%s%s %s %s", keystr, index_type,
                         string_index, dst_buf);
                 
             }
             else
-                yaz_log(level, "%s%c %s \"%s\"", keystr, index_type,
+                yaz_log(level, "%s%s %s \"%s\"", keystr, index_type,
                         string_index, dst_term);
 
             nmem_reset(nmem);
@@ -1502,7 +1503,7 @@ ZEBRA_RES zebra_rec_keys_to_snippets(ZebraHandle zh,
 	    char *dst_term = 0;
 	    int ord;
             zint seqno;
-	    int index_type;
+	    const char *index_type;
 
 	    assert(key.len <= IT_KEY_LEVEL_MAX && key.len > 2);
 	    seqno = key.mem[key.len-1];
@@ -1511,7 +1512,7 @@ ZEBRA_RES zebra_rec_keys_to_snippets(ZebraHandle zh,
 	    zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type,
 				    0/* db */, 0 /* string_index */);
 	    assert(index_type);
-	    zebra_term_untrans_iconv(zh, nmem, index_type,
+	    zebra_term_untrans_iconv(zh, nmem, *index_type,
 				     &dst_term, str);
 	    zebra_snippets_append(snippets, seqno, 0, ord, dst_term);
 	    nmem_reset(nmem);
@@ -1533,7 +1534,7 @@ void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys)
 	{
 	    char dst_buf[IT_MAX_WORD];
 	    zint seqno;
-	    int index_type;
+	    const char *index_type;
             int ord = CAST_ZINT_TO_INT(key.mem[0]);
 	    const char *db = 0;
 	    assert(key.len <= IT_KEY_LEVEL_MAX && key.len > 2);
@@ -1542,7 +1543,7 @@ void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys)
 	    
 	    seqno = key.mem[key.len-1];
 	    
-	    zebra_term_untrans(zh, index_type, dst_buf, str);
+	    zebra_term_untrans(zh, *index_type, dst_buf, str);
 	    
 	    yaz_log(YLOG_LOG, "ord=%d seqno=" ZINT_FORMAT 
                     " term=%s", ord, seqno, dst_buf); 
@@ -1615,11 +1616,11 @@ static void extract_add_string(RecWord *p, const char *string, int length)
     if (!p->index_name)
         return;
 
-    if (zebra_maps_is_index(zh->reg->zebra_maps, p->index_type))
+    if (zebra_maps_is_index(zh->reg->zebra_maps, *p->index_type))
     {
 	extract_add_index_string(p, zinfo_index_category_index,
                                  string, length);
-        if (zebra_maps_is_alwaysmatches(zh->reg->zebra_maps, p->index_type))
+        if (zebra_maps_is_alwaysmatches(zh->reg->zebra_maps, *p->index_type))
         {
             RecWord word;
             memcpy(&word, p, sizeof(word));
@@ -1629,11 +1630,11 @@ static void extract_add_string(RecWord *p, const char *string, int length)
                 &word, zinfo_index_category_alwaysmatches, "", 0);
         }
     }
-    else if (zebra_maps_is_sort(zh->reg->zebra_maps, p->index_type))
+    else if (zebra_maps_is_sort(zh->reg->zebra_maps, *p->index_type))
     {
 	extract_add_sort_string(p, string, length);
     }
-    else if (zebra_maps_is_staticrank(zh->reg->zebra_maps, p->index_type))
+    else if (zebra_maps_is_staticrank(zh->reg->zebra_maps, *p->index_type))
     {
 	extract_add_staticrank_string(p, string, length);
     }
@@ -1648,7 +1649,7 @@ static void extract_add_incomplete_field(RecWord *p)
     const char **map = 0;
     
     if (remain > 0)
-	map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, 0);
+	map = zebra_maps_input(zh->reg->zebra_maps, *p->index_type, &b, remain, 0);
 
     while (map)
     {
@@ -1660,7 +1661,7 @@ static void extract_add_incomplete_field(RecWord *p)
 	{
 	    remain = p->term_len - (b - p->term_buf);
 	    if (remain > 0)
-		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b,
+		map = zebra_maps_input(zh->reg->zebra_maps, *p->index_type, &b,
 				       remain, 0);
 	    else
 		map = 0;
@@ -1676,7 +1677,7 @@ static void extract_add_incomplete_field(RecWord *p)
 		buf[i++] = *(cp++);
 	    remain = p->term_len - (b - p->term_buf);
 	    if (remain > 0)
-		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, 0);
+		map = zebra_maps_input(zh->reg->zebra_maps, *p->index_type, &b, remain, 0);
 	    else
 		map = 0;
 	}
@@ -1686,7 +1687,7 @@ static void extract_add_incomplete_field(RecWord *p)
         if (first)
         {   
             first = 0;
-            if (zebra_maps_is_first_in_field(zh->reg->zebra_maps, p->index_type))
+            if (zebra_maps_is_first_in_field(zh->reg->zebra_maps, *p->index_type))
             {
                 /* first in field marker */
                 extract_add_string(p, FIRST_IN_FIELD_STR, FIRST_IN_FIELD_LEN);
@@ -1707,7 +1708,7 @@ static void extract_add_complete_field(RecWord *p)
     int i = 0, remain = p->term_len;
 
     if (remain > 0)
-	map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, 1);
+	map = zebra_maps_input(zh->reg->zebra_maps, *p->index_type, &b, remain, 1);
 
     while (remain > 0 && i < IT_MAX_WORD)
     {
@@ -1718,7 +1719,7 @@ static void extract_add_complete_field(RecWord *p)
 	    if (remain > 0)
 	    {
 		int first = i ? 0 : 1;  /* first position */
-		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b, remain, first);
+		map = zebra_maps_input(zh->reg->zebra_maps, *p->index_type, &b, remain, first);
 	    }
 	    else
 		map = 0;
@@ -1746,7 +1747,7 @@ static void extract_add_complete_field(RecWord *p)
 	    remain = p->term_len  - (b - p->term_buf);
 	    if (remain > 0)
 	    {
-		map = zebra_maps_input(zh->reg->zebra_maps, p->index_type, &b,
+		map = zebra_maps_input(zh->reg->zebra_maps, *p->index_type, &b,
 					remain, 0);
 	    }
 	    else
@@ -1792,12 +1793,8 @@ static void extract_token_add2_index(ZebraHandle zh, zebra_index_type_t type,
 
 static void extract_token_add2(RecWord *p)
 {
-    zebra_index_type_t type;
     ZebraHandle zh = p->extractCtrl->handle;
-    char type_tmp[2];
-    type_tmp[0] = p->index_type;
-    type_tmp[1] = '\0';
-    type = zebra_index_type_get(zh->reg->index_types, type_tmp);
+    zebra_index_type_t type = zebra_index_type_get(zh->reg->index_types, p->index_type);
     if (type)
     {
         if (zebra_index_type_is_index(type))
@@ -1835,17 +1832,17 @@ static void extract_token_add(RecWord *p)
     if (log_level_details)
     {
         yaz_log(log_level_details, "extract_token_add "
-                "type=%c index=%s seqno=" ZINT_FORMAT " s=%.*s",
+                "type=%s index=%s seqno=" ZINT_FORMAT " s=%.*s",
                 p->index_type, p->index_name, 
                 p->seqno, p->term_len, p->term_buf);
     }
-    if ((wrbuf = zebra_replace(zh->reg->zebra_maps, p->index_type, 0,
+    if ((wrbuf = zebra_replace(zh->reg->zebra_maps, *p->index_type, 0,
 			       p->term_buf, p->term_len)))
     {
 	p->term_buf = wrbuf_buf(wrbuf);
 	p->term_len = wrbuf_len(wrbuf);
     }
-    if (zebra_maps_is_complete(zh->reg->zebra_maps, p->index_type))
+    if (zebra_maps_is_complete(zh->reg->zebra_maps, *p->index_type))
 	extract_add_complete_field(p);
     else
 	extract_add_incomplete_field(p);

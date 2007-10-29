@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.14 2007-10-29 09:25:40 adam Exp $
+/* $Id: rpnscan.c,v 1.15 2007-10-29 16:57:53 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -45,7 +45,7 @@ int log_scan = YLOG_LOG;
 
 /* convert APT SCAN term to internal cmap */
 static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-				 char *termz, int reg_type)
+				 char *termz, const char *index_type)
 {
     char termz0[IT_MAX_WORD];
 
@@ -63,7 +63,8 @@ static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             
         while ((len = (cp_end - cp)) > 0)
         {
-            map = zebra_maps_input(zh->reg->zebra_maps, reg_type, &cp, len, 0);
+            map = zebra_maps_input(zh->reg->zebra_maps, *index_type,
+                                   &cp, len, 0);
             if (**map == *CHR_SPACE)
                 space_map = *map;
             else
@@ -181,7 +182,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
                          Z_AttributesPlusTerm *zapt,
                          RSET limit_set,
                          const char *term, 
-                         int index_type,
+                         const char *index_type,
                          struct scan2_info_entry *ar, int ord_no,
                          ZebraScanEntry *glist, int pos)
 {
@@ -257,7 +258,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
                 }
             }
             if (!glist[pos].term)
-                zebra_term_untrans_iconv(zh, stream->mem, index_type,
+                zebra_term_untrans_iconv(zh, stream->mem, *index_type,
                                          &glist[pos].term, term);
             glist[pos].occurrences = count;
             zebra_snippets_destroy(rec_snippets);
@@ -278,7 +279,8 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
                                int *position, int *num_entries, 
                                ZebraScanEntry **list,
                                int *is_partial, RSET limit_set,
-                               int index_type, int ord_no, int *ords)
+                               const char *index_type,
+                               int ord_no, int *ords)
 {
     struct scan2_info_entry *ar = nmem_malloc(nmem, sizeof(*ar) * ord_no);
     struct rpn_char_map_info rcmi;
@@ -297,7 +299,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
         *num_entries = 0;
         return ZEBRA_OK;
     }
-    rpn_char_map_prepare(zh->reg, index_type, &rcmi);
+    rpn_char_map_prepare(zh->reg, *index_type, &rcmi);
 
     for (i = 0; i < ord_no; i++)
 	ar[i].term = wrbuf_alloc();
@@ -467,7 +469,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     int base_no;
     int ords[RPN_MAX_ORDS], ord_no = 0;
 
-    unsigned index_type;
+    const char *index_type;
     char *search_type = NULL;
     char rank_type[128];
     int complete_flag;

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.201 2007-10-29 09:25:40 adam Exp $
+/* $Id: index.h,v 1.202 2007-10-29 16:57:52 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -281,7 +281,7 @@ RSET rset_trunc(ZebraHandle zh, ISAM_P *isam_p, int no,
 		const char *term, int length_term, const char *flags,
 		int preserve_position, int term_type, NMEM rset_nmem,
 		struct rset_key_control *kctrl, int scope,
-		struct ord_list *ol, int reg_type,
+		struct ord_list *ol, const char *index_type,
 		zint hits_limit, const char *term_ref_id);
 
 void resultSetAddTerm(ZebraHandle zh, ZebraSet s, int reg_type,
@@ -386,7 +386,7 @@ void zebra_term_untrans(ZebraHandle zh, int reg_type,
 
 ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
                             Z_AttributesPlusTerm *zapt,
-                            int index_type,
+                            const char *index_type,
                             const char *xpath_use,
                             const Odr_oid *curAttributeSet,
                             int *ord);
@@ -394,7 +394,7 @@ ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
 ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
                                   Z_AttributeList *attr_list,
                                   zinfo_index_category_t cat,
-                                  int index_type,
+                                  const char *index_type,
                                   const Odr_oid *curAttributeSet,
                                   int *ord);
 

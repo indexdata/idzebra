@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.19 2007-08-31 07:02:24 adam Exp $
+/* $Id: alvis.c,v 1.20 2007-10-29 16:57:52 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -71,16 +71,6 @@ struct filter_info {
 #define XML_STRLEN(a) strlen((char*)a)
 
 static const char *zebra_xslt_ns = ZEBRA_SCHEMA_XSLT_NS;
-
-static void set_param_xml(const char **params, const char *name,
-			  const char *value, ODR odr)
-{
-    while (*params)
-	params++;
-    params[0] = name;
-    params[1] = value;
-    params[2] = 0;
-}
 
 static void set_param_str(const char **params, const char *name,
 			  const char *value, ODR odr)
@@ -398,10 +388,10 @@ static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
 	    }
 	    if (name_str)
 	    {
-		int prev_type = recWord->index_type; /* save default type */
+		const char *prev_type = recWord->index_type; /* save default type */
 
 		if (type_str && *type_str)
-		    recWord->index_type = *type_str; /* type was given */
+		    recWord->index_type = (const char *) type_str; /* type was given */
 		recWord->index_name = name_str;
 		index_cdata(tinfo, ctrl, ptr->children, recWord);
 

@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.40 2007-10-21 19:39:00 adam Exp $
+/* $Id: mod_dom.c,v 1.41 2007-10-29 16:57:52 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -780,7 +780,7 @@ static void index_value_of(struct filter_info *tinfo,
 
                 recword->index_name = (const char *)index;
                 if (type && *type)
-                    recword->index_type = *type;
+                    recword->index_type = (const char *) type;
 
                 /* writing debug out */
                 if (extctr->flagShowRecords)
@@ -790,10 +790,6 @@ static void index_value_of(struct filter_info *tinfo,
                             type ? (const char *) type : "null", 
                             text ? (const char *) text : "null");
                 
-                /* actually indexing the text given */
-                recword->index_name = (const char *)index;
-                if (type && *type)
-                    recword->index_type = *type;
                 (extctr->tokenAdd)(recword);
 
                 /* eat whitespaces */

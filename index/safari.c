@@ -1,4 +1,4 @@
-/* $Id: safari.c,v 1.9 2007-04-25 09:38:21 adam Exp $
+/* $Id: safari.c,v 1.10 2007-10-29 16:57:53 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -135,14 +135,18 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 	int nor = 0;
 	char field[40];
 	const char *cp = line;
+        char type_cstr[2];
 #if 0
 	yaz_log(YLOG_LOG, "safari line: %s", line);
 #endif
+        type_cstr[1] = '\0';
         if (*cp >= '0' && *cp <= '9')
-            recWord.index_type = '0'; /* the default is 0 (raw) */
+            type_cstr[0] = '0'; /* the default is 0 (raw) */
         else
-            recWord.index_type = *cp++; /* type given */
+            type_cstr[0] = *cp++; /* type given */
+        type_cstr[1] = '\0';
 
+        recWord.index_type = type_cstr;
         if (tinfo->segments)
         {
             if (sscanf(cp, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT 
