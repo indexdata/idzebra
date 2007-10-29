@@ -1,4 +1,4 @@
-/* $Id: passwddb.c,v 1.16 2007-01-15 15:10:26 adam Exp $
+/* $Id: passwddb.c,v 1.17 2007-10-29 08:19:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <crypt.h>
 #endif
 
+#include <assert.h>
 #include <yaz/log.h>
 #include <yaz/xmalloc.h>
 
@@ -127,6 +128,8 @@ void passwd_db_show(Passwd_db db)
 int passwd_db_auth(Passwd_db db, const char *user, const char *pass)
 {
     struct passwd_entry *pe;
+
+    assert(db);
     for (pe = db->entries; pe; pe = pe->next)
 	if (user && !strcmp (user, pe->name))
 	    break;
@@ -136,6 +139,7 @@ int passwd_db_auth(Passwd_db db, const char *user, const char *pass)
     {
 #if HAVE_CRYPT_H
 	const char *des_try;
+        assert(pe->des);
 	if (strlen (pe->des) < 3)
 	    return -3;
 	if (!pass)
@@ -148,6 +152,7 @@ int passwd_db_auth(Passwd_db db, const char *user, const char *pass)
         }
 	des_try = crypt (pass, pe->des);
 
+        assert(des_try);
 	if (strcmp (des_try, pe->des))
 	    return -2;
 #else
@@ -156,6 +161,8 @@ int passwd_db_auth(Passwd_db db, const char *user, const char *pass)
     }
     else
     {
+        assert(pass);
+        assert(pe->des);
 	if (strcmp (pe->des, pass))
 	    return -2;
     }
