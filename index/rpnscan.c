@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.15 2007-10-29 16:57:53 adam Exp $
+/* $Id: rpnscan.c,v 1.16 2007-10-30 19:17:15 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -45,7 +45,7 @@ int log_scan = YLOG_LOG;
 
 /* convert APT SCAN term to internal cmap */
 static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-				 char *termz, const char *index_type)
+				 char *termz, zebra_map_t zm)
 {
     char termz0[IT_MAX_WORD];
 
@@ -63,8 +63,7 @@ static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             
         while ((len = (cp_end - cp)) > 0)
         {
-            map = zebra_maps_input(zh->reg->zebra_maps, *index_type,
-                                   &cp, len, 0);
+            map = zebra_maps_input(zm, &cp, len, 0);
             if (**map == *CHR_SPACE)
                 space_map = *map;
             else
@@ -284,6 +283,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
 {
     struct scan2_info_entry *ar = nmem_malloc(nmem, sizeof(*ar) * ord_no);
     struct rpn_char_map_info rcmi;
+    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, *index_type);
     int i, dif;
     int after_pos;
     int pos = 0;
@@ -299,7 +299,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
         *num_entries = 0;
         return ZEBRA_OK;
     }
-    rpn_char_map_prepare(zh->reg, *index_type, &rcmi);
+    rpn_char_map_prepare(zh->reg, zm, &rcmi);
 
     for (i = 0; i < ord_no; i++)
 	ar[i].term = wrbuf_alloc();
@@ -313,7 +313,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
         termz[prefix_len] = 0;
         strcpy(ar[i].prefix, termz);
         
-        if (trans_scan_term(zh, zapt, termz+prefix_len, index_type) == 
+        if (trans_scan_term(zh, zapt, termz+prefix_len, zm) == 
             ZEBRA_FAIL)
         {
             for (i = 0; i < ord_no; i++)
@@ -383,7 +383,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
         termz[prefix_len] = 0;
         strcpy(ar[i].prefix, termz);
         
-        if (trans_scan_term(zh, zapt, termz+prefix_len, index_type) == 
+        if (trans_scan_term(zh, zapt, termz+prefix_len, zm) == 
             ZEBRA_FAIL)
             return ZEBRA_FAIL;
         wrbuf_rewind(ar[i].term);

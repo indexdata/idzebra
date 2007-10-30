@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.260 2007-10-29 09:25:41 adam Exp $
+/* $Id: zebraapi.c,v 1.261 2007-10-30 19:17:15 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1556,6 +1556,7 @@ int zebra_string_norm(ZebraHandle zh, unsigned reg_id,
 		      char *output_str, int output_len)
 {
     WRBUF wrbuf;
+    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, reg_id);
     ASSERTZH;
     assert(input_str);
     assert(output_str);
@@ -1563,8 +1564,7 @@ int zebra_string_norm(ZebraHandle zh, unsigned reg_id,
 
     if (!zh->reg->zebra_maps)
 	return -1;
-    wrbuf = zebra_replace(zh->reg->zebra_maps, reg_id, "",
-			  input_str, input_len);
+    wrbuf = zebra_replace(zm, "", input_str, input_len);
     if (!wrbuf)
 	return -2;
     if (wrbuf_len(wrbuf) >= output_len)

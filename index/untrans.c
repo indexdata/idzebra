@@ -1,4 +1,4 @@
-/* $Id: untrans.c,v 1.3 2007-03-20 22:07:35 adam Exp $
+/* $Id: untrans.c,v 1.4 2007-10-30 19:17:15 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -31,11 +31,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 void zebra_term_untrans(ZebraHandle zh, int reg_type,
 			char *dst, const char *src)
 {
+    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, reg_type);
     int len = 0;
     while (*src)
     {
-        const char *cp = zebra_maps_output(zh->reg->zebra_maps,
-					   reg_type, &src);
+        const char *cp = zebra_maps_output(zm, &src);
 	if (!cp)
 	{
 	    if (len < IT_MAX_WORD-1)

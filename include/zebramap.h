@@ -1,4 +1,4 @@
-/* $Id: zebramap.h,v 1.24 2007-10-29 22:22:06 adam Exp $
+/* $Id: zebramap.h,v 1.25 2007-10-30 19:17:15 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -28,61 +28,68 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 YAZ_BEGIN_CDECL
 
-typedef struct zebra_maps *ZebraMaps;
+typedef struct zebra_maps_s *zebra_maps_t;
+typedef struct zebra_map *zebra_map_t;
 
 YAZ_EXPORT
-ZebraMaps zebra_maps_open(Res res, const char *base_path,
+zebra_maps_t zebra_maps_open(Res res, const char *base_path,
                           const char *profile_path);
 YAZ_EXPORT
-ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname);
+ZEBRA_RES zebra_maps_read_file(zebra_maps_t zms, const char *fname);
 
 YAZ_EXPORT
-void zebra_maps_close(ZebraMaps zm);
+void zebra_maps_close(zebra_maps_t zm);
 
 YAZ_EXPORT
-const char **zebra_maps_input(ZebraMaps zms, unsigned reg_id,
+const char **zebra_maps_input(zebra_map_t zm,
                               const char **from, int len, int first);
 
 YAZ_EXPORT
-const char **zebra_maps_search(ZebraMaps zms, unsigned reg_id,
+const char **zebra_maps_search(zebra_map_t zm,
                                const char **from, int len, int *q_map_match);
 
 YAZ_EXPORT
-const char *zebra_maps_output(ZebraMaps, unsigned reg_id, const char **from);
+const char *zebra_maps_output(zebra_map_t zm, const char **from);
 
 YAZ_EXPORT
-int zebra_maps_attr(ZebraMaps zms, Z_AttributesPlusTerm *zapt,
+int zebra_maps_attr(zebra_maps_t zms, Z_AttributesPlusTerm *zapt,
                     const char **reg_id, char **search_type, char *rank_type,
                     int *complete_flag, int *sort_flag);
 
 YAZ_EXPORT
-int zebra_maps_sort(ZebraMaps zms, Z_SortAttributes *sortAttributes,
+int zebra_maps_sort(zebra_maps_t zms, Z_SortAttributes *sortAttributes,
                     int *numerical);
 
 YAZ_EXPORT
-int zebra_maps_is_complete(ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_complete(zebra_map_t zm);
 
 YAZ_EXPORT
-int zebra_maps_is_sort(ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_sort(zebra_map_t zm);
 
 YAZ_EXPORT
-int zebra_maps_is_index(ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_index(zebra_map_t zm);
 
 YAZ_EXPORT
-int zebra_maps_is_staticrank(ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_staticrank(zebra_map_t zm);
 
 YAZ_EXPORT
-int zebra_maps_is_alwaysmatches(ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_alwaysmatches(zebra_map_t zm);
 
 YAZ_EXPORT
-int zebra_maps_is_positioned(ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_positioned(zebra_map_t zm);
 
 YAZ_EXPORT
-int zebra_maps_is_first_in_field(ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_first_in_field(zebra_map_t zm);
 
 YAZ_EXPORT
-WRBUF zebra_replace(ZebraMaps zms, unsigned reg_id, const char *ex_list,
+WRBUF zebra_replace(zebra_map_t zm, const char *ex_list,
 		    const char *input_str, int input_len);
+
+YAZ_EXPORT
+zebra_map_t zebra_map_get(zebra_maps_t zms, unsigned reg_id);
+
+YAZ_EXPORT
+zebra_map_t zebra_map_get_or_add(zebra_maps_t zms, unsigned reg_id);
 
 YAZ_END_CDECL
 

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.202 2007-10-29 16:57:52 adam Exp $
+/* $Id: index.h,v 1.203 2007-10-30 19:17:15 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -145,7 +145,7 @@ struct zebra_register {
     char *server_path_prefix;
     data1_handle dh;
     zebra_index_types_t index_types;
-    ZebraMaps zebra_maps;
+    zebra_maps_t zebra_maps;
     ZebraRankClass rank_classes;
     RecTypes recTypes;
     int seqno;
@@ -410,11 +410,11 @@ ZEBRA_RES zebra_remove_file_match(ZebraHandle zh);
 
 struct rpn_char_map_info
 {
-    ZebraMaps zm;
+    zebra_map_t zm;
     int reg_type;
 };
 
-void rpn_char_map_prepare(struct zebra_register *reg, int reg_type,
+void rpn_char_map_prepare(struct zebra_register *reg, zebra_map_t zm,
                           struct rpn_char_map_info *map_info);
 
 ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,

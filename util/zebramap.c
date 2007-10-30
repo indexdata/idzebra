@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.59 2007-10-29 16:57:54 adam Exp $
+/* $Id: zebramap.c,v 1.60 2007-10-30 19:17:15 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -53,22 +53,24 @@ struct zebra_map {
     } u;
     chrmaptab maptab;
     const char *maptab_name;
+    zebra_maps_t zebra_maps;
     struct zebra_map *next;
 };
 
-struct zebra_maps {
+struct zebra_maps_s {
     char *tabpath;
     char *tabroot;
     NMEM nmem;
-    struct zebra_map *map_list;
     char temp_map_str[2];
     const char *temp_map_ptr[2];
     struct zebra_map **lookup_array;
     WRBUF wrbuf_1;
     int no_maps;
+    zebra_map_t map_list;
+    zebra_map_t *last_map;
 };
 
-void zebra_maps_close(ZebraMaps zms)
+void zebra_maps_close(zebra_maps_t zms)
 {
     struct zebra_map *zm = zms->map_list;
     while (zm)
@@ -82,7 +84,31 @@ void zebra_maps_close(ZebraMaps zms)
     xfree(zms);
 }
 
-ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
+zebra_map_t zebra_add_map(zebra_maps_t zms, const char *index_type,
+                          int map_type)
+{
+    zebra_map_t zm = (zebra_map_t) nmem_malloc(zms->nmem, sizeof(*zm));
+
+    zm->zebra_maps = zms;
+    zm->reg_id = index_type[0];
+    zm->maptab_name = 0;
+    zm->maptab = 0;
+    zm->type = map_type;
+    zm->completeness = 0;
+    zm->positioned = 0;
+    zm->alwaysmatches = 0;
+    zm->first_in_field = 0;
+
+    zm->next = 0;
+    *zms->last_map = zm;
+    zms->last_map = &zm->next;
+
+    zms->no_maps++;
+
+    return zm;
+}
+
+ZEBRA_RES zebra_maps_read_file(zebra_maps_t zms, const char *fname)
 {
     FILE *f;
     char line[512];
@@ -90,7 +116,7 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
     int argc;
     int lineno = 0;
     int failures = 0;
-    struct zebra_map **zm = 0, *zp;
+    zebra_map_t zm = 0;
 
     if (!(f = yaz_fopen(zms->tabpath, fname, "r", zms->tabroot)))
     {
@@ -115,55 +141,18 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
         }
 	if (!yaz_matchstr(argv[0], "index"))
 	{
-	    if (!zm)
-		zm = &zms->map_list;
-	    else
-		zm = &(*zm)->next;
-	    *zm = (struct zebra_map *) nmem_malloc(zms->nmem, sizeof(**zm));
-	    (*zm)->reg_id = argv[1][0];
-	    (*zm)->maptab_name = NULL;
-	    (*zm)->maptab = NULL;
-	    (*zm)->type = ZEBRA_MAP_TYPE_INDEX;
-	    (*zm)->completeness = 0;
-	    (*zm)->positioned = 1;
-	    (*zm)->alwaysmatches = 0;
-	    (*zm)->first_in_field = 0;
-	    zms->no_maps++;
+            zm = zebra_add_map(zms, argv[1], ZEBRA_MAP_TYPE_INDEX);
+	    zm->positioned = 1;
 	}
 	else if (!yaz_matchstr(argv[0], "sort"))
 	{
-	    if (!zm)
-		zm = &zms->map_list;
-	    else
-		zm = &(*zm)->next;
-	    *zm = (struct zebra_map *) nmem_malloc(zms->nmem, sizeof(**zm));
-	    (*zm)->reg_id = argv[1][0];
-	    (*zm)->maptab_name = NULL;
-	    (*zm)->type = ZEBRA_MAP_TYPE_SORT;
-            (*zm)->u.sort.entry_size = 80;
-	    (*zm)->maptab = NULL;
-	    (*zm)->completeness = 0;
-	    (*zm)->positioned = 0;
-	    (*zm)->alwaysmatches = 0;
-	    (*zm)->first_in_field = 0;
-	    zms->no_maps++;
+	    zm = zebra_add_map(zms, argv[1], ZEBRA_MAP_TYPE_SORT);
+            zm->u.sort.entry_size = 80;
 	}
 	else if (!yaz_matchstr(argv[0], "staticrank"))
 	{
-	    if (!zm)
-		zm = &zms->map_list;
-	    else
-		zm = &(*zm)->next;
-	    *zm = (struct zebra_map *) nmem_malloc(zms->nmem, sizeof(**zm));
-	    (*zm)->reg_id = argv[1][0];
-	    (*zm)->maptab_name = NULL;
-	    (*zm)->type = ZEBRA_MAP_TYPE_STATICRANK;
-	    (*zm)->maptab = NULL;
-	    (*zm)->completeness = 1;
-	    (*zm)->positioned = 0;
-	    (*zm)->alwaysmatches = 0;
-	    (*zm)->first_in_field = 0;
-	    zms->no_maps++;
+	    zm = zebra_add_map(zms, argv[1], ZEBRA_MAP_TYPE_STATICRANK);
+	    zm->completeness = 1;
 	}
         else if (!zm)
         {
@@ -173,28 +162,28 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
         }
 	else if (!yaz_matchstr(argv[0], "charmap") && argc == 2)
 	{
-            if ((*zm)->type != ZEBRA_MAP_TYPE_STATICRANK)
-                (*zm)->maptab_name = nmem_strdup(zms->nmem, argv[1]);
+            if (zm->type != ZEBRA_MAP_TYPE_STATICRANK)
+                zm->maptab_name = nmem_strdup(zms->nmem, argv[1]);
             else
             {
                 yaz_log(YLOG_WARN|YLOG_FATAL, "%s:%d: charmap for "
                         "staticrank is invalid", fname, lineno);
-                yaz_log(YLOG_LOG, "Type is %d", (*zm)->type);
+                yaz_log(YLOG_LOG, "Type is %d", zm->type);
                 failures++;
             }
 	}
 	else if (!yaz_matchstr(argv[0], "completeness") && argc == 2)
 	{
-	    (*zm)->completeness = atoi(argv[1]);
+	    zm->completeness = atoi(argv[1]);
 	}
 	else if (!yaz_matchstr(argv[0], "position") && argc == 2)
 	{
-	    (*zm)->positioned = atoi(argv[1]);
+	    zm->positioned = atoi(argv[1]);
 	}
 	else if (!yaz_matchstr(argv[0], "alwaysmatches") && argc == 2)
 	{
-            if ((*zm)->type != ZEBRA_MAP_TYPE_STATICRANK)
-                (*zm)->alwaysmatches = atoi(argv[1]);
+            if (zm->type != ZEBRA_MAP_TYPE_STATICRANK)
+                zm->alwaysmatches = atoi(argv[1]);
             else
             {
                 yaz_log(YLOG_WARN|YLOG_FATAL, "%s:%d: alwaysmatches for "
@@ -204,12 +193,12 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
 	}
 	else if (!yaz_matchstr(argv[0], "firstinfield") && argc == 2)
 	{
-	    (*zm)->first_in_field = atoi(argv[1]);
+	    zm->first_in_field = atoi(argv[1]);
 	}
         else if (!yaz_matchstr(argv[0], "entrysize") && argc == 2)
         {
-            if ((*zm)->type == ZEBRA_MAP_TYPE_SORT)
-		(*zm)->u.sort.entry_size = atoi(argv[1]);
+            if (zm->type == ZEBRA_MAP_TYPE_SORT)
+		zm->u.sort.entry_size = atoi(argv[1]);
         }
         else
         {
@@ -218,22 +207,20 @@ ZEBRA_RES zebra_maps_read_file(ZebraMaps zms, const char *fname)
             failures++;
         }
     }
-    if (zm)
-	(*zm)->next = NULL;
     yaz_fclose(f);
 
-    for (zp = zms->map_list; zp; zp = zp->next)
-	zms->lookup_array[zp->reg_id] = zp;
+    for (zm = zms->map_list; zm; zm = zm->next)
+	zms->lookup_array[zm->reg_id] = zm;
 
     if (failures)
         return ZEBRA_FAIL;
     return ZEBRA_OK;
 }
 
-ZebraMaps zebra_maps_open(Res res, const char *base_path,
+zebra_maps_t zebra_maps_open(Res res, const char *base_path,
 			  const char *profile_path)
 {
-    ZebraMaps zms = (ZebraMaps) xmalloc(sizeof(*zms));
+    zebra_maps_t zms = (zebra_maps_t) xmalloc(sizeof(*zms));
     int i;
 
     zms->nmem = nmem_create();
@@ -242,7 +229,8 @@ ZebraMaps zebra_maps_open(Res res, const char *base_path,
     zms->tabroot = 0;
     if (base_path)
         zms->tabroot = nmem_strdup(zms->nmem, base_path);
-    zms->map_list = NULL;
+    zms->map_list = 0;
+    zms->last_map = &zms->map_list;
 
     zms->temp_map_str[0] = '\0';
     zms->temp_map_str[1] = '\0';
@@ -250,7 +238,7 @@ ZebraMaps zebra_maps_open(Res res, const char *base_path,
     zms->temp_map_ptr[0] = zms->temp_map_str;
     zms->temp_map_ptr[1] = NULL;
 
-    zms->lookup_array = (struct zebra_map**)
+    zms->lookup_array = (zebra_map_t *)
 	nmem_malloc(zms->nmem, sizeof(*zms->lookup_array)*256);
     zms->wrbuf_1 = wrbuf_alloc();
 
@@ -259,40 +247,51 @@ ZebraMaps zebra_maps_open(Res res, const char *base_path,
     return zms;
 }
 
-struct zebra_map *zebra_map_get(ZebraMaps zms, unsigned reg_id)
+zebra_map_t zebra_map_get(zebra_maps_t zms, unsigned reg_id)
 {
     assert(reg_id >= 0 && reg_id <= 255);
     return zms->lookup_array[reg_id];
 }
 
-chrmaptab zebra_charmap_get(ZebraMaps zms, unsigned reg_id)
+zebra_map_t zebra_map_get_or_add(zebra_maps_t zms, unsigned reg_id)
 {
     struct zebra_map *zm = zebra_map_get(zms, reg_id);
     if (!zm)
     {
-	zm = (struct zebra_map *) nmem_malloc(zms->nmem, sizeof(*zm));
-	
-	/* no reason to warn if no maps are installed at ALL */
-	if (zms->no_maps)
-	    yaz_log(YLOG_WARN, "Unknown register type: %c", reg_id);
+        char name[2];
+        name[0] = reg_id;
+        name[1] = '\0';
 
-	zm->reg_id = reg_id;
+        zm = zebra_add_map(zms, name, ZEBRA_MAP_TYPE_INDEX);
+	
+	/* no reason to warn if no maps are installed at ALL 
+         Note that zebra_add_maps increments no_maps .. 
+        */
+	if (zms->no_maps > 1)
+	    yaz_log(YLOG_WARN, "Unknown register type: %c", reg_id);
+        else
+            zms->no_maps = 0;
+
 	zm->maptab_name = nmem_strdup(zms->nmem, "@");
-	zm->maptab = NULL;
-	zm->type = ZEBRA_MAP_TYPE_INDEX;
 	zm->completeness = 0;
+        zm->positioned = 1;
 	zm->next = zms->map_list;
 	zms->map_list = zm->next;
 
 	zms->lookup_array[zm->reg_id & 255] = zm;
     }
+    return zm;
+}
+
+chrmaptab zebra_charmap_get(zebra_map_t zm)
+{
     if (!zm->maptab)
     {
 	if (!zm->maptab_name || !yaz_matchstr(zm->maptab_name, "@"))
 	    return NULL;
-	if (!(zm->maptab = chrmaptab_create(zms->tabpath,
+	if (!(zm->maptab = chrmaptab_create(zm->zebra_maps->tabpath,
 					    zm->maptab_name,
-					    zms->tabroot)))
+					    zm->zebra_maps->tabroot)))
 	    yaz_log(YLOG_WARN, "Failed to read character table %s",
 		    zm->maptab_name);
 	else
@@ -301,28 +300,26 @@ chrmaptab zebra_charmap_get(ZebraMaps zms, unsigned reg_id)
     return zm->maptab;
 }
 
-const char **zebra_maps_input(ZebraMaps zms, unsigned reg_id,
+const char **zebra_maps_input(zebra_map_t zm,
 			      const char **from, int len, int first)
 {
-    chrmaptab maptab;
-
-    maptab = zebra_charmap_get(zms, reg_id);
+    chrmaptab maptab = zebra_charmap_get(zm);
     if (maptab)
 	return chr_map_input(maptab, from, len, first);
     
-    zms->temp_map_str[0] = **from;
+    zm->zebra_maps->temp_map_str[0] = **from;
 
     (*from)++;
-    return zms->temp_map_ptr;
+    return zm->zebra_maps->temp_map_ptr;
 }
 
-const char **zebra_maps_search(ZebraMaps zms, unsigned reg_id,
+const char **zebra_maps_search(zebra_map_t zm,
 			       const char **from, int len,  int *q_map_match)
 {
     chrmaptab maptab;
     
     *q_map_match = 0;
-    maptab = zebra_charmap_get(zms, reg_id);
+    maptab = zebra_charmap_get(zm);
     if (maptab)
     {
 	const char **map;
@@ -336,16 +333,16 @@ const char **zebra_maps_search(ZebraMaps zms, unsigned reg_id,
 	if (map)
 	    return map;
     }
-    zms->temp_map_str[0] = **from;
+    zm->zebra_maps->temp_map_str[0] = **from;
 
     (*from)++;
-    return zms->temp_map_ptr;
+    return zm->zebra_maps->temp_map_ptr;
 }
 
-const char *zebra_maps_output(ZebraMaps zms, unsigned reg_id,
+const char *zebra_maps_output(zebra_map_t zm,
 			      const char **from)
 {
-    chrmaptab maptab = zebra_charmap_get(zms, reg_id);
+    chrmaptab maptab = zebra_charmap_get(zm);
     if (!maptab)
 	return 0;
     return chr_map_output(maptab, from, 1);
@@ -354,63 +351,56 @@ const char *zebra_maps_output(ZebraMaps zms, unsigned reg_id,
 
 /* ------------------------------------ */
 
-int zebra_maps_is_complete(ZebraMaps zms, unsigned reg_id)
+int zebra_maps_is_complete(zebra_map_t zm)
 { 
-    struct zebra_map *zm = zebra_map_get(zms, reg_id);
     if (zm)
 	return zm->completeness;
     return 0;
 }
 
-int zebra_maps_is_positioned(ZebraMaps zms, unsigned reg_id)
+int zebra_maps_is_positioned(zebra_map_t zm)
 {
-    struct zebra_map *zm = zebra_map_get(zms, reg_id);
     if (zm)
 	return zm->positioned;
     return 0;
 }
 
-int zebra_maps_is_index(ZebraMaps zms, unsigned reg_id)
+int zebra_maps_is_index(zebra_map_t zm)
 {
-    struct zebra_map *zm = zebra_map_get(zms, reg_id);
     if (zm)
 	return zm->type == ZEBRA_MAP_TYPE_INDEX;
     return 0;
 }
 
-int zebra_maps_is_staticrank(ZebraMaps zms, unsigned reg_id)
+int zebra_maps_is_staticrank(zebra_map_t zm)
 {
-    struct zebra_map *zm = zebra_map_get(zms, reg_id);
     if (zm)
 	return zm->type == ZEBRA_MAP_TYPE_STATICRANK;
     return 0;
 }
     
-int zebra_maps_is_sort(ZebraMaps zms, unsigned reg_id)
+int zebra_maps_is_sort(zebra_map_t zm)
 {
-    struct zebra_map *zm = zebra_map_get(zms, reg_id);
     if (zm)
 	return zm->type == ZEBRA_MAP_TYPE_SORT;
     return 0;
 }
 
-int zebra_maps_is_alwaysmatches(ZebraMaps zms, unsigned reg_id)
+int zebra_maps_is_alwaysmatches(zebra_map_t zm)
 {
-    struct zebra_map *zm = zebra_map_get(zms, reg_id);
     if (zm)
 	return zm->alwaysmatches;
     return 0;
 }
 
-int zebra_maps_is_first_in_field(ZebraMaps zms, unsigned reg_id)
+int zebra_maps_is_first_in_field(zebra_map_t zm)
 {
-    struct zebra_map *zm = zebra_map_get(zms, reg_id);
     if (zm)
 	return zm->first_in_field;
     return 0;
 }
 
-int zebra_maps_sort(ZebraMaps zms, Z_SortAttributes *sortAttributes,
+int zebra_maps_sort(zebra_maps_t zms, Z_SortAttributes *sortAttributes,
 		    int *numerical)
 {
     AttrType use;
@@ -426,7 +416,7 @@ int zebra_maps_sort(ZebraMaps zms, Z_SortAttributes *sortAttributes,
     return attr_find(&use, NULL);
 }
 
-int zebra_maps_attr(ZebraMaps zms, Z_AttributesPlusTerm *zapt,
+int zebra_maps_attr(zebra_maps_t zms, Z_AttributesPlusTerm *zapt,
 		    const char **index_type, char **search_type, char *rank_type,
 		    int *complete_flag, int *sort_flag)
 {
@@ -530,12 +520,12 @@ int zebra_maps_attr(ZebraMaps zms, Z_AttributesPlusTerm *zapt,
     return 0;
 }
 
-WRBUF zebra_replace(ZebraMaps zms, unsigned reg_id, const char *ex_list,
+WRBUF zebra_replace(zebra_map_t zm, const char *ex_list,
 		    const char *input_str, int input_len)
 {
-    wrbuf_rewind(zms->wrbuf_1);
-    wrbuf_write(zms->wrbuf_1, input_str, input_len);
-    return zms->wrbuf_1;
+    wrbuf_rewind(zm->zebra_maps->wrbuf_1);
+    wrbuf_write(zm->zebra_maps->wrbuf_1, input_str, input_len);
+    return zm->zebra_maps->wrbuf_1;
 }
 
 /*
