@@ -1,4 +1,4 @@
-/* $Id: zebramap.h,v 1.25 2007-10-30 19:17:15 adam Exp $
+/* $Id: zebramap.h,v 1.26 2007-10-31 16:56:13 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -86,10 +86,10 @@ WRBUF zebra_replace(zebra_map_t zm, const char *ex_list,
 		    const char *input_str, int input_len);
 
 YAZ_EXPORT
-zebra_map_t zebra_map_get(zebra_maps_t zms, unsigned reg_id);
+zebra_map_t zebra_map_get(zebra_maps_t zms, const char *id);
 
 YAZ_EXPORT
-zebra_map_t zebra_map_get_or_add(zebra_maps_t zms, unsigned reg_id);
+zebra_map_t zebra_map_get_or_add(zebra_maps_t zms, const char *id);
 
 YAZ_END_CDECL
 

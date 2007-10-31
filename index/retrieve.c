@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.74 2007-10-29 16:57:53 adam Exp $
+/* $Id: retrieve.c,v 1.75 2007-10-31 16:56:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -186,7 +186,7 @@ int zebra_special_sort_fetch(ZebraHandle zh, zint sysno, ODR odr,
 
         zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db, &string_index);
         
-        zebra_term_untrans(zh, *index_type, dst_buf, str);
+        zebra_term_untrans(zh, index_type, dst_buf, str);
 
         if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
         {
@@ -326,7 +326,7 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
                 if (retrieval_type == 0 
                     || !strcmp(retrieval_type_cstr, index_type))
                 {
-                    zebra_term_untrans(zh, *index_type, dst_buf, str);
+                    zebra_term_untrans(zh, index_type, dst_buf, str);
                     if (strlen(dst_buf))
                     {
                         if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))

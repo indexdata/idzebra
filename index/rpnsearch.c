@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.18 2007-10-30 19:17:15 adam Exp $
+/* $Id: rpnsearch.c,v 1.19 2007-10-31 16:56:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -79,7 +79,7 @@ struct grep_info {
     int isam_p_indx;
     int trunc_max;
     ZebraHandle zh;
-    int reg_type;
+    const char *index_type;
     ZebraSet termset;
 };        
 
@@ -135,7 +135,7 @@ static int add_isam_p(const char *name, const char *info,
         const char *index_name;
         int len = key_SU_decode(&ord, (const unsigned char *) name);
         
-        zebra_term_untrans (p->zh, p->reg_type, term_tmp, name+len);
+        zebra_term_untrans (p->zh, p->index_type, term_tmp, name+len);
         yaz_log(log_level_rpn, "grep: %d %c %s", ord, name[len], term_tmp);
         zebraExplain_lookup_ord(p->zh->reg->zei,
                                 ord, 0 /* index_type */, &db, &index_name);
@@ -948,7 +948,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     int relation_error;
     char ord_buf[32];
     int ord_len, i;
-    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, *index_type);
+    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, index_type);
     
     *ol = ord_list_create(stream);
 
@@ -1123,7 +1123,7 @@ static void grep_info_delete(struct grep_info *grep_info)
 static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
 				   Z_AttributesPlusTerm *zapt,
 				   struct grep_info *grep_info,
-				   int reg_type)
+				   const char *index_type)
 {
 #ifdef TERM_COUNT
     grep_info->term_no = 0;
@@ -1132,7 +1132,7 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
     grep_info->isam_p_size = 0;
     grep_info->isam_p_buf = NULL;
     grep_info->zh = zh;
-    grep_info->reg_type = reg_type;
+    grep_info->index_type = index_type;
     grep_info->termset = 0;
     if (zapt)
     {
@@ -1217,7 +1217,7 @@ static ZEBRA_RES term_list_trunc(ZebraHandle zh,
 
     *num_result_sets = 0;
     *term_dst = 0;
-    if (grep_info_prepare(zh, zapt, &grep_info, *index_type) == ZEBRA_FAIL)
+    if (grep_info_prepare(zh, zapt, &grep_info, index_type) == ZEBRA_FAIL)
         return ZEBRA_FAIL;
     while(1)
     { 
@@ -1275,7 +1275,7 @@ static ZEBRA_RES rpn_search_APT_position(ZebraHandle zh,
     int ord_len;
     char *val;
     ISAM_P isam_p;
-    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, *index_type);
+    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, index_type);
     
     attr_init_APT(&position, zapt, 3);
     position_value = attr_find(&position, NULL);
@@ -1634,7 +1634,7 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     int relation_error = 0;
     int ord, ord_len, i;
     char ord_buf[32];
-    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, *index_type);
+    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, index_type);
     
     *ol = ord_list_create(stream);
 
@@ -1706,7 +1706,7 @@ static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
     term_limits_APT(zh, zapt, &hits_limit_value, &term_ref_id_str, stream);
 
     yaz_log(log_level_rpn, "APT_numeric t='%s'", termz);
-    if (grep_info_prepare(zh, zapt, &grep_info, *index_type) == ZEBRA_FAIL)
+    if (grep_info_prepare(zh, zapt, &grep_info, index_type) == ZEBRA_FAIL)
         return ZEBRA_FAIL;
     while (1)
     { 
@@ -1904,7 +1904,7 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
     int ord = zebraExplain_lookup_attr_str(zh->reg->zei, 
                                            zinfo_index_category_index,
                                            index_type, xpath_use);
-    if (grep_info_prepare(zh, 0 /* zapt */, &grep_info, '0') == ZEBRA_FAIL)
+    if (grep_info_prepare(zh, 0 /* zapt */, &grep_info, "0") == ZEBRA_FAIL)
         return rset_create_null(rset_nmem, kc, 0);
     
     if (ord < 0)

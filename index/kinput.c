@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.85 2007-10-29 16:57:52 adam Exp $
+/* $Id: kinput.c,v 1.86 2007-10-31 16:56:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -389,7 +389,7 @@ void zebra_log_dict_entry(ZebraHandle zh, const char *s)
         zebraExplain_lookup_ord(zh->reg->zei,
                                 ord, &index_type, &db, &string_index);
 
-        zebra_term_untrans(zh, *index_type, dst, s + len);
+        zebra_term_untrans(zh, index_type, dst, s + len);
 
         yaz_log(YLOG_LOG, "ord=%d index_type=%s index=%s term=%s",
                 ord, index_type, string_index, dst);

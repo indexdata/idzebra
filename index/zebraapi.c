@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.261 2007-10-30 19:17:15 adam Exp $
+/* $Id: zebraapi.c,v 1.262 2007-10-31 16:56:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1551,12 +1551,12 @@ ZEBRA_RES zebra_create_database (ZebraHandle zh, const char *db)
     return zebra_end_trans (zh);
 }
 
-int zebra_string_norm(ZebraHandle zh, unsigned reg_id,
+int zebra_string_norm(ZebraHandle zh, const char *index_type,
 		      const char *input_str, int input_len,
 		      char *output_str, int output_len)
 {
     WRBUF wrbuf;
-    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, reg_id);
+    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, index_type);
     ASSERTZH;
     assert(input_str);
     assert(output_str);

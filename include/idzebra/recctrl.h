@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.37 2007-10-29 16:57:51 adam Exp $
+/* $Id: recctrl.h,v 1.38 2007-10-31 16:56:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -49,7 +49,7 @@ YAZ_BEGIN_CDECL
 
 /** Indexing token */
 typedef struct {
-    /** index type ('w', 'p', .. */
+    /** index type, e.g. "w", "p", .. */
     const char *index_type;
     /** index name, e.g. "title" */
     const char *index_name;
@@ -100,7 +100,6 @@ struct recExtractCtrl {
     void      (*setStoreData)(struct recExtractCtrl *p, void *buf, size_t size);
     int       first_record;
     int       flagShowRecords;
-    int       seqno[256];
     char      match_criteria[256];
     zint      staticrank;
     void      (*schemaAdd)(struct recExtractCtrl *p, Odr_oid *oid);

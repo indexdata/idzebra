@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.203 2007-10-30 19:17:15 adam Exp $
+/* $Id: index.h,v 1.204 2007-10-31 16:56:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -376,12 +376,13 @@ Dict dict_open_res(BFiles bfs, const char *name, int cache, int rw,
 void zebra_setError(ZebraHandle zh, int code, const char *addinfo);
 void zebra_setError_zint(ZebraHandle zh, int code, zint i);
 
-void zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream, int reg_type,
+void zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream, 
+                              const char *index_type,
 			      char **dst, const char *src);
 
 ZEBRA_RES zebra_get_hit_vector(ZebraHandle zh, const char *setname, zint sysno);
 
-void zebra_term_untrans(ZebraHandle zh, int reg_type,
+void zebra_term_untrans(ZebraHandle zh, const char *index_type,
 			char *dst, const char *src);
 
 ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,

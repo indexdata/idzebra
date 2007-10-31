@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.52 2007-08-21 13:27:04 adam Exp $
+/* $Id: api.h,v 1.53 2007-10-31 16:56:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -328,14 +328,15 @@ ZEBRA_RES zebra_auth(ZebraHandle zh, const char *user, const char *pass);
 
 /** \brief Normalize zebra term for register (subject to change!)
     \param zh session handle
-    \param reg_id register ID, 'w', 'p',..
+    \param index_type "w", "p",..
     \param input_str input string buffer
     \param input_len input string length
     \param output_str output string buffer
     \param output_len output string length
 */
 YAZ_EXPORT
-int zebra_string_norm(ZebraHandle zh, unsigned reg_id, const char *input_str, 
+int zebra_string_norm(ZebraHandle zh, const char *index_type,
+                      const char *input_str, 
 		      int input_len, char *output_str, int output_len);
 
 /** \brief Creates a database

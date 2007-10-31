@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.16 2007-10-30 19:17:15 adam Exp $
+/* $Id: rpnscan.c,v 1.17 2007-10-31 16:56:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -257,7 +257,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
                 }
             }
             if (!glist[pos].term)
-                zebra_term_untrans_iconv(zh, stream->mem, *index_type,
+                zebra_term_untrans_iconv(zh, stream->mem, index_type,
                                          &glist[pos].term, term);
             glist[pos].occurrences = count;
             zebra_snippets_destroy(rec_snippets);
@@ -283,7 +283,7 @@ static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
 {
     struct scan2_info_entry *ar = nmem_malloc(nmem, sizeof(*ar) * ord_no);
     struct rpn_char_map_info rcmi;
-    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, *index_type);
+    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, index_type);
     int i, dif;
     int after_pos;
     int pos = 0;

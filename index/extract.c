@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.266 2007-10-30 19:17:15 adam Exp $
+/* $Id: extract.c,v 1.267 2007-10-31 16:56:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -67,9 +67,6 @@ static void zebra_init_log_level(void)
     }
 }
 
-static void extract_flush_record_keys(ZebraHandle zh, zint sysno,
-                                      int cmd, zebra_rec_keys_t reckeys,
-                                      zint staticrank);
 static void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
                                     int cmd, zebra_rec_keys_t skp);
 static void extract_schema_add(struct recExtractCtrl *p, Odr_oid *oid);
@@ -100,15 +97,6 @@ static void logRecord(ZebraHandle zh)
 
 static void init_extractCtrl(ZebraHandle zh, struct recExtractCtrl *ctrl)
 {
-    int i;
-    for (i = 0; i<256; i++)
-    {
-        zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, i);
-	if (zebra_maps_is_positioned(zm))
-	    ctrl->seqno[i] = 1;
-	else
-	    ctrl->seqno[i] = 0;
-    }
     ctrl->flagShowRecords = !zh->m_flag_rw;
 }
 
@@ -282,7 +270,7 @@ static void snippet_token_add(RecWord *p)
 {
     struct snip_rec_info *h = p->extractCtrl->handle;
     ZebraHandle zh = h->zh;
-    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, *p->index_type);
+    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, p->index_type);
 
     if (zm && zebra_maps_is_index(zm))
     {
@@ -1277,7 +1265,7 @@ void extract_rec_keys_log(ZebraHandle zh, int is_insert,
             zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type,
                                     0/* db */, &string_index);
             assert(index_type);
-            zebra_term_untrans_iconv(zh, nmem, *index_type,
+            zebra_term_untrans_iconv(zh, nmem, index_type,
                                      &dst_term, str);
             *keystr = '\0';
             for (i = 0; i<key.len; i++)
@@ -1444,47 +1432,6 @@ void extract_flush_record_keys2(ZebraHandle zh, zint sysno,
     yaz_log(log_level_extract, "normal=%d optimized=%d", normal, optimized);
 }
 
-void extract_flush_record_keys(ZebraHandle zh, zint sysno, int cmd,
-                               zebra_rec_keys_t reckeys,
-                               zint staticrank)
-{
-    ZebraExplainInfo zei = zh->reg->zei;
-
-    extract_rec_keys_adjust(zh, cmd, reckeys);
-
-    if (log_level_details)
-    {
-        yaz_log(log_level_details, "Keys for record " ZINT_FORMAT " %s",
-                sysno, cmd ? "insert" : "delete");
-        extract_rec_keys_log(zh, cmd, reckeys, log_level_details);
-    }
-
-    if (!zh->reg->key_block)
-    {
-	int mem = 1024*1024 * atoi( res_get_def( zh->res, "memmax", "8"));
-        const char *key_tmp_dir = res_get_def(zh->res, "keyTmpDir", ".");
-        int use_threads = atoi(res_get_def(zh->res, "threads", "1"));
-        zh->reg->key_block = key_block_create(mem, key_tmp_dir, use_threads);
-    }
-    zebraExplain_recordCountIncrement(zei, cmd ? 1 : -1);
-
-#if 0
-    yaz_log(YLOG_LOG, "sysno=" ZINT_FORMAT " cmd=%d", sysno, cmd);
-    print_rec_keys(zh, reckeys);
-#endif
-    if (zebra_rec_keys_rewind(reckeys))
-    {
-	size_t slen;
-	const char *str;
-	struct it_key key_in;
-	while(zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
-	{
-            key_block_write(zh->reg->key_block, sysno, 
-                            &key_in, cmd, str, slen,
-                            staticrank, zh->m_staticrank);
-	}
-    }
-}
 
 ZEBRA_RES zebra_rec_keys_to_snippets(ZebraHandle zh,
                                      zebra_rec_keys_t reckeys,
@@ -1510,7 +1457,7 @@ ZEBRA_RES zebra_rec_keys_to_snippets(ZebraHandle zh,
 	    zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type,
 				    0/* db */, 0 /* string_index */);
 	    assert(index_type);
-	    zebra_term_untrans_iconv(zh, nmem, *index_type,
+	    zebra_term_untrans_iconv(zh, nmem, index_type,
 				     &dst_term, str);
 	    zebra_snippets_append(snippets, seqno, 0, ord, dst_term);
 	    nmem_reset(nmem);
@@ -1541,7 +1488,7 @@ void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys)
 	    
 	    seqno = key.mem[key.len-1];
 	    
-	    zebra_term_untrans(zh, *index_type, dst_buf, str);
+	    zebra_term_untrans(zh, index_type, dst_buf, str);
 	    
 	    yaz_log(YLOG_LOG, "ord=%d seqno=" ZINT_FORMAT 
                     " term=%s", ord, seqno, dst_buf); 
@@ -1821,7 +1768,7 @@ static void extract_token_add2(RecWord *p)
 static void extract_token_add(RecWord *p)
 {
     ZebraHandle zh = p->extractCtrl->handle;
-    zebra_map_t zm = zebra_map_get_or_add(zh->reg->zebra_maps, *p->index_type);
+    zebra_map_t zm = zebra_map_get_or_add(zh->reg->zebra_maps, p->index_type);
     WRBUF wrbuf;
 
     if (log_level_details)

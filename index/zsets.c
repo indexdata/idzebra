@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.123 2007-10-29 16:57:53 adam Exp $
+/* $Id: zsets.c,v 1.124 2007-10-31 16:56:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -580,9 +580,9 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
                 char other_entry_org[1024];
                 double diff;
                 const char *index_type = criteria[j].index_type;
-                zebra_term_untrans(zh, *index_type, this_entry_org,
+                zebra_term_untrans(zh, index_type, this_entry_org,
                                    this_entry_buf);
-                zebra_term_untrans(zh, *index_type, other_entry_org,
+                zebra_term_untrans(zh, index_type, other_entry_org,
                                    other_entry_buf);
                 diff = atof(this_entry_org) - atof(other_entry_org);
                 

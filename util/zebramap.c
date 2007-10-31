@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.60 2007-10-30 19:17:15 adam Exp $
+/* $Id: zebramap.c,v 1.61 2007-10-31 16:56:15 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -37,16 +37,13 @@
 #define ZEBRA_REPLACE_ANY  300
 
 struct zebra_map {
-    unsigned reg_id;
+    const char *id;
     int completeness;
     int positioned;
     int alwaysmatches;
     int first_in_field;
     int type;
     union {
-        struct {
-            int dummy;
-        } index;
         struct {
             int entry_size;
         } sort;
@@ -63,7 +60,6 @@ struct zebra_maps_s {
     NMEM nmem;
     char temp_map_str[2];
     const char *temp_map_ptr[2];
-    struct zebra_map **lookup_array;
     WRBUF wrbuf_1;
     int no_maps;
     zebra_map_t map_list;
@@ -90,7 +86,7 @@ zebra_map_t zebra_add_map(zebra_maps_t zms, const char *index_type,
     zebra_map_t zm = (zebra_map_t) nmem_malloc(zms->nmem, sizeof(*zm));
 
     zm->zebra_maps = zms;
-    zm->reg_id = index_type[0];
+    zm->id = nmem_strdup(zms->nmem, index_type);
     zm->maptab_name = 0;
     zm->maptab = 0;
     zm->type = map_type;
@@ -199,6 +195,14 @@ ZEBRA_RES zebra_maps_read_file(zebra_maps_t zms, const char *fname)
         {
             if (zm->type == ZEBRA_MAP_TYPE_SORT)
 		zm->u.sort.entry_size = atoi(argv[1]);
+            else
+            {
+                yaz_log(YLOG_WARN, 
+                        "%s:%d: entrysize only valid in sort section",  
+                        fname, lineno);
+                failures++;
+            }
+
         }
         else
         {
@@ -209,9 +213,6 @@ ZEBRA_RES zebra_maps_read_file(zebra_maps_t zms, const char *fname)
     }
     yaz_fclose(f);
 
-    for (zm = zms->map_list; zm; zm = zm->next)
-	zms->lookup_array[zm->reg_id] = zm;
-
     if (failures)
         return ZEBRA_FAIL;
     return ZEBRA_OK;
@@ -221,7 +222,6 @@ zebra_maps_t zebra_maps_open(Res res, const char *base_path,
 			  const char *profile_path)
 {
     zebra_maps_t zms = (zebra_maps_t) xmalloc(sizeof(*zms));
-    int i;
 
     zms->nmem = nmem_create();
     zms->no_maps = 0;
@@ -238,47 +238,38 @@ zebra_maps_t zebra_maps_open(Res res, const char *base_path,
     zms->temp_map_ptr[0] = zms->temp_map_str;
     zms->temp_map_ptr[1] = NULL;
 
-    zms->lookup_array = (zebra_map_t *)
-	nmem_malloc(zms->nmem, sizeof(*zms->lookup_array)*256);
     zms->wrbuf_1 = wrbuf_alloc();
 
-    for (i = 0; i<256; i++)
-	zms->lookup_array[i] = 0;
     return zms;
 }
 
-zebra_map_t zebra_map_get(zebra_maps_t zms, unsigned reg_id)
+zebra_map_t zebra_map_get(zebra_maps_t zms, const char *id)
 {
-    assert(reg_id >= 0 && reg_id <= 255);
-    return zms->lookup_array[reg_id];
+    zebra_map_t zm;
+    for (zm = zms->map_list; zm; zm = zm->next)
+        if (!strcmp(zm->id, id))
+            break;
+    return zm;
 }
 
-zebra_map_t zebra_map_get_or_add(zebra_maps_t zms, unsigned reg_id)
+zebra_map_t zebra_map_get_or_add(zebra_maps_t zms, const char *id)
 {
-    struct zebra_map *zm = zebra_map_get(zms, reg_id);
+    struct zebra_map *zm = zebra_map_get(zms, id);
     if (!zm)
     {
-        char name[2];
-        name[0] = reg_id;
-        name[1] = '\0';
-
-        zm = zebra_add_map(zms, name, ZEBRA_MAP_TYPE_INDEX);
+        zm = zebra_add_map(zms, id, ZEBRA_MAP_TYPE_INDEX);
 	
 	/* no reason to warn if no maps are installed at ALL 
          Note that zebra_add_maps increments no_maps .. 
         */
 	if (zms->no_maps > 1)
-	    yaz_log(YLOG_WARN, "Unknown register type: %c", reg_id);
+	    yaz_log(YLOG_WARN, "Unknown register type: %s", id);
         else
             zms->no_maps = 0;
 
 	zm->maptab_name = nmem_strdup(zms->nmem, "@");
 	zm->completeness = 0;
         zm->positioned = 1;
-	zm->next = zms->map_list;
-	zms->map_list = zm->next;
-
-	zms->lookup_array[zm->reg_id & 255] = zm;
     }
     return zm;
 }
