@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.19 2007-10-31 16:56:14 adam Exp $
+/* $Id: rpnsearch.c,v 1.20 2007-11-01 14:10:03 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -835,11 +835,11 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                              const char *xpath_use,
 			     struct ord_list **ol);
 
-static ZEBRA_RES term_limits_APT(ZebraHandle zh,
-				 Z_AttributesPlusTerm *zapt,
-				 zint *hits_limit_value,
-				 const char **term_ref_id_str,
-				 NMEM nmem)
+ZEBRA_RES zebra_term_limits_APT(ZebraHandle zh,
+                                Z_AttributesPlusTerm *zapt,
+                                zint *hits_limit_value,
+                                const char **term_ref_id_str,
+                                NMEM nmem)
 {
     AttrType term_ref_id_attr;
     AttrType hits_limit_attr;
@@ -902,7 +902,8 @@ static ZEBRA_RES term_trunc(ZebraHandle zh,
     WRBUF term_dict = wrbuf_alloc();
 
     *rset = 0;
-    term_limits_APT(zh, zapt, &hits_limit_value, &term_ref_id_str, stream);
+    zebra_term_limits_APT(zh, zapt, &hits_limit_value, &term_ref_id_str,
+                          stream);
     grep_info->isam_p_indx = 0;
     res = string_term(zh, zapt, term_sub, term_dict,
                       attributeSet, stream, grep_info,
@@ -1703,7 +1704,8 @@ static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
     zint hits_limit_value;
     const char *term_ref_id_str = 0;
 
-    term_limits_APT(zh, zapt, &hits_limit_value, &term_ref_id_str, stream);
+    zebra_term_limits_APT(zh, zapt, &hits_limit_value, &term_ref_id_str,
+                          stream);
 
     yaz_log(log_level_rpn, "APT_numeric t='%s'", termz);
     if (grep_info_prepare(zh, zapt, &grep_info, index_type) == ZEBRA_FAIL)

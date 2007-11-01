@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.204 2007-10-31 16:56:14 adam Exp $
+/* $Id: index.h,v 1.205 2007-11-01 14:10:03 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -429,6 +429,12 @@ int zebra_check_res(Res res);
 #define FIRST_IN_FIELD_STR "\001^"
 #define FIRST_IN_FIELD_CHAR 1
 #define FIRST_IN_FIELD_LEN 2
+
+ZEBRA_RES zebra_term_limits_APT(ZebraHandle zh,
+                                Z_AttributesPlusTerm *zapt,
+                                zint *hits_limit_value,
+                                const char **term_ref_id_str,
+                                NMEM nmem);
 
 YAZ_END_CDECL
 

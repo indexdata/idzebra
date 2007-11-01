@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.17 2007-10-31 16:56:14 adam Exp $
+/* $Id: rpnscan.c,v 1.18 2007-11-01 14:10:03 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -81,7 +81,7 @@ static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     return ZEBRA_OK;
 }
 
-static void count_set(ZebraHandle zh, RSET rset, zint *count)
+static void count_set(ZebraHandle zh, RSET rset, zint *count, zint approx_limit)
 {
     zint psysno = 0;
     struct it_key key;
@@ -89,7 +89,7 @@ static void count_set(ZebraHandle zh, RSET rset, zint *count)
 
     yaz_log(YLOG_DEBUG, "count_set");
 
-    rset->hits_limit = zh->approx_limit;
+    rset->hits_limit = approx_limit;
 
     *count = 0;
     rfd = rset_open(rset, RSETF_READ);
@@ -187,6 +187,15 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
 {
     int i;
     RSET rset = 0;
+    zint approx_limit = zh->approx_limit;
+    AttrType global_hits_limit_attr;
+    int l;
+    attr_init_APT(&global_hits_limit_attr, zapt, 12);
+            
+    l = attr_find(&global_hits_limit_attr, NULL);
+    if (l != -1)
+        approx_limit = l;
+    
     for (i = 0; i < ord_no; i++)
     {
         if (ar[i].isam_p && strcmp(wrbuf_cstr(ar[i].term), term) == 0)
@@ -202,7 +211,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
                     wrbuf_buf(ar[i].term), wrbuf_len(ar[i].term),
                     NULL, 1, zapt->term->which, nmem, 
                     kc, kc->scope, ol, index_type, 
-                    0 /* hits_limit */,
+                    0 /* hits_limit_value */,
                     0 /* term_ref_id_str */);
             if (!rset)
                 rset = rset_t;
@@ -231,7 +240,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
             rset = rset_create_and(nmem, kc, kc->scope, 2, rsets);
         }
         /* count it */
-        count_set(zh, rset, &count);
+        count_set(zh, rset, &count, approx_limit);
 
         if (pos != -1)
         {
