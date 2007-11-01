@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.63 2007-02-07 12:08:54 adam Exp $
+## $Id: Makefile.am,v 1.64 2007-11-01 14:56:07 adam Exp $
 
 aux_libs = \
  ../rset/libidzebra-rset.la \
@@ -94,7 +94,7 @@ libidzebra_2_0_la_SOURCES = \
   orddict.c orddict.h \
   rank.h rank1.c ranksimilarity.c rankstatic.c \
   recindex.c  recindex.h recindxp.h reckeys.c reckeys.h recstat.c retrieve.c \
-  rpnscan.c rpnsearch.c sortidx.c symtab.c stream.c \
+  rpnscan.c rpnsearch.c rpnfacet.c sortidx.c symtab.c stream.c \
   update_path.c update_file.c trunc.c untrans.c isam_methods.c \
   zaptterm.c zebraapi.c zinfo.c zinfo.h zsets.c key_block.c key_block.h \
   check_res.c

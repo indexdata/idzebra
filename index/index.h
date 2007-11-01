@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.205 2007-11-01 14:10:03 adam Exp $
+/* $Id: index.h,v 1.206 2007-11-01 14:56:07 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -435,6 +435,15 @@ ZEBRA_RES zebra_term_limits_APT(ZebraHandle zh,
                                 zint *hits_limit_value,
                                 const char **term_ref_id_str,
                                 NMEM nmem);
+
+ZEBRA_RES rpn_facet(ZebraHandle zh, ODR stream, NMEM nmem,
+                    struct rset_key_control *kc,
+                    Z_AttributesPlusTerm *zapt,
+                    int *position, int *num_entries, 
+                    ZebraScanEntry **list,
+                    int *is_partial, RSET limit_set,
+                    const char *index_type,
+                    int ord_no, int *ords);
 
 YAZ_END_CDECL
 

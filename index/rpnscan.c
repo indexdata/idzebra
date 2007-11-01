@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.18 2007-11-01 14:10:03 adam Exp $
+/* $Id: rpnscan.c,v 1.19 2007-11-01 14:56:07 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -41,7 +41,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define RPN_MAX_ORDS 32
 
-int log_scan = YLOG_LOG;
+static int log_scan = YLOG_LOG;
 
 /* convert APT SCAN term to internal cmap */
 static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
@@ -280,8 +280,8 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
     }
     return 0;
 }
-        
-static ZEBRA_RES rpn_scan_ver2(ZebraHandle zh, ODR stream, NMEM nmem,
+
+static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
                                struct rset_key_control *kc,
                                Z_AttributesPlusTerm *zapt,
                                int *position, int *num_entries, 
@@ -572,9 +572,14 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     nmem = nmem_create();
     kc = zebra_key_control_create(zh);
 
-    res = rpn_scan_ver2(zh, stream, nmem, kc, zapt, position, num_entries,
+    if (sort_flag)
+        res = rpn_facet(zh, stream, nmem, kc, zapt, position, num_entries,
                         list,
                         is_partial, limit_set, index_type, ord_no, ords);
+    else
+        res = rpn_scan_norm(zh, stream, nmem, kc, zapt, position, num_entries,
+                            list,
+                            is_partial, limit_set, index_type, ord_no, ords);
     nmem_destroy(nmem);
     (*kc->dec)(kc);
     return res;
