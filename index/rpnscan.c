@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.19 2007-11-01 14:56:07 adam Exp $
+/* $Id: rpnscan.c,v 1.20 2007-11-01 16:01:33 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -40,8 +40,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/oid_db.h>
 
 #define RPN_MAX_ORDS 32
-
-static int log_scan = YLOG_LOG;
 
 /* convert APT SCAN term to internal cmap */
 static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
@@ -526,7 +524,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
             }
         }
     }
-        
+
     yaz_log(YLOG_DEBUG, "position = %d, num = %d",
 	    *position, *num_entries);
         
@@ -542,7 +540,11 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	zebra_setError(zh, YAZ_BIB1_TOO_MANY_DATABASES_SPECIFIED, 0);
         return ZEBRA_FAIL;
     }
-
+    if (sort_flag)
+    {
+        return rpn_facet(zh, stream, zapt, attributeset, position, num_entries,
+                         list, is_partial, limit_set);
+    }
     for (base_no = 0; base_no < num_bases; base_no++)
     {
 	int ord;
@@ -572,14 +574,9 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     nmem = nmem_create();
     kc = zebra_key_control_create(zh);
 
-    if (sort_flag)
-        res = rpn_facet(zh, stream, nmem, kc, zapt, position, num_entries,
+    res = rpn_scan_norm(zh, stream, nmem, kc, zapt, position, num_entries,
                         list,
                         is_partial, limit_set, index_type, ord_no, ords);
-    else
-        res = rpn_scan_norm(zh, stream, nmem, kc, zapt, position, num_entries,
-                            list,
-                            is_partial, limit_set, index_type, ord_no, ords);
     nmem_destroy(nmem);
     (*kc->dec)(kc);
     return res;

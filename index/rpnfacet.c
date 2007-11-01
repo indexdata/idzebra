@@ -1,4 +1,4 @@
-/* $Id: rpnfacet.c,v 1.1 2007-11-01 14:56:07 adam Exp $
+/* $Id: rpnfacet.c,v 1.2 2007-11-01 16:01:33 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -36,22 +36,66 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <rset.h>
 #include <yaz/oid_db.h>
 
-ZEBRA_RES rpn_facet(ZebraHandle zh, ODR stream, NMEM nmem,
-                    struct rset_key_control *kc,
-                    Z_AttributesPlusTerm *zapt,
+ZEBRA_RES rpn_facet(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
+                    const Odr_oid *attributeset,
                     int *position, int *num_entries, 
-                    ZebraScanEntry **list,
-                    int *is_partial, RSET limit_set,
-                    const char *index_type,
-                    int ord_no, int *ords)
+                    ZebraScanEntry **list, int *is_partial, RSET rset)
 {
-    /* for each ord .. */
-    /*   check that sort idx exist for ord */
-    /*   sweep through result set and sort_idx at the same time */
-    zebra_setError(zh, YAZ_BIB1_TEMPORARY_SYSTEM_ERROR, 
-                   "facet not implemented");
-                
-    return ZEBRA_FAIL;
+    int ord;
+    ZEBRA_RES res = zebra_attr_list_get_ord(zh,
+                                            zapt->attributes,
+                                            zinfo_index_category_sort,
+                                            0 /* index_type */,
+                                            attributeset, &ord);
+    if (res != ZEBRA_OK)
+        return res;
+    else
+    {
+        const char *index_type = 0;
+        const char *db = 0;
+        const char *string_index = 0;
+        /* for each ord .. */
+        /*   check that sort idx exist for ord */
+        /*   sweep through result set and sort_idx at the same time */
+        char *this_entry_buf = xmalloc(SORT_IDX_ENTRYSIZE);
+        char *dst_buf = xmalloc(SORT_IDX_ENTRYSIZE);
+        size_t sysno_mem_index = 0;
+        
+        zint p_this_sys = 0;
+        RSFD rfd;
+        TERMID termid;
+        struct it_key key;
+
+        if (zebraExplain_lookup_ord(zh->reg->zei,
+                                    ord, &index_type, &db, &string_index))
+        {
+            yaz_log(YLOG_WARN, "zebraExplain_lookup_ord failed");
+        }
+        
+        if (zh->m_staticrank)
+            sysno_mem_index = 1;
+        
+        rfd = rset_open(rset, RSETF_READ);
+        while (rset_read(rfd, &key, &termid))
+        {
+            zint sysno = key.mem[sysno_mem_index];
+            if (sysno != p_this_sys)
+            {
+                p_this_sys = sysno;
+                zebra_sort_sysno(zh->reg->sort_index, sysno);
+                zebra_sort_type(zh->reg->sort_index, ord);
+                zebra_sort_read(zh->reg->sort_index, this_entry_buf);
+
+                zebra_term_untrans(zh, index_type, dst_buf, this_entry_buf);
+                yaz_log(YLOG_LOG, "dst_buf=%s", dst_buf);
+            }
+        }
+        rset_close(rfd);
+        xfree(this_entry_buf);
+        xfree(dst_buf);
+        zebra_setError(zh, YAZ_BIB1_TEMPORARY_SYSTEM_ERROR, "facet not done");
+        return ZEBRA_FAIL;
+    }
 }
 
 /*
