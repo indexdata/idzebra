@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.61 2007-10-31 16:56:15 adam Exp $
+/* $Id: zebramap.c,v 1.62 2007-11-05 11:27:24 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -63,7 +63,7 @@ struct zebra_maps_s {
     WRBUF wrbuf_1;
     int no_maps;
     zebra_map_t map_list;
-    zebra_map_t *last_map;
+    zebra_map_t last_map;
 };
 
 void zebra_maps_close(zebra_maps_t zms)
@@ -95,13 +95,109 @@ zebra_map_t zebra_add_map(zebra_maps_t zms, const char *index_type,
     zm->alwaysmatches = 0;
     zm->first_in_field = 0;
 
+    if (zms->last_map)
+        zms->last_map->next = zm;
+    else
+        zms->map_list = zm;
+    zms->last_map = zm;
     zm->next = 0;
-    *zms->last_map = zm;
-    zms->last_map = &zm->next;
 
     zms->no_maps++;
 
     return zm;
+}
+
+static int parse_command(zebra_maps_t zms, int argc, char **argv,
+                         const char *fname, int lineno)
+{
+    zebra_map_t zm = zms->last_map;
+    if (argc == 1)
+    {
+        yaz_log(YLOG_WARN, "%s:%d: Missing arguments for '%s'",
+                fname, lineno, argv[0]);
+        return -1;
+    }
+    if (argc > 2)
+    {
+        yaz_log(YLOG_WARN, "%s:%d: Too many arguments for '%s'",
+                fname, lineno, argv[0]);
+        return -1;
+    }
+    if (!yaz_matchstr(argv[0], "index"))
+    {
+        zm = zebra_add_map(zms, argv[1], ZEBRA_MAP_TYPE_INDEX);
+        zm->positioned = 1;
+    }
+    else if (!yaz_matchstr(argv[0], "sort"))
+    {
+        zm = zebra_add_map(zms, argv[1], ZEBRA_MAP_TYPE_SORT);
+        zm->u.sort.entry_size = 80;
+    }
+    else if (!yaz_matchstr(argv[0], "staticrank"))
+    {
+        zm = zebra_add_map(zms, argv[1], ZEBRA_MAP_TYPE_STATICRANK);
+        zm->completeness = 1;
+    }
+    else if (!zm)
+    {
+        yaz_log(YLOG_WARN, "%s:%d: Missing sort/index before '%s'",  
+                fname, lineno, argv[0]);
+        return -1;
+    }
+    else if (!yaz_matchstr(argv[0], "charmap") && argc == 2)
+    {
+        if (zm->type != ZEBRA_MAP_TYPE_STATICRANK)
+            zm->maptab_name = nmem_strdup(zms->nmem, argv[1]);
+        else
+        {
+            yaz_log(YLOG_WARN|YLOG_FATAL, "%s:%d: charmap for "
+                    "staticrank is invalid", fname, lineno);
+            yaz_log(YLOG_LOG, "Type is %d", zm->type);
+            return -1;
+        }
+    }
+    else if (!yaz_matchstr(argv[0], "completeness") && argc == 2)
+    {
+        zm->completeness = atoi(argv[1]);
+    }
+    else if (!yaz_matchstr(argv[0], "position") && argc == 2)
+    {
+        zm->positioned = atoi(argv[1]);
+    }
+    else if (!yaz_matchstr(argv[0], "alwaysmatches") && argc == 2)
+    {
+        if (zm->type != ZEBRA_MAP_TYPE_STATICRANK)
+            zm->alwaysmatches = atoi(argv[1]);
+        else
+        {
+            yaz_log(YLOG_WARN|YLOG_FATAL, "%s:%d: alwaysmatches for "
+                    "staticrank is invalid", fname, lineno);
+            return -1;
+        }
+    }
+    else if (!yaz_matchstr(argv[0], "firstinfield") && argc == 2)
+    {
+        zm->first_in_field = atoi(argv[1]);
+    }
+    else if (!yaz_matchstr(argv[0], "entrysize") && argc == 2)
+    {
+        if (zm->type == ZEBRA_MAP_TYPE_SORT)
+            zm->u.sort.entry_size = atoi(argv[1]);
+        else
+        {
+            yaz_log(YLOG_WARN, 
+                    "%s:%d: entrysize only valid in sort section",  
+                    fname, lineno);
+            return -1;
+        }
+    }
+    else
+    {
+        yaz_log(YLOG_WARN, "%s:%d: Unrecognized directive '%s'",  
+                fname, lineno, argv[0]);
+        return -1;
+    }
+    return 0;
 }
 
 ZEBRA_RES zebra_maps_read_file(zebra_maps_t zms, const char *fname)
@@ -112,7 +208,6 @@ ZEBRA_RES zebra_maps_read_file(zebra_maps_t zms, const char *fname)
     int argc;
     int lineno = 0;
     int failures = 0;
-    zebra_map_t zm = 0;
 
     if (!(f = yaz_fopen(zms->tabpath, fname, "r", zms->tabroot)))
     {
@@ -121,95 +216,9 @@ ZEBRA_RES zebra_maps_read_file(zebra_maps_t zms, const char *fname)
     }
     while ((argc = readconf_line(f, &lineno, line, 512, argv, 10)))
     {
-        if (argc == 1)
-        {
-            yaz_log(YLOG_WARN, "%s:%d: Missing arguments for '%s'",
-                    fname, lineno, argv[0]);
+        int r = parse_command(zms, argc, argv, fname, lineno);
+        if (r)
             failures++;
-            break;
-        }
-        if (argc > 2)
-        {
-            yaz_log(YLOG_WARN, "%s:%d: Too many arguments for '%s'",
-                    fname, lineno, argv[0]);
-            failures++;
-            break;
-        }
-	if (!yaz_matchstr(argv[0], "index"))
-	{
-            zm = zebra_add_map(zms, argv[1], ZEBRA_MAP_TYPE_INDEX);
-	    zm->positioned = 1;
-	}
-	else if (!yaz_matchstr(argv[0], "sort"))
-	{
-	    zm = zebra_add_map(zms, argv[1], ZEBRA_MAP_TYPE_SORT);
-            zm->u.sort.entry_size = 80;
-	}
-	else if (!yaz_matchstr(argv[0], "staticrank"))
-	{
-	    zm = zebra_add_map(zms, argv[1], ZEBRA_MAP_TYPE_STATICRANK);
-	    zm->completeness = 1;
-	}
-        else if (!zm)
-        {
-            yaz_log(YLOG_WARN, "%s:%d: Missing sort/index before '%s'",  
-                    fname, lineno, argv[0]);
-            failures++;
-        }
-	else if (!yaz_matchstr(argv[0], "charmap") && argc == 2)
-	{
-            if (zm->type != ZEBRA_MAP_TYPE_STATICRANK)
-                zm->maptab_name = nmem_strdup(zms->nmem, argv[1]);
-            else
-            {
-                yaz_log(YLOG_WARN|YLOG_FATAL, "%s:%d: charmap for "
-                        "staticrank is invalid", fname, lineno);
-                yaz_log(YLOG_LOG, "Type is %d", zm->type);
-                failures++;
-            }
-	}
-	else if (!yaz_matchstr(argv[0], "completeness") && argc == 2)
-	{
-	    zm->completeness = atoi(argv[1]);
-	}
-	else if (!yaz_matchstr(argv[0], "position") && argc == 2)
-	{
-	    zm->positioned = atoi(argv[1]);
-	}
-	else if (!yaz_matchstr(argv[0], "alwaysmatches") && argc == 2)
-	{
-            if (zm->type != ZEBRA_MAP_TYPE_STATICRANK)
-                zm->alwaysmatches = atoi(argv[1]);
-            else
-            {
-                yaz_log(YLOG_WARN|YLOG_FATAL, "%s:%d: alwaysmatches for "
-                        "staticrank is invalid", fname, lineno);
-                failures++;
-            }
-	}
-	else if (!yaz_matchstr(argv[0], "firstinfield") && argc == 2)
-	{
-	    zm->first_in_field = atoi(argv[1]);
-	}
-        else if (!yaz_matchstr(argv[0], "entrysize") && argc == 2)
-        {
-            if (zm->type == ZEBRA_MAP_TYPE_SORT)
-		zm->u.sort.entry_size = atoi(argv[1]);
-            else
-            {
-                yaz_log(YLOG_WARN, 
-                        "%s:%d: entrysize only valid in sort section",  
-                        fname, lineno);
-                failures++;
-            }
-
-        }
-        else
-        {
-            yaz_log(YLOG_WARN, "%s:%d: Unrecognized directive '%s'",  
-                    fname, lineno, argv[0]);
-            failures++;
-        }
     }
     yaz_fclose(f);
 
@@ -219,7 +228,7 @@ ZEBRA_RES zebra_maps_read_file(zebra_maps_t zms, const char *fname)
 }
 
 zebra_maps_t zebra_maps_open(Res res, const char *base_path,
-			  const char *profile_path)
+                             const char *profile_path)
 {
     zebra_maps_t zms = (zebra_maps_t) xmalloc(sizeof(*zms));
 
@@ -230,7 +239,7 @@ zebra_maps_t zebra_maps_open(Res res, const char *base_path,
     if (base_path)
         zms->tabroot = nmem_strdup(zms->nmem, base_path);
     zms->map_list = 0;
-    zms->last_map = &zms->map_list;
+    zms->last_map = 0;
 
     zms->temp_map_str[0] = '\0';
     zms->temp_map_str[1] = '\0';
