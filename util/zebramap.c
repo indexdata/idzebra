@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.62 2007-11-05 11:27:24 adam Exp $
+/* $Id: zebramap.c,v 1.63 2007-11-05 11:36:23 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -61,7 +61,7 @@ struct zebra_maps_s {
     char temp_map_str[2];
     const char *temp_map_ptr[2];
     WRBUF wrbuf_1;
-    int no_maps;
+    int no_files_read;
     zebra_map_t map_list;
     zebra_map_t last_map;
 };
@@ -101,8 +101,6 @@ zebra_map_t zebra_add_map(zebra_maps_t zms, const char *index_type,
         zms->map_list = zm;
     zms->last_map = zm;
     zm->next = 0;
-
-    zms->no_maps++;
 
     return zm;
 }
@@ -224,6 +222,8 @@ ZEBRA_RES zebra_maps_read_file(zebra_maps_t zms, const char *fname)
 
     if (failures)
         return ZEBRA_FAIL;
+
+    (zms->no_files_read)++;
     return ZEBRA_OK;
 }
 
@@ -233,7 +233,6 @@ zebra_maps_t zebra_maps_open(Res res, const char *base_path,
     zebra_maps_t zms = (zebra_maps_t) xmalloc(sizeof(*zms));
 
     zms->nmem = nmem_create();
-    zms->no_maps = 0;
     zms->tabpath = profile_path ? nmem_strdup(zms->nmem, profile_path) : 0;
     zms->tabroot = 0;
     if (base_path)
@@ -249,6 +248,7 @@ zebra_maps_t zebra_maps_open(Res res, const char *base_path,
 
     zms->wrbuf_1 = wrbuf_alloc();
 
+    zms->no_files_read = 0;
     return zms;
 }
 
@@ -268,13 +268,9 @@ zebra_map_t zebra_map_get_or_add(zebra_maps_t zms, const char *id)
     {
         zm = zebra_add_map(zms, id, ZEBRA_MAP_TYPE_INDEX);
 	
-	/* no reason to warn if no maps are installed at ALL 
-         Note that zebra_add_maps increments no_maps .. 
-        */
-	if (zms->no_maps > 1)
+	/* no reason to warn if no maps are read from file */
+	if (zms->no_files_read)
 	    yaz_log(YLOG_WARN, "Unknown register type: %s", id);
-        else
-            zms->no_maps = 0;
 
 	zm->maptab_name = nmem_strdup(zms->nmem, "@");
 	zm->completeness = 0;
