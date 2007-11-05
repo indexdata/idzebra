@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.63 2007-11-05 11:36:23 adam Exp $
+/* $Id: zebramap.c,v 1.64 2007-11-05 13:58:01 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -28,6 +28,9 @@
 #include <attrfind.h>
 #include <yaz/yaz-util.h>
 
+#if HAVE_ICU
+#include <yaz/icu_I18N.h>
+#endif
 #include <zebramap.h>
 
 #define ZEBRA_MAP_TYPE_SORT  1
@@ -50,7 +53,14 @@ struct zebra_map {
     } u;
     chrmaptab maptab;
     const char *maptab_name;
+    const char *locale;
     zebra_maps_t zebra_maps;
+#if YAZ_HAVE_XML2
+    xmlDocPtr doc;
+#endif
+#if HAVE_ICU
+    struct icu_chain *icu_chain;
+#endif
     struct zebra_map *next;
 };
 
@@ -73,6 +83,13 @@ void zebra_maps_close(zebra_maps_t zms)
     {
 	if (zm->maptab)
 	    chrmaptab_destroy(zm->maptab);
+#if HAVE_ICU
+        if (zm->icu_chain)
+            icu_chain_destroy(zm->icu_chain);
+#endif
+#if YAZ_HAVE_XML2
+        xmlFreeDoc(zm->doc);
+#endif
 	zm = zm->next;
     }
     wrbuf_destroy(zms->wrbuf_1);
@@ -88,6 +105,7 @@ zebra_map_t zebra_add_map(zebra_maps_t zms, const char *index_type,
     zm->zebra_maps = zms;
     zm->id = nmem_strdup(zms->nmem, index_type);
     zm->maptab_name = 0;
+    zm->locale = 0;
     zm->maptab = 0;
     zm->type = map_type;
     zm->completeness = 0;
@@ -101,7 +119,12 @@ zebra_map_t zebra_add_map(zebra_maps_t zms, const char *index_type,
         zms->map_list = zm;
     zms->last_map = zm;
     zm->next = 0;
-
+#if HAVE_ICU
+    zm->icu_chain = 0;
+#endif
+#if YAZ_HAVE_XML2
+    zm->doc = 0;
+#endif
     return zm;
 }
 
@@ -188,6 +211,46 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
                     fname, lineno);
             return -1;
         }
+    }
+    else if (!yaz_matchstr(argv[0], "locale"))
+    {
+        zm->locale = nmem_strdup(zms->nmem, argv[1]);
+    }
+    else if (!yaz_matchstr(argv[0], "icuchain"))
+    {
+#if YAZ_HAVE_XML2
+        zm->doc = xmlParseFile(argv[1]);
+        if (!zm->doc)
+        {
+            yaz_log(YLOG_WARN, "%s:%d: Could not load icuchain config '%s'",
+                    fname, lineno, argv[1]);
+            return -1;
+        }
+        else
+        {
+#if HAVE_ICU
+            UErrorCode status;
+            xmlNode *xml_node = xmlDocGetRootElement(zm->doc);
+            zm->icu_chain = 
+                icu_chain_xml_config(xml_node, zm->locale, 
+                                     zm->type == ZEBRA_MAP_TYPE_SORT,
+                                     &status);
+            if (!zm->icu_chain)
+            {
+                yaz_log(YLOG_WARN, "%s:%d: Failed to load ICU chain %s",
+                        fname, lineno, argv[1]);
+            }
+#else
+            yaz_log(YLOG_WARN, "%s:%d: ICU support unavailable",
+                    fname, lineno);
+            return -1;
+#endif
+        }
+#else
+        yaz_log(YLOG_WARN, "%s:%d: XML support unavailable",
+                fname, lineno);
+        return -1;
+#endif
     }
     else
     {
