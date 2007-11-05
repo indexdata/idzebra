@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.262 2007-10-31 16:56:14 adam Exp $
+/* $Id: zebraapi.c,v 1.263 2007-11-05 11:20:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1251,7 +1251,6 @@ ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		     const char *setname)
 {
     ZEBRA_RES res;
-    RSET limit_rset = 0;
 
     ZEBRA_CHECK_HANDLE(zh);
 
@@ -1269,21 +1268,10 @@ ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	*num_entries = 0;
 	return ZEBRA_FAIL;
     }
-    if (setname)
-    {
-	limit_rset = resultSetRef(zh, setname);
-	if (!limit_rset)
-	{
-	    zebra_setError(zh, 
-			   YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST,
-			   setname);
-	    zebra_end_read (zh);
-	    return ZEBRA_FAIL;
-	}
-    }
+
     res = rpn_scan(zh, stream, zapt, attributeset,
                    zh->num_basenames, zh->basenames, position,
-                   num_entries, entries, is_partial, limit_rset);
+                   num_entries, entries, is_partial, setname);
     zebra_end_read(zh);
     return res;
 }

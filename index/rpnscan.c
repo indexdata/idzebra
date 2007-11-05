@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.20 2007-11-01 16:01:33 adam Exp $
+/* $Id: rpnscan.c,v 1.21 2007-11-05 11:20:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -471,7 +471,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		   const Odr_oid *attributeset,
 		   int num_bases, char **basenames,
 		   int *position, int *num_entries, ZebraScanEntry **list,
-		   int *is_partial, RSET limit_set)
+		   int *is_partial, const char *set_name)
 {
     int base_no;
     int ords[RPN_MAX_ORDS], ord_no = 0;
@@ -484,6 +484,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     NMEM nmem;
     ZEBRA_RES res;
     struct rset_key_control *kc = 0;
+    RSET limit_set = 0;
 
     *list = 0;
     *is_partial = 0;
@@ -491,37 +492,38 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     if (!attributeset)
         attributeset = yaz_oid_attset_bib_1;
 
-    if (!limit_set) /* no limit set given already */
+    if (!set_name)
     {
         /* see if there is a @attr 8=set */
         AttrType termset;
         int termset_value_numeric;
-        const char *termset_value_string;
+        const char *termset_value_string = 0;
         attr_init_APT(&termset, zapt, 8);
         termset_value_numeric =
             attr_find_ex(&termset, NULL, &termset_value_string);
         if (termset_value_numeric != -1)
         {
-            char resname[32];
-            const char *termset_name = 0;
-            
             if (termset_value_numeric != -2)
             {
+                char resname[32];
                 sprintf(resname, "%d", termset_value_numeric);
-                termset_name = resname;
+                set_name = odr_strdup(stream, resname); 
             }
             else
-                termset_name = termset_value_string;
-            
-            limit_set = resultSetRef(zh, termset_name);
+                set_name = odr_strdup(stream, termset_value_string);
+        }
+    }
 
-            if (!limit_set)
-            {
-                zebra_setError(zh, 
-                               YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST,
-                               termset_name);
-                return ZEBRA_FAIL;
-            }
+    if (set_name)
+    {
+        limit_set = resultSetRef(zh, set_name);
+        
+        if (!limit_set)
+        {
+            zebra_setError(zh, 
+                           YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST,
+                           set_name);
+            return ZEBRA_FAIL;
         }
     }
 
@@ -543,7 +545,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     if (sort_flag)
     {
         return rpn_facet(zh, stream, zapt, attributeset, position, num_entries,
-                         list, is_partial, limit_set);
+                         list, is_partial, set_name);
     }
     for (base_no = 0; base_no < num_bases; base_no++)
     {
@@ -575,8 +577,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     kc = zebra_key_control_create(zh);
 
     res = rpn_scan_norm(zh, stream, nmem, kc, zapt, position, num_entries,
-                        list,
-                        is_partial, limit_set, index_type, ord_no, ords);
+                        list, is_partial, limit_set,
+                        index_type, ord_no, ords);
     nmem_destroy(nmem);
     (*kc->dec)(kc);
     return res;

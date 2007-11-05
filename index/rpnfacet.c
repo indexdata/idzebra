@@ -1,4 +1,4 @@
-/* $Id: rpnfacet.c,v 1.2 2007-11-01 16:01:33 adam Exp $
+/* $Id: rpnfacet.c,v 1.3 2007-11-05 11:20:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -39,9 +39,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ZEBRA_RES rpn_facet(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                     const Odr_oid *attributeset,
                     int *position, int *num_entries, 
-                    ZebraScanEntry **list, int *is_partial, RSET rset)
+                    ZebraScanEntry **list, int *is_partial, 
+                    const char *set_name)
 {
     int ord;
+    int use_sort_idx = 1;
     ZEBRA_RES res = zebra_attr_list_get_ord(zh,
                                             zapt->attributes,
                                             zinfo_index_category_sort,
@@ -49,7 +51,7 @@ ZEBRA_RES rpn_facet(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                                             attributeset, &ord);
     if (res != ZEBRA_OK)
         return res;
-    else
+    else if (use_sort_idx)
     {
         const char *index_type = 0;
         const char *db = 0;
@@ -60,7 +62,7 @@ ZEBRA_RES rpn_facet(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         char *this_entry_buf = xmalloc(SORT_IDX_ENTRYSIZE);
         char *dst_buf = xmalloc(SORT_IDX_ENTRYSIZE);
         size_t sysno_mem_index = 0;
-        
+        RSET rset = resultSetRef(zh, set_name);
         zint p_this_sys = 0;
         RSFD rfd;
         TERMID termid;
@@ -93,7 +95,36 @@ ZEBRA_RES rpn_facet(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         rset_close(rfd);
         xfree(this_entry_buf);
         xfree(dst_buf);
-        zebra_setError(zh, YAZ_BIB1_TEMPORARY_SYSTEM_ERROR, "facet not done");
+        zebra_setError(zh, YAZ_BIB1_TEMPORARY_SYSTEM_ERROR, "facet not done1");
+        return ZEBRA_FAIL;
+    }
+    else
+    {
+        int num = 100; /* to be customizable */
+        int i;
+
+        ZebraMetaRecord *meta = zebra_meta_records_create_range(
+            zh, set_name, 0, num);
+
+        for (i = 0; i < num; i++)
+        {
+            zint sysno = meta[i].sysno;
+            Record rec = rec_get(zh->reg->records, sysno);
+            if (!rec)
+            {
+                yaz_log(YLOG_WARN, "rec_get fail on sysno=" ZINT_FORMAT,
+                        sysno);
+                break;
+            }
+            else
+            {
+                
+
+                rec_free(&rec);
+            }
+        }
+        zebra_meta_records_destroy(zh, meta, num);
+        zebra_setError(zh, YAZ_BIB1_TEMPORARY_SYSTEM_ERROR, "facet not done2");
         return ZEBRA_FAIL;
     }
 }
