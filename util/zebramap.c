@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.64 2007-11-05 13:58:01 adam Exp $
+/* $Id: zebramap.c,v 1.65 2007-11-06 10:30:02 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -46,6 +46,7 @@ struct zebra_map {
     int alwaysmatches;
     int first_in_field;
     int type;
+    int use_chain;
     union {
         struct {
             int entry_size;
@@ -61,6 +62,8 @@ struct zebra_map {
 #if HAVE_ICU
     struct icu_chain *icu_chain;
 #endif
+    WRBUF simple_buf;
+    size_t simple_off;
     struct zebra_map *next;
 };
 
@@ -90,6 +93,7 @@ void zebra_maps_close(zebra_maps_t zms)
 #if YAZ_HAVE_XML2
         xmlFreeDoc(zm->doc);
 #endif
+        wrbuf_destroy(zm->simple_buf);
 	zm = zm->next;
     }
     wrbuf_destroy(zms->wrbuf_1);
@@ -105,6 +109,7 @@ zebra_map_t zebra_add_map(zebra_maps_t zms, const char *index_type,
     zm->zebra_maps = zms;
     zm->id = nmem_strdup(zms->nmem, index_type);
     zm->maptab_name = 0;
+    zm->use_chain = 0;
     zm->locale = 0;
     zm->maptab = 0;
     zm->type = map_type;
@@ -125,6 +130,7 @@ zebra_map_t zebra_add_map(zebra_maps_t zms, const char *index_type,
 #if YAZ_HAVE_XML2
     zm->doc = 0;
 #endif
+    zm->simple_buf = wrbuf_alloc();
     return zm;
 }
 
@@ -216,9 +222,20 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
     {
         zm->locale = nmem_strdup(zms->nmem, argv[1]);
     }
+    else if (!yaz_matchstr(argv[0], "simplechain"))
+    {
+        zm->use_chain = 1;
+        zm->icu_chain = 0;
+    }
     else if (!yaz_matchstr(argv[0], "icuchain"))
     {
 #if YAZ_HAVE_XML2
+        if (!zm->locale)
+        {
+            yaz_log(YLOG_WARN, "%s:%d: locale required before icuchain", 
+                    fname, lineno);
+            return -1;
+        }
         zm->doc = xmlParseFile(argv[1]);
         if (!zm->doc)
         {
@@ -240,6 +257,7 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
                 yaz_log(YLOG_WARN, "%s:%d: Failed to load ICU chain %s",
                         fname, lineno, argv[1]);
             }
+            zm->use_chain = 1;
 #else
             yaz_log(YLOG_WARN, "%s:%d: ICU support unavailable",
                     fname, lineno);
@@ -586,6 +604,64 @@ WRBUF zebra_replace(zebra_map_t zm, const char *ex_list,
     wrbuf_write(zm->zebra_maps->wrbuf_1, input_str, input_len);
     return zm->zebra_maps->wrbuf_1;
 }
+
+#define SE_CHARS ";,.()-/?<> \r\n\t"
+
+static int tokenize_simple(zebra_map_t zm,
+                           const char **result_buf, size_t *result_len)
+{
+    char *buf = wrbuf_buf(zm->simple_buf);
+    size_t len = wrbuf_len(zm->simple_buf);
+    size_t i = zm->simple_off;
+    size_t start;
+
+    while (i < len && strchr(SE_CHARS, buf[i]))
+        i++;
+    start = i;
+    while (i < len && !strchr(SE_CHARS, buf[i]))
+    {
+        if (buf[i] > 32 && buf[i] < 127)
+            buf[i] = tolower(buf[i]);
+        i++;
+    }
+
+    zm->simple_off = i;
+    if (start != i)
+    {
+        *result_buf = buf + start;
+        *result_len = i - start;
+        return 1;
+    }
+    return 0;
+ }
+
+int zebra_map_tokenize(zebra_map_t zm,
+                       const char *buf, size_t len,
+                       const char **result_buf, size_t *result_len)
+{
+    assert(zm->use_chain);
+    if (!zm->icu_chain)
+    {
+        if (buf)
+        {
+            wrbuf_rewind(zm->simple_buf);
+            wrbuf_write(zm->simple_buf, buf, len);
+            zm->simple_off = 0;
+        }
+        return tokenize_simple(zm, result_buf, result_len);
+    }
+    return 0;
+}
+
+int zebra_maps_is_icu(zebra_map_t zm)
+{
+#if HAVE_ICU
+    return zm->use_chain;
+#else
+    return 0;
+#endif
+}
+
 
 /*
  * Local variables:

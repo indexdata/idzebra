@@ -1,4 +1,4 @@
-/* $Id: t17.c,v 1.1 2007-10-29 13:43:58 adam Exp $
+/* $Id: t17.c,v 1.2 2007-11-06 10:29:59 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -43,8 +43,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=title notfound", 0));
 
     /* we should get 3 hits. But 0 for now */
-#if 0
-
+#if 1
     YAZ_CHECK(tl_query(zh, "@attr 1=title title", 3));
 #else
     YAZ_CHECK(tl_query(zh, "@attr 1=title title", 0));
