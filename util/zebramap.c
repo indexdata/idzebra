@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.66 2007-11-07 10:24:28 adam Exp $
+/* $Id: zebramap.c,v 1.67 2007-11-07 11:22:58 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -225,7 +225,9 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
     else if (!yaz_matchstr(argv[0], "simplechain"))
     {
         zm->use_chain = 1;
+#if HAVE_ICU
         zm->icu_chain = 0;
+#endif
     }
     else if (!yaz_matchstr(argv[0], "icuchain"))
     {
@@ -653,6 +655,7 @@ int zebra_map_tokenize(zebra_map_t zm,
         zm->simple_off = 0;
     }
 
+#if HAVE_ICU
     if (!zm->icu_chain)
         return tokenize_simple(zm, result_buf, result_len);
     else
@@ -679,6 +682,9 @@ int zebra_map_tokenize(zebra_map_t zm,
         assert(U_SUCCESS(status));
     }
     return 0;
+#else
+    return tokenize_simple(zm, result_buf, result_len);
+#endif
 }
 
 int zebra_maps_is_icu(zebra_map_t zm)
