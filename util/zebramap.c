@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.65 2007-11-06 10:30:02 adam Exp $
+/* $Id: zebramap.c,v 1.66 2007-11-07 10:24:28 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -250,7 +250,12 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
             xmlNode *xml_node = xmlDocGetRootElement(zm->doc);
             zm->icu_chain = 
                 icu_chain_xml_config(xml_node, zm->locale, 
+/* not sure about sort for this function yet.. */
+#if 1
+                                     1,
+#else
                                      zm->type == ZEBRA_MAP_TYPE_SORT,
+#endif                                    
                                      &status);
             if (!zm->icu_chain)
             {
@@ -640,15 +645,38 @@ int zebra_map_tokenize(zebra_map_t zm,
                        const char **result_buf, size_t *result_len)
 {
     assert(zm->use_chain);
-    if (!zm->icu_chain)
+
+    if (buf)
     {
+        wrbuf_rewind(zm->simple_buf);
+        wrbuf_write(zm->simple_buf, buf, len);
+        zm->simple_off = 0;
+    }
+
+    if (!zm->icu_chain)
+        return tokenize_simple(zm, result_buf, result_len);
+    else
+    {
+        UErrorCode status;
         if (buf)
         {
-            wrbuf_rewind(zm->simple_buf);
-            wrbuf_write(zm->simple_buf, buf, len);
-            zm->simple_off = 0;
+            yaz_log(YLOG_LOG, "assicn_cstr %s", wrbuf_cstr(zm->simple_buf)); 
+            icu_chain_assign_cstr(zm->icu_chain,
+                                  wrbuf_cstr(zm->simple_buf),
+                                  &status);
+            assert(U_SUCCESS(status));
         }
-        return tokenize_simple(zm, result_buf, result_len);
+        while (icu_chain_next_token(zm->icu_chain, &status))
+        {
+            assert(U_SUCCESS(status));
+            *result_buf = icu_chain_token_norm(zm->icu_chain);
+            assert(*result_buf);
+            yaz_log(YLOG_LOG, "got result %s", *result_buf);
+            *result_len = strlen(*result_buf);
+            if (**result_buf != '\0')
+                return 1;
+        }
+        assert(U_SUCCESS(status));
     }
     return 0;
 }

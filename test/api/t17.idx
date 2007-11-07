@@ -1,5 +1,5 @@
 # Zebra indexes as referred to from the *.abs-files.
-#  $Id: t17.idx,v 1.1 2007-11-06 10:30:00 adam Exp $
+#  $Id: t17.idx,v 1.2 2007-11-07 10:24:28 adam Exp $
 #
 
 # Traditional word index
@@ -10,7 +10,9 @@ completeness 0
 position 1
 alwaysmatches 1
 firstinfield 1
-simplechain dummy
+locale en
+# simplechain dummy
+icuchain words-icu.xml
 
 # Phrase index
 # Used if completeness is 'complete {sub}field' (@attr 6=2, @attr 6=1)
@@ -18,37 +20,6 @@ simplechain dummy
 index p
 completeness 1
 charmap string.chr
-
-# URX (URL) index
-# Used if structure=urx (@attr 4=104)
-index u
-completeness 0
-charmap urx.chr
-
-# Numeric index
-# Used if structure=numeric (@attr 4=109)
-index n
-completeness 0
-charmap numeric.chr
-
-# Null map index (no mapping at all)
-# Used if structure=key (@attr 4=3)
-index 0
-completeness 0
-position 1
-charmap @
-
-# Year
-# Used if structure=year (@attr 4=4)
-index y
-completeness 0
-charmap @
-
-# Date
-# Used if structure=date (@attr 4=5)
-index d
-completeness 0
-charmap @
 
 # Sort register
 sort s
