@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.67 2007-11-07 11:22:58 adam Exp $
+/* $Id: zebramap.c,v 1.68 2007-11-08 08:18:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -28,7 +28,7 @@
 #include <attrfind.h>
 #include <yaz/yaz-util.h>
 
-#if HAVE_ICU
+#if YAZ_HAVE_ICU
 #include <yaz/icu_I18N.h>
 #endif
 #include <zebramap.h>
@@ -59,7 +59,7 @@ struct zebra_map {
 #if YAZ_HAVE_XML2
     xmlDocPtr doc;
 #endif
-#if HAVE_ICU
+#if YAZ_HAVE_ICU
     struct icu_chain *icu_chain;
 #endif
     WRBUF simple_buf;
@@ -86,7 +86,7 @@ void zebra_maps_close(zebra_maps_t zms)
     {
 	if (zm->maptab)
 	    chrmaptab_destroy(zm->maptab);
-#if HAVE_ICU
+#if YAZ_HAVE_ICU
         if (zm->icu_chain)
             icu_chain_destroy(zm->icu_chain);
 #endif
@@ -124,7 +124,7 @@ zebra_map_t zebra_add_map(zebra_maps_t zms, const char *index_type,
         zms->map_list = zm;
     zms->last_map = zm;
     zm->next = 0;
-#if HAVE_ICU
+#if YAZ_HAVE_ICU
     zm->icu_chain = 0;
 #endif
 #if YAZ_HAVE_XML2
@@ -225,7 +225,7 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
     else if (!yaz_matchstr(argv[0], "simplechain"))
     {
         zm->use_chain = 1;
-#if HAVE_ICU
+#if YAZ_HAVE_ICU
         zm->icu_chain = 0;
 #endif
     }
@@ -247,7 +247,7 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
         }
         else
         {
-#if HAVE_ICU
+#if YAZ_HAVE_ICU
             UErrorCode status;
             xmlNode *xml_node = xmlDocGetRootElement(zm->doc);
             zm->icu_chain = 
@@ -655,7 +655,7 @@ int zebra_map_tokenize(zebra_map_t zm,
         zm->simple_off = 0;
     }
 
-#if HAVE_ICU
+#if YAZ_HAVE_ICU
     if (!zm->icu_chain)
         return tokenize_simple(zm, result_buf, result_len);
     else
@@ -689,7 +689,7 @@ int zebra_map_tokenize(zebra_map_t zm,
 
 int zebra_maps_is_icu(zebra_map_t zm)
 {
-#if HAVE_ICU
+#if YAZ_HAVE_ICU
     return zm->use_chain;
 #else
     return 0;

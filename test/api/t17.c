@@ -1,4 +1,4 @@
-/* $Id: t17.c,v 1.3 2007-11-08 07:54:17 adam Exp $
+/* $Id: t17.c,v 1.4 2007-11-08 08:18:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -34,7 +34,7 @@ const char *myrec[] = {
 	
 static void tst(int argc, char **argv)
 {
-#if HAVE_ICU
+#if YAZ_HAVE_ICU
     ZebraService zs = tl_start_up("zebra17.cfg", argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
