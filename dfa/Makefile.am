@@ -1,8 +1,13 @@
-## $Id: Makefile.am,v 1.11 2006-07-05 15:03:45 adam Exp $
+## $Id: Makefile.am,v 1.12 2007-11-08 21:21:16 adam Exp $
 
 noinst_LTLIBRARIES = libidzebra-dfa.la
 
 noinst_PROGRAMS = agrep lexer grepper
+
+check_PROGRAMS = test_dfa
+TESTS = $(check_PROGRAMS)
+
+test_dfa_SOURCES = test_dfa.c
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC)
 LDADD = libidzebra-dfa.la ../util/libidzebra-util.la $(YAZLALIB)
