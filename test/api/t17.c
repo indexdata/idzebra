@@ -1,4 +1,4 @@
-/* $Id: t17.c,v 1.2 2007-11-06 10:29:59 adam Exp $
+/* $Id: t17.c,v 1.3 2007-11-08 07:54:17 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /** \file
-    \brief tests unicode enabled searching (index_types)
+    \brief tests ICU enabled maps
 */
 #include <yaz/test.h>
 #include "testlib.h"
@@ -34,6 +34,7 @@ const char *myrec[] = {
 	
 static void tst(int argc, char **argv)
 {
+#if HAVE_ICU
     ZebraService zs = tl_start_up("zebra17.cfg", argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
@@ -51,6 +52,7 @@ static void tst(int argc, char **argv)
 
  
     YAZ_CHECK(tl_close_down(zh, zs));
+#endif
 }
 
 TL_MAIN
