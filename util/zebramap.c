@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.68 2007-11-08 08:18:37 adam Exp $
+/* $Id: zebramap.c,v 1.69 2007-11-08 09:30:05 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -29,7 +29,7 @@
 #include <yaz/yaz-util.h>
 
 #if YAZ_HAVE_ICU
-#include <yaz/icu_I18N.h>
+#include <yaz/icu.h>
 #endif
 #include <zebramap.h>
 

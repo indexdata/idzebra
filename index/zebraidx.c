@@ -1,4 +1,4 @@
-/* $Id: zebraidx.c,v 1.9 2007-10-29 09:25:41 adam Exp $
+/* $Id: zebraidx.c,v 1.10 2007-11-08 09:30:05 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 #if HAVE_ICU
-#include <yaz/icu_I18N.h>
+#include <yaz/icu.h>
 #endif
 #include <yaz/log.h>
 #include <yaz/options.h>
