@@ -1,5 +1,5 @@
 # Zebra indexes as referred to from the *.abs-files.
-#  $Id: t17.idx,v 1.3 2007-11-08 13:35:36 adam Exp $
+#  $Id: t17.idx,v 1.4 2007-11-08 21:21:58 adam Exp $
 #
 
 # Traditional word index
@@ -12,6 +12,7 @@ alwaysmatches 1
 firstinfield 1
 # simplechain dummy
 icuchain words-icu.xml
+debug 1
 
 # Phrase index
 # Used if completeness is 'complete {sub}field' (@attr 6=2, @attr 6=1)

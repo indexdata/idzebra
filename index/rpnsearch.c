@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.20 2007-11-01 14:10:03 adam Exp $
+/* $Id: rpnsearch.c,v 1.21 2007-11-08 21:21:58 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -65,7 +65,10 @@ void rpn_char_map_prepare(struct zebra_register *reg, zebra_map_t zm,
                           struct rpn_char_map_info *map_info)
 {
     map_info->zm = zm;
-    dict_grep_cmap(reg->dict, map_info, rpn_char_map_handler);
+    if (zebra_maps_is_icu(zm))
+        dict_grep_cmap(reg->dict, 0, 0);
+    else
+        dict_grep_cmap(reg->dict, map_info, rpn_char_map_handler);
 }
 
 #define TERM_COUNT        
@@ -232,6 +235,38 @@ static void add_non_space(const char *start, const char *end,
     }
 }
 
+
+static int term_100_icu(zebra_map_t zm,
+                        const char **src, WRBUF term_dict, int space_split,
+                        char *dst_term)
+{
+    int no = 0;
+    const char *res_buf = 0;
+    size_t res_len = 0;
+    int r = zebra_map_tokenize(zm, *src, strlen(*src),
+                               &res_buf, &res_len);
+
+    yaz_log(YLOG_LOG, "term_100_icu r=%d", r);
+    if (r)
+        strcat(dst_term, *src);
+    *src += strlen(*src);
+    while (r)
+    {
+        int i;
+        no++;
+        for (i = 0; i < res_len; i++)
+        {
+            if (strchr(REGEX_CHARS, res_buf[i]))
+                wrbuf_putc(term_dict, '\\');
+            if (res_buf[i] < 32)
+                wrbuf_putc(term_dict, 1);
+            wrbuf_putc(term_dict, res_buf[i]);
+        }
+        r = zebra_map_tokenize(zm, 0, 0, &res_buf, &res_len);
+    }
+    return no;
+}
+
 /* term_100: handle term, where trunc = none(no operators at all) */
 static int term_100(zebra_map_t zm,
 		    const char **src, WRBUF term_dict, int space_split,
@@ -244,6 +279,9 @@ static int term_100(zebra_map_t zm,
 
     const char *space_start = 0;
     const char *space_end = 0;
+
+    if (zebra_maps_is_icu(zm))
+        return term_100_icu(zm, src, term_dict, space_split, dst_term);
 
     if (!term_pre(zm, src, NULL, NULL, !space_split))
         return 0;
@@ -950,7 +988,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     char ord_buf[32];
     int ord_len, i;
     zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, index_type);
-    
+
     *ol = ord_list_create(stream);
 
     rpn_char_map_prepare(zh->reg, zm, &rcmi);
@@ -1096,8 +1134,13 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         const char *input = wrbuf_cstr(term_dict) + prefix_len;
         esc_str(buf, sizeof(buf), input, strlen(input));
     }
-    yaz_log(log_level_rpn, "dict_lookup_grep: %s",
-            wrbuf_cstr(term_dict) + prefix_len);
+    {
+        WRBUF pr_wr = wrbuf_alloc();
+
+        wrbuf_verbose_str(pr_wr, wrbuf_buf(term_dict), wrbuf_len(term_dict));
+        yaz_log(YLOG_LOG, "dict_lookup_grep: %s", wrbuf_cstr(pr_wr));
+        wrbuf_destroy(pr_wr);
+    }
     r = dict_lookup_grep(zh->reg->dict, wrbuf_cstr(term_dict), regex_range,
                          grep_info, &max_pos, 
                          ord_len /* number of "exact" chars */,

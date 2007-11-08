@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.70 2007-11-08 13:35:36 adam Exp $
+/* $Id: zebramap.c,v 1.71 2007-11-08 21:21:58 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -47,6 +47,7 @@ struct zebra_map {
     int first_in_field;
     int type;
     int use_chain;
+    int debug;
     union {
         struct {
             int entry_size;
@@ -61,7 +62,8 @@ struct zebra_map {
 #if YAZ_HAVE_ICU
     struct icu_chain *icu_chain;
 #endif
-    WRBUF simple_buf;
+    WRBUF input_str;
+    WRBUF print_str;
     size_t simple_off;
     struct zebra_map *next;
 };
@@ -92,7 +94,8 @@ void zebra_maps_close(zebra_maps_t zms)
 #if YAZ_HAVE_XML2
         xmlFreeDoc(zm->doc);
 #endif
-        wrbuf_destroy(zm->simple_buf);
+        wrbuf_destroy(zm->input_str);
+        wrbuf_destroy(zm->print_str);
 	zm = zm->next;
     }
     wrbuf_destroy(zms->wrbuf_1);
@@ -109,6 +112,7 @@ zebra_map_t zebra_add_map(zebra_maps_t zms, const char *index_type,
     zm->id = nmem_strdup(zms->nmem, index_type);
     zm->maptab_name = 0;
     zm->use_chain = 0;
+    zm->debug = 0;
     zm->maptab = 0;
     zm->type = map_type;
     zm->completeness = 0;
@@ -128,7 +132,8 @@ zebra_map_t zebra_add_map(zebra_maps_t zms, const char *index_type,
 #if YAZ_HAVE_XML2
     zm->doc = 0;
 #endif
-    zm->simple_buf = wrbuf_alloc();
+    zm->input_str = wrbuf_alloc();
+    zm->print_str = wrbuf_alloc();
     return zm;
 }
 
@@ -264,6 +269,10 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
                 fname, lineno);
         return -1;
 #endif
+    }
+    else if (!yaz_matchstr(argv[0], "debug") && argc == 2)
+    {
+        zm->debug = atoi(argv[1]);
     }
     else
     {
@@ -605,8 +614,8 @@ WRBUF zebra_replace(zebra_map_t zm, const char *ex_list,
 static int tokenize_simple(zebra_map_t zm,
                            const char **result_buf, size_t *result_len)
 {
-    char *buf = wrbuf_buf(zm->simple_buf);
-    size_t len = wrbuf_len(zm->simple_buf);
+    char *buf = wrbuf_buf(zm->input_str);
+    size_t len = wrbuf_len(zm->input_str);
     size_t i = zm->simple_off;
     size_t start;
 
@@ -638,8 +647,8 @@ int zebra_map_tokenize(zebra_map_t zm,
 
     if (buf)
     {
-        wrbuf_rewind(zm->simple_buf);
-        wrbuf_write(zm->simple_buf, buf, len);
+        wrbuf_rewind(zm->input_str);
+        wrbuf_write(zm->input_str, buf, len);
         zm->simple_off = 0;
     }
 
@@ -651,19 +660,35 @@ int zebra_map_tokenize(zebra_map_t zm,
         UErrorCode status;
         if (buf)
         {
-            yaz_log(YLOG_LOG, "assicn_cstr %s", wrbuf_cstr(zm->simple_buf)); 
+            if (zm->debug)
+            {
+                wrbuf_rewind(zm->print_str);
+                wrbuf_verbose_str(zm->print_str, wrbuf_buf(zm->input_str),
+                                  wrbuf_len(zm->input_str));
+                
+                yaz_log(YLOG_LOG, "input %s", 
+                        wrbuf_cstr(zm->print_str)); 
+            }
             icu_chain_assign_cstr(zm->icu_chain,
-                                  wrbuf_cstr(zm->simple_buf),
+                                  wrbuf_cstr(zm->input_str),
                                   &status);
             assert(U_SUCCESS(status));
         }
         while (icu_chain_next_token(zm->icu_chain, &status))
         {
             assert(U_SUCCESS(status));
-            *result_buf = icu_chain_token_norm(zm->icu_chain);
+            *result_buf = icu_chain_token_sortkey(zm->icu_chain);
             assert(*result_buf);
-            yaz_log(YLOG_LOG, "got result %s", *result_buf);
+
             *result_len = strlen(*result_buf);
+
+            if (zm->debug)
+            {
+                wrbuf_rewind(zm->print_str);
+                wrbuf_verbose_str(zm->print_str, *result_buf, *result_len);
+                yaz_log(YLOG_LOG, "output %s", wrbuf_cstr(zm->print_str));
+            }
+
             if (**result_buf != '\0')
                 return 1;
         }

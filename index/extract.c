@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.268 2007-11-06 10:29:59 adam Exp $
+/* $Id: extract.c,v 1.269 2007-11-08 21:21:58 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1716,7 +1716,6 @@ static void extract_add_icu(RecWord *p, zebra_map_t zm)
         key.mem[i++] = p->seqno;
         key.len = i;
 
-        yaz_log(YLOG_LOG, "keys_write %.*s", (int) res_len, res_buf);
         zebra_rec_keys_write(zh->reg->keys, res_buf, res_len, &key);
         
         p->seqno++;
