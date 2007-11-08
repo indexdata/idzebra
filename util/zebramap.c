@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.69 2007-11-08 09:30:05 adam Exp $
+/* $Id: zebramap.c,v 1.70 2007-11-08 13:35:36 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -54,7 +54,6 @@ struct zebra_map {
     } u;
     chrmaptab maptab;
     const char *maptab_name;
-    const char *locale;
     zebra_maps_t zebra_maps;
 #if YAZ_HAVE_XML2
     xmlDocPtr doc;
@@ -110,7 +109,6 @@ zebra_map_t zebra_add_map(zebra_maps_t zms, const char *index_type,
     zm->id = nmem_strdup(zms->nmem, index_type);
     zm->maptab_name = 0;
     zm->use_chain = 0;
-    zm->locale = 0;
     zm->maptab = 0;
     zm->type = map_type;
     zm->completeness = 0;
@@ -218,10 +216,6 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
             return -1;
         }
     }
-    else if (!yaz_matchstr(argv[0], "locale"))
-    {
-        zm->locale = nmem_strdup(zms->nmem, argv[1]);
-    }
     else if (!yaz_matchstr(argv[0], "simplechain"))
     {
         zm->use_chain = 1;
@@ -232,12 +226,6 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
     else if (!yaz_matchstr(argv[0], "icuchain"))
     {
 #if YAZ_HAVE_XML2
-        if (!zm->locale)
-        {
-            yaz_log(YLOG_WARN, "%s:%d: locale required before icuchain", 
-                    fname, lineno);
-            return -1;
-        }
         zm->doc = xmlParseFile(argv[1]);
         if (!zm->doc)
         {
@@ -251,7 +239,7 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
             UErrorCode status;
             xmlNode *xml_node = xmlDocGetRootElement(zm->doc);
             zm->icu_chain = 
-                icu_chain_xml_config(xml_node, zm->locale, 
+                icu_chain_xml_config(xml_node,
 /* not sure about sort for this function yet.. */
 #if 1
                                      1,

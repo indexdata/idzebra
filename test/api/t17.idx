@@ -1,5 +1,5 @@
 # Zebra indexes as referred to from the *.abs-files.
-#  $Id: t17.idx,v 1.2 2007-11-07 10:24:28 adam Exp $
+#  $Id: t17.idx,v 1.3 2007-11-08 13:35:36 adam Exp $
 #
 
 # Traditional word index
@@ -10,7 +10,6 @@ completeness 0
 position 1
 alwaysmatches 1
 firstinfield 1
-locale en
 # simplechain dummy
 icuchain words-icu.xml
 
