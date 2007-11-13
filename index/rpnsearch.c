@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.21 2007-11-08 21:21:58 adam Exp $
+/* $Id: rpnsearch.c,v 1.22 2007-11-13 13:41:51 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -987,7 +987,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     int relation_error;
     char ord_buf[32];
     int ord_len, i;
-    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, index_type);
+    zebra_map_t zm = zebra_map_get_or_add(zh->reg->zebra_maps, index_type);
 
     *ol = ord_list_create(stream);
 
@@ -1319,7 +1319,7 @@ static ZEBRA_RES rpn_search_APT_position(ZebraHandle zh,
     int ord_len;
     char *val;
     ISAM_P isam_p;
-    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, index_type);
+    zebra_map_t zm = zebra_map_get_or_add(zh->reg->zebra_maps, index_type);
     
     attr_init_APT(&position, zapt, 3);
     position_value = attr_find(&position, NULL);
@@ -1678,7 +1678,7 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     int relation_error = 0;
     int ord, ord_len, i;
     char ord_buf[32];
-    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, index_type);
+    zebra_map_t zm = zebra_map_get_or_add(zh->reg->zebra_maps, index_type);
     
     *ol = ord_list_create(stream);
 

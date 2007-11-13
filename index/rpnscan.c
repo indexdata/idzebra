@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.21 2007-11-05 11:20:39 adam Exp $
+/* $Id: rpnscan.c,v 1.22 2007-11-13 13:41:51 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -290,7 +290,7 @@ static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
 {
     struct scan2_info_entry *ar = nmem_malloc(nmem, sizeof(*ar) * ord_no);
     struct rpn_char_map_info rcmi;
-    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, index_type);
+    zebra_map_t zm = zebra_map_get_or_add(zh->reg->zebra_maps, index_type);
     int i, dif;
     int after_pos;
     int pos = 0;
