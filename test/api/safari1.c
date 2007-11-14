@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.16 2007-04-25 09:38:21 adam Exp $
+/* $Id: safari1.c,v 1.17 2007-11-14 13:12:41 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -82,6 +82,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_init_data(zh, myrec));
 
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any the", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any den", 0));
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @and the art", 1));
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @and den gamle", 0));
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @and the gamle", 1));
