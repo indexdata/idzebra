@@ -1,4 +1,4 @@
-/* $Id: t17.c,v 1.4 2007-11-08 08:18:37 adam Exp $
+/* $Id: t17.c,v 1.5 2007-11-14 09:51:00 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -27,9 +27,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "testlib.h"
 
 const char *myrec[] = {
-        "<gils>\n<title>My title</title>\n</gils>\n",
-        "<gils>\n<title>My x title</title>\n</gils>\n",
-        "<gils>\n<title>My title x</title>\n</gils>\n" ,
+        "<gils>\n<title>My computer</title>\n</gils>\n",
+        "<gils>\n<title>My x computer</title>\n</gils>\n",
+        "<gils>\n<title>My computer x</title>\n</gils>\n" ,
 	0} ;
 	
 static void tst(int argc, char **argv)
@@ -43,13 +43,7 @@ static void tst(int argc, char **argv)
     /* simple term */
     YAZ_CHECK(tl_query(zh, "@attr 1=title notfound", 0));
 
-    /* we should get 3 hits. But 0 for now */
-#if 1
-    YAZ_CHECK(tl_query(zh, "@attr 1=title title", 3));
-#else
-    YAZ_CHECK(tl_query(zh, "@attr 1=title title", 0));
-#endif
-
+    YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 3));
  
     YAZ_CHECK(tl_close_down(zh, zs));
 #endif
