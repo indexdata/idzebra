@@ -7,3 +7,5 @@ grepper
 lexer
 *.lo
 *.la
+*.log
+test_dfa
