@@ -1,4 +1,4 @@
-/* $Id: tstbfile1.c,v 1.5 2007-01-15 15:10:14 adam Exp $
+/* $Id: tstbfile1.c,v 1.6 2007-11-14 09:44:16 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -20,10 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <idzebra/bfile.h>
+#include <yaz/test.h>
 
 void tst1(BFiles bfs)
 {
@@ -34,18 +34,19 @@ void tst1(BFiles bfs)
     bf_reset(bfs);
     bf = bf_xopen(bfs, "tst", /* block size */ 32, 
 		  /* wr */ 1, "tstmagic",	&version, 0 /* more_info */);
-    
+    YAZ_CHECK(bf);
+    if (!bf)
+        return;
     bf_xclose(bf, version, "more info");
     
     bf = bf_xopen(bfs, "tst", /* block size */ 32, 
 		  /* wr */ 1, "tstmagic",	&version, &more_info);
+    
+    YAZ_CHECK(bf);
+    if (!bf)
+        return;
 
-    if (strcmp(more_info, "more info"))
-    {
-	fprintf(stderr, "tstbfile1: more info data corrupt more_info=%s\n",
-		more_info);
-	exit(1);
-    }
+    YAZ_CHECK(strcmp(more_info, "more info") == 0);
     bf_xclose(bf, version, 0 /* no more info */);
 }
 
@@ -59,35 +60,25 @@ void tst2(BFiles bfs)
 
     bf = bf_xopen(bfs, "tst", /* block size */ 32, 
 			/* wr */ 1, "tstmagic",	&version, 0 /* more_info */);
-
+    YAZ_CHECK(bf);
+    if (!bf)
+        return;
     bno = 0;
     for (i = 1; i<30; i++)
     {
 	int j;
 	for (j = 0; j<i; j++)
 	    blocks[bno + j] = 0;
-	if (bf_alloc(bf, i, blocks + bno))
-	{
-	    fprintf(stderr, "bf_alloc failed i=%d bno=%d\n", i, bno);
-	    exit(1);
-	}
+        YAZ_CHECK_EQ(bf_alloc(bf, i, blocks + bno), 0);
 	for (j = 0; j < i; j++)
 	{
-	    if (!blocks[bno + j])
-	    {
-		fprintf(stderr, "zero block i=%d bno=%d j=%d\n", i, bno, j);
-		exit(1);
-	    }
+            YAZ_CHECK(blocks[bno + j]);
 	}
 	bno += i;
     }
     for (i = 0; i<bno; i++)
     {
-	if (bf_free(bf, 1, blocks + i))
-	{
-	    fprintf(stderr, "bf_freec failed i=%d\n", i);
-	    exit(1);
-	}
+        YAZ_CHECK_EQ(bf_free(bf, 1, blocks + i), 0);
     }
     bf_xclose(bf, version, 0);
 }
@@ -109,13 +100,16 @@ void tst3(BFiles bfs)
 
     bf = bf_xopen(bfs, "tst", /* block size */ 32, 
 			/* wr */ 1, "tstmagic",	&version, 0 /* more_info */);
-
+    YAZ_CHECK(bf);
+    if (!bf)
+        return;
     no_in_use = 0;
     for (pass = 0; pass < 100; pass++)
     {
 	int r = random() % 9;
 
-	assert (no_in_use >= 0 && no_in_use <= BLOCKS);
+        YAZ_CHECK(no_in_use >= 0);
+        YAZ_CHECK(no_in_use <= BLOCKS);
 	if (r < 5 && (BLOCKS - no_in_use) > 0)
 	{
 	    /* alloc phase */
@@ -157,7 +151,7 @@ void tst3(BFiles bfs)
 		    j++;
 		}
 	    }
-	    assert(tblocks[to_free-start-1]);
+	    YAZ_CHECK(tblocks[to_free-start-1]);
 	    bf_free(bf, to_free - start, tblocks);
 	}
 	else
@@ -170,21 +164,30 @@ void tst3(BFiles bfs)
     bf_xclose(bf, version, 0);
 }
 
-int main(int argc, char **argv)
+static void tst(void)
 {
     BFiles bfs = bfs_create(0, /* register: current dir, no limit */
 			    0  /* base: current dir */
 	);
+    YAZ_CHECK(bfs);
     if (!bfs)
-	exit(1);
+	return;
 
     tst1(bfs);
     tst2(bfs);
     tst3(bfs);
     bf_reset(bfs);
     bfs_destroy(bfs);
-    exit(0);
 }
+
+int main(int argc, char **argv)
+{
+    YAZ_CHECK_INIT(argc, argv);
+    YAZ_CHECK_LOG();
+    tst();
+    YAZ_CHECK_TERM;
+}
+
 /*
  * Local variables:
  * c-basic-offset: 4

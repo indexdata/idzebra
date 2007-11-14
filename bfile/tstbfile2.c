@@ -1,4 +1,4 @@
-/* $Id: tstbfile2.c,v 1.4 2007-01-15 15:10:14 adam Exp $
+/* $Id: tstbfile2.c,v 1.5 2007-11-14 09:44:17 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -172,6 +172,7 @@ void tst(void)
 int main(int argc, char **argv)
 {
     YAZ_CHECK_INIT(argc, argv);
+    YAZ_CHECK_LOG();
     tst();
     YAZ_CHECK_TERM;
 }
