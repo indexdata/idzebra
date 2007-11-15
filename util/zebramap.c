@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.71 2007-11-08 21:21:58 adam Exp $
+/* $Id: zebramap.c,v 1.72 2007-11-15 08:53:26 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -663,8 +663,8 @@ int zebra_map_tokenize(zebra_map_t zm,
             if (zm->debug)
             {
                 wrbuf_rewind(zm->print_str);
-                wrbuf_verbose_str(zm->print_str, wrbuf_buf(zm->input_str),
-                                  wrbuf_len(zm->input_str));
+                wrbuf_write_escaped(zm->print_str, wrbuf_buf(zm->input_str),
+                                    wrbuf_len(zm->input_str));
                 
                 yaz_log(YLOG_LOG, "input %s", 
                         wrbuf_cstr(zm->print_str)); 
@@ -685,7 +685,7 @@ int zebra_map_tokenize(zebra_map_t zm,
             if (zm->debug)
             {
                 wrbuf_rewind(zm->print_str);
-                wrbuf_verbose_str(zm->print_str, *result_buf, *result_len);
+                wrbuf_write_escaped(zm->print_str, *result_buf, *result_len);
                 yaz_log(YLOG_LOG, "output %s", wrbuf_cstr(zm->print_str));
             }
 

@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.22 2007-11-13 13:41:51 adam Exp $
+/* $Id: rpnsearch.c,v 1.23 2007-11-15 08:53:25 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1137,7 +1137,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     {
         WRBUF pr_wr = wrbuf_alloc();
 
-        wrbuf_verbose_str(pr_wr, wrbuf_buf(term_dict), wrbuf_len(term_dict));
+        wrbuf_write_escaped(pr_wr, wrbuf_buf(term_dict), wrbuf_len(term_dict));
         yaz_log(YLOG_LOG, "dict_lookup_grep: %s", wrbuf_cstr(pr_wr));
         wrbuf_destroy(pr_wr);
     }
