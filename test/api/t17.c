@@ -1,4 +1,4 @@
-/* $Id: t17.c,v 1.5 2007-11-14 09:51:00 adam Exp $
+/* $Id: t17.c,v 1.6 2007-11-15 08:53:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -44,6 +44,15 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=title notfound", 0));
 
     YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 3));
+ 
+    YAZ_CHECK(tl_query(zh, "@attr 1=title .computer.", 3));
+
+    YAZ_CHECK(tl_query(zh, "@attr 1=title x", 2));
+
+#if 0
+    /* does not yet work */
+    YAZ_CHECK(tl_query(zh, "@attr 1=title my", 2));
+#endif
  
     YAZ_CHECK(tl_close_down(zh, zs));
 #endif
