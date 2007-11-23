@@ -1,4 +1,4 @@
-/* $Id: records.c,v 1.1 2007-11-23 13:52:52 adam Exp $
+/* $Id: records.c,v 1.2 2007-11-23 13:59:14 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -41,11 +41,67 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 
 #include <yaz/yaz-util.h>
-#include "recindxp.h"
+#include <idzebra/bfile.h>
+#include "recindex.h"
 
 #if HAVE_BZLIB_H
 #include <bzlib.h>
 #endif
+
+#define REC_BLOCK_TYPES 2
+#define REC_HEAD_MAGIC "recindex"
+#define REC_VERSION 5
+
+struct records_info {
+    int rw;
+    int compression_method;
+
+    recindex_t recindex;
+
+    char *data_fname[REC_BLOCK_TYPES];
+    BFile data_BFile[REC_BLOCK_TYPES];
+
+    char *tmp_buf;
+    int tmp_size;
+
+    struct record_cache_entry *record_cache;
+    int cache_size;
+    int cache_cur;
+    int cache_max;
+
+    Zebra_mutex mutex;
+
+    struct records_head {
+        char magic[8];
+	char version[4];
+        zint block_size[REC_BLOCK_TYPES];
+        zint block_free[REC_BLOCK_TYPES];
+        zint block_last[REC_BLOCK_TYPES];
+        zint block_used[REC_BLOCK_TYPES];
+        zint block_move[REC_BLOCK_TYPES];
+
+        zint total_bytes;
+        zint index_last;
+        zint index_free;
+        zint no_records;
+
+    } head;
+};
+
+enum recordCacheFlag { recordFlagNop, recordFlagWrite, recordFlagNew,
+                       recordFlagDelete };
+
+struct record_cache_entry {
+    Record rec;
+    enum recordCacheFlag flag;
+};
+
+struct record_index_entry {
+    zint next;         /* first block of record info / next free entry */
+    int size;          /* size of record or 0 if free entry */
+};
+
+Record rec_cp(Record rec);
 
 /* Modify argument to if below: 1=normal, 0=sysno testing */
 #if 1
@@ -259,7 +315,8 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
         }
         if (rw)
 	{
-            if (recindex_write_head(p->recindex, &p->head, sizeof(p->head)) != ZEBRA_OK)
+            if (recindex_write_head(p->recindex, 
+                                    &p->head, sizeof(p->head)) != ZEBRA_OK)
 		ret = ZEBRA_FAIL;
 	}
         break;
@@ -922,6 +979,35 @@ char *rec_strdup(const char *s, size_t *len)
     p = (char *) xmalloc(*len);
     strcpy(p, s);
     return p;
+}
+
+void rec_prstat(Records records)
+{
+    int i;
+    zint total_bytes = 0;
+    
+    yaz_log (YLOG_LOG,
+          "Total records                        %8" ZINT_FORMAT0,
+          records->head.no_records);
+
+    for (i = 0; i< REC_BLOCK_TYPES; i++)
+    {
+        yaz_log (YLOG_LOG, "Record blocks of size "ZINT_FORMAT,
+              records->head.block_size[i]);
+        yaz_log (YLOG_LOG,
+          " Used/Total/Bytes used            "
+	      ZINT_FORMAT "/" ZINT_FORMAT "/" ZINT_FORMAT,
+              records->head.block_used[i], records->head.block_last[i]-1,
+              records->head.block_used[i] * records->head.block_size[i]);
+        total_bytes +=
+            records->head.block_used[i] * records->head.block_size[i];
+    }
+    yaz_log (YLOG_LOG,
+          "Total size of record index in bytes  %8" ZINT_FORMAT0,
+          records->head.total_bytes);
+    yaz_log (YLOG_LOG,
+          "Total size with overhead             %8" ZINT_FORMAT0,
+	  total_bytes);
 }
 
 /*
