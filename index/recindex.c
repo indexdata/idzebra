@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.56 2007-01-15 15:10:17 adam Exp $
+/* $Id: recindex.c,v 1.57 2007-11-23 13:11:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -73,14 +73,24 @@ zint rec_sysno_to_int(zint sysno)
     return sysno - FAKE_OFFSET;
 }
 
-static ZEBRA_RES rec_write_head(Records p)
+static int rec_read_head(recindex_t p, void *buf)
+{
+    return bf_read(p->index_BFile, 0, 0, 0, buf);
+}
+
+static const char *recindex_get_fname(recindex_t p)
+{
+    return p->index_fname;
+}
+
+static ZEBRA_RES rec_write_head(recindex_t p, const void *buf, size_t len)
 {
     int r;
 
     assert(p);
     assert(p->index_BFile);
 
-    r = bf_write(p->index_BFile, 0, 0, sizeof(p->head), &p->head);    
+    r = bf_write(p->index_BFile, 0, 0, len, buf);
     if (r)
     {
         yaz_log(YLOG_FATAL|YLOG_ERRNO, "write head of %s", p->index_fname);
@@ -101,8 +111,8 @@ static void rec_tmp_expand(Records p, int size)
     }
 }
 
-static int read_indx(Records p, zint sysno, void *buf, int itemsize, 
-                      int ignoreError)
+static int read_indx(recindex_t p, zint sysno, void *buf, int itemsize, 
+                     int ignoreError)
 {
     int r;
     zint pos = (sysno-1)*itemsize;
@@ -124,7 +134,7 @@ static int read_indx(Records p, zint sysno, void *buf, int itemsize,
     return r;
 }
 
-static void write_indx(Records p, zint sysno, void *buf, int itemsize)
+static void write_indx(recindex_t p, zint sysno, void *buf, int itemsize)
 {
     zint pos = (sysno-1)*itemsize;
     int off = CAST_ZINT_TO_INT(pos%RIDX_CHUNK);
@@ -147,7 +157,7 @@ static ZEBRA_RES rec_release_blocks(Records p, zint sysno)
     int dst_type;
     int first = 1;
 
-    if (read_indx(p, sysno, &entry, sizeof(entry), 1) != 1)
+    if (read_indx(p->recindex, sysno, &entry, sizeof(entry), 1) != 1)
         return ZEBRA_FAIL;
 
     freeblock = entry.next;
@@ -210,7 +220,7 @@ static ZEBRA_RES rec_delete_single(Records p, Record rec)
     entry.next = p->head.index_free;
     entry.size = 0;
     p->head.index_free = rec_sysno_to_int(rec->sysno);
-    write_indx(p, rec_sysno_to_int(rec->sysno), &entry, sizeof(entry));
+    write_indx(p->recindex, rec_sysno_to_int(rec->sysno), &entry, sizeof(entry));
     return ZEBRA_OK;
 }
 
@@ -253,7 +263,7 @@ static ZEBRA_RES rec_write_tmp_buf(Records p, int size, zint *sysnos)
             p->head.total_bytes += size;
 	    while (*sysnos > 0)
 	    {
-		write_indx(p, *sysnos, &entry, sizeof(entry));
+		write_indx(p->recindex, *sysnos, &entry, sizeof(entry));
 		sysnos++;
 	    }
         }
@@ -276,6 +286,31 @@ static ZEBRA_RES rec_write_tmp_buf(Records p, int size, zint *sysnos)
     return ZEBRA_OK;
 }
 
+recindex_t recindex_open(BFiles bfs, int rw)
+{
+    recindex_t p = xmalloc(sizeof(*p));
+    p->index_fname = "reci";
+    p->index_BFile = bf_open(bfs, p->index_fname, RIDX_CHUNK, rw);
+    if (p->index_BFile == NULL)
+    {
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "open %s", p->index_fname);
+	xfree(p);
+	return 0;
+    }
+    return p;
+}
+
+void recindex_close(recindex_t p)
+{
+    if (p)
+    {
+        if (p->index_BFile)
+            bf_close(p->index_BFile);
+        xfree(p);
+    }
+}
+
+
 Records rec_open(BFiles bfs, int rw, int compression_method)
 {
     Records p;
@@ -288,16 +323,9 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
     p->compression_method = compression_method;
     p->rw = rw;
     p->tmp_size = 1024;
-    p->index_fname = "reci";
-    p->index_BFile = bf_open(bfs, p->index_fname, RIDX_CHUNK, rw);
-    if (p->index_BFile == NULL)
-    {
-        yaz_log(YLOG_FATAL|YLOG_ERRNO, "open %s", p->index_fname);
-	xfree(p);
-	return 0;
-    }
+    p->recindex = recindex_open(bfs, rw);
     p->tmp_buf = (char *) xmalloc(p->tmp_size);
-    r = bf_read(p->index_BFile, 0, 0, 0, p->tmp_buf);
+    r = rec_read_head(p->recindex, p->tmp_buf);
     switch (r)
     {
     case 0:
@@ -322,7 +350,7 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
         }
         if (rw)
 	{
-            if (rec_write_head(p) != ZEBRA_OK)
+            if (rec_write_head(p->recindex, &p->head, sizeof(p->head)) != ZEBRA_OK)
 		ret = ZEBRA_FAIL;
 	}
         break;
@@ -330,14 +358,16 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
         memcpy(&p->head, p->tmp_buf, sizeof(p->head));
         if (memcmp(p->head.magic, REC_HEAD_MAGIC, sizeof(p->head.magic)))
         {
-            yaz_log(YLOG_FATAL, "file %s has bad format", p->index_fname);
+            yaz_log(YLOG_FATAL, "file %s has bad format",
+                    recindex_get_fname(p->recindex));
 	    ret = ZEBRA_FAIL;
         }
 	version = atoi(p->head.version);
 	if (version != REC_VERSION)
 	{
 	    yaz_log(YLOG_FATAL, "file %s is version %d, but version"
-		  " %d is required", p->index_fname, version, REC_VERSION);
+		  " %d is required",
+                    recindex_get_fname(p->recindex), version, REC_VERSION);
 	    ret = ZEBRA_FAIL;
 	}
         break;
@@ -670,12 +700,11 @@ ZEBRA_RES rec_close(Records *pp)
 
     if (p->rw)
     {
-        if (rec_write_head(p) != ZEBRA_OK)
+        if (rec_write_head(p->recindex, &p->head, sizeof(p->head)) != ZEBRA_OK)
 	    ret = ZEBRA_FAIL;
     }
 
-    if (p->index_BFile)
-        bf_close(p->index_BFile);
+    recindex_close(p->recindex);
 
     for (i = 0; i<REC_BLOCK_TYPES; i++)
     {
@@ -710,7 +739,7 @@ static Record rec_get_int(Records p, zint sysno)
     if ((recp = rec_cache_lookup(p, sysno, recordFlagNop)))
         return rec_cp(*recp);
 
-    if (read_indx(p, rec_sysno_to_int(sysno), &entry, sizeof(entry), 1) < 1)
+    if (read_indx(p->recindex, rec_sysno_to_int(sysno), &entry, sizeof(entry), 1) < 1)
         return NULL;       /* record is not there! */
 
     if (!entry.size)
@@ -863,7 +892,7 @@ static Record rec_new_int(Records p)
     {
         struct record_index_entry entry;
 
-        if (read_indx(p, p->head.index_free, &entry, sizeof(entry), 0) < 1)
+        if (read_indx(p->recindex, p->head.index_free, &entry, sizeof(entry), 0) < 1)
 	{
 	    xfree(rec);
 	    return 0;
