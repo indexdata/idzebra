@@ -1,4 +1,4 @@
-/* $Id: recindex.h,v 1.31 2007-01-15 20:08:25 adam Exp $
+/* $Id: recindex.h,v 1.32 2007-11-23 13:52:52 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -106,6 +106,17 @@ enum {
     recInfo_attr,
     recInfo_sortKeys
 };
+
+typedef struct recindex *recindex_t;
+
+recindex_t recindex_open(BFiles bfs, int rw);
+void recindex_close(recindex_t p);
+int recindex_read_head(recindex_t p, void *buf);
+const char *recindex_get_fname(recindex_t p);
+ZEBRA_RES recindex_write_head(recindex_t p, const void *buf, size_t len);
+int recindex_read_indx(recindex_t p, zint sysno, void *buf, int itemsize, 
+                       int ignoreError);
+void recindex_write_indx(recindex_t p, zint sysno, void *buf, int itemsize);
 
 YAZ_END_CDECL
 #endif

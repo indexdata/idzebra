@@ -1,4 +1,4 @@
-/* $Id: recindxp.h,v 1.22 2007-11-23 13:11:08 adam Exp $
+/* $Id: recindxp.h,v 1.23 2007-11-23 13:52:52 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -29,13 +29,6 @@ YAZ_BEGIN_CDECL
 #define REC_BLOCK_TYPES 2
 #define REC_HEAD_MAGIC "recindex"
 #define REC_VERSION 5
-
-struct recindex {
-    char *index_fname;
-    BFile index_BFile;
-};
-
-typedef struct recindex *recindex_t;
 
 struct records_info {
     int rw;
