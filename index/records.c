@@ -1,4 +1,4 @@
-/* $Id: records.c,v 1.2 2007-11-23 13:59:14 adam Exp $
+/* $Id: records.c,v 1.3 2007-11-28 11:16:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -288,8 +288,8 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
     p->compression_method = compression_method;
     p->rw = rw;
     p->tmp_size = 1024;
-    p->recindex = recindex_open(bfs, rw);
     p->tmp_buf = (char *) xmalloc(p->tmp_size);
+    p->recindex = recindex_open(bfs, rw, 0 /* 1=isamb for recindex */);
     r = recindex_read_head(p->recindex, p->tmp_buf);
     switch (r)
     {

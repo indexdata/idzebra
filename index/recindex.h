@@ -1,4 +1,4 @@
-/* $Id: recindex.h,v 1.32 2007-11-23 13:52:52 adam Exp $
+/* $Id: recindex.h,v 1.33 2007-11-28 11:16:32 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -109,7 +109,7 @@ enum {
 
 typedef struct recindex *recindex_t;
 
-recindex_t recindex_open(BFiles bfs, int rw);
+recindex_t recindex_open(BFiles bfs, int rw, int use_isamb);
 void recindex_close(recindex_t p);
 int recindex_read_head(recindex_t p, void *buf);
 const char *recindex_get_fname(recindex_t p);
