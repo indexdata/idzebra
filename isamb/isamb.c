@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.93 2007-04-03 16:54:46 adam Exp $
+/* $Id: isamb.c,v 1.94 2007-11-28 09:56:42 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -969,14 +969,22 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
                     assert(*lookahead_mode);
                 }
             }
+            else if (d == 0 && *lookahead_mode == 2)
+            {
+                /* For mode == 2, we insert the new key anyway - even 
+                   though the comparison is 0. */
+                dst_item = lookahead_item;
+                p->dirty = 1;
+            }
             else
                 dst_item = file_item_buf;
 
-            if (!*lookahead_mode && d == 0)
+            if (d == 0 && !*lookahead_mode)
             {
-		/* it's a deletion and they match so there is nothing to be
-		   inserted anyway .. But mark the thing bad (file item
-		   was part of input.. The item will not be part of output */
+                /* it's a deletion and they match so there is nothing
+                   to be inserted anyway .. But mark the thing dirty
+                   (file item was part of input.. The item will not be
+                   part of output */
                 p->dirty = 1;
             }
             else if (!half1 && dst > mid_cut)
@@ -1414,7 +1422,7 @@ void isamb_pp_close (ISAMB_PP pp)
 
 /* simple recursive dumper .. */
 static void isamb_dump_r (ISAMB b, ISAM_P pos, void (*pr)(const char *str),
-			  int level)
+                          int level)
 {
     char buf[1024];
     char prefix_str[1024];
