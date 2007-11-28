@@ -1,4 +1,4 @@
-/* $Id: isamc.h,v 1.7 2007-01-15 20:08:24 adam Exp $
+/* $Id: isamc.h,v 1.8 2007-11-28 10:38:10 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -58,37 +58,37 @@ typedef struct ISAMC_I_s {
 } ISAMC_I;
 
 YAZ_EXPORT
-void isamc_getmethod (ISAMC_M *m);
+void isamc_getmethod(ISAMC_M *m);
 
 YAZ_EXPORT
-ISAMC isamc_open (BFiles bfs, const char *name, int writeflag,
+ISAMC isamc_open(BFiles bfs, const char *name, int writeflag,
 		  ISAMC_M *method);
 YAZ_EXPORT
-int isamc_close (ISAMC is);
+int isamc_close(ISAMC is);
 
 YAZ_EXPORT
-void isamc_merge (ISAMC is, ISAM_P *pos, ISAMC_I *data);
+void isamc_merge(ISAMC is, ISAM_P *pos, ISAMC_I *data);
 
 YAZ_EXPORT
-ISAMC_PP isamc_pp_open (ISAMC is, ISAM_P pos);
+ISAMC_PP isamc_pp_open(ISAMC is, ISAM_P pos);
 
 YAZ_EXPORT
-void isamc_pp_close (ISAMC_PP pp);
+void isamc_pp_close(ISAMC_PP pp);
 
 YAZ_EXPORT
-int isamc_read_item (ISAMC_PP pp, char **dst);
+int isamc_read_item(ISAMC_PP pp, char **dst);
 
 YAZ_EXPORT
-int isamc_pp_read (ISAMC_PP pp, void *buf);
+int isamc_pp_read(ISAMC_PP pp, void *buf);
 
 YAZ_EXPORT
-zint isamc_pp_num (ISAMC_PP pp);
+zint isamc_pp_num(ISAMC_PP pp);
 
 YAZ_EXPORT
-zint isamc_block_used (ISAMC is, int type);
+zint isamc_block_used(ISAMC is, int type);
 
 YAZ_EXPORT
-int isamc_block_size (ISAMC is, int type);
+int isamc_block_size(ISAMC is, int type);
 
 #define isamc_type(x) ((x) & 7)
 #define isamc_block(x) ((x) >> 3)
