@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.23 2007-11-15 08:53:25 adam Exp $
+/* $Id: rpnsearch.c,v 1.24 2007-11-30 12:19:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -2143,7 +2143,7 @@ static ZEBRA_RES rpn_search_database(ZebraHandle zh,
 static ZEBRA_RES rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 				const Odr_oid *attributeSet, NMEM stream,
 				Z_SortKeySpecList *sort_sequence,
-				int num_bases, char **basenames, 
+				int num_bases, const char **basenames, 
 				NMEM rset_nmem,
 				RSET *rset,
 				struct rset_key_control *kc)
@@ -2313,7 +2313,7 @@ static ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
 				      const Odr_oid *attributeSet, 
 				      NMEM stream, NMEM rset_nmem,
 				      Z_SortKeySpecList *sort_sequence,
-				      int num_bases, char **basenames,
+				      int num_bases, const char **basenames,
 				      RSET **result_sets, int *num_result_sets,
 				      Z_Operator *parent_op,
 				      struct rset_key_control *kc);
@@ -2353,7 +2353,7 @@ ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
 			 const Odr_oid *attributeSet, 
 			 NMEM stream, NMEM rset_nmem,
 			 Z_SortKeySpecList *sort_sequence,
-			 int num_bases, char **basenames,
+			 int num_bases, const char **basenames,
 			 RSET *result_set)
 {
     RSET *result_sets = 0;
@@ -2390,7 +2390,7 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
 			       const Odr_oid *attributeSet, 
 			       NMEM stream, NMEM rset_nmem,
 			       Z_SortKeySpecList *sort_sequence,
-			       int num_bases, char **basenames,
+			       int num_bases, const char **basenames,
 			       RSET **result_sets, int *num_result_sets,
 			       Z_Operator *parent_op,
 			       struct rset_key_control *kc)

@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.125 2007-11-01 15:59:47 adam Exp $
+/* $Id: zsets.c,v 1.126 2007-11-30 12:19:09 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -50,7 +50,7 @@ struct zebra_set {
     NMEM rset_nmem; /* for creating the rsets in */
     zint hits;
     int num_bases;
-    char **basenames;
+    const char **basenames;
     Z_RPNQuery *rpn;
     Z_SortKeySpecList *sortSpec;
     struct zset_sort_info *sort_info;
@@ -303,6 +303,18 @@ ZebraSet resultSetGet(ZebraHandle zh, const char *name)
             return s;
         }
     return NULL;
+}
+
+ZEBRA_RES resultSetGetBaseNames(ZebraHandle zh, const char *setname,
+                                const char ***basenames, int *num_bases)
+{
+    ZebraSet sset = resultSetGet(zh, setname);
+    if (!sset)
+        return ZEBRA_FAIL;
+    *basenames = sset->basenames;
+    *num_bases = sset->num_bases;
+    return ZEBRA_OK;
+
 }
 
 void resultSetInvalidate(ZebraHandle zh)
@@ -1285,6 +1297,107 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
     }
     return ZEBRA_OK;
 }
+
+static ZEBRA_RES zebra_recid_to_sysno(ZebraHandle zh, 
+                                      const char **basenames, int num_bases,
+                                      zint recid,
+                                      zint *sysnos, int *no_sysnos)
+{
+    ZEBRA_RES res = ZEBRA_OK;
+    int sysnos_offset = 0;
+    int i;
+    
+    if (zh->reg->isamb)
+    {
+        for (i = 0; res == ZEBRA_OK && i < num_bases; i++)
+        {
+            const char *database = basenames[i];
+            if (zebraExplain_curDatabase(zh->reg->zei, database) == 0)
+            {
+                const char *index_type = "w";
+                const char *use_string = "_ALLRECORDS";
+                int ord;
+                zinfo_index_category_t cat = zinfo_index_category_alwaysmatches;
+                ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat,
+                                                   index_type, use_string);
+                if (ord != -1)
+                {
+                    char ord_buf[32];
+                    int ord_len = key_SU_encode(ord, ord_buf);
+                    char *info;
+                
+                    ord_buf[ord_len] = '\0';
+                
+                    info = dict_lookup(zh->reg->dict, ord_buf);
+                    if (info)
+                    {
+                        if (*info != sizeof(ISAM_P))
+                        {
+                            res = ZEBRA_FAIL;
+                        }
+                        else
+                        {
+                            ISAM_P isam_p;
+                            ISAMB_PP pt;
+                            struct it_key key_until, key_found;
+                            int i = 0;
+                            int r;
+                        
+                            memcpy(&isam_p, info+1, sizeof(ISAM_P));
+                        
+                            pt = isamb_pp_open(zh->reg->isamb, isam_p, 2);
+                            if (!pt)
+                                res = ZEBRA_FAIL;
+                            else
+                            {
+                                key_until.mem[i++] = recid;
+                                key_until.mem[i++] = 0;  /* section_id */
+                                if (zh->m_segment_indexing)
+                                    key_until.mem[i++] = 0; /* segment */
+                                key_until.mem[i++] = 0;
+                                key_until.len = i;
+                            
+                                r = isamb_pp_forward(pt, &key_found, &key_until);
+                                while (r && key_found.mem[0] == recid)
+                                {
+                                    if (sysnos_offset < *no_sysnos)
+                                        sysnos[sysnos_offset] = 
+                                            key_found.mem[key_found.len-1];
+                                
+                                    yaz_log(YLOG_LOG,  "Found " ZINT_FORMAT, 
+                                            key_found.mem[key_found.len-1]);
+                                    r = isamb_pp_read(pt, &key_found);
+                                    sysnos_offset++;
+                                }
+                                isamb_pp_close(pt);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    *no_sysnos = sysnos_offset;
+    return res;
+}
+
+ZEBRA_RES zebra_result_recid_to_sysno(ZebraHandle zh, 
+                                      const char *setname,
+                                      zint recid,
+                                      zint *sysnos, int *no_sysnos)
+{
+    const char **basenames;
+    int num_bases;
+    ZEBRA_RES res;
+
+    res = resultSetGetBaseNames(zh, setname, &basenames, &num_bases);
+    if (res != ZEBRA_OK)
+        return ZEBRA_FAIL;
+
+    return zebra_recid_to_sysno(zh, basenames, num_bases,
+                                recid, sysnos, no_sysnos);
+}
+                   
 
 /*
  * Local variables:

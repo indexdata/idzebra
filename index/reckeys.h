@@ -1,4 +1,4 @@
-/* $Id: reckeys.h,v 1.9 2007-01-15 20:08:25 adam Exp $
+/* $Id: reckeys.h,v 1.10 2007-11-30 12:19:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -51,6 +51,7 @@ void zebra_rec_keys_get_buf(zebra_rec_keys_t p, char **buf, size_t *sz);
 void zebra_rec_keys_set_buf(zebra_rec_keys_t p, char *buf, size_t sz,
 			    int copy_buf);
 
+zint zebra_rec_keys_get_custom_record_id(zebra_rec_keys_t keys);
 YAZ_END_CDECL
 
 #endif

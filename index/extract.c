@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.269 2007-11-08 21:21:58 adam Exp $
+/* $Id: extract.c,v 1.270 2007-11-30 12:19:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -520,13 +520,29 @@ struct recordLogInfo {
     struct recordGroup *rGroup;
 };
 
-static void all_matches_add(struct recExtractCtrl *ctrl)
+/** \brief add the always-matches index entry and map to real record ID
+    \param ctrl record control
+    \param record_id custom record ID
+    \param sysno system record ID
+    
+    This function serves two purposes.. It adds the always matches
+    entry and makes a pointer from the custom record ID (if defined)
+    back to the system record ID (sysno)
+    See zebra_recid_to_sysno .
+  */
+static void all_matches_add(struct recExtractCtrl *ctrl, zint record_id,
+                            zint sysno)
 {
     RecWord word;
     extract_init(ctrl, &word);
+    word.record_id = record_id;
+    /* we use the seqno as placeholder for a way to get back to
+       record database from _ALLRECORDS.. This is used if a custom
+       RECORD was defined */
+    word.seqno = sysno;
     word.index_name = "_ALLRECORDS";
     word.index_type = "w";
-    word.seqno = 1;
+
     extract_add_index_string(&word, zinfo_index_category_alwaysmatches,
                               "", 0);
 }
@@ -874,8 +890,6 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         else
             end_offset = stream->tellf(stream);
 
-        all_matches_add(&extractCtrl);
-        
         if (extractCtrl.match_criteria[0])
             match_criteria = extractCtrl.match_criteria;
     }
@@ -919,6 +933,7 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 	    }
        }
     }
+
     if (zebra_rec_keys_empty(zh->reg->keys))
     {
 	/* the extraction process returned no information - the record
@@ -950,6 +965,15 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         rec = rec_new(zh->reg->records);
 
         *sysno = rec->sysno;
+
+
+        if (stream)
+        {
+            all_matches_add(&extractCtrl,
+                            zebra_rec_keys_get_custom_record_id(zh->reg->keys),
+                            *sysno);
+        }
+
 
 	recordAttr = rec_init_attr(zh->reg->zei, rec);
 	if (extractCtrl.staticrank < 0)
@@ -992,6 +1016,13 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 
         rec = rec_get(zh->reg->records, *sysno);
         assert(rec);
+
+        if (stream)
+        {
+            all_matches_add(&extractCtrl,
+                            zebra_rec_keys_get_custom_record_id(zh->reg->keys),
+                            *sysno);
+        }
 	
 	recordAttr = rec_init_attr(zh->reg->zei, rec);
 

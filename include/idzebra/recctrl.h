@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.38 2007-10-31 16:56:14 adam Exp $
+/* $Id: recctrl.h,v 1.39 2007-11-30 12:19:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -123,8 +123,6 @@ struct recRetrieveCtrl {
     int       recordSize;             /* size of record in bytes */
     char      *fname;                 /* name of file (or NULL if internal) */
     data1_handle dh;
-    zebra_snippets *hit_snippet;
-    zebra_snippets *doc_snippet;
     
     /* response */
     const Odr_oid * output_format;    /* output format OID */

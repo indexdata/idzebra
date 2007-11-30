@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.75 2007-10-31 16:56:14 adam Exp $
+/* $Id: retrieve.c,v 1.76 2007-11-30 12:19:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -703,7 +703,7 @@ int zebra_special_fetch(ZebraHandle zh, const char *setname,
                           
 int zebra_record_fetch(ZebraHandle zh, const char *setname,
                        zint sysno, int score,
-                       zebra_snippets *hit_snippet, ODR odr,
+                       ODR odr,
                        const Odr_oid *input_format, Z_RecordComposition *comp,
                        const Odr_oid **output_format,
                        char **rec_bufp, int *rec_lenp, char **basenamep,
@@ -716,7 +716,15 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
     RecordAttr *recordAttr;
     void *clientData;
     int return_code = 0;
+    zint sysnos[10];
+    int no_sysnos = 10;
+    ZEBRA_RES res;
 
+    res = zebra_result_recid_to_sysno(zh, setname, sysno, sysnos, &no_sysnos);
+    if (res != ZEBRA_OK)
+        return ZEBRA_FAIL;
+
+    sysno = sysnos[0];
     *basenamep = 0;
     *addinfo = 0;
     elemsetname = yaz_get_esn(comp);
@@ -754,7 +762,6 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
 
     if (rec)
     {
-	zebra_rec_keys_t reckeys = zebra_rec_keys_open();
         RecType rt;
         struct recRetrieveCtrl retrieveCtrl;
 
@@ -774,15 +781,6 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
         retrieveCtrl.res = zh->res;
         retrieveCtrl.rec_buf = 0;
         retrieveCtrl.rec_len = -1;
-        retrieveCtrl.hit_snippet = hit_snippet;
-        retrieveCtrl.doc_snippet = zebra_snippets_create();
-
-	zebra_rec_keys_set_buf(reckeys,
-			       rec->info[recInfo_delKeys],
-			       rec->size[recInfo_delKeys], 
-			       0);
-	zebra_rec_keys_to_snippets(zh, reckeys, retrieveCtrl.doc_snippet);
-	zebra_rec_keys_close(reckeys);
 
         if (!(rt = recType_byName(zh->reg->recTypes, zh->res,
                                   file_type, &clientData)))
@@ -805,8 +803,6 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
             *rec_lenp = retrieveCtrl.rec_len;
             *addinfo = retrieveCtrl.addinfo;
         }
-
-        zebra_snippets_destroy(retrieveCtrl.doc_snippet);
 
         stream.destroy(&stream);
         rec_free(&rec);

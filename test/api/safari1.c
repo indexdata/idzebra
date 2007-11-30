@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.18 2007-11-30 10:08:01 adam Exp $
+/* $Id: safari1.c,v 1.19 2007-11-30 12:19:09 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -95,17 +95,13 @@ static void tst(int argc, char **argv)
     ids[1] = 24339;
     ids[2] = 24340;
     YAZ_CHECK(tl_meta_query(zh, "@attr 4=3 @attr 1=any mand", 3, ids));
-    
-#if 0
-    {
-        zint sysnos[10];
-        int no_sysnos = 10;
-        YAZ_CHECK_EQ(zebra_recid_to_sysno(zh, "Default", 24338, sysnos,
-                                          &no_sysnos), ZEBRA_OK);
-        YAZ_CHECK_EQ(no_sysnos, 1);
-    }
-#endif
 
+    YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "R", yaz_oid_recsyn_sutrs,
+                                  myrec[0]), ZEBRA_OK);
+    YAZ_CHECK_EQ(tl_fetch_compare(zh, 2, "R", yaz_oid_recsyn_sutrs,
+                                  myrec[2]), ZEBRA_OK);
+    YAZ_CHECK_EQ(tl_fetch_compare(zh, 3, "R", yaz_oid_recsyn_sutrs,
+                                  myrec[4]), ZEBRA_OK);
     /* limit to 125061 */
     limits[0] = 125061;
     limits[1] = 0;

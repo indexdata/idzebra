@@ -1,4 +1,4 @@
-/* $Id: t16.c,v 1.13 2007-11-30 10:08:01 adam Exp $
+/* $Id: t16.c,v 1.14 2007-11-30 12:19:09 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -50,7 +50,7 @@ static void tst(int argc, char **argv)
 
     YAZ_CHECK(tl_init_data(zh, myrec));
 
-    res = zebra_search_PQF(zh, "@attr 1=4 my", "default", &hits);
+    res = zebra_search_PQF(zh, "@attr 1=4 my", "rsetname", &hits);
     YAZ_CHECK_EQ(res, ZEBRA_OK);
     YAZ_CHECK_EQ(hits, 1);
     

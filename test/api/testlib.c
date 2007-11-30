@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.46 2007-11-30 10:08:01 adam Exp $
+/* $Id: testlib.c,v 1.47 2007-11-30 12:19:09 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -450,19 +450,19 @@ void tl_check_filter(ZebraService zs, const char *name)
     }
 }
 
-ZEBRA_RES tl_fetch_first(ZebraHandle zh, const char *element_set,
-                         const Odr_oid * format, ODR odr,
-                         const char **rec_buf, size_t *rec_len)
+ZEBRA_RES tl_fetch(ZebraHandle zh, int position, const char *element_set,
+                   const Odr_oid * format, ODR odr,
+                   const char **rec_buf, size_t *rec_len)
 {
     ZebraRetrievalRecord retrievalRecord[1];
     Z_RecordComposition *comp;
     ZEBRA_RES res;
 
-    retrievalRecord[0].position = 1; /* get from this position */
+    retrievalRecord[0].position = position;
     
     yaz_set_esn(&comp, element_set, odr->mem);
 
-    res = zebra_records_retrieve(zh, odr, "default", comp, format, 1, 
+    res = zebra_records_retrieve(zh, odr, "rsetname", comp, format, 1, 
                                  retrievalRecord);
     if (res != ZEBRA_OK)
     {
@@ -478,15 +478,15 @@ ZEBRA_RES tl_fetch_first(ZebraHandle zh, const char *element_set,
     return res;
 }
 
-ZEBRA_RES tl_fetch_first_compare(ZebraHandle zh,
-                                 const char *element_set,
-                                 const Odr_oid *format, const char *cmp_rec)
+ZEBRA_RES tl_fetch_compare(ZebraHandle zh,
+                           int position, const char *element_set,
+                           const Odr_oid *format, const char *cmp_rec)
 {
     const char *rec_buf = 0;
     size_t rec_len = 0;
     ODR odr = odr_createmem(ODR_ENCODE);
-    ZEBRA_RES res = tl_fetch_first(zh, element_set, format, odr,
-                                   &rec_buf, &rec_len);
+    ZEBRA_RES res = tl_fetch(zh, position, element_set, format, odr,
+                             &rec_buf, &rec_len);
     if (res == ZEBRA_OK)
     {
         if (strlen(cmp_rec) != rec_len)
@@ -498,9 +498,12 @@ ZEBRA_RES tl_fetch_first_compare(ZebraHandle zh,
     return res;
 }
 
-
-
-
+ZEBRA_RES tl_fetch_first_compare(ZebraHandle zh,
+                                 const char *element_set,
+                                 const Odr_oid *format, const char *cmp_rec)
+{
+    return tl_fetch_compare(zh, 1, element_set, format, cmp_rec);
+}
 
 /*
  * Local variables:

@@ -1,4 +1,4 @@
-/* $Id: reckeys.c,v 1.12 2007-01-15 15:10:17 adam Exp $
+/* $Id: reckeys.c,v 1.13 2007-11-30 12:19:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -64,6 +64,7 @@ struct zebra_rec_keys_t_ {
     void *encode_handle;
     void *decode_handle;
     char owner_of_buffer;
+    zint custom_record_id;
 
     NMEM nmem;
     size_t hash_size;
@@ -133,6 +134,7 @@ zebra_rec_keys_t zebra_rec_keys_open(void)
     p->encode_handle = iscz1_start();
     p->decode_handle = iscz1_start(); 
 
+    p->custom_record_id = 0;
     p->nmem = nmem_create();
     p->hash_size = 32767;
     p->entries = 0;
@@ -289,6 +291,10 @@ void zebra_rec_keys_write(zebra_rec_keys_t keys,
     
     assert(keys->owner_of_buffer);
 
+    if (key->mem[1]) /* record_id custom */
+    {
+        keys->custom_record_id = key->mem[1];
+    }
 #if 1
     if (!zebra_rec_keys_add_hash(keys, str, slen, key))
     {
@@ -410,6 +416,12 @@ int zebra_rec_keys_read(zebra_rec_keys_t keys,
     }
     return 1;
 }
+
+zint zebra_rec_keys_get_custom_record_id(zebra_rec_keys_t keys)
+{
+    return keys->custom_record_id;
+}
+
 /*
  * Local variables:
  * c-basic-offset: 4

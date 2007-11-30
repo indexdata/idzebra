@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.209 2007-11-06 10:29:59 adam Exp $
+/* $Id: index.h,v 1.210 2007-11-30 12:19:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -263,7 +263,7 @@ ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
 			 const Odr_oid *attributeSet, 
 			 NMEM stream, NMEM rset_nmem,
 			 Z_SortKeySpecList *sort_sequence,
-			 int num_bases, char **basenames,
+			 int num_bases, const char **basenames,
 			 RSET *result_set);
 
 ZEBRA_RES rpn_get_top_approx_limit(ZebraHandle zh, Z_RPNStructure *zs,
@@ -281,6 +281,9 @@ RSET rset_trunc(ZebraHandle zh, ISAM_P *isam_p, int no,
 		struct rset_key_control *kctrl, int scope,
 		struct ord_list *ol, const char *index_type,
 		zint hits_limit, const char *term_ref_id);
+
+ZEBRA_RES resultSetGetBaseNames(ZebraHandle zh, const char *setname,
+                                const char ***basenames, int *num_bases);
 
 void resultSetAddTerm(ZebraHandle zh, ZebraSet s, int reg_type,
                       const char *db, const char *index_name,
@@ -308,7 +311,7 @@ void resultSetInvalidate(ZebraHandle zh);
 
 int zebra_record_fetch(ZebraHandle zh, const char *setname,
                        zint sysno, int score, 
-                       zebra_snippets *hit_snippet, ODR stream,
+                       ODR stream,
                        const Odr_oid *input_format, Z_RecordComposition *comp,
                        const Odr_oid **output_format, char **rec_bufp,
                        int *rec_lenp, char **basenamep,
@@ -440,6 +443,12 @@ ZEBRA_RES rpn_facet(ZebraHandle zh, ODR stream,
                     int *position, int *num_entries, 
                     ZebraScanEntry **list,
                     int *is_partial, const char *set_name);
+
+ZEBRA_RES zebra_result_recid_to_sysno(ZebraHandle zh, 
+                                      const char *setname,
+                                      zint recid,
+                                      zint *sysnos, int *no_sysnos);
+
 YAZ_END_CDECL
 
 #endif

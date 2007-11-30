@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.26 2007-11-30 10:08:01 adam Exp $
+/* $Id: testlib.h,v 1.27 2007-11-30 12:19:09 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -127,9 +127,13 @@ ZEBRA_RES tl_fetch_first_compare(ZebraHandle zh,
                                  const char *element_set,
                                  const Odr_oid *format, const char *cmp_rec);
 
-ZEBRA_RES tl_fetch_first(ZebraHandle zh, const char *element_set,
-                         const Odr_oid * format, ODR odr,
-                         const char **rec_buf, size_t *rec_len);
+ZEBRA_RES tl_fetch(ZebraHandle zh,
+                   int position, const char *element_set,
+                   const Odr_oid * format, ODR odr,
+                   const char **rec_buf, size_t *rec_len);
+ZEBRA_RES tl_fetch_compare(ZebraHandle zh,
+                           int position, const char *element_set,
+                           const Odr_oid *format, const char *cmp_rec);
 
 #define TL_MAIN int main(int argc, char **argv) { \
  YAZ_CHECK_INIT(argc, argv); YAZ_CHECK_LOG(); tst(argc, argv); YAZ_CHECK_TERM; }
