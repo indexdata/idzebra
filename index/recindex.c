@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.59 2007-11-28 11:16:32 adam Exp $
+/* $Id: recindex.c,v 1.60 2007-11-30 09:51:31 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -226,7 +226,6 @@ int recindex_read_indx(recindex_t p, zint sysno, void *buf, int itemsize,
                        int ignoreError)
 {
     int r = 0;
-    struct record_index_entry *ep = buf;
     if (p->isamb)
     {
         if (p->isam_p)
@@ -274,8 +273,11 @@ int recindex_read_indx(recindex_t p, zint sysno, void *buf, int itemsize,
         }
     }
 #if 0
-    yaz_log(YLOG_LOG, "read r=%d sysno=" ZINT_FORMAT " next=" ZINT_FORMAT 
+    {
+        struct record_index_entry *ep = buf;
+        yaz_log(YLOG_LOG, "read r=%d sysno=" ZINT_FORMAT " next=" ZINT_FORMAT 
             " sz=%d", r, sysno, ep->next, ep->size);
+    }
 #endif
     return r;
 }
