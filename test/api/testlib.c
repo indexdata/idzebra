@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.45 2007-04-18 11:37:39 adam Exp $
+/* $Id: testlib.c,v 1.46 2007-11-30 10:08:01 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -449,6 +449,55 @@ void tl_check_filter(ZebraService zs, const char *name)
 	exit(0);
     }
 }
+
+ZEBRA_RES tl_fetch_first(ZebraHandle zh, const char *element_set,
+                         const Odr_oid * format, ODR odr,
+                         const char **rec_buf, size_t *rec_len)
+{
+    ZebraRetrievalRecord retrievalRecord[1];
+    Z_RecordComposition *comp;
+    ZEBRA_RES res;
+
+    retrievalRecord[0].position = 1; /* get from this position */
+    
+    yaz_set_esn(&comp, element_set, odr->mem);
+
+    res = zebra_records_retrieve(zh, odr, "default", comp, format, 1, 
+                                 retrievalRecord);
+    if (res != ZEBRA_OK)
+    {
+        int code = zebra_errCode(zh);
+        yaz_log(YLOG_FATAL, "zebra_records_retrieve returned error %d",
+                code);
+    }
+    else
+    {
+        *rec_buf = retrievalRecord[0].buf;
+        *rec_len = retrievalRecord[0].len;
+    }
+    return res;
+}
+
+ZEBRA_RES tl_fetch_first_compare(ZebraHandle zh,
+                                 const char *element_set,
+                                 const Odr_oid *format, const char *cmp_rec)
+{
+    const char *rec_buf = 0;
+    size_t rec_len = 0;
+    ODR odr = odr_createmem(ODR_ENCODE);
+    ZEBRA_RES res = tl_fetch_first(zh, element_set, format, odr,
+                                   &rec_buf, &rec_len);
+    if (res == ZEBRA_OK)
+    {
+        if (strlen(cmp_rec) != rec_len)
+            res = ZEBRA_FAIL;
+        else if (memcmp(cmp_rec, rec_buf, rec_len))
+            res = ZEBRA_FAIL;
+    }
+    odr_destroy(odr);
+    return res;
+}
+
 
 
 

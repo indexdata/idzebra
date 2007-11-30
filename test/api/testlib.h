@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.25 2007-04-16 08:44:32 adam Exp $
+/* $Id: testlib.h,v 1.26 2007-11-30 10:08:01 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -122,6 +122,14 @@ int tl_meta_query(ZebraHandle zh, char *query, int exphits,
  * if filter given by name does not exist, exit nicely but warn in log 
  */
 void tl_check_filter(ZebraService zs, const char *name);
+
+ZEBRA_RES tl_fetch_first_compare(ZebraHandle zh,
+                                 const char *element_set,
+                                 const Odr_oid *format, const char *cmp_rec);
+
+ZEBRA_RES tl_fetch_first(ZebraHandle zh, const char *element_set,
+                         const Odr_oid * format, ODR odr,
+                         const char **rec_buf, size_t *rec_len);
 
 #define TL_MAIN int main(int argc, char **argv) { \
  YAZ_CHECK_INIT(argc, argv); YAZ_CHECK_LOG(); tst(argc, argv); YAZ_CHECK_TERM; }
