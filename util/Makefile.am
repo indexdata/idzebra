@@ -1,8 +1,8 @@
-## $Id: Makefile.am,v 1.37 2007-11-06 10:30:00 adam Exp $
+## $Id: Makefile.am,v 1.38 2007-12-02 11:30:28 adam Exp $
 
 noinst_LTLIBRARIES = libidzebra-util.la
 
-check_PROGRAMS = tstcharmap tstflock tstlockscope tstpass tstres
+check_PROGRAMS = tstcharmap tstflock tstlockscope tstpass tstres test_strmap
 
 TESTS = $(check_PROGRAMS)
 
@@ -17,7 +17,7 @@ LDADD = libidzebra-util.la $(YAZLALIB)
 
 libidzebra_util_la_SOURCES = version.c zint.c res.c charmap.c zebramap.c \
  passwddb.c zebra-lock.c dirent.c xpath.c atoi_zn.c snippet.c flock.c \
- attrfind.c exit.c it_key.c su_codec.c
+ attrfind.c exit.c it_key.c su_codec.c strmap.c
 
 tstpass_SOURCES = tstpass.c
 
@@ -28,6 +28,8 @@ tstflock_SOURCES = tstflock.c
 tstlockscope_SOURCES = tstlockscope.c
 
 tstres_SOURCES = tstres.c
+
+test_strmap_SOURCES = test_strmap.c
 
 clean-local:
 	-rm -rf *.LCK 
