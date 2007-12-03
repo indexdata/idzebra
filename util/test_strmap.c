@@ -1,4 +1,4 @@
-/* $Id: test_strmap.c,v 1.2 2007-12-03 09:12:38 adam Exp $
+/* $Id: test_strmap.c,v 1.3 2007-12-03 17:09:01 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -94,6 +94,7 @@ static void test2(int no_iter)
         }
     }
     {
+        int failed = 0;
         int i;
         srand(12);
         for (i = 0; i < no_iter; i++)
@@ -115,9 +116,12 @@ static void test2(int no_iter)
                     break;
                 j++;
             }
-            YAZ_CHECK(data_buf && data_len == sizeof v
-                      && v == *((int*) data_buf));
+            if (!(data_buf && data_len == sizeof v
+                  && v == *((int*) data_buf)))
+                failed++;
         }
+        if (failed)
+            YAZ_CHECK_EQ(failed, 0);
     }
     zebra_strmap_destroy(sm);
 }
