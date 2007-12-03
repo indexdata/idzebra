@@ -1,4 +1,4 @@
-/* $Id: test_strmap.c,v 1.1 2007-12-02 11:30:28 adam Exp $
+/* $Id: test_strmap.c,v 1.2 2007-12-03 09:12:38 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -33,20 +33,43 @@ static void test1(void)
         zebra_strmap_destroy(sm);
     }
     {
-        int v1 = 1;
-        int *data_buf;
+        int v = 1;
+        void *data_buf;
         size_t data_len;
         zebra_strmap_t sm = zebra_strmap_create();
         YAZ_CHECK(!zebra_strmap_lookup(sm, "a", 0, 0));
         
-        zebra_strmap_add(sm, "a", &v1, sizeof v1);
+        zebra_strmap_add(sm, "a", &v, sizeof v);
         data_buf = zebra_strmap_lookup(sm, "a", 0, &data_len);
-        YAZ_CHECK(data_buf && data_len == sizeof v1 
-                  && v1 == *((int*) data_buf));
+        YAZ_CHECK(data_buf && data_len == sizeof v 
+                  && v == *((int*) data_buf));
 
         zebra_strmap_remove(sm, "a");
         data_buf = zebra_strmap_lookup(sm, "a", 0, &data_len);
         YAZ_CHECK(data_buf == 0);
+
+        v = 1;
+        zebra_strmap_add(sm, "a", &v, sizeof v);
+
+        v = 2;
+        zebra_strmap_add(sm, "b", &v, sizeof v);
+
+        v = 3;
+        zebra_strmap_add(sm, "c", &v, sizeof v);
+
+        {
+            zebra_strmap_it it = zebra_strmap_it_create(sm);
+            const char *name;
+            int no = 0;
+            while ((name = zebra_strmap_it_next(it, &data_buf, &data_len)))
+            {
+                YAZ_CHECK(!strcmp(name, "a") || !strcmp(name, "b") ||
+                          !strcmp(name, "c"));
+                no++;
+            }
+            YAZ_CHECK_EQ(no, 3);
+            zebra_strmap_it_destroy(it);
+        }
         zebra_strmap_destroy(sm);
     }
 }

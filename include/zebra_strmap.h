@@ -1,4 +1,4 @@
-/* $Id: zebra_strmap.h,v 1.1 2007-12-02 11:30:28 adam Exp $
+/* $Id: zebra_strmap.h,v 1.2 2007-12-03 09:12:38 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 YAZ_BEGIN_CDECL
 
 typedef struct zebra_strmap *zebra_strmap_t;
+typedef struct zebra_strmap_it_s *zebra_strmap_it;
 
 YAZ_EXPORT
 zebra_strmap_t zebra_strmap_create(void);
@@ -45,6 +46,17 @@ void *zebra_strmap_lookup(zebra_strmap_t st, const char *name, int no,
 
 YAZ_EXPORT
 int zebra_strmap_remove(zebra_strmap_t st, const char *name);
+
+YAZ_EXPORT
+zebra_strmap_it zebra_strmap_it_create(zebra_strmap_t st);
+
+YAZ_EXPORT
+void zebra_strmap_it_destroy(zebra_strmap_it it);
+
+YAZ_EXPORT
+const char *zebra_strmap_it_next(zebra_strmap_it it, void **data_buf,
+                                 size_t *data_len);
+
 
 YAZ_END_CDECL
 
