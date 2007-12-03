@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.47 2007-11-30 12:19:09 adam Exp $
+/* $Id: testlib.c,v 1.48 2007-12-03 11:47:53 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -493,6 +493,11 @@ ZEBRA_RES tl_fetch_compare(ZebraHandle zh,
             res = ZEBRA_FAIL;
         else if (memcmp(cmp_rec, rec_buf, rec_len))
             res = ZEBRA_FAIL;
+        if (res == ZEBRA_FAIL)
+        {
+            yaz_log(YLOG_LOG, "Expected: %s", cmp_rec);
+            yaz_log(YLOG_LOG, "Got: %.*s", rec_len, rec_buf);
+        }
     }
     odr_destroy(odr);
     return res;
