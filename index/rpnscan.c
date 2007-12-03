@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.22 2007-11-13 13:41:51 adam Exp $
+/* $Id: rpnscan.c,v 1.23 2007-12-03 11:49:11 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -77,31 +77,6 @@ static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         termz[i] = '\0';
     }
     return ZEBRA_OK;
-}
-
-static void count_set(ZebraHandle zh, RSET rset, zint *count, zint approx_limit)
-{
-    zint psysno = 0;
-    struct it_key key;
-    RSFD rfd;
-
-    yaz_log(YLOG_DEBUG, "count_set");
-
-    rset->hits_limit = approx_limit;
-
-    *count = 0;
-    rfd = rset_open(rset, RSETF_READ);
-    while (rset_read(rfd, &key,0 /* never mind terms */))
-    {
-        if (key.mem[0] != psysno)
-        {
-            psysno = key.mem[0];
-	    if (rfd->counted_items >= rset->hits_limit)
-		break;
-        }
-    }
-    rset_close(rfd);
-    *count = rset->hits_count;
 }
 
 static void get_first_snippet_from_rset(ZebraHandle zh, 
@@ -238,7 +213,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
             rset = rset_create_and(nmem, kc, kc->scope, 2, rsets);
         }
         /* count it */
-        count_set(zh, rset, &count, approx_limit);
+        zebra_count_set(zh, rset, &count, approx_limit);
 
         if (pos != -1)
         {

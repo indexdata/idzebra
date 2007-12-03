@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.127 2007-12-01 21:34:10 adam Exp $
+/* $Id: zsets.c,v 1.128 2007-12-03 11:49:11 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1402,6 +1402,32 @@ ZEBRA_RES zebra_result_recid_to_sysno(ZebraHandle zh,
 
     return zebra_recid_to_sysno(zh, basenames, num_bases,
                                 recid, sysnos, no_sysnos);
+}
+
+void zebra_count_set(ZebraHandle zh, RSET rset, zint *count,
+                     zint approx_limit)
+{
+    zint psysno = 0;
+    struct it_key key;
+    RSFD rfd;
+
+    yaz_log(YLOG_DEBUG, "count_set");
+
+    rset->hits_limit = approx_limit;
+
+    *count = 0;
+    rfd = rset_open(rset, RSETF_READ);
+    while (rset_read(rfd, &key,0 /* never mind terms */))
+    {
+        if (key.mem[0] != psysno)
+        {
+            psysno = key.mem[0];
+	    if (rfd->counted_items >= rset->hits_limit)
+		break;
+        }
+    }
+    rset_close(rfd);
+    *count = rset->hits_count;
 }
                    
 

@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.76 2007-11-30 12:19:08 adam Exp $
+/* $Id: retrieve.c,v 1.77 2007-12-03 11:49:11 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -37,6 +37,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/snprintf.h>
 #include <direntz.h>
 #include <yaz/oid_db.h>
+#include <zebra_strmap.h>
+
+#define MAX_SYSNOS_PER_RECORD 40
 
 #define ZEBRA_XML_HEADER_STR "<record xmlns=\"http://www.indexdata.com/zebra/\""
 
@@ -74,7 +77,61 @@ static int zebra_create_record_stream(ZebraHandle zh,
 }
     
 
+struct index_spec {
+    const char *index_name;
+    const char *index_type;
+    struct index_spec *next;
+};
 
+
+struct index_spec *parse_index_spec(const char *elem, NMEM nmem,
+                                    int *error)
+{
+    struct index_spec *first = 0;
+    struct index_spec **last = &first;
+    const char *cp = elem;
+
+    *error = 0;
+    if (cp[0] == ':' && cp[1] == ':')
+    {
+
+        cp++; /* skip first ':' */
+
+        for (;;)
+        {
+            const char *cp0;
+            struct index_spec *spec = nmem_malloc(nmem, sizeof(*spec));
+            spec->index_type = 0;
+            spec->next = 0;
+
+            if (!first)
+                first = spec;
+            *last = spec;
+            last = &spec->next;
+
+            cp++; /* skip ',' or second ':' */
+            cp0 = cp;
+            while (*cp != ':' && *cp != '\0' && *cp != ',')
+                cp++;
+            spec->index_name = nmem_strdupn(nmem, cp0, cp - cp0);
+            if (*cp == ':') /* type as well */
+            {
+                cp++;
+                cp0 = cp;
+                
+                while (*cp != '\0' && *cp != ',')
+                    cp++;
+                spec->index_type = nmem_strdupn(nmem, cp0, cp - cp0);
+            }
+            if (*cp != ',')
+                break;
+        }
+    }
+    if (*cp != '\0')
+        *error = 1;
+    return first;
+}
+                            
 static int parse_zebra_elem(const char *elem,
                             const char **index, size_t *index_len,
                             const char **type, size_t *type_len)
@@ -352,7 +409,6 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
                                 wrbuf_printf(wrbuf, " " ZINT_FORMAT, 
                                              key_in.mem[i]);
                             
-                            /* zebra_term_untrans(zh, index_type, dst_buf, str); */
                             wrbuf_printf(wrbuf, " %s", dst_buf);
                         
                             wrbuf_printf(wrbuf, "\n");
@@ -484,12 +540,12 @@ int zebra_get_rec_snippets(ZebraHandle zh, zint sysno,
     return return_code;
 }
 
-int zebra_special_snippet_fetch(ZebraHandle zh, const char *setname,
-                                zint sysno, ODR odr,
-                                const char *elemsetname,
-                                const Odr_oid *input_format,
-                                const Odr_oid **output_format,
-                                char **rec_bufp, int *rec_lenp)
+static int snippet_fetch(ZebraHandle zh, const char *setname,
+                         zint sysno, ODR odr,
+                         const char *elemsetname,
+                         const Odr_oid *input_format,
+                         const Odr_oid **output_format,
+                         char **rec_bufp, int *rec_lenp)
 {
     zebra_snippets *rec_snippets = zebra_snippets_create();
     int return_code = zebra_get_rec_snippets(zh, sysno, rec_snippets);
@@ -534,6 +590,262 @@ int zebra_special_snippet_fetch(ZebraHandle zh, const char *setname,
     return return_code;
 }
 
+struct term_collect {
+    const char *term;
+    int oc;
+    zint set_occur;
+};
+
+zint freq_term(ZebraHandle zh, int ord, const char *term, RSET rset_set)
+{
+    struct rset_key_control *kc = zebra_key_control_create(zh);
+    char ord_buf[IT_MAX_WORD];
+    int ord_len = key_SU_encode(ord, ord_buf);
+    char *info;
+    zint hits = 0;
+    NMEM nmem = nmem_create();
+    
+    strcpy(ord_buf + ord_len, term);
+    
+    info = dict_lookup(zh->reg->dict, ord_buf);
+    if (info)
+    {
+        ISAM_P isam_p;
+        RSET rsets[2], rset;
+        memcpy(&isam_p, info+1, sizeof(ISAM_P));
+        
+        rsets[0] = rsisamb_create(nmem, kc,
+                                  2, zh->reg->isamb, isam_p, 0);
+        rsets[1] = rset_dup(rset_set);
+        
+        rset = rset_create_and(nmem, kc, kc->scope, 2, rsets);
+
+        zebra_count_set(zh, rset, &hits, zh->approx_limit);
+
+        rset_delete(rsets[0]);
+        rset_delete(rset);
+    }
+    (*kc->dec)(kc);
+    nmem_destroy(nmem);
+    return hits;
+}
+
+void term_collect_freq(ZebraHandle zh,
+                       struct term_collect *col, int no_terms_collect,
+                       int ord, RSET rset)
+{
+    int i;
+    for (i = 0; i < no_terms_collect; i++)
+    {
+        if (col[i].term)
+            col[i].set_occur = freq_term(zh, ord, col[i].term, rset);
+    }
+}
+
+struct term_collect *term_collect_create(zebra_strmap_t sm, 
+                                         int no_terms_collect,
+                                         NMEM nmem)
+{
+    const char *term;
+    void *data_buf;
+    size_t data_len;
+    zebra_strmap_it it;
+    struct term_collect *col = nmem_malloc(nmem, 
+                                           sizeof *col *no_terms_collect);
+    int i;
+    for (i = 0; i < no_terms_collect; i++)
+    {
+        col[i].term = 0;
+        col[i].oc = 0;
+        col[i].set_occur = 0;
+    }
+    /* iterate over terms and collect the most frequent ones */
+    it = zebra_strmap_it_create(sm);
+    while ((term = zebra_strmap_it_next(it, &data_buf, &data_len)))
+    {
+        int oc = *(int*) data_buf;
+        int j = 0;
+        /* insertion may be slow but terms terms will be "infrequent" and
+           thus number of iterations should be small below */
+        while (j < no_terms_collect && oc > col[j].oc)
+            j++;
+        if (j)
+        {
+            --j;
+            memmove(col, col+1, sizeof(*col) * j);
+            col[j].term = term;
+            col[j].oc = oc;
+        }
+    }
+    zebra_strmap_it_destroy(it);
+    return col;
+}
+
+static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
+                             ODR odr,
+                             const char *elemsetname,
+                             const Odr_oid *input_format,
+                             const Odr_oid **output_format,
+                             char **rec_bufp, int *rec_lenp)
+{
+    zint *pos_array;
+    int i;
+    int num_recs = 10; /* number of records to analyze */
+    int no_collect_terms = 20; /* number of term candidates */
+    ZebraMetaRecord *poset;
+    ZEBRA_RES ret = ZEBRA_OK;
+    int *ord_array;
+    WRBUF wr = wrbuf_alloc();
+    
+    int no_ord = 0;
+    struct index_spec *spec, *spec_list;
+    int error;
+
+
+    spec_list = parse_index_spec(elemsetname, odr_getmem(odr), &error);
+              
+    if (!spec_list || error)
+        return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+            
+    for (spec = spec_list; spec; spec = spec->next)
+    {
+        if (!spec->index_type)
+            return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+        no_ord++;
+    }
+
+    ord_array = odr_malloc(odr, sizeof(*ord_array) * no_ord);
+
+    for (spec = spec_list, i = 0; spec; spec = spec->next, i++)
+    {
+        int ord = zebraExplain_lookup_attr_str(zh->reg->zei,
+                                               zinfo_index_category_index,
+                                               spec->index_type,
+                                               spec->index_name);
+        if (ord == -1)
+        {
+            return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+        }
+        ord_array[i] = ord;
+    }
+
+    pos_array = (zint *) xmalloc(num_recs * sizeof(*pos_array));
+    for (i = 0; i < num_recs; i++)
+	pos_array[i] = i+1;
+    poset = zebra_meta_records_create(zh, setname, num_recs, pos_array);
+    if (!poset)
+    {
+	zebra_setError(zh, YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST,
+		       setname);
+        xfree(pos_array);
+	ret = ZEBRA_FAIL;
+    }
+    else
+    {
+        zebra_strmap_t *map_array
+            = odr_malloc(odr, sizeof *map_array * no_ord);
+        for (i = 0; i < no_ord; i++)
+            map_array[i] = zebra_strmap_create();
+
+        for (i = 0; i < num_recs; i++)
+        {
+            int j;
+            zint sysnos[MAX_SYSNOS_PER_RECORD];
+            int no_sysnos = MAX_SYSNOS_PER_RECORD;
+            if (!poset[i].sysno)
+                continue;
+            ret = zebra_result_recid_to_sysno(zh,  setname,
+                                              poset[i].sysno,
+                                              sysnos, &no_sysnos);
+            assert(no_sysnos > 0);
+            for (j = 0; j < no_sysnos; j++)
+            {
+                size_t slen;
+                const char *str;
+                struct it_key key_in;
+                Record rec = rec_get(zh->reg->records, sysnos[j]);
+                zebra_rec_keys_t keys = zebra_rec_keys_open();
+                zebra_rec_keys_set_buf(keys, rec->info[recInfo_delKeys],
+                                       rec->size[recInfo_delKeys], 0);
+                
+                if (zebra_rec_keys_rewind(keys))
+                {
+                    while (zebra_rec_keys_read(keys, &str, &slen, &key_in))
+                    {
+                        int i;
+                        struct index_spec *spec;
+                        for (spec = spec_list, i = 0; i < no_ord; 
+                             i++, spec = spec->next)
+                        {
+                            int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
+                            if (ord == ord_array[i])
+                            {
+                                int *freq;
+                                zebra_strmap_t sm = map_array[i];
+                                
+                                freq = zebra_strmap_lookup(sm, str, 0, 0);
+                                if (freq)
+                                    (*freq)++;
+                                else
+                                {
+                                    int v = 1;
+                                    zebra_strmap_add(sm, str, &v, sizeof v);
+                                }
+                            }
+                        }
+                    }
+                }
+                zebra_rec_keys_close(keys);
+                rec_free(&rec);
+            }
+        }
+        wrbuf_puts(wr, "<facets>\n");
+        for (spec = spec_list, i = 0; i < no_ord; i++, spec = spec->next)
+        {
+            int j;
+            NMEM nmem = nmem_create();
+            struct term_collect *col = term_collect_create(map_array[i], 
+                                                           no_collect_terms,
+                                                           nmem);
+            term_collect_freq(zh, col, no_collect_terms, ord_array[i],
+                              resultSetRef(zh, setname));
+            
+            wrbuf_printf(wr, "  <facet type=\"%s\" index=\"%s\">\n",
+                         spec->index_type, spec->index_name);
+            for (j = 0; j < no_collect_terms; j++)
+            {
+                if (col[j].term)
+                {
+                    char dst_buf[IT_MAX_WORD];
+                    zebra_term_untrans(zh, spec->index_type, dst_buf, col[j].term);
+                    wrbuf_printf(wr, "    <term coccur=\"%d\"", col[j].oc);
+                    if (col[j].set_occur)
+                        wrbuf_printf(wr, " occur=\"" ZINT_FORMAT "\"", 
+                                     col[j].set_occur);
+                    wrbuf_printf(wr, ">");
+                    wrbuf_xmlputs(wr, dst_buf);
+                    wrbuf_printf(wr, "</term>\n");
+                }
+            }
+            wrbuf_puts(wr, "  </facet>\n");
+            nmem_destroy(nmem);
+        }
+        wrbuf_puts(wr, "</facets>\n");
+        for (i = 0; i < no_ord; i++)
+            zebra_strmap_destroy(map_array[i]);
+    }
+    
+
+    *rec_bufp = odr_strdup(odr, wrbuf_cstr(wr));
+    wrbuf_destroy(wr);
+    *rec_lenp = strlen(*rec_bufp);
+    *output_format = input_format;
+
+    xfree(pos_array);
+    zebra_meta_records_destroy(zh, poset, num_recs);
+    return ret;
+}
+
 int zebra_special_fetch(ZebraHandle zh, const char *setname,
                         zint sysno, int score, ODR odr,
                         const char *elemsetname,
@@ -546,13 +858,20 @@ int zebra_special_fetch(ZebraHandle zh, const char *setname,
     /* set output variables before processing possible error states */
     /* *rec_lenp = 0; */
 
+    if (elemsetname && 0 == strncmp(elemsetname, "facet", 5))
+    {
+        return facet_fetch(zh, setname, odr,
+                           elemsetname + 5,
+                           input_format, output_format,
+                           rec_bufp, rec_lenp);
+    }
 
     if (elemsetname && 0 == strcmp(elemsetname, "snippet"))
     {
-        return zebra_special_snippet_fetch(zh, setname, sysno, odr,
-                                           elemsetname + 7,
-                                           input_format, output_format,
-                                           rec_bufp, rec_lenp);
+        return snippet_fetch(zh, setname, sysno, odr,
+                             elemsetname + 7,
+                             input_format, output_format,
+                             rec_bufp, rec_lenp);
     }
 
     /* processing zebra::meta::sysno elemset without fetching binary data */
@@ -716,8 +1035,8 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
     RecordAttr *recordAttr;
     void *clientData;
     int return_code = 0;
-    zint sysnos[10];
-    int no_sysnos = 10;
+    zint sysnos[MAX_SYSNOS_PER_RECORD];
+    int no_sysnos = MAX_SYSNOS_PER_RECORD;
     ZEBRA_RES res;
 
     res = zebra_result_recid_to_sysno(zh, setname, sysno, sysnos, &no_sysnos);
