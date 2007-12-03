@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.24 2007-12-03 12:57:55 adam Exp $
+/* $Id: t5.c,v 1.25 2007-12-03 14:33:35 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /** \file
-    \brief test attributes: proximity and position */
+    \brief test various search attributes */
 #include <yaz/test.h>
 #include "testlib.h"
 
@@ -126,7 +126,10 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 tu", 2));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 title", 2));
 
-    
+    /* always-matches relation */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=103 {x my}", 3));
+    YAZ_CHECK(tl_query_x(zh, "@attr 1=1 @attr 2=103 {x my}", 0, 114));
+
     /* and searches */
     YAZ_CHECK(tl_query(zh, "@and @attr 1=4 notfound @attr 1=4 x", 0)); 
     YAZ_CHECK(tl_query(zh, "@and @attr 1=4 x @attr 1=4 notfound", 0)); 
@@ -222,11 +225,27 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query_x(zh, "@attr 1=4 @attr 2=6 x", 0, 117));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=1016 @attr 2=6 @attr 4=109 x", 0, 114));
 
-    /* position */
+    /* position , phrase searches */
+    YAZ_CHECK(tl_query(zh, "@attr 3=1 title", 0));
     YAZ_CHECK(tl_query(zh, "@attr 3=1 my", 3));
-    YAZ_CHECK(tl_query(zh, "@attr 3=1 x", 0));
-    YAZ_CHECK(tl_query_x(zh, "@attr 3=4 x", 0, 119));
- 
+
+    YAZ_CHECK(tl_query(zh, "@attr 3=1 {my title}", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 4=1 @attr 3=1 {my title}", 2));
+
+    YAZ_CHECK(tl_query(zh, "@attr 3=1 {title my}", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 4=1 @attr 3=1 {title my}", 0));
+
+    YAZ_CHECK(tl_query(zh, "@attr 4=1 @attr 3=1 {title my}", 0));
+
+    /* position , or-list */
+    YAZ_CHECK(tl_query(zh, "@attr 4=105 @attr 3=1 {title my}", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 4=105 @attr 3=1 {title x}", 0));
+    
+    /* position, and-list */
+    YAZ_CHECK(tl_query(zh, "@attr 4=6 @attr 3=1 {title my}", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 4=6 @attr 3=1 {title x}", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 4=6 @attr 3=1 my", 3));
+    
     YAZ_CHECK(tl_close_down(zh, zs));
 }
 
