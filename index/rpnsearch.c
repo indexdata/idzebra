@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.25 2007-12-03 13:04:04 adam Exp $
+/* $Id: rpnsearch.c,v 1.26 2007-12-03 14:33:22 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1397,7 +1397,12 @@ static ZEBRA_RES rpn_search_APT_phrase(ZebraHandle zh,
                                       rset_nmem, &first_set,
                                       kc);
         if (res != ZEBRA_OK)
+        {
+            int i;
+            for (i = 0; i<num_result_sets; i++)
+                rset_delete(result_sets[i]);
             return res;
+        }
         if (first_set)
         {
             RSET *nsets = nmem_malloc(stream,
