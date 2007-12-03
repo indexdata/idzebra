@@ -1,4 +1,4 @@
-/* $Id: safari.c,v 1.10 2007-10-29 16:57:53 adam Exp $
+/* $Id: safari.c,v 1.11 2007-12-03 11:46:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -118,6 +118,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
     struct filter_info *tinfo = clientData;
     char line[512];
     RecWord recWord;
+    int ret = RECCTRL_EXTRACT_OK;
     struct fi_info *fi = fi_open(p);
 
 #if 0
@@ -127,58 +128,62 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
     (*p->init)(p, &recWord);
 
     if (!fi_gets(fi, line, sizeof(line)-1))
-	return RECCTRL_EXTRACT_EOF;
-    sscanf(line, "%255s", p->match_criteria);
-    
-    while (fi_gets(fi, line, sizeof(line)-1))
+        ret = RECCTRL_EXTRACT_EOF;
+    else
     {
-	int nor = 0;
-	char field[40];
-	const char *cp = line;
-        char type_cstr[2];
+        sscanf(line, "%255s", p->match_criteria);
+        while (fi_gets(fi, line, sizeof(line)-1))
+        {
+            int nor = 0;
+            char field[40];
+            const char *cp = line;
+            char type_cstr[2];
 #if 0
-	yaz_log(YLOG_LOG, "safari line: %s", line);
+            yaz_log(YLOG_LOG, "safari line: %s", line);
 #endif
-        type_cstr[1] = '\0';
-        if (*cp >= '0' && *cp <= '9')
-            type_cstr[0] = '0'; /* the default is 0 (raw) */
-        else
-            type_cstr[0] = *cp++; /* type given */
-        type_cstr[1] = '\0';
+            type_cstr[1] = '\0';
+            if (*cp >= '0' && *cp <= '9')
+                type_cstr[0] = '0'; /* the default is 0 (raw) */
+            else
+                type_cstr[0] = *cp++; /* type given */
+            type_cstr[1] = '\0';
 
-        recWord.index_type = type_cstr;
-        if (tinfo->segments)
-        {
-            if (sscanf(cp, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT 
-                       ZINT_FORMAT " %39s %n",
-                       &recWord.record_id, &recWord.section_id, 
-                       &recWord.segment,
-                       &recWord.seqno,
-                       field, &nor) < 5)
+            recWord.index_type = type_cstr;
+            if (tinfo->segments)
             {
-                yaz_log(YLOG_WARN, "Bad safari record line: %s", line);
-                return RECCTRL_EXTRACT_ERROR_GENERIC;
+                if (sscanf(cp, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT 
+                           ZINT_FORMAT " %39s %n",
+                           &recWord.record_id, &recWord.section_id, 
+                           &recWord.segment,
+                           &recWord.seqno,
+                           field, &nor) < 5)
+                {
+                    yaz_log(YLOG_WARN, "Bad safari record line: %s", line);
+                    ret = RECCTRL_EXTRACT_ERROR_GENERIC;
+                    break;
+                }
             }
-        }
-        else
-        {
-            if (sscanf(cp, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT " %39s %n",
-                       &recWord.record_id, &recWord.section_id, &recWord.seqno,
-                       field, &nor) < 4)
+            else
             {
-                yaz_log(YLOG_WARN, "Bad safari record line: %s", line);
-                return RECCTRL_EXTRACT_ERROR_GENERIC;
+                if (sscanf(cp, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT " %39s %n",
+                           &recWord.record_id, &recWord.section_id, &recWord.seqno,
+                           field, &nor) < 4)
+                {
+                    yaz_log(YLOG_WARN, "Bad safari record line: %s", line);
+                    ret = RECCTRL_EXTRACT_ERROR_GENERIC;
+                    break;
+                }
             }
+            for (cp = cp + nor; *cp == ' '; cp++)
+                ;
+            recWord.index_name = field;
+            recWord.term_buf = cp;
+            recWord.term_len = strlen(cp);
+            (*p->tokenAdd)(&recWord);
         }
-	for (cp = cp + nor; *cp == ' '; cp++)
-	    ;
-	recWord.index_name = field;
-	recWord.term_buf = cp;
-	recWord.term_len = strlen(cp);
-	(*p->tokenAdd)(&recWord);
     }
     fi_close(fi);
-    return RECCTRL_EXTRACT_OK;
+    return ret;
 }
 
 static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
