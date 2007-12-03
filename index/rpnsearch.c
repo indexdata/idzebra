@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.24 2007-11-30 12:19:08 adam Exp $
+/* $Id: rpnsearch.c,v 1.25 2007-12-03 13:04:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1345,13 +1345,6 @@ static ZEBRA_RES rpn_search_APT_position(ZebraHandle zh,
         return ZEBRA_FAIL;
     }
 
-    if (!zh->reg->isamb && !zh->reg->isamc)
-    {
-        zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_POSITION_ATTRIBUTE,
-                            position_value);
-        return ZEBRA_FAIL;
-    }
-
     if (zebra_apt_get_ord(zh, zapt, index_type, 0,
                           attributeSet, &ord) != ZEBRA_OK)
     {
@@ -1365,13 +1358,9 @@ static ZEBRA_RES rpn_search_APT_position(ZebraHandle zh,
     {
         assert(*val == sizeof(ISAM_P));
         memcpy(&isam_p, val+1, sizeof(isam_p));
-        
-        if (zh->reg->isamb)
-            *rset = rsisamb_create(rset_nmem, kc, kc->scope,
-                                   zh->reg->isamb, isam_p, 0);
-        else if (zh->reg->isamc)
-            *rset = rsisamc_create(rset_nmem, kc, kc->scope,
-                                   zh->reg->isamc, isam_p, 0);
+
+        *rset = zebra_create_rset_isam(zh, rset_nmem, kc, kc->scope, 
+                                       isam_p, 0);
     }
     return ZEBRA_OK;
 }

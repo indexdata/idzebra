@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.77 2007-12-03 11:49:11 adam Exp $
+/* $Id: retrieve.c,v 1.78 2007-12-03 13:04:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -614,8 +614,7 @@ zint freq_term(ZebraHandle zh, int ord, const char *term, RSET rset_set)
         RSET rsets[2], rset;
         memcpy(&isam_p, info+1, sizeof(ISAM_P));
         
-        rsets[0] = rsisamb_create(nmem, kc,
-                                  2, zh->reg->isamb, isam_p, 0);
+        rsets[0] = zebra_create_rset_isam(zh, nmem, kc, kc->scope, isam_p, 0);
         rsets[1] = rset_dup(rset_set);
         
         rset = rset_create_and(nmem, kc, kc->scope, 2, rsets);
@@ -839,7 +838,7 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
     *rec_bufp = odr_strdup(odr, wrbuf_cstr(wr));
     wrbuf_destroy(wr);
     *rec_lenp = strlen(*rec_bufp);
-    *output_format = input_format;
+    *output_format = yaz_oid_recsyn_xml;
 
     xfree(pos_array);
     zebra_meta_records_destroy(zh, poset, num_recs);

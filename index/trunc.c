@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.69 2007-10-29 16:57:53 adam Exp $
+/* $Id: trunc.c,v 1.70 2007-12-03 13:04:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -400,7 +400,7 @@ static int isamc_trunc_cmp(const void *p1, const void *p2)
     return 0;
 }
 
-RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
+RSET rset_trunc(ZebraHandle zh, ISAM_P *isam_p, int no,
 		const char *term, int length, const char *flags,
 		int preserve_position, int term_type, NMEM rset_nmem,
 	        struct rset_key_control *kctrl, int scope,
@@ -410,55 +410,36 @@ RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
     TERMID termid;
     RSET result;
     int trunc_chunk;
-    
+    int trunc_limit = atoi(res_get_def(zh->res, "trunclimit", "10000"));
+
     termid = rset_term_create(term, length, flags, term_type, rset_nmem, ol,
 			      *index_type, hits_limit, term_ref_id);
+    
     if (no < 1)
 	return rset_create_null(rset_nmem, kctrl, termid);
-    
-    if (zi->reg->isams)
+    else if (no == 1)
+        return zebra_create_rset_isam(zh, rset_nmem, kctrl,
+                                      scope, *isam_p, termid);
+    else if (zh->reg->isamb && no > 1 && no < trunc_limit)
     {
-        if (no == 1)
-            return rsisams_create(rset_nmem, kctrl, scope,
-				  zi->reg->isams, *isam_p, termid);
-        qsort(isam_p, no, sizeof(*isam_p), isams_trunc_cmp);
+        RSET r;
+        RSET *rsets = xmalloc(no*sizeof(RSET)); /* use nmem! */
+        int i;
+        for (i = 0; i<no; i++)
+            rsets[i] = rsisamb_create(rset_nmem, kctrl, scope,
+                                      zh->reg->isamb, isam_p[i],
+                                      0 /* termid */);
+        r = rset_create_or(rset_nmem, kctrl, scope,
+                           termid, no, rsets);
+        xfree(rsets);
+        return r;
     }
-    else if (zi->reg->isamc)
-    {
-        if (no == 1)
-            return rsisamc_create(rset_nmem, kctrl, scope,
-				  zi->reg->isamc, *isam_p, termid);
+    if (zh->reg->isamc)
         qsort(isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
-    }
-    else if (zi->reg->isamb)
-    {
-	int trunc_limit = atoi(res_get_def(zi->res, "trunclimit", "10000"));
-        if (no == 1)
-            return rsisamb_create(rset_nmem, kctrl, scope,
-				  zi->reg->isamb, *isam_p, termid);
-        else if (no < trunc_limit) 
-        {
-            RSET r;
-            RSET *rsets = xmalloc(no*sizeof(RSET)); /* use nmem! */
-            int i;
-            for (i = 0; i<no; i++)
-                rsets[i] = rsisamb_create(rset_nmem, kctrl, scope,
-					  zi->reg->isamb, isam_p[i],
-					  0 /* termid */);
-            r = rset_create_or(rset_nmem, kctrl, scope,
-                               termid, no, rsets);
-            xfree(rsets);
-            return r;
-        } 
-        qsort(isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
-    }
     else
-    {
-        yaz_log(YLOG_WARN, "Unknown isam set in rset_trunc");
-	return rset_create_null(rset_nmem, kctrl, 0);
-    }
-    trunc_chunk = atoi(res_get_def(zi->res, "truncchunk", "20"));
-    result = rset_trunc_r(zi, term, length, flags, isam_p, 0, no, trunc_chunk,
+        qsort(isam_p, no, sizeof(*isam_p), isams_trunc_cmp);
+    trunc_chunk = atoi(res_get_def(zh->res, "truncchunk", "20"));
+    result = rset_trunc_r(zh, term, length, flags, isam_p, 0, no, trunc_chunk,
 			  preserve_position, term_type, rset_nmem, kctrl,
 			  scope, termid);
     return result;

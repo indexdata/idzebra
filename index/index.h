@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.211 2007-12-03 11:49:11 adam Exp $
+/* $Id: index.h,v 1.212 2007-12-03 13:04:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -451,6 +451,10 @@ ZEBRA_RES zebra_result_recid_to_sysno(ZebraHandle zh,
 
 void zebra_count_set(ZebraHandle zh, RSET rset, zint *count,
                      zint approx_limit);
+
+RSET zebra_create_rset_isam(ZebraHandle zh,
+                            NMEM rset_nmem, struct rset_key_control *kctl,
+                            int scope, ISAM_P pos, TERMID termid);
 
 YAZ_END_CDECL
 
