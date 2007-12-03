@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.78 2007-12-03 13:04:04 adam Exp $
+/* $Id: retrieve.c,v 1.79 2007-12-03 13:34:17 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -777,7 +777,8 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
                              i++, spec = spec->next)
                         {
                             int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
-                            if (ord == ord_array[i])
+                            if (ord == ord_array[i] && 
+                                str[0] != FIRST_IN_FIELD_CHAR)
                             {
                                 int *freq;
                                 zebra_strmap_t sm = map_array[i];
