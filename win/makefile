@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.69 2007-12-03 13:04:04 adam Exp $
+# $Id: makefile,v 1.70 2007-12-03 16:54:49 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -423,7 +423,6 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\states.obj \
 	$(OBJDIR)\stream.obj \
 	$(OBJDIR)\su_codec.obj \
-	$(OBJDIR)\symtab.obj \
 	$(OBJDIR)\trunc.obj \
 	$(OBJDIR)\untrans.obj \
 	$(OBJDIR)\update_path.obj \
