@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.70 2007-12-03 16:54:49 adam Exp $
+# $Id: makefile,v 1.71 2007-12-03 17:16:48 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -422,6 +422,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\sortidx.obj \
 	$(OBJDIR)\states.obj \
 	$(OBJDIR)\stream.obj \
+	$(OBJDIR)\strmap.obj \
 	$(OBJDIR)\su_codec.obj \
 	$(OBJDIR)\trunc.obj \
 	$(OBJDIR)\untrans.obj \
