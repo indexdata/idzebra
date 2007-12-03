@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.23 2007-05-25 12:17:11 adam Exp $
+/* $Id: t5.c,v 1.24 2007-12-03 12:57:55 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -20,7 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-/** t5.c: proximity searches */
+/** \file
+    \brief test attributes: proximity and position */
 #include <yaz/test.h>
 #include "testlib.h"
 
@@ -220,6 +221,11 @@ static void tst(int argc, char **argv)
     /* provoke unsupported relation */
     YAZ_CHECK(tl_query_x(zh, "@attr 1=4 @attr 2=6 x", 0, 117));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=1016 @attr 2=6 @attr 4=109 x", 0, 114));
+
+    /* position */
+    YAZ_CHECK(tl_query(zh, "@attr 3=1 my", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 3=1 x", 0));
+    YAZ_CHECK(tl_query_x(zh, "@attr 3=4 x", 0, 119));
  
     YAZ_CHECK(tl_close_down(zh, zs));
 }
