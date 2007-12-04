@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.20 2007-12-03 11:49:12 adam Exp $
+/* $Id: safari1.c,v 1.21 2007-12-04 12:52:33 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -106,7 +106,7 @@ static void tst(int argc, char **argv)
 #endif
 #if 1
     YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::any:0", 
-                                  yaz_oid_recsyn_sutrs,
+                                  yaz_oid_recsyn_xml,
                                   "<facets>\n"
                                   "  <facet type=\"0\" index=\"any\">\n"
                                   "    <term coccur=\"1\" occur=\"1\">old</term>\n"

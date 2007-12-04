@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.79 2007-12-03 13:34:17 adam Exp $
+/* $Id: retrieve.c,v 1.80 2007-12-04 12:52:33 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -695,21 +695,37 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
     ZEBRA_RES ret = ZEBRA_OK;
     int *ord_array;
     WRBUF wr = wrbuf_alloc();
+    int use_xml = 0;
     
     int no_ord = 0;
     struct index_spec *spec, *spec_list;
     int error;
 
+    /* see if XML is required for response */
+    if (oid_oidcmp(input_format, yaz_oid_recsyn_xml) == 0)
+        use_xml = 1;
 
     spec_list = parse_index_spec(elemsetname, odr_getmem(odr), &error);
               
     if (!spec_list || error)
-        return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
-            
+    {
+        zebra_setError(
+            zh, 
+            YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_,
+            0);
+        return ZEBRA_FAIL;
+    }          
+  
     for (spec = spec_list; spec; spec = spec->next)
     {
         if (!spec->index_type)
-            return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+        {
+            zebra_setError(
+                zh, 
+                YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_,
+                0);
+            return ZEBRA_FAIL;
+        }
         no_ord++;
     }
 
@@ -723,12 +739,15 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
                                                spec->index_name);
         if (ord == -1)
         {
-            return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+            zebra_setError(
+                zh, 
+                YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_,
+                0);
+            return ZEBRA_FAIL;
         }
         ord_array[i] = ord;
     }
-
-    pos_array = (zint *) xmalloc(num_recs * sizeof(*pos_array));
+    pos_array = (zint *) odr_malloc(odr, num_recs * sizeof(*pos_array));
     for (i = 0; i < num_recs; i++)
 	pos_array[i] = i+1;
     poset = zebra_meta_records_create(zh, setname, num_recs, pos_array);
@@ -736,7 +755,6 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
     {
 	zebra_setError(zh, YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST,
 		       setname);
-        xfree(pos_array);
 	ret = ZEBRA_FAIL;
     }
     else
@@ -799,7 +817,8 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
                 rec_free(&rec);
             }
         }
-        wrbuf_puts(wr, "<facets>\n");
+        if (use_xml)
+            wrbuf_puts(wr, "<facets>\n");
         for (spec = spec_list, i = 0; i < no_ord; i++, spec = spec->next)
         {
             int j;
@@ -810,27 +829,44 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
             term_collect_freq(zh, col, no_collect_terms, ord_array[i],
                               resultSetRef(zh, setname));
             
-            wrbuf_printf(wr, "  <facet type=\"%s\" index=\"%s\">\n",
-                         spec->index_type, spec->index_name);
+            if (use_xml)
+                wrbuf_printf(wr, "  <facet type=\"%s\" index=\"%s\">\n",
+                             spec->index_type, spec->index_name);
+            else
+                wrbuf_printf(wr, "facet %s %s\n",
+                             spec->index_type, spec->index_name);
             for (j = 0; j < no_collect_terms; j++)
             {
                 if (col[j].term)
                 {
                     char dst_buf[IT_MAX_WORD];
                     zebra_term_untrans(zh, spec->index_type, dst_buf, col[j].term);
-                    wrbuf_printf(wr, "    <term coccur=\"%d\"", col[j].oc);
-                    if (col[j].set_occur)
-                        wrbuf_printf(wr, " occur=\"" ZINT_FORMAT "\"", 
-                                     col[j].set_occur);
-                    wrbuf_printf(wr, ">");
-                    wrbuf_xmlputs(wr, dst_buf);
-                    wrbuf_printf(wr, "</term>\n");
+                    if (use_xml)
+                    {
+                        wrbuf_printf(wr, "    <term coccur=\"%d\"", col[j].oc);
+                        if (col[j].set_occur)
+                            wrbuf_printf(wr, " occur=\"" ZINT_FORMAT "\"", 
+                                         col[j].set_occur);
+                        wrbuf_printf(wr, ">");
+                        wrbuf_xmlputs(wr, dst_buf);
+                        wrbuf_printf(wr, "</term>\n");
+                    }
+                    else
+                    {
+                        wrbuf_printf(wr, "term %d", col[j].oc);
+                        if (col[j].set_occur)
+                            wrbuf_printf(wr, " " ZINT_FORMAT, 
+                                         col[j].set_occur);
+                        wrbuf_printf(wr, ": %s\n", dst_buf);
+                    }
                 }
             }
-            wrbuf_puts(wr, "  </facet>\n");
+            if (use_xml)
+                wrbuf_puts(wr, "  </facet>\n");
             nmem_destroy(nmem);
         }
-        wrbuf_puts(wr, "</facets>\n");
+        if (use_xml)
+            wrbuf_puts(wr, "</facets>\n");
         for (i = 0; i < no_ord; i++)
             zebra_strmap_destroy(map_array[i]);
     }
@@ -841,7 +877,6 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
     *rec_lenp = strlen(*rec_bufp);
     *output_format = yaz_oid_recsyn_xml;
 
-    xfree(pos_array);
     zebra_meta_records_destroy(zh, poset, num_recs);
     return ret;
 }
