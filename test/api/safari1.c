@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.21 2007-12-04 12:52:33 adam Exp $
+/* $Id: safari1.c,v 1.22 2007-12-05 09:29:53 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -109,11 +109,11 @@ static void tst(int argc, char **argv)
                                   yaz_oid_recsyn_xml,
                                   "<facets>\n"
                                   "  <facet type=\"0\" index=\"any\">\n"
-                                  "    <term coccur=\"1\" occur=\"1\">old</term>\n"
-                                  "    <term coccur=\"1\" occur=\"1\">art</term>\n"
-                                  "    <term coccur=\"2\" occur=\"1\">gamle</term>\n"
                                   "    <term coccur=\"4\" occur=\"3\">mand</term>\n"
                                   "    <term coccur=\"4\" occur=\"3\">the</term>\n"
+                                  "    <term coccur=\"1\" occur=\"1\">art</term>\n"
+                                  "    <term coccur=\"2\" occur=\"1\">gamle</term>\n"
+                                  "    <term coccur=\"1\" occur=\"1\">old</term>\n"
                                   "  </facet>\n"
                                   "</facets>\n"), ZEBRA_OK);
 #endif

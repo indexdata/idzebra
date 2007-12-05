@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.80 2007-12-04 12:52:33 adam Exp $
+/* $Id: retrieve.c,v 1.81 2007-12-05 09:29:52 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -629,6 +629,22 @@ zint freq_term(ZebraHandle zh, int ord, const char *term, RSET rset_set)
     return hits;
 }
 
+int term_qsort_handle(const void *a, const void *b)
+{
+    const struct term_collect *l = a;
+    const struct term_collect *r = b;
+    if (l->set_occur < r->set_occur)
+        return 1;
+    else if (l->set_occur > r->set_occur)
+        return -1;
+    else
+    {
+        const char *lterm = l->term ? l->term : "";
+        const char *rterm = r->term ? r->term : "";
+        return strcmp(lterm, rterm);
+    }
+}
+
 void term_collect_freq(ZebraHandle zh,
                        struct term_collect *col, int no_terms_collect,
                        int ord, RSET rset)
@@ -639,6 +655,7 @@ void term_collect_freq(ZebraHandle zh,
         if (col[i].term)
             col[i].set_occur = freq_term(zh, ord, col[i].term, rset);
     }
+    qsort(col, no_terms_collect, sizeof(*col), term_qsort_handle);
 }
 
 struct term_collect *term_collect_create(zebra_strmap_t sm, 
@@ -662,14 +679,17 @@ struct term_collect *term_collect_create(zebra_strmap_t sm,
     it = zebra_strmap_it_create(sm);
     while ((term = zebra_strmap_it_next(it, &data_buf, &data_len)))
     {
+        /* invariant:
+           col[0] has lowest oc .  col[no_terms_collect-1] has highest oc */
         int oc = *(int*) data_buf;
         int j = 0;
         /* insertion may be slow but terms terms will be "infrequent" and
-           thus number of iterations should be small below */
+           thus number of iterations should be small below 
+        */
         while (j < no_terms_collect && oc > col[j].oc)
             j++;
-        if (j)
-        {
+        if (j) 
+        {   /* oc <= col[j] and oc > col[j-1] */
             --j;
             memmove(col, col+1, sizeof(*col) * j);
             col[j].term = term;
