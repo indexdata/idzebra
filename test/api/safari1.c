@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.22 2007-12-05 09:29:53 adam Exp $
+/* $Id: safari1.c,v 1.23 2007-12-05 09:55:10 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -96,15 +96,12 @@ static void tst(int argc, char **argv)
     ids[2] = 24340;
     YAZ_CHECK(tl_meta_query(zh, "@attr 4=3 @attr 1=any mand", 3, ids));
 
-#if 1
     YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "R", yaz_oid_recsyn_sutrs,
                                   myrec[0]), ZEBRA_OK);
     YAZ_CHECK_EQ(tl_fetch_compare(zh, 2, "R", yaz_oid_recsyn_sutrs,
                                   myrec[2]), ZEBRA_OK);
     YAZ_CHECK_EQ(tl_fetch_compare(zh, 3, "R", yaz_oid_recsyn_sutrs,
                                   myrec[4]), ZEBRA_OK);
-#endif
-#if 1
     YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::any:0", 
                                   yaz_oid_recsyn_xml,
                                   "<facets>\n"
@@ -116,7 +113,15 @@ static void tst(int argc, char **argv)
                                   "    <term coccur=\"1\" occur=\"1\">old</term>\n"
                                   "  </facet>\n"
                                   "</facets>\n"), ZEBRA_OK);
-#endif
+    YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::any:0:2", 
+                                  yaz_oid_recsyn_xml,
+                                  "<facets>\n"
+                                  "  <facet type=\"0\" index=\"any\">\n"
+                                  "    <term coccur=\"4\" occur=\"3\">mand</term>\n"
+                                  "    <term coccur=\"4\" occur=\"3\">the</term>\n"
+                                  "  </facet>\n"
+                                  "</facets>\n"), ZEBRA_OK);
+
     /* limit to 125061 */
     limits[0] = 125061;
     limits[1] = 0;

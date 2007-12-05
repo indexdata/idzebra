@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.81 2007-12-05 09:29:52 adam Exp $
+/* $Id: retrieve.c,v 1.82 2007-12-05 09:55:57 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -80,6 +80,7 @@ static int zebra_create_record_stream(ZebraHandle zh,
 struct index_spec {
     const char *index_name;
     const char *index_type;
+    const char *extra;
     struct index_spec *next;
 };
 
@@ -103,6 +104,7 @@ struct index_spec *parse_index_spec(const char *elem, NMEM nmem,
             struct index_spec *spec = nmem_malloc(nmem, sizeof(*spec));
             spec->index_type = 0;
             spec->next = 0;
+            spec->extra = 0;
 
             if (!first)
                 first = spec;
@@ -119,9 +121,18 @@ struct index_spec *parse_index_spec(const char *elem, NMEM nmem,
                 cp++;
                 cp0 = cp;
                 
-                while (*cp != '\0' && *cp != ',')
+                while (*cp != '\0' && *cp != ',' && *cp != ':')
                     cp++;
                 spec->index_type = nmem_strdupn(nmem, cp0, cp - cp0);
+            }
+            if (*cp == ':') /* extra arguments */
+            {
+                cp++;
+                cp0 = cp;
+                
+                while (*cp != '\0' && *cp != ',' && *cp != ':')
+                    cp++;
+                spec->extra = nmem_strdupn(nmem, cp0, cp - cp0);
             }
             if (*cp != ',')
                 break;
@@ -710,7 +721,6 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
     zint *pos_array;
     int i;
     int num_recs = 10; /* number of records to analyze */
-    int no_collect_terms = 20; /* number of term candidates */
     ZebraMetaRecord *poset;
     ZEBRA_RES ret = ZEBRA_OK;
     int *ord_array;
@@ -843,9 +853,14 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
         {
             int j;
             NMEM nmem = nmem_create();
-            struct term_collect *col = term_collect_create(map_array[i], 
-                                                           no_collect_terms,
-                                                           nmem);
+            struct term_collect *col;
+            int no_collect_terms = 20;
+
+            if (spec->extra)
+                no_collect_terms = atoi(spec->extra);
+            if (no_collect_terms < 1)
+                no_collect_terms = 1;
+            col = term_collect_create(map_array[i], no_collect_terms, nmem);
             term_collect_freq(zh, col, no_collect_terms, ord_array[i],
                               resultSetRef(zh, setname));
             
