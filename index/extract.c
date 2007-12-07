@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.270 2007-11-30 12:19:08 adam Exp $
+/* $Id: extract.c,v 1.271 2007-12-07 14:09:09 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1729,13 +1729,15 @@ static void extract_add_icu(RecWord *p, zebra_map_t zm)
     const char *res_buf = 0;
     size_t res_len = 0;
     ZebraHandle zh = p->extractCtrl->handle;
-    int r = zebra_map_tokenize(zm, p->term_buf, p->term_len,
-                               &res_buf, &res_len);
+    
     int cat = zinfo_index_category_index;
-    int ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, p->index_type, p->index_name);
+    int ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, 
+                                          p->index_type, p->index_name);
     if (ch < 0)
-        ch = zebraExplain_add_attr_str(zh->reg->zei, cat, p->index_type, p->index_name);
-    while (r)
+        ch = zebraExplain_add_attr_str(zh->reg->zei, cat, 
+                                       p->index_type, p->index_name);
+    zebra_map_tokenize_start(zm, p->term_buf, p->term_len);
+    while (zebra_map_tokenize_next(zm, &res_buf, &res_len))
     {
         int i = 0;
         key.mem[i++] = ch;
@@ -1750,7 +1752,6 @@ static void extract_add_icu(RecWord *p, zebra_map_t zm)
         zebra_rec_keys_write(zh->reg->keys, res_buf, res_len, &key);
         
         p->seqno++;
-        r = zebra_map_tokenize(zm, 0, 0, &res_buf, &res_len);
     }
 }
 

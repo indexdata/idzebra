@@ -1,4 +1,4 @@
-/* $Id: zebramap.h,v 1.27 2007-11-06 10:29:58 adam Exp $
+/* $Id: zebramap.h,v 1.28 2007-12-07 14:09:09 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -94,10 +94,13 @@ zebra_map_t zebra_map_get(zebra_maps_t zms, const char *id);
 YAZ_EXPORT
 zebra_map_t zebra_map_get_or_add(zebra_maps_t zms, const char *id);
 
+YAZ_EXPORT
+int zebra_map_tokenize_start(zebra_map_t zm,
+                             const char *buf, size_t len);
 
-int zebra_map_tokenize(zebra_map_t zm,
-                       const char *buf, size_t len,
-                       const char **result_buf, size_t *result_len);
+YAZ_EXPORT
+int zebra_map_tokenize_next(zebra_map_t zm,
+                            const char **result_buf, size_t *result_len);
 
 YAZ_END_CDECL
 
