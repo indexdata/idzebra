@@ -1,4 +1,4 @@
-/* $Id: t17.c,v 1.7 2007-12-07 14:09:09 adam Exp $
+/* $Id: t17.c,v 1.8 2007-12-07 14:17:37 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -53,6 +53,12 @@ static void tst(int argc, char **argv)
 
     /* phrase search */
     YAZ_CHECK(tl_query(zh, "@attr 1=title {my computer}", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=1 {my computer}", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title {computer x}", 1));
+
+    /* complete-subfield search */
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {my computer}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {my}", 0));
  
     YAZ_CHECK(tl_close_down(zh, zs));
 #endif

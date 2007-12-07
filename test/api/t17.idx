@@ -1,5 +1,5 @@
 # Zebra indexes as referred to from the *.abs-files.
-#  $Id: t17.idx,v 1.4 2007-11-08 21:21:58 adam Exp $
+#  $Id: t17.idx,v 1.5 2007-12-07 14:17:37 adam Exp $
 #
 
 # Traditional word index
@@ -19,7 +19,7 @@ debug 1
 # and structure is word/phrase/word-list/free-form-text/document-text
 index p
 completeness 1
-charmap string.chr
+charmap phrases-icu.xml
 
 # Sort register
 sort s
