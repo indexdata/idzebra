@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.73 2007-12-07 14:09:10 adam Exp $
+/* $Id: zebramap.c,v 1.74 2007-12-10 17:06:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -641,7 +641,8 @@ static int tokenize_simple(zebra_map_t zm,
 
 
 int zebra_map_tokenize_next(zebra_map_t zm,
-                            const char **result_buf, size_t *result_len)
+                            const char **result_buf, size_t *result_len,
+                            const char **display_buf, size_t *display_len)
 {
     assert(zm->use_chain);
 
@@ -659,6 +660,12 @@ int zebra_map_tokenize_next(zebra_map_t zm,
 
             *result_len = strlen(*result_buf);
 
+            if (display_buf)
+            {
+                *display_buf = icu_chain_token_display(zm->icu_chain);
+                if (display_len)
+                    *display_len = strlen(*display_buf);
+            }
             if (zm->debug)
             {
                 wrbuf_rewind(zm->print_str);

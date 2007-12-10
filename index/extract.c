@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.271 2007-12-07 14:09:09 adam Exp $
+/* $Id: extract.c,v 1.272 2007-12-10 17:06:08 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1737,7 +1737,7 @@ static void extract_add_icu(RecWord *p, zebra_map_t zm)
         ch = zebraExplain_add_attr_str(zh->reg->zei, cat, 
                                        p->index_type, p->index_name);
     zebra_map_tokenize_start(zm, p->term_buf, p->term_len);
-    while (zebra_map_tokenize_next(zm, &res_buf, &res_len))
+    while (zebra_map_tokenize_next(zm, &res_buf, &res_len, 0, 0))
     {
         int i = 0;
         key.mem[i++] = ch;
