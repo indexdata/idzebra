@@ -1,4 +1,4 @@
-/* $Id: t17.c,v 1.9 2007-12-13 11:09:20 adam Exp $
+/* $Id: t17.c,v 1.10 2007-12-13 15:43:52 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -26,17 +26,27 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/test.h>
 #include "testlib.h"
 
+/* utf-8 sequences for some characters */
 #define char_ae "\xc3\xa6"
 #define char_AE "\xc3\x86"
+
 #define char_oslash "\xc3\xb8"
 #define char_Oslash "\xc3\x98"
+
+#define char_aring "\xc3\xa5"
+#define char_Aring "\xc3\x85"
+
+#define char_comb_ring_above "\xcc\x8a"
+
+#define char_aring1 "a" char_comb_ring_above
+#define char_Aring1 "A" char_comb_ring_above
 
 const char *myrec[] = {
         "<gils>\n<title>My computer</title>\n</gils>\n",
         "<gils>\n<title>My x computer</title>\n</gils>\n",
         "<gils>\n<title>My computer x</title>\n</gils>\n" ,
-
         "<gils>\n<title>" char_ae "</title>\n</gils>\n" ,
+        "<gils>\n<title>B" char_aring "d</title>\n</gils>\n" ,
 	0} ;
 	
 static void tst(int argc, char **argv)
@@ -61,9 +71,12 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=title mY", 3));
 
     YAZ_CHECK(tl_query(zh, char_ae, 1));
-#if 0
     YAZ_CHECK(tl_query(zh, char_AE, 1));
-#endif
+
+    YAZ_CHECK(tl_query(zh, "b" char_aring "d", 1));
+    YAZ_CHECK(tl_query(zh, "B" char_Aring "D", 1));
+    YAZ_CHECK(tl_query(zh, "b" char_aring1 "d", 1));
+    YAZ_CHECK(tl_query(zh, "B" char_Aring1 "D", 1));
 
     /* phrase search */
     YAZ_CHECK(tl_query(zh, "@attr 1=title {my computer}", 2));
