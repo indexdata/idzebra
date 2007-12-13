@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- 
-$Id: zebra.xsl,v 1.1 2006-06-09 20:46:38 marc Exp $
+$Id: zebra.xsl,v 1.2 2007-12-13 17:42:28 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 -->
 
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:z="http://indexdata.dk/zebra/xslt/1" 
+                xmlns:z="http://indexdata.com/zebra-2.0" 
                 version="1.0">
 
   <xsl:param name="id" select="''"/>

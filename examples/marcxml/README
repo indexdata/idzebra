@@ -1,8 +1,7 @@
-Example data and configuration for MARC21 XML data using the 'alvis'
+Example data and configuration for MARC21 XML data using the 'dom'
 XSLT input filter. 
 
 MARC21 XML example data and transforming XSLT stylesheets are borrowed from 
-
 The Library of Congress' Network Development and MARC Standards Office,
 which is developing a framework for working with MARC data in a XML
 environment. 

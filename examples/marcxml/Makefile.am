@@ -1,6 +1,7 @@
-# $Id: Makefile.am,v 1.2 2006-06-13 07:52:15 marc Exp $
+# $Id: Makefile.am,v 1.3 2007-12-13 17:42:28 adam Exp $
 
 EXTRA_DIST = zebra.cfg\
+   README\
    MARC21slim2INDEX.xsl\
    MARC21slim2MADS.xsl\
    MARC21slim2MODS3-1.xsl\
@@ -13,7 +14,7 @@ EXTRA_DIST = zebra.cfg\
    collection-opera-43.xml\
    collection-sandburg-1.xml\
    collection-subjmrc.xml\
-   filter_alvis_conf.xml\
+   dom-config.xml\
    identity.xsl\
    zebra.xsl
 

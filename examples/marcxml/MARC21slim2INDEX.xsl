@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- xsltproc MARC21slim2INDEX.xsl collection-2.xml -->
-
 <!-- 
-$Id: MARC21slim2INDEX.xsl,v 1.5 2006-06-09 20:46:38 marc Exp $
+$Id: MARC21slim2INDEX.xsl,v 1.6 2007-12-13 17:42:28 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 
@@ -26,11 +24,10 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 <xsl:stylesheet 
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
-    xmlns:z="http://indexdata.dk/zebra/xslt/1" 
+    xmlns:z="http://indexdata.com/zebra-2.0" 
     xmlns:marc="http://www.loc.gov/MARC21/slim" 
     version="1.0">
 
-  <!-- <xsl:include href="MARC21slimUtils.xsl"/> -->
   <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
 
   <!-- disable all default text node output -->
@@ -79,7 +76,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
        </xsl:choose>
      </xsl:variable>
 
-     <z:record id="{$controlField001}" type="update">
+     <z:record z:id="{$controlField001}" type="update">
 
 
        <!-- <xsl:attribute name="id"></xsl:attribute> -->
@@ -214,7 +211,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    -->
    <xsl:template name="Abstract">
      <xsl:for-each select="marc:datafield[@tag='520']">
-       <z:index name="Abstract" type="w">
+       <z:index name="Abstract:w">
          <xsl:value-of select="."/>
        </z:index>
      </xsl:for-each>
@@ -287,12 +284,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
                           | marc:datafield[@tag='800']
                           | marc:datafield[@tag='810']
                           | marc:datafield[@tag='811']">
-      <z:index name="Author" type="w">
+      <z:index name="Author:w">
         <xsl:value-of select="."/>
       </z:index>
     </xsl:for-each>
     <xsl:for-each select="marc:datafield[@tag='100']">
-      <z:index name="Author" type="p">
+      <z:index name="Author:p">
         <xsl:value-of select="marc:subfield[@code='a']"/>
         <xsl:text> </xsl:text>
         <xsl:value-of select="marc:subfield[@code='d']"/>
@@ -316,7 +313,7 @@ title                      or a conference or meeting      111/2XX, subfields
   <xsl:template name="Author-title">
     <xsl:if test="marc:datafield[@tag='100']
                   and marc:datafield[@tag='245']">
-      <z:index name="Author-title" type="p">
+      <z:index name="Author-title:p">
         <xsl:value-of 
             select="marc:datafield[@tag='100']/marc:subfield[@code='a']"/>
         <xsl:text> </xsl:text>
@@ -342,7 +339,7 @@ corporate                  of persons that is identified
    -->
   <xsl:template name="Author-name-corporate">
     <xsl:for-each select="marc:datafield[@tag='110']">
-      <z:index name="Author-name-corporate" type="w">
+      <z:index name="Author-name-corporate:w">
         <xsl:value-of select="."/>
       </z:index>
     </xsl:for-each>
@@ -362,7 +359,7 @@ conference                 representatives of various
    -->
   <xsl:template name="Author-name-conference">
     <xsl:for-each select="marc:datafield[@tag='111']">
-      <z:index name="Author-name-conference" type="w">
+      <z:index name="Author-name-conference:w">
         <xsl:value-of select="."/>
       </z:index>
     </xsl:for-each>
@@ -382,13 +379,13 @@ Author-name-personal 1004  A person's real name,           100, 400, 700, 800
   <xsl:template name="Author-name-personal">
     <xsl:for-each select="marc:datafield[@tag='100']">
       <xsl:for-each select="marc:subfield[@code='a']">
-        <z:index name="Author-name-personal" type="w">
+        <z:index name="Author-name-personal:w">
           <xsl:value-of select="."/>
         </z:index>
       </xsl:for-each>
     </xsl:for-each>
     <xsl:for-each select="marc:datafield[@tag='100']">
-      <z:index name="Author-name-personal" type="p">
+      <z:index name="Author-name-personal:p">
         <xsl:value-of select="marc:subfield[@code='a']"/>
         <xsl:text> </xsl:text>
         <xsl:value-of select="marc:subfield[@code='d']"/>
@@ -667,7 +664,7 @@ Identifier-ISBN         7  International Standard Book     020
    -->
   <xsl:template name="ISBN">
     <xsl:for-each select="marc:datafield[@tag='020']/marc:subfield[@code='a']">
-      <z:index name="ISBN" type="n">
+      <z:index name="ISBN:n">
         <xsl:value-of select="."/>
       </z:index>
     </xsl:for-each>
@@ -684,7 +681,7 @@ Identifier-ISSN         8  International Standard Serial   022, 4XX$x,
    -->
   <xsl:template name="ISSN">
     <xsl:for-each select="marc:datafield[@tag='022']">
-      <z:index name="ISSN" type="n">
+      <z:index name="ISSN:n">
         <xsl:value-of select="."/>
       </z:index>
     </xsl:for-each>
@@ -887,7 +884,7 @@ Subject                21  The primary topic on which a    600, 610, 611, 630,
                           |marc:datafield[@tag='655']
                           |marc:datafield[@tag='656']
                           |marc:datafield[@tag='657']">
-      <z:index name="Subject-heading" type="w">
+      <z:index name="Subject-heading:w">
         <xsl:value-of select="."/>
       </z:index>
     </xsl:for-each>
@@ -895,7 +892,7 @@ Subject                21  The primary topic on which a    600, 610, 611, 630,
                           |marc:datafield[@tag='650']
                           |marc:datafield[@tag='651']
                           |marc:datafield[@tag='653']">
-      <z:index name="Subject-heading" type="w">
+      <z:index name="Subject-heading:w">
         <xsl:value-of select="."/>
       </z:index>
     </xsl:for-each>
@@ -1023,7 +1020,7 @@ Title                   4  A word, phrase, character,      130, 21X-24X, 440,
    -->
   <xsl:template name="Title">
     <xsl:for-each select="marc:datafield[@tag='245']/marc:subfield[@code='a']">
-      <z:index name="Title" type="w">
+      <z:index name="Title:w">
         <xsl:value-of select="."/>
       </z:index>
     </xsl:for-each>
