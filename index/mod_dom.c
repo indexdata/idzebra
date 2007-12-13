@@ -1,4 +1,4 @@
-/* $Id: mod_dom.c,v 1.41 2007-10-29 16:57:52 adam Exp $
+/* $Id: mod_dom.c,v 1.42 2007-12-13 19:59:21 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -841,7 +841,6 @@ static void set_record_info(struct filter_info *tinfo,
         else
             dom_log(YLOG_WARN, tinfo, node, "bad @type value: %s", type_p);
         extctr->action = action;
-        yaz_log(YLOG_LOG, "In mod_dom.c: setting action to %d", action);
     }
 
     if (tinfo->record_info_invoked == 1)
