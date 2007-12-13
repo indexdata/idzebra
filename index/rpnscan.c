@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.23 2007-12-03 11:49:11 adam Exp $
+/* $Id: rpnscan.c,v 1.24 2007-12-13 11:09:20 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -45,14 +45,28 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 				 char *termz, zebra_map_t zm)
 {
-    char termz0[IT_MAX_WORD];
+    char term_utf8[IT_MAX_WORD];
 
-    if (zapt_term_to_utf8(zh, zapt, termz0) == ZEBRA_FAIL)
+    if (zapt_term_to_utf8(zh, zapt, term_utf8) == ZEBRA_FAIL)
         return ZEBRA_FAIL;    /* error */
+    else if (zebra_maps_is_icu(zm))
+    {
+        const char *res_buf;
+        size_t res_len;
+        zebra_map_tokenize_start(zm, term_utf8, strlen(term_utf8));
+        
+        if (zebra_map_tokenize_next(zm, &res_buf, &res_len, 0, 0))
+        {
+            memcpy(termz, res_buf, res_len);
+            termz[res_len] = '\0';
+        }
+        else
+            termz[0] = '\0';
+    }
     else
     {
         const char **map;
-        const char *cp = (const char *) termz0;
+        const char *cp = (const char *) term_utf8;
         const char *cp_end = cp + strlen(cp);
         const char *src;
         int i = 0;
@@ -218,8 +232,6 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
         if (pos != -1)
         {
             zint sysno;
-            int code = -1;
-            zebra_snippets *rec_snippets = zebra_snippets_create();
             zebra_snippets *hit_snippets = zebra_snippets_create();
 
             glist[pos].term = 0;
@@ -227,22 +239,28 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
             
             get_first_snippet_from_rset(zh, rset, hit_snippets, &sysno);
             if (sysno)
-                code = zebra_get_rec_snippets(zh, sysno, rec_snippets);
-         
-            if (code == 0)
             {
-                const struct zebra_snippet_word *w = 
-                    zebra_snippets_lookup(rec_snippets, hit_snippets);
-                if (w)
+                zebra_snippets *rec_snippets = zebra_snippets_create();
+                int code = zebra_get_rec_snippets(zh, sysno, rec_snippets);
+                if (code == 0)
                 {
-                    glist[pos].display_term = odr_strdup(stream, w->term);
+                    const struct zebra_snippet_word *w = 
+                        zebra_snippets_lookup(rec_snippets, hit_snippets);
+                    if (w)
+                    {
+                        glist[pos].display_term = odr_strdup(stream, w->term);
+                    }
                 }
+                zebra_snippets_destroy(rec_snippets);
             }
-            if (!glist[pos].term)
-                zebra_term_untrans_iconv(zh, stream->mem, index_type,
-                                         &glist[pos].term, term);
+            if (zebra_term_untrans_iconv(zh, stream->mem, index_type,
+                                         &glist[pos].term, term))
+            {
+                /* failed.. use display_term instead (which could be 0) */
+                glist[pos].term = glist[pos].display_term;
+            }
+
             glist[pos].occurrences = count;
-            zebra_snippets_destroy(rec_snippets);
             zebra_snippets_destroy(hit_snippets);
         }
         rset_delete(rset);
@@ -516,11 +534,6 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     {
 	zebra_setError(zh, YAZ_BIB1_TOO_MANY_DATABASES_SPECIFIED, 0);
         return ZEBRA_FAIL;
-    }
-    if (sort_flag)
-    {
-        return rpn_facet(zh, stream, zapt, attributeset, position, num_entries,
-                         list, is_partial, set_name);
     }
     for (base_no = 0; base_no < num_bases; base_no++)
     {

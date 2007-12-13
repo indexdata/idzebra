@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.212 2007-12-03 13:04:04 adam Exp $
+/* $Id: index.h,v 1.213 2007-12-13 11:09:20 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -377,14 +377,14 @@ Dict dict_open_res(BFiles bfs, const char *name, int cache, int rw,
 void zebra_setError(ZebraHandle zh, int code, const char *addinfo);
 void zebra_setError_zint(ZebraHandle zh, int code, zint i);
 
-void zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream, 
-                              const char *index_type,
-			      char **dst, const char *src);
+int zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream, 
+                             const char *index_type,
+                             char **dst, const char *src);
 
 ZEBRA_RES zebra_get_hit_vector(ZebraHandle zh, const char *setname, zint sysno);
 
-void zebra_term_untrans(ZebraHandle zh, const char *index_type,
-			char *dst, const char *src);
+int zebra_term_untrans(ZebraHandle zh, const char *index_type,
+                       char *dst, const char *src);
 
 ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
                             Z_AttributesPlusTerm *zapt,
@@ -436,13 +436,6 @@ ZEBRA_RES zebra_term_limits_APT(ZebraHandle zh,
                                 zint *hits_limit_value,
                                 const char **term_ref_id_str,
                                 NMEM nmem);
-
-ZEBRA_RES rpn_facet(ZebraHandle zh, ODR stream,
-                    Z_AttributesPlusTerm *zapt,
-                    const Odr_oid *attributeset,
-                    int *position, int *num_entries, 
-                    ZebraScanEntry **list,
-                    int *is_partial, const char *set_name);
 
 ZEBRA_RES zebra_result_recid_to_sysno(ZebraHandle zh, 
                                       const char *setname,

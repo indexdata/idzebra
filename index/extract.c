@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.272 2007-12-10 17:06:08 adam Exp $
+/* $Id: extract.c,v 1.273 2007-12-13 11:09:20 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -265,6 +265,26 @@ static void snippet_add_incomplete_field(RecWord *p, int ord, zebra_map_t zm)
 
 }
 
+static void snippet_add_icu(RecWord *p, int ord, zebra_map_t zm)
+{
+    struct snip_rec_info *h = p->extractCtrl->handle;
+
+    const char *res_buf = 0;
+    size_t res_len = 0;
+
+    const char *display_buf = 0;
+    size_t display_len = 0;
+
+    zebra_map_tokenize_start(zm, p->term_buf, p->term_len);
+    while (zebra_map_tokenize_next(zm, &res_buf, &res_len,
+                                   &display_buf, &display_len))
+    {
+        zebra_snippets_appendn(h->snippets, p->seqno, 0, ord,
+                               display_buf, display_len);
+        p->seqno++;
+    }
+}
+
 static void snippet_token_add(RecWord *p)
 {
     struct snip_rec_info *h = p->extractCtrl->handle;
@@ -277,10 +297,15 @@ static void snippet_token_add(RecWord *p)
         int ch = zebraExplain_lookup_attr_str(
             zei, zinfo_index_category_index, p->index_type, p->index_name);
 
-        if (zebra_maps_is_complete(zm))
-            snippet_add_complete_field(p, ch, zm);
+        if (zebra_maps_is_icu(zm))
+            snippet_add_icu(p, ch, zm);
         else
-            snippet_add_incomplete_field(p, ch, zm);
+        {
+            if (zebra_maps_is_complete(zm))
+                snippet_add_complete_field(p, ch, zm);
+            else
+                snippet_add_incomplete_field(p, ch, zm);
+        }
     }
 }
 
@@ -1456,7 +1481,7 @@ void extract_flush_record_keys2(ZebraHandle zh, zint sysno,
 }
 
 
-ZEBRA_RES zebra_rec_keys_to_snippets(ZebraHandle zh,
+ZEBRA_RES zebra_rec_keys_to_snippets1(ZebraHandle zh,
                                      zebra_rec_keys_t reckeys,
                                      zebra_snippets *snippets)
 {
@@ -1760,8 +1785,8 @@ static void extract_add_icu(RecWord *p, zebra_map_t zm)
     \param p token data to be indexed
 
     Call sequence:
-    extract_token
-    zebra_add_{in}_complete
+    extract_token_add
+    extract_add_{in}_complete
     extract_add_string
     
     extract_add_index_string

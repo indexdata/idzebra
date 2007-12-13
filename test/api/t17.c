@@ -1,4 +1,4 @@
-/* $Id: t17.c,v 1.8 2007-12-07 14:17:37 adam Exp $
+/* $Id: t17.c,v 1.9 2007-12-13 11:09:20 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -26,10 +26,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/test.h>
 #include "testlib.h"
 
+#define char_ae "\xc3\xa6"
+#define char_AE "\xc3\x86"
+#define char_oslash "\xc3\xb8"
+#define char_Oslash "\xc3\x98"
+
 const char *myrec[] = {
         "<gils>\n<title>My computer</title>\n</gils>\n",
         "<gils>\n<title>My x computer</title>\n</gils>\n",
         "<gils>\n<title>My computer x</title>\n</gils>\n" ,
+
+        "<gils>\n<title>" char_ae "</title>\n</gils>\n" ,
 	0} ;
 	
 static void tst(int argc, char **argv)
@@ -51,6 +58,13 @@ static void tst(int argc, char **argv)
 
     YAZ_CHECK(tl_query(zh, "@attr 1=title my", 3));
 
+    YAZ_CHECK(tl_query(zh, "@attr 1=title mY", 3));
+
+    YAZ_CHECK(tl_query(zh, char_ae, 1));
+#if 0
+    YAZ_CHECK(tl_query(zh, char_AE, 1));
+#endif
+
     /* phrase search */
     YAZ_CHECK(tl_query(zh, "@attr 1=title {my computer}", 2));
     YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=1 {my computer}", 2));
@@ -59,7 +73,9 @@ static void tst(int argc, char **argv)
     /* complete-subfield search */
     YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {my computer}", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {my}", 0));
- 
+
+    /* scan */
+    
     YAZ_CHECK(tl_close_down(zh, zs));
 #endif
 }

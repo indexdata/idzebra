@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.71 2007-12-03 17:16:48 adam Exp $
+# $Id: makefile,v 1.72 2007-12-13 11:09:20 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -400,7 +400,6 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\regxread.obj \
 	$(OBJDIR)\res.obj \
 	$(OBJDIR)\retrieve.obj \
-	$(OBJDIR)\rpnfacet.obj \
 	$(OBJDIR)\rpnscan.obj \
 	$(OBJDIR)\rpnsearch.obj \
 	$(OBJDIR)\rsbetween.obj \
