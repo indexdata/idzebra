@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.12 2006-11-14 12:41:19 adam Exp $ 
+## $Id: Makefile.am,v 1.13 2007-12-13 20:19:40 adam Exp $ 
 
 noinst_LTLIBRARIES = libidzebra-bfile.la
 
@@ -15,4 +15,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 libidzebra_bfile_la_SOURCES = bfile.c mfile.c cfile.c commit.c cfile.h mfile.h
 
 LDADD = libidzebra-bfile.la ../util/libidzebra-util.la $(YAZLALIB)
+
+clean-local:
+	-rm -fr *.log *.mf shadow
 
