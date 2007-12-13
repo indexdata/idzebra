@@ -1,0 +1,30 @@
+# ICU indexing for words and phrases.. Otherwise similar
+# to default.idx .
+# $Id: icu.idx,v 1.1 2007-12-13 18:10:35 adam Exp $
+
+# Traditional word index
+# Used if completenss is 'incomplete field' (@attr 6=1) and
+# structure is word/phrase/word-list/free-form-text/document-text
+index w
+completeness 0
+position 1
+alwaysmatches 1
+firstinfield 1
+icuchain words-icu.xml
+# debug 1
+
+# Phrase index
+# Used if completeness is 'complete {sub}field' (@attr 6=2, @attr 6=1)
+# and structure is word/phrase/word-list/free-form-text/document-text
+index p
+completeness 1
+icuchain phrases-icu.xml
+# debug 1
+
+# Sort register
+sort s
+completeness 1
+charmap string.chr
+
+# Staticrank (uncomment to enable)
+#staticrank r
