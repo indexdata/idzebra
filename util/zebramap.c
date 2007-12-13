@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.74 2007-12-10 17:06:08 adam Exp $
+/* $Id: zebramap.c,v 1.75 2007-12-13 18:08:26 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -230,8 +230,16 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
     }
     else if (!yaz_matchstr(argv[0], "icuchain"))
     {
+        char full_path[1024];
+        if (!yaz_filepath_resolve(argv[1], zms->tabpath, zms->tabroot,
+                                  full_path))
+        {
+            yaz_log(YLOG_WARN, "%s:%d: Could not locate icuchain config '%s'",
+                    fname, lineno, argv[1]);
+            return -1;
+        }
 #if YAZ_HAVE_XML2
-        zm->doc = xmlParseFile(argv[1]);
+        zm->doc = xmlParseFile(full_path);
         if (!zm->doc)
         {
             yaz_log(YLOG_WARN, "%s:%d: Could not load icuchain config '%s'",
