@@ -1,4 +1,4 @@
-/* $Id: tstpass.c,v 1.3 2007-05-16 12:31:17 adam Exp $
+/* $Id: tstpass.c,v 1.4 2007-12-13 19:50:26 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -22,9 +22,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <passwddb.h>
 #include <yaz/test.h>
+#include <yaz/snprintf.h>
+#include <stdlib.h>
+
+/* use env srcdir as base directory - or current directory if unset */
+const char *get_srcdir(void)
+{
+    const char *srcdir = getenv("srcdir");
+    if (!srcdir || ! *srcdir)
+        srcdir=".";
+    return srcdir;
+
+}
 
 static void tst(void)
 {
+    char path[1024];
     Passwd_db db;
     
     db = passwd_db_open();
@@ -32,10 +45,12 @@ static void tst(void)
     if (!db)
         return;
 
-    YAZ_CHECK_EQ(passwd_db_file_plain(db, "no_such_file.txt"), -1);
-    YAZ_CHECK_EQ(passwd_db_file_crypt(db, "no_such_file.txt"), -1);
+    yaz_snprintf(path, sizeof(path), "%s/no_such_file.txt", get_srcdir());
+    YAZ_CHECK_EQ(passwd_db_file_plain(db, path), -1);
+    YAZ_CHECK_EQ(passwd_db_file_crypt(db, path), -1);
+    yaz_snprintf(path, sizeof(path), "%s/tstpass.txt", get_srcdir());
 #if HAVE_CRYPT_H
-    YAZ_CHECK_EQ(passwd_db_file_crypt(db, "tstpass.txt"), 0);
+    YAZ_CHECK_EQ(passwd_db_file_crypt(db, path), 0);
     YAZ_CHECK_EQ(passwd_db_auth(db, "other", "x1234"), -1);
     YAZ_CHECK_EQ(passwd_db_auth(db, "admin", "abcd"), -2);
     YAZ_CHECK_EQ(passwd_db_auth(db, "admin", "fruitbat"), 0);

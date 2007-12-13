@@ -1,4 +1,4 @@
-/* $Id: tstres.c,v 1.3 2007-08-31 21:12:51 mike Exp $
+/* $Id: tstres.c,v 1.4 2007-12-13 19:50:26 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -21,8 +21,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include <string.h>
+#include <stdlib.h>
 #include <idzebra/res.h>
 #include <yaz/test.h>
+#include <yaz/snprintf.h>
+
+/* use env srcdir as base directory - or current directory if unset */
+const char *get_srcdir(void)
+{
+    const char *srcdir = getenv("srcdir");
+    if (!srcdir || ! *srcdir)
+        srcdir=".";
+    return srcdir;
+
+}
+
 
 static void tst_res_open(void)
 {
@@ -49,7 +62,11 @@ static void tst_res_read_file(void)
     if (res)
     {
         const char *v;
-        int r = res_read_file(res, "tstres.cfg");
+        char path[1024];
+        int r;
+        
+        yaz_snprintf(path, sizeof(path), "%s/tstres.cfg", get_srcdir());
+        r = res_read_file(res, path);
         YAZ_CHECK_EQ(r, ZEBRA_OK);
 
         v = res_get_def(res, "register", "none");
