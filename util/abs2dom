@@ -1,16 +1,29 @@
 #!/usr/bin/perl -w
 
-# $Id: abs2dom,v 1.2 2007-12-17 12:28:50 sondberg Exp $
+# $Id: abs2dom,v 1.3 2007-12-17 12:38:57 sondberg Exp $
 # ----------------------------------------------------------------------------
 # Generate a dom-filter indexing stylesheet based upon an .abs file
+# Should be called either this way
+#
+#   abs2dom something.abs > something.xsl
+#
+# or in a streaming way
+#
+#   something | abs2dom > something.xsl
+#
+# The output xslt stylesheet generally needs a little bit of tweaking to be
+# ready for indexing. In particular, watch out for the precedence rules of
+# xslt templates which work differently from xelm declarations in an .abs file!
+#
+# Good luck!
 
 use strict;
 
 print <<END_OF_XSLT;
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                    xmlns:z="http://indexdata.com/zebra-2.0"
-                    version="1.0">
+                xmlns:z="http://indexdata.com/zebra-2.0"
+                version="1.0">
 
   <xsl:output indent="yes"
         method="xml"
