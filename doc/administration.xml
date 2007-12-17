@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.52 2007-06-27 13:46:43 adam Exp $ -->
+ <!-- $Id: administration.xml,v 1.53 2007-12-17 14:22:05 heikki Exp $ -->
  <title>Administrating &zebra;</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -762,7 +762,7 @@
    of tokens. Each token takes the form:
    
    <screen>
-    <emphasis>dir</emphasis><literal>:</literal><emphasis>size</emphasis>. 
+    <emphasis>dir</emphasis><literal>:</literal><emphasis>size</emphasis> 
    </screen>
    
    The <emphasis>dir</emphasis> specifies a directory in which index files
@@ -776,19 +776,21 @@
    <literal>k</literal> for kilobytes.
    <literal>M</literal> for megabytes,
    <literal>G</literal> for gigabytes.
+   Specifying a negative value disables the checking (it still needs the unit, 
+   use <literal>-1b</literal>).
   </para>
   
   <para>
-   For instance, if you have allocated two disks for your register, and
+   For instance, if you have allocated three disks for your register, and
    the first disk is mounted
-   on <literal>/d1</literal> and has 2GB of free space and the
-   second, mounted on <literal>/d2</literal> has 3.6 GB, you could
-   put this entry in your configuration file:
+   on <literal>/d1</literal> and has 2GB of free space, the
+   second, mounted on <literal>/d2</literal> has 3.6 GB, and the third,
+   on which you have more space than you bother to worry about, mounted on 
+   <literal>/d3</literal> you could put this entry in your configuration file:
    
    <screen>
-    register: /d1:2G /d2:3600M
+    register: /d1:2G /d2:3600M /d3:-1b
    </screen>
-   
   </para>
   
   <para>
