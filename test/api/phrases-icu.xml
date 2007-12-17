@@ -1,7 +1,0 @@
-<icu_chain locale="en">
-  <transform rule="[:Control:] Any-Remove"/>
-  <tokenize rule="s"/>
-  <transform rule="[:Punctuation:] Remove"/>
-  <display/>
-  <casemap rule="l"/>
-</icu_chain>

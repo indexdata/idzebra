@@ -1,4 +1,4 @@
-/* $Id: t17.c,v 1.10 2007-12-13 15:43:52 adam Exp $
+/* $Id: t17.c,v 1.11 2007-12-17 12:23:03 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -86,8 +86,24 @@ static void tst(int argc, char **argv)
     /* complete-subfield search */
     YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {my computer}", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {my}", 0));
-
+    
     /* scan */
+    {   /* word search */
+        const char *ent[] = { char_ae, "B" char_aring "d", "computer", 
+                              "My", "x", 0 };
+        YAZ_CHECK(tl_scan(zh, "@attr 1=title 0", 1, 10, 1, 5, 1, ent));
+    }
+
+    {   /* word search */
+        const char *ent[] = { "My", "x", 0 };
+        YAZ_CHECK(tl_scan(zh, "@attr 1=title cp", 1, 10, 1, 2, 1, ent));
+    }
+
+    {   /* phrase search */
+        const char *ent[] = { char_ae, "B" char_aring "d", "My computer" };
+        YAZ_CHECK(tl_scan(zh, "@attr 1=title @attr 6=2 0", 1, 3, 1, 3, 0, ent));
+    }
+
     
     YAZ_CHECK(tl_close_down(zh, zs));
 #endif
