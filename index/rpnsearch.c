@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.28 2007-12-10 17:06:08 adam Exp $
+/* $Id: rpnsearch.c,v 1.29 2007-12-17 12:24:50 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -254,7 +254,7 @@ static int term_100_icu(zebra_map_t zm,
     wrbuf_write(display_term, display_buf, display_len);
     for (i = 0; i < res_len; i++)
     {
-        if (strchr(REGEX_CHARS, res_buf[i]))
+        if (strchr(REGEX_CHARS "\\", res_buf[i]))
             wrbuf_putc(term_dict, '\\');
         if (res_buf[i] < 32)
             wrbuf_putc(term_dict, 1);
