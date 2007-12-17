@@ -1,0 +1,31 @@
+#!/usr/bin/perl -w
+
+# $Id: abs2dom,v 1.1 2007-12-17 11:48:14 sondberg Exp $
+# ----------------------------------------------------------------------------
+# Generate a dom-filter indexing stylesheet based upon an .abs file
+
+use strict;
+
+my $xslt_header = <<END_OF_XSLT;
+<?xml version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                    xmlns:z="http://indexdata.com/zebra-2.0"
+                    version="1.0">
+
+  <xsl:output indent="yes"
+        method="xml"
+        version="1.0"
+        encoding="UTF-8"/>
+END_OF_XSLT
+
+
+while (<>) {
+    chomp;
+    s/^\s+//;
+    s/\s+$//;
+    next unless s/^xelm\s+//;
+    my ($indexes) = (/(\S+)$/);
+    s/\s+\Q$indexes\E$//;
+    my $xpath = $_;
+
+    print "XPATH='$xpath', INDEX='$indexes'\n"; 
+}
