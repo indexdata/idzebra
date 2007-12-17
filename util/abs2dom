@@ -1,13 +1,14 @@
 #!/usr/bin/perl -w
 
-# $Id: abs2dom,v 1.1 2007-12-17 11:48:14 sondberg Exp $
+# $Id: abs2dom,v 1.2 2007-12-17 12:28:50 sondberg Exp $
 # ----------------------------------------------------------------------------
 # Generate a dom-filter indexing stylesheet based upon an .abs file
 
 use strict;
 
-my $xslt_header = <<END_OF_XSLT;
-<?xml version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+print <<END_OF_XSLT;
+<?xml version="1.0"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                     xmlns:z="http://indexdata.com/zebra-2.0"
                     version="1.0">
 
@@ -15,6 +16,13 @@ my $xslt_header = <<END_OF_XSLT;
         method="xml"
         version="1.0"
         encoding="UTF-8"/>
+
+  <xsl:template match="/">
+    <z:record>
+      <xsl:apply-templates/>
+    </z:record>
+  </xsl:template>
+
 END_OF_XSLT
 
 
@@ -23,9 +31,17 @@ while (<>) {
     s/^\s+//;
     s/\s+$//;
     next unless s/^xelm\s+//;
-    my ($indexes) = (/(\S+)$/);
-    s/\s+\Q$indexes\E$//;
+    my ($index) = (/(\S+)$/);
+    s/\s+\Q$index\E$//;
     my $xpath = $_;
+    my @indexes = split /,/, $index;
 
-    print "XPATH='$xpath', INDEX='$indexes'\n"; 
+    print "  <xsl:template match=\"$xpath\">\n";
+    print "    <z:index name=\"", join(" ", @indexes), "\">\n";
+    print "      <xsl:value-of select=\".\"/>\n";
+    print "    </z:index>\n";
+    print "  </xsl:template>\n\n";
 }
+
+
+print "</xsl:stylesheet>\n";
