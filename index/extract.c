@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.273 2007-12-13 11:09:20 adam Exp $
+/* $Id: extract.c,v 1.274 2007-12-17 08:44:07 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1750,32 +1750,13 @@ static void extract_add_complete_field(RecWord *p, zebra_map_t zm)
 
 static void extract_add_icu(RecWord *p, zebra_map_t zm)
 {
-    struct it_key key;
     const char *res_buf = 0;
     size_t res_len = 0;
-    ZebraHandle zh = p->extractCtrl->handle;
-    
-    int cat = zinfo_index_category_index;
-    int ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, 
-                                          p->index_type, p->index_name);
-    if (ch < 0)
-        ch = zebraExplain_add_attr_str(zh->reg->zei, cat, 
-                                       p->index_type, p->index_name);
+
     zebra_map_tokenize_start(zm, p->term_buf, p->term_len);
     while (zebra_map_tokenize_next(zm, &res_buf, &res_len, 0, 0))
     {
-        int i = 0;
-        key.mem[i++] = ch;
-        key.mem[i++] = p->record_id;
-        key.mem[i++] = p->section_id;
-        
-        if (zh->m_segment_indexing)
-            key.mem[i++] = p->segment;
-        key.mem[i++] = p->seqno;
-        key.len = i;
-
-        zebra_rec_keys_write(zh->reg->keys, res_buf, res_len, &key);
-        
+        extract_add_string(p, zm, res_buf, res_len);
         p->seqno++;
     }
 }
@@ -1786,7 +1767,7 @@ static void extract_add_icu(RecWord *p, zebra_map_t zm)
 
     Call sequence:
     extract_token_add
-    extract_add_{in}_complete
+    extract_add_{in}_complete / extract_add_icu
     extract_add_string
     
     extract_add_index_string
