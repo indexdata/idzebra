@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.75 2007-02-10 18:37:42 adam Exp $
+/* $Id: mfile.c,v 1.76 2007-12-17 14:12:09 heikki Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -543,6 +543,13 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 	    {
 	    	yaz_log(YLOG_FATAL, "mf_write: %s error (4) no more space",
                         mf->name);
+    	        for (dp = mf->ma->dirs; dp ; dp = dp->next) {
+                    yaz_log(YLOG_FATAL,"%s: max=" ZINT_FORMAT 
+                           " used=" ZINT_FORMAT " available=" ZINT_FORMAT, 
+                        dp->name, (zint)dp->max_bytes, 
+                        (zint)(dp->max_bytes - dp->avail_bytes), (zint)dp->avail_bytes );
+                }
+                yaz_log(YLOG_FATAL,"Adjust the limits in your zebra.cfg");
                 ret = -1;
                 goto out;
 	    }
