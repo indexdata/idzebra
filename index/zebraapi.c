@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.265 2007-11-30 12:19:08 adam Exp $
+/* $Id: zebraapi.c,v 1.266 2007-12-18 10:04:15 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -421,7 +421,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
 
     {
 	const char *index_fname = res_get_def(res, "index", "default.idx");
-	if (index_fname && *index_fname)
+	if (index_fname && *index_fname && strcmp(index_fname, "none"))
 	{
 	    if (zebra_maps_read_file(reg->zebra_maps, index_fname) != ZEBRA_OK)
 		ret = ZEBRA_FAIL;
