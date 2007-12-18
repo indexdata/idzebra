@@ -1,4 +1,4 @@
-/* $Id: mfile.h,v 1.12 2007-01-15 20:08:23 adam Exp $
+/* $Id: mfile.h,v 1.13 2007-12-18 13:39:39 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -93,14 +93,14 @@ typedef struct meta_file
     struct meta_file *next;
 } *MFile, meta_file;
 
-typedef struct MFile_area_struct
+struct MFile_area_struct
 {
     char name[FILENAME_MAX+1];
     mf_dir *dirs;
     struct meta_file *mfiles;
     struct MFile_area_struct *next;  /* global list of active areas */
     Zebra_mutex mutex;
-} MFile_area_struct;
+};
 
 /** \brief creates a metafile area
     \param name of area (does not show up on disk - purely for notation)
