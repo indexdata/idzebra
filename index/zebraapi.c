@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.266 2007-12-18 10:04:15 adam Exp $
+/* $Id: zebraapi.c,v 1.267 2007-12-18 13:41:27 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1553,7 +1553,7 @@ static void zebra_set_state (ZebraHandle zh, int val, int seqno)
     long p = getpid();
     FILE *f;
     ASSERTZH;
-    yaz_log(log_level, "zebra_set_state v=%d seq=%d", val, seqno);
+    yaz_log(log_level, "zebra_set_state v=%c seq=%d", val, seqno);
 
     sprintf (state_fname, "state.%s.LCK", zh->reg_name);
     fname = zebra_mk_fname (res_get(zh->res, "lockDir"), state_fname);
@@ -1905,14 +1905,12 @@ ZEBRA_RES zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
         if (val != 'd')
         {
             BFiles bfs = bfs_create (rval, zh->path_reg);
-            yaz_log (YLOG_DEBUG, "deleting shadow val=%c", val);
             bf_commitClean (bfs, rval);
             bfs_destroy (bfs);
         }
         if (!rval)
             seqno++;
         zebra_set_state (zh, 'o', seqno);
-        
         zebra_unlock (zh->lock_shadow);
         zebra_unlock (zh->lock_normal);
         
@@ -1968,6 +1966,7 @@ static ZEBRA_RES zebra_commit_ex(ZebraHandle zh, int clean_only)
 
     ASSERTZH;
 
+    yaz_log(log_level, "zebra_commit_ex clean_only=%d", clean_only);
     zebra_select_default_database(zh);
     if (!zh->res)
     {
@@ -1999,6 +1998,11 @@ static ZEBRA_RES zebra_commit_ex(ZebraHandle zh, int clean_only)
         yaz_log(YLOG_WARN, "previous transaction didn't reach commit");
         clean_only = 1;
     }
+    else if (val == 'c')
+    {
+        /* commit has started. We can not remove it anymore */
+        clean_only = 0;
+    }
 
     if (rval && *rval)
         bf_cache (bfs, rval);
@@ -2010,7 +2014,7 @@ static ZEBRA_RES zebra_commit_ex(ZebraHandle zh, int clean_only)
         {
             zebra_set_state(zh, 'c', seqno);
             
-            yaz_log(YLOG_DEBUG, "commit start");
+            yaz_log(log_level, "commit start");
             if (bf_commitExec (bfs))
                 res = ZEBRA_FAIL;
         }
