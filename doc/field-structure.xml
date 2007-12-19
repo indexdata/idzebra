@@ -1,5 +1,5 @@
  <chapter id="fields-and-charsets">
-  <!-- $Id: field-structure.xml,v 1.12 2007-02-02 09:58:39 marc Exp $ -->
+  <!-- $Id: field-structure.xml,v 1.13 2007-12-19 09:30:29 adam Exp $ -->
   <title>Field Structure and Character Sets
   </title>
   
@@ -21,17 +21,33 @@
    special-purpose fields such as WWW-style linkages (URx).
   </para>
 
+  <para>
+   Zebra 1.3 and Zebra 2.0 series require that the field type is
+   a single character, e.g. <literal>w</literal> (for word), and
+   <literal>p</literal> for phrase. Zebra 2.1 allows field types to
+   be any string. This allows for greater flexibility - in particular
+   per-locale (language) fields can be defined.
+  </para>
+
+  <para>
+   Version 2.1 of Zebra can also be configured - per field - to use the
+   <ulink url="&url.icu;">ICU</ulink> library to perform tokenization and
+   normalization of strings. This is an alternative to the "charmap"
+   files which has been part of Zebra since its first release.
+  </para>
+
   <section id="default-idx-file">
    <title>The default.idx file</title>
    <para>
     The field types, and hence character sets, are associated with data
-    elements by the .abs files (see above).
-    The file <literal>default.idx</literal>
-    provides the association between field type codes (as used in the .abs
-    files) and the character map files (with the .chr suffix). The format
+    elements by the indexing rules (say <literal>title:w</literal>) in the
+    various filters. Fields are defined in a field definition file which,
+    by default, is called <filename>default.idx</filename>. 
+    This file provides the association between field type codes 
+    and the character map files (with the .chr suffix). The format
     of the .idx file is as follows
    </para>
-
+   
    <para>
     <variablelist>
 
@@ -106,15 +122,30 @@
         See <xref linkend="character-map-files"/> for details.
        </para>
       </listitem></varlistentry>
+     
+     <varlistentry>
+      <term>icuchain <replaceable>filename</replaceable></term>
+      <listitem>
+       <para>
+	Specifies the filename with ICU tokenization and
+	normalization rules. 
+	See <xref linkend="icuchain-files"/> for details.
+	Using icuchain for a field type is an alternative to
+	charmap. It does not make sense to define both
+	icuchain and charmap for the same field type.
+       </para>
+      </listitem></varlistentry>
     </variablelist>
    </para>
-   <para>
-    Following are three excerpts of the standard
-    <filename>tab/default.idx</filename> configuration file. Notice
-    that the <literal>index</literal> and <literal>sort</literal>
-    are grouping directives, which bind all other following directives
-    to them:
-    <screen>
+   <example>
+    <title>Field types</title>
+    <para>
+     Following are three excerpts of the standard
+     <filename>tab/default.idx</filename> configuration file. Notice
+     that the <literal>index</literal> and <literal>sort</literal>
+     are grouping directives, which bind all other following directives
+     to them:
+     <screen>
      # Traditional word index
      # Used if completenss is 'incomplete field' (@attr 6=1) and
      # structure is word/phrase/word-list/free-form-text/document-text
@@ -140,12 +171,13 @@
      sort s
      completeness 1
      charmap string.chr
-    </screen>
-   </para>
+     </screen>
+    </para>
+   </example>
   </section>
 
   <section id="character-map-files">
-   <title>The character map file format</title>
+   <title>Charmap Files</title>
    <para>
     The character map files are used to define the word tokenization
     and character normalization performed before inserting text into
@@ -346,8 +378,7 @@
 	character-representations to their natural form, etc. The
 	map directive can also be used to ignore leading articles in
 	searching and/or sorting, and to perform other special
-	transformations. See section <xref
-	 linkend="leading-articles"/>.
+	transformations.
        </para>
        <para>
         For example, <literal>scan.chr</literal> contains the following
@@ -359,6 +390,47 @@
          map (&oslash;)     ø
          map (&aring;)      å
         ]]></screen>
+	</para>
+       <para>
+	In addition to specifying sort orders, space (blank) handling,
+	and upper/lowercase folding, you can also use the character map
+	files to make &zebra; ignore leading articles in sorting records,
+	or when doing complete field searching.
+       </para>
+       <para>
+	This is done using the <literal>map</literal> directive in the
+	character map file. In a nutshell, what you do is map certain
+	sequences of characters, when they occur <emphasis> in the
+	 beginning of a field</emphasis>, to a space. Assuming that the
+	character "@" is defined as a space character in your file, you
+	can do:
+	<screen>
+	 map (^The\s) @
+	 map (^the\s) @
+	</screen>
+	The effect of these directives is to map either 'the' or 'The',
+	followed by a space character, to a space. The hat ^ character
+	denotes beginning-of-field only when complete-subfield indexing
+	or sort indexing is taking place; otherwise, it is treated just
+	as any other character.
+       </para>
+       <para>
+	Because the <literal>default.idx</literal> file can be used to
+	associate different character maps with different indexing types
+	-- and you can create additional indexing types, should the need
+	arise -- it is possible to specify that leading articles should
+	be ignored either in sorting, in complete-field searching, or
+	both.
+       </para>
+       <para>
+	If you ignore certain prefixes in sorting, then these will be
+	eliminated from the index, and sorting will take place as if
+	they weren't there. However, if you set the system up to ignore
+	certain prefixes in <emphasis>searching</emphasis>, then these
+	are deleted both from the indexes and from query terms, when the
+	client specifies complete-field searching. This has the effect
+	that a search for 'the science journal' and 'science journal'
+	would both produce the same results.
        </para>
       </listitem></varlistentry>
      <varlistentry>
@@ -384,49 +456,72 @@
     </variablelist>
    </para>
   </section>
-  <section id="leading-articles">
-   <title>Ignoring leading articles</title>
+
+  <section id="icuchain-files">
+   <title>ICU Chain Files</title>
    <para>
-    In addition to specifying sort orders, space (blank) handling,
-    and upper/lowercase folding, you can also use the character map
-    files to make &zebra; ignore leading articles in sorting records,
-    or when doing complete field searching.
+    The <ulink url="&url.icu;">ICU</ulink> chain files defines a 
+    <emphasis>chain</emphasis> of rules
+    which specify the conversion process to be carried out for each
+    record string for indexing.
    </para>
    <para>
-    This is done using the <literal>map</literal> directive in the
-    character map file. In a nutshell, what you do is map certain
-    sequences of characters, when they occur <emphasis> in the
-     beginning of a field</emphasis>, to a space. Assuming that the
-    character "@" is defined as a space character in your file, you
-    can do:
-    <screen>
-     map (^The\s) @
-     map (^the\s) @
-    </screen>
-    The effect of these directives is to map either 'the' or 'The',
-    followed by a space character, to a space. The hat ^ character
-    denotes beginning-of-field only when complete-subfield indexing
-    or sort indexing is taking place; otherwise, it is treated just
-    as any other character.
+    Both searching and sorting is based on the <emphasis>sort</emphasis>
+    normalization that ICU provides. This means that scan and sort will
+    return terms in the sort order given by ICU.
    </para>
    <para>
-    Because the <literal>default.idx</literal> file can be used to
-    associate different character maps with different indexing types
-    -- and you can create additional indexing types, should the need
-    arise -- it is possible to specify that leading articles should
-    be ignored either in sorting, in complete-field searching, or
-    both.
+    Zebra is using YAZ' ICU wrapper. Refer to the 
+    <ulink url="&url.yaz.yaz-icu;">yaz-icu man page</ulink> for
+    documentation about the ICU chain rules.
    </para>
+   <tip>
+    <para>
+     Use the yaz-icu program to test your icuchain rules.
+    </para>
+   </tip>
+   <example><title>Indexing Greek text</title>
+    <para>
+     Consider a system where all "regular" text is to be indexed
+     using as Greek (locale: EL).
+     We would have to change our index type file - to read
+     <screen>
+      # Index greek words
+      index w
+      completeness 0
+      position 1
+      alwaysmatches 1
+      firstinfield 1
+      icuahain greek.xml
+      ..
+     </screen>
+     The ICU chain file <filename>greek.xml</filename> could look
+     as follows:
+     <screen><![CDATA[
+      <icu_chain locale="el">
+      <transform rule="[:Control:] Any-Remove"/>
+      <tokenize rule="l"/>
+      <transform rule="[[:WhiteSpace:][:Punctuation:]] Remove"/>
+      <display/>
+      <casemap rule="l"/>
+     </icu_chain>
+     ]]></screen>
+    </para>
+   </example>
    <para>
-    If you ignore certain prefixes in sorting, then these will be
-    eliminated from the index, and sorting will take place as if
-    they weren't there. However, if you set the system up to ignore
-    certain prefixes in <emphasis>searching</emphasis>, then these
-    are deleted both from the indexes and from query terms, when the
-    client specifies complete-field searching. This has the effect
-    that a search for 'the science journal' and 'science journal'
-    would both produce the same results.
+    Zebra is shipped with a field types file <filename>icu.idx</filename>
+    which is an ICU chain version of <filename>default.idx</filename>.
    </para>
+
+   <example><title>MARCXML indexing using ICU</title>
+    <para>
+     The directory <filename>examples/marcxml</filename> includes
+     a complete sample with MARCXML recordst that are DOM XML indexed 
+     using ICU chain rules. Study the
+     <filename>README</filename> in the <filename>marcxml</filename>
+     directory for details.
+    </para>
+   </example>
   </section>
 
  </chapter>
