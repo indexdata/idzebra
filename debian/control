@@ -3,7 +3,7 @@ Priority: optional
 Maintainer: Adam Dickmeiss <adam@indexdata.dk>
 Build-Depends: debhelper (>= 4.0.0)
 Standards-Version: 3.6.0
-Build-Depends: libyaz3-dev (>= 3.0.2), libexpat1-dev, tcl8.4-dev, libbz2-dev, libxslt1-dev
+Build-Depends: libyaz3-dev (>= 3.0.17), libexpat1-dev, tcl8.4-dev, libbz2-dev, libxslt1-dev
 
 Package: idzebra-2.0
 Section: text
