@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.50 2007-05-24 13:44:09 adam Exp $ -->
+ <!-- $Id: introduction.xml,v 1.51 2007-12-19 13:35:39 adam Exp $ -->
  <title>Introduction</title>
  
  <section id="overview">
@@ -274,12 +274,10 @@
       </row>
       <row>
        <entry>Facetted browsing</entry>
-       <entry>partial</entry>
-       <entry>&zebra; supports <literal>scan inside a hit 
-          set</literal> from a previous search, thus reducing the listed 
-          terms to the 
-          subset of terms found in the documents/records of the hit
-       set.</entry> 
+	<entry>available</entry>
+	<entry>Zebra 2.1 and allows retrieval of facets for
+	 a result set.
+	</entry> 
        <entry><xref linkend="querymodel-zebra-attr-scan"/></entry>
       </row>
       <row>

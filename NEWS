@@ -1,3 +1,16 @@
+--- 2.0.20 2007/12/19
+
+Added experimental support for faceted results. This is implemented
+as a special retrieval on a result set and is triggered using element
+set name zebra::facet::f1:t1,f2,t2,.. which will return terms and
+hit counts for field f1, type t1, field f2, type t2, .. The returned
+data is packed as XML or SUTRS depending on record syntax.
+
+Added support for Unicode-based indexing using ICU. This allows
+locale specific scanning, sorting. The implementation is based on
+the ICU utility part of YAZ 3.0.16 and later. See the manual as well
+as the examples/marcxml for an example of the use of ICU.
+
 --- 2.0.18 2007/09/19
 
 Fixed bug with scan and staticrank enabled. Bug introduced in 2.0.16.

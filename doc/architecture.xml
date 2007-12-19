@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.25 2007-09-18 19:21:32 adam Exp $ -->
+  <!-- $Id: architecture.xml,v 1.26 2007-12-19 13:35:39 adam Exp $ -->
   <title>Overview of &zebra; Architecture</title>
 
   <section id="architecture-representation">
@@ -501,12 +501,26 @@
 	<literal>zebra::snippet</literal>
        </entry>
        <entry>
-	Get snippet for record. This includes a phrase from the original
+	Get snippet for record for one or more indexes (f1,f2,..).
+	This includes a phrase from the original
 	record at the point where a match occurs (for a query). By default
 	give terms before - and after are included in the snippet. The
 	matching terms are enclosed within element
 	<literal>&lt;s&gt;</literal>. The snippet facility requires
 	Zebra 2.0.16 or later.
+       </entry>
+       <entry>&acro.xml; and &acro.sutrs;</entry>
+      </row>
+      <row>
+       <entry>
+	<literal>zebra::facet::</literal><replaceable>f1</replaceable>:<replaceable>t1</replaceable>,<replaceable>f2</replaceable>:<replaceable>t2</replaceable>,..
+       </entry>
+       <entry>
+	Get facet of a result set. The facet result is returned
+	as if it was a normal record, while in reality is a 
+	recap of most "important" terms in a result set for the fields 
+	given.
+	The facet facility first appeared in Zebra 2.0.20.
        </entry>
        <entry>&acro.xml;</entry>
       </row>

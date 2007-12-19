@@ -1,5 +1,5 @@
  <chapter id="fields-and-charsets">
-  <!-- $Id: field-structure.xml,v 1.13 2007-12-19 09:30:29 adam Exp $ -->
+  <!-- $Id: field-structure.xml,v 1.14 2007-12-19 13:35:39 adam Exp $ -->
   <title>Field Structure and Character Sets
   </title>
   
@@ -22,10 +22,10 @@
   </para>
 
   <para>
-   Zebra 1.3 and Zebra 2.0 series require that the field type is
-   a single character, e.g. <literal>w</literal> (for word), and
-   <literal>p</literal> for phrase. Zebra 2.1 allows field types to
-   be any string. This allows for greater flexibility - in particular
+   Zebra 1.3 and Zebra versions 2.0.18 and earlier required that the field
+   type is a single character, e.g. <literal>w</literal> (for word), and
+   <literal>p</literal> for phrase. Zebra 2.0.20 and later allow field types 
+   to be any string. This allows for greater flexibility - in particular
    per-locale (language) fields can be defined.
   </para>
 
