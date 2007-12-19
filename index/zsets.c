@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.129 2007-12-04 11:13:17 adam Exp $
+/* $Id: zsets.c,v 1.130 2007-12-19 14:11:36 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1307,7 +1307,7 @@ static ZEBRA_RES zebra_recid_to_sysno(ZebraHandle zh,
     int sysnos_offset = 0;
     int i;
     
-    if (!zh->reg->isamb)
+    if (!zh->reg->isamb || !zh->m_segment_indexing)
     {
         if (sysnos_offset < *no_sysnos)
             *sysnos = recid;
