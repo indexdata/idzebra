@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.76 2007-12-20 19:02:12 adam Exp $
+/* $Id: zebramap.c,v 1.77 2007-12-20 19:05:12 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -716,12 +716,13 @@ int zebra_map_tokenize_start(zebra_map_t zm,
         icu_chain_assign_cstr(zm->icu_chain,
                               wrbuf_cstr(zm->input_str),
                               &status);
-        if (zm->debug)
+        if (!U_SUCCESS(status))
         {
-            if (!U_SUCCESS(status))
+            if (zm->debug)
             {
                 yaz_log(YLOG_WARN, "bad encoding for input");
             }
+            return -1;
         }
     }
 #endif
