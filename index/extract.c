@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.275 2007-12-20 11:15:42 adam Exp $
+/* $Id: extract.c,v 1.276 2007-12-20 11:21:29 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -979,7 +979,7 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         else if (action == action_a_delete)
         {
             if (show_progress)
-                yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
+                yaz_log(YLOG_LOG, "adelete %s %s " ZINT_FORMAT, recordType,
                         pr_fname, (zint) start_offset);
             return ZEBRA_OK;
         }
