@@ -1,3 +1,5 @@
+--- 2.0.22 2007/12/20
+
 Handle encoding errors for strings passed to ICU. (assert was
 thrown earlier).
 
