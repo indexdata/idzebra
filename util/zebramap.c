@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.75 2007-12-13 18:08:26 adam Exp $
+/* $Id: zebramap.c,v 1.76 2007-12-20 19:02:12 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -662,7 +662,8 @@ int zebra_map_tokenize_next(zebra_map_t zm,
         UErrorCode status;
         while (icu_chain_next_token(zm->icu_chain, &status))
         {
-            assert(U_SUCCESS(status));
+            if (!U_SUCCESS(status))
+                return 0;
             *result_buf = icu_chain_token_sortkey(zm->icu_chain);
             assert(*result_buf);
 
@@ -684,7 +685,6 @@ int zebra_map_tokenize_next(zebra_map_t zm,
             if (**result_buf != '\0')
                 return 1;
         }
-        assert(U_SUCCESS(status));
     }
     return 0;
 #else
@@ -716,74 +716,17 @@ int zebra_map_tokenize_start(zebra_map_t zm,
         icu_chain_assign_cstr(zm->icu_chain,
                               wrbuf_cstr(zm->input_str),
                               &status);
-        assert(U_SUCCESS(status));
+        if (zm->debug)
+        {
+            if (!U_SUCCESS(status))
+            {
+                yaz_log(YLOG_WARN, "bad encoding for input");
+            }
+        }
     }
 #endif
     return 0;
 }
-
-#if 0
-int zebra_map_tokenize(zebra_map_t zm,
-                       const char *buf, size_t len,
-                       const char **result_buf, size_t *result_len)
-{
-    assert(zm->use_chain);
-
-    if (buf)
-    {
-        wrbuf_rewind(zm->input_str);
-        wrbuf_write(zm->input_str, buf, len);
-        zm->simple_off = 0;
-    }
-
-#if YAZ_HAVE_ICU
-    if (!zm->icu_chain)
-        return tokenize_simple(zm, result_buf, result_len);
-    else
-    {
-        UErrorCode status;
-        if (buf)
-        {
-            if (zm->debug)
-            {
-                wrbuf_rewind(zm->print_str);
-                wrbuf_write_escaped(zm->print_str, wrbuf_buf(zm->input_str),
-                                    wrbuf_len(zm->input_str));
-                
-                yaz_log(YLOG_LOG, "input %s", 
-                        wrbuf_cstr(zm->print_str)); 
-            }
-            icu_chain_assign_cstr(zm->icu_chain,
-                                  wrbuf_cstr(zm->input_str),
-                                  &status);
-            assert(U_SUCCESS(status));
-        }
-        while (icu_chain_next_token(zm->icu_chain, &status))
-        {
-            assert(U_SUCCESS(status));
-            *result_buf = icu_chain_token_sortkey(zm->icu_chain);
-            assert(*result_buf);
-
-            *result_len = strlen(*result_buf);
-
-            if (zm->debug)
-            {
-                wrbuf_rewind(zm->print_str);
-                wrbuf_write_escaped(zm->print_str, *result_buf, *result_len);
-                yaz_log(YLOG_LOG, "output %s", wrbuf_cstr(zm->print_str));
-            }
-
-            if (**result_buf != '\0')
-                return 1;
-        }
-        assert(U_SUCCESS(status));
-    }
-    return 0;
-#else
-    return tokenize_simple(zm, result_buf, result_len);
-#endif
-}
-#endif
 
 int zebra_maps_is_icu(zebra_map_t zm)
 {
