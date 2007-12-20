@@ -1,4 +1,4 @@
-/* $Id: zebraidx.c,v 1.10 2007-11-08 09:30:05 adam Exp $
+/* $Id: zebraidx.c,v 1.11 2007-12-20 11:15:43 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -142,6 +142,8 @@ int main(int argc, char **argv)
                     cmd = 's';
                 else if (!strcmp(arg, "del") || !strcmp(arg, "delete"))
                     cmd = 'd';
+                else if (!strcmp(arg, "adelete"))
+                    cmd = 'a';
 		else if (!strcmp(arg, "init"))
 		{
                     zebra_init(zh);
@@ -196,10 +198,13 @@ int main(int argc, char **argv)
                 switch (cmd)
                 {
                 case 'u':
-                    res = zebra_repository_update(zh, arg);
+                    res = zebra_repository_index(zh, arg, action_update);
                     break;
                 case 'd':
-                    res = zebra_repository_delete(zh, arg);
+                    res = zebra_repository_index(zh, arg, action_delete);
+                    break;
+                case 'a':
+                    res = zebra_repository_index(zh, arg, action_a_delete);
                     break;
                 case 's':
                     res = zebra_repository_show(zh, arg);

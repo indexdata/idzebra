@@ -1,4 +1,4 @@
-/* $Id: update_file.c,v 1.6 2007-10-29 09:25:41 adam Exp $
+/* $Id: update_file.c,v 1.7 2007-12-20 11:15:42 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -75,8 +75,7 @@ static void fileDelete_r(ZebraHandle zh,
         {
         case dirs_file:
             sprintf(tmppath, "%s%s", base, dst->path);
-            zebra_extract_file(zh, &dst->sysno, tmppath, 1);
-             
+            zebra_extract_file(zh, &dst->sysno, tmppath, action_delete);
             strcpy(tmppath, dst->path);
             dst = dirs_read(di); 
             dirs_del(di, tmppath);
@@ -172,7 +171,7 @@ static void file_update_r(ZebraHandle zh,
             case dirs_file:
                 if (e_src[i_src].mtime > dst->mtime)
                 {
-                    if (zebra_extract_file(zh, &dst->sysno, tmppath, 0) == ZEBRA_OK)
+                    if (zebra_extract_file(zh, &dst->sysno, tmppath, action_update) == ZEBRA_OK)
                     {
                         dirs_add(di, src, dst->sysno, e_src[i_src].mtime);
                     }
@@ -200,7 +199,7 @@ static void file_update_r(ZebraHandle zh,
             switch (e_src[i_src].kind)
             {
             case dirs_file:
-                if (zebra_extract_file(zh, &sysno, tmppath, 0) == ZEBRA_OK)
+                if (zebra_extract_file(zh, &sysno, tmppath, action_update) == ZEBRA_OK)
                     dirs_add(di, src, sysno, e_src[i_src].mtime);            
                 break;
             case dirs_dir:
@@ -219,7 +218,7 @@ static void file_update_r(ZebraHandle zh,
             switch (dst->kind)
             {
             case dirs_file:
-                zebra_extract_file(zh, &dst->sysno, tmppath, 1);
+                zebra_extract_file(zh, &dst->sysno, tmppath, action_delete);
                 dirs_del(di, dst->path);
                 dst = dirs_read(di);
                 break;
@@ -268,13 +267,13 @@ static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
         if (e_dst)
         {
             if (sbuf.st_mtime > e_dst->mtime)
-                if (zebra_extract_file(zh, &e_dst->sysno, src, 0) == ZEBRA_OK)
+                if (zebra_extract_file(zh, &e_dst->sysno, src, action_update) == ZEBRA_OK)
                     dirs_add(di, src, e_dst->sysno, sbuf.st_mtime);
         }
         else
         {
             zint sysno = 0;
-            if (zebra_extract_file(zh, &sysno, src, 0) == ZEBRA_OK)
+            if (zebra_extract_file(zh, &sysno, src, action_update) == ZEBRA_OK)
                  dirs_add(di, src, sysno, sbuf.st_mtime);
         }
         dirs_free(&di);

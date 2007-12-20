@@ -1,4 +1,4 @@
-/* $Id: update_path.c,v 1.4 2007-10-29 09:25:41 adam Exp $
+/* $Id: update_path.c,v 1.5 2007-12-20 11:15:42 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -37,8 +37,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "index.h"
 
-static void repositoryExtractR(ZebraHandle zh, int deleteFlag, char *rep,
-			       int level)
+static void repositoryExtractR(ZebraHandle zh, char *rep, int level,
+                               enum zebra_recctrl_action_t action)
 {
     struct dir_entry *e;
     int i;
@@ -63,10 +63,10 @@ static void repositoryExtractR(ZebraHandle zh, int deleteFlag, char *rep,
         switch (e[i].kind)
         {
         case dirs_file:
-            zebra_extract_file(zh, NULL, rep, deleteFlag);
+            zebra_extract_file(zh, NULL, rep, action);
             break;
         case dirs_dir:
-            repositoryExtractR(zh, deleteFlag, rep, level+1);
+            repositoryExtractR(zh, rep, level+1, action);
             break;
         }
     }
@@ -107,7 +107,9 @@ void repositoryShow(ZebraHandle zh, const char *path)
 }
 
 static void repositoryExtract(ZebraHandle zh,
-                              int deleteFlag, const char *path)
+                              const char *path,
+                              enum zebra_recctrl_action_t action)
+
 {
     struct stat sbuf;
     char src[1024];
@@ -130,38 +132,26 @@ static void repositoryExtract(ZebraHandle zh,
     if (ret == -1)
         yaz_log(YLOG_WARN|YLOG_ERRNO, "Cannot access path %s", src);
     else if (S_ISREG(sbuf.st_mode))
-        zebra_extract_file(zh, NULL, src, deleteFlag);
+        zebra_extract_file(zh, NULL, src, action);
     else if (S_ISDIR(sbuf.st_mode))
-	repositoryExtractR(zh, deleteFlag, src, 0);
+	repositoryExtractR(zh, src, 0, action);
     else
         yaz_log(YLOG_WARN, "Skipping path %s", src);
 }
 
-static void repositoryExtractG(ZebraHandle zh, const char *path, 
-			       int deleteFlag)
+
+ZEBRA_RES zebra_update_from_path(ZebraHandle zh, const char *path, 
+                                 enum zebra_recctrl_action_t action)
 {
     if (!strcmp(path, "") || !strcmp(path, "-"))
     {
         char src[1024];
 	
         while (scanf("%1020s", src) == 1)
-            repositoryExtract(zh, deleteFlag, src);
+            repositoryExtract(zh, src, action);
     }
     else
-        repositoryExtract(zh, deleteFlag, path);
-}
-
-ZEBRA_RES zebra_update_from_path(ZebraHandle zh, const char *path)
-{
-    assert(path);
-    repositoryExtractG(zh, path, 0);
-    return ZEBRA_OK;
-}
-
-ZEBRA_RES zebra_delete_from_path(ZebraHandle zh, const char *path)
-{
-    assert(path);
-    repositoryExtractG(zh, path, 1);
+        repositoryExtract(zh, path, action);
     return ZEBRA_OK;
 }
 

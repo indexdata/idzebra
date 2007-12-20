@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.274 2007-12-17 08:44:07 adam Exp $
+/* $Id: extract.c,v 1.275 2007-12-20 11:15:42 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -585,7 +585,7 @@ ZEBRA_RES zebra_extract_records_stream(ZebraHandle zh,
 
 
 ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname, 
-			     int deleteFlag)
+                             enum zebra_recctrl_action_t action)
 {
     ZEBRA_RES r = ZEBRA_OK;
     int i, fd;
@@ -655,7 +655,7 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
     default:
 	yaz_log(YLOG_WARN, "Bad filter version: %s", zh->m_record_type);
     }
-    if (sysno && deleteFlag)
+    if (sysno && (action == action_delete || action == action_a_delete))
     {
         streamp = 0;
         fi = 0;
@@ -683,8 +683,7 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
         zebra_create_stream_fd(streamp, fd, 0);
     }
     r = zebra_extract_records_stream(zh, streamp,
-                                     deleteFlag ? 
-                                     action_delete : action_update,
+                                     action,
                                      0, /* tst_mode */
                                      zh->m_record_type,
                                      sysno,
@@ -969,13 +968,20 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 
     if (! *sysno)
     {
-        /* new record */
+        /* new record AKA does not exist already */
         if (action == action_delete)
         {
-	    yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
-			 pr_fname, (zint) start_offset);
+                yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
+                        pr_fname, (zint) start_offset);
             yaz_log(YLOG_WARN, "cannot delete record above (seems new)");
             return ZEBRA_FAIL;
+        }
+        else if (action == action_a_delete)
+        {
+            if (show_progress)
+                yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
+                        pr_fname, (zint) start_offset);
+            return ZEBRA_OK;
         }
 	else if (action == action_replace)
 	{
@@ -1069,7 +1075,7 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         extract_flush_record_keys(zh, *sysno, 0, delkeys,
                                   recordAttr->staticrank);
 #endif
-        if (action == action_delete)
+        if (action == action_delete || action == action_a_delete)
         {
             /* record going to be deleted */
 #if FLUSH2

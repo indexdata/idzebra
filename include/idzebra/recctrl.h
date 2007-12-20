@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.39 2007-11-30 12:19:08 adam Exp $
+/* $Id: recctrl.h,v 1.40 2007-12-20 11:15:41 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -84,11 +84,18 @@ struct ZebraRecStream {
     void      (*destroy)(struct ZebraRecStream *s);
 };
 
+/** record update action */
 enum zebra_recctrl_action_t {
+    /** insert record (fail if it exists already) */
     action_insert = 1,
+    /** replace record (fail it it does not exist) */
     action_replace,
+    /** delete record (fail if it does not exist) */
     action_delete,
-    action_update  /* insert or replace as needed */
+    /** insert or replace */
+    action_update,
+    /** delete record (ignore if it does not exist) */
+    action_a_delete
 };
 
 /** \brief record extract for indexing */

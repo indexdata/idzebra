@@ -1,3 +1,6 @@
+Added zebraidx command, adelete, which attempts to delete records.
+It's like 'delete', but does not fail if a record does not exist.
+
 --- 2.0.20 2007/12/19
 
 Added experimental support for faceted results. This is implemented

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.213 2007-12-13 11:09:20 adam Exp $
+/* $Id: index.h,v 1.214 2007-12-20 11:15:42 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -363,7 +363,7 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 ZEBRA_RES zebra_extract_explain(void *handle, Record rec, data1_node *n);
 
 ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
-			     int deleteFlag);
+                             enum zebra_recctrl_action_t action);
 
 ZEBRA_RES zebra_begin_read(ZebraHandle zh);
 ZEBRA_RES zebra_end_read(ZebraHandle zh);
@@ -406,8 +406,8 @@ ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,
                              int *numerical);
 
 ZEBRA_RES zebra_update_file_match(ZebraHandle zh, const char *path);
-ZEBRA_RES zebra_update_from_path(ZebraHandle zh, const char *path);
-ZEBRA_RES zebra_delete_from_path(ZebraHandle zh, const char *path);
+ZEBRA_RES zebra_update_from_path(ZebraHandle zh, const char *path,
+                                 enum zebra_recctrl_action_t action);
 ZEBRA_RES zebra_remove_file_match(ZebraHandle zh);
 
 struct rpn_char_map_info

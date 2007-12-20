@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.268 2007-12-18 13:55:28 adam Exp $
+/* $Id: zebraapi.c,v 1.269 2007-12-20 11:15:42 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1929,22 +1929,33 @@ ZEBRA_RES zebra_end_transaction(ZebraHandle zh, ZebraTransactionStatus *status)
 
 ZEBRA_RES zebra_repository_update(ZebraHandle zh, const char *path)
 {
-    ASSERTZH;
-    assert(path);
-    yaz_log(log_level, "updating %s", path);
-
-    if (zh->m_record_id && !strcmp(zh->m_record_id, "file"))
-        return zebra_update_file_match(zh, path);
-    else
-        return zebra_update_from_path(zh, path);
+    return zebra_repository_index(zh, path, action_update);
 }
 
 ZEBRA_RES zebra_repository_delete(ZebraHandle zh, const char *path)
 {
+    return zebra_repository_index(zh, path, action_delete);
+}
+
+ZEBRA_RES zebra_repository_index(ZebraHandle zh, const char *path,
+                                 enum zebra_recctrl_action_t action)
+{
     ASSERTZH;
     assert(path);
-    yaz_log(log_level, "deleting %s", path);
-    return zebra_delete_from_path(zh, path);
+
+    if (action == action_update)
+        yaz_log(log_level, "updating %s", path);
+    else if (action == action_delete)
+        yaz_log(log_level, "deleting %s", path);
+    else if (action == action_a_delete)
+        yaz_log(log_level, "attempt deleting %s", path);
+    else
+        yaz_log(log_level, "update action=%d", (int) action);
+
+    if (zh->m_record_id && !strcmp(zh->m_record_id, "file"))
+        return zebra_update_file_match(zh, path);
+    else
+        return zebra_update_from_path(zh, path, action);
 }
 
 ZEBRA_RES zebra_repository_show(ZebraHandle zh, const char *path)
