@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: abs2dom,v 1.3 2007-12-17 12:38:57 sondberg Exp $
+# $Id: abs2dom,v 1.4 2007-12-20 11:44:18 sondberg Exp $
 # ----------------------------------------------------------------------------
 # Generate a dom-filter indexing stylesheet based upon an .abs file
 # Should be called either this way
@@ -19,10 +19,28 @@
 
 use strict;
 
+my $marc_prefix = 'marc';
+my $supported_rules = {
+
+        # Supported indexing types:
+        'melm'          => \&melm_handler,
+        'xelm'          => sub { return $_[1] },
+
+        # Declarations to ignore:
+        'attset'        => 0,
+        'encoding'      => 0,
+        'esetname'      => 0,
+        'marc'          => 0,
+        'name'          => 0,
+        'xpath'         => 0
+
+};
+
 print <<END_OF_XSLT;
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:z="http://indexdata.com/zebra-2.0"
+                xmlns:$marc_prefix="http://www.loc.gov/MARC21/slim"
                 version="1.0">
 
   <xsl:output indent="yes"
@@ -40,14 +58,39 @@ END_OF_XSLT
 
 
 while (<>) {
+    my $handler = undef;
+
     chomp;
     s/^\s+//;
     s/\s+$//;
-    next unless s/^xelm\s+//;
+    next unless length;
+    next if /^#/;
+
+    my ($rule) = (/^(\S+)/);
+
+    if ( defined $supported_rules->{$rule} ) {
+        $handler = $supported_rules->{$rule};
+
+        if ( $handler == 0 ) {
+            next;
+        }
+    } else {
+        print STDERR "$0: Unsupported indexing rule: '", $rule, "\n\n";
+        next;
+    }
+
+    s/^\Q$rule\E\s+//;
+
     my ($index) = (/(\S+)$/);
+
     s/\s+\Q$index\E$//;
-    my $xpath = $_;
+
+    my $match = $_;
+    my $xpath = $handler->($rule, $match);
     my @indexes = split /,/, $index;
+
+    # To avoid screwing up the <xsl:template match="...."> instruction...
+    $xpath =~ s/"/'/g;
 
     print "  <xsl:template match=\"$xpath\">\n";
     print "    <z:index name=\"", join(" ", @indexes), "\">\n";
@@ -56,5 +99,27 @@ while (<>) {
     print "  </xsl:template>\n\n";
 }
 
-
 print "</xsl:stylesheet>\n";
+
+
+sub melm_handler {
+    my ($rule, $match) = @_;
+    my ($field, $subfield) = ($match =~ /([^\$]+)\$?(.*)/);
+    my $xpath = '/*/';
+
+    if ( $field =~ /^00/ ) {
+        $xpath .= $marc_prefix . ':controlfield[@tag=\'' . $field . '\']';
+    } else {
+        $xpath .= $marc_prefix . ':datafield[@tag=\'' . $field . '\']/' .
+                  $marc_prefix . ':subfield';
+
+        if ( $subfield ne '' ) {
+            $xpath .= '[@code=\'' . $subfield . '\']';
+        }
+    }
+
+    return $xpath;
+}
+
+
+
