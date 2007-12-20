@@ -11,7 +11,7 @@
 
      <!ENTITY test SYSTEM "test.xml">
 ]>
-<!-- $Id: zebra.xml,v 1.21 2007-06-26 21:01:33 adam Exp $ -->
+<!-- $Id: zebra.xml,v 1.22 2007-12-20 13:16:09 adam Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>&zebra; - User's Guide and Reference</title>
@@ -40,7 +40,7 @@
    <simpara>
     This manual explains how to build and install &zebra;, configure it
     appropriately for your application, add data and set up a running
-    information service.  It describes version &version; of &zebra;.
+    information service. It describes version &version; of &zebra;.
    </simpara>
    <simpara>
     <inlinemediaobject>
@@ -69,6 +69,12 @@
  
  <reference id="reference">
   <title>Reference</title>
+   <partintro id="reference-introduction">
+    <para>
+     The material in this chapter is drawn directly from the individual
+     manual entries.
+    </para>
+   </partintro>
   &manref;
  </reference>
  
