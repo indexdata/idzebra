@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.130 2007-12-19 14:11:36 adam Exp $
+/* $Id: zsets.c,v 1.131 2007-12-28 10:29:40 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1367,11 +1367,9 @@ static ZEBRA_RES zebra_recid_to_sysno(ZebraHandle zh,
                                 while (r && key_found.mem[0] == recid)
                                 {
                                     if (sysnos_offset < *no_sysnos)
-                                        sysnos[sysnos_offset] = 
+                                        sysnos[sysnos_offset++] = 
                                             key_found.mem[key_found.len-1];
-                                
                                     r = isamb_pp_read(pt, &key_found);
-                                    sysnos_offset++;
                                 }
                                 isamb_pp_close(pt);
                             }
