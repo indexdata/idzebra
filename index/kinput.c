@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.86 2007-10-31 16:56:14 adam Exp $
+/* $Id: kinput.c,v 1.87 2008-01-09 14:53:26 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -188,8 +188,12 @@ int key_file_read(struct key_file *f, char *key)
     {
         i = 0;
         key[i++] = c;
-        while ((key[i++] = key_file_getc(f)))
-            ;
+        while ((c = key_file_getc(f)))
+        {
+            if (i < IT_MAX_WORD)
+                key[i++] = c;
+        }
+        key[i++] = '\0';
         strcpy(f->prev_name, key);
 	iscz1_reset(f->decode_handle);
     }
