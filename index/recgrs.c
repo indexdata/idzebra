@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.21 2007-10-29 16:57:52 adam Exp $
+/* $Id: recgrs.c,v 1.22 2008-01-09 22:17:34 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -450,7 +450,6 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
     xfree(pexpr);
     
     if (xpe) {
-	yaz_log(YLOG_DEBUG, "Got it");
         return xpe->termlists;
     } else {
         return NULL;
