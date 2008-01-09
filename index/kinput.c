@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.88 2008-01-09 14:57:07 adam Exp $
+/* $Id: kinput.c,v 1.89 2008-01-09 22:18:04 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -36,8 +36,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define KEY_SIZE (1+sizeof(struct it_key))
 #define INP_NAME_MAX 768
-#define INP_BUF_START 60000
-#define INP_BUF_ADD  400000
 
 struct key_file {
     int   no;            /* file no */
