@@ -1,4 +1,4 @@
-/* $Id: key_block.c,v 1.11 2008-01-09 22:59:44 adam Exp $
+/* $Id: key_block.c,v 1.12 2008-01-09 23:00:13 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -99,7 +99,7 @@ static void encode_key_init(struct encode_info *i)
     i->decode_handle = iscz1_start();
 }
 
-static void encode_key_write (char *k, struct encode_info *i, FILE *outf)
+static void encode_key_write(const char *k, struct encode_info *i, FILE *outf)
 {
     struct it_key key;
     char *bp = i->buf, *bp0;
