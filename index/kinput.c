@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.87 2008-01-09 14:53:26 adam Exp $
+/* $Id: kinput.c,v 1.88 2008-01-09 14:57:07 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -228,7 +228,6 @@ struct heap_info {
     int    (*cmp)(const void *p1, const void *p2);
     struct zebra_register *reg;
     ZebraHandle zh;
-    int raw_reading; /* 1=raw /mem read. 0=file reading */
     zint no_diffs;
     zint no_updates;
     zint no_deletions;
@@ -244,7 +243,6 @@ static struct heap_info *key_heap_malloc(void)
     hi->info.buf = 0;
     hi->heapnum = 0;
     hi->ptr = 0;
-    hi->raw_reading = 0;
     hi->no_diffs = 0;
     hi->no_diffs = 0;
     hi->no_updates = 0;
@@ -276,23 +274,11 @@ struct heap_info *key_heap_init_file(ZebraHandle zh,
     return hi;
 }
 
-struct heap_info *key_heap_init_raw(ZebraHandle zh,
-				    int (*cmp)(const void *p1, const void *p2))
-{
-    struct heap_info *hi=key_heap_malloc();
-    hi->cmp = cmp;
-    hi->zh = zh;
-    hi->raw_reading = 1;
-    return hi;
-}
-
 void key_heap_destroy(struct heap_info *hi, int nkeys)
 {
     int i;
-    if (!hi->raw_reading)
-        for (i = 0; i<=nkeys; i++)
-            xfree(hi->info.buf[i]);
-    
+    for (i = 0; i<=nkeys; i++)
+        xfree(hi->info.buf[i]);
     xfree(hi->info.buf);
     xfree(hi->ptr);
     xfree(hi->info.file);
@@ -599,26 +585,6 @@ int heap_inpc(struct heap_cread_info *hci, struct heap_info *hi)
     xfree(isamc_i);
     return 0;
 } 
-
-int heap_inp0(struct heap_cread_info *hci, struct heap_info *hi)
-{
-    while (hci->more)
-    {
-        char this_name[INP_NAME_MAX];
-	char mybuf[1024];
-	char *dst = mybuf;
-	int mode;
-
-        strcpy(this_name, hci->cur_name);
-	assert(hci->cur_name[0]);
-        hi->no_diffs++;
-
-	while (heap_cread_item2(hci, &dst, &mode))
-	    ;
-    }
-    return 0;
-} 
-
 
 int heap_inpb(struct heap_cread_info *hci, struct heap_info *hi)
 {
