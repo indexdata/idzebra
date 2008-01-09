@@ -1,4 +1,4 @@
-/* $Id: key_block.c,v 1.10 2007-04-07 22:24:12 adam Exp $
+/* $Id: key_block.c,v 1.11 2008-01-09 22:59:44 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -104,10 +104,16 @@ static void encode_key_write (char *k, struct encode_info *i, FILE *outf)
     struct it_key key;
     char *bp = i->buf, *bp0;
     const char *src = (char *) &key;
+    size_t klen = strlen(k);
+    
+    if (fwrite (k, klen+1, 1, outf) != 1)
+    {
+        yaz_log (YLOG_FATAL|YLOG_ERRNO, "fwrite");
+        zebra_exit("encode_key_write");
+    }
 
-    /* copy term to output buf */
-    while ((*bp++ = *k++))
-        ;
+    k = k + klen+1;
+
     /* and copy & align key so we can mangle */
     memcpy (&key, k+1, sizeof(struct it_key));  /* *k is insert/delete */
 
