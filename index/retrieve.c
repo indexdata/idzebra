@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.82 2007-12-05 09:55:57 adam Exp $
+/* $Id: retrieve.c,v 1.83 2008-01-16 11:54:28 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -789,6 +789,7 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
     }
     else
     {
+        yaz_timing_t timing = yaz_timing_create();
         zebra_strmap_t *map_array
             = odr_malloc(odr, sizeof *map_array * no_ord);
         for (i = 0; i < no_ord; i++)
@@ -847,6 +848,10 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
                 rec_free(&rec);
             }
         }
+        yaz_timing_stop(timing);
+        yaz_log(YLOG_LOG, "facet first phase real=%4.2f",
+                yaz_timing_get_real(timing));
+        yaz_timing_start(timing);
         if (use_xml)
             wrbuf_puts(wr, "<facets>\n");
         for (spec = spec_list, i = 0; i < no_ord; i++, spec = spec->next)
@@ -904,9 +909,11 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
             wrbuf_puts(wr, "</facets>\n");
         for (i = 0; i < no_ord; i++)
             zebra_strmap_destroy(map_array[i]);
+        yaz_timing_stop(timing);
+        yaz_log(YLOG_LOG, "facet second phase real=%4.2f",
+                yaz_timing_get_real(timing));
+        yaz_timing_destroy(&timing);
     }
-    
-
     *rec_bufp = odr_strdup(odr, wrbuf_cstr(wr));
     wrbuf_destroy(wr);
     *rec_lenp = strlen(*rec_bufp);
