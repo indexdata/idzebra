@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.73 2008-01-17 14:01:45 adam Exp $
+# $Id: makefile,v 1.74 2008-01-17 21:48:36 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -31,7 +31,7 @@ ZLIB_DIR = c:\zlib-1.2.3.win32
 
 # ICU support
 # get icu libraries from http://www.icu-project.org
-HAVE_LIBICU=1
+HAVE_ICU=1
 ICU_DIR=c:\icu
 
 
@@ -50,14 +50,14 @@ YAZINCL=$(YAZDIR)\include
 YAZBINDIR=$(YAZDIR)\bin
 !if $(DEBUG)
 YAZLIB="$(YAZDIR)\lib\yaz3d.lib"
-!if $(HAVE_LIBICU)
+!if $(HAVE_ICU)
 YAZLIB=$(YAZLIB) "$(YAZDIR)\lib\yaz_icu3d.lib"
 !endif
 YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz3d.dll"
 YAZ_DLL_TARGET="$(BINDIR)\yaz3d.dll"
 !else
 YAZLIB="$(YAZDIR)\lib\yaz3.lib"
-!if $(HAVE_LIBICU)
+!if $(HAVE_ICU)
 YAZLIB=$(YAZLIB) "$(YAZDIR)\lib\yaz_icu3.lib"
 !endif
 YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz3.dll"
@@ -200,7 +200,7 @@ libxslt:
 
 !endif
 
-!if $(HAVE_LIBICU)
+!if $(HAVE_ICU)
 ICU_DEF= /DYAZ_HAVE_ICU=1  /I"$(ICU_DIR)\include"
 ICU_LIB= $(ICU_DIR)\lib\icudt.lib $(ICU_DIR)\lib\icuin.lib $(ICU_DIR)\lib\icuuc.lib
 icu: $(BINDIR)\icudt38.dll $(BINDIR)\icuin38.dll $(BINDIR)\icuuc38.dll
