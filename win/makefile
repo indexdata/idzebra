@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.72 2007-12-13 11:09:20 adam Exp $
+# $Id: makefile,v 1.73 2008-01-17 14:01:45 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -29,9 +29,14 @@ ZLIB_DIR = c:\zlib-1.2.3.win32
 # get WIN32 binaries libxml2 & iconv & zlib from here:
 #  http://www.zlatkovic.com/libxml.en.html
 
-default: all
+# ICU support
+# get icu libraries from http://www.icu-project.org
+HAVE_LIBICU=1
+ICU_DIR=c:\icu
 
-all: dirs expat iconv libxml2 libxslt yaz dll zserver zebraidx tstflock
+
+default: all
+all: dirs expat iconv libxml2 libxslt icu yaz dll zserver zebraidx tstflock
 
 # Directories
 # The current directory is supposed to be something like
@@ -42,14 +47,19 @@ ROOTDIR=..   # The home of zebra
 YAZDIR=$(ROOTDIR)\..\yaz  # or \program files\yaz
 
 YAZINCL=$(YAZDIR)\include
-YAZLIBS=$(YAZLIB)
 YAZBINDIR=$(YAZDIR)\bin
 !if $(DEBUG)
 YAZLIB="$(YAZDIR)\lib\yaz3d.lib"
+!if $(HAVE_LIBICU)
+YAZLIB=$(YAZLIB) "$(YAZDIR)\lib\yaz_icu3d.lib"
+!endif
 YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz3d.dll"
 YAZ_DLL_TARGET="$(BINDIR)\yaz3d.dll"
 !else
 YAZLIB="$(YAZDIR)\lib\yaz3.lib"
+!if $(HAVE_LIBICU)
+YAZLIB=$(YAZLIB) "$(YAZDIR)\lib\yaz_icu3.lib"
+!endif
 YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz3.dll"
 YAZ_DLL_TARGET="$(BINDIR)\yaz3.dll"
 !endif
@@ -190,6 +200,23 @@ libxslt:
 
 !endif
 
+!if $(HAVE_LIBICU)
+ICU_DEF= /DYAZ_HAVE_ICU=1  /I"$(ICU_DIR)\include"
+ICU_LIB= $(ICU_DIR)\lib\icudt.lib $(ICU_DIR)\lib\icuin.lib $(ICU_DIR)\lib\icuuc.lib
+icu: $(BINDIR)\icudt38.dll $(BINDIR)\icuin38.dll $(BINDIR)\icuuc38.dll
+
+$(BINDIR)\icudt38.dll:
+	  copy "$(ICU_DIR)\bin\icudt38.dll" $(BINDIR)
+$(BINDIR)\icuin38.dll:
+	  copy "$(ICU_DIR)\bin\icuin38.dll" $(BINDIR)
+$(BINDIR)\icuuc38.dll:
+	  copy "$(ICU_DIR)\bin\icuuc38.dll" $(BINDIR)
+!else
+ICU_DEF=  /DYAZ_HAVE_ICU=0
+ICU_LIB=
+icu:
+!endif
+
 !if $(HAVE_LIBXSLT)
 MOD_ALVIS_OBJS= $(OBJDIR)\alvis.obj
 MOD_ALVIS_CFLAGS=/DIDZEBRA_STATIC_ALVIS=1
@@ -219,6 +246,7 @@ COMMON_C_OPTIONS=          \
   $(EXPAT_DEF)             \
   $(LIBXML2_DEF)           \
   $(LIBXSLT_DEF)           \
+  $(ICU_DEF)               \
   /FR"$(OBJDIR)\\"         \
   /Fo"$(OBJDIR)\\"         \
   /Fd"$(OBJDIR)\\"         \
@@ -271,7 +299,7 @@ LINK_LIBS= kernel32.lib user32.lib   gdi32.lib   winspool.lib \
            comdlg32.lib advapi32.lib shell32.lib ole32.lib    \
            oleaut32.lib uuid.lib     odbc32.lib  odbccp32.lib \
            wsock32.lib  advapi32.lib \
-	   $(ICONV_LIB) $(EXPAT_LIB) $(LIBXML2_LIB) $(LIBXSLT_LIB)
+	   $(ICONV_LIB) $(EXPAT_LIB) $(LIBXML2_LIB) $(LIBXSLT_LIB) $(ICU_LIB)
 
 COMMON_LNK_OPTIONS= /nologo /machine:i386 /incremental:no
 
@@ -303,7 +331,7 @@ LINK_PROGRAM= $(LINK) \
 		$(LNKOPT) \
 		$(CLIENT_LINK_OPTIONS) \
 		$(IMPLIB) \
-		$(YAZLIBS) \
+		$(YAZLIB) \
 		$(BZIP2LIB) \
 		$(LINK_LIBS)
 
@@ -496,7 +524,7 @@ $(DLL) $(IMPLIB): "$(BINDIR)" $(ZEBRALIB_OBJS)
 		$(DLL_LINK_OPTIONS) \
 		$(ZEBRALIB_OBJS) \
 		/out:$(DLL) \
-		$(YAZLIBS) \
+		$(YAZLIB) \
 		/implib:"$(IMPLIB)" \
 		/map:"$(LIBDIR)\idzebra.map" \
 
