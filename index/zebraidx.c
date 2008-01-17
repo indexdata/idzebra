@@ -1,4 +1,4 @@
-/* $Id: zebraidx.c,v 1.11 2007-12-20 11:15:43 adam Exp $
+/* $Id: zebraidx.c,v 1.12 2008-01-17 13:56:18 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <unistd.h>
 #endif
 
-#if HAVE_ICU
+#if YAZ_HAVE_ICU
 #include <yaz/icu.h>
 #endif
 #include <yaz/log.h>
@@ -250,7 +250,7 @@ int main(int argc, char **argv)
             printf("Configured as: %s\n", sys_str);
             if (strcmp(version_str, ZEBRAVER))
                 printf("zebraidx compiled version %s\n", ZEBRAVER);
-#if HAVE_ICU
+#if YAZ_HAVE_ICU
             printf("Using ICU\n");
 #endif
         }
