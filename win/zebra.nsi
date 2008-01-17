@@ -1,4 +1,4 @@
-; $Id: zebra.nsi,v 1.47 2008-01-17 14:13:25 adam Exp $
+; $Id: zebra.nsi,v 1.48 2008-01-17 15:08:18 adam Exp $
 
 !define VERSION "2.0.24"
 
@@ -93,6 +93,10 @@ Section "Zebra Runtime"
 	File ..\bin\libxslt.dll
 	File ..\bin\yaz3.dll
 	File ..\bin\libexpat.dll
+	File ..\bin\icudt38.dll
+	File ..\bin\icuin38.dll
+	File ..\bin\icuuc38.dll
+	File ..\bin\yaz_icu3.dll
 SectionEnd
 
 Section "Zebra Development"
