@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.74 2008-01-17 21:48:36 adam Exp $
+# $Id: makefile,v 1.75 2008-01-18 11:33:36 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -46,7 +46,6 @@ ROOTDIR=..   # The home of zebra
 # YAZ include files, libraries, etc.
 YAZDIR=$(ROOTDIR)\..\yaz  # or \program files\yaz
 
-YAZINCL=$(YAZDIR)\include
 YAZBINDIR=$(YAZDIR)\bin
 !if $(DEBUG)
 YAZLIB="$(YAZDIR)\lib\yaz3d.lib"
@@ -122,8 +121,6 @@ IMPLIB=$(LIBDIR)\idzebrad.lib
 DLL=$(BINDIR)\idzebra.dll
 IMPLIB=$(LIBDIR)\idzebra.lib
 !endif
-
-ZEBRA_RES=$(OBJDIR)\idzebra.res
 
 ZSERVER=$(BINDIR)\zebrasrv.exe
 ZEBRAIDX=$(BINDIR)\zebraidx.exe
@@ -517,12 +514,28 @@ $(TSTFLOCK) : "$(BINDIR)" $(TSTFLOCK_OBJS) $(IMPLIB)
 		$(TSTFLOCK_OBJS) \
 		/out:$(TSTFLOCK) 
 
-$(DLL) $(IMPLIB): "$(BINDIR)" $(ZEBRALIB_OBJS)
+# Resources
+RES=$(OBJDIR)\zebra.res
+RC=$(WINDIR)\zebra.rc
+
+RSC=rc.exe
+!if $(DEBUG)
+RSOPT=/d_DEBUG
+!else
+RSOPT=/d_NDEBUG
+!endif
+
+
+$(RES): $(RC)
+	$(RSC) $(RSOPT) /I"../include" /I"$(YAZDIR)\include" /fo"$(RES)" $(RC)
+
+$(DLL) $(IMPLIB): "$(BINDIR)" $(ZEBRALIB_OBJS) $(RES)
 	$(LINK) \
 		$(LNKOPT) \
 		$(LINK_LIBS) \
 		$(DLL_LINK_OPTIONS) \
 		$(ZEBRALIB_OBJS) \
+		$(RES) \
 		/out:$(DLL) \
 		$(YAZLIB) \
 		/implib:"$(IMPLIB)" \

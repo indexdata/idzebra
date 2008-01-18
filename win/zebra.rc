@@ -1,0 +1,39 @@
+#include "winver.h"
+#include "..\include\idzebra\version.h"
+
+VS_VERSION_INFO VERSIONINFO 
+  FILEVERSION ZEBRA_FILEVERSION
+  PRODUCTVERSION ZEBRA_FILEVERSION
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+  FILEFLAGS 0x1L
+#else
+  FILEFLAGS 0x0L
+#endif
+  FILEOS VOS_NT
+  FILETYPE VFT_DLL
+  FILESUBTYPE VFT2_UNKNOWN
+{
+ BLOCK "StringFileInfo"
+ {
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "Comments", "http://www.indexdata.com/zebra/\0"
+            VALUE "CompanyName", "Index Data\0"
+            VALUE "FileDescription", "idzebra DLL\0"
+            VALUE "FileVersion", ZEBRAVER "\0"
+            VALUE "InternalName", "idzebra\0"
+            VALUE "LegalCopyright", "Copyright © 1995-2008 Index Data ApS\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "zebra.dll\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "Zebra\0"
+            VALUE "ProductVersion", ZEBRAVER "\0"
+            VALUE "SpecialBuild", "\0"
+        END
+ }
+ BLOCK "VarFileInfo"
+ BEGIN
+        VALUE "Translation", 0x0, 1200
+ END 
+}
