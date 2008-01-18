@@ -1,4 +1,4 @@
-<!-- $Id: entities.ent,v 1.5 2007-02-20 14:28:31 marc Exp $ -->
+<!-- $Id: entities.ent,v 1.6 2008-01-18 09:02:24 adam Exp $ -->
 <!ENTITY chap-introduction SYSTEM "introduction.xml">
 <!ENTITY chap-installation SYSTEM "installation.xml">
 <!ENTITY chap-quickstart SYSTEM "quickstart.xml">
@@ -18,4 +18,4 @@
 <!ENTITY zebrasrv-options SYSTEM "zebrasrv-options.xml">
 <!ENTITY zebrasrv-virtual SYSTEM "zebrasrv-virtual.xml">
 <!ENTITY gfs-synopsis-app "zebrasrv">
-
+<!ENTITY copyright-year "1995-2008">

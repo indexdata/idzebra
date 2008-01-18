@@ -11,7 +11,7 @@
 
      <!ENTITY test SYSTEM "test.xml">
 ]>
-<!-- $Id: zebra.xml,v 1.22 2007-12-20 13:16:09 adam Exp $ -->
+<!-- $Id: zebra.xml,v 1.23 2008-01-18 09:02:24 adam Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>&zebra; - User's Guide and Reference</title>
@@ -24,7 +24,7 @@
   </authorgroup>
   <releaseinfo>&version;</releaseinfo>
   <copyright>
-   <year>1995-2007</year>
+   <year>&copyright-year;</year>
    <holder>Index Data</holder>
   </copyright>
   <abstract>
