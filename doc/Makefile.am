@@ -1,5 +1,7 @@
-## $Id: Makefile.am,v 1.74 2007-07-10 09:43:33 adam Exp $
+## $Id: Makefile.am,v 1.75 2008-01-18 12:39:35 adam Exp $
 SUBDIRS = common
+
+docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 XMLMAN = zebraidx.xml zebrasrv.xml idzebra-config.xml
 
