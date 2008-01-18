@@ -1,4 +1,4 @@
-/* $Id: version.h,v 1.31 2008-01-17 14:13:25 adam Exp $
+/* $Id: version.h,v 1.32 2008-01-18 14:24:56 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -29,7 +29,9 @@ YAZ_BEGIN_CDECL
 
 #define ZEBRAVER "2.0.24"
 
-#define ZEBRADATE "$Date: 2008-01-17 14:13:25 $"
+#define ZEBRA_FILEVERSION 2,0,24,1
+
+#define ZEBRADATE "$Date: 2008-01-18 14:24:56 $"
 
 /** \brief Returns Zebra version and system info.
     \param version_str buffer for version (at least 16 bytes)
