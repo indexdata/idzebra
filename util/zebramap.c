@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.77 2007-12-20 19:05:12 adam Exp $
+/* $Id: zebramap.c,v 1.78 2008-01-24 16:13:12 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -731,6 +731,7 @@ int zebra_map_tokenize_start(zebra_map_t zm,
 
 int zebra_maps_is_icu(zebra_map_t zm)
 {
+    assert(zm);
 #if YAZ_HAVE_ICU
     return zm->use_chain;
 #else
