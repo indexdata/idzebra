@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.83 2008-01-16 11:54:28 adam Exp $
+/* $Id: retrieve.c,v 1.84 2008-01-24 16:17:29 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -394,36 +394,35 @@ int zebra_special_index_fetch(ZebraHandle zh, zint sysno, ODR odr,
                 if (retrieval_type == 0 
                     || !strcmp(retrieval_type_cstr, index_type))
                 {
-                    zebra_term_untrans(zh, index_type, dst_buf, str);
-                    if (strlen(dst_buf))
+                    if (zebra_term_untrans(zh, index_type, dst_buf, str))
+                        *dst_buf = '\0'; /* untrans failed */
+
+                    if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
                     {
-                        if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
-                        {
-                            wrbuf_printf(wrbuf, "  <index name=\"%s\"", 
-                                         string_index);
-                            
-                            wrbuf_printf(wrbuf, " type=\"%s\"", index_type);
-                            
-                            wrbuf_printf(wrbuf, " seq=\"" ZINT_FORMAT "\">", 
-                                         key_in.mem[key_in.len -1]);
+                        wrbuf_printf(wrbuf, "  <index name=\"%s\"", 
+                                     string_index);
                         
-                            wrbuf_xmlputs(wrbuf, dst_buf);
-                            wrbuf_printf(wrbuf, "</index>\n");
-                        }
-                        else 
-                        {
-                            wrbuf_printf(wrbuf, "%s ", string_index);
-                            
-                            wrbuf_printf(wrbuf, "%s", index_type);
-                            
-                            for (i = 1; i < key_in.len; i++)
-                                wrbuf_printf(wrbuf, " " ZINT_FORMAT, 
+                        wrbuf_printf(wrbuf, " type=\"%s\"", index_type);
+                        
+                        wrbuf_printf(wrbuf, " seq=\"" ZINT_FORMAT "\">", 
+                                     key_in.mem[key_in.len -1]);
+                        wrbuf_xmlputs(wrbuf, dst_buf);
+                        wrbuf_printf(wrbuf, "</index>\n");
+                    }
+                    else 
+                    {
+                        wrbuf_printf(wrbuf, "%s ", string_index);
+                        
+                        wrbuf_printf(wrbuf, "%s", index_type);
+                        
+                        for (i = 1; i < key_in.len; i++)
+                            wrbuf_printf(wrbuf, " " ZINT_FORMAT, 
                                              key_in.mem[i]);
-                            
-                            wrbuf_printf(wrbuf, " %s", dst_buf);
                         
-                            wrbuf_printf(wrbuf, "\n");
-                        }
+                        wrbuf_printf(wrbuf, " %s", dst_buf);
+                        
+                        wrbuf_printf(wrbuf, "\n");
+
                     }
                     
                 }
