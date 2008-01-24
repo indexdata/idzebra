@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.276 2007-12-20 11:21:29 adam Exp $
+/* $Id: extract.c,v 1.277 2008-01-24 16:15:35 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -187,7 +187,7 @@ static void snippet_add_complete_field(RecWord *p, int ord,
     }
     if (!i)
 	return;
-    if (last && start != last)
+    if (last && start != last && zebra_maps_is_index(zm))
         zebra_snippets_appendn(h->snippets, p->seqno, 0, ord,
                                start, last - start);
 }
@@ -222,7 +222,7 @@ static void snippet_add_incomplete_field(RecWord *p, int ord, zebra_map_t zm)
 	}
 	if (!map)
 	    break;
-        if (start != last)
+        if (start != last && zebra_maps_is_index(zm))
         {
             zebra_snippets_appendn(h->snippets, p->seqno, 1, ord,
                                    start, last - start);
@@ -256,7 +256,7 @@ static void snippet_add_incomplete_field(RecWord *p, int ord, zebra_map_t zm)
                 p->seqno++;
             }
         }
-        if (start != last)
+        if (start != last && zebra_maps_is_index(zm))
             zebra_snippets_appendn(h->snippets, p->seqno, 0, ord,
                                    start, last - start);
         start = last;
@@ -279,8 +279,9 @@ static void snippet_add_icu(RecWord *p, int ord, zebra_map_t zm)
     while (zebra_map_tokenize_next(zm, &res_buf, &res_len,
                                    &display_buf, &display_len))
     {
-        zebra_snippets_appendn(h->snippets, p->seqno, 0, ord,
-                               display_buf, display_len);
+        if (zebra_maps_is_index(zm))
+            zebra_snippets_appendn(h->snippets, p->seqno, 0, ord,
+                                   display_buf, display_len);
         p->seqno++;
     }
 }
@@ -291,7 +292,7 @@ static void snippet_token_add(RecWord *p)
     ZebraHandle zh = h->zh;
     zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, p->index_type);
 
-    if (zm && zebra_maps_is_index(zm))
+    if (zm)
     {
         ZebraExplainInfo zei = zh->reg->zei;
         int ch = zebraExplain_lookup_attr_str(
