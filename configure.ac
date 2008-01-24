@@ -1,11 +1,11 @@
 dnl Zebra, Index Data ApS, 1995-2008
-dnl $Id: configure.ac,v 1.73 2008-01-18 09:07:01 adam Exp $
+dnl $Id: configure.ac,v 1.74 2008-01-24 21:52:46 adam Exp $
 dnl
-AC_PREREQ(2.59)
+AC_PREREQ(2.60)
 AC_INIT([idzebra],[2.0.24],[zebra-help@indexdata.dk])
 AC_CONFIG_SRCDIR(configure.ac)
 AC_CONFIG_AUX_DIR(config)
-AM_INIT_AUTOMAKE([1.8])
+AM_INIT_AUTOMAKE([1.9])
 PACKAGE_SUFFIX="-2.0"
 AC_SUBST(PACKAGE_SUFFIX)
 dnl http://www.gnu.org/software/libtool/manual.html#Versioning
