@@ -1,4 +1,4 @@
-/* $Id: untrans.c,v 1.6 2007-12-13 11:09:20 adam Exp $
+/* $Id: untrans.c,v 1.7 2008-01-24 16:14:40 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -32,8 +32,14 @@ int zebra_term_untrans(ZebraHandle zh, const char *index_type,
                        char *dst, const char *src)
 {
     zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, index_type);
+    if (!zm)
+    {
+        return -2;
+    }
     if (zebra_maps_is_icu(zm))
+    {
         return -1;
+    }
     else
     {
         int len = 0;
