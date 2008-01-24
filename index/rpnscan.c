@@ -1,4 +1,4 @@
-/* $Id: rpnscan.c,v 1.24 2007-12-13 11:09:20 adam Exp $
+/* $Id: rpnscan.c,v 1.25 2008-01-24 16:17:03 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -250,6 +250,10 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
                     {
                         glist[pos].display_term = odr_strdup(stream, w->term);
                     }
+                    else
+                    {
+                        yaz_log(YLOG_WARN, "zebra_snippets_lookup failed for pos=%d", pos);
+                    }
                 }
                 zebra_snippets_destroy(rec_snippets);
             }
@@ -260,6 +264,12 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
                 glist[pos].term = glist[pos].display_term;
             }
 
+            if (!glist[pos].term)
+            {
+                yaz_log(YLOG_WARN, "Could not generate scan term for pos=%d",
+                        pos);
+                glist[pos].term = "None";
+            }
             glist[pos].occurrences = count;
             zebra_snippets_destroy(hit_snippets);
         }
