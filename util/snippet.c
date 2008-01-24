@@ -1,4 +1,4 @@
-/* $Id: snippet.c,v 1.14 2007-08-21 13:27:04 adam Exp $
+/* $Id: snippet.c,v 1.15 2008-01-24 16:13:29 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 #include <yaz/nmem.h>
 #include <yaz/log.h>
+#include <yaz/wrbuf.h>
 #include <idzebra/snippet.h>
 
 struct zebra_snippets {
@@ -105,10 +106,15 @@ void zebra_snippets_log(const zebra_snippets *l, int log_level, int all)
     zebra_snippet_word *w;
     for (w = l->front; w; w = w->next)
     {
+        WRBUF wr_term = wrbuf_alloc();
+        wrbuf_puts_escaped(wr_term, w->term);
+
         if (all || w->mark)
             yaz_log(log_level, "term='%s'%s mark=%d seqno=" ZINT_FORMAT " ord=%d",
-                    w->term, (w->match && !w->ws ? "*" : ""), w->mark,
+                    wrbuf_cstr(wr_term), 
+                    (w->match && !w->ws ? "*" : ""), w->mark,
                     w->seqno, w->ord);
+        wrbuf_destroy(wr_term);
     }
 }
 
