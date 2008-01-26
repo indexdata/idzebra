@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.277 2008-01-24 16:15:35 adam Exp $
+/* $Id: extract.c,v 1.278 2008-01-26 15:32:51 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -1615,7 +1615,15 @@ static void extract_add_string(RecWord *p, zebra_map_t zm,
 
     if (!p->index_name)
         return;
+    if (log_level_details)
+    {
 
+        WRBUF w = wrbuf_alloc();
+        
+        wrbuf_write_escaped(w, string, length);
+        yaz_log(log_level_details, "extract_add_string: %s", wrbuf_cstr(w));
+        wrbuf_destroy(w);
+    }
     if (zebra_maps_is_index(zm))
     {
 	extract_add_index_string(p, zinfo_index_category_index,
