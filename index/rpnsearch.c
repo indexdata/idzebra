@@ -1,4 +1,4 @@
-/* $Id: rpnsearch.c,v 1.30 2008-01-26 15:32:05 adam Exp $
+/* $Id: rpnsearch.c,v 1.31 2008-01-26 15:48:29 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -206,7 +206,7 @@ static void esc_str(char *out_buf, size_t out_size,
     }
 }
 
-#define REGEX_CHARS " []()|.*+?!\\\"$"
+#define REGEX_CHARS " []()|.*+?!\"$"
 
 static void add_non_space(const char *start, const char *end,
                           WRBUF term_dict,
@@ -254,7 +254,7 @@ static int term_100_icu(zebra_map_t zm,
     wrbuf_write(display_term, display_buf, display_len);
     for (i = 0; i < res_len; i++)
     {
-        if (strchr(REGEX_CHARS, res_buf[i]))
+        if (strchr(REGEX_CHARS "\\", res_buf[i]))
             wrbuf_putc(term_dict, '\\');
         if (res_buf[i] < 32)
             wrbuf_putc(term_dict, 1);
