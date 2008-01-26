@@ -1,4 +1,4 @@
-/* $Id: t17.c,v 1.11 2007-12-17 12:23:03 adam Exp $
+/* $Id: t17.c,v 1.12 2008-01-26 15:51:00 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -46,7 +46,8 @@ const char *myrec[] = {
         "<gils>\n<title>My x computer</title>\n</gils>\n",
         "<gils>\n<title>My computer x</title>\n</gils>\n" ,
         "<gils>\n<title>" char_ae "</title>\n</gils>\n" ,
-        "<gils>\n<title>B" char_aring "d</title>\n</gils>\n" ,
+        "<gils>\n<title>B" char_aring "d</title>\n"
+        "<abstract>זיהוי סדר הארועים בסיפור המרד הגדול מאת צביה בן-שלום 提示:直接点击数据库名称,将进入单库检索 Ngày xửa ngày xưa D.W. all wet</abstract>\n</gils>\n" ,
 	0} ;
 	
 static void tst(int argc, char **argv)
@@ -77,6 +78,14 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "B" char_Aring "D", 1));
     YAZ_CHECK(tl_query(zh, "b" char_aring1 "d", 1));
     YAZ_CHECK(tl_query(zh, "B" char_Aring1 "D", 1));
+
+    /* Abstract searches . Chinese mostly */
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract בן", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract צביה", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract הגדול", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract בסיפור", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract 点", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract wet", 1));
 
     /* phrase search */
     YAZ_CHECK(tl_query(zh, "@attr 1=title {my computer}", 2));
