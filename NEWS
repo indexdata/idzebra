@@ -1,3 +1,9 @@
+--- 2.0.26 2008/01/28 
+
+Fixes for searches on Chinese text.
+
+Fixes for scan using ICU indexing terms.
+
 --- 2.0.24 2008/01/18 
 
 Fixed some memory violations for ICU enabled indexing that could be
