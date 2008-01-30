@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.51 2007-12-19 13:35:39 adam Exp $ -->
+ <!-- $Id: introduction.xml,v 1.52 2008-01-30 08:02:10 marc Exp $ -->
  <title>Introduction</title>
  
  <section id="overview">
@@ -751,6 +751,39 @@
       <ulink url="http://www.liblime.com/newsletter/2006/01/features/koha-earns-its-stripes/">
      Koha Earns its Stripes</ulink>.
      </para>
+   </section>
+
+
+  <section id="kete-dom">
+   <title>Kete Open Source Digital Library and Archiving software</title>
+   <para>
+     <ulink url="http://kete.net.nz/">Kete</ulink> is a digital object
+     management repository, initially developed  in 
+     New Zealand. Initial development has
+     been a partnership between the Horowhenua Library Trust and
+     Katipo Communications Ltd. funded as part of the Community
+     Partnership Fund in 2006.
+     Kete is purpose built
+     software to enable communities to build their own digital
+     libraries, archives and repositories.  
+    </para>
+    <para>
+     It is based on Ruby-on-Rails and MySQL, and integrates  the &zebra; server
+     and the &yaz; toolkit for indexing and retrieval of it's content.
+     Zebra is run as separate computer process from the Kete
+     application.
+     See
+     how Kete <ulink
+     url="http://kete.net.nz/documentation/topics/show/139-managing-zebra">manages
+     Zebra.</ulink>
+     </para>
+     <para>
+     Why does Kete wants to use Zebra?? Speed, Scalability and easy
+ integration with Koha. Read their
+ <ulink
+     url="http://kete.net.nz/blog/topics/show/44-who-what-why-when-answering-some-of-the-niggly-development-questions">detailled
+ reasoning here.</ulink>
+    </para>
    </section>
 
   <section id="emilda-ils">
