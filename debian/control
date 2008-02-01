@@ -42,6 +42,18 @@ Description: IDZebra common files
  formats (eg. email, XML, MARC) and allows access to them through exact
  boolean search expressions and relevance-ranked free-text queries.
 
+Package: idzebra-2.0-examples
+Section: text
+Architecture: all
+Description: IDZebra example configurations
+ This package includes examples for indexing of various
+ data formats like OAI-PMH, Marc21, and MarcXML.
+ .
+ IDZebra is a high-performance, general-purpose structured text indexing
+ and retrieval engine. It reads structured records in a variety of input
+ formats (eg. email, XML, MARC) and allows access to them through exact
+ boolean search expressions and relevance-ranked free-text queries.
+
 Package: idzebra-2.0-utils
 Section: text
 Architecture: any
