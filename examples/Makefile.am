@@ -1,5 +1,5 @@
 
-SUBDIRS = alvis-oai gils zthes marc21 marcxml
+SUBDIRS = gils marc21 marcxml oai-pmh zthes 
 
 EXTRA_DIST = README
 

@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.1 2008-02-01 09:55:30 marc Exp $
+# $Id: Makefile.am,v 1.2 2008-02-01 10:00:24 marc Exp $
 
 EXTRA_DIST = README \
    conf/yazserver.xml \
@@ -9,6 +9,8 @@ EXTRA_DIST = README \
    conf/oai2index.xsl \
    conf/oai2zebra.xsl \
    conf/zebra.cfg \
+   data/debug-record.xml \
+   data/debug-utf8-record.xml \
    data/oai-caltech.xml 
 
 
