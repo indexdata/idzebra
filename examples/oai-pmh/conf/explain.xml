@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id: explain.xml,v 1.1 2008-02-01 09:45:17 marc Exp $ -->
+
+<!-- this file configures the SRU/SRW explain response -->
+<!-- see: http://explain.z3950.org/dtd/commentary.html -->
+<!-- validate this using zeerex-2.0.xsd -->
+<!-- Extensions see: http://explain.z3950.org/dtd/extensions.html -->
+
+<explain xmlns="http://explain.z3950.org/dtd/2.0/">
+
+  <serverInfo protocol="SRW/SRU/Z39.50">
+
+    <host>localhost</host>
+
+    <port>9999</port>
+
+    <!-- <database numRecs="1314" lastUpdate="2006-03-15 09-05-33">
+         Default</database> -->
+    <database>Default</database>
+
+    <!--
+        <authentication>
+        <user>azaroth</user>
+        <group>agroup</group>
+        <password>squirrelfish</password>
+        </authentication>
+    -->
+  </serverInfo>
+
+  <databaseInfo>
+
+    <title lang="en" primary="true">OAI record  SRU/SRW/Z39.50 server</title>
+
+    <description lang="en" primary="true">
+      OAI harvested article and preprint metadata records 
+    </description>
+
+    <author>
+      Marc Cromme, Index Data Aps, 
+      http://www.indexdata.dk
+    </author>
+
+    <contact>Marc Cromme, marc(at)indexdata(dot)com</contact>
+
+    <!--<langUsage codes="en fr">
+        The records are in English and French.
+        </langUsage>  -->
+
+    <history>
+      Part of the open source Zebra information retrieval database
+      example configurations, see http://www.indexdata.com/zebra
+    </history>
+
+    <implementation  identifier="zebra" version="2.0">
+      <title>Index Data YAZ/ZEBRA http://www.indexdata.dk/zebra</title>
+    </implementation>
+    
+    <links> 
+      <link type="z39.50">http://localhost:9999</link>
+      <link type="srw">http://localhost:9999</link>
+      <link type="sru">http://localhost:9999</link>
+    </links>
+    
+  </databaseInfo>
+
+  <!--
+  <metaInfo>
+    <dateModified>2002-03-29 19:00:00</dateModified>
+    <aggregatedFrom> z39.50r://gondolin.hist.liv.ac.uk:210/IR-Explain-1?
+                   id=ghlau-1;esn=F;rs=XML </aggregatedFrom>
+    <dateAggregated>2002-03-30 06:30:00</dateAggregated>
+  </metaInfo>
+  -->
+
+
+  <indexInfo>
+    <set name="cql" identifier="info:srw/cql-context-set/1/cql-v1.1">
+      <title>CQL Standard Set</title>
+    </set>
+    <set name="rec" identifier="info:srw/cql-context-set/2/rec-1.0">
+      <title>Record Standard Set</title>
+    </set>
+    <set name="oai" identifier="info:srw/cql-context-set/1/oai-v1.1">
+      <title>Open Archive Metadata Set</title>
+    </set>
+    <set name="dc" identifier="info:srw/cql-context-set/1/dc-v1.1">
+      <title>Dublin Core Set</title>
+    </set>
+
+    <!-- CQL standard index -->
+    <index search="true" scan="true" sort="false">
+      <title lang="en">CQL Server Choice</title>
+      <map><name set="cql">serverChoice</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_all</attr>
+      </map>
+    </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">CQL All</title>
+      <map><name set="cql">all</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_all</attr>
+      </map>
+    </index>
+
+    <!-- Record ID index -->
+    <index search="true" scan="true" sort="false">
+      <title lang="en">Record ID</title>
+      <map><name set="rec">id</name></map>
+      <map>
+        <attr type="1" set="bib1">rec:id</attr>
+        <attr type="4" set="bib1">3</attr>
+      </map>
+    </index>
+
+    <!-- Open Archive Metadata indexes -->
+    <index search="true" scan="true" sort="false">
+      <title lang="en">OAI Identifier</title>
+      <map><name set="oai">identifier</name></map>
+      <map>
+        <attr type="1" set="bib1">oai_identifier</attr>
+        <attr type="4" set="bib1">3</attr>
+      </map>
+    </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">OAI Datestamp</title>
+      <map><name set="oai">date</name></map>
+      <map>
+        <attr type="1" set="bib1">oai_datestamp</attr>
+        <attr type="4" set="bib1">3</attr>
+      </map>
+    </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">OAI Set Specification</title>
+      <map><name set="oai">set</name></map>
+      <map>
+        <attr type="1" set="bib1">oai_setspec</attr>
+        <attr type="4" set="bib1">3</attr>
+      </map>
+    </index>
+
+    <!-- Dublin Core Indexes -->
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Title</title>
+      <map><name set="dc">title</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_title</attr>
+      </map>
+    </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Creator</title>
+      <map><name set="dc">creator</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_creator</attr>
+      </map>
+    </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Subject</title>
+      <map><name set="dc">subject</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_subject</attr>
+        <!-- <attr type="6" set="bib1">3</attr> -->
+      </map>
+    </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Description</title>
+      <map><name set="dc">description</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_description</attr>
+      </map>
+    </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Publisher</title>
+      <map><name set="dc">publisher</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_publisher</attr>
+        <!-- <attr type="6" set="bib1">3</attr> -->
+      </map>
+    </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Contributor</title>
+      <map><name set="dc">contributor</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_contributor</attr>
+      </map>
+    </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Date</title>
+      <map><name set="dc">date</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_date</attr>
+        <attr type="4" set="bib1">3</attr>
+      </map>
+    </index>
+    <!--
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Type</title>
+      <map><name set="dc">type</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_type</attr>
+      </map>
+    </index>
+    -->
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Format</title>
+      <map><name set="dc">format</name></map>
+      <map>
+        <attr type="1" set="bib1"></attr>
+        <attr type="4" set="bib1">3</attr>
+      </map>
+    </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Identifier</title>
+      <map><name set="dc">identifier</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_identifier</attr>
+        <attr type="4" set="bib1">3</attr>
+      </map>
+    </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Source</title>
+      <map><name set="dc">source</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_source</attr>
+        <attr type="4" set="bib1">3</attr>
+      </map>
+    </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Language</title>
+      <map><name set="dc">language</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_language</attr>
+      </map>
+    </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Relation</title>
+      <map><name set="dc">relation</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_relation</attr>
+        <attr type="4" set="bib1">3</attr>
+      </map>
+    </index>
+    <!--
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Coverage</title>
+      <map><name set="dc">coverage</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_coverage</attr>
+      </map>
+    </index>
+    -->
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Rights</title>
+      <map><name set="dc">rights</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_rights</attr>
+        <!-- <attr type="6" set="bib1">3</attr> -->
+      </map>
+    </index>
+
+  </indexInfo>
+
+  <schemaInfo>
+
+    <schema identifier="http://www.loc.gov/zing/srw/dcschema/v1.0/"
+            location="http://www.loc.gov/zing/srw/dc.xsd" 
+            name="dc"
+            retrieve="true">
+      <title lang="en">Dublin Core</title>
+    </schema>
+
+    <schema identifier="http://indexdata.dk/dc-short"
+            location="" 
+            name="oai"
+            retrieve="true">
+      <title lang="en">Open Archives Initiative</title>
+    </schema>
+
+    <schema identifier="http://indexdata.dk/zebra/xslt/retrieve"
+            location="" 
+            name="zebra"
+            retrieve="true">
+      <title lang="en">Zebra Retrieve</title>
+    </schema>
+
+    <schema identifier="http://indexdata.dk/zebra/xslt/1"
+            location="" 
+            name="index"
+            retrieve="true">
+      <title lang="en">Zebra Indexing</title>
+    </schema>
+
+  </schemaInfo>
+
+ 
+  <configInfo>
+
+    <!-- default context set -->
+    <default type="contextSet">cql</default>
+
+    <default type="index">all</default>
+
+    <!-- default relation -->
+    <default type="relation">=</default>
+    <supports type="relation">&lt;</supports> <!-- 2=1 OK -->
+    <supports type="relation">&lt;=</supports> <!-- 2=2 OK -->
+    <supports type="relation">=</supports> <!-- 2=3 OK -->
+    <supports type="relation">&gt;=</supports> <!-- 2=4 OK -->
+    <supports type="relation">&gt;</supports> <!-- 2=5 OK -->
+    <!-- <supports type="relation">&lt;&gt;</supports> --><!-- 2=6 DEAD !!! -->
+    <!-- <supports type="relation">all</supports> --><!-- 2=3 OK -->
+    <!-- <supports type="relation">any</supports> --><!-- 2=3 OK -->
+
+    <supports type="relationModifier">relevant</supports><!-- -->
+    <supports type="relationModifier">phrase</supports><!-- -->
+
+
+
+
+    <!-- masking character supported (* or ?) -->
+    <supports type="maskingCharacter">*</supports>
+    <supports type="maskingCharacter">?</supports>
+
+    <!-- zebra happily accepts empty terms, if escaped in quotes -->
+    <supports type="emptyTerm"></supports>
+
+    <!-- presentation settings --> 
+
+    <!-- default number of records that a server will return at once  -->
+    <default type="numberOfRecords">0</default>
+
+    <!-- default schema used for retrieved records -->
+    <default type="retrieveSchema">oai</default>
+
+    <!-- default record packing returned (string or xml) -->
+    <default type="recordPacking">xml</default>
+
+    <!-- maximum number of records that a server will return at once -->
+    <!-- <setting type="maximumRecords">1000</setting> -->
+
+    <!-- support result sets (Empty) -->
+    <!-- <supports type="resultSets"></supports>  --> 
+
+
+    <!-- scan settings -->
+
+    <!-- scan operation supported -->
+    <supports type="scan"></supports>
+
+    <!-- default number of terms to be returned in scan -->
+    <default type="numberOfTerms">20</default>
+
+    <!-- number of seconds that a result set will be maintained for -->
+    <setting type="resultSetTTL">0</setting>
+
+  </configInfo>
+   
+</explain>

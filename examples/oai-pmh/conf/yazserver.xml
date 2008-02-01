@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- this file configures the frontend YAZ server -->
+<!-- see: http://www.indexdata.com/yaz/doc/server.vhosts.tkl -->
+<yazgfs>
+
+  <!-- one or more ports to listen to -->
+  <listen id="tcp9999">tcp:@:9999</listen>
+  
+  <!-- one or more servers bound to ports - multiple servers on same
+       ports possible -->
+  <server id="oai" listenref="tcp9999">
+    
+    <!-- working directory for zebra -->
+    <directory>./</directory>
+    
+    <!-- ordinary config file for zebra -->
+    <config>conf/zebra.cfg</config>
+    
+    <!-- location of CQL-to-PQF file 
+         see: http://www.indexdata.com/yaz/doc/tools.tkl#tools.cql.map -->
+    <cql2rpn>conf/cql2pqf.txt</cql2rpn>
+    
+    <!-- explain message - send in SRW Explain
+         - yes, we understand Z39.50 and SRW on the same port !! -->
+    <xi:include href="conf/explain.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude">
+      <xi:fallback>
+        <explain xmlns="http://explain.z3950.org/dtd/2.0/">
+          <serverInfo>
+            <host>localhost</host>
+            <port>9999</port>
+            <database>Default</database>
+          </serverInfo>
+        </explain>
+      </xi:fallback>
+    </xi:include>
+    
+  </server>
+  
+</yazgfs>
