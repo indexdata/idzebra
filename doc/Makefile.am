@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.75 2008-01-18 12:39:35 adam Exp $
+## $Id: Makefile.am,v 1.76 2008-02-01 13:54:39 marc Exp $
 SUBDIRS = common
 
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
@@ -8,7 +8,6 @@ XMLMAN = zebraidx.xml zebrasrv.xml idzebra-config.xml
 XMLFILES =  \
    administration.xml \
    architecture.xml \
-   examples.xml \
    field-structure.xml \
    indexdata.xml \
    installation.xml \
@@ -16,7 +15,6 @@ XMLFILES =  \
    license.xml \
    marc_indexing.xml \
    querymodel.xml \
-   quickstart.xml \
    recordmodel-domxml.xml \
    recordmodel-alvisxslt.xml \
    recordmodel-grs.xml \
@@ -25,6 +23,10 @@ XMLFILES =  \
    zebrasrv-options.xml \
    zebrasrv-synopsis.xml \
    zebrasrv-virtual.xml 
+
+#examples.xml 
+#quickstart.xml
+
 
 HTMLFILES = index.html
 

@@ -1,8 +1,9 @@
-<!-- $Id: entities.ent,v 1.6 2008-01-18 09:02:24 adam Exp $ -->
+<!-- $Id: entities.ent,v 1.7 2008-02-01 13:54:39 marc Exp $ -->
 <!ENTITY chap-introduction SYSTEM "introduction.xml">
 <!ENTITY chap-installation SYSTEM "installation.xml">
-<!ENTITY chap-quickstart SYSTEM "quickstart.xml">
-<!ENTITY chap-examples SYSTEM "examples.xml">
+<!-- <!ENTITY chap-quickstart SYSTEM "quickstart.xml"> -->
+<!-- <!ENTITY chap-examples SYSTEM "examples.xml"> -->
+<!ENTITY chap-tutorial SYSTEM "tutorial.xml">
 <!ENTITY chap-architecture SYSTEM "architecture.xml">
 <!ENTITY chap-administration SYSTEM "administration.xml">
 <!ENTITY chap-querymodel SYSTEM "querymodel.xml">

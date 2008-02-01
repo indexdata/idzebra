@@ -11,7 +11,7 @@
 
      <!ENTITY test SYSTEM "test.xml">
 ]>
-<!-- $Id: zebra.xml,v 1.23 2008-01-18 09:02:24 adam Exp $ -->
+<!-- $Id: zebra.xml,v 1.24 2008-02-01 13:54:39 marc Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>&zebra; - User's Guide and Reference</title>
@@ -57,8 +57,9 @@
  
   &chap-introduction;
   &chap-installation;
-  &chap-quickstart;
-  &chap-examples;
+  <!-- &chap-quickstart; -->
+  <!-- &chap-examples; -->
+  &chap-tutorial;
   &chap-architecture;
   &chap-querymodel;
   &chap-administration;
