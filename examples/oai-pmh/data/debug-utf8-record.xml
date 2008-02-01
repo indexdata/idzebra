@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.openarchives.org/OAI/2.0/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+  <responseDate>2005-12-20T08:40:20Z</responseDate>
+  <request verb="ListRecords" metadataPrefix="oai_dc">http://caltechcstr.library.caltech.edu/perl/oai2</request>
+  <ListRecords>
+    <record  xmlns="http://www.openarchives.org/OAI/2.0/">
+      <header>
+        <identifier>oai:zebra.debug:blåbærgrød&lt;&amp;!/&gt;</identifier>
+        <datestamp>2006-11-12</datestamp>
+        <setSpec>xx7374617475733D756E707562</setSpec>
+        <setSpec>xx7375626A656374733D656E676E2D636D7074</setSpec>
+      </header>
+      <metadata>
+        <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+          <dc:title>Danske processeringsfejl med blåbærgrød</dc:title>
+          <dc:creator>Index Data</dc:creator>
+          <dc:subject></dc:subject>
+          <dc:description>blåbærgrød og &lt;&amp;!/&gt; blåbærkage 
+Ingredienser:
+3 æg	 	
+3 dl sukker	 	
+3 dl mel	 	
+1 tsk bagepulver	 	
+½ tsk stødt kardemomme	 	
+½ tsk stødt ingefær	 	
+100 g smør	 	
+250 g blåbær	 	
+½ dl sukker
+Pisk æg og sukker luftigt og rør mel, bagepulver og krydderier i. Smelt smørret og rør det i dejen, som fyldes i en smurt form. Drys med bær og sukker og bag kagen ved 180 grader i ca 30 minutter. Fremstillingstid - 40 minutter
+</dc:description>
+          <dc:publisher>Index data ApS</dc:publisher>
+          <dc:date>2006-11-12</dc:date>
+          <dc:type>Test</dc:type>
+          <dc:type>NonPeerReviewed</dc:type>
+          <dc:identifier>http://www.indexdata.com/zebra/doc</dc:identifier>
+        </oai_dc:dc>
+      </metadata>
+    </record>
+  </ListRecords>
+</OAI-PMH>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <record  xmlns="http://www.openarchives.org/OAI/2.0/">
+      <header>
+        <identifier>oai:caltechcstr.library.caltech.edu:4</identifier>
+        <datestamp>2003-12-12</datestamp>
+        <setSpec>7374617475733D756E707562</setSpec>
+        <setSpec>7375626A656374733D656E676E2D636D7074</setSpec>
+      </header>
+      <metadata>
+        <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+          <dc:title>A Language Processor and a Sample Language</dc:title>
+          <dc:creator>Ayres, Ronald</dc:creator>
+          <dc:subject>All Records</dc:subject>
+          <dc:description>This thesis explores shared data in list structures and ambiguity in language processing. Tolerance of ambiguity is necessary to support clear and modular expression. Data sharing is necessary to support ambiguity efficiently. Data sharing is useful also in compiled programs to save memory and time. Let us define some terms. A rewrite grammar is a set of replacement rules each of which specifies that a given phrase may be replaced by another given phrase. Each replacement rule expresses a local translation. A parser finds those sequences of replacements that bring a given text to a machine handleable form. Each such sequence represents a meaning or interpretation for the given text. Tolerance of ambiguity or multiple interpretations for a given text is necessary so that subsequent processing can place further constraints upon the input text. This thesis presents a parser which efficiently, handles general-rewrite grammars. To conserve computer time and memory, only essential differences among multiple interpretations are represented and processed. If several interpretations for a given text are valid, the parser yields a meaning which represents the ambiguity as, locally as possible. Even an exponential number of distinct meanings may be represented in a polynomial amount of memory. This thesis also presents a language processing system which supports semantic processing via independent rewrite grammars. Each grammar represents a distinct aspect of the language. A given sequence of grammars becomes a sequence of passes, or process steps. Each pass derives a meaning with respect to one grammar and uses that meaning to generate phrases which will be interpreted by the next pass. Although linguistic specification is usually done with context-free grammars, features of this parser which support general-rewrite grammars are essential for the integration of passes. Not only ambiguity, but also the locality of ambiguity is preserved from one pass to the next. It is necessary to preserve&#13;
+locality of ambiguity in order to avoid explosive computation arising from useless action among independent sets of interpretations. I have implemented a general-purpose programming language called ICL with this system. The fact that ICL's datatypes are processed by a rewrite grammar makes it simple to implement both user-defined datatype coercions and functions known as polymorphic operators whose definitions depend on parameter datatypes. Datatype coercions and Polymorphic operators reduce the amount,of specification required in algorithms to such an extent that a user can often modify declarations and achieve optimizations and changes in concept without modifying his algorithmic specification. ICL includes a simple and safe policy about pointers so that the user can ignore their existence completely if he wishes. ICL automatically maximizes data sharing and minimizes copying by adopting a "copy on write" policy. This policy supports the illusion that each and every reference to a data structure generates a&#13;
+complete copy of that data structure. This same technique is used in the language processor itself to facilitate data sharing among multiple interpretations in ambiguous cases.</dc:description>
+          <dc:publisher>California Institute of Technology</dc:publisher>
+          <dc:date>1978-01-01</dc:date>
+          <dc:type>Monograph</dc:type>
+          <dc:type>NonPeerReviewed</dc:type>
+          <dc:identifier>http://resolver.caltech.edu/CaltechCSTR:1978.2276-tr-78</dc:identifier>
+          <dc:format>application/postscript</dc:format>
+          <dc:relation>http://caltechcstr.library.caltech.edu/4/00/postscript.ps</dc:relation>
+          <dc:format>application/octet-stream</dc:format>
+          <dc:relation>http://caltechcstr.library.caltech.edu/4/01/postscript.pdf</dc:relation>
+          <dc:relation>http://resolver.caltech.edu/CaltechCSTR:1978.2276-tr-78</dc:relation>
+        </oai_dc:dc>
+      </metadata>
+    </record>
