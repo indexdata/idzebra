@@ -1,0 +1,241 @@
+Example DOM XML filter configuration using XSLT stylesheets
+
+
+Checking manually the retrieval stylesheets:
+
+   cat data/debug-record.xml
+   xsltproc conf/oai2dc.xsl data/debug-record.xml
+   xsltproc conf/oai2zebra.xsl data/debug-record.xml
+
+
+Checking manually the indexing stylesheet:
+
+   xsltproc conf/oai2index.xsl data/debug-record.xml
+
+Indexing:
+
+   zebraidx -c conf/zebra.cfg init
+   zebraidx -c conf/zebra.cfg update data/oai-caltech.xml
+   zebraidx -c conf/zebra.cfg commit
+
+(in case you have not installed zebra yet, use the following command:
+    ../../index/zebraidx -c conf/zebra.cfg this and that .. )
+
+
+Starting the SRU/SRW/Z39.50 server in PQF mode only:
+
+   zebrasrv -c conf/zebra.cfg 
+
+Or, alternatively, starting the SRU/SRW/Z39.50 server including 
+PQF and CQL query configuration:
+
+   zebrasrv -f yazserver.xml
+
+
+
+Z39.50 search:
+
+   yaz-client localhost:9999
+   Z> format xml
+   Z> querytype prefix
+   Z> elements oai
+   Z> find the
+   Z> show 1+1
+
+
+Z39.50 presents using presentation stylesheets:
+
+   Z> elements dc
+   Z> show 2+1
+
+   Z> elements zebra
+   Z> show 3+1
+
+
+Z39.50 buildin Zebra presents (in this configuration only if 
+  started without yaz-frontendserver):
+
+   Z> elements zebra::meta
+   Z> show 4+1
+
+   Z> elements zebra::meta::sysno
+   Z> show 5+1
+
+   Z> format sutrs
+   Z> show 5+1
+   Z> format xml
+
+   Z> elements zebra::index
+   Z> show 6+1
+
+   Z> elements zebra::snippet
+   Z> show 7+1
+
+   Z> elements zebra::facet::any:w
+   Z> show 8+1
+
+   Z>  elements zebra::facet::any:w,dc_title:w
+   Z> show 9+1
+   
+
+
+Z39.50 searches targeted at specific indexes
+
+   Z> elements zebra
+   Z> find @attr 1=oai_identifier @attr 4=3 oai:caltechcstr.library.caltech.edu:4
+   Z> show 1+1
+
+   Z> find @attr 1=oai_datestamp  @attr 4=3 2001-04-20
+   Z> show 1+1
+
+   Z> find @attr 1=oai_setspec @attr 4=3 7374617475733D756E707562
+   Z> show 1+1
+   
+   Z> find @attr 1=dc_title communication
+   Z> show 1+1
+
+   Z> find @attr 1=dc_identifier @attr 4=3  
+                 http://resolver.caltech.edu/CaltechCSTR:1986.5228-tr-86
+   Z> show 1+1
+
+   etc, etc. 
+
+   Notice that all indexes defined by 'type="0"' in the 
+   indexing style  sheet must be searched using the '@attr 4=3' 
+   structure attribute instruction.   
+
+   Notice also that searching and scan on indexes
+   'dc_contributor',  'dc_language', 'dc_rights', and 'dc_source' 
+   fails, simply because none of the records in this example set 
+   have these fields set, and consequently, these indexes are 
+   _not_ created. 
+
+
+XXXXXXXX
+
+
+Z39.50 scan:
+
+   yaz-client localhost:9999
+   Z> format xml
+   Z> querytype prefix
+   Z> scan @attr 1=oai_identifier @attr 4=3 oai
+   Z> scan @attr 1=oai_datestamp @attr 4=3 1
+   Z> scan @attr 1=oai_setspec @attr 4=3 2000
+   Z>
+   Z> scan @attr 1=dc_title communication
+   Z> scan @attr 1=dc_identifier @attr 4=3 a
+
+   etc, etc,
+
+
+Z39.50 search using server-side CQL conversion:
+
+   Z> format xml
+   Z> querytype cql
+   Z> elements dc
+   Z>
+   Z> find harry 
+   Z>
+   Z> find creator = the
+   Z> find dc.creator = the
+   Z> find title = the
+   Z>
+   Z> find description < the
+   Z> find title le some
+   Z> find title ge some
+   Z> find title > some
+   Z>
+   Z> find identifier eq 
+           "http://resolver.caltech.edu/CaltechCSTR:1978.2276-tr-78"
+   Z> find relation eq something 
+   
+
+   etc, etc. Notice that  all indexes defined by 'type="0"' in the 
+   indexing style  sheet must be searched using the 'eq' 
+   relation.    
+
+   Z> find title <> and
+
+   fails as well.  ???
+
+
+Z39.50 scan using server side CQL conversion:
+
+   Unfortunately, this will _never_ work as it is not supported by the 
+   Z39.50 standard.
+   If you want to use scan using server side CQL conversion, you need to  
+   make an SRW connection using  yaz-client, or a
+   SRU connection using REST Web Services - any browser will do.
+
+
+SRU Explain ZeeRex response:
+
+   http://localhost:9999/
+   http://localhost:9999/?version=1.1&operation=explain
+
+
+SRU Search Retrieve records:
+
+   http://localhost:9999/?version=1.1&operation=searchRetrieve
+                          &query=creator=adam
+
+   http://localhost:9999/?version=1.1&operation=searchRetrieve
+                         &query=date=1978-01-01
+                         &startRecord=1&maximumRecords=1&recordSchema=dc
+
+   http://localhost:9999/?version=1.1&operation=searchRetrieve
+                         &query=dc.title=the
+
+   http://localhost:9999/?version=1.1&operation=searchRetrieve
+                         &query=description=the
+
+
+   relation tests:
+
+   http://localhost:9999/?version=1.1&operation=searchRetrieve
+                      &query=title%3Cthe
+
+
+SRU scan:
+
+   http://localhost:9999/?version=1.1&operation=scan&scanClause=title=a
+   http://localhost:9999/?version=1.1&operation=scan
+                      &scanClause=identifier%20eq%20a
+
+   Notice: you need to use the 'eq' relation for all @attr 4=3 indexes
+
+
+
+SRW explain with CQL index points:
+
+   Z> open http://localhost:9999
+   Z> explain
+
+   Notice: when opening a connection using the 'http.//' prefix, yaz-client
+   uses SRW SOAP connections, and 'form xml' and 'querytype cql' are 
+   implicitely set.
+
+
+SRW search using implicit server side CQL:
+
+   Z> open http://localhost:9999
+   Z> find identifier eq 
+        "http://resolver.caltech.edu/CaltechCSTR:1978.2276-tr-78"
+   Z> find description < the
+
+
+   In SRW connection mode, the follwing fails due to problem in yaz-client:
+   Z> elements dc
+   Z> s 1+1
+
+
+SRW scan using implicit server side CQL:
+
+   yaz-client http://localhost:9999
+   Z> scan title = communication
+   Z> scan identifier eq a  
+
+   Notice: you need to use the 'eq' relation for all @attr 4=3 indexes
+
+
