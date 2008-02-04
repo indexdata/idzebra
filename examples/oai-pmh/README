@@ -1,6 +1,14 @@
 Example DOM XML filter configuration using XSLT stylesheets
 
 
+Get some more data to play with:
+   
+   cd data
+   fetch_OAI_data.sh
+   (stop the script when you get tired waiting ..)
+   cd ../
+   
+
 Checking manually the retrieval stylesheets:
 
    cat data/debug-record.xml
@@ -15,7 +23,7 @@ Checking manually the indexing stylesheet:
 Indexing:
 
    zebraidx -c conf/zebra.cfg init
-   zebraidx -c conf/zebra.cfg update data/oai-caltech.xml
+   zebraidx -c conf/zebra.cfg update data
    zebraidx -c conf/zebra.cfg commit
 
 (in case you have not installed zebra yet, use the following command:
