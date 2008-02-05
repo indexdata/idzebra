@@ -1,5 +1,5 @@
 <chapter id="tutorial">
- <!-- $Id: tutorial.xml,v 1.1 2008-02-01 13:54:39 marc Exp $ -->
+ <!-- $Id: tutorial.xml,v 1.2 2008-02-05 10:15:58 marc Exp $ -->
  <title>Tutorial</title>
 
  
@@ -19,16 +19,34 @@
   <literal>/usr/share/idzebra-2.0.-examples/oai-pmh</literal>. 
    An XML file containing multiple &acro.oai;
    records is located in the  sub
-   directory <literal>examples/oai-pmh/data</literal>. To index these, type:
+   directory <literal>examples/oai-pmh/data</literal>. 
+ </para>
+ <para> 
+    Additional OAI test records can be downloaded by running a shell
+    script (you may want to abort the script when you have waitet
+    longer than your coffe brews ..).
   <screen>
-    zebraidx -c conf/zebra.cfg init
-    zebraidx -c conf/zebra.cfg update data/oai-caltech.xml
-    zebraidx -c conf/zebra.cfg commit
+     cd data
+     ./fetch_OAI_data.sh
+     cd ../
+  </screen>
+ </para>
+ <para> 
+    To index these &acro.oai; records, type:
+  <screen>
+    zebraidx-2.0 -c conf/zebra.cfg init
+    zebraidx-2.0 -c conf/zebra.cfg update data/oai-caltech.xml
+    zebraidx-2.0 -c conf/zebra.cfg commit
   </screen>
    In case you have not installed zebra yet but have compiled the
     binaries from this tarball, use the following command form:
   <screen>
     ../../index/zebraidx -c conf/zebra.cfg this and that 
+  </screen>
+   On some systems the &zebra; binaries are installed under the
+   generic names, you need to use  the following command form:
+  <screen>
+    zebraidx -c conf/zebra.cfg this and that 
   </screen>
  </para>
  
@@ -57,7 +75,7 @@
   If your indexing command was successful, you are now ready to
   fire up a server. To start a server on port 9999, type:
   <screen>
-   zebrasrv -c conf/zebra.cfg  @:9999
+   zebrasrv-2.0 -c conf/zebra.cfg  @:9999
   </screen>
  </para>
 
@@ -66,32 +84,282 @@
   named <literal>Default</literal>.
   The database contains  several &acro.oai; records, and the server will
   return records in the &acro.xml; format only. The indexing machine
-  di the splitting into individual records just behind the scenes.
+  did the splitting into individual records just behind the scenes.
  </para>
  
- <para>
-  To test the server, you can use any &acro.z3950; client.
-  For instance, you can use the demo command-line client that comes
-  with &yaz;; we start the  SRU/SRW/Z39.50 server in PQF mode only:
- </para>
- <para>
-  <screen>
+
+ </sect1>
+
+ <sect1 id="tutorial-oai-sru-pqf">
+  <title>Searching the &acro.oai; database by web service</title>
+   
+  <para>
+    &zebra; has a build-in web service, which is close to the
+    &acro.sru; standard web service. We use it to access our new
+    database using any   &acro.xml; enabled web browser. 
+    This service is using the  &acro.pqf; query language.
+    In a later
+    section we show how to run a fully compliant  &acro.sru; server,
+    including support for the query language  &acro.cql;
+   </para>
+
+   <para>
+    Searching and retrieving &acro.xml; records is easy. For example,
+    you can point your browser to one of the following url's to
+    search for the term <literal>the</literal>. Just point your
+    browser at this link:
+    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=creator=adam">
+   http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=the</ulink>
+   </para>
+
+   <warning>
+    <para>
+     These URL's woun't work unless you have indexed the example data
+     and started an &zebra; server as outlined in the previous section.
+    </para>
+   </warning>
+
+   <para>
+    In case we actually want to retrieve one record, we need to alter
+    our URl to the following
+   <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
+   http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
+   </ulink>
+   </para>
+
+   <para>
+    This way we can page through our result set in chunks of records,
+    for example, we access the 6th to the 10th record using the URL
+   <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=the&amp;startRecord=6&amp;maximumRecords=5&amp;recordSchema=dc">
+   http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=the&amp;startRecord=6&amp;maximumRecords=5&amp;recordSchema=dc
+   </ulink>
+  </para>
+
+<!--
+   relation tests:
+ 
+    <ulink url="">
+
+   http://localhost:9999/?version=1.1&amp;operation=searchRetrieve
+                      &amp;query=title%3Cthe
+-->
+ </sect1>
+
+
+
+
+ <sect1 id="tutorial-oai-sru-present">
+  <title>Presenting search results in different formats</title>
+
+
+
+Z39.50 search:
+
    yaz-client localhost:9999
-  </screen>
- </para>
- 
- <para>
-  When the client has connected, you can type:
- </para>
- 
- <para>
-  <screen>
    Z> format xml
+   Z> querytype prefix
    Z> elements oai
    Z> find the
    Z> show 1+1
-  </screen>
- </para>
+
+
+Z39.50 presents using presentation stylesheets:
+
+   Z> elements dc
+   Z> show 2+1
+
+   Z> elements zebra
+   Z> show 3+1
+
+
+Z39.50 buildin Zebra presents (in this configuration only if 
+  started without yaz-frontendserver):
+
+   <screen>
+   Z> elements zebra::meta
+   Z> show 4+1
+
+   Z> elements zebra::meta::sysno
+   Z> show 5+1
+
+   Z> format sutrs
+   Z> show 5+1
+   Z> format xml
+
+   Z> elements zebra::index
+   Z> show 6+1
+
+   Z> elements zebra::snippet
+   Z> show 7+1
+
+   Z> elements zebra::facet::any:w
+   Z> show 8+1
+
+   Z>  elements zebra::facet::any:w,dc_title:w
+   Z> show 9+1
+   </screen>
+
+
+
+Z39.50 searches targeted at specific indexes
+
+   Z> elements zebra
+   Z> find @attr 1=oai_identifier @attr 4=3 oai:caltechcstr.library.caltech.edu:4
+   Z> show 1+1
+
+   Z> find @attr 1=oai_datestamp  @attr 4=3 2001-04-20
+   Z> show 1+1
+
+   Z> find @attr 1=oai_setspec @attr 4=3 7374617475733D756E707562
+   Z> show 1+1
+   
+   Z> find @attr 1=dc_title communication
+   Z> show 1+1
+
+   Z> find @attr 1=dc_identifier @attr 4=3  
+                 http://resolver.caltech.edu/CaltechCSTR:1986.5228-tr-86
+   Z> show 1+1
+
+   etc, etc. 
+
+   Notice that all indexes defined by 'type="0"' in the 
+   indexing style  sheet must be searched using the '@attr 4=3' 
+   structure attribute instruction.   
+
+   Notice also that searching and scan on indexes
+   'dc_contributor',  'dc_language', 'dc_rights', and 'dc_source' 
+   fails, simply because none of the records in this example set 
+   have these fields set, and consequently, these indexes are 
+   _not_ created. 
+
+
+ </sect1>
+
+
+
+  <sect1 id="tutorial-oai-z3950">
+   <title>Searching the &acro.oai; database by &acro.z3950; protocol</title>
+ 
+
+   <para>
+    In this section we repeat the searches and presents we have done so
+    far using the binary &acro.z3950; protocol, you can use any
+    &acro.z3950; client. 
+    For instance, you can use the demo command-line client that comes
+    with &yaz;. 
+   </para>
+   <para>
+    Connecting to the server is done by the command 
+  <screen>
+     yaz-client localhost:9999
+    </screen>
+   </para>
+   
+   <para>
+    When the client has connected, you can type:
+    <screen>
+     Z> format xml
+     Z> querytype prefix
+     Z> elements oai
+     Z> find the
+     Z> show 1+1
+    </screen>
+   </para>
+   
+   <para>
+    Z39.50 presents using presentation stylesheets:
+    <screen>
+     Z> elements dc
+     Z> show 2+1
+     
+     Z> elements zebra
+     Z> show 3+1
+    </screen>
+   </para>
+
+   <para>
+    Z39.50 buildin Zebra presents (in this configuration only if 
+    started without yaz-frontendserver):
+    
+    <screen>
+     Z> elements zebra::meta
+     Z> show 4+1
+     
+     Z> elements zebra::meta::sysno
+     Z> show 5+1
+     
+     Z> format sutrs
+     Z> show 5+1
+     Z> format xml
+     
+     Z> elements zebra::index
+     Z> show 6+1
+     
+     Z> elements zebra::snippet
+     Z> show 7+1
+     
+     Z> elements zebra::facet::any:w
+     Z> show 8+1
+     
+     Z>  elements zebra::facet::any:w,dc_title:w
+     Z> show 9+1
+   </screen>
+   </para>
+
+   <para>
+    Z39.50 searches targeted at specific indexes and boolean
+    combinations of these can be issued as well.
+
+    <srceen>
+     Z> elements dc
+     Z> find @attr 1=oai_identifier @attr 4=3 oai:caltechcstr.library.caltech.edu:4
+     Z> show 1+1
+
+     Z> find @attr 1=oai_datestamp  @attr 4=3 2001-04-20
+     Z> show 1+1
+
+     Z> find @attr 1=oai_setspec @attr 4=3 7374617475733D756E707562
+     Z> show 1+1
+     
+     Z> find @attr 1=dc_title communication
+     Z> show 1+1
+     
+     Z> find @attr 1=dc_identifier @attr 4=3  
+     http://resolver.caltech.edu/CaltechCSTR:1986.5228-tr-86
+     Z> show 1+1
+    </srceen>
+   etc, etc. 
+   </para>
+
+   <para>    
+   Notice that all indexes defined by 'type="0"' in the 
+   indexing style  sheet must be searched using the '@attr 4=3' 
+   structure attribute instruction.   
+   </para>
+
+   <para>
+   Notice also that searching and scan on indexes
+   'dc_contributor',  'dc_language', 'dc_rights', and 'dc_source' 
+   might fail, simply because none of the records in the small example set 
+   have these fields set, and consequently, these indexes might not
+   been created. 
+   </para>
+   
+ </sect1>
+
+
+
+ <sect1 id="tutorial-oai-sru-yazfrontend">
+  <title>Setting up a correct &acro.sru; web service</title>
+
+Or, alternatively, starting the SRU/SRW/Z39.50 server including 
+PQF and CQL query configuration:
+
+   zebrasrv -f yazserver.xml
+
+
+ </sect1>
+
 
 <!--
 
@@ -296,53 +564,6 @@ SRW scan using implicit server side CQL:
 -->
 
 
-<!--
- 
- <para>
-  The default retrieval syntax for the client is &acro.usmarc;, and the
-  default element set is <literal>F</literal> (``full record''). To
-  try other formats and element sets for the same record, try:
- </para>
- <para>
-  <screen>
-   Z&#62;format sutrs
-   Z&#62;show 1
-   Z&#62;format grs-1
-   Z&#62;show 1
-   Z&#62;format xml
-   Z&#62;show 1
-   Z&#62;elements B
-   Z&#62;show 1
-  </screen>
- </para>
- 
- <note>
-  <para>You may notice that more fields are returned when your
-   client requests &acro.sutrs;, &acro.grs1; or &acro.xml; records.
-   This is normal - not all of the GILS data elements have mappings in
-   the &acro.usmarc; record format.
-  </para>
- </note>
-
- <para>
-  If you've made it this far, you know that your installation is
-  working, but there's a certain amount of voodoo going on - for
-  example, the mysterious incantations in the
-  <literal>zebra.cfg</literal> file.  In order to help us understand
-  these fully, the next chapter will work through a series of
-  increasingly complex example configurations.
- </para>
-
-
--->
-
- </sect1>
-
- <sect1 id="tutorial-oai-zebra">
-  <title>Requesting &acro.oai; records in &zebra; specific formats</title>
-
-
- </sect1>
 
  
 </chapter>
