@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: dom-conf.xml,v 1.1 2008-02-05 08:24:51 marc Exp $ -->
+
+<!-- this file configures the Zebra DOM XML filter -->
+<!-- see: http://www.indexdata.com/zebra/doc/record-model-dom.html -->
+
+<dom>
+
+  <input syntax="xml">
+    <xmlreader level="2"/>
+  </input>
+
+  <!--  
+  <input syntax="usmarc">
+    <marc inputcharset="marc-8"/>
+  </input>
+  -->
+
+  <extract name="index">
+    <xslt stylesheet="conf/oai2index.xsl"/>
+  </extract>
+
+  <!--
+  <store>
+  </store>
+  -->
+
+  <retrieve name="oai">
+  </retrieve>
+  
+  <retrieve name="zebra">
+    <xslt stylesheet="conf/oai2zebra.xsl"/>
+  </retrieve>
+
+  <retrieve name="dc">
+    <xslt stylesheet="conf/oai2dc.xsl"/>
+  </retrieve>
+ 
+ </dom>

@@ -43,19 +43,19 @@
 
   <!-- DC specific indexing templates -->
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:title">
-    <z:index name="any:w dc_title:w">
+    <z:index name="any:w dc_title:w dc_title:p">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:creator">
-    <z:index name="any:w dc_creator:w">
+    <z:index name="any:w dc_creator:w dc_creator:p">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:subject">
-    <z:index name="any:w dc_subject:p">
+    <z:index name="any:w dc_subject:w dc_subject:p">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
@@ -67,7 +67,7 @@
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:contributor">
-    <z:index name="any:w dc_contributor:w">
+    <z:index name="any:w dc_contributor:w dc_contributor:p">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
