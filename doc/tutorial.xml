@@ -1,5 +1,5 @@
 <chapter id="tutorial">
- <!-- $Id: tutorial.xml,v 1.2 2008-02-05 10:15:58 marc Exp $ -->
+ <!-- $Id: tutorial.xml,v 1.3 2008-02-05 12:16:52 marc Exp $ -->
  <title>Tutorial</title>
 
  
@@ -35,7 +35,7 @@
     To index these &acro.oai; records, type:
   <screen>
     zebraidx-2.0 -c conf/zebra.cfg init
-    zebraidx-2.0 -c conf/zebra.cfg update data/oai-caltech.xml
+    zebraidx-2.0 -c conf/zebra.cfg update data
     zebraidx-2.0 -c conf/zebra.cfg commit
   </screen>
    In case you have not installed zebra yet but have compiled the
@@ -53,7 +53,8 @@
  <para>
   In this command, the word <literal>update</literal> is followed
   by the name of a directory: <literal>zebraidx</literal> updates all
-  files in the hierarchy rooted at that directory. The command option 
+  files in the hierarchy rooted at <literal>data</literal>. 
+  The command option 
   <literal>-c conf/zebra.cfg</literal> points to the proper
   configuration file.
  </para>
@@ -108,8 +109,9 @@
     you can point your browser to one of the following url's to
     search for the term <literal>the</literal>. Just point your
     browser at this link:
-    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=creator=adam">
-   http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=the</ulink>
+    <ulink
+    url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the">
+   http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the</ulink>
    </para>
 
    <warning>
@@ -122,16 +124,16 @@
    <para>
     In case we actually want to retrieve one record, we need to alter
     our URl to the following
-   <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
-   http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
+   <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
+   http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
    </ulink>
    </para>
 
    <para>
     This way we can page through our result set in chunks of records,
     for example, we access the 6th to the 10th record using the URL
-   <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=the&amp;startRecord=6&amp;maximumRecords=5&amp;recordSchema=dc">
-   http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=the&amp;startRecord=6&amp;maximumRecords=5&amp;recordSchema=dc
+   <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=6&amp;maximumRecords=5&amp;recordSchema=dc">
+   http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=6&amp;maximumRecords=5&amp;recordSchema=dc
    </ulink>
   </para>
 
@@ -141,97 +143,164 @@
     <ulink url="">
 
    http://localhost:9999/?version=1.1&amp;operation=searchRetrieve
-                      &amp;query=title%3Cthe
+                      &amp;x-pquery=title%3Cthe
 -->
  </sect1>
-
-
-
 
  <sect1 id="tutorial-oai-sru-present">
   <title>Presenting search results in different formats</title>
 
+   <para>
+    &zebra; uses &acro.xslt; stylesheets for both &acro.xml;record
+    indexing and
+    display retrieval. In this example installation, they are two
+    retrieval schema's defined in 
+    <literal>conf/dom-conf.xml</literal>: 
+    the <literal>dc</literal> schema implemented in 
+    <literal>conf/oai2dc.xsl</literal>, and
+    the <literal>zebra</literal> schema implemented in 
+    <literal>conf/oai2zebra.xsl</literal>. 
+    The URL's for acessing both are the same, except for the different
+    value of the <literal>recordSchema</literal> parameter:
+    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
+    </ulink>    
+    and
+    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra
+    </ulink>    
+    For the curious, one can see that the &acro.xslt; transformations
+    really do the magic.  
+    <screen>
+     xsltproc conf/oai2dc.xsl data/debug-record.xml
+     xsltproc conf/oai2zebra.xsl data/debug-record.xml
+     </screen>
+    Notice also that the &zebra; specific parameters are injected by
+    the engine when retrieving data, therefore some of the attributes
+    in the <literal>zebra</literal> retrieval schema are not filled
+    when running the transformation from the command line.
+   </para>
 
 
-Z39.50 search:
+   <para>
+    In addition to the user defined retrieval schema's one can  always
+    choose from many  build-in schema's. In case one is only
+    interested in the &zebra; internal metadata about a certain
+    record, one uses the <literal>zebra::meta</literal> schema.
+    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::meta">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::meta
+    </ulink>
+   </para>
 
-   yaz-client localhost:9999
-   Z> format xml
-   Z> querytype prefix
-   Z> elements oai
-   Z> find the
-   Z> show 1+1
+   <para>
+    The <literal>zebra::data</literal> schema is used to retrieve the
+    original stored &acro.oai; &acro.xml; record.
+    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::data">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::data
+    </ulink>    
+   </para>
+
+ </sect1>
+
+ <sect1 id="tutorial-oai-sru-searches">
+  <title>More interesting searches</title>
+
+   <para>
+    The &acro.oai; indexing example defines many different index
+    names, a study of the <literal>conf/oai2index.xsl</literal>
+    stylesheet reveals the following word type indexes (i.e. those
+    swith suffix <literal>:w</literal>):
+    <screen>
+     any:w 
+     dc_title:w
+     dc_creator:w
+     dc_subject:w
+     dc_description:w
+     dc_contributor:w
+     dc_publisher:w
+     dc_language:w
+     dc_rights:w
+    </screen>
+    By default, searches do access the <literal>anr:w</literal> index,
+    but we can direct searches to any access point by constructing the
+    correct &acro.pqf; query. For example, to search in titles only,
+    we use
+    <ulink
+    url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@attr
+    1=dc_title the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@attr
+    1=dc_title the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
+    </ulink>
+   </para>
+
+   <para>
+    Similar we can direct searches to the other indexes defined. Or we
+    can create boolean combinations of searches on different
+    indexes. In this case we search for <literal>the</literal> in
+    <literal>dc_title</literal> and for <literal>fish</literal> in 
+    <literal>dc_description</literal> using the query 
+    <literal>@and @attr 1=dc_title the @attr 1=dc_description fish</literal>.
+    <ulink
+    url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@and
+    @attr 1=dc_title the
+    @attr 1=dc_description
+    fish&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@and
+     @attr 1=dc_title the
+     @attr 1=dc_description fish&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
+    </ulink>
+   </para>
 
 
-Z39.50 presents using presentation stylesheets:
+ </sect1>
 
-   Z> elements dc
-   Z> show 2+1
+ <sect1 id="tutorial-oai-sru-zebra-indexess">
+  <title>Investigating the content of the indexes</title>
 
-   Z> elements zebra
-   Z> show 3+1
+   <para>
+    How works the magic? What is inside the indexes? Why is a certain
+    record foound by a search, and another not?. The answer is in the
+    inverterd indexes. You can easily investigat them using the
+    special &zebra; schema
+    <literal>zebra::index::fieldname</literal>. In this example you
+    can see that the <literal>dc_title</literal> index has both word
+    (type <literal>:w</literal>) and phrase (type
+    <literal>:p</literal>) 
+    indexed fields, 
+    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::index::dc_title">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::index::dc_title
+    </ulink>    
+   </para>
 
+   <para>
+    But where in the indexes did the term match for the query occur?
+    Easily answered with the special  &zebra; schema
+    <literal>zebra::snippet</literal>. The matching terma are
+    encapsulated by <literal>&lt;s&gt;</literal> tags. 
+    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::snippet">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::snippet
+    </ulink>    
+   </para>
 
-Z39.50 buildin Zebra presents (in this configuration only if 
-  started without yaz-frontendserver):
+   <para>
+    How can I refine my search? Which interesting search terms are
+    found inside my hit set? Try the special  &zebra; schema
+    <literal>zebra::facet::fieldname:type</literal>. In this case, we
+    investigate additional search terms for the
+    <literal>dc_title:w</literal> index.
+    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::dc_title:w">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::dc_title:w
+    </ulink>    
+   </para>
 
-   <screen>
-   Z> elements zebra::meta
-   Z> show 4+1
-
-   Z> elements zebra::meta::sysno
-   Z> show 5+1
-
-   Z> format sutrs
-   Z> show 5+1
-   Z> format xml
-
-   Z> elements zebra::index
-   Z> show 6+1
-
-   Z> elements zebra::snippet
-   Z> show 7+1
-
-   Z> elements zebra::facet::any:w
-   Z> show 8+1
-
-   Z>  elements zebra::facet::any:w,dc_title:w
-   Z> show 9+1
-   </screen>
-
-
-
-Z39.50 searches targeted at specific indexes
-
-   Z> elements zebra
-   Z> find @attr 1=oai_identifier @attr 4=3 oai:caltechcstr.library.caltech.edu:4
-   Z> show 1+1
-
-   Z> find @attr 1=oai_datestamp  @attr 4=3 2001-04-20
-   Z> show 1+1
-
-   Z> find @attr 1=oai_setspec @attr 4=3 7374617475733D756E707562
-   Z> show 1+1
-   
-   Z> find @attr 1=dc_title communication
-   Z> show 1+1
-
-   Z> find @attr 1=dc_identifier @attr 4=3  
-                 http://resolver.caltech.edu/CaltechCSTR:1986.5228-tr-86
-   Z> show 1+1
-
-   etc, etc. 
-
-   Notice that all indexes defined by 'type="0"' in the 
-   indexing style  sheet must be searched using the '@attr 4=3' 
-   structure attribute instruction.   
-
-   Notice also that searching and scan on indexes
-   'dc_contributor',  'dc_language', 'dc_rights', and 'dc_source' 
-   fails, simply because none of the records in this example set 
-   have these fields set, and consequently, these indexes are 
-   _not_ created. 
-
+   <para>
+    One can ask for multiple facets. Here, we want them from phrase
+    indexes of type
+    <literal>:p</literal>.
+    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::dc_publisher:p,dc_title:p">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::dc_publisher:p,dc_title:p
+    </ulink>    
+   </para>
 
  </sect1>
 
@@ -310,7 +379,7 @@ Z39.50 searches targeted at specific indexes
     Z39.50 searches targeted at specific indexes and boolean
     combinations of these can be issued as well.
 
-    <srceen>
+    <screen>
      Z> elements dc
      Z> find @attr 1=oai_identifier @attr 4=3 oai:caltechcstr.library.caltech.edu:4
      Z> show 1+1
@@ -327,7 +396,7 @@ Z39.50 searches targeted at specific indexes
      Z> find @attr 1=dc_identifier @attr 4=3  
      http://resolver.caltech.edu/CaltechCSTR:1986.5228-tr-86
      Z> show 1+1
-    </srceen>
+    </screen>
    etc, etc. 
    </para>
 
@@ -352,11 +421,13 @@ Z39.50 searches targeted at specific indexes
  <sect1 id="tutorial-oai-sru-yazfrontend">
   <title>Setting up a correct &acro.sru; web service</title>
 
-Or, alternatively, starting the SRU/SRW/Z39.50 server including 
-PQF and CQL query configuration:
-
-   zebrasrv -f yazserver.xml
-
+   <para>
+    Or, alternatively, starting the SRU/SRW/Z39.50 server including 
+    PQF and CQL query configuration:
+    <screen>
+     zebrasrv -f yazserver.xml
+     </screen>
+    </para>
 
  </sect1>
 
@@ -498,23 +569,23 @@ SRU Explain ZeeRex response:
 SRU Search Retrieve records:
 
    http://localhost:9999/?version=1.1&operation=searchRetrieve
-                          &query=creator=adam
+                          &x-pquery=creator=adam
 
    http://localhost:9999/?version=1.1&operation=searchRetrieve
-                         &query=date=1978-01-01
+                         &x-pquery=date=1978-01-01
                          &startRecord=1&maximumRecords=1&recordSchema=dc
 
    http://localhost:9999/?version=1.1&operation=searchRetrieve
-                         &query=dc.title=the
+                         &x-pquery=dc.title=the
 
    http://localhost:9999/?version=1.1&operation=searchRetrieve
-                         &query=description=the
+                         &x-pquery=description=the
 
 
    relation tests:
 
    http://localhost:9999/?version=1.1&operation=searchRetrieve
-                      &query=title%3Cthe
+                      &x-pquery=title%3Cthe
 
 
 SRU scan:
