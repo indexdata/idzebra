@@ -247,3 +247,19 @@ SRW scan using implicit server side CQL:
    Notice: you need to use the 'eq' relation for all @attr 4=3 indexes
 
 
+
+
+SRW search using X-PQF query
+
+http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=fish&startRecord=1&maximumRecords=1&recordSchema=dc
+
+http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=fish&startRecord=1&maximumRecords=1&recordSchema=zebra::data
+
+http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=fish&startRecord=1&maximumRecords=1&recordSchema=zebra::meta
+
+http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=fish&startRecord=1&maximumRecords=1&recordSchema=zebra::index::dc_description
+
+http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=fish&startRecord=1&maximumRecords=1&recordSchema=zebra::snippet
+
+http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=fish&startRecord=1&maximumRecords=1&recordSchema=zebra::facet::dc_description:w
+

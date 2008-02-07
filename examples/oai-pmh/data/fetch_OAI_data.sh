@@ -403,7 +403,8 @@ http://libserv12.Princeton.EDU/oai/oai.pl \
 http://www.tdx.cesca.es/TDX_UOC/NDLTD-OAI/oai.pl \
 http://arXiv.org/oai2 \
 http://www.pubmedcentral.gov/oai/oai.cgi \
-http://dataprovider.ibict.br/mypoai/oai2.php"
+http://dataprovider.ibict.br/mypoai/oai2.php \
+http://quod.lib.umich.edu/cgi/o/oai/oai"
 
 
 for BASE_OAI_URL in $BASE_OAI_URLS ; 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- $Id: explain.xml,v 1.1 2008-02-01 09:45:17 marc Exp $ -->
+<!-- $Id: explain.xml,v 1.2 2008-02-07 13:30:19 marc Exp $ -->
 
 <!-- this file configures the SRU/SRW explain response -->
 <!-- see: http://explain.z3950.org/dtd/commentary.html -->
@@ -30,14 +30,14 @@
 
   <databaseInfo>
 
-    <title lang="en" primary="true">OAI record  SRU/SRW/Z39.50 server</title>
+    <title lang="en" primary="true">OAI record SRU/SRW/Z39.50 server</title>
 
     <description lang="en" primary="true">
       OAI harvested article and preprint metadata records 
     </description>
 
     <author>
-      Marc Cromme, Index Data Aps, 
+      Marc Cromme, © Index Data Aps, 
       http://www.indexdata.dk
     </author>
 
@@ -93,14 +93,14 @@
       <title lang="en">CQL Server Choice</title>
       <map><name set="cql">serverChoice</name></map>
       <map>
-        <attr type="1" set="bib1">dc_all</attr>
+        <attr type="1" set="bib1">any</attr>
       </map>
     </index>
     <index search="true" scan="true" sort="false">
       <title lang="en">CQL All</title>
       <map><name set="cql">all</name></map>
       <map>
-        <attr type="1" set="bib1">dc_all</attr>
+        <attr type="1" set="bib1">any</attr>
       </map>
     </index>
 
@@ -109,7 +109,7 @@
       <title lang="en">Record ID</title>
       <map><name set="rec">id</name></map>
       <map>
-        <attr type="1" set="bib1">rec:id</attr>
+        <attr type="1" set="bib1">oai_identifier</attr>
         <attr type="4" set="bib1">3</attr>
       </map>
     </index>
@@ -241,6 +241,14 @@
         <attr type="4" set="bib1">3</attr>
       </map>
     </index>
+    <index search="true" scan="true" sort="false">
+      <title lang="en">DC Source</title>
+      <map><name set="dc">source</name></map>
+      <map>
+        <attr type="1" set="bib1">dc_source</attr>
+        <attr type="4" set="bib1">3</attr>
+      </map>
+    </index>
     <!--
     <index search="true" scan="true" sort="false">
       <title lang="en">DC Coverage</title>
@@ -272,23 +280,16 @@
 
     <schema identifier="http://indexdata.dk/dc-short"
             location="" 
-            name="oai"
+            name="zebra::data"
             retrieve="true">
       <title lang="en">Open Archives Initiative</title>
     </schema>
 
     <schema identifier="http://indexdata.dk/zebra/xslt/retrieve"
             location="" 
-            name="zebra"
+            name="zebra::meta"
             retrieve="true">
-      <title lang="en">Zebra Retrieve</title>
-    </schema>
-
-    <schema identifier="http://indexdata.dk/zebra/xslt/1"
-            location="" 
-            name="index"
-            retrieve="true">
-      <title lang="en">Zebra Indexing</title>
+      <title lang="en">Zebra Meta</title>
     </schema>
 
   </schemaInfo>

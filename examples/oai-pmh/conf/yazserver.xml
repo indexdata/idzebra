@@ -23,7 +23,7 @@
     
     <!-- explain message - send in SRW Explain
          - yes, we understand Z39.50 and SRW on the same port !! -->
-    <xi:include href="conf/explain.xml"
+    <xi:include href="explain.xml"
                 xmlns:xi="http://www.w3.org/2001/XInclude">
       <xi:fallback>
         <explain xmlns="http://explain.z3950.org/dtd/2.0/">
