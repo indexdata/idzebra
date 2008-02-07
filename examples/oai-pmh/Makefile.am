@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.3 2008-02-01 11:05:03 marc Exp $
+# $Id: Makefile.am,v 1.4 2008-02-07 13:29:38 marc Exp $
 
 oaidatadir = $(datadir)/$(PACKAGE)$(PACKAGE_SUFFIX)-examples/oai-pmh
 oaiconfdatadir = $(datadir)/$(PACKAGE)$(PACKAGE_SUFFIX)-examples/oai-pmh/conf
@@ -27,8 +27,9 @@ conf/cql2pqf.txt: conf/explain2cqlpqftxt.xsl conf/explain.xml
 clean:
 	rm -f tmp/*.mf tmp/*..LCK zebrasrv.pid
 
-dist-hook:
-	-mkdir $(distdir)/tmp
-
-#	-mkdir $(distdir)/data
-#	cp $(srcdir)/data/*.xml $(distdir)/data/*.xml
+# dist-hook:
+#-mkdir $(distdir)/conf
+#-mkdir $(distdir)/data
+#-mkdir $(distdir)/tmp
+#cp $(srcdir)/conf/*.xml $(distdir)/conf
+#cp $(srcdir)/data/*.xml $(distdir)/data
