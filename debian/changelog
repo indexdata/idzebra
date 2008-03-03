@@ -1,3 +1,9 @@
+idzebra (2.0.26-2) unstable; urgency=low
+
+  * Fixed multiple Build-Depends lines.
+
+ -- Adam Dickmeiss <adam@indexdata.dk>  Mon, 03 Mar 2008 22:37:28 +0100
+
 idzebra (2.0.26-1) unstable; urgency=low
 
   * Upstream.
