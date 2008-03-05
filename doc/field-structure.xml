@@ -1,5 +1,5 @@
  <chapter id="fields-and-charsets">
-  <!-- $Id: field-structure.xml,v 1.14 2007-12-19 13:35:39 adam Exp $ -->
+  <!-- $Id: field-structure.xml,v 1.15 2008-03-05 09:33:23 adam Exp $ -->
   <title>Field Structure and Character Sets
   </title>
   
@@ -137,7 +137,7 @@
       </listitem></varlistentry>
     </variablelist>
    </para>
-   <example>
+   <example id="field-types">
     <title>Field types</title>
     <para>
      Following are three excerpts of the standard
@@ -480,7 +480,7 @@
      Use the yaz-icu program to test your icuchain rules.
     </para>
    </tip>
-   <example><title>Indexing Greek text</title>
+   <example id="indexing-greek-example"><title>Indexing Greek text</title>
     <para>
      Consider a system where all "regular" text is to be indexed
      using as Greek (locale: EL).
@@ -513,7 +513,7 @@
     which is an ICU chain version of <filename>default.idx</filename>.
    </para>
 
-   <example><title>MARCXML indexing using ICU</title>
+   <example id="indexing-marcxml-example"><title>MARCXML indexing using ICU</title>
     <para>
      The directory <filename>examples/marcxml</filename> includes
      a complete sample with MARCXML recordst that are DOM XML indexed 
