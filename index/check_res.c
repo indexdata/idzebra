@@ -1,4 +1,4 @@
-/* $Id: check_res.c,v 1.8 2007-11-06 10:29:59 adam Exp $
+/* $Id: check_res.c,v 1.9 2008-03-05 09:21:48 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -72,7 +72,8 @@ int zebra_check_res(Res res)
     res_add(v, "storeKeys", "p");
     res_add(v, "storeData", "p");
     res_add(v, "openRW", "p");
-
+    res_add(v, "facetNumRecs", "");
+    res_add(v, "facetMaxChunks", "");
     
     errors = res_check(res, v);
  

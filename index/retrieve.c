@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.84 2008-01-24 16:17:29 adam Exp $
+/* $Id: retrieve.c,v 1.85 2008-03-05 09:21:48 adam Exp $
    Copyright (C) 1995-2007
    Index Data ApS
 
@@ -49,7 +49,8 @@ static int zebra_create_record_stream(ZebraHandle zh,
 {
     RecordAttr *recordAttr = rec_init_attr(zh->reg->zei, *rec);
 
-    if ((*rec)->size[recInfo_storeData] > 0)
+    if ((*rec)->size[recInfo_storeData] > 0 
+        || (*rec)->info[recInfo_filename] == 0)
         zebra_create_stream_mem(stream, (*rec)->info[recInfo_storeData],
                                 (*rec)->size[recInfo_storeData]);
     else
@@ -75,7 +76,7 @@ static int zebra_create_record_stream(ZebraHandle zh,
     }
     return 0;
 }
-    
+   
 
 struct index_spec {
     const char *index_name;
@@ -720,15 +721,18 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
     zint *pos_array;
     int i;
     int num_recs = 10; /* number of records to analyze */
+    int max_chunks = 2;
     ZebraMetaRecord *poset;
     ZEBRA_RES ret = ZEBRA_OK;
     int *ord_array;
     WRBUF wr = wrbuf_alloc();
     int use_xml = 0;
-    
     int no_ord = 0;
     struct index_spec *spec, *spec_list;
     int error;
+
+    res_get_int(zh->res, "facetNumRecs", &num_recs);
+    res_get_int(zh->res, "facetMaxChunks", &max_chunks);
 
     /* see if XML is required for response */
     if (oid_oidcmp(input_format, yaz_oid_recsyn_xml) == 0)
@@ -805,7 +809,9 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
                                               poset[i].sysno,
                                               sysnos, &no_sysnos);
             assert(no_sysnos > 0);
-            for (j = 0; j < no_sysnos; j++)
+            yaz_log(YLOG_LOG, "Analyzing rec=%d ISAM sysno=" ZINT_FORMAT " chunks=%d",
+                    i, poset[i].sysno, no_sysnos);
+            for (j = 0; j < no_sysnos && j < max_chunks; j++)
             {
                 size_t slen;
                 const char *str;
@@ -814,7 +820,9 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
                 zebra_rec_keys_t keys = zebra_rec_keys_open();
                 zebra_rec_keys_set_buf(keys, rec->info[recInfo_delKeys],
                                        rec->size[recInfo_delKeys], 0);
-                
+
+                yaz_log(YLOG_LOG, "rec %d " ZINT_FORMAT " %s", 
+                        j, sysnos[j], zebra_rec_keys_empty(keys) ? "empty" : "non-empty");
                 if (zebra_rec_keys_rewind(keys))
                 {
                     while (zebra_rec_keys_read(keys, &str, &slen, &key_in))
