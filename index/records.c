@@ -1,5 +1,5 @@
-/* $Id: records.c,v 1.3 2007-11-28 11:16:32 adam Exp $
-   Copyright (C) 1995-2007
+/* $Id: records.c,v 1.4 2008-03-05 09:18:51 adam Exp $
+   Copyright (C) 1995-2008
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -68,6 +68,8 @@ struct records_info {
     int cache_size;
     int cache_cur;
     int cache_max;
+
+    int compression_chunk_size;
 
     Zebra_mutex mutex;
 
@@ -289,6 +291,7 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
     p->rw = rw;
     p->tmp_size = 1024;
     p->tmp_buf = (char *) xmalloc(p->tmp_size);
+    p->compression_chunk_size = 0;
     p->recindex = recindex_open(bfs, rw, 0 /* 1=isamb for recindex */);
     r = recindex_read_head(p->recindex, p->tmp_buf);
     switch (r)
@@ -336,6 +339,7 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
                     recindex_get_fname(p->recindex), version, REC_VERSION);
 	    ret = ZEBRA_FAIL;
 	}
+        p->compression_chunk_size = 90000; /* good for BZIP2 */
         break;
     }
     for (i = 0; i<REC_BLOCK_TYPES; i++)
@@ -638,7 +642,7 @@ static ZEBRA_RES rec_cache_insert(Records p, Record rec, enum recordCacheFlag fl
             for (j = 0; j<REC_NO_INFO; j++)
                 used += r->size[j];
         }
-        if (used > 90000)
+        if (used > p->compression_chunk_size)
             ret = rec_cache_flush(p, 1);
     }
     assert(p->cache_cur < p->cache_max);
