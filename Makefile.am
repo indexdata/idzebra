@@ -16,7 +16,7 @@ EXTRA_DIST= README NEWS $(SPEC_FILE) $(SPEC_FILE).in \
  idzebra-config-2.0.in m4/idzebra-2.0.m4 m4/yaz.m4 buildconf.sh Doxyfile.in
 
 dist-hook:
-	if test -x /usr/bin/cvs2cl -a -d CVS; then cvs2cl ; cp ChangeLog $(distdir); fi
+	if test -x /usr/bin/git -a -d .git; then git log >ChangeLog ; cp ChangeLog $(distdir); fi
 	cp $(srcdir)/LICENSE* $(distdir)
 	mkdir $(distdir)/win
 	for i in $(srcdir)/win/*; do \
