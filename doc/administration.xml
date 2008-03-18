@@ -1538,9 +1538,18 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     is able to parse &acro.xml; records, you may use any of the two
     declarations (but not both simultaneously!)
     <screen>    
-     recordType: grs.xml
-     # recordType: alvis.filter_alvis_config.xml
+     recordType: dom.filter_dom_conf.xml
+     # recordType: grs.xml
     </screen>
+    Notice the difference to the specific instructions
+    <screen>    
+     recordType.xml: dom.filter_dom_conf.xml
+     # recordType.xml: grs.xml
+    </screen> 
+    which only work when indexing XML files from the filesystem using
+    the <literal>*.xml</literal> naming convention.
+   </para>
+   <para>
     To enable transaction safe shadow indexing,
     which is extra important for this kind of operation, set
     <screen>
@@ -1821,6 +1830,76 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
     </screen>  
     </para>
     </sect2>
+
+   <sect2 id="administration-extended-services-debugging">
+    <title>Extended services debugging guide</title>
+    <para>
+     When debugging ES over PHP we recomment the following order of tests:
+    </para>
+
+    <itemizedlist>
+     <listitem>
+      <para>
+       Make sure you have a nice record on your filesystem, which you can 
+       index from the filesystem by use of the zebraidx command.
+       Do it exactly as you planned, using one of the GRS-1 filters,
+       or the DOMXML filter. 
+       When this works, proceed.
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       Check that your server setup is OK before you even coded one single 
+       line PHP using ES.
+       Take the same record form the file system, and send as ES via 
+       <literal>yaz-client</literal> like described in
+       <xref linkend="administration-extended-services-yaz-client"/>,
+       and
+       remeber the <literal>-a</literal> option which tells you what
+       goes over the wire! Notice also the section on permissions:
+       try 
+       <screen>
+        perm.anonymous: rw
+       </screen>
+       in <literal>zebra.cfg</literal> to make sure you do not run into 
+       permission  problems (but never expose such an unsecure setup on the 
+       internet!!!). Then, make sure to set the general
+       <literal>recordType</literal> instruction, pointing correctly
+       to the GRS-1 filters,
+       or the DOMXML filters.
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       If you insist on using the <literal>sysno</literal> in the 
+       <literal>recordIdNumber</literal> setting, 
+       please make sure you do only updates and deletes. Zebra's internal 
+       system number is not allowed for
+       <literal>recordInsert</literal> or 
+       <literal>specialUpdate</literal> actions 
+       which result in fresh record inserts.
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       If <literal>shadow register</literal> is enabled in your 
+       <literal>zebra.cfg</literal>, you must remember running the 
+       <screen>
+        Z> adm-commit
+       </screen>
+       command as well.
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       If this works, then proceed to do the same thing in your PHP script.
+      </para>
+     </listitem>
+    </itemizedlist>
+
+
+   </sect2>
+
  </sect1>
 
 </chapter>
