@@ -390,6 +390,8 @@ int dict_lookup_grep(Dict dict, const char *pattern, int range, void *client,
     dfa_verbose = 1;
 #endif
 
+    dfa_anyset_includes_nl(dfa);
+
     yaz_log(YLOG_DEBUG, "dict_lookup_grep range=%d", range);
     for (i = 0; pattern[i]; i++)
     {

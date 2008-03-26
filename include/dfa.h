@@ -61,6 +61,7 @@ struct DFA {
 };
 
 struct DFA *dfa_init (void);
+void dfa_anyset_includes_nl(struct DFA *dfa);
 void dfa_set_cmap (struct DFA *dfa, void *vp,
                    const char **(*cmap)(void *vp, const char **from, int len));
 int dfa_parse (struct DFA *, const char **);

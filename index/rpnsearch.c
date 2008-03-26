@@ -238,7 +238,8 @@ static void add_non_space(const char *start, const char *end,
 
 static int term_100_icu(zebra_map_t zm,
                         const char **src, WRBUF term_dict, int space_split,
-                        WRBUF display_term)
+                        WRBUF display_term,
+                        int right_trunc)
 {
     int i;
     const char *res_buf = 0;
@@ -252,14 +253,38 @@ static int term_100_icu(zebra_map_t zm,
         return 0;
     }
     wrbuf_write(display_term, display_buf, display_len);
+    if (right_trunc)
+    {
+        /* ICU sort keys seem to be of the form
+           basechars \x01 accents \x01 length
+           For now we'll just right truncate from basechars . This 
+           may give false hits due to accents not being used.
+        */
+        i = res_len;
+        while (--i >= 0 && res_buf[i] != '\x01')
+            ;
+        if (i > 0)
+        {
+            while (--i >= 0 && res_buf[i] != '\x01')
+                ;
+        }
+        if (i == 0)
+        {  /* did not find base chars at all. Throw error */
+            return -1;
+        }
+        res_len = i; /* reduce res_len */
+    }
     for (i = 0; i < res_len; i++)
     {
         if (strchr(REGEX_CHARS "\\", res_buf[i]))
             wrbuf_putc(term_dict, '\\');
         if (res_buf[i] < 32)
             wrbuf_putc(term_dict, 1);
+            
         wrbuf_putc(term_dict, res_buf[i]);
     }
+    if (right_trunc)
+        wrbuf_puts(term_dict, ".*");
     return 1;
 }
 
@@ -274,9 +299,6 @@ static int term_100(zebra_map_t zm,
 
     const char *space_start = 0;
     const char *space_end = 0;
-
-    if (zebra_maps_is_icu(zm))
-        return term_100_icu(zm, src, term_dict, space_split, display_term);
 
     if (!term_pre(zm, src, NULL, NULL, !space_split))
         return 0;
@@ -1013,113 +1035,144 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     wrbuf_putc(term_dict, ')');
     
     prefix_len = wrbuf_len(term_dict);
-    
-    switch (truncation_value)
+
+    if (zebra_maps_is_icu(zm))
     {
-    case -1:         /* not specified */
-    case 100:        /* do not truncate */
-        if (!string_relation(zh, zapt, &termp, term_dict,
-                             attributeSet,
-                             zm, space_split, display_term,
-                             &relation_error))
+        /* ICU case */
+        switch (truncation_value)
         {
-            if (relation_error)
+        case -1:         /* not specified */
+        case 100:        /* do not truncate */
+            if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 0))
             {
-                zebra_setError(zh, relation_error, 0);
-                return ZEBRA_FAIL;
+                *term_sub = 0;
+                return ZEBRA_OK;
             }
-            *term_sub = 0;
-            return ZEBRA_OK;
+            break;
+        case 1:          /* right truncation */
+            if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 1))
+            {
+                *term_sub = 0;
+                return ZEBRA_OK;
+            }
+            break;
+        default:
+            zebra_setError_zint(zh,
+                                YAZ_BIB1_UNSUPP_TRUNCATION_ATTRIBUTE,
+                                truncation_value);
+            return ZEBRA_FAIL;
         }
-        break;
-    case 1:          /* right truncation */
-        wrbuf_putc(term_dict, '(');
-        if (!term_100(zm, &termp, term_dict, space_split, display_term))
+    }
+    else
+    {
+        /* non-ICU case. using string.chr and friends */
+        switch (truncation_value)
         {
-            *term_sub = 0;
-            return ZEBRA_OK;
+        case -1:         /* not specified */
+        case 100:        /* do not truncate */
+            if (!string_relation(zh, zapt, &termp, term_dict,
+                                 attributeSet,
+                                 zm, space_split, display_term,
+                                 &relation_error))
+            {
+                if (relation_error)
+                {
+                    zebra_setError(zh, relation_error, 0);
+                    return ZEBRA_FAIL;
+                }
+                *term_sub = 0;
+                return ZEBRA_OK;
+            }
+            break;
+        case 1:          /* right truncation */
+            wrbuf_putc(term_dict, '(');
+            if (!term_100(zm, &termp, term_dict, space_split, display_term))
+            {
+                *term_sub = 0;
+                return ZEBRA_OK;
+            }
+            wrbuf_puts(term_dict, ".*)");
+            break;
+        case 2:          /* left truncation */
+            wrbuf_puts(term_dict, "(.*");
+            if (!term_100(zm, &termp, term_dict, space_split, display_term))
+            {
+                *term_sub = 0;
+                return ZEBRA_OK;
+            }
+            wrbuf_putc(term_dict, ')');
+            break;
+        case 3:          /* left&right truncation */
+            wrbuf_puts(term_dict, "(.*");
+            if (!term_100(zm, &termp, term_dict, space_split, display_term))
+            {
+                *term_sub = 0;
+                return ZEBRA_OK;
+            }
+            wrbuf_puts(term_dict, ".*)");
+            break;
+        case 101:        /* process # in term */
+            wrbuf_putc(term_dict, '(');
+            if (!term_101(zm, &termp, term_dict, space_split, display_term))
+            {
+                *term_sub = 0;
+                return ZEBRA_OK;
+            }
+            wrbuf_puts(term_dict, ")");
+            break;
+        case 102:        /* Regexp-1 */
+            wrbuf_putc(term_dict, '(');
+            if (!term_102(zm, &termp, term_dict, space_split, display_term))
+            {
+                *term_sub = 0;
+                return ZEBRA_OK;
+            }
+            wrbuf_putc(term_dict, ')');
+            break;
+        case 103:       /* Regexp-2 */
+            regex_range = 1;
+            wrbuf_putc(term_dict, '(');
+            if (!term_103(zm, &termp, term_dict, &regex_range,
+                          space_split, display_term))
+            {
+                *term_sub = 0;
+                return ZEBRA_OK;
+            }
+            wrbuf_putc(term_dict, ')');
+            break;
+        case 104:        /* process # and ! in term */
+            wrbuf_putc(term_dict, '(');
+            if (!term_104(zm, &termp, term_dict, space_split, display_term))
+            {
+                *term_sub = 0;
+                return ZEBRA_OK;
+            }
+            wrbuf_putc(term_dict, ')');
+            break;
+        case 105:        /* process * and ! in term */
+            wrbuf_putc(term_dict, '(');
+            if (!term_105(zm, &termp, term_dict, space_split, display_term, 1))
+            {
+                *term_sub = 0;
+                return ZEBRA_OK;
+            }
+            wrbuf_putc(term_dict, ')');
+            break;
+        case 106:        /* process * and ! in term */
+            wrbuf_putc(term_dict, '(');
+            if (!term_105(zm, &termp, term_dict, space_split, display_term, 0))
+            {
+                *term_sub = 0;
+                return ZEBRA_OK;
+            }
+            wrbuf_putc(term_dict, ')');
+            break;
+        default:
+            zebra_setError_zint(zh,
+                                YAZ_BIB1_UNSUPP_TRUNCATION_ATTRIBUTE,
+                                truncation_value);
+            return ZEBRA_FAIL;
         }
-        wrbuf_puts(term_dict, ".*)");
-        break;
-    case 2:          /* keft truncation */
-        wrbuf_puts(term_dict, "(.*");
-        if (!term_100(zm, &termp, term_dict, space_split, display_term))
-        {
-            *term_sub = 0;
-            return ZEBRA_OK;
-        }
-        wrbuf_putc(term_dict, ')');
-        break;
-    case 3:          /* left&right truncation */
-        wrbuf_puts(term_dict, "(.*");
-        if (!term_100(zm, &termp, term_dict, space_split, display_term))
-        {
-            *term_sub = 0;
-            return ZEBRA_OK;
-        }
-        wrbuf_puts(term_dict, ".*)");
-        break;
-    case 101:        /* process # in term */
-        wrbuf_putc(term_dict, '(');
-        if (!term_101(zm, &termp, term_dict, space_split, display_term))
-        {
-            *term_sub = 0;
-            return ZEBRA_OK;
-        }
-        wrbuf_puts(term_dict, ")");
-        break;
-    case 102:        /* Regexp-1 */
-        wrbuf_putc(term_dict, '(');
-        if (!term_102(zm, &termp, term_dict, space_split, display_term))
-        {
-            *term_sub = 0;
-            return ZEBRA_OK;
-        }
-        wrbuf_putc(term_dict, ')');
-        break;
-    case 103:       /* Regexp-2 */
-        regex_range = 1;
-        wrbuf_putc(term_dict, '(');
-        if (!term_103(zm, &termp, term_dict, &regex_range,
-                      space_split, display_term))
-        {
-            *term_sub = 0;
-            return ZEBRA_OK;
-        }
-        wrbuf_putc(term_dict, ')');
-        break;
-    case 104:        /* process # and ! in term */
-        wrbuf_putc(term_dict, '(');
-        if (!term_104(zm, &termp, term_dict, space_split, display_term))
-        {
-            *term_sub = 0;
-            return ZEBRA_OK;
-        }
-        wrbuf_putc(term_dict, ')');
-        break;
-    case 105:        /* process * and ! in term */
-        wrbuf_putc(term_dict, '(');
-        if (!term_105(zm, &termp, term_dict, space_split, display_term, 1))
-        {
-            *term_sub = 0;
-            return ZEBRA_OK;
-        }
-        wrbuf_putc(term_dict, ')');
-        break;
-    case 106:        /* process * and ! in term */
-        wrbuf_putc(term_dict, '(');
-        if (!term_105(zm, &termp, term_dict, space_split, display_term, 0))
-        {
-            *term_sub = 0;
-            return ZEBRA_OK;
-        }
-        wrbuf_putc(term_dict, ')');
-        break;
-    default:
-        zebra_setError_zint(zh,
-                            YAZ_BIB1_UNSUPP_TRUNCATION_ATTRIBUTE,
-                            truncation_value);
-        return ZEBRA_FAIL;
     }
     if (1)
     {

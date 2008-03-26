@@ -60,9 +60,11 @@ static void tst(int argc, char **argv)
 
     /* simple term */
     YAZ_CHECK(tl_query(zh, "@attr 1=title notfound", 0));
-
-    YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 3));
  
+    YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 3));
+
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 5=1 comput", 3));
+
     YAZ_CHECK(tl_query(zh, "@attr 1=title .computer.", 3));
 
     YAZ_CHECK(tl_query(zh, "@attr 1=title x", 2));
@@ -84,8 +86,15 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract צביה", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract הגדול", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract בסיפור", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract בסיפ", 0));
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract 点", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract wet", 1));
+
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 5=1 בסיפ", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 5=1 סיפ", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 5=1 בסי", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 5=1 בס", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 5=1 ב", 1));
 
     /* phrase search */
     YAZ_CHECK(tl_query(zh, "@attr 1=title {my computer}", 2));
@@ -112,7 +121,6 @@ static void tst(int argc, char **argv)
         const char *ent[] = { char_ae, "B" char_aring "d", "My computer" };
         YAZ_CHECK(tl_scan(zh, "@attr 1=title @attr 6=2 0", 1, 3, 1, 3, 0, ent));
     }
-
     
     YAZ_CHECK(tl_close_down(zh, zs));
 #endif

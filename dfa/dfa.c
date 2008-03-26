@@ -1032,9 +1032,12 @@ static struct DFA_parse *dfa_parse_init (void)
     parse_info->rule = 0;
     parse_info->root = NULL;
 
+    /* initialize the anyset which by default does not include \n */
     parse_info->anyset = mk_BSet (&parse_info->charset);
     res_BSet (parse_info->charset, parse_info->anyset);
+    add_BSet (parse_info->charset, parse_info->anyset, '\n');
     com_BSet (parse_info->charset, parse_info->anyset);
+
     parse_info->use_Tnode = parse_info->max_Tnode = 0;
     parse_info->start = parse_info->end = NULL;
     parse_info->charMap = NULL;
@@ -1096,6 +1099,11 @@ struct DFA *dfa_init (void)
     return dfa;
 }
 
+void dfa_anyset_includes_nl(struct DFA *dfa)
+{
+    add_BSet (dfa->parse_info->charset, dfa->parse_info->anyset, '\n');
+}
+
 void dfa_set_cmap (struct DFA *dfa, void *vp,
 		   const char **(*cmap)(void *vp, const char **from, int len))
 {
@@ -1117,12 +1125,6 @@ int dfa_parse (struct DFA *dfa, const char **pattern)
     assert (dfa->parse_info);
     parse_info = dfa->parse_info;
 
-    if (!parse_info->cmap)
-    {
-	res_BSet (parse_info->charset, parse_info->anyset);
-	add_BSet (parse_info->charset, parse_info->anyset, '\n');
-	com_BSet (parse_info->charset, parse_info->anyset);
-    }
     do_parse (parse_info, pattern, &top);
     if (parse_info->err_code)
         return parse_info->err_code;
