@@ -6,6 +6,8 @@ agrep
 grepper
 lexer
 *.lo
+*.o
 *.la
 *.log
 test_dfa
+*~

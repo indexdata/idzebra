@@ -9,3 +9,6 @@ socket
 xpath[0-9]
 .libs
 .deps
+*.o
+*.lo
+*~

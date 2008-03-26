@@ -4,4 +4,6 @@ Makefile
 Makefile.in
 tstcodec
 *.lo
+*.o
 *.la
+*~

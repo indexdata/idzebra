@@ -8,3 +8,6 @@ tmp?
 .libs
 .deps
 t?
+*.lo
+*.o
+*~

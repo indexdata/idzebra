@@ -4,3 +4,4 @@ Makefile.in
 *.log
 log
 *.LCK
+*~

@@ -3,3 +3,4 @@
 *.in
 Makefile
 zebrasrv.pid
+*~

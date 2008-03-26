@@ -6,6 +6,7 @@ passtest
 tstcharmap
 idzebra-config-2.0
 *.lo
+*.o
 *.la
 *.log
 my.LCK
@@ -15,3 +16,4 @@ tstlockscope
 tstpass
 tstres
 test_strmap
+*~

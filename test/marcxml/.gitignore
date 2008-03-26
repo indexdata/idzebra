@@ -11,3 +11,6 @@ t1
 t2
 .libs
 .deps
+*.lo
+*.o
+*~

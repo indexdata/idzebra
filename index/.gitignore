@@ -9,4 +9,6 @@ zebraidx
 zebrasrv
 zebrash
 *.lo
+*.o
 *.la
+*~

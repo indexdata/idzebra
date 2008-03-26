@@ -8,5 +8,7 @@ zebrasrv.pid
 *.LCK
 *.log
 *.lo
+*.o
 *.la
 *.tmp
+*~

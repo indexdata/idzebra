@@ -3,4 +3,6 @@
 Makefile
 Makefile.in
 *.lo
+*.o
 *.la
+*~

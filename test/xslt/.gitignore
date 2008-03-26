@@ -9,4 +9,6 @@ dom[0-9]
 *.log
 zebrasrv.pid
 *.lo
+*.o
 *.la
+*~

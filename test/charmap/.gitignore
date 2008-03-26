@@ -11,3 +11,6 @@ zebrasrv.pid
 .libs
 .deps
 charmap[0-9]
+*.lo
+*.o
+*~

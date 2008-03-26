@@ -11,3 +11,6 @@ socket
 .deps
 .libs
 t1
+*.lo
+*.o
+*~

@@ -5,3 +5,4 @@ idx.log
 srv.log
 log
 *.LCK
+*~

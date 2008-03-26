@@ -6,5 +6,7 @@ dictext
 dicttest
 scantest
 *.lo
+*.o
 *.la
 *.mf
+*~

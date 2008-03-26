@@ -11,6 +11,9 @@ safari1
 testclient
 zebrasrv.pid
 *.lo
+*.o
 *.la
+*.a
 register
 shadow
+*~

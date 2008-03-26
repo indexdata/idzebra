@@ -7,6 +7,8 @@ tstisamb
 benchisamb
 benchindex1
 *.lo
+*.o
 *.la
 *.dat
 *.eps
+*~
