@@ -1971,14 +1971,14 @@ int isamb_pp_forward2(ISAMB_PP pp, void *buf, const void *untilb)
 	    file_item = file_item_buf;
 	    (*b->method->codec.reset)(c1);
 	    (*b->method->codec.decode)(c1, &file_item, &src);
-	    if ((*b->method->compare_item)(untilb, file_item_buf) <= 1)
+	    if ((*b->method->compare_item)(untilb, file_item_buf) < pp->scope)
 	    {
 		src = src_0;
 		break;
 	    }
 #else
 	    decode_item_len(&src, &item_len);
-	    if ((*b->method->compare_item)(untilb, src) <= 1)
+	    if ((*b->method->compare_item)(untilb, src) < pp->scope)
 		break;
 	    src += item_len;
 #endif
@@ -2014,14 +2014,14 @@ int isamb_pp_forward2(ISAMB_PP pp, void *buf, const void *untilb)
 		file_item = file_item_buf;
 		(*b->method->codec.reset)(c1);
 		(*b->method->codec.decode)(c1, &file_item, &src);
-		if ((*b->method->compare_item)(untilb, file_item_buf) <= 1)
+		if ((*b->method->compare_item)(untilb, file_item_buf) < pp->scope)
 		{
 		    src = src_0;
 		    break;
 		}
 #else
 		decode_ptr(&src, &item_len);
-		if ((*b->method->compare_item)(untilb, src) <= 1)
+		if ((*b->method->compare_item)(untilb, src) <= pp->scope)
 		    break;
 		src += item_len;
 #endif
@@ -2040,7 +2040,7 @@ int isamb_pp_forward2(ISAMB_PP pp, void *buf, const void *untilb)
         src = p->bytes + p->offset;
         (*pp->isamb->method->codec.decode)(p->decodeClientData, &dst, &src);
         p->offset = src - (char*) p->bytes;
-        if (!untilb || (*pp->isamb->method->compare_item)(untilb, dst0) <= 1)
+        if (!untilb || (*pp->isamb->method->compare_item)(untilb, dst0) < pp->scope)
 	    break;
 	dst = dst0;
 	if (p->offset == p->size) goto again;
