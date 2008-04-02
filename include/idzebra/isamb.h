@@ -53,8 +53,6 @@ int isamb_pp_read(ISAMB_PP pp, void *buf);
 
 YAZ_EXPORT
 int isamb_pp_forward(ISAMB_PP pp, void *buf, const void *untilbuf);
-YAZ_EXPORT
-int isamb_pp_forward2(ISAMB_PP pp, void *buf, const void *untilbuf);
 
 YAZ_EXPORT
 void isamb_pp_pos(ISAMB_PP pp, double *current, double *total);
