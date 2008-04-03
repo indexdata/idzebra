@@ -1,5 +1,4 @@
 dnl Zebra, Index Data ApS, 1995-2008
-dnl $Id: configure.ac,v 1.77 2008-03-05 09:29:09 adam Exp $
 dnl
 AC_PREREQ(2.60)
 AC_INIT([idzebra],[2.0.27],[zebra-help@indexdata.dk])

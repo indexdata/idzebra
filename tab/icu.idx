@@ -1,6 +1,5 @@
 # ICU indexing for words and phrases.. Otherwise similar
 # to default.idx .
-# $Id: icu.idx,v 1.1 2007-12-13 18:10:35 adam Exp $
 
 # Traditional word index
 # Used if completenss is 'incomplete field' (@attr 6=1) and

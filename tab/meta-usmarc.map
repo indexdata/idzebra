@@ -1,5 +1,4 @@
 # Meta to USMARC conversion
-# $Id: meta-usmarc.map,v 1.1 2002-10-22 12:51:09 adam Exp $
 targetname usmarc
 targetref USmarc
 
