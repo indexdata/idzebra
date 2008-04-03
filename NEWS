@@ -1,3 +1,9 @@
+--- 2.0.28 2008/04/XX
+
+Handle right-truncation for ICU normalized terms.
+
+Updated OAI-PMH example.
+
 --- 2.0.26 2008/01/28 
 
 Fixes for searches on Chinese text.
