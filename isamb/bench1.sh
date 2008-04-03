@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: bench1.sh,v 1.2 2006-12-10 11:54:11 adam Exp $
 # Test for variations of number of trees.. Total number of entries is
 # Constant 1 mio
 CMD="./benchisamb -r 50"

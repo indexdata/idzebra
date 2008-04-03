@@ -1,5 +1,4 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.26 2007-12-19 13:35:39 adam Exp $ -->
   <title>Overview of &zebra; Architecture</title>
 
   <section id="architecture-representation">

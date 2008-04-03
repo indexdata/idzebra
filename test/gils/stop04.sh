@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: stop04.sh,v 1.11 2006-04-27 10:52:26 marc Exp $
 # test start and stop of the forked server 
 
 srcdir=${srcdir:-"."}

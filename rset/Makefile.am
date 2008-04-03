@@ -1,4 +1,3 @@
-## $Id: Makefile.am,v 1.18 2006-07-05 15:03:52 adam Exp $
 
 noinst_LTLIBRARIES = libidzebra-rset.la
 

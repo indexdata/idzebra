@@ -1,4 +1,3 @@
-## $Id: Makefile.am,v 1.76 2008-02-01 13:54:39 marc Exp $
 SUBDIRS = common
 
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)

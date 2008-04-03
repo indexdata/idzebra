@@ -1,5 +1,4 @@
 <dom>
-  <!-- $Id: dom-config-del.xml,v 1.1 2007-03-14 14:16:14 adam Exp $ -->
   <extract name="index">
    <xslt stylesheet="id.xsl"/>
   </extract>

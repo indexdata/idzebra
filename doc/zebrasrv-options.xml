@@ -1,5 +1,4 @@
 <!-- 
-   $Id: zebrasrv-options.xml,v 1.8 2007-05-24 13:44:09 adam Exp $
    Options for generic frontend server and yaz-ztest.
    Included in both manual and man page for yaz-ztest
    Note - these files have been altered for zebrasrv, and are not in

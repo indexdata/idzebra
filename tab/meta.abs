@@ -1,6 +1,5 @@
 # This is a simple profile based on the Dublin Core of metadata elements.
 #
-# $Id: meta.abs,v 1.1 2002-10-22 12:51:09 adam Exp $
 
 name meta
 attset bib1.att

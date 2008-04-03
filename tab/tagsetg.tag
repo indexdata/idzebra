@@ -1,5 +1,4 @@
 # TagSet-G Tags
-# $Id: tagsetg.tag,v 1.2 2002-12-01 23:28:30 mike Exp $
 name tagsetg
 reference TagsetG
 type 2

@@ -1,7 +1,6 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:e="http://explain.z3950.org/dtd/2.0/"
                 version="1.0">
-  <!--  $Id: explain2cqlpqftxt.xsl,v 1.1 2008-02-01 09:45:17 marc Exp $ -->
   
   <xsl:output method="text" encoding="UTF-8"/>
   

@@ -1,4 +1,3 @@
-# $Id: Makefile.am,v 1.3 2007-12-13 17:42:28 adam Exp $
 
 EXTRA_DIST = zebra.cfg\
    README\

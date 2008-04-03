@@ -1,6 +1,5 @@
 # TagSet-M Tags
 #
-# $Id: tagsetm-zthes.tag,v 1.2 2002-12-02 15:19:12 mike Exp $
 # Hacked for Zthes: compare with ../../tab/tagsetm.tag
 name tagsetm
 reference TagsetM

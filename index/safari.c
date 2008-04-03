@@ -1,8 +1,5 @@
-/* $Id: safari.c,v 1.11 2007-12-03 11:46:39 adam Exp $
-   Copyright (C) 1995-2007
-   Index Data ApS
-
-This file is part of the Zebra server.
+/* This file is part of the Zebra server.
+   Copyright (C) 1995-2008 Index Data
 
 Zebra is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free

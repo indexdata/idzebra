@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: update.sh,v 1.10 2002-07-15 11:48:21 adam Exp $
 t=$1
 test -n "$t" || exit 1
 test -d reg-$t && rm -fr reg-$t

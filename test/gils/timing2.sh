@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: timing2.sh,v 1.13 2006-04-27 10:52:27 marc Exp $ 
 # Demonstrated that updates depend on file timestamps
 
 srcdir=${srcdir:-"."}

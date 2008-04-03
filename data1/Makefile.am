@@ -1,4 +1,3 @@
-## $Id: Makefile.am,v 1.8 2006-07-06 12:42:21 marc Exp $
 
 noinst_LTLIBRARIES=libidzebra-data1.la
 

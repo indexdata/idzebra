@@ -2,7 +2,6 @@
   xmlns:m="http://www.loc.gov/MARC21/slim"
   exclude-result-prefixes="m"
   version="1.0">
-  <!-- $Id: dom-index-pi.xsl,v 1.2 2007-03-01 10:35:46 adam Exp $ -->
   <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
   
 

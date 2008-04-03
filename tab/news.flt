@@ -1,4 +1,3 @@
-# $Id: news.flt,v 1.4 1996-01-08 19:15:54 adam Exp $
 BEGIN				{ begin record wais }
 /^From:/	BODY	/$/	{ data -element name $1 }
 /^Subject:/	BODY	/$/	{ data -element title $1 }

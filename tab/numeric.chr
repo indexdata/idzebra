@@ -1,6 +1,5 @@
 # Numeric character map
 #
-# $Id: numeric.chr,v 1.1 1997-10-27 14:35:04 adam Exp $
 
 # Define the basic value-set. *Beware* of changing this without re-indexing
 # your databases.

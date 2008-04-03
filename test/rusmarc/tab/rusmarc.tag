@@ -1,6 +1,5 @@
 # Pseudo-tagset for USMARC
 #
-# $Id: rusmarc.tag,v 1.1 2003-02-28 12:33:41 oleg Exp $
 
 name rusmarc
 type 4

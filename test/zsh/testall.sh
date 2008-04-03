@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: testall.sh,v 1.6 2006-04-28 18:50:48 adam Exp $
 # run all zebrash tests
 
 srcdir=${srcdir:-"."}

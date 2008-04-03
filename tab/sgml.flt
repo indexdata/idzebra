@@ -1,4 +1,3 @@
-# $Id: sgml.flt,v 1.5 1998-10-15 13:11:46 adam Exp $
 BEGIN	/\n*</	BODY	/>\n*/	{ begin record $2 }
 /\n*<[Vv][Aa][Rr][ ]+/  /[^ >]+/   /[ ]+/  /[^ >]+/  /[ ]+/ /[^ >]+/ /[ ]*>/ {
                                   begin variant $1 $3 $5

@@ -1,6 +1,5 @@
 # TagSet-M Tags
 #
-# $Id: tagsetm.tag,v 1.2 2002-12-01 23:28:30 mike Exp $
 name tagsetm
 reference TagsetM
 type 1

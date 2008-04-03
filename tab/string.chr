@@ -1,6 +1,5 @@
 # Generic character map.
 #
-# $Id: string.chr,v 1.4 1999-09-07 07:19:21 adam Exp $
 
 # Define the basic value-set. *Beware* of changing this without re-indexing
 # your databases.

@@ -1,6 +1,5 @@
 # character map that removes some leading prefixes
 #
-# $Id: sort.chr,v 1.2 2004-09-16 14:02:46 adam Exp $
 
 # Define the basic value-set. *Beware* of changing this without re-indexing
 # your databases.

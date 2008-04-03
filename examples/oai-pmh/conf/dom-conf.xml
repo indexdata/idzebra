@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: dom-conf.xml,v 1.2 2008-02-07 13:30:19 marc Exp $ -->
 
 <!-- this file configures the Zebra DOM XML filter -->
 <!-- see: http://www.indexdata.com/zebra/doc/record-model-dom.html -->

@@ -1,4 +1,3 @@
-# $Id: zthes.tag,v 1.1 2002-12-01 23:25:06 mike Exp $
 # Zthes Tags -- see
 #	http://zthes.z3950.org/profile/current.html#3.2
 

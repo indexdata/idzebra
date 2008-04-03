@@ -8,7 +8,6 @@
      <!ENTITY % idcommon  SYSTEM "common/common.ent">
      %idcommon;
 ]>
-<!-- $Id: idzebra-config.xml,v 1.4 2007-05-22 11:12:53 adam Exp $ -->
 <refentry id="idzebra-config">
  <refentryinfo>
   <productname>zebra</productname>

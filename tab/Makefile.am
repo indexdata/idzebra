@@ -1,4 +1,3 @@
-## $Id: Makefile.am,v 1.11 2007-12-17 12:22:05 adam Exp $
 
 tabdatadir = $(datadir)/$(PACKAGE)$(PACKAGE_SUFFIX)/tab
 tabdata_DATA = bib1.att dan1.att danmarc.abs danmarc.mar \

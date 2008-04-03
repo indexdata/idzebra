@@ -1,4 +1,3 @@
-<!-- $Id: entities.ent,v 1.7 2008-02-01 13:54:39 marc Exp $ -->
 <!ENTITY chap-introduction SYSTEM "introduction.xml">
 <!ENTITY chap-installation SYSTEM "installation.xml">
 <!-- <!ENTITY chap-quickstart SYSTEM "quickstart.xml"> -->

@@ -1,5 +1,4 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.54 2007-12-19 09:30:29 adam Exp $ -->
  <title>Administrating &zebra;</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from

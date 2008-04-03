@@ -1,6 +1,5 @@
 # The Zebra special IDXPATH Attribute Set
 #
-# $Id: idxpath.att,v 1.1 2006-06-21 13:14:26 marc Exp $
 name idxpath
 reference idxpath
 

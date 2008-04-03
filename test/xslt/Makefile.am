@@ -1,4 +1,3 @@
-# $Id: Makefile.am,v 1.17 2007-03-14 14:16:14 adam Exp $
 
 check_PROGRAMS = xslt1 xslt2 xslt3 xslt4 xslt5 dom1
 TESTS = $(check_PROGRAMS)

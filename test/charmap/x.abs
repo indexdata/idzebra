@@ -1,6 +1,5 @@
 # Based on gils.abs but modified a bit to test various register types
 # bu elm for title has been modified
-# $Id: x.abs,v 1.1 2005-06-14 10:33:31 adam Exp $
 
 name gils
 reference GILS-schema

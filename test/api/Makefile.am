@@ -1,4 +1,3 @@
-# $Id: Makefile.am,v 1.45 2007-12-17 12:23:03 adam Exp $
 
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c 

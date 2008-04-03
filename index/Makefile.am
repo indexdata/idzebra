@@ -1,4 +1,3 @@
-## $Id: Makefile.am,v 1.69 2007-12-13 11:09:20 adam Exp $
 
 aux_libs = \
  ../rset/libidzebra-rset.la \

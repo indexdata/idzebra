@@ -1,4 +1,3 @@
-# $Id: Makefile.am,v 1.3 2006-07-03 14:27:20 adam Exp $
 
 check_PROGRAMS = t1
 

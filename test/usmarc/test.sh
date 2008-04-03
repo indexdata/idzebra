@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: test.sh,v 1.5 2003-05-06 17:39:01 adam Exp $
 test -d tmp || mkdir tmp
 test -d lock || mkdir lock
 echo Loading Records

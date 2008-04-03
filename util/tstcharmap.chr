@@ -1,6 +1,5 @@
 # Generic character map.
 #
-# $Id: tstcharmap.chr,v 1.1 2005-06-15 21:31:45 adam Exp $
 
 # Define the basic value-set. *Beware* of changing this without re-indexing
 # your databases.

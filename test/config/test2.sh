@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: test2.sh,v 1.5 2004-09-27 10:44:50 adam Exp $
 
 pp=${srcdir:-"."}
 

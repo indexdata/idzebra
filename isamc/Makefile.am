@@ -1,4 +1,3 @@
-## $Id: Makefile.am,v 1.12 2006-07-05 15:03:49 adam Exp $
 
 noinst_LTLIBRARIES = libidzebra-isamc.la
 

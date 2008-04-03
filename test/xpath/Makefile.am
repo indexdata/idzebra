@@ -1,4 +1,3 @@
-# $Id: Makefile.am,v 1.13 2006-07-03 14:27:34 adam Exp $
 
 check_PROGRAMS = xpath1 xpath2 xpath3 xpath4 xpath5 xpath6
 

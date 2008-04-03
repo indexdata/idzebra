@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-$Id: MARC21slim2INDEX.xsl,v 1.6 2007-12-13 17:42:28 adam Exp $
    Copyright (C) 1995-2006
    Index Data ApS
 

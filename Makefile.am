@@ -1,4 +1,3 @@
-## $Id: Makefile.am,v 1.31 2007-03-20 22:42:19 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 

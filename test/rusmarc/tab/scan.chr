@@ -1,6 +1,5 @@
 # Danish/Swedish character map.
 #
-# $Id: scan.chr,v 1.1 2003-02-28 12:33:41 oleg Exp $
 
 # Define the basic value-set. *Beware* of changing this without re-indexing
 # your databases.

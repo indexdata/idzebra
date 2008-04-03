@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.15 2006-05-19 13:49:36 adam Exp $
 
 srcdir=${srcdir:-"."}
 

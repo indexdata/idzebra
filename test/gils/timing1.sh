@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: timing1.sh,v 1.13 2006-04-27 10:52:27 marc Exp $
 # tests that updates are reflected immediately # in the registers.
 # Repeatedly modifies a record and counts hits.
 # Test 1: with good sleeps in every between - should pass always

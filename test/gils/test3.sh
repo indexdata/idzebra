@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: test3.sh,v 1.9 2006-05-19 13:49:36 adam Exp $
 
 # Testing searches with lots of @and operators
 # in order to test the fast-forward operation of rsets

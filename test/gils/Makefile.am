@@ -1,4 +1,3 @@
-# $Id: Makefile.am,v 1.18 2006-04-27 10:52:26 marc Exp $
 
 dist-hook:
 	-mkdir $(distdir)/records

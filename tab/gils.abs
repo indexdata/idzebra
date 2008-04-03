@@ -1,7 +1,6 @@
 # This is the abstract syntax (and most of the top-level profile info)
 # for GILS version 2.
 #
-# $Id: gils.abs,v 1.3 2006-05-19 13:49:35 adam Exp $
 
 name gils
 reference GILS-schema

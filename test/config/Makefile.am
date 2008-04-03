@@ -1,4 +1,3 @@
-# $Id: Makefile.am,v 1.3 2006-04-27 20:40:42 marc Exp $
 
 check_SCRIPTS = test1.sh test2.sh
 TESTS = test1.sh test2.sh

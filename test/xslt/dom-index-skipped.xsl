@@ -3,7 +3,6 @@
   xmlns:z="http://indexdata.com/zebra-2.0"
   exclude-result-prefixes="m z"
   version="1.0">
-  <!-- $Id: dom-index-skipped.xsl,v 1.1 2007-03-05 13:02:11 marc Exp $ -->
   <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
   
 

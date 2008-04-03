@@ -1,4 +1,3 @@
-## $Id: Makefile.am,v 1.17 2006-07-05 15:03:47 adam Exp $
 
 noinst_LTLIBRARIES = libidzebra-dict.la
 noinst_PROGRAMS = dicttest dictext

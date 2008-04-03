@@ -1,4 +1,3 @@
-# $Id: Makefile.am,v 1.5 2008-02-07 13:31:33 marc Exp $
 
 oaidatadir = $(datadir)/$(PACKAGE)$(PACKAGE_SUFFIX)-examples/oai-pmh
 oaiconfdatadir = $(datadir)/$(PACKAGE)$(PACKAGE_SUFFIX)-examples/oai-pmh/conf

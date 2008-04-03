@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: cleanrecords.sh,v 1.1 2006-04-27 10:52:26 marc Exp $
 
 srcdir=${srcdir:-"."}
 

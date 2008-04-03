@@ -1,4 +1,3 @@
-# $Id: Makefile.am,v 1.12 2006-09-15 10:07:09 adam Exp $
 
 zebraincludedir=$(includedir)/$(PACKAGE)$(PACKAGE_SUFFIX)/idzebra
 

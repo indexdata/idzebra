@@ -1,7 +1,6 @@
 #
 # Input-filter for the Nordic Web Index record syntax. Output is 'gils-like'.
 #
-# $Id: nwi.flt,v 1.4 1996-06-11 10:53:56 quinn Exp $
 #
 
 /<nwi>/                            { begin record gils }

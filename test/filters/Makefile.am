@@ -1,4 +1,3 @@
-# $Id: Makefile.am,v 1.4 2006-07-06 12:42:23 marc Exp $
 
 check_PROGRAMS = text grs.xml grs.xml.idzebra grs.marc
 

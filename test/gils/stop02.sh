@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: stop02.sh,v 1.12 2006-04-27 10:52:26 marc Exp $
 # test start and stop of the server with -S
 
 srcdir=${srcdir:-"."}

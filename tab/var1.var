@@ -2,7 +2,6 @@
 # Variant triple syntax is '<VAR class type value>'. Eg.
 # <var body iana "application/postscript"> or <var lang lang "eng">.
 #
-# $Id: var1.var,v 1.1 2002-10-22 12:51:09 adam Exp $
 
 name variant-1
 reference Variant-1
