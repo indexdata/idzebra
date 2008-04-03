@@ -1640,6 +1640,7 @@ int isamb_pp_forward(ISAMB_PP pp, void *buf, const void *untilb)
 	dst = dst0;
 	if (p->offset == p->size) goto again;
     }
+    pp->returned_numbers++; 
     return 1;
 }
 
