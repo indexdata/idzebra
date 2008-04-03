@@ -809,7 +809,7 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
                                               poset[i].sysno,
                                               sysnos, &no_sysnos);
             assert(no_sysnos > 0);
-            yaz_log(YLOG_LOG, "Analyzing rec=%d ISAM sysno=" ZINT_FORMAT " chunks=%d",
+            yaz_log(YLOG_DEBUG, "Analyzing rec=%d ISAM sysno=" ZINT_FORMAT " chunks=%d",
                     i, poset[i].sysno, no_sysnos);
             for (j = 0; j < no_sysnos && j < max_chunks; j++)
             {
@@ -821,7 +821,7 @@ static ZEBRA_RES facet_fetch(ZebraHandle zh, const char *setname,
                 zebra_rec_keys_set_buf(keys, rec->info[recInfo_delKeys],
                                        rec->size[recInfo_delKeys], 0);
 
-                yaz_log(YLOG_LOG, "rec %d " ZINT_FORMAT " %s", 
+                yaz_log(YLOG_DEBUG, "rec %d " ZINT_FORMAT " %s", 
                         j, sysnos[j], zebra_rec_keys_empty(keys) ? "empty" : "non-empty");
                 if (zebra_rec_keys_rewind(keys))
                 {
