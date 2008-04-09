@@ -38,10 +38,19 @@ static void tst(int argc, char **argv)
     /* simple term */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 notfound", 0));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 title", 3));
+    tl_fetch_compare(zh, 1, "zebra::facet::title:w", yaz_oid_recsyn_sutrs,
+                     "term 3 3: my\n"
+                     "term 3 3: title\n"
+                     "term 2 2: x\n");
 
     /* trunc right */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=1 titl", 3));
+
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=1 x", 2));
+    tl_fetch_compare(zh, 1, "zebra::facet::title:w", yaz_oid_recsyn_sutrs,
+                     "term 2 2: my\n"
+                     "term 2 2: title\n"
+                     "term 2 2: x\n");
 
     /* trunc left */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=2 titl", 0));
