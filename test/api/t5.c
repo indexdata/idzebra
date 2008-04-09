@@ -124,6 +124,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 title", 2));
 
     /* always-matches relation */
+    YAZ_CHECK(tl_query(zh, "@attr 1=_ALLRECORDS @attr 2=103 {ym}", 3));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=103 {x my}", 3));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=1 @attr 2=103 {x my}", 0, 114));
 

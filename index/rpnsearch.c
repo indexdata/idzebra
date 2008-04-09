@@ -1035,28 +1035,45 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
     if (zebra_maps_is_icu(zm))
     {
-        /* ICU case */
-        switch (truncation_value)
+        int relation_value;
+        AttrType relation;
+        
+        attr_init_APT(&relation, zapt, 2);
+        relation_value = attr_find(&relation, NULL);
+        if (relation_value == 103) /* always matches */
+            termp += strlen(termp); /* move to end of term */
+        else if (relation_value == 3 || relation_value == 102 || relation_value == -1)
         {
-        case -1:         /* not specified */
-        case 100:        /* do not truncate */
-            if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 0))
+            /* ICU case */
+            switch (truncation_value)
             {
-                *term_sub = 0;
-                return ZEBRA_OK;
+            case -1:         /* not specified */
+            case 100:        /* do not truncate */
+                if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 0))
+                {
+                    *term_sub = 0;
+                    return ZEBRA_OK;
+                }
+                break;
+            case 1:          /* right truncation */
+                if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 1))
+                {
+                    *term_sub = 0;
+                    return ZEBRA_OK;
+                }
+                break;
+            default:
+                zebra_setError_zint(zh,
+                                    YAZ_BIB1_UNSUPP_TRUNCATION_ATTRIBUTE,
+                                    truncation_value);
+                return ZEBRA_FAIL;
             }
-            break;
-        case 1:          /* right truncation */
-            if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 1))
-            {
-                *term_sub = 0;
-                return ZEBRA_OK;
-            }
-            break;
-        default:
+        }
+        else
+        {
             zebra_setError_zint(zh,
-                                YAZ_BIB1_UNSUPP_TRUNCATION_ATTRIBUTE,
-                                truncation_value);
+                                YAZ_BIB1_UNSUPP_RELATION_ATTRIBUTE,
+                                relation_value);
             return ZEBRA_FAIL;
         }
     }

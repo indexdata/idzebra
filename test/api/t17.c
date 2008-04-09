@@ -101,6 +101,12 @@ static void tst(int argc, char **argv)
     /* complete-subfield search */
     YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {my computer}", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {my}", 0));
+
+    /* always matches */
+    YAZ_CHECK(tl_query(zh, "@attr 1=_ALLRECORDS @attr 2=103 {}", 5));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 2=103 {}", 5));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 2=103 {}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 2=103 {does not match}", 1));
     
     /* scan */
     {   /* word search */
