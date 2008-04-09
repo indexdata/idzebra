@@ -17,7 +17,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-/* safari1 - insert a few Safari records */
+/** \file
+    \brief test safari filter
+ */
 
 #include "testlib.h"
 
@@ -72,7 +74,7 @@ static void tst(int argc, char **argv)
 {
     zint ids[3];
     zint limits[3];
-    ZebraService zs = tl_start_up("safari.cfg", argc, argv);
+    ZebraService zs = tl_start_up("test_safari.cfg", argc, argv);
     
     ZebraHandle zh = zebra_open(zs, 0);
 

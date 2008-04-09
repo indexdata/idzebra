@@ -3,7 +3,7 @@ noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c 
 
 simpletests = t0 t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16 t17
-safaritests = safari1
+safaritests = test_safari
 check_PROGRAMS = $(simpletests) $(safaritests)
 TESTS = $(check_PROGRAMS)
 
@@ -33,7 +33,7 @@ t15_SOURCES = t15.c
 t16_SOURCES = t16.c
 t17_SOURCES = t17.c
 
-safari1_SOURCES = safari1.c testlib.c
+test_safari_SOURCES = test_safari.c testlib.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 
