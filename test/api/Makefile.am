@@ -2,13 +2,15 @@
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c 
 
-simpletests = t0 t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16 t17
-safaritests = test_safari
-check_PROGRAMS = $(simpletests) $(safaritests)
+check_PROGRAMS = t0 t1 t2 t3 t4 t5 t6 t7 t8 \
+	t9 t10 t11 t12 t13 t14 t15 t16 t17 \
+	test_sortindex test_safari
+
 TESTS = $(check_PROGRAMS)
 
-EXTRA_DIST=zebra.cfg zebra6.cfg zebra8.cfg zebra10.cfg zebra15.cfg safari.cfg \
-	t10.att t10.abs zebra17.cfg t17.idx 
+EXTRA_DIST=zebra.cfg zebra6.cfg zebra8.cfg zebra10.cfg zebra15.cfg \
+	t10.att t10.abs zebra17.cfg t17.idx \
+	test_safari.cfg test_sortindex.cfg
 
 noinst_LIBRARIES = libtestlib.a
 
@@ -32,7 +34,7 @@ t14_SOURCES = t14.c
 t15_SOURCES = t15.c
 t16_SOURCES = t16.c
 t17_SOURCES = t17.c
-
+test_sortindex_SOURCES = test_sortindex.c
 test_safari_SOURCES = test_safari.c testlib.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
