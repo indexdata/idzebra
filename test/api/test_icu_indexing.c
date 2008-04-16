@@ -50,7 +50,7 @@ const char *myrec[] = {
 static void tst(int argc, char **argv)
 {
 #if YAZ_HAVE_ICU
-    ZebraService zs = tl_start_up("zebra17.cfg", argc, argv);
+    ZebraService zs = tl_start_up("test_icu_indexing.cfg", argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
     YAZ_CHECK(tl_init_data(zh, myrec));

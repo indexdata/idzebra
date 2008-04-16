@@ -92,7 +92,7 @@ static void tst(int argc, char **argv)
     mkdir("register", 0775);
     mkdir("shadow", 0775);
 
-    zs = tl_start_up("zebra15.cfg", argc, argv);
+    zs = tl_start_up("test_zebra_fork.cfg", argc, argv);
     YAZ_CHECK(zs);
 
     zh = zebra_open(zs, 0);

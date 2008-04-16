@@ -17,8 +17,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-/** t7.c sorting  */
-
 #include "testlib.h"
 #include <yaz/sortspec.h>
 

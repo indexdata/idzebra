@@ -17,19 +17,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-/* Creates a few result sets */
-
 #include "testlib.h"
 
 const char *myrec[] ={
-        "<t10>\n"
+        "<private_attset>\n"
         "  <title>My title</title>\n"
-        "</t10>\n",
+        "</private_attset>\n",
         0};
 
 static void tst(int argc, char **argv)
 {
-    ZebraService zs = tl_start_up("zebra10.cfg", argc, argv);
+    ZebraService zs = tl_start_up("test_private_attset.cfg", argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
     YAZ_CHECK(tl_init_data(zh, myrec));

@@ -1,5 +1,5 @@
 # Bib-1 Attribute Set
-name t10
+name private_attset
 reference 1.2.840.10003.3.1000.1000.1 
 
 att 7	title

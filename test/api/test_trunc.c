@@ -17,14 +17,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-/** t6.c Insert a number of randomly generated words */
+/* Insert a number of randomly generated words and truncate */
 
 #include "testlib.h"
 
 static void tst(int argc, char **argv)
 {
     int i;
-    ZebraService zs = tl_start_up("zebra6.cfg", argc, argv);
+    ZebraService zs = tl_start_up("test_trunc.cfg", argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
     srand(17);

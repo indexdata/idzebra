@@ -17,28 +17,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+#include <yaz/test.h>
 #include "testlib.h"
 
-const char *myrec[] = {
-        "<gils>\n"
-        "  <title>My title</title>\n"
-        "</gils>\n",
-        0};
-
-void tst(int argc, char **argv)
+static void tst(int argc, char **argv)
 {
-    ZebraService zs = tl_start_up(0, argc, argv);
-    ZebraHandle  zh = zebra_open(zs, 0);
+    YAZ_CHECK(!zebra_start("xxxxpoiasdfasfd.cfg")); /* should fail */
 
-    YAZ_CHECK(tl_init_data(zh, myrec));
-    YAZ_CHECK(tl_query(zh, "@attr 1=title my", 1));
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 my", 1));
-    YAZ_CHECK(tl_query(zh, "@attr 1=title nope", 0));
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 nope", 0));
-    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 2=103 dummy", 1));
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=103 dummy", 1));
+    {
+        ZebraService zs = tl_start_up(0, argc, argv);
+        ZebraHandle  zh = 0;        
+        YAZ_CHECK(zs);
 
-    YAZ_CHECK(tl_close_down(zh, zs));
+        if (zs)
+        {
+            zh = zebra_open(zs, 0);
+            YAZ_CHECK(zh);
+        }
+        
+        YAZ_CHECK(tl_close_down(zh, zs));
+    }
 }
 
 TL_MAIN

@@ -17,7 +17,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-/** rankingrecords.h - some test data for t9, and t10 */
+#include "testlib.h"
 
 const char *recs[] = {
         "<gils>\n"
@@ -49,7 +49,23 @@ const char *recs[] = {
     
         0 };
 
+static void tst(int argc, char **argv)
+{
+    ZebraService zs = tl_start_up(0, argc, argv);
+    ZebraHandle zh = zebra_open(zs, 0);
 
+    YAZ_CHECK(tl_init_data(zh, recs));
+    
+    YAZ_CHECK(tl_ranking_query(zh, "@attr 1=4 @attr 2=102 the",
+			       3, "first title", 936 ));
+    
+    YAZ_CHECK(tl_ranking_query(zh, "@attr 1=62 @attr 2=102 foo",
+			       3, "second title", 850 ));
+    
+    YAZ_CHECK(tl_close_down(zh, zs));
+}
+
+TL_MAIN
 /*
  * Local variables:
  * c-basic-offset: 4

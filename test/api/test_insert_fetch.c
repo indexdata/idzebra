@@ -17,7 +17,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-/* t4 - insert a small pile of records, search and fetch them */
+/* insert a small pile of records, search and fetch them */
 
 #include "testlib.h"
 

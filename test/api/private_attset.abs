@@ -2,8 +2,8 @@
 # for GILS version 2.
 #
 
-name t10
-attset t10.att
+name my_private_attset
+attset private_attset.att
 
 esetname F @
 
