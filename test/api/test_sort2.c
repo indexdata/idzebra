@@ -17,25 +17,34 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-#include "../api/testlib.h"
+#include "testlib.h"
+
+const char *myrec[] = {
+    "<sort2>\n"
+    "  <title>first computer</title>\n"
+    "</sort2>\n"
+    ,
+    "<sort2>\n"
+    "  <title>second computer</title>\n"
+    "</sort2>\n"
+    ,
+    "<sort2>\n"
+    "  <title>A third computer</title>\n"
+    "</sort2>\n"
+    ,
+    "<sort2>\n"
+    "  <title>the fourth computer</title>\n"
+    "</sort2>\n"
+    ,
+    0 };
 
 static void tst(int argc, char **argv)
 {
     ZebraService zs = tl_start_up("test_sort2.cfg", argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
-    char path[256];
     zint ids[5];
 
-    YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
-
-    zebra_init(zh);
-
-    YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
-    sprintf(path, "%.200s/test_sort2_rec.xml", tl_get_srcdir());
-    zebra_repository_update(zh, path);
-
-    YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
-    zebra_commit(zh);
+    YAZ_CHECK(tl_init_data(zh, myrec));
 
     ids[0] = 2;
     ids[1] = 5;

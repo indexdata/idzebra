@@ -19,6 +19,8 @@ test_special_elements
 test_zebra_fork
 test_safari
 test_sortindex
+test_sort1
+test_sort2
 *.mf
 *.LCK
 *.log

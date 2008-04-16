@@ -317,9 +317,9 @@ AC_OUTPUT([
   test/xpath/Makefile
   test/rusmarc/Makefile test/cddb/Makefile test/malxml/Makefile 
   test/mbox/Makefile
-  test/config/Makefile test/sort2/Makefile
+  test/config/Makefile
   test/xelm/Makefile
-  test/dmoz/Makefile test/sort/Makefile test/zsh/Makefile
+  test/dmoz/Makefile test/zsh/Makefile
   test/marcxml/Makefile test/charmap/Makefile test/codec/Makefile
   test/espec/Makefile
   test/filters/Makefile
