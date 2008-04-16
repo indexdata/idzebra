@@ -1,12 +1,12 @@
 
-check_PROGRAMS = sort1
+check_PROGRAMS = test_sort1
 
 TESTS = $(check_PROGRAMS)
 
-EXTRA_DIST = zebra.cfg default.idx string-hat.chr \
- rec1.xml rec2.xml rec3.xml rec4.xml zebra.cfg my.abs
+EXTRA_DIST = test_sort1.cfg test_sort1.idx test_sort1.chr \
+ test_sort1_rec.xml sort1.abs
 
-sort1_SOURCES = sort1.c
+test_sort1_SOURCES = test_sort1.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 

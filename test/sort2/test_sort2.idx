@@ -7,14 +7,14 @@
 index w
 completeness 0
 position 1
-charmap string.chr
+charmap test_sort2.chr
 
 # Phrase index
 # Used if completeness is 'complete {sub}field' (@attr 6=2, @attr 6=1)
 # and structure is word/phrase/word-list/free-form-text/document-text
 index p
 completeness 1
-charmap string.chr
+charmap test_sort2.chr
 
 # URX (URL) index
 # Used if structure=urx (@attr 4=104)
@@ -47,12 +47,8 @@ index d
 completeness 0
 charmap @
 
-# Sort register as usual but specify another map : string-hat.
+# Sort, with prefixes to ignore
 sort s
 completeness 1
-charmap string-hat.chr
+charmap test_sort2.chr
 
-# Sort register with no map
-sort S
-completeness 1
-charmap string.chr

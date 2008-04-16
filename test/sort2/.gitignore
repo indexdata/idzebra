@@ -7,7 +7,7 @@ tmp?
 *.log
 .libs
 .deps
-t[0-9]
+test_sort2
 *.lo
 *.o
 *~
