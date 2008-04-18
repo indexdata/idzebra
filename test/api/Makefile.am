@@ -12,7 +12,7 @@ check_PROGRAMS = test_start_stop test_result_sets \
 TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST=zebra.cfg test_trunc.cfg test_private_attset.cfg \
-	private_attset.att private_attset.abs \
+	private_attset.att private_attset.abs test_search.abs \
 	test_zebra_fork.cfg \
 	test_icu_indexing.cfg test_icu_indexing.idx \
 	test_safari.cfg test_sortindex.cfg \

@@ -1,0 +1,9 @@
+name my
+reference WAIS-schema
+attset bib1.att
+
+esetname B @
+esetname F @
+
+xelm /test_search/title		title:p,title:w
+xelm /test_search/date		date:d

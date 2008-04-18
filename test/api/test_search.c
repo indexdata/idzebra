@@ -30,8 +30,9 @@ const char *myrec[] = {
         "    <East-Bounding-Coordinate> -102 </East-Bounding-Coordinate>\n"
         "    <North-Bounding-Coordinate>  49 </North-Bounding-Coordinate>\n"
         "    <South-Bounding-Coordinate>  31 </South-Bounding-Coordinate>\n"
-        "  </Bounding-Coordinates></Spatial-Domain>"
+        "  </Bounding-Coordinates></Spatial-Domain>\n"
         "</gils>\n",
+
         "<gils>\n<title>My x title</title>\n"
         "  <abstract>second test with two coord sets</abstract>\n"
         "  <Spatial-Domain><Bounding-Coordinates>\n"
@@ -45,9 +46,15 @@ const char *myrec[] = {
         "    <East-Bounding-Coordinate> -108 </East-Bounding-Coordinate>\n"
         "    <North-Bounding-Coordinate>  41 </North-Bounding-Coordinate>\n"
         "    <South-Bounding-Coordinate>  25 </South-Bounding-Coordinate>\n"
-        "  </Bounding-Coordinates></Spatial-Domain>"
+        "  </Bounding-Coordinates></Spatial-Domain>\n"
         "</gils>\n",
+
         "<gils>\n<title>My title x</title>\n</gils>\n" ,
+
+        "<test_search>\n"
+        " <date>2107-09-19 00:00:00</date>\n"
+        "</test_search>\n"
+        ,
 	0} ;
 	
 static void tst(int argc, char **argv)
@@ -155,7 +162,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 title", 2));
 
     /* always-matches relation */
-    YAZ_CHECK(tl_query(zh, "@attr 1=_ALLRECORDS @attr 2=103 {ym}", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=_ALLRECORDS @attr 2=103 {ym}", 4));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=103 {x my}", 3));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=1 @attr 2=103 {x my}", 0, 114));
 
@@ -313,7 +320,19 @@ static void tst(int argc, char **argv)
     /* N=41 and N=49 get only rec2 */
     YAZ_CHECK(tl_query(zh, "@attr 2=3 @attr gils 1=2040 @attr 4=109 \"41 49\" ", 1));
 
+
+    /* = */
+    YAZ_CHECK(tl_query(zh, "@attr 1=30 @attr 4=5 @attr 2=3 {2107-09-19 00:00:00}", 1));
+    /* < */
+    YAZ_CHECK(tl_query(zh, "@attr 1=30 @attr 4=5 @attr 2=1 {2107-09-19 00:00:00}", 0));
+    /* <= */
+    YAZ_CHECK(tl_query(zh, "@attr 1=30 @attr 4=5 @attr 2=2 {2107-09-19 00:00:00}", 1));
+    /* >= */
+    YAZ_CHECK(tl_query(zh, "@attr 1=30 @attr 4=5 @attr 2=4 {2107-09-19 00:00:00}", 1));
+    /* > */
+    YAZ_CHECK(tl_query(zh, "@attr 1=30 @attr 4=5 @attr 2=5 {2107-09-19 00:00:00}", 0));
     
+
     YAZ_CHECK(tl_close_down(zh, zs));
 }
 
