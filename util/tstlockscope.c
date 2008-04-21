@@ -25,11 +25,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <yaz/log.h>
 #include <yaz/test.h>
-#if YAZ_POSIX_THREADS
 #include <fcntl.h>
+#if YAZ_POSIX_THREADS
+#include <pthread.h>
 #endif
 
 int fd;
