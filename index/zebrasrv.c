@@ -804,6 +804,7 @@ int main(int argc, char **argv)
     sob->bend_start = bend_start;
     sob->bend_stop = bend_stop;
 #ifdef WIN32
+    strcpy(sob->service_name, "zebrasrv");
     strcpy(sob->service_display_name, "Zebra Server");
 #endif
     statserv_setcontrol(sob);
