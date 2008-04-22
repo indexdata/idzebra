@@ -109,10 +109,10 @@ uninstall-hook:
 	rm -r $(DESTDIR)$(docdir)
 
 domfilter.png: domfilter.svg
-	inkscape --export-png=$@ --export-width=600 $?
+	unset DISPLAY; inkscape --export-png=$@ --export-width=600 $?
 
 domfilter.eps: domfilter.svg
-	inkscape --export-eps=$@ --export-bbox-page $?
+	unset DISPLAY; inkscape --export-eps=$@ --export-bbox-page $?
 
 .eps.pdf:
 	epstopdf -hires $?
