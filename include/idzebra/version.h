@@ -24,9 +24,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 YAZ_BEGIN_CDECL
 
-#define ZEBRAVER "2.0.28"
+#define ZEBRAVER "2.0.30"
 
-#define ZEBRA_FILEVERSION 2,0,28,1
+#define ZEBRA_FILEVERSION 2,0,30,1
 
 /** \brief Returns Zebra version and system info.
     \param version_str buffer for version (at least 16 bytes)

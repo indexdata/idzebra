@@ -1,3 +1,9 @@
+--- 2.0.30 2008/05/14
+
+Changed service name for Windows. Bug #978.
+
+Fixed the alwaysmatches including _ALLRECORDS for ICU term indexing. Bug #2139.
+
 --- 2.0.28 2008/04/03
 
 Handle right-truncation for ICU normalized terms.
