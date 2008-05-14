@@ -69,7 +69,7 @@ rm -fr ${RPM_BUILD_ROOT}
 /usr/share/doc/idzebra-2.0
 /usr/share/man/*/zebraidx-*
 /usr/share/man/*/zebrasrv-*
-
+/usr/share/idzebra-2.0-examples
 %files -n lib%{name}
 /usr/lib/*.so.*
 
