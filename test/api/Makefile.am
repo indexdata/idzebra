@@ -7,7 +7,7 @@ check_PROGRAMS = test_start_stop test_result_sets \
 	test_rank test_private_attset \
 	test_scan test_create_databases test_resources test_update_record \
 	test_zebra_fork test_special_elements test_icu_indexing \
-	test_sortindex test_safari test_sort1 test_sort2
+	test_sortindex test_safari test_sort1 test_sort2 test_sortidx
 
 TESTS = $(check_PROGRAMS)
 
@@ -42,6 +42,7 @@ test_sortindex_SOURCES = test_sortindex.c
 test_safari_SOURCES = test_safari.c 
 test_sort1_SOURCES = test_sort1.c
 test_sort2_SOURCES = test_sort2.c
+test_sortidx_SOURCES = test_sortidx.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 

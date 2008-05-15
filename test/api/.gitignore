@@ -21,6 +21,7 @@ test_safari
 test_sortindex
 test_sort1
 test_sort2
+test_sortidx
 *.mf
 *.LCK
 *.log

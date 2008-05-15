@@ -34,7 +34,7 @@ const char *myrec[] = {
     ,
     "<sort1>\n"
     "  <title>3rd computer</title>\n"
-"  <dateTime>a^3</dateTime>\n"
+    "  <dateTime>a^3</dateTime>\n"
     "  <cost>15</cost>\n"
     "</sort1>\n"
     ,

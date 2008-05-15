@@ -47,7 +47,7 @@ static void sort_term_log_item(int level, const void *b, const char *txt)
     yaz_log(level, "%s " ZINT_FORMAT " %s", txt, a1.sysno, a1.term);
 }
 
-int sort_term_compare(const void *a, const void *b)
+static int sort_term_compare(const void *a, const void *b)
 {
     struct sort_term a1, b1;
 
@@ -61,12 +61,12 @@ int sort_term_compare(const void *a, const void *b)
     return 0;
 }
 
-void *sort_term_code_start(void)
+static void *sort_term_code_start(void)
 {
     return 0;
 }
 
-void sort_term_encode(void *p, char **dst, const char **src)
+static void sort_term_encode(void *p, char **dst, const char **src)
 {
     struct sort_term a1;
 
@@ -78,7 +78,7 @@ void sort_term_encode(void *p, char **dst, const char **src)
     *dst += strlen(a1.term) + 1;
 }
 
-void sort_term_decode(void *p, char **dst, const char **src)
+static void sort_term_decode(void *p, char **dst, const char **src)
 {
     struct sort_term a1;
 
@@ -91,14 +91,13 @@ void sort_term_decode(void *p, char **dst, const char **src)
     *dst += sizeof(a1);
 }
 
-void sort_term_code_reset(void *p)
+static void sort_term_code_reset(void *p)
 {
 }
 
-void sort_term_code_stop(void *p)
+static void sort_term_code_stop(void *p)
 {
 }
-
 
 struct sort_term_stream {
     int no;
@@ -106,7 +105,7 @@ struct sort_term_stream {
     struct sort_term st;
 };
 
-int sort_term_code_read(void *vp, char **dst, int *insertMode)
+static int sort_term_code_read(void *vp, char **dst, int *insertMode)
 {
     struct sort_term_stream *s = (struct sort_term_stream *) vp;
 
@@ -121,7 +120,6 @@ int sort_term_code_read(void *vp, char **dst, int *insertMode)
     return 1;
 }
 
-        
 struct sortFileHead {
     zint sysno_max;
 };
@@ -190,6 +188,7 @@ void zebra_sort_close(zebra_sort_index_t si)
 int zebra_sort_type(zebra_sort_index_t si, int id)
 {
     int isam_block_size = 4096;
+
     ISAMC_M method;
     char fname[80];
     struct sortFile *sf;
@@ -204,14 +203,6 @@ int zebra_sort_type(zebra_sort_index_t si, int id)
     sf = (struct sortFile *) xmalloc(sizeof(*sf));
     sf->id = id;
 
-    method.compare_item = sort_term_compare;
-    method.log_item = sort_term_log_item;
-    method.codec.start = sort_term_code_start;
-    method.codec.encode = sort_term_encode;
-    method.codec.decode = sort_term_decode;
-    method.codec.reset = sort_term_code_reset;
-    method.codec.stop = sort_term_code_stop;
-   
     switch(si->type)
     {
     case ZEBRA_SORT_TYPE_FLAT:
@@ -236,8 +227,15 @@ int zebra_sort_type(zebra_sort_index_t si, int id)
         }
         break;
     case ZEBRA_SORT_TYPE_ISAMB:
-        sprintf(fname, "sortb%d", id);
+        method.compare_item = sort_term_compare;
+        method.log_item = sort_term_log_item;
+        method.codec.start = sort_term_code_start;
+        method.codec.encode = sort_term_encode;
+        method.codec.decode = sort_term_decode;
+        method.codec.reset = sort_term_code_reset;
+        method.codec.stop = sort_term_code_stop;
         
+        sprintf(fname, "sortb%d", id);
         sf->u.isamb = isamb_open2(si->bfs, fname, si->write_flag, &method,
                                   /* cache */ 0,
                                   /* no_cat */ 1, &isam_block_size,
@@ -358,12 +356,13 @@ void zebra_sort_add(zebra_sort_index_t si, const char *buf, int len)
     }
 }
 
-void zebra_sort_read(zebra_sort_index_t si, char *buf)
+int zebra_sort_read(zebra_sort_index_t si, char *buf)
 {
     int r;
     struct sortFile *sf = si->current_file;
 
     assert(sf);
+    assert(sf->u.bf);
 
     switch(si->type)
     {
@@ -371,44 +370,34 @@ void zebra_sort_read(zebra_sort_index_t si, char *buf)
         r = bf_read(sf->u.bf, si->sysno+1, 0, 0, buf);
         if (!r)
             memset(buf, 0, SORT_IDX_ENTRYSIZE);
+        if (buf[0] == 0)
+            return 0;
         break;
     case ZEBRA_SORT_TYPE_ISAMB:
         memset(buf, 0, SORT_IDX_ENTRYSIZE);
-        assert(sf->u.bf);
-        if (sf->u.bf)
+        if (!sf->isam_p)
+            return 0;
+        else
         {
             struct sort_term st, st_untilbuf;
 
             if (!sf->isam_pp)
                 sf->isam_pp = isamb_pp_open(sf->u.isamb, sf->isam_p, 1);
             if (!sf->isam_pp)
-                return;
+                return 0;
 
-#if 0
-            while (1)
-            {
-                r = isamb_pp_read(sf->isam_pp, &st);
-                if (!r)
-                    break;
-                if (st.sysno == si->sysno)
-                    break;
-                yaz_log(YLOG_LOG, "Received sysno=" ZINT_FORMAT " looking for "
-                        ZINT_FORMAT, st.sysno, si->sysno);
-            }
-#else
             st_untilbuf.sysno = si->sysno;
             st_untilbuf.term[0] = '\0';
             r = isamb_pp_forward(sf->isam_pp, &st, &st_untilbuf);
             if (!r)
-                return;
-#endif
+                return 0;
             if (r)
             {
                 if (st.sysno != si->sysno)
                 {
                     yaz_log(YLOG_LOG, "Received sysno=" ZINT_FORMAT " looking for "
                             ZINT_FORMAT, st.sysno, si->sysno);
-                    return;
+                    return 0;
                 }
                 if (strlen(st.term) < SORT_IDX_ENTRYSIZE)
                     strcpy(buf, st.term);
@@ -418,6 +407,7 @@ void zebra_sort_read(zebra_sort_index_t si, char *buf)
         }
         break;
     }
+    return 1;
 }
 /*
  * Local variables:
