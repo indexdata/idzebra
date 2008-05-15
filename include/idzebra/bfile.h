@@ -53,7 +53,7 @@ BFiles bfs_create (const char *spec, const char *base);
     \param bfiles block files handle
    
     The files in the block files collection are not deleted. Only the
-    handle is 
+    handle is freed.
 */
 void bfs_destroy (BFiles bfiles);
 
