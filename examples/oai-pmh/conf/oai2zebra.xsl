@@ -25,9 +25,11 @@
        z:schema="{$schema}"
        z:size="{$size}"
        >
+     <!--
      <title>
        <xsl:value-of select="oai:record/oai:metadata/oai_dc:dc/dc:title"/>
      </title>
+     -->
    </z:record>
 
  </xsl:template>
