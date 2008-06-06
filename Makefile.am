@@ -23,20 +23,6 @@ dist-hook:
 			cp $$i $(distdir)/win; \
 		fi; \
 	done
-	mkdir $(distdir)/debian
-	cp $(srcdir)/debian/*.install $(distdir)/debian
-	cp $(srcdir)/debian/*.manpages $(distdir)/debian
-	cp $(srcdir)/debian/*.postinst $(distdir)/debian
-	cp $(srcdir)/debian/*.prerm $(distdir)/debian
-	cp $(srcdir)/debian/changelog $(distdir)/debian
-	cp $(srcdir)/debian/compat $(distdir)/debian
-	cp $(srcdir)/debian/control $(distdir)/debian
-	cp $(srcdir)/debian/copyright $(distdir)/debian
-	cp $(srcdir)/debian/rules $(distdir)/debian
-
-cvs2cl:
-	cvs2cl
-
 
 dox:
 	doxygen
@@ -46,4 +32,4 @@ showdox:
 	firefox -new-window file:///`pwd`/$(top_srcdir)/dox/html/index.html &
 
 
-.PHONY: cvs2cl dox showdox
+.PHONY: dox showdox
