@@ -44,91 +44,91 @@
   <!-- DC specific indexing templates -->
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:title 
                     | oai:record/oai:metadata/oai_dc:dc/oai_dc:title">
-    <z:index name="any:w dc_title:w dc_title:p">
+    <z:index name="any:w title:w title:p">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:creator
                     | oai:record/oai:metadata/oai_dc:dc/oai_dc:creator">
-    <z:index name="any:w dc_creator:w dc_creator:p">
+    <z:index name="any:w author:w author:p">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:subject
                     | oai:record/oai:metadata/oai_dc:dc/oai_dc:subject">
-    <z:index name="any:w dc_subject:w dc_subject:p">
+    <z:index name="any:w subject-heading:w subject-heading:p">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:description
                     | oai:record/oai:metadata/oai_dc:dc/oai_dc:description">
-    <z:index name="any:w dc_description:w">
+    <z:index name="any:w description:w">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:contributor
                     | oai:record/oai:metadata/oai_dc:dc/oai_dc:contributor">
-    <z:index name="any:w dc_contributor:w dc_contributor:p">
+    <z:index name="any:w contributor:w contributor:p">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:publisher
                     | oai:record/oai:metadata/oai_dc:dc/oai_dc:publisher">
-    <z:index name="dc_publisher:p dc_publisher:w">
+    <z:index name="publisher:p publisher:w">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:date
                     | oai:record/oai:metadata/oai_dc:dc/oai_dc:date">
-    <z:index name="dc_date:0">
+    <z:index name="date:0">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:format
                     | oai:record/oai:metadata/oai_dc:dc/oai_dc:format">
-    <z:index name="dc_format:0">
+    <z:index name="format:0">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:identifier
                     | oai:record/oai:metadata/oai_dc:dc/oai_dc:identifier">
-    <z:index name="dc_identifier:0">
+    <z:index name="identifier:0">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:source
                     | oai:record/oai:metadata/oai_dc:dc/oai_dc:source">
-    <z:index name="dc_source:0">
+    <z:index name="source:0">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:language
                     | oai:record/oai:metadata/oai_dc:dc/oai_dc:language">
-    <z:index name="dc_language:w">
+    <z:index name="language:w">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:relation
                     | oai:record/oai:metadata/oai_dc:dc/oai_dc:relation">
-    <z:index name="dc_relation:0">
+    <z:index name="relation:0">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
 
   <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:rights
                     | oai:record/oai:metadata/oai_dc:dc/oai_dc:rights">
-    <z:index name="dc_rights:p dc_rights:w">
+    <z:index name="rights:p rights:w">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>
