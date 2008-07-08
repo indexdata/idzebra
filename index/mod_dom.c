@@ -218,18 +218,6 @@ static int attr_content(struct _xmlAttr *attr, const char *name,
     return 0;
 }
 
-static int attr_content_xml(struct _xmlAttr *attr, const char *name,
-                            const char **dst_content)
-{
-    if (0 == XML_STRCMP(attr->name, name) && attr->children 
-        && attr->children->type == XML_TEXT_NODE)
-    {
-        *dst_content = (const char *) (attr->children->content);
-        return 1;
-    }
-    return 0;
-}
-
 static void destroy_xsp(struct convert_s *c)
 {
     while (c)
@@ -388,7 +376,7 @@ static int process_meta(struct filter_info *tinfo, xmlDocPtr doc, xmlNodePtr nod
             struct _xmlAttr *attr;      
             for (attr = node->properties; attr; attr = attr->next)
             {
-                if (attr_content_xml(attr, "element_set_name", &element_set_name))
+                if (attr_content(attr, "element_set_name", &element_set_name))
                     ;
                 else
                 {
@@ -968,7 +956,7 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
             struct _xmlAttr *attr;      
             for (attr = node->properties; attr; attr = attr->next)
             {
-                if (attr_content_xml(attr, "name", &index_p))
+                if (attr_content(attr, "name", &index_p))
                 {
                     index_value_of(tinfo, extctr, recword, node, index_p);
                 }  
@@ -989,11 +977,11 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
             struct _xmlAttr *attr;
             for (attr = node->properties; attr; attr = attr->next)
             {
-                if (attr_content_xml(attr, "id", &id_p))
+                if (attr_content(attr, "id", &id_p))
                     ;
-                else if (attr_content_xml(attr, "rank", &rank_p))
+                else if (attr_content(attr, "rank", &rank_p))
                     ;
-                else if (attr_content_xml(attr, "type", &type_p))
+                else if (attr_content(attr, "type", &type_p))
                     ;
                 else
                 {
