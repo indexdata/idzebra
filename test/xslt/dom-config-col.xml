@@ -5,6 +5,13 @@
   <retrieve name="F">
     <xslt stylesheet="id.xsl"/>
   </retrieve>
+  <retrieve name="B">
+    <xslt stylesheet="dom-brief.xsl"/>
+  </retrieve>
+  <retrieve name="snippet">
+    <xslt stylesheet="dom-snippet.xsl"/>
+    <meta/>
+  </retrieve>
   <input syntax="xml">
     <xmlreader level="1"/>
   </input>

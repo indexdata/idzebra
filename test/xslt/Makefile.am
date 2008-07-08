@@ -12,6 +12,8 @@ EXTRA_DIST= \
      dom-index-pi.xsl \
      dom-index-skipped.xsl \
      dom-config-del.xml \
+     dom-brief.xsl \
+     dom-snippet.xsl \
      del-col.xml \
      id.xsl \
      index.xsl \

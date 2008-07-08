@@ -68,10 +68,32 @@ void tst(int argc, char **argv)
     /* testing XMLREADER input with PI stylesheet */ 
     zh = index_some(zs, "dom.dom-config-col.xml", "marc-col.xml");
     YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 3));
+
+    /* fetch first using dom-brief.xsl */
+    YAZ_CHECK_EQ(tl_fetch_first_compare(
+                     zh, "B", yaz_oid_recsyn_xml,
+                     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                     "<title>How to program a computer</title>\n"),
+                 ZEBRA_OK);
+    /* fetch first using dom-snippets.xsl */
+    YAZ_CHECK_EQ(tl_fetch_first_compare(
+                     zh, "snippet", yaz_oid_recsyn_xml,
+                     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                     "<root>\n"
+                     "  <z:meta xmlns:z=\"http://indexdata.com/zebra-2.0\" element_set_name=\"snippet\">"
+                     "<record xmlns=\"http://www.indexdata.com/zebra/\">\n"
+                     "  <snippet name=\"title\" type=\"w\">How to program a <s>computer</s></snippet>\n"
+                     "</record></z:meta>\n"
+                     "  <title>How to program a computer</title>\n"
+                     "</root>\n"),
+                 ZEBRA_OK);
+
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 1));
+    
     YAZ_CHECK(tl_query_x(zh, "@attr 1=titl computer", 0, 114));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=4 computer", 0, 121));
     zebra_close(zh);
+
 
     /* testing XMLREADER input with ELEMENT stylesheet */ 
     zh = index_some(zs, "dom.dom-config-one.xml", "marc-one.xml");
