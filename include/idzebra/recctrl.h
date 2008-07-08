@@ -134,6 +134,13 @@ struct recRetrieveCtrl {
     int        rec_len;
     int        diagnostic;
     char *     addinfo;
+    
+    /* special fetch to be included in retrieved response (say snippets) */
+    void *handle;
+    int (*special_fetch)(void *handle, const char *esn,
+                         const Odr_oid *input_format,
+                         const Odr_oid **output_format,
+                         WRBUF result, WRBUF addinfo);
 };
 
 typedef struct recType *RecType;
