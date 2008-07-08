@@ -99,8 +99,8 @@ struct filter_info {
     char *fname;
     char *full_name;
     const char *profile_path;
-    ODR odr_record;
-    ODR odr_config;
+    NMEM nmem_record;
+    NMEM nmem_config;
     xmlDocPtr doc_config;
     struct filter_extract *extract;
     struct filter_retrieve *retrieve_list;
@@ -146,9 +146,9 @@ static void dom_log(int level, struct filter_info *tinfo, xmlNodePtr ptr,
 
 
 static void set_param_str(const char **params, const char *name,
-			  const char *value, ODR odr)
+			  const char *value, NMEM nmem)
 {
-    char *quoted = odr_malloc(odr, 3 + strlen(value));
+    char *quoted = nmem_malloc(nmem, 3 + strlen(value));
     sprintf(quoted, "'%s'", value);
     while (*params)
 	params++;
@@ -158,9 +158,9 @@ static void set_param_str(const char **params, const char *name,
 }
 
 static void set_param_int(const char **params, const char *name,
-			  zint value, ODR odr)
+			  zint value, NMEM nmem)
 {
-    char *quoted = odr_malloc(odr, 30); /* 25 digits enough for 2^64 */
+    char *quoted = nmem_malloc(nmem, 30); /* 25 digits enough for 2^64 */
     while (*params)
 	params++;
     sprintf(quoted, "'" ZINT_FORMAT "'", value);
@@ -175,8 +175,8 @@ static void *filter_init(Res res, RecType recType)
     tinfo->fname = 0;
     tinfo->full_name = 0;
     tinfo->profile_path = 0;
-    tinfo->odr_record = odr_createmem(ODR_ENCODE);
-    tinfo->odr_config = odr_createmem(ODR_ENCODE);
+    tinfo->nmem_record = nmem_create();
+    tinfo->nmem_config = nmem_create();
     tinfo->extract = 0;
     tinfo->retrieve_list = 0;
     tinfo->input_list = 0;
@@ -258,7 +258,7 @@ static void destroy_dom(struct filter_info *tinfo)
         xmlFreeDoc(tinfo->doc_config);
         tinfo->doc_config = 0;
     }
-    odr_reset(tinfo->odr_config);
+    nmem_reset(tinfo->nmem_config);
 }
 
 static ZEBRA_RES parse_convert(struct filter_info *tinfo, xmlNodePtr ptr,
@@ -270,7 +270,7 @@ static ZEBRA_RES parse_convert(struct filter_info *tinfo, xmlNodePtr ptr,
         {
             struct _xmlAttr *attr;
             struct convert_s *p 
-                = odr_malloc(tinfo->odr_config, sizeof(*p));
+                = nmem_malloc(tinfo->nmem_config, sizeof(*p));
             
             p->next = 0;
             p->stylesheet = 0;
@@ -377,7 +377,7 @@ static struct filter_input *new_input(struct filter_info *tinfo, int type)
     struct filter_input **np = &tinfo->input_list;
     for (;*np; np = &(*np)->next)
         ;
-    p = *np = odr_malloc(tinfo->odr_config, sizeof(*p));
+    p = *np = nmem_malloc(tinfo->nmem_config, sizeof(*p));
     p->next = 0;
     p->syntax = 0;
     p->name = 0;
@@ -476,13 +476,13 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
     xmlNodePtr ptr;
     xmlDocPtr doc;
 
-    tinfo->fname = odr_strdup(tinfo->odr_config, fname);
+    tinfo->fname = nmem_strdup(tinfo->nmem_config, fname);
     
     if (yaz_filepath_resolve(tinfo->fname, tinfo->profile_path, 
                              NULL, tmp_full_name))
-        tinfo->full_name = odr_strdup(tinfo->odr_config, tmp_full_name);
+        tinfo->full_name = nmem_strdup(tinfo->nmem_config, tmp_full_name);
     else
-        tinfo->full_name = odr_strdup(tinfo->odr_config, tinfo->fname);
+        tinfo->full_name = nmem_strdup(tinfo->nmem_config, tinfo->fname);
     
     yaz_log(YLOG_LOG, "%s dom filter: "
             "loading config file %s", tinfo->fname, tinfo->full_name);
@@ -520,7 +520,7 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
             */
             struct _xmlAttr *attr;
             struct filter_extract *f =
-                odr_malloc(tinfo->odr_config, sizeof(*f));
+                nmem_malloc(tinfo->nmem_config, sizeof(*f));
             
             tinfo->extract = f;
             f->name = 0;
@@ -549,7 +549,7 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
             struct _xmlAttr *attr;
             struct filter_retrieve **fp = &tinfo->retrieve_list;
             struct filter_retrieve *f =
-                odr_malloc(tinfo->odr_config, sizeof(*f));
+                nmem_malloc(tinfo->nmem_config, sizeof(*f));
             
             while (*fp)
                 fp = &(*fp)->next;
@@ -585,7 +585,7 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
               </retrieve>
             */
             struct filter_store *f =
-                odr_malloc(tinfo->odr_config, sizeof(*f));
+                nmem_malloc(tinfo->nmem_config, sizeof(*f));
             
             tinfo->store = f;
             f->convert = 0;
@@ -682,8 +682,8 @@ static void filter_destroy(void *clientData)
 {
     struct filter_info *tinfo = clientData;
     destroy_dom(tinfo);
-    odr_destroy(tinfo->odr_config);
-    odr_destroy(tinfo->odr_record);
+    nmem_destroy(tinfo->nmem_config);
+    nmem_destroy(tinfo->nmem_record);
     xfree(tinfo);
 }
 
@@ -776,16 +776,16 @@ static void index_value_of(struct filter_info *tinfo,
                 /* actually indexing the text given */
 
                 recword->index_name = (const char *)index;
-                if (type && *type)
+                if (*type)
                     recword->index_type = (const char *) type;
 
                 /* writing debug out */
                 if (extctr->flagShowRecords)
                     dom_log(YLOG_LOG, tinfo, 0, 
                             "INDEX '%s:%s' '%s'", 
-                            index ? (const char *) index : "null",
-                            type ? (const char *) type : "null", 
-                            text ? (const char *) text : "null");
+                            (const char *) index,
+                            (const char *) type, 
+                            (const char *) text);
                 
                 (extctr->tokenAdd)(recword);
 
@@ -1075,7 +1075,7 @@ static int convert_extract_doc(struct filter_info *tinfo,
 
     /* we actuallu have a document which needs to be processed further */
     params[0] = 0;
-    set_param_str(params, "schema", zebra_dom_ns, tinfo->odr_record);
+    set_param_str(params, "schema", zebra_dom_ns, tinfo->nmem_record);
 
     if (p && p->flagShowRecords)
     {
@@ -1297,7 +1297,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
     if (!input)
         return RECCTRL_EXTRACT_ERROR_GENERIC;
     
-    odr_reset(tinfo->odr_record);
+    nmem_reset(tinfo->nmem_record);
 
     if (p->setStoreData == 0)
         return extract_xml_full(tinfo, input, p);
@@ -1361,25 +1361,25 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     }
 
     params[0] = 0;
-    set_param_int(params, "id", p->localno, p->odr);
+    set_param_int(params, "id", p->localno, p->odr->mem);
     if (p->fname)
-	set_param_str(params, "filename", p->fname, p->odr);
+	set_param_str(params, "filename", p->fname, p->odr->mem);
     if (p->staticrank >= 0)
-	set_param_int(params, "rank", p->staticrank, p->odr);
+	set_param_int(params, "rank", p->staticrank, p->odr->mem);
 
     if (esn)
-        set_param_str(params, "schema", esn, p->odr);
+        set_param_str(params, "schema", esn, p->odr->mem);
     else
         if (retrieve->name)
-            set_param_str(params, "schema", retrieve->name, p->odr);
+            set_param_str(params, "schema", retrieve->name, p->odr->mem);
         else if (retrieve->identifier)
-            set_param_str(params, "schema", retrieve->identifier, p->odr);
+            set_param_str(params, "schema", retrieve->identifier, p->odr->mem);
         else
-            set_param_str(params, "schema", "", p->odr);
+            set_param_str(params, "schema", "", p->odr->mem);
 
     if (p->score >= 0)
-	set_param_int(params, "score", p->score, p->odr);
-    set_param_int(params, "size", p->recordSize, p->odr);
+	set_param_int(params, "score", p->score, p->odr->mem);
+    set_param_int(params, "size", p->recordSize, p->odr->mem);
 
     doc = xmlReadIO(ioread_ret, ioclose_ret, p /* I/O handler */,
 		    0 /* URL */,
