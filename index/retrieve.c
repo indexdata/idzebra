@@ -571,7 +571,7 @@ static int snippet_fetch(
         /* for debugging purposes */
         yaz_log(YLOG_LOG, "---------------------------");
         yaz_log(YLOG_LOG, "REC SNIPPET:");
-        zebra_snippets_log(rec_snippet, YLOG_LOG, 1);
+        zebra_snippets_log(rec_snippets, YLOG_LOG, 1);
         yaz_log(YLOG_LOG, "---------------------------");
         yaz_log(YLOG_LOG, "HIT SNIPPET:");
         zebra_snippets_log(hit_snippet, YLOG_LOG, 1);
