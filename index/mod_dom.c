@@ -399,11 +399,11 @@ static int process_meta(struct filter_info *tinfo, xmlDocPtr doc, xmlNodePtr nod
                 if (ret == 0)
                 {
                     xmlDocPtr sub_doc = 
-                        xmlParseMemory(    wrbuf_buf(result), wrbuf_len(result));
+                        xmlParseMemory(wrbuf_buf(result), wrbuf_len(result));
                     if (sub_doc)
                     {
                         xmlNodePtr t = xmlDocGetRootElement(sub_doc);
-                        xmlAddChild(node, xmlCopyNode(t, 1));
+                        xmlReplaceNode(node, xmlCopyNode(t, 1));
                         xmlFreeDoc(sub_doc);
                     }
                 }
