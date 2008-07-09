@@ -9,7 +9,7 @@
 
   <xsl:template match="/">
     <root>
-    <z:meta element_set_name="snippet"/>
+    <z:meta name="snippet"/>
     <xsl:apply-templates/>
     </root>
   </xsl:template>

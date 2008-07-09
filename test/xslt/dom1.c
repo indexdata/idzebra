@@ -80,7 +80,7 @@ void tst(int argc, char **argv)
                      zh, "snippet", yaz_oid_recsyn_xml,
                      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                      "<root>\n"
-                     "  <z:meta xmlns:z=\"http://indexdata.com/zebra-2.0\" element_set_name=\"snippet\">"
+                     "  <z:meta xmlns:z=\"http://indexdata.com/zebra-2.0\" name=\"snippet\">"
                      "<record xmlns=\"http://www.indexdata.com/zebra/\">\n"
                      "  <snippet name=\"title\" type=\"w\">How to program a <s>computer</s></snippet>\n"
                      "</record></z:meta>\n"

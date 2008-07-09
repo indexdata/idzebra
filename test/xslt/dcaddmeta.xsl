@@ -10,7 +10,7 @@
               xmlns:dc="http://purl.org/dc/elements/1.1/"
 	      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <xsl:copy-of select="*"/>
-      <z:meta element_set_name="snippet"/>
+      <z:meta name="snippet"/>
     </srw_dc:dc>
   </xsl:template>
 

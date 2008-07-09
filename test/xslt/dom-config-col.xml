@@ -10,7 +10,7 @@
   </retrieve>
   <retrieve name="snippet">
     <xslt stylesheet="dom-snippet.xsl"/>
-    <meta/>
+    <process-meta/>
   </retrieve>
   <input syntax="xml">
     <xmlreader level="1"/>

@@ -338,7 +338,7 @@ static ZEBRA_RES parse_convert(struct filter_info *tinfo, xmlNodePtr ptr,
             *l = p;
             l = &p->next;
         }
-        else if (!XML_STRCMP(ptr->name, "meta"))
+        else if (!XML_STRCMP(ptr->name, "process-meta"))
         {
             struct _xmlAttr *attr;
             struct convert_s *p = nmem_malloc(tinfo->nmem_config, sizeof(*p));
@@ -376,13 +376,12 @@ static int process_meta(struct filter_info *tinfo, xmlDocPtr doc, xmlNodePtr nod
             struct _xmlAttr *attr;      
             for (attr = node->properties; attr; attr = attr->next)
             {
-                if (attr_content(attr, "element_set_name", &element_set_name))
+                if (attr_content(attr, "name", &element_set_name))
                     ;
                 else
                 {
                     dom_log(YLOG_WARN, tinfo, node,
-                            "bad attribute @%s, expected @element_set_name",
-                            attr->name);
+                            "bad attribute @%s, expected @name", attr->name);
                 }
             }
             if (element_set_name)

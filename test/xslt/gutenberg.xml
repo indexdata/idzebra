@@ -12,7 +12,7 @@
 
   <retrieve name="dcsnippets">
     <xslt stylesheet="dcaddmeta.xsl"/>
-    <meta/>
+    <process-meta/>
   </retrieve>
 
   <retrieve name="index">
