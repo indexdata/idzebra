@@ -1,0 +1,22 @@
+<dom xmlns="http://indexdata.com/zebra-2.0">
+  <input>
+    <xmlreader level="0"/>
+    <xslt stylesheet="gpdctodc.xsl"/>
+  </input>
+
+  <extract>
+    <xslt stylesheet="dctoindex.xsl"/>
+  </extract>
+
+  <retrieve name="dc"/>
+
+  <retrieve name="dcsnippets">
+    <xslt stylesheet="dcaddmeta.xsl"/>
+    <meta/>
+  </retrieve>
+
+  <retrieve name="index">
+    <xslt stylesheet="dctoindex.xsl"/>
+  </retrieve>
+
+</dom>

@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE rdf:RDF [
+  <!ENTITY pg  "Project Gutenberg">
+  <!ENTITY lic "http://www.gutenberg.org/license">
+  <!ENTITY f   "http://www.gutenberg.org/dirs/">
+]>
+
+
+<pgterms:etext rdf:ID="etext1338"
+xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:dcterms="http://purl.org/dc/terms/"
+         xmlns:dcmitype="http://purl.org/dc/dcmitype/"
+         xmlns:cc="http://web.resource.org/cc/"
+         xmlns:pgterms="http://www.gutenberg.org/rdfterms/"
+         xml:base="http://www.gutenberg.org/feeds/catalog.rdf">
+  <dc:publisher>&pg;</dc:publisher>
+  <dc:title rdf:parseType="Literal">Selected Prose of Oscar Wilde</dc:title>
+  <dc:tableOfContents rdf:parseType="Literal">Preface by Robert Ross -- How They Struck a Contemporary -- The Quality of George Meredith -- Life in the Fallacious Model -- Life the Disciple -- Life the Plagiarist -- The Indispensable East -- The Influence of the Impressionists on Climate --</dc:tableOfContents>
+  <dc:creator rdf:parseType="Literal">Wilde, Oscar, 1854-1900</dc:creator>
+  <pgterms:friendlytitle rdf:parseType="Literal">Selected Prose of Oscar Wilde by Oscar Wilde</pgterms:friendlytitle>
+  <dc:language><dcterms:ISO639-2><rdf:value>en</rdf:value></dcterms:ISO639-2></dc:language>
+  <dc:subject>
+    <rdf:Bag>
+      <rdf:li><dcterms:LCSH><rdf:value>Essays</rdf:value></dcterms:LCSH></rdf:li>
+      <rdf:li><dcterms:LCSH><rdf:value>Short stories</rdf:value></dcterms:LCSH></rdf:li>
+    </rdf:Bag>
+  </dc:subject>
+  <dc:subject><dcterms:LCC><rdf:value>PR</rdf:value></dcterms:LCC></dc:subject>
+  <dc:created><dcterms:W3CDTF><rdf:value>1998-06-01</rdf:value></dcterms:W3CDTF></dc:created>
+  <dc:rights rdf:resource="&lic;" />
+</pgterms:etext>

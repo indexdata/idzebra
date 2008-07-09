@@ -14,6 +14,11 @@ EXTRA_DIST= \
      dom-config-del.xml \
      dom-brief.xsl \
      dom-snippet.xsl \
+     gutenberg.xml \
+     gutenberg-sample.xml \
+     dcaddmeta.xsl \
+     gpdctodc.xsl \
+     dctoindex.xsl \
      del-col.xml \
      id.xsl \
      index.xsl \

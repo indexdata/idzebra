@@ -126,6 +126,18 @@ void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=title 3", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=title b", 1));
 
+    zh = index_some(zs, "dom.gutenberg.xml", "gutenberg-sample.xml");
+    YAZ_CHECK(tl_query(zh, "selected", 1));
+
+    YAZ_CHECK_EQ(tl_fetch_first_compare(
+                     zh, "zebra::snippet", yaz_oid_recsyn_xml,
+                     "<record xmlns=\"http://www.indexdata.com/zebra/\">\n"
+                     "  <snippet name=\"any\" type=\"w\">etext/1338\n"
+                     "    Project Gutenberg\n"
+                     "    <s>Selected</s> Prose of Oscar Wilde</snippet>\n"
+                     "</record>"),
+                 ZEBRA_OK);
+
     zebra_close(zh);
 
 
