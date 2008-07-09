@@ -1151,7 +1151,6 @@ static int convert_extract_doc(struct filter_info *tinfo,
     int len_out;
     const char *params[10];
     xsltStylesheetPtr last_xsp = 0;
-    xmlDocPtr store_doc = 0;
 
     /* per default do not ingest record */
     tinfo->record_info_invoked = 0;
@@ -1179,30 +1178,35 @@ static int convert_extract_doc(struct filter_info *tinfo,
 #endif
     }
 
-    /* input conversion */
-    perform_convert(tinfo, p, 0, input->convert, params, &doc, 0);
-
-    if (tinfo->store)
-    {
-        /* store conversion */
-        store_doc = xmlCopyDoc(doc, 1);
-        perform_convert(tinfo, p, 0, tinfo->store->convert,
-                        params, &store_doc, &last_xsp);
-    }
-    
-    /* saving either store doc or original doc in case no store doc exists */
-    if (last_xsp)
-        xsltSaveResultToString(&buf_out, &len_out, 
-                               store_doc ? store_doc : doc, last_xsp);
-    else
-        xmlDocDumpMemory(store_doc ? store_doc : doc, &buf_out, &len_out);
-
     if (p->setStoreData)
-        (*p->setStoreData)(p, buf_out, len_out);
-    xmlFree(buf_out);
+    {
+        xmlDocPtr store_doc = 0;
 
-    if (store_doc)
-        xmlFreeDoc(store_doc);
+        /* input conversion */
+        perform_convert(tinfo, p, 0, input->convert, params, &doc, 0);
+        
+        if (tinfo->store)
+        {
+            /* store conversion */
+            store_doc = xmlCopyDoc(doc, 1);
+            perform_convert(tinfo, p, 0, tinfo->store->convert,
+                            params, &store_doc, &last_xsp);
+        }
+        
+        /* saving either store doc or original doc in case no store doc exists */
+        if (last_xsp)
+            xsltSaveResultToString(&buf_out, &len_out, 
+                                   store_doc ? store_doc : doc, last_xsp);
+        else
+            xmlDocDumpMemory(store_doc ? store_doc : doc, &buf_out, &len_out);
+        
+        if (p->setStoreData)
+            (*p->setStoreData)(p, buf_out, len_out);
+        xmlFree(buf_out);
+        if (store_doc)
+            xmlFreeDoc(store_doc);
+    }
+
 
     /* extract conversion */
     perform_convert(tinfo, p, 0, tinfo->extract->convert, params, &doc, 0);
@@ -1258,7 +1262,7 @@ static int extract_xml_split(struct filter_info *tinfo,
             
             ptr = xmlTextReaderExpand(input->u.xmlreader.reader);
             if (ptr)
-                {
+            {
                 /* we have a new document */
 
                 xmlNodePtr ptr2 = xmlCopyNode(ptr, 1);
