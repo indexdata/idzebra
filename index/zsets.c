@@ -106,7 +106,7 @@ static ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
     sort_sequence->num_specs = 10; /* FIXME - Hard-coded number */
     sort_sequence->specs = (Z_SortKeySpec **)
         nmem_malloc(nmem, sort_sequence->num_specs *
-                     sizeof(*sort_sequence->specs));
+                    sizeof(*sort_sequence->specs));
     for (i = 0; i<sort_sequence->num_specs; i++)
         sort_sequence->specs[i] = 0;
     
@@ -133,7 +133,7 @@ static ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
     else
     {
         res = resultSetSortSingle(zh, nmem, sset, rset,
-				   sort_sequence, &sort_status);
+                                  sort_sequence, &sort_status);
     }
     sset->rset = rset;
     return res;
@@ -193,7 +193,7 @@ void resultSetAddTerm(ZebraHandle zh, ZebraSet s, int reg_type,
         s->term_entries_max = 1000;
         s->term_entries =
             nmem_malloc(s->nmem, s->term_entries_max * 
-                         sizeof(*s->term_entries));
+                        sizeof(*s->term_entries));
         for (i = 0; i < s->term_entries_max; i++)
             s->term_entries[i].term = 0;
     }
@@ -252,10 +252,10 @@ ZebraSet resultSetAdd(ZebraHandle zh, const char *name, int ov)
 
         s->sort_info->entries = (struct zset_sort_entry **)
             xmalloc(sizeof(*s->sort_info->entries) *
-                     s->sort_info->max_entries);
+                    s->sort_info->max_entries);
         s->sort_info->all_entries = (struct zset_sort_entry *)
             xmalloc(sizeof(*s->sort_info->all_entries) *
-                     s->sort_info->max_entries);
+                    s->sort_info->max_entries);
         for (i = 0; i < s->sort_info->max_entries; i++)
             s->sort_info->entries[i] = s->sort_info->all_entries + i;
     }
@@ -293,7 +293,7 @@ ZebraSet resultSetGet(ZebraHandle zh, const char *name)
 		    int sort_status;
 		    yaz_log(log_level_resultsets, "resort %s", name);
 		    resultSetSortSingle(zh, nmem, s, s->rset, s->sortSpec,
-					 &sort_status);
+                                        &sort_status);
 		}
                 nmem_destroy(nmem);
             }
@@ -540,7 +540,7 @@ ZebraMetaRecord *zebra_meta_records_create(ZebraHandle zh, const char *name,
 }
 
 void zebra_meta_records_destroy(ZebraHandle zh, ZebraMetaRecord *records,
-				 int num)
+                                int num)
 {
     assert(zh); /* compiler shut up about unused arg */
     xfree(records);
@@ -548,8 +548,8 @@ void zebra_meta_records_destroy(ZebraHandle zh, ZebraMetaRecord *records,
 
 struct sortKeyInfo {
     int relation;
-    int *ord; // array of ord for each database searched
-    int *numerical;// array of ord for each database searched
+    int *ord; /* array of ord for each database searched */
+    int *numerical; /* array of ord for each database searched */
     const char *index_type;
 };
 
@@ -570,40 +570,49 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
         char *this_entry_buf = tmp_cmp_buf[i];
         memset(this_entry_buf, '\0', SORT_IDX_ENTRYSIZE);
         
-        // if the first database doesn't have a sort index, we assume none of them will
+        /* if the first database doesn't have a sort index, 
+           we assume none of them will */
         if (criteria[i].ord[0] != -1)
         {
-            // now make a best guess for the database in which we think the record is located
-            // if its not in our best guess, try the other databases one by one, till we had them all
-            scan_db=*cached_success_db;
-            scan_count=0;
+            /* now make a best guess for the database in which we think
+               the record is located if its not in our best guess, try the
+               other databases one by one, till we had them all */
+            scan_db = *cached_success_db;
+            scan_count = 0;
             
-            while(1){
+            while (1)
+            {
                 scan_count++;
-                if(scan_count>numbases){
-                    // well...we scanned all databases and still nothing...give up
+                if (scan_count>numbases)
+                {
+                    /* well...we scanned all databases and still nothing...give up */
                     yaz_log(log_level_sort, "zebra_sort_read failed (record not found in indices)");
                     break;
                 }
                 
-                // the criteria[i].ord is the file id of the sort index
+                /* the criteria[i].ord is the file id of the sort index */
                 yaz_log(log_level_sort, "pre zebra_sort_type ord is %d", criteria[i].ord[scan_db]);
                 zebra_sort_type(zh->reg->sort_index, criteria[i].ord[scan_db]);
-                if(zebra_sort_read(zh->reg->sort_index, this_entry_buf)){
-                    // allright, found it
-                    // cache this db so we start trying from this db for next record
+                if (zebra_sort_read(zh->reg->sort_index, this_entry_buf))
+                {
+                    /* allright, found it */
+                    /* cache this db so we start trying from this db 
+                       for next record */
                     *cached_success_db=scan_db;
                     break;
-                }else{
+                }
+                else
+                {
                     yaz_log(log_level_sort, "record not found in database, trying next one");
                     scan_db++;
-                    if(scan_db>=numbases){
-                      scan_db=0;
-                    }
+                    if (scan_db>=numbases)
+                        scan_db=0;
                 }
             }
             
-        }else{
+        }
+        else
+        {
             yaz_log(log_level_sort, "criteria[i].ord is -1 so not reading from sort index");
         }
     }
@@ -621,10 +630,12 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
                 char this_entry_org[1024];
                 char other_entry_org[1024];
                 double diff;
-                // when searching multiple databases, we use the index type of
-                // the first one. So if they differ between databases, we have a problem here
-                // we could store the index_type for each database, but if we didn't find the
-                // record in any sort index, then we still don't know to which database it belongs.
+                /* when searching multiple databases, we use the index
+                   type of the first one. So if they differ between
+                   databases, we have a problem here we could store the
+                   index_type for each database, but if we didn't find the
+                   record in any sort index, then we still don't know to
+                   which database it belongs. */
                 const char *index_type = criteria[j].index_type;
                 zebra_term_untrans(zh, index_type, this_entry_org,
                                    this_entry_buf);
@@ -644,7 +655,8 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
                 rel = memcmp(this_entry_buf, other_entry_buf,
                              SORT_IDX_ENTRYSIZE);
             }
-            // when the compare is equal, continue to next criteria, else break out
+            /* when the compare is equal, continue to next criteria, 
+               else break out */
             if (rel)
                 break;
         }       
@@ -674,7 +686,7 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
     else
         j = (sort_info->num_entries)++;
     new_entry = sort_info->entries[j];
-    // move up all higher entries (to make room)
+    /* move up all higher entries (to make room) */
     while (j != i)
     {
         int k;
@@ -687,10 +699,10 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
         sort_info->entries[j] = sort_info->entries[j-1];
         --j;
     }
-    // and insert the new entry at the correct place
+    /* and insert the new entry at the correct place */
     sort_info->entries[i] = new_entry;
     assert(new_entry);
-    // and add this to the compare buffer
+    /* and add this to the compare buffer */
     for (i = 0; i<num_criteria; i++)
     {
         char *new_entry_buf = cmp_buf[i] + j * SORT_IDX_ENTRYSIZE;
@@ -840,7 +852,7 @@ ZEBRA_RES resultSetSort(ZebraHandle zh, NMEM nmem,
     if (!log_level_set)
         loglevels();
     yaz_log(log_level_sort, "result set sort input=%s output=%s",
-          *input_setnames, output_setname);
+            *input_setnames, output_setname);
     sset = resultSetGet(zh, input_setnames[0]);
     if (!sset)
     {
@@ -857,8 +869,8 @@ ZEBRA_RES resultSetSort(ZebraHandle zh, NMEM nmem,
     if (strcmp(output_setname, input_setnames[0]))
 	sset = resultSetClone(zh, output_setname, sset);
     sset->sortSpec = copy_SortKeySpecList(sort_sequence, sset->nmem);
-    return resultSetSortSingle (zh, nmem, sset, rset, sort_sequence,
-				sort_status);
+    return resultSetSortSingle(zh, nmem, sset, rset, sort_sequence,
+                               sort_status);
 }
 
 ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
@@ -900,7 +912,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     num_criteria = sort_sequence->num_specs;
     if (num_criteria > ZSET_SORT_MAX_LEVEL)
         num_criteria = ZSET_SORT_MAX_LEVEL;
-    // set up the search criteria
+    /* set up the search criteria */
     for (i = 0; i < num_criteria; i++)
     {
         Z_SortKeySpec *sks = sort_sequence->specs[i];
@@ -912,11 +924,11 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
         sort_criteria[i].numerical = (int *)
             nmem_malloc(nmem, sizeof(int)*numbases);
         
-        // initialize ord and numerical for each database
+        /* initialize ord and numerical for each database */
         for (ib = 0; ib < numbases; ib++)
         {
-          sort_criteria[i].ord[ib] = -1;
-          sort_criteria[i].numerical[ib] = 0;
+            sort_criteria[i].ord[ib] = -1;
+            sort_criteria[i].numerical[ib] = 0;
         }
 
         if (sks->which == Z_SortKeySpec_missingValueData)
@@ -947,8 +959,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
         switch (sk->which)
         {
         case Z_SortKey_sortField:
-            yaz_log(log_level_sort, "key %d is of type sortField",
-		    i+1);
+            yaz_log(log_level_sort, "key %d is of type sortField", i+1);
             for (ib = 0; ib < numbases; ib++)
             {
                 zebraExplain_curDatabase(zh->reg->zei, zh->basenames[ib]);
@@ -967,29 +978,30 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
             }
             break;
         case Z_SortKey_elementSpec:
-            yaz_log(log_level_sort, "key %d is of type elementSpec",
-		    i+1);
+            yaz_log(log_level_sort, "key %d is of type elementSpec", i+1);
             zebra_setError(zh, YAZ_BIB1_CANNOT_SORT_ACCORDING_TO_SEQUENCE, 0);
             return ZEBRA_FAIL;
         case Z_SortKey_sortAttributes:
             yaz_log(log_level_sort, "key %d is of type sortAttributes", i+1);
-            // for every database we searched, get the sort index file id (ord)
-            // and its numerical indication and store them in the sort_criteria
+            /* for every database we searched, get the sort index file
+               id (ord) and its numerical indication and store them in
+               the sort_criteria */
             for (ib = 0; ib < numbases; ib++)
             {
                 zebraExplain_curDatabase(zh->reg->zei, zh->basenames[ib]);
                 res = zebra_sort_get_ord(zh, sk->u.sortAttributes,
-                                       &sort_criteria[i].ord[ib],
-                                       &sort_criteria[i].numerical[ib]);
+                                         &sort_criteria[i].ord[ib],
+                                         &sort_criteria[i].numerical[ib]);
             }
             
             if (sks->which != Z_SortKeySpec_null && res != ZEBRA_OK)
                 return ZEBRA_FAIL;
             break;
         }
-        // right now we look up the index type based on the first database
-        // if the index_type's can differ between the indexes of different databases (which i guess they can?)
-        // then we have to store the index types for each database, just like the ord and numerical
+        /* right now we look up the index type based on the first database
+           if the index_type's can differ between the indexes of different
+           databases (which i guess they can?) then we have to store the
+           index types for each database, just like the ord and numerical */
         if (zebraExplain_lookup_ord(zh->reg->zei, sort_criteria[i].ord[0],
                                     &sort_criteria[i].index_type,
                                     0, 0))
@@ -1035,7 +1047,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     }
     rset_close(rfd);
 
-    // free the compare buffers
+    /* free the compare buffers */
     for (i = 0; i<num_criteria; i++)
     {
         xfree(cmp_buf[i]);
@@ -1046,7 +1058,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
 	    kno, sset->hits);   
     for (i = 0; i < numTerms; i++)
         yaz_log(log_level_sort, "term=\"%s\" type=%s count=" ZINT_FORMAT,
-                 terms[i]->name, terms[i]->flags, terms[i]->rset->hits_count);
+                terms[i]->name, terms[i]->flags, terms[i]->rset->hits_count);
     *sort_status = Z_SortResponse_success;
     return ZEBRA_OK;
 }
@@ -1129,7 +1141,7 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 		if (psysno)
 		{   /* only if we did have a previous record */
 		    score = (*rc->calc)(handle, psysno, pstaticrank,
-					 &stop_flag);
+                                        &stop_flag);
 		    /* insert the hit. A=Ascending */
 		    resultSetInsertRank(zh, sort_info, psysno, score, 'A');
 		    count++;
