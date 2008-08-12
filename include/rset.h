@@ -40,6 +40,7 @@ struct ord_list {
 struct ord_list *ord_list_create(NMEM nmem);
 struct ord_list *ord_list_append(NMEM nmem, struct ord_list *list, int ord);
 struct ord_list *ord_list_dup(NMEM nmem, struct ord_list *list);
+void ord_list_print(struct ord_list *list);
 
 /** 
  * rset_term is all we need to know of a term to do ranking etc. 

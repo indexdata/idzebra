@@ -315,6 +315,11 @@ struct ord_list *ord_list_dup(NMEM nmem, struct ord_list *list)
     return n;
 }
 
+void ord_list_print(struct ord_list *list)
+{
+    for (; list; list = list->next)
+        yaz_log(YLOG_LOG, "ord_list %d", list->ord);
+}
 /**
    \brief Creates a TERMID entry.
    \param name Term/Name buffer with given length
