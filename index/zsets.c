@@ -907,8 +907,10 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
         Z_SortKey *sk;
         ZEBRA_RES res;
         
-        sort_criteria[i].ord = (int *)xmalloc(sizeof(int)*numbases);
-        sort_criteria[i].numerical = (int *)xmalloc(sizeof(int)*numbases);
+        sort_criteria[i].ord = (int *)
+            nmem_malloc(nmem, sizeof(int)*numbases);
+        sort_criteria[i].numerical = (int *)
+            nmem_malloc(nmem, sizeof(int)*numbases);
         
         // initialize ord and numerical for each database
         for (ib = 0; ib < numbases; ib++)
@@ -1038,9 +1040,6 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     {
         xfree(cmp_buf[i]);
         xfree(tmp_cmp_buf[i]);
-        // and the criteria
-        xfree(sort_criteria[i].ord);
-        xfree(sort_criteria[i].numerical);
     }
 
     yaz_log(log_level_sort, ZINT_FORMAT " keys, " ZINT_FORMAT " sysnos, sort",
