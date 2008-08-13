@@ -1022,8 +1022,8 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
 #if 0
             yaz_log(YLOG_LOG, "sysno=" ZINT_FORMAT " database_no=%d", this_sys,
                 database_no);
-#endif
             ord_list_print(termid->ol);
+#endif
             resultSetInsertSort(zh, sset, database_no,
                                 sort_criteria, num_criteria, psysno, cmp_buf,
                                 tmp_cmp_buf);
