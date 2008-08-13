@@ -554,15 +554,14 @@ struct sortKeyInfo {
 };
 
 void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
+                         int database_no,
                          struct sortKeyInfo *criteria, int num_criteria,
                          zint sysno,
-                         char *cmp_buf[], char *tmp_cmp_buf[], int *cached_success_db)
+                         char *cmp_buf[], char *tmp_cmp_buf[])
 {
     struct zset_sort_entry *new_entry = NULL;
     struct zset_sort_info *sort_info = sset->sort_info;
     int i, j;
-    int scan_db,scan_count;
-    int numbases = zh->num_basenames;
 
     zebra_sort_sysno(zh->reg->sort_index, sysno);
     for (i = 0; i<num_criteria; i++)
@@ -570,46 +569,12 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
         char *this_entry_buf = tmp_cmp_buf[i];
         memset(this_entry_buf, '\0', SORT_IDX_ENTRYSIZE);
         
-        /* if the first database doesn't have a sort index, 
-           we assume none of them will */
-        if (criteria[i].ord[0] != -1)
+        if (criteria[i].ord[database_no] != -1)
         {
-            /* now make a best guess for the database in which we think
-               the record is located if its not in our best guess, try the
-               other databases one by one, till we had them all */
-            scan_db = *cached_success_db;
-            scan_count = 0;
-            
-            while (1)
-            {
-                scan_count++;
-                if (scan_count>numbases)
-                {
-                    /* well...we scanned all databases and still nothing...give up */
-                    yaz_log(log_level_sort, "zebra_sort_read failed (record not found in indices)");
-                    break;
-                }
-                
-                /* the criteria[i].ord is the file id of the sort index */
-                yaz_log(log_level_sort, "pre zebra_sort_type ord is %d", criteria[i].ord[scan_db]);
-                zebra_sort_type(zh->reg->sort_index, criteria[i].ord[scan_db]);
-                if (zebra_sort_read(zh->reg->sort_index, this_entry_buf))
-                {
-                    /* allright, found it */
-                    /* cache this db so we start trying from this db 
-                       for next record */
-                    *cached_success_db=scan_db;
-                    break;
-                }
-                else
-                {
-                    yaz_log(log_level_sort, "record not found in database, trying next one");
-                    scan_db++;
-                    if (scan_db>=numbases)
-                        scan_db=0;
-                }
-            }
-            
+            yaz_log(log_level_sort, "pre zebra_sort_type ord is %d",
+                    criteria[i].ord[database_no]);
+            zebra_sort_type(zh->reg->sort_index, criteria[i].ord[database_no]);
+            zebra_sort_read(zh->reg->sort_index, this_entry_buf);
         }
         else
         {
@@ -625,7 +590,7 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
             char *this_entry_buf = tmp_cmp_buf[j];
             char *other_entry_buf = 
                 cmp_buf[j] + i * SORT_IDX_ENTRYSIZE;
-            if (criteria[j].numerical[*cached_success_db])
+            if (criteria[j].numerical[database_no])
             {
                 char this_entry_org[1024];
                 char other_entry_org[1024];
@@ -880,7 +845,6 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
 {
     int i;
     int ib;
-    int cached_success_db = 0;
     int n = 0;
     zint kno = 0;
     zint psysno = 0;
@@ -1030,6 +994,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
 	kno++;
         if (this_sys != psysno)
         {
+            int database_no = 0;
             if ((sset->hits & 255) == 0 && zh->break_handler_func)
             {
                 if (zh->break_handler_func(zh->break_handler_data))
@@ -1040,9 +1005,28 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
             }
             (sset->hits)++;
             psysno = this_sys;
-            resultSetInsertSort(zh, sset,
+
+            /* determine database from the term, but only bother if more than
+               one database is in use*/
+            if (numbases > 1 && termid->ol)
+            {
+                const char *this_db = 0;
+                if (zebraExplain_lookup_ord(zh->reg->zei, termid->ol->ord,  0, &this_db, 0)
+                    == 0 && this_db)
+                {
+                    for (ib = 0; ib < numbases; ib++)
+                        if (!strcmp(this_db, zh->basenames[ib]))
+                            database_no = ib;
+                }
+            }
+#if 0
+            yaz_log(YLOG_LOG, "sysno=" ZINT_FORMAT " database_no=%d", this_sys,
+                database_no);
+#endif
+            ord_list_print(termid->ol);
+            resultSetInsertSort(zh, sset, database_no,
                                 sort_criteria, num_criteria, psysno, cmp_buf,
-                                tmp_cmp_buf, &cached_success_db);
+                                tmp_cmp_buf);
         }
     }
     rset_close(rfd);
