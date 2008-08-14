@@ -18,6 +18,7 @@ XMLFILES =  \
    recordmodel-alvisxslt.xml \
    recordmodel-grs.xml \
    manref.xml \
+   tutorial.xml \
    zebra.xml \
    zebrasrv-options.xml \
    zebrasrv-synopsis.xml \
