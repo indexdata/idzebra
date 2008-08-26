@@ -71,7 +71,7 @@ zebra.pdf: $(XMLFILES) domfilter.pdf
 	for i in $(PNGFILES); do \
 		if test ! -f $$i; then cp $(srcdir)/$$i .; fi; \
 	done
-	dblatex $(srcdir)/zebra.xml
+	$(PDF_COMPILE) $(srcdir)/zebra.xml
 
 manref.xml: $(XMLMAN) $(srcdir)/common/ref2dbinc.xsl
 	rm -f manref.xml
