@@ -249,7 +249,7 @@ int zebra_special_sort_fetch(
     else
     {
         char dst_buf[IT_MAX_WORD];
-        char str[IT_MAX_WORD];
+        WRBUF str = wrbuf_alloc();
         const char *index_type;
         const char *db = 0;
         const char *string_index = 0;
@@ -261,7 +261,7 @@ int zebra_special_sort_fetch(
 
         zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db, &string_index);
         
-        zebra_term_untrans(zh, index_type, dst_buf, str);
+        zebra_term_untrans(zh, index_type, dst_buf, wrbuf_cstr(str));
 
         if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
         {
@@ -285,6 +285,7 @@ int zebra_special_sort_fetch(
             wrbuf_printf(wrbuf, "%s %s %s\n", string_index, index_type,
                          dst_buf);
         }
+        wrbuf_destroy(str);
         return 0;
     }
 }

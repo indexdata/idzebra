@@ -562,6 +562,7 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
     struct zset_sort_entry *new_entry = NULL;
     struct zset_sort_info *sort_info = sset->sort_info;
     int i, j;
+    WRBUF w = wrbuf_alloc();
 
     zebra_sort_sysno(zh->reg->sort_index, sysno);
     for (i = 0; i<num_criteria; i++)
@@ -574,13 +575,18 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
             yaz_log(log_level_sort, "pre zebra_sort_type ord is %d",
                     criteria[i].ord[database_no]);
             zebra_sort_type(zh->reg->sort_index, criteria[i].ord[database_no]);
-            zebra_sort_read(zh->reg->sort_index, this_entry_buf);
+            wrbuf_rewind(w);
+            zebra_sort_read(zh->reg->sort_index, w);
+            memcpy(this_entry_buf, wrbuf_buf(w),
+                   (wrbuf_len(w) >= SORT_IDX_ENTRYSIZE) ?
+                   SORT_IDX_ENTRYSIZE : wrbuf_len(w));
         }
         else
         {
             yaz_log(log_level_sort, "criteria[i].ord is -1 so not reading from sort index");
         }
     }
+    wrbuf_destroy(w);
     i = sort_info->num_entries;
     while (--i >= 0)
     {

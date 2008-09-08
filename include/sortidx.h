@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/yconfig.h>
 #include <idzebra/version.h>
 #include <idzebra/bfile.h>
+#include <yaz/wrbuf.h>
 
 YAZ_BEGIN_CDECL
 
@@ -35,6 +36,7 @@ typedef struct zebra_sort_index *zebra_sort_index_t;
 
 #define ZEBRA_SORT_TYPE_FLAT 1
 #define ZEBRA_SORT_TYPE_ISAMB 2
+#define ZEBRA_SORT_TYPE_MULTI 3
 
 
 /** \brief creates sort handle
@@ -84,7 +86,7 @@ void zebra_sort_delete(zebra_sort_index_t si);
     \retval 0 could not be read
     \retval 1 could be read (found)
 */
-int zebra_sort_read(zebra_sort_index_t si, char *buf);
+int zebra_sort_read(zebra_sort_index_t si, WRBUF w);
 
 YAZ_END_CDECL
 

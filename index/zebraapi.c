@@ -445,6 +445,8 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
         sort_type = ZEBRA_SORT_TYPE_FLAT;
     else if (res_get_match(res, "sortindex", "i", "f"))
         sort_type = ZEBRA_SORT_TYPE_ISAMB;
+    else if (res_get_match(res, "sortindex", "m", "f"))
+        sort_type = ZEBRA_SORT_TYPE_MULTI;
     else
     {
 	yaz_log(YLOG_WARN, "bad_value for 'sortindex'");

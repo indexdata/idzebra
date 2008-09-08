@@ -25,28 +25,76 @@ static void tst1(zebra_sort_index_t si)
 {
     zint sysno = 12; /* just some sysno */
     int my_type = 2; /* just some type ID */
-    char read_buf[SORT_IDX_ENTRYSIZE];
+    WRBUF w = wrbuf_alloc();
 
     zebra_sort_type(si, my_type);
 
     zebra_sort_sysno(si, sysno);
-    YAZ_CHECK_EQ(zebra_sort_read(si, read_buf), 0);
+    YAZ_CHECK_EQ(zebra_sort_read(si, w), 0);
 
     zebra_sort_add(si, "abcde1", 6);
 
     zebra_sort_sysno(si, sysno);
-    YAZ_CHECK_EQ(zebra_sort_read(si, read_buf), 1);
-    YAZ_CHECK(!strcmp(read_buf, "abcde1"));
+    YAZ_CHECK_EQ(zebra_sort_read(si, w), 1);
+    YAZ_CHECK(!strcmp(wrbuf_cstr(w), "abcde1"));
 
     zebra_sort_sysno(si, sysno+1);
-    YAZ_CHECK_EQ(zebra_sort_read(si, read_buf), 0);
+    YAZ_CHECK_EQ(zebra_sort_read(si, w), 0);
 
     zebra_sort_sysno(si, sysno-1);
-    YAZ_CHECK_EQ(zebra_sort_read(si, read_buf), 0);
+    YAZ_CHECK_EQ(zebra_sort_read(si, w), 0);
 
     zebra_sort_sysno(si, sysno);
     zebra_sort_delete(si);
-    YAZ_CHECK_EQ(zebra_sort_read(si, read_buf), 0);
+    YAZ_CHECK_EQ(zebra_sort_read(si, w), 0);
+
+    zebra_sort_type(si, my_type);
+
+    zebra_sort_sysno(si, sysno);
+    YAZ_CHECK_EQ(zebra_sort_read(si, w), 0);
+
+    wrbuf_rewind(w);
+    zebra_sort_add(si, "abcde1", 6);
+
+    zebra_sort_sysno(si, sysno);
+    YAZ_CHECK_EQ(zebra_sort_read(si, w), 1);
+    YAZ_CHECK(!strcmp(wrbuf_cstr(w), "abcde1"));
+
+    zebra_sort_sysno(si, sysno);
+    zebra_sort_delete(si);
+
+    wrbuf_destroy(w);
+}
+
+static void tst2(zebra_sort_index_t si)
+{
+    zint sysno = 15; /* just some sysno */
+    int my_type = 2; /* just some type ID */
+    int i;
+
+    zebra_sort_type(si, my_type);
+
+    for (sysno = 1; sysno < 50; sysno++)
+    {
+        WRBUF w1 = wrbuf_alloc();
+        WRBUF w2 = wrbuf_alloc();
+        zebra_sort_sysno(si, sysno);
+        YAZ_CHECK_EQ(zebra_sort_read(si, w2), 0);
+        
+        for (i = 0; i < 600; i++) /* 600 * 6 < max size =4K */
+            wrbuf_write(w1, "12345", 6);
+        
+        zebra_sort_add(si, wrbuf_buf(w1), wrbuf_len(w1));
+        
+        zebra_sort_sysno(si, sysno);
+        
+        YAZ_CHECK_EQ(zebra_sort_read(si, w2), 1);
+        
+        YAZ_CHECK_EQ(wrbuf_len(w1), wrbuf_len(w2));
+        YAZ_CHECK(!memcmp(wrbuf_buf(w1), wrbuf_buf(w2), wrbuf_len(w2)));
+        wrbuf_destroy(w1);
+        wrbuf_destroy(w2);
+    }
 }
 
 static void tst(int argc, char **argv)
@@ -58,6 +106,17 @@ static void tst(int argc, char **argv)
     if (bfs)
     {
         bf_reset(bfs);
+        si = zebra_sort_open(bfs, 1, ZEBRA_SORT_TYPE_FLAT);
+        YAZ_CHECK(si);
+        if (si)
+        {
+            tst1(si);
+            zebra_sort_close(si);
+        }
+    }
+    if (bfs)
+    {
+        bf_reset(bfs);
         si = zebra_sort_open(bfs, 1, ZEBRA_SORT_TYPE_ISAMB);
         YAZ_CHECK(si);
         if (si)
@@ -66,15 +125,15 @@ static void tst(int argc, char **argv)
             zebra_sort_close(si);
         }
     }
-
     if (bfs)
     {
         bf_reset(bfs);
-        si = zebra_sort_open(bfs, 1, ZEBRA_SORT_TYPE_FLAT);
+        si = zebra_sort_open(bfs, 1, ZEBRA_SORT_TYPE_MULTI);
         YAZ_CHECK(si);
         if (si)
         {
             tst1(si);
+            tst2(si);
             zebra_sort_close(si);
         }
     }
