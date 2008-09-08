@@ -47,14 +47,17 @@ struct ISAMB_head {
 #define INT_ENCODE 1
 
 /* maximum size of encoded buffer */
-#define DST_ITEM_MAX 256
+#define DST_ITEM_MAX 5000
+
+/* max page size for _any_ isamb use */
+#define ISAMB_MAX_PAGE 32768
 
 #define ISAMB_MAX_LEVEL 10
 /* approx 2*max page + max size of item */
-#define DST_BUF_SIZE (2*4096+300)
+#define DST_BUF_SIZE (2*ISAMB_MAX_PAGE+DST_ITEM_MAX+100)
 
 /* should be maximum block size of multiple thereof */
-#define ISAMB_CACHE_ENTRY_SIZE 4096
+#define ISAMB_CACHE_ENTRY_SIZE ISAMB_MAX_PAGE
 
 /* CAT_MAX: _must_ be power of 2 */
 #define CAT_MAX 4
@@ -786,7 +789,7 @@ int insert_int(ISAMB b, struct ISAMB_block *p, void *lookahead_item,
 #if INT_ENCODE
 	const char *sub_item_ptr = sub_item;
 #endif
-        assert(sub_size < 128 && sub_size > 1);
+        assert(sub_size < DST_ITEM_MAX && sub_size > 1);
 
         memcpy(dst, startp, src - startp);
                 
@@ -1291,7 +1294,7 @@ void isamb_merge(ISAMB b, ISAM_P *pos, ISAMC_I *stream)
 #endif
 
             encode_ptr(&dst, p->pos);
-	    assert(sub_size < 128 && sub_size > 1);
+	    assert(sub_size < DST_ITEM_MAX && sub_size > 1);
 #if INT_ENCODE
 	    (*b->method->codec.reset)(c1);
 	    (*b->method->codec.encode)(c1, &dst, &sub_item_ptr);
