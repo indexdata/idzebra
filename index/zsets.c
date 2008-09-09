@@ -576,10 +576,27 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
                     criteria[i].ord[database_no]);
             zebra_sort_type(zh->reg->sort_index, criteria[i].ord[database_no]);
             wrbuf_rewind(w);
-            zebra_sort_read(zh->reg->sort_index, w);
-            memcpy(this_entry_buf, wrbuf_buf(w),
-                   (wrbuf_len(w) >= SORT_IDX_ENTRYSIZE) ?
-                   SORT_IDX_ENTRYSIZE : wrbuf_len(w));
+            if (zebra_sort_read(zh->reg->sort_index, w))
+            {
+                int off = 0;
+                while (off != wrbuf_len(w))
+                {
+                    assert(off < wrbuf_len(w));
+                    if (off == 0)
+                        strcpy(this_entry_buf, wrbuf_buf(w));
+                    else if (criteria[i].relation == 'A')
+                    {
+                        if (strcmp(wrbuf_buf(w)+off, this_entry_buf) < 0)
+                            strcpy(this_entry_buf, wrbuf_buf(w)+off);
+                    }
+                    else if (criteria[i].relation == 'D')
+                    {
+                        if (strcmp(wrbuf_buf(w)+off, this_entry_buf) > 0)
+                            strcpy(this_entry_buf, wrbuf_buf(w)+off);
+                    }
+                    off += 1 + strlen(wrbuf_buf(w)+off);
+                }
+            }
         }
         else
         {

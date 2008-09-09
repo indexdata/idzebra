@@ -1867,20 +1867,16 @@ void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
 	const char *str;
 	struct it_key key_in;
 
-#define USE_SORT_ENT 1
-#if USE_SORT_ENT
         NMEM nmem = nmem_create();
         struct sort_add_ent {
             int ord;
             int cmd;
             struct sort_add_ent *next;
-            struct zebra_sort_ent sort_ent;
+            WRBUF wrbuf;
         };
         struct sort_add_ent *sort_ent_list = 0;
-#endif
         zebra_sort_sysno(si, sysno);
 
-#if USE_SORT_ENT
 	while (zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
         {
             int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
@@ -1892,15 +1888,13 @@ void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
             {
                 *e = nmem_malloc(nmem, sizeof(**e));
                 (*e)->next = 0;
-                (*e)->sort_ent.wrbuf = wrbuf_alloc();
-                (*e)->sort_ent.num = 0;
+                (*e)->wrbuf = wrbuf_alloc();
                 (*e)->ord = ord;
                 (*e)->cmd = cmd;
             }
             
-            wrbuf_write((*e)->sort_ent.wrbuf, str, slen);
-            wrbuf_putc((*e)->sort_ent.wrbuf, '\0');
-            (*e)->sort_ent.num++;
+            wrbuf_write((*e)->wrbuf, str, slen);
+            wrbuf_putc((*e)->wrbuf, '\0');
         }
         if (sort_ent_list)
         {
@@ -1909,25 +1903,13 @@ void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
             {
                 zebra_sort_type(si, e->ord);
                 if (e->cmd == 1)
-                    zebra_sort_add_ent(si, &e->sort_ent);
+                    zebra_sort_add(si, e->wrbuf);
                 else
                     zebra_sort_delete(si);
-                wrbuf_destroy(e->sort_ent.wrbuf);
+                wrbuf_destroy(e->wrbuf);
             }
         }
         nmem_destroy(nmem);
-#else
-	while (zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
-        {
-            int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
-            
-            zebra_sort_type(si, ord);
-            if (cmd == 1)
-                zebra_sort_add(si, str, slen);
-            else
-                zebra_sort_delete(si);
-        }
-#endif
     }
 }
 

@@ -21,6 +21,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <sortidx.h>
 #include "testlib.h"
 
+static void sort_add_cstr(zebra_sort_index_t si, const char *str)
+{
+    WRBUF w = wrbuf_alloc();
+    wrbuf_puts(w, str);
+    wrbuf_putc(w, '\0');
+    zebra_sort_add(si, w);
+    wrbuf_destroy(w);
+}
+
 static void tst1(zebra_sort_index_t si)
 {
     zint sysno = 12; /* just some sysno */
@@ -32,7 +41,7 @@ static void tst1(zebra_sort_index_t si)
     zebra_sort_sysno(si, sysno);
     YAZ_CHECK_EQ(zebra_sort_read(si, w), 0);
 
-    zebra_sort_add(si, "abcde1", 6);
+    sort_add_cstr(si, "abcde1");
 
     zebra_sort_sysno(si, sysno);
     YAZ_CHECK_EQ(zebra_sort_read(si, w), 1);
@@ -54,7 +63,7 @@ static void tst1(zebra_sort_index_t si)
     YAZ_CHECK_EQ(zebra_sort_read(si, w), 0);
 
     wrbuf_rewind(w);
-    zebra_sort_add(si, "abcde1", 6);
+    sort_add_cstr(si, "abcde1");
 
     zebra_sort_sysno(si, sysno);
     YAZ_CHECK_EQ(zebra_sort_read(si, w), 1);
@@ -84,7 +93,7 @@ static void tst2(zebra_sort_index_t si)
         for (i = 0; i < 600; i++) /* 600 * 6 < max size =4K */
             wrbuf_write(w1, "12345", 6);
         
-        zebra_sort_add(si, wrbuf_buf(w1), wrbuf_len(w1));
+        zebra_sort_add(si, w1);
         
         zebra_sort_sysno(si, sysno);
         

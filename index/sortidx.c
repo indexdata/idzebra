@@ -47,7 +47,7 @@ static void sort_term_log_item(int level, const void *b, const char *txt)
     memcpy(&a1, b, sizeof(a1));
 
     yaz_log(level, "%s " ZINT_FORMAT " %.*s", txt, a1.sysno, 
-            (int) a1.length, a1.term);
+            (int) a1.length-1, a1.term);
 }
 
 static int sort_term_compare(const void *a, const void *b)
@@ -102,8 +102,8 @@ static void sort_term_decode1(void *p, char **dst, const char **src)
     zebra_zint_decode(src, &a1.sysno);
 
     strcpy(a1.term, *src);
-    slen = strlen(a1.term);
-    *src += slen + 1;
+    slen = 1 + strlen(a1.term);
+    *src += slen;
     a1.length = slen;
 
     memcpy(*dst, &a1, sizeof(a1));
@@ -348,7 +348,8 @@ void zebra_sort_delete(zebra_sort_index_t si)
     switch(si->type)
     {
     case ZEBRA_SORT_TYPE_FLAT:
-        zebra_sort_add(si, "", 0);
+        memset(si->entry_buf, 0, SORT_IDX_ENTRYSIZE);
+        bf_write(sf->u.bf, si->sysno+1, 0, 0, si->entry_buf);
         break;
     case ZEBRA_SORT_TYPE_ISAMB:
     case ZEBRA_SORT_TYPE_MULTI:
@@ -374,7 +375,7 @@ void zebra_sort_delete(zebra_sort_index_t si)
     }
 }
 
-void zebra_sort_add_ent(zebra_sort_index_t si, struct zebra_sort_ent *ent)
+void zebra_sort_add(zebra_sort_index_t si, WRBUF wrbuf)
 {
     struct sortFile *sf = si->current_file;
     int len;
@@ -385,11 +386,11 @@ void zebra_sort_add_ent(zebra_sort_index_t si, struct zebra_sort_ent *ent)
     {
     case ZEBRA_SORT_TYPE_FLAT:
         /* take first entry from wrbuf - itself is 0-terminated */
-        len = strlen(wrbuf_buf(ent->wrbuf));
+        len = strlen(wrbuf_buf(wrbuf));
         if (len > SORT_IDX_ENTRYSIZE)
             len = SORT_IDX_ENTRYSIZE;
         
-        memcpy(si->entry_buf, wrbuf_buf(ent->wrbuf), len);
+        memcpy(si->entry_buf, wrbuf_buf(wrbuf), len);
         if (len < SORT_IDX_ENTRYSIZE-len)
             memset(si->entry_buf+len, 0, SORT_IDX_ENTRYSIZE-len);
         bf_write(sf->u.bf, si->sysno+1, 0, 0, si->entry_buf);
@@ -397,20 +398,21 @@ void zebra_sort_add_ent(zebra_sort_index_t si, struct zebra_sort_ent *ent)
     case ZEBRA_SORT_TYPE_ISAMB:
         assert(sf->u.isamb);
 
-        assert(sf->no_inserted == 0);
         if (sf->no_inserted == 0)
         {
             struct sort_term_stream s;
             ISAMC_I isamc_i;
             /* take first entry from wrbuf - itself is 0-terminated */
-            len = strlen(wrbuf_buf(ent->wrbuf)); 
 
-            s.st.sysno = si->sysno;
-            if (len >= SORT_MAX_TERM)
-                len = SORT_MAX_TERM-1;
-            memcpy(s.st.term, wrbuf_buf(ent->wrbuf), len);
-            s.st.term[len] = '\0';
+            len = wrbuf_len(wrbuf);
+            if (len > SORT_MAX_TERM)
+            {
+                len = SORT_MAX_TERM;
+                wrbuf_buf(wrbuf)[len-1] = '\0';
+            }
+            memcpy(s.st.term, wrbuf_buf(wrbuf), len);
             s.st.length = len;
+            s.st.sysno = si->sysno;
             s.no = 1;
             s.insert_flag = 1;
             isamc_i.clientData = &s;
@@ -426,13 +428,15 @@ void zebra_sort_add_ent(zebra_sort_index_t si, struct zebra_sort_ent *ent)
         {
             struct sort_term_stream s;
             ISAMC_I isamc_i;
-            len = wrbuf_len(ent->wrbuf);
-
-            s.st.sysno = si->sysno;
-            if (len >= SORT_MAX_MULTI)
-                len = SORT_MAX_MULTI-1;
-            memcpy(s.st.term, wrbuf_buf(ent->wrbuf), len);
+            len = wrbuf_len(wrbuf);
+            if (len > SORT_MAX_MULTI)
+            {
+                len = SORT_MAX_MULTI;
+                wrbuf_buf(wrbuf)[len-1] = '\0';
+            }
+            memcpy(s.st.term, wrbuf_buf(wrbuf), len);
             s.st.length = len;
+            s.st.sysno = si->sysno;
             s.no = 1;
             s.insert_flag = 1;
             isamc_i.clientData = &s;
@@ -445,72 +449,6 @@ void zebra_sort_add_ent(zebra_sort_index_t si, struct zebra_sort_ent *ent)
     }
 }
 
-void zebra_sort_add(zebra_sort_index_t si, const char *buf, int len)
-{
-    struct sortFile *sf = si->current_file;
-
-    if (!sf || !sf->u.bf)
-        return;
-    switch(si->type)
-    {
-    case ZEBRA_SORT_TYPE_FLAT:
-        if (len > SORT_IDX_ENTRYSIZE)
-        {
-            len = SORT_IDX_ENTRYSIZE;
-            memcpy(si->entry_buf, buf, len);
-        }
-        else
-        {
-            memcpy(si->entry_buf, buf, len);
-            memset(si->entry_buf+len, 0, SORT_IDX_ENTRYSIZE-len);
-        }
-        bf_write(sf->u.bf, si->sysno+1, 0, 0, si->entry_buf);
-        break;
-    case ZEBRA_SORT_TYPE_ISAMB:
-        assert(sf->u.isamb);
-        if (sf->no_inserted == 0)
-        {
-            struct sort_term_stream s;
-            ISAMC_I isamc_i;
-
-            s.st.sysno = si->sysno;
-            if (len >= SORT_MAX_TERM)
-                len = SORT_MAX_TERM-1;
-            memcpy(s.st.term, buf, len);
-            s.st.term[len] = '\0';
-            s.st.length = len;
-            s.no = 1;
-            s.insert_flag = 1;
-            isamc_i.clientData = &s;
-            isamc_i.read_item = sort_term_code_read;
-            
-            isamb_merge(sf->u.isamb, &sf->isam_p, &isamc_i);
-            sf->no_inserted++;
-        }
-        break;
-    case ZEBRA_SORT_TYPE_MULTI:
-        assert(sf->u.isamb);
-        if (sf->no_inserted == 0)
-        {
-            struct sort_term_stream s;
-            ISAMC_I isamc_i;
-
-            s.st.sysno = si->sysno;
-            if (len >= SORT_MAX_MULTI)
-                len = SORT_MAX_MULTI-1;
-            memcpy(s.st.term, buf, len);
-            s.st.length = len;
-            s.no = 1;
-            s.insert_flag = 1;
-            isamc_i.clientData = &s;
-            isamc_i.read_item = sort_term_code_read;
-            
-            isamb_merge(sf->u.isamb, &sf->isam_p, &isamc_i);
-            sf->no_inserted++;
-        }
-        break;
-    }
-}
 
 int zebra_sort_read(zebra_sort_index_t si, WRBUF w)
 {
@@ -526,43 +464,37 @@ int zebra_sort_read(zebra_sort_index_t si, WRBUF w)
     case ZEBRA_SORT_TYPE_FLAT:
         r = bf_read(sf->u.bf, si->sysno+1, 0, 0, tbuf);
         if (r && *tbuf)
+        {
             wrbuf_puts(w, tbuf);
-        else
-            return 0;
+            wrbuf_putc(w, '\0');
+            return 1;
+        }
         break;
     case ZEBRA_SORT_TYPE_ISAMB:
     case ZEBRA_SORT_TYPE_MULTI:
-        if (!sf->isam_p)
-            return 0;
-        else
+        if (sf->isam_p)
         {
-            struct sort_term st, st_untilbuf;
 
             if (!sf->isam_pp)
                 sf->isam_pp = isamb_pp_open(sf->u.isamb, sf->isam_p, 1);
-            if (!sf->isam_pp)
-                return 0;
-
-            st_untilbuf.sysno = si->sysno;
-            st_untilbuf.length = 0;
-            st_untilbuf.term[0] = '\0';
-            r = isamb_pp_forward(sf->isam_pp, &st, &st_untilbuf);
-            if (!r)
-                return 0;
-            if (r)
+            if (sf->isam_pp)
             {
-                if (st.sysno != si->sysno)
+                struct sort_term st, st_untilbuf;
+
+                st_untilbuf.sysno = si->sysno;
+                st_untilbuf.length = 0;
+                st_untilbuf.term[0] = '\0';
+                r = isamb_pp_forward(sf->isam_pp, &st, &st_untilbuf);
+                if (r && st.sysno == si->sysno)
                 {
-                    yaz_log(YLOG_LOG, "Received sysno=" ZINT_FORMAT " looking for "
-                            ZINT_FORMAT, st.sysno, si->sysno);
-                    return 0;
+                    wrbuf_write(w, st.term, st.length);
+                    return 1;
                 }
-                wrbuf_write(w, st.term, st.length);
             }
         }
         break;
     }
-    return 1;
+    return 0;
 }
 /*
  * Local variables:

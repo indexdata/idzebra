@@ -18,33 +18,86 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /** \file 
-    \brief test sortindex
+    \brief sort using various sortindex types
  */
 
 #include <yaz/test.h>
 #include "testlib.h"
 
 const char *myrec[] = {
-        "<gils>\n<title>My title</title>\n</gils>\n",
-        "<gils>\n<title>My x title</title>\n</gils>\n",
-        "<gils>\n<title>My title x</title>\n</gils>\n" ,
-	0} ;
+    /* 2 */
+    "<gils>\n"
+    "  <title>My title</title>\n"
+    "  <title>X</title>\n"
+    "</gils>\n",
+
+    /* 3 */
+    "<gils>\n" 
+    "  <title>My x title</title>\n"
+    "  <title>B</title>\n"
+    "</gils>\n",
+
+    /* 4 */
+    "<gils>\n"
+    "  <title>My title x</title>\n"
+    "  <title>A</title>\n"
+    "</gils>\n" ,
+    0} ;
 	
-static void tst(int argc, char **argv)
+static void tst_sortindex(int argc, char **argv, const char *type)
 {
     zint ids[5];
+    Res res = res_open(0, 0);
 
     ZebraService zs = tl_start_up("test_sort3.cfg", argc, argv);
-    ZebraHandle  zh = zebra_open(zs, 0);
+    ZebraHandle  zh;
+
+    res_set(res, "sortindex", type);
+
+    zh = zebra_open(zs, res);
     
     YAZ_CHECK(tl_init_data(zh, myrec));
 
-    ids[0] = 2;
-    ids[1] = 4;
-    ids[2] = 3;
+    if (strcmp(type, "m"))
+    {
+        /* i, f only takes first title into consideration */
+        ids[0] = 2;
+        ids[1] = 4;
+        ids[2] = 3;
+    }
+    else
+    {
+        /* m takes all titles into consideration */
+        ids[0] = 4;
+        ids[1] = 3;
+        ids[2] = 2;
+    }
     YAZ_CHECK(tl_sort(zh, "@or @attr 1=4 title @attr 7=1 @attr 1=4 0", 3, ids));
 
+    if (strcmp(type, "m"))
+    {
+        /* i, f only takes first title into consideration */
+        ids[0] = 3;
+        ids[1] = 4;
+        ids[2] = 2;
+    }
+    else
+    {
+        /* m takes all titles into consideration */
+        ids[0] = 2;
+        ids[1] = 3;
+        ids[2] = 4;
+    }
+    YAZ_CHECK(tl_sort(zh, "@or @attr 1=4 title @attr 7=2 @attr 1=4 0", 3, ids));
+
     YAZ_CHECK(tl_close_down(zh, zs));
+}
+
+static void tst(int argc, char **argv)
+{
+    tst_sortindex(argc, argv, "i");
+    tst_sortindex(argc, argv, "f");
+    tst_sortindex(argc, argv, "m");
 }
 
 TL_MAIN
