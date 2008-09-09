@@ -38,6 +38,10 @@ typedef struct zebra_sort_index *zebra_sort_index_t;
 #define ZEBRA_SORT_TYPE_ISAMB 2
 #define ZEBRA_SORT_TYPE_MULTI 3
 
+struct zebra_sort_ent {
+    int num;
+    WRBUF wrbuf;
+};
 
 /** \brief creates sort handle
     \param bfs block files handle
@@ -71,6 +75,15 @@ void zebra_sort_sysno(zebra_sort_index_t si, zint sysno);
     zebra_sort_type and zebra_sort_sysno must be called prior to this
 */
 void zebra_sort_add(zebra_sort_index_t si, const char *buf, int len);
+
+
+/** \brief adds multi-map content to sort file
+    \param si sort index handle
+    \param ent multi-map value
+
+    zebra_sort_type and zebra_sort_sysno must be called prior to this
+*/
+void zebra_sort_add_ent(zebra_sort_index_t si, struct zebra_sort_ent *ent);
 
 
 /** \brief delete sort entry

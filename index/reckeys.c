@@ -27,31 +27,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/nmem.h>
 #include <yaz/xmalloc.h>
 
-#define NEW 0
-
-#if NEW
-struct zebra_rec_word_entry {
-    char *buf;
-    size_t len;
-    int ord;
-    int max_seq;
-    struct zebra_rec_word_entry *next;
-    struct zebra_rec_key_entry *keys;
-    struct zebra_rec_key_entry **last_key;
-};
-
-struct zebra_rec_key_entry {
-    struct it_key key;
-    struct zebra_rec_key_entry *next;
-};
-#else
 struct zebra_rec_key_entry {
     char *buf;
     size_t len;
     struct it_key key;
     struct zebra_rec_key_entry *next;
 };
-#endif
 
 struct zebra_rec_keys_t_ {
     size_t buf_used;
@@ -65,28 +46,10 @@ struct zebra_rec_keys_t_ {
 
     NMEM nmem;
     size_t hash_size;
-#if NEW
-    struct zebra_rec_word_entry **entries;
-#else
     struct zebra_rec_key_entry **entries;
-#endif
 };
 
 
-#if NEW
-struct zebra_rec_word_entry **zebra_rec_keys_mk_hash(zebra_rec_keys_t p,
-                                                     const char *buf,
-                                                     size_t len,
-                                                     int ord)
-{
-    int i;
-    unsigned h = ord;
-
-    for (i = 0; i<len; i++)
-	h = h * 65509 + buf[i];
-    return &p->entries[h % (unsigned) p->hash_size];
-}
-#else
 struct zebra_rec_key_entry **zebra_rec_keys_mk_hash(zebra_rec_keys_t p,
 						    const char *buf,
 						    size_t len,
@@ -105,7 +68,6 @@ struct zebra_rec_key_entry **zebra_rec_keys_mk_hash(zebra_rec_keys_t p,
 #endif
     return &p->entries[h % (unsigned) p->hash_size];
 }
-#endif
 
 static void init_hash(zebra_rec_keys_t p)
 {
@@ -190,65 +152,6 @@ void zebra_rec_keys_close(zebra_rec_keys_t p)
     xfree(p);
 }
 
-#if NEW
-void zebra_rec_keys_write(zebra_rec_keys_t keys, 
-			  const char *str, size_t slen,
-			  const struct it_key *key)
-{
-    char *dst;
-    const char *src = (char*) key;
-    
-    struct zebra_rec_word_entry **wep;
-    struct zebra_rec_key_entry **kep;
-    int ord = key->mem[0];
-    int seq = key->mem[key->len-1];
-    
-    assert(keys->owner_of_buffer);
-
-    wep = zebra_rec_keys_mk_hash(keys, str, slen, ord);
-
-    while (*wep)
-    {
-	struct zebra_rec_word_entry *e = *wep;
-	if (ord == e->ord && slen == e->len && !memcmp(str, e->buf, slen))
-            break;
-	wep = &(*wep)->next;
-    }
-    
-    if (!*wep)
-    {
-        *wep = nmem_malloc(keys->nmem, sizeof(**wep));
-        (*wep)->buf = nmem_malloc(keys->nmem, slen);
-        memcpy((*wep)->buf, str, slen);
-        (*wep)->len = slen;
-        (*wep)->ord = ord;
-        (*wep)->next = 0;
-        (*wep)->keys = 0;
-        (*wep)->max_seq = 0;
-        (*wep)->last_key = &(*wep)->keys;
-    }
-    if (seq > (*wep)->max_seq)
-        kep = (*wep)->last_key;
-    else
-    {
-        kep = &(*wep)->keys;
-        while (*kep)
-        {
-            if (!key_compare(key, &(*kep)->key))
-                return;
-            kep = &(*kep)->next;
-        }
-    }
-    *kep = nmem_malloc(keys->nmem, sizeof(**kep));
-    (*kep)->next = 0;
-    (*wep)->last_key = &(*kep)->next;
-    memcpy(&(*kep)->key, key, sizeof(*key));
-    if (seq > (*wep)->max_seq)
-    {
-        (*wep)->max_seq = seq;
-    }
-}
-#else
 int zebra_rec_keys_add_hash(zebra_rec_keys_t keys, 
 			    const char *str, size_t slen,
 			    const struct it_key *key)
@@ -320,7 +223,6 @@ void zebra_rec_keys_write(zebra_rec_keys_t keys,
     *dst++ = '\0';
     keys->buf_used = dst - keys->buf;
 }
-#endif
 
 void zebra_rec_keys_reset(zebra_rec_keys_t keys)
 {
@@ -337,42 +239,6 @@ int zebra_rec_keys_rewind(zebra_rec_keys_t keys)
     assert(keys);
     iscz1_reset(keys->decode_handle);
 
-#if NEW
-    if (keys->buf_used == 0)
-    {
-        size_t i;
-        for (i = 0; i<keys->hash_size; i++)
-        {
-            struct zebra_rec_word_entry *we = keys->entries[i];
-            for (; we; we = we->next)
-            {
-                struct zebra_rec_key_entry *ke = we->keys;
-                for (; ke; ke = ke->next)
-                {
-                    const char *src = (char*) &ke->key;
-                    char *dst;
-                    if (keys->buf_used+1024 > keys->buf_max)
-                    {
-                        char *b = (char *) xmalloc (keys->buf_max += 128000);
-                        if (keys->buf_used > 0)
-                            memcpy (b, keys->buf, keys->buf_used);
-                        xfree (keys->buf);
-                        keys->buf = b;
-                    }
-                    
-                    dst = keys->buf + keys->buf_used;
-                    
-                    iscz1_encode(keys->encode_handle, &dst, &src);
-                    
-                    memcpy (dst, we->buf, we->len);
-                    dst += we->len;
-                    *dst++ = '\0';
-                    keys->buf_used = dst - keys->buf;
-                }
-            }
-        }
-    }
-#endif
 
     keys->fetch_offset = 0;
     if (keys->buf_used == 0)

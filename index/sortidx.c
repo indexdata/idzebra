@@ -374,6 +374,77 @@ void zebra_sort_delete(zebra_sort_index_t si)
     }
 }
 
+void zebra_sort_add_ent(zebra_sort_index_t si, struct zebra_sort_ent *ent)
+{
+    struct sortFile *sf = si->current_file;
+    int len;
+
+    if (!sf || !sf->u.bf)
+        return;
+    switch(si->type)
+    {
+    case ZEBRA_SORT_TYPE_FLAT:
+        /* take first entry from wrbuf - itself is 0-terminated */
+        len = strlen(wrbuf_buf(ent->wrbuf));
+        if (len > SORT_IDX_ENTRYSIZE)
+            len = SORT_IDX_ENTRYSIZE;
+        
+        memcpy(si->entry_buf, wrbuf_buf(ent->wrbuf), len);
+        if (len < SORT_IDX_ENTRYSIZE-len)
+            memset(si->entry_buf+len, 0, SORT_IDX_ENTRYSIZE-len);
+        bf_write(sf->u.bf, si->sysno+1, 0, 0, si->entry_buf);
+        break;
+    case ZEBRA_SORT_TYPE_ISAMB:
+        assert(sf->u.isamb);
+
+        assert(sf->no_inserted == 0);
+        if (sf->no_inserted == 0)
+        {
+            struct sort_term_stream s;
+            ISAMC_I isamc_i;
+            /* take first entry from wrbuf - itself is 0-terminated */
+            len = strlen(wrbuf_buf(ent->wrbuf)); 
+
+            s.st.sysno = si->sysno;
+            if (len >= SORT_MAX_TERM)
+                len = SORT_MAX_TERM-1;
+            memcpy(s.st.term, wrbuf_buf(ent->wrbuf), len);
+            s.st.term[len] = '\0';
+            s.st.length = len;
+            s.no = 1;
+            s.insert_flag = 1;
+            isamc_i.clientData = &s;
+            isamc_i.read_item = sort_term_code_read;
+            
+            isamb_merge(sf->u.isamb, &sf->isam_p, &isamc_i);
+            sf->no_inserted++;
+        }
+        break;
+    case ZEBRA_SORT_TYPE_MULTI:
+        assert(sf->u.isamb);
+        if (sf->no_inserted == 0)
+        {
+            struct sort_term_stream s;
+            ISAMC_I isamc_i;
+            len = wrbuf_len(ent->wrbuf);
+
+            s.st.sysno = si->sysno;
+            if (len >= SORT_MAX_MULTI)
+                len = SORT_MAX_MULTI-1;
+            memcpy(s.st.term, wrbuf_buf(ent->wrbuf), len);
+            s.st.length = len;
+            s.no = 1;
+            s.insert_flag = 1;
+            isamc_i.clientData = &s;
+            isamc_i.read_item = sort_term_code_read;
+            
+            isamb_merge(sf->u.isamb, &sf->isam_p, &isamc_i);
+            sf->no_inserted++;
+        }
+        break;
+    }
+}
+
 void zebra_sort_add(zebra_sort_index_t si, const char *buf, int len)
 {
     struct sortFile *sf = si->current_file;
