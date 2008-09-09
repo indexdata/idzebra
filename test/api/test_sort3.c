@@ -34,7 +34,7 @@ static void tst(int argc, char **argv)
 {
     zint ids[5];
 
-    ZebraService zs = tl_start_up("test_sortindex.cfg", argc, argv);
+    ZebraService zs = tl_start_up("test_sort3.cfg", argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
     
     YAZ_CHECK(tl_init_data(zh, myrec));

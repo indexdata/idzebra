@@ -18,9 +18,7 @@ test_scan
 test_special_elements
 test_zebra_fork
 test_safari
-test_sortindex
-test_sort1
-test_sort2
+test_sort[1-9]
 test_sortidx
 *.mf
 *.LCK
