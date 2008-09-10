@@ -581,18 +581,31 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
                 int off = 0;
                 while (off != wrbuf_len(w))
                 {
+                    size_t l = strlen(wrbuf_buf(w)+off);
                     assert(off < wrbuf_len(w));
+
+                    if (l >= SORT_IDX_ENTRYSIZE)
+                        l = SORT_IDX_ENTRYSIZE-1;
                     if (off == 0)
-                        strcpy(this_entry_buf, wrbuf_buf(w));
+                    {
+                        memcpy(this_entry_buf, wrbuf_buf(w)+off, l);
+                        this_entry_buf[l] = '\0';
+                    }
                     else if (criteria[i].relation == 'A')
                     {
                         if (strcmp(wrbuf_buf(w)+off, this_entry_buf) < 0)
-                            strcpy(this_entry_buf, wrbuf_buf(w)+off);
+                        {
+                            memcpy(this_entry_buf, wrbuf_buf(w)+off, l);
+                            this_entry_buf[l] = '\0';
+                        }
                     }
                     else if (criteria[i].relation == 'D')
                     {
                         if (strcmp(wrbuf_buf(w)+off, this_entry_buf) > 0)
-                            strcpy(this_entry_buf, wrbuf_buf(w)+off);
+                        {
+                            memcpy(this_entry_buf, wrbuf_buf(w)+off, l);
+                            this_entry_buf[l] = '\0';
+                        }
                     }
                     off += 1 + strlen(wrbuf_buf(w)+off);
                 }
