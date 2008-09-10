@@ -315,25 +315,26 @@ int zebra_sort_type(zebra_sort_index_t si, int id)
     return 0;
 }
 
+static void zebra_sortf_rewind(struct sortFile *sf)
+{
+    if (sf->isam_pp)
+        isamb_pp_close(sf->isam_pp);
+    sf->isam_pp = 0;
+    sf->no_inserted = 0;
+    sf->no_deleted = 0;
+}
+
 void zebra_sort_sysno(zebra_sort_index_t si, zint sysno)
 {
-    struct sortFile *sf = si->current_file;
     zint new_sysno = rec_sysno_to_int(sysno);
+    struct sortFile *sf;
 
     for (sf = si->files; sf; sf = sf->next)
     {
         if (sf->no_inserted || sf->no_deleted)
-        {
-            isamb_pp_close(sf->isam_pp);
-            sf->isam_pp = 0;
-        }
-        else if (sf->isam_pp && new_sysno < si->sysno && sf->isam_pp)
-        {
-            isamb_pp_close(sf->isam_pp);
-            sf->isam_pp = 0;
-        }
-        sf->no_inserted = 0;
-        sf->no_deleted = 0;
+            zebra_sortf_rewind(sf);
+        else if (sf->isam_pp && new_sysno <= si->sysno)
+            zebra_sortf_rewind(sf);
     }
     si->sysno = new_sysno;
 }
