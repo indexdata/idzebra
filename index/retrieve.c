@@ -209,16 +209,6 @@ int zebra_special_sort_fetch(
     int ord;
     ZebraHandle zh = fi->zh;
 
-    /* only accept XML and SUTRS requests */
-    if (oid_oidcmp(input_format, yaz_oid_recsyn_xml) 
-        && oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
-    {
-        yaz_log(YLOG_WARN, "unsupported format for element set zebra::%s", 
-                elemsetname);
-        *output_format = 0;
-        return YAZ_BIB1_NO_SYNTAXES_AVAILABLE_FOR_THIS_REQUEST;
-    }
-    
     if (!parse_zebra_elem(elemsetname,
                           &retrieval_index, &retrieval_index_len,
                           &retrieval_type,  &retrieval_type_len))
@@ -248,44 +238,66 @@ int zebra_special_sort_fetch(
         return -1;  /* is not a sort index */
     else
     {
-        char dst_buf[IT_MAX_WORD];
-        WRBUF str = wrbuf_alloc();
+        WRBUF wrbuf_str = wrbuf_alloc();
         const char *index_type;
         const char *db = 0;
         const char *string_index = 0;
-        WRBUF wrbuf = result;
+        WRBUF wrbuf_result = result;
+        int off = 0;
         
-        zebra_sort_sysno(zh->reg->sort_index, fi->sysno);
-        zebra_sort_type(zh->reg->sort_index, ord);
-        zebra_sort_read(zh->reg->sort_index, str);
-
-        zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db, &string_index);
-        
-        zebra_term_untrans(zh, index_type, dst_buf, wrbuf_cstr(str));
-
+        zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db, 
+                                &string_index);
         if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
         {
             *output_format = yaz_oid_recsyn_xml;
-            wrbuf_printf(wrbuf, ZEBRA_XML_HEADER_STR
+            wrbuf_printf(wrbuf_result, ZEBRA_XML_HEADER_STR
                          " sysno=\"" ZINT_FORMAT "\""
                          " set=\"zebra::index%s/\">\n",
                          fi->sysno, elemsetname);
-
-            wrbuf_printf(wrbuf, "  <index name=\"%s\"", 
-                         string_index);
-            wrbuf_printf(wrbuf, " type=\"%s\">", index_type);
-            wrbuf_xmlputs(wrbuf, dst_buf);
-            wrbuf_printf(wrbuf, "</index>\n");
-            wrbuf_printf(wrbuf, "</record>\n");
         }
         else if (!oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
         {
             *output_format = yaz_oid_recsyn_sutrs;
-            
-            wrbuf_printf(wrbuf, "%s %s %s\n", string_index, index_type,
-                         dst_buf);
         }
-        wrbuf_destroy(str);
+        else
+        {
+            yaz_log(YLOG_WARN, "unsupported format for element set zebra::%s", 
+                    elemsetname);
+            *output_format = 0;
+            wrbuf_destroy(wrbuf_str);
+            return YAZ_BIB1_NO_SYNTAXES_AVAILABLE_FOR_THIS_REQUEST;
+        }
+        zebra_sort_type(zh->reg->sort_index, ord);
+        zebra_sort_sysno(zh->reg->sort_index, fi->sysno);
+        zebra_sort_read(zh->reg->sort_index, wrbuf_str);
+
+        while (off != wrbuf_len(wrbuf_str))
+        {
+            char dst_buf[IT_MAX_WORD];
+            assert(off < wrbuf_len(wrbuf_str));
+            zebra_term_untrans(zh, index_type, dst_buf,
+                               wrbuf_buf(wrbuf_str)+off);
+            
+            if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
+            {
+                wrbuf_printf(wrbuf_result, "  <index name=\"%s\"", 
+                             string_index);
+                wrbuf_printf(wrbuf_result, " type=\"%s\">", index_type);
+                wrbuf_xmlputs(wrbuf_result, dst_buf);
+                wrbuf_printf(wrbuf_result, "</index>\n");
+            }
+            else if (!oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
+            {
+                wrbuf_printf(wrbuf_result, "%s %s %s\n", string_index, index_type,
+                             dst_buf);
+            }
+            off += strlen(wrbuf_buf(wrbuf_str)+off) + 1;
+        }
+        if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
+        {
+            wrbuf_printf(wrbuf_result, "</record>\n");
+        }
+        wrbuf_destroy(wrbuf_str);
         return 0;
     }
 }
