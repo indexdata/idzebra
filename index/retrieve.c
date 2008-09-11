@@ -717,6 +717,212 @@ static struct term_collect *term_collect_create(zebra_strmap_t sm,
     return col;
 }
 
+static int perform_facet_sort(ZebraHandle zh, int no_ord, int *ord_array,
+                              zebra_strmap_t *map_array,
+                              int num_recs, ZebraMetaRecord *poset)
+{
+    int rec_i;
+    WRBUF w = wrbuf_alloc();
+    int ord_i;
+
+    for (ord_i = 0; ord_i < no_ord; ord_i++)
+    {
+        for (rec_i = 0; rec_i < num_recs; rec_i++)
+        {
+            if (!poset[rec_i].sysno)
+                continue;
+            
+            zebra_sort_sysno(zh->reg->sort_index, poset[rec_i].sysno);
+            zebra_sort_type(zh->reg->sort_index, ord_array[ord_i]);
+            
+            wrbuf_rewind(w);
+            if (zebra_sort_read(zh->reg->sort_index, w))
+            {
+                zebra_strmap_t sm = map_array[ord_i];
+                int off = 0;
+                while (off != wrbuf_len(w))
+                {
+                    const char *str = wrbuf_buf(w) + off;
+                    int *freq = zebra_strmap_lookup(sm, str, 0, 0);
+                    if (freq)
+                        (*freq)++;
+                    else
+                    {
+                        int v = 1;
+                        zebra_strmap_add(sm, str, &v, sizeof v);
+                    }
+                    off += strlen(str)+1;
+                }
+            }
+        }
+    }
+    wrbuf_destroy(w);
+    return 0;
+}
+
+
+static int perform_facet_index(ZebraHandle zh,
+                               struct special_fetch_s *fi,
+                               int no_ord, int *ord_array,
+                               zebra_strmap_t *map_array,
+                               int num_recs, ZebraMetaRecord *poset,
+                               struct index_spec *spec_list)
+{
+    int max_chunks = 2;
+    int rec_i;
+    res_get_int(zh->res, "facetMaxChunks", &max_chunks);
+
+    for (rec_i = 0; rec_i < num_recs; rec_i++)
+    {
+        int ret;
+        int j;
+        zint sysnos[MAX_SYSNOS_PER_RECORD];
+        int no_sysnos = MAX_SYSNOS_PER_RECORD;
+        if (!poset[rec_i].sysno)
+            continue;
+        ret = zebra_result_recid_to_sysno(zh, fi->setname,
+                                          poset[rec_i].sysno,
+                                          sysnos, &no_sysnos);
+        assert(no_sysnos > 0);
+        yaz_log(YLOG_DEBUG, "Analyzing rec=%d ISAM sysno=" ZINT_FORMAT " chunks=%d",
+                rec_i, poset[rec_i].sysno, no_sysnos);
+        for (j = 0; j < no_sysnos && j < max_chunks; j++)
+        {
+            size_t slen;
+            const char *str;
+            struct it_key key_in;
+            Record rec = rec_get(zh->reg->records, sysnos[j]);
+            zebra_rec_keys_t keys = zebra_rec_keys_open();
+            zebra_rec_keys_set_buf(keys, rec->info[recInfo_delKeys],
+                                   rec->size[recInfo_delKeys], 0);
+            
+            yaz_log(YLOG_DEBUG, "rec %d " ZINT_FORMAT " %s", 
+                    j, sysnos[j], zebra_rec_keys_empty(keys) ? "empty" : "non-empty");
+            if (zebra_rec_keys_rewind(keys))
+            {
+                while (zebra_rec_keys_read(keys, &str, &slen, &key_in))
+                {
+                    int ord_i;
+                    struct index_spec *spec;
+                    for (spec = spec_list, ord_i = 0; ord_i < no_ord; 
+                         ord_i++, spec = spec->next)
+                    {
+                        int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
+                        if (ord == ord_array[ord_i] && 
+                            str[0] != FIRST_IN_FIELD_CHAR)
+                        {
+                            int *freq;
+                            zebra_strmap_t sm = map_array[ord_i];
+                            
+                            freq = zebra_strmap_lookup(sm, str, 0, 0);
+                            if (freq)
+                                (*freq)++;
+                            else
+                            {
+                                int v = 1;
+                                zebra_strmap_add(sm, str, &v, sizeof v);
+                            }
+                        }
+                    }
+                }
+            }
+            zebra_rec_keys_close(keys);
+            rec_free(&rec);
+        }
+    }
+    return 0;
+}
+
+static int perform_facet(ZebraHandle zh,  
+                         struct special_fetch_s *fi,
+                         WRBUF result,
+                         int num_recs, ZebraMetaRecord *poset,
+                         struct index_spec *spec_list,
+                         int no_ord, int *ord_array,
+                         int use_xml,
+                         zinfo_index_category_t cat)
+{
+    int i;
+    int ret = 0;
+    WRBUF wr = result;
+    struct index_spec *spec;
+    yaz_timing_t timing = yaz_timing_create();
+    zebra_strmap_t *map_array
+        = nmem_malloc(fi->nmem, sizeof *map_array * no_ord);
+    for (i = 0; i < no_ord; i++)
+        map_array[i] = zebra_strmap_create();
+
+    if (cat == zinfo_index_category_sort)
+        perform_facet_sort(zh, no_ord, ord_array, map_array,
+                           num_recs, poset);
+    else
+        perform_facet_index(zh, fi, no_ord, ord_array, map_array,
+                            num_recs, poset, spec_list);
+    yaz_timing_stop(timing);
+    yaz_log(YLOG_LOG, "facet first phase real=%4.2f cat=%s",
+            yaz_timing_get_real(timing),
+            (cat == zinfo_index_category_sort) ? "sort" : "index");
+    yaz_timing_start(timing);
+    for (spec = spec_list, i = 0; i < no_ord; i++, spec = spec->next)
+    {
+        int j;
+        NMEM nmem = nmem_create();
+        struct term_collect *col;
+        int no_collect_terms = 20;
+        
+        if (spec->extra)
+            no_collect_terms = atoi(spec->extra);
+        if (no_collect_terms < 1)
+            no_collect_terms = 1;
+        col = term_collect_create(map_array[i], no_collect_terms, nmem);
+        term_collect_freq(zh, col, no_collect_terms, ord_array[i],
+                          resultSetRef(zh, fi->setname));
+        
+        if (use_xml)
+            wrbuf_printf(wr, "  <facet type=\"%s\" index=\"%s\">\n",
+                         spec->index_type, spec->index_name);
+        else
+            wrbuf_printf(wr, "facet %s %s\n",
+                         spec->index_type, spec->index_name);
+        for (j = 0; j < no_collect_terms; j++)
+        {
+            if (col[j].term)
+            {
+                char dst_buf[IT_MAX_WORD];
+                zebra_term_untrans(zh, spec->index_type, dst_buf, col[j].term);
+                if (use_xml)
+                {
+                    wrbuf_printf(wr, "    <term coccur=\"%d\"", col[j].oc);
+                    if (col[j].set_occur)
+                        wrbuf_printf(wr, " occur=\"" ZINT_FORMAT "\"", 
+                                     col[j].set_occur);
+                    wrbuf_printf(wr, ">");
+                    wrbuf_xmlputs(wr, dst_buf);
+                    wrbuf_printf(wr, "</term>\n");
+                }
+                else
+                {
+                    wrbuf_printf(wr, "term %d", col[j].oc);
+                    if (col[j].set_occur)
+                        wrbuf_printf(wr, " " ZINT_FORMAT, 
+                                     col[j].set_occur);
+                    wrbuf_printf(wr, ": %s\n", dst_buf);
+                }
+            }
+        }
+        if (use_xml)
+            wrbuf_puts(wr, "  </facet>\n");
+        nmem_destroy(nmem);
+    }
+    for (i = 0; i < no_ord; i++)
+        zebra_strmap_destroy(map_array[i]);
+    yaz_timing_stop(timing);
+    yaz_log(YLOG_LOG, "facet second phase real=%4.2f",
+            yaz_timing_get_real(timing));
+    yaz_timing_destroy(&timing);
+    return ret;
+}
+
 static int facet_fetch(
     struct special_fetch_s *fi, const char *elemsetname,
     const Odr_oid *input_format,
@@ -726,19 +932,18 @@ static int facet_fetch(
     zint *pos_array;
     int i;
     int num_recs = 10; /* number of records to analyze */
-    int max_chunks = 2;
     ZebraMetaRecord *poset;
     ZEBRA_RES ret = ZEBRA_OK;
     int *ord_array;
-    WRBUF wr = result;
     int use_xml = 0;
     int no_ord = 0;
     struct index_spec *spec, *spec_list;
     int error;
     ZebraHandle zh = fi->zh;
+    /* whether sort or index based */
+    zinfo_index_category_t cat = zinfo_index_category_sort;
 
     res_get_int(zh->res, "facetNumRecs", &num_recs);
-    res_get_int(zh->res, "facetMaxChunks", &max_chunks);
 
     /* see if XML is required for response */
     if (oid_oidcmp(input_format, yaz_oid_recsyn_xml) == 0)
@@ -758,20 +963,38 @@ static int facet_fetch(
         no_ord++;
     }
 
+    /* try to see if all specs are sort based.. If not, try the
+       index based ones */
     ord_array = nmem_malloc(fi->nmem, sizeof(*ord_array) * no_ord);
 
     for (spec = spec_list, i = 0; spec; spec = spec->next, i++)
     {
         int ord = zebraExplain_lookup_attr_str(zh->reg->zei,
-                                               zinfo_index_category_index,
+                                               zinfo_index_category_sort,
                                                spec->index_type,
                                                spec->index_name);
         if (ord == -1)
-        {
-            return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
-        }
+            break;
         ord_array[i] = ord;
     }
+    if (spec)
+    {
+        cat = zinfo_index_category_index;
+        for (spec = spec_list, i = 0; spec; spec = spec->next, i++)
+        {
+            int ord = zebraExplain_lookup_attr_str(zh->reg->zei,
+                                                   zinfo_index_category_index,
+                                                   spec->index_type,
+                                                   spec->index_name);
+            if (ord == -1)
+                break;
+            ord_array[i] = ord;
+            
+        }
+    }
+    if (spec)
+        return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+
     pos_array = (zint *) nmem_malloc(fi->nmem, num_recs * sizeof(*pos_array));
     for (i = 0; i < num_recs; i++)
 	pos_array[i] = i+1;
@@ -783,134 +1006,15 @@ static int facet_fetch(
     }
     else
     {
-        yaz_timing_t timing = yaz_timing_create();
-        zebra_strmap_t *map_array
-            = nmem_malloc(fi->nmem, sizeof *map_array * no_ord);
-        for (i = 0; i < no_ord; i++)
-            map_array[i] = zebra_strmap_create();
-
-        for (i = 0; i < num_recs; i++)
-        {
-            int j;
-            zint sysnos[MAX_SYSNOS_PER_RECORD];
-            int no_sysnos = MAX_SYSNOS_PER_RECORD;
-            if (!poset[i].sysno)
-                continue;
-            ret = zebra_result_recid_to_sysno(zh, fi->setname,
-                                              poset[i].sysno,
-                                              sysnos, &no_sysnos);
-            assert(no_sysnos > 0);
-            yaz_log(YLOG_DEBUG, "Analyzing rec=%d ISAM sysno=" ZINT_FORMAT " chunks=%d",
-                    i, poset[i].sysno, no_sysnos);
-            for (j = 0; j < no_sysnos && j < max_chunks; j++)
-            {
-                size_t slen;
-                const char *str;
-                struct it_key key_in;
-                Record rec = rec_get(zh->reg->records, sysnos[j]);
-                zebra_rec_keys_t keys = zebra_rec_keys_open();
-                zebra_rec_keys_set_buf(keys, rec->info[recInfo_delKeys],
-                                       rec->size[recInfo_delKeys], 0);
-
-                yaz_log(YLOG_DEBUG, "rec %d " ZINT_FORMAT " %s", 
-                        j, sysnos[j], zebra_rec_keys_empty(keys) ? "empty" : "non-empty");
-                if (zebra_rec_keys_rewind(keys))
-                {
-                    while (zebra_rec_keys_read(keys, &str, &slen, &key_in))
-                    {
-                        int i;
-                        struct index_spec *spec;
-                        for (spec = spec_list, i = 0; i < no_ord; 
-                             i++, spec = spec->next)
-                        {
-                            int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
-                            if (ord == ord_array[i] && 
-                                str[0] != FIRST_IN_FIELD_CHAR)
-                            {
-                                int *freq;
-                                zebra_strmap_t sm = map_array[i];
-                                
-                                freq = zebra_strmap_lookup(sm, str, 0, 0);
-                                if (freq)
-                                    (*freq)++;
-                                else
-                                {
-                                    int v = 1;
-                                    zebra_strmap_add(sm, str, &v, sizeof v);
-                                }
-                            }
-                        }
-                    }
-                }
-                zebra_rec_keys_close(keys);
-                rec_free(&rec);
-            }
-        }
-        yaz_timing_stop(timing);
-        yaz_log(YLOG_LOG, "facet first phase real=%4.2f",
-                yaz_timing_get_real(timing));
-        yaz_timing_start(timing);
         if (use_xml)
-            wrbuf_puts(wr, "<facets>\n");
-        for (spec = spec_list, i = 0; i < no_ord; i++, spec = spec->next)
         {
-            int j;
-            NMEM nmem = nmem_create();
-            struct term_collect *col;
-            int no_collect_terms = 20;
-
-            if (spec->extra)
-                no_collect_terms = atoi(spec->extra);
-            if (no_collect_terms < 1)
-                no_collect_terms = 1;
-            col = term_collect_create(map_array[i], no_collect_terms, nmem);
-            term_collect_freq(zh, col, no_collect_terms, ord_array[i],
-                              resultSetRef(zh, fi->setname));
-            
-            if (use_xml)
-                wrbuf_printf(wr, "  <facet type=\"%s\" index=\"%s\">\n",
-                             spec->index_type, spec->index_name);
-            else
-                wrbuf_printf(wr, "facet %s %s\n",
-                             spec->index_type, spec->index_name);
-            for (j = 0; j < no_collect_terms; j++)
-            {
-                if (col[j].term)
-                {
-                    char dst_buf[IT_MAX_WORD];
-                    zebra_term_untrans(zh, spec->index_type, dst_buf, col[j].term);
-                    if (use_xml)
-                    {
-                        wrbuf_printf(wr, "    <term coccur=\"%d\"", col[j].oc);
-                        if (col[j].set_occur)
-                            wrbuf_printf(wr, " occur=\"" ZINT_FORMAT "\"", 
-                                         col[j].set_occur);
-                        wrbuf_printf(wr, ">");
-                        wrbuf_xmlputs(wr, dst_buf);
-                        wrbuf_printf(wr, "</term>\n");
-                    }
-                    else
-                    {
-                        wrbuf_printf(wr, "term %d", col[j].oc);
-                        if (col[j].set_occur)
-                            wrbuf_printf(wr, " " ZINT_FORMAT, 
-                                         col[j].set_occur);
-                        wrbuf_printf(wr, ": %s\n", dst_buf);
-                    }
-                }
-            }
-            if (use_xml)
-                wrbuf_puts(wr, "  </facet>\n");
-            nmem_destroy(nmem);
+            wrbuf_printf(result, ZEBRA_XML_HEADER_STR ">\n");
         }
+        ret = perform_facet(zh, fi, result, num_recs, poset,
+                            spec_list, no_ord, ord_array, use_xml,
+                            cat);
         if (use_xml)
-            wrbuf_puts(wr, "</facets>\n");
-        for (i = 0; i < no_ord; i++)
-            zebra_strmap_destroy(map_array[i]);
-        yaz_timing_stop(timing);
-        yaz_log(YLOG_LOG, "facet second phase real=%4.2f",
-                yaz_timing_get_real(timing));
-        yaz_timing_destroy(&timing);
+            wrbuf_puts(result, "</record>\n");
     }
     *output_format = yaz_oid_recsyn_xml;
     zebra_meta_records_destroy(zh, poset, num_recs);

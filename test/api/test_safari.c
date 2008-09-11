@@ -45,7 +45,7 @@ const char *myrec[] =
     "00024339 125061 0 1 any the\n"
     "00024339 125061 0 2 any gamle\n"
     "00024339 125061 0 3 any mand\n"
-    "w 00024339 125661 0 4 any Hello\n"
+    "w 00024339 125661 0 4 any Hello\n" /* index type given */
     ,
     "1001\n"  /* separate record */
     "00024340 125062 0 1 any the\n"
@@ -103,7 +103,7 @@ static void tst(int argc, char **argv)
                                   myrec[4]), ZEBRA_OK);
     YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::any:0", 
                                   yaz_oid_recsyn_xml,
-                                  "<facets>\n"
+                                  "<record xmlns=\"http://www.indexdata.com/zebra/\">\n"
                                   "  <facet type=\"0\" index=\"any\">\n"
                                   "    <term coccur=\"4\" occur=\"3\">mand</term>\n"
                                   "    <term coccur=\"4\" occur=\"3\">the</term>\n"
@@ -111,15 +111,15 @@ static void tst(int argc, char **argv)
                                   "    <term coccur=\"2\" occur=\"1\">gamle</term>\n"
                                   "    <term coccur=\"1\" occur=\"1\">old</term>\n"
                                   "  </facet>\n"
-                                  "</facets>\n"), ZEBRA_OK);
+                                  "</record>\n"), ZEBRA_OK);
     YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::any:0:2", 
                                   yaz_oid_recsyn_xml,
-                                  "<facets>\n"
-                                  "  <facet type=\"0\" index=\"any\">\n"
+                                  "<record xmlns=\"http://www.indexdata.com/zebra/\">\n"
+                               "  <facet type=\"0\" index=\"any\">\n"
                                   "    <term coccur=\"4\" occur=\"3\">mand</term>\n"
                                   "    <term coccur=\"4\" occur=\"3\">the</term>\n"
                                   "  </facet>\n"
-                                  "</facets>\n"), ZEBRA_OK);
+                                  "</record>\n"), ZEBRA_OK);
 
     /* limit to 125061 */
     limits[0] = 125061;
