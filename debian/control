@@ -8,7 +8,7 @@ Package: idzebra-2.0
 Section: text
 Architecture: any
 Depends: idzebra-2.0-common, libidzebra-2.0-dev, idzebra-2.0-utils (= ${Source-Version}), libidzebra-2.0-modules, idzebra-2.0-doc
-Description: IDZebra virtual package (the works)
+Description: virtual package with most components
  This virtual package installs all the necessary packages to start
  working with IDZebra - including utility programs, development libraries,
  documentation and modules.
@@ -22,7 +22,7 @@ Package: libidzebra-2.0-modules
 Section: libs
 Architecture: any
 Depends: libidzebra-2.0-mod-alvis, libidzebra-2.0-mod-dom, libidzebra-2.0-mod-grs-xml, libidzebra-2.0-mod-grs-regx, libidzebra-2.0-mod-grs-marc, libidzebra-2.0-mod-text
-Description: IDZebra modules 
+Description: record filter modules
  This virtual package contains all base IDZebra filter modules.
  .
  IDZebra is a high-performance, general-purpose structured text indexing
@@ -33,7 +33,7 @@ Description: IDZebra modules
 Package: idzebra-2.0-common
 Section: text
 Architecture: all
-Description: IDZebra common files
+Description: common files
  This package includes common essential IDZebra configuration files.
  .
  IDZebra is a high-performance, general-purpose structured text indexing
@@ -44,7 +44,7 @@ Description: IDZebra common files
 Package: idzebra-2.0-examples
 Section: text
 Architecture: all
-Description: IDZebra example configurations
+Description: example configurations
  This package includes examples for indexing of various
  data formats like OAI-PMH, Marc21, and MarcXML.
  .
@@ -60,7 +60,7 @@ Conflicts: idzebra (<= 1.3.36-2)
 Depends: ${shlibs:Depends}, libidzebra-2.0 (= ${Source-Version})
 Recommends: idzebra-2.0-common
 Suggests: libidzebra-2.0-modules
-Description: IDZebra utility programs
+Description: utility programs including indexer and server
  This package contains IDZebra utilities such as the zebraidx indexer
  utility and the zebrasrv server.
  .
@@ -73,7 +73,7 @@ Package: libidzebra-2.0-dev
 Section: devel
 Architecture: any
 Depends: libidzebra-2.0 (= ${Source-Version})
-Description: IDZebra development
+Description: development files
  This package contains development files for IDZebra, such as libraries
  and header files.
  .
@@ -87,7 +87,7 @@ Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}
 Description: IDZebra libraries
- This package contains all run-time libraries for IDZebra.
+ Libraries
  .
  IDZebra is a high-performance, general-purpose structured text indexing
  and retrieval engine. It reads structured records in a variety of input
@@ -98,7 +98,7 @@ Package: libidzebra-2.0-mod-alvis
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: IDZebra filter alvis (XSLT filter for XML)
+Description: record filter module for XSLT indexing (obsolete)
  This package includes the alvis filter which uses libxslt1 to
  transform XML records by XSLT into XML indexable records. 
  DEPRECATED, better use the libidzebra-2.0-mod-dom indexing filter.
@@ -112,7 +112,7 @@ Package: libidzebra-2.0-mod-dom
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: IDZebra filter 'dom' (XML DOM internal document model with XSLT)
+Description: record filter module for XSLT indexing (replaces alvis)
  This package includes the 'dom' filter which uses libxslt1 to
  transform XML records by XSLT into XML indexable records. It can read and 
  index any binary MARC syntax as well, and is therefore a modern replacement
@@ -127,7 +127,7 @@ Package: libidzebra-2.0-mod-text
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: IDZebra filter text
+Description: record filter module for indexing plain text
  This package includes the a very simple text filter which indexes
  all tokens in simple text.
  .
@@ -140,7 +140,7 @@ Package: libidzebra-2.0-mod-grs-marc
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: IDZebra filter grs.marc (ISO2709 MARC reader)
+Description: record filter module for indexing MARC/ISO2709
  This package includes the grs.marc and grs.marcxml filters that allows
  IDZebra to read MARC records based on ISO2709.
  DEPRECATED, better use the libidzebra-2.0-mod-dom indexing filter.
@@ -154,7 +154,7 @@ Package: libidzebra-2.0-mod-grs-regx
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: IDZebra filters grs.regx, grs.tcl
+Description: record filter module for indexing using Tcl
  This package includes the grs.regx and grs.tcl filters.
  .
  IDZebra is a high-performance, general-purpose structured text indexing
@@ -166,7 +166,7 @@ Package: libidzebra-2.0-mod-grs-xml
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: IDZebra filter grs.xml (XML filter)
+Description: record filter module for indexing XML using Expat (SAX)
  This package includes the grs.xml filter which uses Expat to
  parse records in XML and turn them into IDZebra's internal grs node.
  DEPRECATED, better use the libidzebra-2.0-mod-dom indexing filter.
@@ -179,7 +179,7 @@ Description: IDZebra filter grs.xml (XML filter)
 Package: idzebra-2.0-doc
 Section: doc
 Architecture: all
-Description: IDZebra documentation
+Description: documentation
  This package includes documentation for IDZebra in PDF and HTML.
  .
  IDZebra is a high-performance, general-purpose structured text indexing
