@@ -20,27 +20,27 @@ modlibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)/modules
 tabdatadir = $(datadir)/$(PACKAGE)$(PACKAGE_SUFFIX)/tab
 
 # The shared modules 
-mod_grs_regx_la_SOURCES = regxread.c
+mod_grs_regx_la_SOURCES = mod_grs_regx.c
 mod_grs_regx_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
 mod_grs_regx_la_LADD = $(TCL_LIB)
 mod_grs_regx_la_LIBADD = $(zebralib) $(mod_grs_regx_la_LADD)
 
-mod_grs_xml_la_SOURCES = xmlread.c
+mod_grs_xml_la_SOURCES = mod_grs_xml.c
 mod_grs_xml_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
 mod_grs_xml_la_LADD = $(EXPAT_LIBS)
 mod_grs_xml_la_LIBADD = $(zebralib) $(mod_grs_xml_la_LADD)
 
-mod_grs_marc_la_SOURCES = marcread.c marcomp.c marcomp.h inline.c inline.h
+mod_grs_marc_la_SOURCES = mod_grs_marc.c marcomp.c marcomp.h inline.c inline.h
 mod_grs_marc_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
 mod_grs_marc_la_LADD =
 mod_grs_marc_la_LIBADD = $(zebralib) $(mod_grs_marc_la_LADD)
 
-mod_safari_la_SOURCES = safari.c
+mod_safari_la_SOURCES = mod_safari.c
 mod_safari_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
 mod_safari_la_LADD =
 mod_safari_la_LIBADD = $(zebralib) $(mod_safari_la_LADD)
 
-mod_alvis_la_SOURCES = alvis.c
+mod_alvis_la_SOURCES = mod_alvis.c
 mod_alvis_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
 mod_alvis_la_LADD =
 mod_alvis_la_LIBADD = $(zebralib) $(mod_alvis_la_LADD)
@@ -50,7 +50,7 @@ mod_dom_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
 mod_dom_la_LADD =
 mod_dom_la_LIBADD = $(zebralib) $(mod_dom_la_LADD)
 
-mod_text_la_SOURCES = rectext.c
+mod_text_la_SOURCES = mod_text.c
 mod_text_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
 mod_text_la_LADD =
 mod_text_la_LIBADD = $(zebralib) $(mod_text_la_LADD)
@@ -82,7 +82,7 @@ libidzebra_2_0_la_LDFLAGS=-export-dynamic -version-info $(ZEBRALIBS_VERSION_INFO
 libidzebra_2_0_la_SOURCES = \
   recctrl.c \
   recgrs.c \
-  sgmlread.c \
+  mod_grs_sgml.c \
   attribute.c \
   compact.c \
   dir.c dirs.c \

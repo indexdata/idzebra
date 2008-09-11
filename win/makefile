@@ -15,7 +15,7 @@ EXPAT_DIR=c:\Program files\Expat 2.0.1
 HAVE_ICONV=1
 ICONV_DIR=c:\iconv-1.9.2.win32
 
-# libxslt. For alvis
+# libxslt. For mod_dom and mod_alvis
 HAVE_LIBXSLT=1
 LIBXSLT_DIR=c:\libxslt-1.1.19.win32
 
@@ -215,7 +215,7 @@ icu:
 !endif
 
 !if $(HAVE_LIBXSLT)
-MOD_ALVIS_OBJS= $(OBJDIR)\alvis.obj
+MOD_ALVIS_OBJS= $(OBJDIR)\mod_alvis.obj
 MOD_ALVIS_CFLAGS=/DIDZEBRA_STATIC_ALVIS=1
 
 MOD_DOM_OBJS= $(OBJDIR)\mod_dom.obj
@@ -407,7 +407,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\lookup.obj \
 	$(OBJDIR)\lookupec.obj \
 	$(OBJDIR)\marcomp.obj \
-	$(OBJDIR)\marcread.obj \
+	$(OBJDIR)\mod_grs_marc.obj \
 	$(OBJDIR)\merge.obj \
 	$(OBJDIR)\mfile.obj \
 	$(OBJDIR)\open.obj \
@@ -421,8 +421,8 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\records.obj \
 	$(OBJDIR)\recindex.obj \
 	$(OBJDIR)\reckeys.obj \
-	$(OBJDIR)\rectext.obj \
-	$(OBJDIR)\regxread.obj \
+	$(OBJDIR)\mod_text.obj \
+	$(OBJDIR)\mod_grs_regx.obj \
 	$(OBJDIR)\res.obj \
 	$(OBJDIR)\retrieve.obj \
 	$(OBJDIR)\rpnscan.obj \
@@ -438,10 +438,10 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\rsnull.obj \
 	$(OBJDIR)\rsprox.obj \
 	$(OBJDIR)\rstemp.obj \
-	$(OBJDIR)\safari.obj \
+	$(OBJDIR)\mod_safari.obj \
 	$(OBJDIR)\scan.obj \
 	$(OBJDIR)\set.obj \
-	$(OBJDIR)\sgmlread.obj \
+	$(OBJDIR)\mod_grs_sgml.obj \
 	$(OBJDIR)\snippet.obj \
 	$(OBJDIR)\sortidx.obj \
 	$(OBJDIR)\states.obj \
@@ -453,7 +453,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\update_path.obj \
 	$(OBJDIR)\update_file.obj \
 	$(OBJDIR)\version.obj \
-	$(OBJDIR)\xmlread.obj \
+	$(OBJDIR)\mod_grs_xml.obj \
 	$(OBJDIR)\xpath.obj \
 	$(OBJDIR)\zaptterm.obj \
 	$(OBJDIR)\zebra-lock.obj \
