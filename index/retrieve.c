@@ -194,7 +194,7 @@ static int parse_zebra_elem(const char *elem,
 }
 
 
-int zebra_special_sort_fetch(
+static int sort_fetch(
     struct special_fetch_s *fi, const char *elemsetname,
     const Odr_oid *input_format,
     const Odr_oid **output_format,
@@ -929,9 +929,7 @@ static int zebra_special_fetch(
     ZebraHandle zh = fi->zh;
     zint sysno = fi->sysno;
     
-    /* set output variables before processing possible error states */
-    /* *rec_lenp = 0; */
-
+    /* processing zebra::facet */
     if (elemsetname && 0 == strncmp(elemsetname, "facet", 5))
     {
         return facet_fetch(fi, elemsetname + 5, 
@@ -946,24 +944,23 @@ static int zebra_special_fetch(
                              result, addinfo);
     }
 
-    /* processing zebra::meta::sysno elemset without fetching binary data */
+    /* processing zebra::meta::sysno  */
     if (elemsetname && 0 == strcmp(elemsetname, "meta::sysno"))
     {
         int ret = 0;
-        WRBUF wrbuf = result;
         if (!oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
         {
-            wrbuf_printf(wrbuf, ZINT_FORMAT, fi->sysno);
+            wrbuf_printf(result, ZINT_FORMAT, fi->sysno);
             *output_format = input_format;
         } 
         else if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
         {
-            wrbuf_printf(wrbuf, ZEBRA_XML_HEADER_STR
+            wrbuf_printf(result, ZEBRA_XML_HEADER_STR
                          " sysno=\"" ZINT_FORMAT "\"/>\n",
                          fi->sysno);
             *output_format = input_format;
         }
-        if (wrbuf_len(wrbuf) == 0)
+        else
             ret = YAZ_BIB1_NO_SYNTAXES_AVAILABLE_FOR_THIS_REQUEST;
         return ret;
     }
@@ -971,7 +968,7 @@ static int zebra_special_fetch(
     /* processing special elementsetname zebra::index:: for sort elements */
     if (elemsetname && 0 == strncmp(elemsetname, "index", 5))
     {
-        int ret = zebra_special_sort_fetch(
+        int ret = sort_fetch(
             fi, elemsetname + 5,
             input_format, output_format,
             result, addinfo);
@@ -1008,35 +1005,25 @@ static int zebra_special_fetch(
         return 0;
     }
 
-    /* only accept XML and SUTRS requests from now */
-    if (oid_oidcmp(input_format, yaz_oid_recsyn_xml)
-        && oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
-    {
-        yaz_log(YLOG_WARN, "unsupported format for element set zebra::%s", 
-                elemsetname);
-        return YAZ_BIB1_NO_SYNTAXES_AVAILABLE_FOR_THIS_REQUEST;
-    }
-    
     /* processing special elementsetnames zebra::meta:: */
     if (elemsetname && 0 == strcmp(elemsetname, "meta"))
     {
         int ret = 0;
-        WRBUF wrbuf = result;
         RecordAttr *recordAttr = rec_init_attr(zh->reg->zei, rec); 
 
         if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
         {
             *output_format = input_format;
             
-            wrbuf_printf(wrbuf, ZEBRA_XML_HEADER_STR
+            wrbuf_printf(result, ZEBRA_XML_HEADER_STR
                          " sysno=\"" ZINT_FORMAT "\"", sysno);
-            retrieve_puts_attr(wrbuf, "base", rec->info[recInfo_databaseName]);
-            retrieve_puts_attr(wrbuf, "file", rec->info[recInfo_filename]);
-            retrieve_puts_attr(wrbuf, "type", rec->info[recInfo_fileType]);
+            retrieve_puts_attr(result, "base", rec->info[recInfo_databaseName]);
+            retrieve_puts_attr(result, "file", rec->info[recInfo_filename]);
+            retrieve_puts_attr(result, "type", rec->info[recInfo_fileType]);
             if (fi->score >= 0)
-                retrieve_puts_attr_int(wrbuf, "score", fi->score);
+                retrieve_puts_attr_int(result, "score", fi->score);
            
-            wrbuf_printf(wrbuf,
+            wrbuf_printf(result,
                          " rank=\"" ZINT_FORMAT "\""
                          " size=\"%i\""
                          " set=\"zebra::%s\"/>\n",
@@ -1047,14 +1034,14 @@ static int zebra_special_fetch(
         else if (!oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
         {
             *output_format = input_format;
-            wrbuf_printf(wrbuf, "sysno " ZINT_FORMAT "\n", sysno);
-            retrieve_puts_str(wrbuf, "base", rec->info[recInfo_databaseName]);
-            retrieve_puts_str(wrbuf, "file", rec->info[recInfo_filename]);
-            retrieve_puts_str(wrbuf, "type", rec->info[recInfo_fileType]);
+            wrbuf_printf(result, "sysno " ZINT_FORMAT "\n", sysno);
+            retrieve_puts_str(result, "base", rec->info[recInfo_databaseName]);
+            retrieve_puts_str(result, "file", rec->info[recInfo_filename]);
+            retrieve_puts_str(result, "type", rec->info[recInfo_fileType]);
             if (fi->score >= 0)
-                retrieve_puts_int(wrbuf, "score", fi->score);
+                retrieve_puts_int(result, "score", fi->score);
 
-            wrbuf_printf(wrbuf,
+            wrbuf_printf(result,
                          "rank " ZINT_FORMAT "\n"
                          "size %i\n"
                          "set zebra::%s\n",
@@ -1062,8 +1049,8 @@ static int zebra_special_fetch(
                          recordAttr->recordSize,
                          elemsetname);
         }
-	if (wrbuf_len(wrbuf) == 0)
-            ret = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+        else
+            ret = YAZ_BIB1_NO_SYNTAXES_AVAILABLE_FOR_THIS_REQUEST;
 
         rec_free(&rec);
         return ret;
