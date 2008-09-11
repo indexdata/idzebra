@@ -302,7 +302,7 @@ int zebra_special_sort_fetch(
     }
 }
                             
-int zebra_special_index_fetch(
+static int special_index_fetch(
     struct special_fetch_s *fi, const char *elemsetname,
     const Odr_oid *input_format,
     const Odr_oid **output_format,
@@ -613,7 +613,7 @@ struct term_collect {
     zint set_occur;
 };
 
-zint freq_term(ZebraHandle zh, int ord, const char *term, RSET rset_set)
+static zint freq_term(ZebraHandle zh, int ord, const char *term, RSET rset_set)
 {
     struct rset_key_control *kc = zebra_key_control_create(zh);
     char ord_buf[IT_MAX_WORD];
@@ -646,7 +646,7 @@ zint freq_term(ZebraHandle zh, int ord, const char *term, RSET rset_set)
     return hits;
 }
 
-int term_qsort_handle(const void *a, const void *b)
+static int term_qsort_handle(const void *a, const void *b)
 {
     const struct term_collect *l = a;
     const struct term_collect *r = b;
@@ -662,9 +662,9 @@ int term_qsort_handle(const void *a, const void *b)
     }
 }
 
-void term_collect_freq(ZebraHandle zh,
-                       struct term_collect *col, int no_terms_collect,
-                       int ord, RSET rset)
+static void term_collect_freq(ZebraHandle zh,
+                              struct term_collect *col, int no_terms_collect,
+                              int ord, RSET rset)
 {
     int i;
     for (i = 0; i < no_terms_collect; i++)
@@ -675,9 +675,9 @@ void term_collect_freq(ZebraHandle zh,
     qsort(col, no_terms_collect, sizeof(*col), term_qsort_handle);
 }
 
-struct term_collect *term_collect_create(zebra_strmap_t sm, 
-                                         int no_terms_collect,
-                                         NMEM nmem)
+static struct term_collect *term_collect_create(zebra_strmap_t sm, 
+                                                int no_terms_collect,
+                                                NMEM nmem)
 {
     const char *term;
     void *data_buf;
@@ -717,7 +717,7 @@ struct term_collect *term_collect_create(zebra_strmap_t sm,
     return col;
 }
 
-static ZEBRA_RES facet_fetch(
+static int facet_fetch(
     struct special_fetch_s *fi, const char *elemsetname,
     const Odr_oid *input_format,
     const Odr_oid **output_format,
@@ -748,23 +748,13 @@ static ZEBRA_RES facet_fetch(
               
     if (!spec_list || error)
     {
-        zebra_setError(
-            zh, 
-            YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_,
-            0);
-        return ZEBRA_FAIL;
+        return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
     }          
   
     for (spec = spec_list; spec; spec = spec->next)
     {
         if (!spec->index_type)
-        {
-            zebra_setError(
-                zh, 
-                YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_,
-                0);
-            return ZEBRA_FAIL;
-        }
+            return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
         no_ord++;
     }
 
@@ -778,11 +768,7 @@ static ZEBRA_RES facet_fetch(
                                                spec->index_name);
         if (ord == -1)
         {
-            zebra_setError(
-                zh, 
-                YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_,
-                0);
-            return ZEBRA_FAIL;
+            return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
         }
         ord_array[i] = ord;
     }
@@ -792,9 +778,8 @@ static ZEBRA_RES facet_fetch(
     poset = zebra_meta_records_create(zh, fi->setname, num_recs, pos_array);
     if (!poset)
     {
-	zebra_setError(zh, YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST,
-		       fi->setname);
-	ret = ZEBRA_FAIL;
+        wrbuf_puts(addinfo, fi->setname);
+	return YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST;
     }
     else
     {
@@ -933,12 +918,11 @@ static ZEBRA_RES facet_fetch(
 }
 
 
-int zebra_special_fetch(
+static int zebra_special_fetch(
     void *handle, const char *elemsetname,
     const Odr_oid *input_format,
     const Odr_oid **output_format,
-    WRBUF result, WRBUF addinfo
-    )
+    WRBUF result, WRBUF addinfo)
 {
     Record rec = 0;
     struct special_fetch_s *fi = (struct special_fetch_s *) handle;
@@ -1088,7 +1072,7 @@ int zebra_special_fetch(
     /* processing special elementsetnames zebra::index:: */
     if (elemsetname && 0 == strncmp(elemsetname, "index", 5))
     {
-        int ret = zebra_special_index_fetch(
+        int ret = special_index_fetch(
             fi, elemsetname + 5,
             input_format, output_format,
             result, addinfo, rec);

@@ -1123,11 +1123,18 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
     }
     else
     {
-	for (i = 0; i<num_recs; i++)
+        WRBUF addinfo_w = wrbuf_alloc();
+	for (i = 0; i < num_recs; i++)
 	{
+            recs[i].errCode = 0;
+            recs[i].errString = 0;
+            recs[i].format = 0;
+            recs[i].len = 0;
+            recs[i].buf = 0;
+            recs[i].base = 0;
+            recs[i].sysno = poset[i].term;
 	    if (poset[i].term)
 	    {
-		recs[i].errCode = 0;
 		recs[i].format = yaz_oid_recsyn_sutrs;
 		recs[i].len = strlen(poset[i].term);
 		recs[i].buf = poset[i].term;
@@ -1145,13 +1152,17 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 		zebra_snippets_hit_vector(zh, setname, poset[i].sysno, 
 					  hit_snippet);
 #endif
+                wrbuf_rewind(addinfo_w);
 		recs[i].errCode =
 		    zebra_record_fetch(zh, setname,
                                        poset[i].sysno, poset[i].score,
 				       stream, input_format, comp,
 				       &recs[i].format, &buf, &len,
-				       &recs[i].base, &recs[i].errString);
+				       &recs[i].base, addinfo_w);
 		
+                if (wrbuf_len(addinfo_w))
+                    recs[i].errString =
+                        odr_strdup(stream, wrbuf_cstr(addinfo_w));
 		recs[i].len = len;
 		if (len > 0)
 		{
@@ -1161,7 +1172,6 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 		else
 		    recs[i].buf = buf;
                 recs[i].score = poset[i].score;
-                recs[i].sysno = poset[i].sysno;
 		zebra_snippets_destroy(hit_snippet);
 	    }
 	    else
@@ -1175,14 +1185,10 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 		    ret = ZEBRA_FAIL;
 		    break;
 		}
-		recs[i].buf = 0;  /* no record and no error issued */
-		recs[i].len = 0;
-		recs[i].errCode = 0;
-		recs[i].format = 0;
-		recs[i].sysno = 0;
 	    }
 	}
 	zebra_meta_records_destroy(zh, poset, num_recs);
+        wrbuf_destroy(addinfo_w);
     }
     zebra_end_read(zh);
     xfree(pos_array);
