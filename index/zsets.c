@@ -578,6 +578,9 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
             wrbuf_rewind(w);
             if (zebra_sort_read(zh->reg->sort_index, w))
             {
+                /* consider each sort entry and take lowest/highest one
+                   of the one as sorting key depending on whether sort is
+                   ascending/descending */
                 int off = 0;
                 while (off != wrbuf_len(w))
                 {
@@ -586,26 +589,15 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
 
                     if (l >= SORT_IDX_ENTRYSIZE)
                         l = SORT_IDX_ENTRYSIZE-1;
-                    if (off == 0)
+                    if ( (off == 0)
+                         || (criteria[i].relation == 'A'
+                             && strcmp(wrbuf_buf(w)+off, this_entry_buf) < 0)
+                         || (criteria[i].relation == 'D'
+                             && strcmp(wrbuf_buf(w)+off, this_entry_buf) > 0)
+                        )
                     {
                         memcpy(this_entry_buf, wrbuf_buf(w)+off, l);
                         this_entry_buf[l] = '\0';
-                    }
-                    else if (criteria[i].relation == 'A')
-                    {
-                        if (strcmp(wrbuf_buf(w)+off, this_entry_buf) < 0)
-                        {
-                            memcpy(this_entry_buf, wrbuf_buf(w)+off, l);
-                            this_entry_buf[l] = '\0';
-                        }
-                    }
-                    else if (criteria[i].relation == 'D')
-                    {
-                        if (strcmp(wrbuf_buf(w)+off, this_entry_buf) > 0)
-                        {
-                            memcpy(this_entry_buf, wrbuf_buf(w)+off, l);
-                            this_entry_buf[l] = '\0';
-                        }
                     }
                     off += 1 + strlen(wrbuf_buf(w)+off);
                 }
@@ -631,12 +623,6 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
                 char this_entry_org[1024];
                 char other_entry_org[1024];
                 double diff;
-                /* when searching multiple databases, we use the index
-                   type of the first one. So if they differ between
-                   databases, we have a problem here we could store the
-                   index_type for each database, but if we didn't find the
-                   record in any sort index, then we still don't know to
-                   which database it belongs. */
                 const char *index_type = criteria[j].index_type;
                 zebra_term_untrans(zh, index_type, this_entry_org,
                                    this_entry_buf);
