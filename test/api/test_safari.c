@@ -30,28 +30,33 @@ const char *myrec[] =
     "00024338 125060 0 1 any the\n"
     "00024338 125060 0 2 any art\n"
     "00024338 125060 0 3 any mand\n"
+    "s 00024338 125060 0 3 ti a b c\n"
     ,
     "5678\n"  /* other record - same owner id */
     "00024339 125060 0 1 any den\n"
     "00024339 125060 0 2 any gamle\n"
     "00024339 125060 0 3 any mand\n"
+    "s 00024339 125060 0 3 ti d e f\n"
     ,
     "5678\n"  /* same record chunk id as before .. */
     "00024339 125060 0 1 any the\n"
     "00024339 125060 0 2 any gamle\n"
     "00024339 125060 0 3 any mand\n"
+    "s 00024339 125060 0 3 ti g h i\n"
     ,
     "1000\n"  /* separate record */
     "00024339 125061 0 1 any the\n"
     "00024339 125061 0 2 any gamle\n"
     "00024339 125061 0 3 any mand\n"
     "w 00024339 125661 0 4 any Hello\n" /* index type given */
+    "s 00024339 125061 0 3 ti j k l\n"
     ,
     "1001\n"  /* separate record */
     "00024340 125062 0 1 any the\n"
     "00024340 125062 0 1 any the\n" /* DUP KEY, bug #432 */
     "00024340 125062 0 2 any old\n"
     "00024340 125062 0 3 any mand\n"
+    "s 00024340 125062 0 3 ti m n o\n"
     ,
     "1002\n"  /* segment testing record */
     "00024341 125062 0 1 title a\n"
@@ -118,6 +123,15 @@ static void tst(int argc, char **argv)
                                "  <facet type=\"0\" index=\"any\">\n"
                                   "    <term coccur=\"4\" occur=\"3\">mand</term>\n"
                                   "    <term coccur=\"4\" occur=\"3\">the</term>\n"
+                                  "  </facet>\n"
+                                  "</record>\n"), ZEBRA_OK);
+
+
+    YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::ti:s", 
+                                  yaz_oid_recsyn_xml,
+                                  "<record xmlns=\"http://www.indexdata.com/zebra/\">\n"
+                                  "  <facet type=\"s\" index=\"ti\">\n"
+                                  /* something is missing here! */
                                   "  </facet>\n"
                                   "</record>\n"), ZEBRA_OK);
 
