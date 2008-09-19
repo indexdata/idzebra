@@ -131,7 +131,9 @@ static void tst(int argc, char **argv)
                                   yaz_oid_recsyn_xml,
                                   "<record xmlns=\"http://www.indexdata.com/zebra/\">\n"
                                   "  <facet type=\"s\" index=\"ti\">\n"
-                                  /* something is missing here! */
+                                  "    <term coccur=\"1\">a b c</term>\n"
+                                  "    <term coccur=\"1\">j k l</term>\n"
+                                  "    <term coccur=\"1\">m n o</term>\n"
                                   "  </facet>\n"
                                   "</record>\n"), ZEBRA_OK);
 
