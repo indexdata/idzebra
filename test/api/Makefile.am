@@ -39,7 +39,6 @@ test_update_record_SOURCES = test_update_record.c
 test_zebra_fork_SOURCES = test_zebra_fork.c
 test_special_elements_SOURCES = test_special_elements.c
 test_icu_indexing_SOURCES = test_icu_indexing.c
-test_sortindex_SOURCES = test_sortindex.c
 test_safari_SOURCES = test_safari.c 
 test_sort1_SOURCES = test_sort1.c
 test_sort2_SOURCES = test_sort2.c
