@@ -664,13 +664,20 @@ static int term_qsort_handle(const void *a, const void *b)
 
 static void term_collect_freq(ZebraHandle zh,
                               struct term_collect *col, int no_terms_collect,
-                              int ord, RSET rset)
+                              int ord, RSET rset, double scale_factor)
 {
     int i;
     for (i = 0; i < no_terms_collect; i++)
     {
         if (col[i].term)
-            col[i].set_occur = freq_term(zh, ord, col[i].term, rset);
+        {
+            if (scale_factor < 0.0)
+            {
+                col[i].set_occur = freq_term(zh, ord, col[i].term, rset);
+            }
+            else
+                col[i].set_occur = scale_factor * col[i].oc;
+        }
     }
     qsort(col, no_terms_collect, sizeof(*col), term_qsort_handle);
 }
@@ -876,7 +883,8 @@ static int perform_facet(ZebraHandle zh,
             no_collect_terms = 1;
         col = term_collect_create(map_array[i], no_collect_terms, nmem);
         term_collect_freq(zh, col, no_collect_terms, ord_array[i],
-                          resultSetRef(zh, fi->setname));
+                          resultSetRef(zh, fi->setname), 
+                          cat == zinfo_index_category_sort ? 1.0 : -1.0);
         
         if (use_xml)
             wrbuf_printf(wr, "  <facet type=\"%s\" index=\"%s\">\n",
@@ -943,8 +951,6 @@ static int facet_fetch(
     /* whether sort or index based */
     zinfo_index_category_t cat = zinfo_index_category_sort;
 
-    res_get_int(zh->res, "facetNumRecs", &num_recs);
-
     /* see if XML is required for response */
     if (oid_oidcmp(input_format, yaz_oid_recsyn_xml) == 0)
         use_xml = 1;
@@ -976,6 +982,7 @@ static int facet_fetch(
         if (ord == -1)
             break;
         ord_array[i] = ord;
+        num_recs = 10000;
     }
     if (spec)
     {
@@ -994,6 +1001,8 @@ static int facet_fetch(
     }
     if (spec)
         return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+
+    res_get_int(zh->res, "facetNumRecs", &num_recs);
 
     pos_array = (zint *) nmem_malloc(fi->nmem, num_recs * sizeof(*pos_array));
     for (i = 0; i < num_recs; i++)
