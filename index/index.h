@@ -312,7 +312,7 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
                        const Odr_oid *input_format, Z_RecordComposition *comp,
                        const Odr_oid **output_format, char **rec_bufp,
                        int *rec_lenp, char **basenamep,
-                       char **addinfo);
+                       WRBUF addinfo_w);
 
 void extract_get_fname_tmp(ZebraHandle zh, char *fname, int no);
 

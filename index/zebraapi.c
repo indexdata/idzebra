@@ -423,6 +423,10 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
 	    if (zebra_maps_read_file(reg->zebra_maps, index_fname) != ZEBRA_OK)
 		ret = ZEBRA_FAIL;
 	}
+        else
+        {
+            zebra_maps_define_default_sort(reg->zebra_maps);
+        }
     }
 
     if (!(reg->records = rec_open(reg->bfs, rw, record_compression)))
@@ -1132,7 +1136,7 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
             recs[i].len = 0;
             recs[i].buf = 0;
             recs[i].base = 0;
-            recs[i].sysno = poset[i].term;
+            recs[i].sysno = poset[i].sysno;
 	    if (poset[i].term)
 	    {
 		recs[i].format = yaz_oid_recsyn_sutrs;

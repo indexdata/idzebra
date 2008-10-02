@@ -1182,7 +1182,7 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
                        const Odr_oid *input_format, Z_RecordComposition *comp,
                        const Odr_oid **output_format,
                        char **rec_bufp, int *rec_lenp, char **basenamep,
-                       char **addinfo)
+                       WRBUF addinfo_w)
 {
     Record rec;
     char *fname, *file_type, *basename;
@@ -1202,7 +1202,6 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
 
     sysno = sysnos[0];
     *basenamep = 0;
-    *addinfo = 0;
     elemsetname = yaz_get_esn(comp);
 
     fetch_info.zh = zh;
@@ -1215,7 +1214,6 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
     if (elemsetname && 0 == strncmp(elemsetname, "zebra::", 7))
     {
         WRBUF result = wrbuf_alloc();
-        WRBUF addinfo_w = wrbuf_alloc();
         int r = zebra_special_fetch(&fetch_info, elemsetname + 7,
                                     input_format, output_format,
                                     result, addinfo_w);
@@ -1224,13 +1222,7 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
             *rec_bufp = odr_strdup(odr, wrbuf_cstr(result));
             *rec_lenp = wrbuf_len(result);
         }
-        else 
-        {
-            if (wrbuf_len(addinfo_w))
-                *addinfo = odr_strdup(odr, wrbuf_cstr(addinfo_w));
-        }
         wrbuf_destroy(result);
-        wrbuf_destroy(addinfo_w);
         return r;
     }
 
@@ -1284,12 +1276,8 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
         if (!(rt = recType_byName(zh->reg->recTypes, zh->res,
                                   file_type, &clientData)))
         {
-            char addinfo_str[100];
-
-            sprintf(addinfo_str, "Could not handle record type %.40s",
-                    file_type);
-                    
-            *addinfo = odr_strdup(odr, addinfo_str);
+            wrbuf_printf(addinfo_w, "Could not handle record type %.40s",
+                         file_type);
             return_code = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
         }
         else
@@ -1300,7 +1288,8 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
             *output_format = retrieveCtrl.output_format;
             *rec_bufp = (char *) retrieveCtrl.rec_buf;
             *rec_lenp = retrieveCtrl.rec_len;
-            *addinfo = retrieveCtrl.addinfo;
+            if (retrieveCtrl.addinfo)
+                wrbuf_puts(addinfo_w, retrieveCtrl.addinfo);
         }
 
         stream.destroy(&stream);

@@ -35,6 +35,9 @@ YAZ_EXPORT
 ZEBRA_RES zebra_maps_read_file(zebra_maps_t zms, const char *fname);
 
 YAZ_EXPORT
+void zebra_maps_define_default_sort(zebra_maps_t zms);
+
+YAZ_EXPORT
 void zebra_maps_close(zebra_maps_t zm);
 
 YAZ_EXPORT

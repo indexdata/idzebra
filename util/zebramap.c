@@ -342,6 +342,12 @@ zebra_maps_t zebra_maps_open(Res res, const char *base_path,
     return zms;
 }
 
+void zebra_maps_define_default_sort(zebra_maps_t zms)
+{
+    zebra_map_t zm = zebra_add_map(zms, "s", ZEBRA_MAP_TYPE_SORT);
+    zm->u.sort.entry_size = 80;
+}
+
 zebra_map_t zebra_map_get(zebra_maps_t zms, const char *id)
 {
     zebra_map_t zm;
