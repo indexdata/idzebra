@@ -46,6 +46,14 @@ struct user_info {
     int loglevel;
 };
 
+static void report_xml_error(XML_Parser parser)
+{
+    zint line = XML_GetCurrentLineNumber(parser);
+    zint col = XML_GetCurrentColumnNumber(parser);
+    yaz_log (YLOG_WARN, ZINT_FORMAT ":" ZINT_FORMAT ":XML error: %s",
+             line, col, XML_ErrorString(XML_GetErrorCode(parser)));
+}
+
 static void cb_start (void *user, const char *el, const char **attr)
 {
     struct user_info *ui = (struct user_info*) user;
@@ -199,11 +207,7 @@ static int cb_external_entity(XML_Parser pparser,
         if (!XML_ParseBuffer (parser, r, done))
         {
 	    done = 1;
-	    yaz_log (YLOG_WARN, "%s:%d:%d:XML error: %s",
-		     systemId,
-		     XML_GetCurrentLineNumber(parser),
-		     XML_GetCurrentColumnNumber(parser),
-		     XML_ErrorString(XML_GetErrorCode(parser)));
+            report_xml_error(parser);
 	}
     }
     fclose (inf);
@@ -446,10 +450,7 @@ data1_node *zebra_read_xml(data1_handle dh,
         if (no_read && !XML_ParseBuffer (parser, r, done))
         {
 	    done = 1;
-	    yaz_log (YLOG_WARN, "%d:%d:XML error: %s",
-		     XML_GetCurrentLineNumber(parser),
-		     XML_GetCurrentColumnNumber(parser),
-		     XML_ErrorString(XML_GetErrorCode(parser)));
+            report_xml_error(parser);
 	}
     }
     XML_ParserFree (parser);
