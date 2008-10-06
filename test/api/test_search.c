@@ -77,9 +77,9 @@ static void tst(int argc, char **argv)
     YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::title:s",
                                   yaz_oid_recsyn_sutrs,
                                   "facet s title\n"
-                                  "term 1: my title\n"
-                                  "term 1: my title x\n"
-                                  "term 1: my x title\n"), ZEBRA_OK);
+                                  "term 1 1: my title\n"
+                                  "term 1 1: my title x\n"
+                                  "term 1 1: my x title\n"), ZEBRA_OK);
 
     /* trunc right */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=1 titl", 3));
