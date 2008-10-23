@@ -80,7 +80,7 @@ void zebra_sort_delete(zebra_sort_index_t si);
 
 /** \brief reads sort entry
     \param si sort index handle
-    \param buf resulting buffer
+    \param w resulting buffer
     \retval 0 could not be read
     \retval 1 could be read (found)
 */
