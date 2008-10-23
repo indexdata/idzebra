@@ -25,12 +25,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 YAZ_BEGIN_CDECL
 
 struct zebra_snippet_word {
-    zint seqno;
-    int ord;
-    char *term;
-    int match;
-    int mark;
-    int ws;
+    zint seqno;  /**< sequence number */
+    int ord;     /**< ordinal, i.e. database,field,type */
+    char *term;  /**< term itself */
+    int match;   /**< both part and real match */
+    int mark;    /**< part of snippet */
+    int ws;      /**< white space flag (not indexed material) */
     struct zebra_snippet_word *next;
     struct zebra_snippet_word *prev;
 };

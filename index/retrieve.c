@@ -484,6 +484,41 @@ static void retrieve_puts_int(WRBUF wrbuf, const char *name,
 }
 
 
+static void snippet_check_fields(ZebraHandle zh, WRBUF wrbuf,
+                                 zebra_snippets *doc,
+                                 const zebra_snippet_word *doc_w,
+                                 const char *w_index_type)
+{
+    /* beginning of snippet. See which fields the snippet also
+       occur */
+    const zebra_snippet_word *w;
+    int no = 0;
+    for (w = zebra_snippets_constlist(doc); w; w = w->next)
+    {
+        /* same sequence but other field? */
+        if (w->seqno == doc_w->seqno && w->ord != doc_w->ord)
+        {
+            const char *index_type;
+            const char *db = 0;
+            const char *string_index = 0;
+            
+            zebraExplain_lookup_ord(zh->reg->zei, w->ord, 
+                                    &index_type, &db, &string_index);
+            /* only report for same index type */
+            if (!strcmp(w_index_type, index_type))
+            {
+                if (no == 0)
+                    wrbuf_printf(wrbuf, " fields=\"%s", string_index);
+                else
+                    wrbuf_printf(wrbuf, " %s", string_index);
+                no++;
+            }
+        }
+    }
+    if (no)
+        wrbuf_printf(wrbuf, "\"");
+}
+
 static void snippet_xml_record(ZebraHandle zh, WRBUF wrbuf, zebra_snippets *doc)
 {
     const zebra_snippet_word *doc_w;
@@ -503,8 +538,11 @@ static void snippet_xml_record(ZebraHandle zh, WRBUF wrbuf, zebra_snippets *doc)
 
             if (mark_state == 0)
             {
+                
                 wrbuf_printf(wrbuf, "  <snippet name=\"%s\"",  string_index);
-                wrbuf_printf(wrbuf, " type=\"%s\">", index_type);
+                wrbuf_printf(wrbuf, " type=\"%s\"", index_type);
+                snippet_check_fields(zh, wrbuf, doc, doc_w, index_type);
+                wrbuf_printf(wrbuf, ">");
             }
             if (doc_w->match)
                 wrbuf_puts(wrbuf, "<s>");

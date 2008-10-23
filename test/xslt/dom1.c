@@ -131,10 +131,10 @@ void tst(int argc, char **argv)
     YAZ_CHECK_EQ(tl_fetch_first_compare(
                      zh, "zebra::snippet", yaz_oid_recsyn_xml,
                      "<record xmlns=\"http://www.indexdata.com/zebra/\">\n"
-                     "  <snippet name=\"any\" type=\"w\">"
+                     "  <snippet name=\"any\" type=\"w\" fields=\"title\">"
                      "Selected Prose of <s>Oscar</s> Wilde"
                      "</snippet>\n"
-                     "  <snippet name=\"any\" type=\"w\">"
+                     "  <snippet name=\"any\" type=\"w\" fields=\"creator\">"
                      "Wilde, <s>Oscar</s>, 1854-1900"
                      "</snippet>\n"
                      "</record>"),
