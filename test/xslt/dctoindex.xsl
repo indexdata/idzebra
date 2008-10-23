@@ -23,9 +23,7 @@
 
   <xsl:template match="/*">
     <z:record>
-      <z:index name="any:w">
         <xsl:apply-templates/>
-      </z:index>
 
       <xsl:call-template name="special-indexes"/>
 
@@ -38,7 +36,7 @@
   </xsl:template>
 
   <xsl:template match="/*/*[namespace-uri() = 'http://purl.org/dc/elements/1.1/']">
-    <z:index name="{local-name()}:w">
+    <z:index name="any:w {local-name()}:w">
       <xsl:value-of select="."/>
     </z:index>
   </xsl:template>

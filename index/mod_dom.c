@@ -813,10 +813,18 @@ static void index_value_of(struct filter_info *tinfo,
     {
         xmlChar *text = xmlNodeGetContent(node);
         size_t text_len = strlen((const char *)text);
-       
+        
         /* if there is no text, we do not need to proceed */
         if (text_len)
         {            
+            /* keep seqno base so that all text will have
+               identical seqno's for multiple fields , e.g
+               <z:index name="title:w any:w title:p">.. */
+            
+            zint seqno_base = recword->seqno;
+            zint seqno_max = recword->seqno;
+       
+
             const char *look = index_p;
             const char *bval;
             const char *eval;
@@ -864,6 +872,7 @@ static void index_value_of(struct filter_info *tinfo,
 
                 /* actually indexing the text given */
 
+                recword->seqno = seqno_base;
                 recword->index_name = (const char *)index;
                 if (*type)
                     recword->index_type = (const char *) type;
@@ -878,12 +887,16 @@ static void index_value_of(struct filter_info *tinfo,
                 
                 (extctr->tokenAdd)(recword);
 
+                if (seqno_max < recword->seqno)
+                    seqno_max = recword->seqno;
+
                 /* eat whitespaces */
                 if (*look && ' ' == *look)
                 {
                     look++;
                 } 
             }
+            recword->seqno = seqno_max;
         }
         xmlFree(text); 
     }
