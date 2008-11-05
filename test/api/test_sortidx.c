@@ -21,12 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <sortidx.h>
 #include "testlib.h"
 
-static void sort_add_cstr(zebra_sort_index_t si, const char *str)
+static void sort_add_cstr(zebra_sort_index_t si, const char *str,
+                          zint section_id)
 {
     WRBUF w = wrbuf_alloc();
     wrbuf_puts(w, str);
     wrbuf_putc(w, '\0');
-    zebra_sort_add(si, w);
+    zebra_sort_add(si, section_id, w);
     wrbuf_destroy(w);
 }
 
@@ -39,38 +40,38 @@ static void tst1(zebra_sort_index_t si)
     zebra_sort_type(si, my_type);
 
     zebra_sort_sysno(si, sysno);
-    YAZ_CHECK_EQ(zebra_sort_read(si, w), 0);
+    YAZ_CHECK_EQ(zebra_sort_read(si, 0, w), 0);
 
-    sort_add_cstr(si, "abcde1");
+    sort_add_cstr(si, "abcde1", 0);
 
     zebra_sort_sysno(si, sysno);
-    YAZ_CHECK_EQ(zebra_sort_read(si, w), 1);
+    YAZ_CHECK_EQ(zebra_sort_read(si, 0, w), 1);
     YAZ_CHECK(!strcmp(wrbuf_cstr(w), "abcde1"));
 
     zebra_sort_sysno(si, sysno+1);
-    YAZ_CHECK_EQ(zebra_sort_read(si, w), 0);
+    YAZ_CHECK_EQ(zebra_sort_read(si, 0, w), 0);
 
     zebra_sort_sysno(si, sysno-1);
-    YAZ_CHECK_EQ(zebra_sort_read(si, w), 0);
+    YAZ_CHECK_EQ(zebra_sort_read(si, 0, w), 0);
 
     zebra_sort_sysno(si, sysno);
-    zebra_sort_delete(si);
-    YAZ_CHECK_EQ(zebra_sort_read(si, w), 0);
+    zebra_sort_delete(si, 0);
+    YAZ_CHECK_EQ(zebra_sort_read(si, 0, w), 0);
 
     zebra_sort_type(si, my_type);
 
     zebra_sort_sysno(si, sysno);
-    YAZ_CHECK_EQ(zebra_sort_read(si, w), 0);
+    YAZ_CHECK_EQ(zebra_sort_read(si, 0, w), 0);
 
     wrbuf_rewind(w);
-    sort_add_cstr(si, "abcde1");
+    sort_add_cstr(si, "abcde1", 0);
 
     zebra_sort_sysno(si, sysno);
-    YAZ_CHECK_EQ(zebra_sort_read(si, w), 1);
+    YAZ_CHECK_EQ(zebra_sort_read(si, 0, w), 1);
     YAZ_CHECK(!strcmp(wrbuf_cstr(w), "abcde1"));
 
     zebra_sort_sysno(si, sysno);
-    zebra_sort_delete(si);
+    zebra_sort_delete(si, 0);
 
     wrbuf_destroy(w);
 }
@@ -85,22 +86,25 @@ static void tst2(zebra_sort_index_t si)
 
     for (sysno = 1; sysno < 50; sysno++)
     {
+        zint input_section_id = 12345;
+        zint output_section_id = 0;
         WRBUF w1 = wrbuf_alloc();
         WRBUF w2 = wrbuf_alloc();
         zebra_sort_sysno(si, sysno);
-        YAZ_CHECK_EQ(zebra_sort_read(si, w2), 0);
+        YAZ_CHECK_EQ(zebra_sort_read(si, 0, w2), 0);
         
         for (i = 0; i < 600; i++) /* 600 * 6 < max size =4K */
             wrbuf_write(w1, "12345", 6);
         
-        zebra_sort_add(si, w1);
+        zebra_sort_add(si, input_section_id, w1);
         
         zebra_sort_sysno(si, sysno);
         
-        YAZ_CHECK_EQ(zebra_sort_read(si, w2), 1);
+        YAZ_CHECK_EQ(zebra_sort_read(si, &output_section_id, w2), 1);
         
         YAZ_CHECK_EQ(wrbuf_len(w1), wrbuf_len(w2));
         YAZ_CHECK(!memcmp(wrbuf_buf(w1), wrbuf_buf(w2), wrbuf_len(w2)));
+        YAZ_CHECK_EQ(input_section_id, output_section_id);
         wrbuf_destroy(w1);
         wrbuf_destroy(w2);
     }

@@ -269,7 +269,7 @@ static int sort_fetch(
         }
         zebra_sort_type(zh->reg->sort_index, ord);
         zebra_sort_sysno(zh->reg->sort_index, fi->sysno);
-        zebra_sort_read(zh->reg->sort_index, wrbuf_str);
+        zebra_sort_read(zh->reg->sort_index, 0, wrbuf_str);
 
         while (off != wrbuf_len(wrbuf_str))
         {
@@ -781,7 +781,7 @@ static int perform_facet_sort(ZebraHandle zh, int no_ord, int *ord_array,
             zebra_sort_type(zh->reg->sort_index, ord_array[ord_i]);
             
             wrbuf_rewind(w);
-            if (zebra_sort_read(zh->reg->sort_index, w))
+            if (zebra_sort_read(zh->reg->sort_index, 0, w))
             {
                 zebra_strmap_t sm = map_array[ord_i];
                 int off = 0;

@@ -64,27 +64,30 @@ void zebra_sort_sysno(zebra_sort_index_t si, zint sysno);
 
 /** \brief adds multi-map content to sort file
     \param si sort index handle
+    \param section_id section of key
     \param w one or more 0-terminted strings (thus an array)
 
     zebra_sort_type and zebra_sort_sysno must be called prior to this
 */
-void zebra_sort_add(zebra_sort_index_t si, WRBUF w);
+void zebra_sort_add(zebra_sort_index_t si, zint section_id, WRBUF w);
 
 
 /** \brief delete sort entry
     \param si sort index handle
+    \param section_id section of sort key to be deleted
 
     zebra_sort_type and zebra_sort_sysno must be called prior to this
 */
-void zebra_sort_delete(zebra_sort_index_t si);
+void zebra_sort_delete(zebra_sort_index_t si, zint section_id);
 
 /** \brief reads sort entry
     \param si sort index handle
+    \param section_id output section ID (may be NULL and it will not be set)
     \param w resulting buffer
     \retval 0 could not be read
     \retval 1 could be read (found)
 */
-int zebra_sort_read(zebra_sort_index_t si, WRBUF w);
+int zebra_sort_read(zebra_sort_index_t si, zint *section_id, WRBUF w);
 
 YAZ_END_CDECL
 

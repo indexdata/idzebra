@@ -1874,6 +1874,7 @@ void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
             struct sort_add_ent *next;
             WRBUF wrbuf;
             zint sysno;
+            zint section_id;
         };
         struct sort_add_ent *sort_ent_list = 0;
 
@@ -1881,10 +1882,12 @@ void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
         {
             int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
             zint filter_sysno = key_in.mem[1];
+            zint section_id = key_in.mem[2];
 
             struct sort_add_ent **e = &sort_ent_list;
-            while (*e && (*e)->ord != ord)
-                e = &(*e)->next;
+            for (; *e; e = &(*e)->next)
+                if ((*e)->ord == ord && section_id == (*e)->section_id)
+                    break;
             if (!*e)
             {
                 *e = nmem_malloc(nmem, sizeof(**e));
@@ -1893,6 +1896,7 @@ void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
                 (*e)->ord = ord;
                 (*e)->cmd = cmd;
                 (*e)->sysno = filter_sysno ? filter_sysno : sysno;
+                (*e)->section_id = section_id;
             }
             
             wrbuf_write((*e)->wrbuf, str, slen);
@@ -1911,9 +1915,9 @@ void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
                 }
                 zebra_sort_type(si, e->ord);
                 if (e->cmd == 1)
-                    zebra_sort_add(si, e->wrbuf);
+                    zebra_sort_add(si, e->section_id, e->wrbuf);
                 else
-                    zebra_sort_delete(si);
+                    zebra_sort_delete(si, e->section_id);
                 wrbuf_destroy(e->wrbuf);
             }
         }

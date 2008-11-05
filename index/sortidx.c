@@ -35,6 +35,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 struct sort_term {
     zint sysno;
+    zint section_id;
     zint length;
     char term[SORT_MAX_MULTI];
 };
@@ -46,8 +47,8 @@ static void sort_term_log_item(int level, const void *b, const char *txt)
 
     memcpy(&a1, b, sizeof(a1));
 
-    yaz_log(level, "%s " ZINT_FORMAT " %.*s", txt, a1.sysno, 
-            (int) a1.length-1, a1.term);
+    yaz_log(level, "%s " ZINT_FORMAT " " ZINT_FORMAT " %.*s", txt, a1.sysno,
+            a1.section_id, (int) a1.length-1, a1.term);
 }
 
 static int sort_term_compare(const void *a, const void *b)
@@ -61,6 +62,11 @@ static int sort_term_compare(const void *a, const void *b)
         return 1;
     else if (a1.sysno < b1.sysno)
         return -1;
+    if (a1.section_id > b1.section_id)
+        return 1;
+    else if (a1.section_id < b1.section_id)
+        return -1;
+
     return 0;
 }
 
@@ -88,7 +94,8 @@ static void sort_term_encode2(void *p, char **dst, const char **src)
     memcpy(&a1, *src, sizeof(a1));
     *src += sizeof(a1);
 
-    zebra_zint_encode(dst, a1.sysno); /* encode record id */
+    zebra_zint_encode(dst, a1.sysno);
+    zebra_zint_encode(dst, a1.section_id);
     zebra_zint_encode(dst, a1.length); /* encode length */
     memcpy(*dst, a1.term, a1.length);
     *dst += a1.length;
@@ -100,6 +107,7 @@ static void sort_term_decode1(void *p, char **dst, const char **src)
     size_t slen;
 
     zebra_zint_decode(src, &a1.sysno);
+    a1.section_id = 0;
 
     strcpy(a1.term, *src);
     slen = 1 + strlen(a1.term);
@@ -115,6 +123,7 @@ static void sort_term_decode2(void *p, char **dst, const char **src)
     struct sort_term a1;
 
     zebra_zint_decode(src, &a1.sysno);
+    zebra_zint_decode(src, &a1.section_id);
     zebra_zint_decode(src, &a1.length);
 
     memcpy(a1.term, *src, a1.length);
@@ -340,7 +349,7 @@ void zebra_sort_sysno(zebra_sort_index_t si, zint sysno)
 }
 
 
-void zebra_sort_delete(zebra_sort_index_t si)
+void zebra_sort_delete(zebra_sort_index_t si, zint section_id)
 {
     struct sortFile *sf = si->current_file;
 
@@ -361,6 +370,7 @@ void zebra_sort_delete(zebra_sort_index_t si)
             ISAMC_I isamc_i;
 
             s.st.sysno = si->sysno;
+            s.st.section_id = section_id;
             s.st.length = 0;
             s.st.term[0] = '\0';
             
@@ -376,7 +386,7 @@ void zebra_sort_delete(zebra_sort_index_t si)
     }
 }
 
-void zebra_sort_add(zebra_sort_index_t si, WRBUF wrbuf)
+void zebra_sort_add(zebra_sort_index_t si, zint section_id, WRBUF wrbuf)
 {
     struct sortFile *sf = si->current_file;
     int len;
@@ -414,6 +424,7 @@ void zebra_sort_add(zebra_sort_index_t si, WRBUF wrbuf)
             memcpy(s.st.term, wrbuf_buf(wrbuf), len);
             s.st.length = len;
             s.st.sysno = si->sysno;
+            s.st.section_id = 0;
             s.no = 1;
             s.insert_flag = 1;
             isamc_i.clientData = &s;
@@ -438,6 +449,7 @@ void zebra_sort_add(zebra_sort_index_t si, WRBUF wrbuf)
             memcpy(s.st.term, wrbuf_buf(wrbuf), len);
             s.st.length = len;
             s.st.sysno = si->sysno;
+            s.st.section_id = section_id;
             s.no = 1;
             s.insert_flag = 1;
             isamc_i.clientData = &s;
@@ -451,7 +463,7 @@ void zebra_sort_add(zebra_sort_index_t si, WRBUF wrbuf)
 }
 
 
-int zebra_sort_read(zebra_sort_index_t si, WRBUF w)
+int zebra_sort_read(zebra_sort_index_t si, zint *section_id, WRBUF w)
 {
     int r;
     struct sortFile *sf = si->current_file;
@@ -483,12 +495,15 @@ int zebra_sort_read(zebra_sort_index_t si, WRBUF w)
                 struct sort_term st, st_untilbuf;
 
                 st_untilbuf.sysno = si->sysno;
+                st_untilbuf.section_id = 0;
                 st_untilbuf.length = 0;
                 st_untilbuf.term[0] = '\0';
                 r = isamb_pp_forward(sf->isam_pp, &st, &st_untilbuf);
                 if (r && st.sysno == si->sysno)
                 {
                     wrbuf_write(w, st.term, st.length);
+                    if (section_id)
+                        *section_id = st.section_id;
                     return 1;
                 }
             }

@@ -576,7 +576,7 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
                     criteria[i].ord[database_no]);
             zebra_sort_type(zh->reg->sort_index, criteria[i].ord[database_no]);
             wrbuf_rewind(w);
-            if (zebra_sort_read(zh->reg->sort_index, w))
+            if (zebra_sort_read(zh->reg->sort_index, 0, w))
             {
                 /* consider each sort entry and take lowest/highest one
                    of the one as sorting key depending on whether sort is
