@@ -17,11 +17,11 @@ ICONV_DIR=c:\iconv-1.9.2.win32
 
 # libxslt. For mod_dom and mod_alvis
 HAVE_LIBXSLT=1
-LIBXSLT_DIR=c:\libxslt-1.1.19.win32
+LIBXSLT_DIR=c:\libxslt-1.1.24.win32
 
 # libxml2. Used by libxslt
 HAVE_LIBXML2=1
-LIBXML2_DIR=c:\libxml2-2.6.28.win32
+LIBXML2_DIR=c:\libxml2-2.7.1.win32
 
 # zlib compression.  Used by libxml2
 ZLIB_DIR = c:\zlib-1.2.3.win32
@@ -200,14 +200,14 @@ libxslt:
 !if $(HAVE_ICU)
 ICU_DEF= /DYAZ_HAVE_ICU=1  /I"$(ICU_DIR)\include"
 ICU_LIB= $(ICU_DIR)\lib\icudt.lib $(ICU_DIR)\lib\icuin.lib $(ICU_DIR)\lib\icuuc.lib
-icu: $(BINDIR)\icudt38.dll $(BINDIR)\icuin38.dll $(BINDIR)\icuuc38.dll
+icu: $(BINDIR)\icudt40.dll $(BINDIR)\icuin40.dll $(BINDIR)\icuuc40.dll
 
-$(BINDIR)\icudt38.dll:
-	  copy "$(ICU_DIR)\bin\icudt38.dll" $(BINDIR)
-$(BINDIR)\icuin38.dll:
-	  copy "$(ICU_DIR)\bin\icuin38.dll" $(BINDIR)
-$(BINDIR)\icuuc38.dll:
-	  copy "$(ICU_DIR)\bin\icuuc38.dll" $(BINDIR)
+$(BINDIR)\icudt40.dll:
+	  copy "$(ICU_DIR)\bin\icudt40.dll" $(BINDIR)
+$(BINDIR)\icuin40.dll:
+	  copy "$(ICU_DIR)\bin\icuin40.dll" $(BINDIR)
+$(BINDIR)\icuuc40.dll:
+	  copy "$(ICU_DIR)\bin\icuuc40.dll" $(BINDIR)
 !else
 ICU_DEF=  /DYAZ_HAVE_ICU=0
 ICU_LIB=
