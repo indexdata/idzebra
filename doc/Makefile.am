@@ -115,6 +115,9 @@ domfilter.png: domfilter.svg
 domfilter.eps: domfilter.svg
 	unset DISPLAY; inkscape --export-eps=$@ --export-bbox-page $?
 
+doc-clean:
+	rm -f *.html *.pdf *.[0-9] domfilter.png domfilter.eps
+
 .eps.pdf:
 	epstopdf -hires $?
 
