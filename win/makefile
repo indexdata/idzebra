@@ -1,5 +1,4 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.75 2008-01-18 11:33:36 adam Exp $
  
 ###########################################################
 ############### Parameters 

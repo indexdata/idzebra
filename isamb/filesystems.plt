@@ -1,4 +1,3 @@
-# $Id: filesystems.plt,v 1.1 2006-12-12 13:54:33 adam Exp $
 # Inspect benchindex1 times with different filesystems
 set terminal x11
 # set terminal postscript eps

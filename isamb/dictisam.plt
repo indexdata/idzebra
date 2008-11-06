@@ -1,4 +1,3 @@
-# $Id: dictisam.plt,v 1.1 2006-12-12 13:54:33 adam Exp $
 # Plot isam + isamb times from output of benchindex1
 set terminal x11
 #set terminal postscript eps

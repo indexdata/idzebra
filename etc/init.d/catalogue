@@ -1,5 +1,3 @@
-# $Id: catalogue,v 1.1 2007-01-31 12:26:50 mike Exp $
-#
 # Zebra catalogue -- specifies which Zebra services the
 # /etc/init.d/idzebra script should start up and and shut down.
 #

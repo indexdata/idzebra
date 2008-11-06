@@ -1,5 +1,3 @@
-# $Id: Makefile,v 1.1 2006-02-16 10:43:15 mike Exp $
-
 # This doesn't actually build anything, it just tests whether the
 # configuration files here correspond with the schema.  The master
 # schema is in Relax-NG Compact (.rnc) format: this cannot be used

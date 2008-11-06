@@ -1,5 +1,3 @@
-; $Id: zebra.nsi,v 1.50 2008-03-05 09:29:10 adam Exp $
-
 !define VERSION "2.0.33"
 
 ; VS 2005

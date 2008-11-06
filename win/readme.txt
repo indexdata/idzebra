@@ -1,5 +1,4 @@
 Compilation for Zebra on WIN32.
- $Id: readme.txt,v 1.2 2002-08-20 12:01:00 adam Exp $
 
 This software is shipped with MS nmake files. It has been tested
 on Visual C++ 6, but should work with Visual C++ 5 as well.

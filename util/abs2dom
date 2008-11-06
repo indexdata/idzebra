@@ -1,6 +1,5 @@
 #!/usr/bin/perl -w
 
-# $Id: abs2dom,v 1.4 2007-12-20 11:44:18 sondberg Exp $
 # ----------------------------------------------------------------------------
 # Generate a dom-filter indexing stylesheet based upon an .abs file
 # Should be called either this way

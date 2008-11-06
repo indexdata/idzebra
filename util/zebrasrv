@@ -1,5 +1,4 @@
 #! /bin/sh
-# $Id: zebrasrv,v 1.2 2005-01-12 09:58:24 adam Exp $
 # Start and stop idzebra script for Debian.
 
 test -x /usr/bin/zebrasrv || exit 0

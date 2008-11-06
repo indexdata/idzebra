@@ -1,7 +1,5 @@
 #! /bin/sh
 
-# $Id: idzebra-init-script,v 1.1 2007-01-31 12:26:50 mike Exp $
-#
 # This is a startup/shutdown script for Index Data's Zebra server,
 # suitable for use in a SysV-style init directory such as /etc/init.d
 # (on Debian systems) and /etc/rc.d/init.d (on Red Hat systems), like
