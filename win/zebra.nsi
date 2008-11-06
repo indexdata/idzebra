@@ -1,4 +1,4 @@
-!define VERSION "2.0.33"
+!define VERSION "2.0.34"
 
 ; VS 2005
 ; !define VS_RUNTIME_DLL      "c:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\msvcr80.dll"
