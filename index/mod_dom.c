@@ -1179,15 +1179,13 @@ static int convert_extract_doc(struct filter_info *tinfo,
     {
         xmlChar *buf_out;
         int len_out;
+        xmlDocDumpMemory(doc, &buf_out, &len_out);
 #if 0 
         FILE *outf = fopen("extract.xml", "w");
-        xmlDocDumpMemory(doc, &buf_out, &len_out);
         fwrite(buf_out, 1, len_out, outf);
-#endif
-        yaz_log(YLOG_LOG, "Extract Doc: %.*s", len_out, buf_out);
-#if 0
         fclose(outf);
 #endif
+        yaz_log(YLOG_LOG, "Extract Doc: %.*s", len_out, buf_out);
     }
 
     if (p->setStoreData)
