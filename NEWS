@@ -17,7 +17,7 @@ element set name which is equivalent to the suffix to zebra:: for
 non-embedded special retrievals. This allows snippets, facets etc to be
 included.
 
-Fixed bug #2202: incorrect sorting order when searching multiple databases (at the same time)
+Fixed bug #2202: incorrect sorting order when searching multiple databases.
 
 --- 2.0.32 2008/06/06
 
