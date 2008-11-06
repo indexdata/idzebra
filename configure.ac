@@ -1,7 +1,7 @@
 dnl Zebra, Index Data ApS, 1995-2008
 dnl
 AC_PREREQ(2.60)
-AC_INIT([idzebra],[2.0.33],[zebra-help@indexdata.dk])
+AC_INIT([idzebra],[2.0.34],[zebra-help@indexdata.dk])
 AC_CONFIG_SRCDIR(configure.ac)
 AC_CONFIG_AUX_DIR(config)
 AM_INIT_AUTOMAKE([1.9])
