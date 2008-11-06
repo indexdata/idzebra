@@ -1584,9 +1584,10 @@ static void extract_add_sort_string(RecWord *p, const char *str, int length)
     ch = zebraExplain_lookup_attr_str(zei, cat, p->index_type, p->index_name);
     if (ch < 0)
         ch = zebraExplain_add_attr_str(zei, cat, p->index_type, p->index_name);
-    key.len = 2;
+    key.len = 3;
     key.mem[0] = ch;
     key.mem[1] = p->record_id;
+    key.mem[2] = p->section_id;
 
     zebra_rec_keys_write(zh->reg->sortKeys, str, length, &key);
 }
