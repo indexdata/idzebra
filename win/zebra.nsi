@@ -93,9 +93,7 @@ Section "Zebra Runtime"
 	File ..\bin\libxslt.dll
 	File ..\bin\yaz3.dll
 	File ..\bin\libexpat.dll
-	File ..\bin\icudt38.dll
-	File ..\bin\icuin38.dll
-	File ..\bin\icuuc38.dll
+	File ..\bin\icu*.dll
 	File ..\bin\yaz_icu3.dll
 SectionEnd
 
