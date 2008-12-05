@@ -1437,12 +1437,25 @@ int delete_w_handle(const char *info, void *handle)
     return 0;
 }
 
-static int delete_SU_handle(void *handle, int ord)
+static int delete_SU_handle(void *handle, int ord,
+                            const char *index_type, const char *string_index,
+                            zinfo_index_category_t cat)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     char ord_buf[20];
     int ord_len;
-
+#if 0
+    const char *index_type = 0;
+    const char *db = 0;
+    const char *string_index = 0;
+    zebraExplain_lookup_ord(zh->reg->zei, ord,
+                            &index_type, &db, &string_index);
+    yaz_log(YLOG_LOG, 
+            "delete_SU_handle:: ord=%d index_type=%s db=%s string_index=%s",
+            ord, index_type, db, string_index);
+#endif
+    yaz_log(YLOG_LOG, "ord=%d index_type=%s index=%s cat=%d", ord,
+            index_type, string_index, (int) cat);
     ord_len = key_SU_encode(ord, ord_buf);
     ord_buf[ord_len] = '\0';
 

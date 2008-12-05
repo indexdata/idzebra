@@ -94,7 +94,10 @@ zint zebraExplain_ord_get_term_occurrences(ZebraExplainInfo zei, int ord);
 zint zebraExplain_ord_get_doc_occurrences(ZebraExplainInfo zei, int ord);
 
 int zebraExplain_trav_ord(ZebraExplainInfo zei, void *handle,
-			  int (*f)(void *handle, int ord));
+			  int (*f)(void *handle, int ord,
+                                   const char *index_type,
+                                   const char *string_index,
+                                   zinfo_index_category_t cat));
 
 int zebraExplain_get_database_ord(ZebraExplainInfo zei);
 int zebraExplain_removeDatabase(ZebraExplainInfo zei, void *updateHandle);

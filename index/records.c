@@ -206,6 +206,7 @@ static ZEBRA_RES rec_delete_single(Records p, Record rec)
     if (rec_release_blocks(p, rec_sysno_to_int(rec->sysno)) != ZEBRA_OK)
 	return ZEBRA_FAIL;
 
+    yaz_log(YLOG_LOG, "rec_delete_single sysno=" ZINT_FORMAT, rec->sysno);
     entry.next = p->head.index_free;
     entry.size = 0;
     p->head.index_free = rec_sysno_to_int(rec->sysno);

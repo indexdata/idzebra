@@ -1376,14 +1376,19 @@ int zebraExplain_lookup_attr_str(ZebraExplainInfo zei,
 }
 
 int zebraExplain_trav_ord(ZebraExplainInfo zei, void *handle,
-			  int (*f)(void *handle, int ord))
+			  int (*f)(void *handle, int ord,
+                                   const char *index_type,
+                                   const char *string_index,
+                                   zinfo_index_category_t cat))
 {
     struct zebDatabaseInfoB *zdb = zei->curDatabaseInfo;
     if (zdb)
     {
 	struct zebSUInfoB *zsui = zdb->attributeDetails->SUInfo;
 	for ( ;zsui; zsui = zsui->next)
-	    (*f)(handle,  zsui->info.ordinal);
+	    (*f)(handle,  zsui->info.ordinal,
+                 zsui->info.index_type, zsui->info.str,
+                 zsui->info.cat);
     }
     return 0;
 }
