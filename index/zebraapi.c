@@ -1427,7 +1427,6 @@ int delete_w_handle(const char *info, void *handle)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     ISAM_P pos;
-    ASSERTZH;
 
     if (*info == sizeof(pos))
     {
@@ -1435,6 +1434,33 @@ int delete_w_handle(const char *info, void *handle)
 	isamb_unlink(zh->reg->isamb, pos);
     }
     return 0;
+}
+
+int delete_w_all_handle(const char *info, void *handle)
+{
+    ZebraHandle zh = (ZebraHandle) handle;
+    ISAM_P pos;
+
+    if (*info == sizeof(pos))
+    {
+        ISAMB_PP pt;
+	memcpy(&pos, info+1, sizeof(pos));
+        pt = isamb_pp_open(zh->reg->isamb, pos, 2);
+        if (pt)
+        {
+            struct it_key key;
+            key.mem[0] = 0;
+            while (isamb_pp_read(pt, &key))
+            {
+                Record rec;
+                yaz_log(YLOG_LOG, "SYSNO=" ZINT_FORMAT, key.mem[0]);
+                rec = rec_get(zh->reg->records, key.mem[0]);
+                rec_del(zh->reg->records, &rec);
+            }
+            isamb_pp_close(pt);
+        }
+    }
+    return delete_w_handle(info, handle);
 }
 
 static int delete_SU_handle(void *handle, int ord,
@@ -1445,23 +1471,18 @@ static int delete_SU_handle(void *handle, int ord,
     char ord_buf[20];
     int ord_len;
 #if 0
-    const char *index_type = 0;
-    const char *db = 0;
-    const char *string_index = 0;
-    zebraExplain_lookup_ord(zh->reg->zei, ord,
-                            &index_type, &db, &string_index);
-    yaz_log(YLOG_LOG, 
-            "delete_SU_handle:: ord=%d index_type=%s db=%s string_index=%s",
-            ord, index_type, db, string_index);
-#endif
     yaz_log(YLOG_LOG, "ord=%d index_type=%s index=%s cat=%d", ord,
             index_type, string_index, (int) cat);
+#endif
     ord_len = key_SU_encode(ord, ord_buf);
     ord_buf[ord_len] = '\0';
 
     assert(zh->reg->isamb);
+    assert(zh->reg->records);
     dict_delete_subtree(zh->reg->dict, ord_buf,
-			zh, delete_w_handle);
+			zh, 
+                        !strcmp(string_index, "_ALLRECORDS") ?
+                        delete_w_all_handle : delete_w_handle);
     return 0;
 }
 
