@@ -26,15 +26,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 YAZ_BEGIN_CDECL
 
+/** \brief number of blocks in hash bucket */
 #define HASH_BUCKET 15
 
-struct CFile_ph_bucket {     /* structure on disc */
-    zint no[HASH_BUCKET];    /* block number in original file */
-    zint vno[HASH_BUCKET];   /* block number in shadow file */
-    zint this_bucket;        /* this bucket number */
-    zint next_bucket;        /* next bucket number */
+/** \brief CFile hash structure on disc */
+struct CFile_ph_bucket {
+    zint no[HASH_BUCKET]; /**< block number in original file */
+    zint vno[HASH_BUCKET];/**< block number in shadow file */
+    zint this_bucket;     /**< this bucket number */
+    zint next_bucket;     /**< next bucket number */
 };
 
+/** \brief CFile hash structure info in memory */
 struct CFile_hash_bucket {
     struct CFile_ph_bucket ph;
     int dirty;
@@ -44,35 +47,46 @@ struct CFile_hash_bucket {
 
 #define HASH_BSIZE sizeof(struct CFile_ph_bucket)
 
-#define CFILE_FLAT 1
+/** \brief state of CFile is a hash structure */
+#define CFILE_STATE_HASH 1
 
+/** \brief state of CFile is a flat file file */
+#define CFILE_STATE_FLAT 2
+
+/** \brief CFile file header */
+struct CFile_head {
+    int state;         /**< CFILE_STATE_HASH, CFILE_STATE_FLAT, .. */
+    zint next_block;   /**< next free block / last block */
+    int block_size;    /**< mfile/bfile block size */
+    int hash_size;     /**< no of chains in hash table */
+    zint first_bucket; /**< first hash bucket */
+    zint next_bucket;  /**< last hash bucket + 1 = first flat bucket */
+    zint flat_bucket;  /**< last flat bucket + 1 */
+};
+
+/** \brief All in-memory information per CFile */
 typedef struct CFile_struct
 {
-    struct CFile_head {
-        int state;               /* 1 = hash, 2 = flat */
-        zint next_block;          /* next free block / last block */
-        int block_size;          /* mfile/bfile block size */
-        int hash_size;           /* no of chains in hash table */
-        zint first_bucket;       /* first hash bucket */
-        zint next_bucket;        /* last hash bucket + 1 = first flat bucket */
-        zint flat_bucket;        /* last flat bucket + 1 */
-    } head;
-    MFile block_mf;
-    MFile hash_mf;
-    zint *array;
-    struct CFile_hash_bucket **parray;
-    struct CFile_hash_bucket *bucket_lru_front, *bucket_lru_back;
-    int dirty;
-    zint bucket_in_memory;
-    zint max_bucket_in_memory;
-    char *iobuf;
-    MFile rmf;
-    int  no_hits;
-    int  no_miss;
+    struct CFile_head head;
+    
+    MFile block_mf;  /**< block meta file */
+    MFile hash_mf;   /**< hash or index file (depending on state) */
+    zint *array;     /**< array for hash */
+    struct CFile_hash_bucket **parray; /**< holds all hash bucket in memory */
+    struct CFile_hash_bucket *bucket_lru_front; /**< LRU front for hash */
+    struct CFile_hash_bucket *bucket_lru_back;  /**< LRU back for hash */
+    int dirty;   /**< whether CFile is dirty / header must be rewritten */
+    zint bucket_in_memory;  /**< number of buckets in memory */
+    zint max_bucket_in_memory; /**< max number of buckets in memory */
+    char *iobuf;  /**< data block .. of size block size */
+    MFile rmf;   /**< read meta file (original data / not dirty) */
+    int  no_hits;  /**< number of bucket cache hits */
+    int  no_miss;  /**< number of bucket cache misses */
     Zebra_mutex mutex;
 } *CFile;
 
 int cf_close (CFile cf);
+
 CFile cf_open (MFile mf, MFile_area area, const char *fname, int block_size,
                int wflag, int *firstp);
 int cf_read (CFile cf, zint no, int offset, int nbytes, void *buf);

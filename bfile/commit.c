@@ -261,9 +261,9 @@ int cf_commit(CFile cf)
         return -1;
     }
     yaz_log(log_level, "cf_commit: state=%d", cf->head.state);
-    if (cf->head.state == 1)
+    if (cf->head.state == CFILE_STATE_HASH)
         return cf_commit_hash(cf);
-    else if (cf->head.state == 2)
+    else if (cf->head.state == CFILE_STATE_FLAT)
         return cf_commit_flat(cf);
     else
     {
