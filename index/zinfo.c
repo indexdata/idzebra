@@ -767,12 +767,12 @@ int zebraExplain_removeDatabase(ZebraExplainInfo zei, void *update_handle)
 		
 		rec = rec_get(zei->records, zad->sysno);
 		(*zei->updateFunc)(zei->updateHandle, rec, 0);
-		rec_free(&rec);
+		rec_del(zei->records, &rec);
 	    }
 	    /* remove database record keys and delete it */
 	    rec = rec_get(zei->records, zdi->sysno);
 	    (*zei->updateFunc)(zei->updateHandle, rec, 0);
-	    rec_free(&rec);
+	    rec_del(zei->records, &rec);
 
 	    /* remove from list */
 	    *zdip = zdi->next;

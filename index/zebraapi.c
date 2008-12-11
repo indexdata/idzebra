@@ -1453,7 +1453,6 @@ int delete_w_all_handle(const char *info, void *handle)
             while (isamb_pp_read(pt, &key))
             {
                 Record rec;
-                yaz_log(YLOG_LOG, "SYSNO=" ZINT_FORMAT, key.mem[0]);
                 rec = rec_get(zh->reg->records, key.mem[0]);
                 rec_del(zh->reg->records, &rec);
             }

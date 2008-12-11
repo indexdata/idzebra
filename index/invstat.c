@@ -291,7 +291,7 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
     }
     fprintf (stdout, "%7d-        %7d\n",
              prev, stat_info.isam_occurrences[i]);
-    rec_prstat(zh->reg->records);
+    rec_prstat(zh->reg->records, 0);
     xmalloc_trav("unfreed"); /*! while hunting memory leaks */    
     zebra_end_read (zh);
     return 0;
