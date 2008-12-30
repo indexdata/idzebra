@@ -1,2 +1,5 @@
 name usmarc
 reference USmarc
+
+# Defines implementation codes (offset 6..9) 
+#implementation-codes ABCD

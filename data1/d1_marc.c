@@ -148,6 +148,21 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 	    }
 	    res->force_identifier_length = atoi(argv[1]);
 	}
+	else if (!strcmp(*argv, "implementation-codes"))
+	{
+	    if (argc != 2)
+	    {
+		yaz_log(YLOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
+			*argv);
+		continue;
+	    }
+            /* up to 4 characters .. space pad */
+            if (strlen(argv[1]) > 4)
+	        yaz_log(YLOG_WARN, "%s:%d: Max 4 characters for "
+                                   "implementation-codes", file, lineno);
+            else
+                memcpy(res->implementation_codes, argv[1], strlen(argv[1]));
+	}
 	else
 	    yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'", file, lineno,
 		    *argv);
