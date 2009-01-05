@@ -1,4 +1,5 @@
-dnl Zebra, Index Data ApS, 1995-2008
+dnl This file is part of the Zebra server.
+dnl   Copyright (C) 1994-2008 Index Data
 dnl
 AC_PREREQ(2.60)
 AC_INIT([idzebra],[2.0.34],[zebra-help@indexdata.dk])
@@ -287,13 +288,28 @@ ZEBRA_MODULE(safari,shared,[  --enable-mod-safari     Safari filter (DBC)])
 dnl ------ ANSI C Header files
 AC_STDC_HEADERS
 if test "$ac_cv_header_stdc" = "no"; then
-    AC_MSG_WARN(Your system doesn't seem to support ANSI C)
+    AC_MSG_WARN([Your system does not seem to support ANSI C])
 fi
 AC_SUBST(IDZEBRA_SRC_ROOT)
 AC_SUBST(IDZEBRA_BUILD_ROOT)
 IDZEBRA_SRC_ROOT=`cd ${srcdir}; pwd`
 IDZEBRA_BUILD_ROOT=`pwd`
+dnl
+dnl ------ versioning
+dnl
+WIN_FILEVERSION=`echo $PACKAGE_VERSION | $AWK 'BEGIN { FS = "."; } { m = $4; printf("%d,%d,%d,%d", $1, $2, $3 == "" ? "0" : $3, $4 == "" ? "1" : $4);}'`
+AC_SUBST([WIN_FILEVERSION])
+VERSION_HEX=`echo $PACKAGE_VERSION | $AWK 'BEGIN { FS = "."; } { printf("%x", ($1 * 256 + $2) * 256 + $3);}'`
+AC_SUBST([VERSION_HEX])
+if test -d ${srcdir}/.git; then
+    VERSION_SHA1=`git show --pretty=format:%H|head -1`
+else
+    VERSION_SHA1=`head -1 ${srcdir}/ChangeLog|awk '{print $2}'`
+fi
+AC_SUBST([VERSION_SHA1])
+dnl
 dnl ------ Create Makefiles
+dnl
 AC_OUTPUT([
   Makefile
   util/Makefile
@@ -332,6 +348,7 @@ AC_OUTPUT([
   idzebra.spec
   idzebra-config-2.0
   Doxyfile
+  include/idzebra/version.h
 ],[sed s%echo_source=yes%echo_source=no%g < idzebra-config-2.0 > util/idzebra-config-2.0 && chmod +x idzebra-config-2.0 util/idzebra-config-2.0])
 
 echo \

@@ -30,25 +30,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 #include <idzebra/version.h>
 
-void zebra_get_version(char *version_str, char *sys_str)
+void zebra_get_version(char *version_str, char *sha1_str)
 {
     if (version_str)
         strcpy(version_str, ZEBRAVER);
-    if (sys_str)
-    {
-        strcpy(sys_str, "unknown");
-
-#ifdef WIN32
-        strcpy(sys_str, "win32");
-#ifdef _MSC_VER
-        yaz_snprintf(sys_str+strlen(sys_str), 25, "; mscver %lu",
-                 (unsigned long) _MSC_VER);
-#endif
-#endif
-#ifdef HOST_TRIPLET
-        strcpy(sys_str, HOST_TRIPLET);
-#endif
-    }
+    if (sha1_str)
+        strcpy(sha1_str, ZEBRA_VERSION_SHA1);
 }
 
 /*
