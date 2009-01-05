@@ -1427,7 +1427,6 @@ int delete_w_handle(const char *info, void *handle)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     ISAM_P pos;
-    ASSERTZH;
 
     if (*info == sizeof(pos))
     {
@@ -1437,18 +1436,52 @@ int delete_w_handle(const char *info, void *handle)
     return 0;
 }
 
-static int delete_SU_handle(void *handle, int ord)
+int delete_w_all_handle(const char *info, void *handle)
+{
+    ZebraHandle zh = (ZebraHandle) handle;
+    ISAM_P pos;
+
+    if (*info == sizeof(pos))
+    {
+        ISAMB_PP pt;
+	memcpy(&pos, info+1, sizeof(pos));
+        pt = isamb_pp_open(zh->reg->isamb, pos, 2);
+        if (pt)
+        {
+            struct it_key key;
+            key.mem[0] = 0;
+            while (isamb_pp_read(pt, &key))
+            {
+                Record rec;
+                rec = rec_get(zh->reg->records, key.mem[0]);
+                rec_del(zh->reg->records, &rec);
+            }
+            isamb_pp_close(pt);
+        }
+    }
+    return delete_w_handle(info, handle);
+}
+
+static int delete_SU_handle(void *handle, int ord,
+                            const char *index_type, const char *string_index,
+                            zinfo_index_category_t cat)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     char ord_buf[20];
     int ord_len;
-
+#if 0
+    yaz_log(YLOG_LOG, "ord=%d index_type=%s index=%s cat=%d", ord,
+            index_type, string_index, (int) cat);
+#endif
     ord_len = key_SU_encode(ord, ord_buf);
     ord_buf[ord_len] = '\0';
 
     assert(zh->reg->isamb);
+    assert(zh->reg->records);
     dict_delete_subtree(zh->reg->dict, ord_buf,
-			zh, delete_w_handle);
+			zh, 
+                        !strcmp(string_index, "_ALLRECORDS") ?
+                        delete_w_all_handle : delete_w_handle);
     return 0;
 }
 

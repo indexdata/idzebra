@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "mfile.h"
 #include "cfile.h"
 
-/* set to 1 if extra commit/shadow check is to be performed */
+/** \brief set to 1 if extra commit/shadow check is to be performed */
 #define EXTRA_CHECK 0
 
 static int write_head(CFile cf)
@@ -131,7 +131,7 @@ CFile cf_open(MFile mf, MFile_area area, const char *fname,
     if (ret == 0 || !cf->head.state)
     {
         *firstp = 1;
-        cf->head.state = 1;
+        cf->head.state = CFILE_STATE_HASH;
         cf->head.block_size = block_size;
         cf->head.hash_size = 199;
         hash_bytes = cf->head.hash_size * sizeof(zint);
@@ -163,7 +163,7 @@ CFile cf_open(MFile mf, MFile_area area, const char *fname,
         hash_bytes = cf->head.hash_size * sizeof(zint);
         assert(cf->head.next_bucket > 0);
         assert(cf->head.next_block > 0);
-        if (cf->head.state == 1)
+        if (cf->head.state == CFILE_STATE_HASH)
             cf->array = (zint *) xmalloc(hash_bytes);
         else
             cf->array = NULL;
@@ -173,7 +173,7 @@ CFile cf_open(MFile mf, MFile_area area, const char *fname,
             return 0;
         }
     }
-    if (cf->head.state == 1)
+    if (cf->head.state == CFILE_STATE_HASH)
     {
         cf->parray = (struct CFile_hash_bucket **)
 	    xmalloc(cf->head.hash_size * sizeof(*cf->parray));
@@ -395,7 +395,7 @@ static int cf_moveto_flat(CFile cf)
 	  ZINT_FORMAT,
 	cf->no_hits, cf->no_miss, cf->bucket_in_memory, 
         cf->head.next_bucket - cf->head.first_bucket);
-    assert(cf->head.state == 1);
+    assert(cf->head.state == CFILE_STATE_HASH);
     if (flush_bucket(cf, -1))
         return -1;
     assert(cf->bucket_in_memory == 0);
@@ -422,7 +422,7 @@ static int cf_moveto_flat(CFile cf)
     cf->array = NULL;
     xfree(cf->parray);
     cf->parray = NULL;
-    cf->head.state = 2;
+    cf->head.state = CFILE_STATE_FLAT;
     cf->dirty = 1;
     return 0;
 }

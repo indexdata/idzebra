@@ -767,12 +767,12 @@ int zebraExplain_removeDatabase(ZebraExplainInfo zei, void *update_handle)
 		
 		rec = rec_get(zei->records, zad->sysno);
 		(*zei->updateFunc)(zei->updateHandle, rec, 0);
-		rec_free(&rec);
+		rec_del(zei->records, &rec);
 	    }
 	    /* remove database record keys and delete it */
 	    rec = rec_get(zei->records, zdi->sysno);
 	    (*zei->updateFunc)(zei->updateHandle, rec, 0);
-	    rec_free(&rec);
+	    rec_del(zei->records, &rec);
 
 	    /* remove from list */
 	    *zdip = zdi->next;
@@ -1376,14 +1376,19 @@ int zebraExplain_lookup_attr_str(ZebraExplainInfo zei,
 }
 
 int zebraExplain_trav_ord(ZebraExplainInfo zei, void *handle,
-			  int (*f)(void *handle, int ord))
+			  int (*f)(void *handle, int ord,
+                                   const char *index_type,
+                                   const char *string_index,
+                                   zinfo_index_category_t cat))
 {
     struct zebDatabaseInfoB *zdb = zei->curDatabaseInfo;
     if (zdb)
     {
 	struct zebSUInfoB *zsui = zdb->attributeDetails->SUInfo;
 	for ( ;zsui; zsui = zsui->next)
-	    (*f)(handle,  zsui->info.ordinal);
+	    (*f)(handle,  zsui->info.ordinal,
+                 zsui->info.index_type, zsui->info.str,
+                 zsui->info.cat);
     }
     return 0;
 }

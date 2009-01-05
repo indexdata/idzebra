@@ -86,7 +86,7 @@ ZEBRA_RES rec_close (Records *p);
 Records rec_open(BFiles bfs, int rw, int compression_method);
 
 char *rec_strdup(const char *s, size_t *len);
-void rec_prstat(Records p);
+void rec_prstat(Records p, int verbose);
 
 zint rec_sysno_to_int(zint sysno);
 

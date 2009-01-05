@@ -171,6 +171,7 @@ static ZEBRA_RES rec_release_blocks(Records p, zint sysno)
 	    memcpy(block_and_ref + sizeof(freeblock), &ref, sizeof(ref));
 	    if (ref)
 	    {
+                /* there is still a reference to this block.. */
 		if (bf_write(p->data_BFile[dst_type], freeblock, 0,
 			      sizeof(block_and_ref), block_and_ref))
 		{
@@ -179,7 +180,8 @@ static ZEBRA_RES rec_release_blocks(Records p, zint sysno)
 		}
 		return ZEBRA_OK;
 	    }
-	    first = 0;
+            /* the list of blocks can all be removed (ref == 0) */
+            first = 0;
 	}
 	
         if (bf_write(p->data_BFile[dst_type], freeblock, 0, sizeof(freeblock),
@@ -522,8 +524,10 @@ static ZEBRA_RES rec_write_multiple(Records p, int saveCount)
 
 	    e->flag = recordFlagNop;
             break;
-	default:
+        case recordFlagNop:
 	    break;
+	default:
+            break;
         }
     }
 
@@ -982,7 +986,7 @@ char *rec_strdup(const char *s, size_t *len)
     return p;
 }
 
-void rec_prstat(Records records)
+void rec_prstat(Records records, int verbose)
 {
     int i;
     zint total_bytes = 0;
@@ -1002,6 +1006,34 @@ void rec_prstat(Records records)
               records->head.block_used[i] * records->head.block_size[i]);
         total_bytes +=
             records->head.block_used[i] * records->head.block_size[i];
+
+        yaz_log(YLOG_LOG, " Block Last " ZINT_FORMAT, records->head.block_last[i]);
+        if (verbose)
+        {   /* analyse free lists */
+            zint no_free = 0;
+            zint block_free = records->head.block_free[i];
+            WRBUF w = wrbuf_alloc();
+            while (block_free)
+            {
+                zint nblock;
+                no_free++;
+                wrbuf_printf(w, " " ZINT_FORMAT, block_free);
+                if (bf_read(records->data_BFile[i],
+                            block_free, 0, sizeof(nblock), &nblock) != 1)
+                {
+                    yaz_log(YLOG_FATAL|YLOG_ERRNO, "read in %s at free block "
+                            ZINT_FORMAT,
+                            records->data_fname[i], block_free);
+                    break;
+                }
+                block_free = nblock;
+            }
+            yaz_log (YLOG_LOG,
+                     " Number in free list       %8" ZINT_FORMAT0, no_free);
+            if (no_free)
+                yaz_log(YLOG_LOG, "%s", wrbuf_cstr(w));
+            wrbuf_destroy(w);
+        }
     }
     yaz_log (YLOG_LOG,
           "Total size of record index in bytes  %8" ZINT_FORMAT0,
