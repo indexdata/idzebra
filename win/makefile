@@ -6,6 +6,10 @@
 
 DEBUG=0   # 0 for release, 1 for debug
 
+# TCL is optional - ONLY needed for source straight from Git
+TCL="C:\Tcl\bin\tclsh85.exe"
+HAVE_TCL=1
+
 # EXPAT is optional. It's required for grs.xml-filters.
 HAVE_EXPAT=1
 EXPAT_DIR=c:\Program files\Expat 2.0.1
@@ -35,7 +39,7 @@ ICU_DIR=c:\icu
 
 
 default: all
-all: dirs expat iconv libxml2 libxslt icu yaz dll zserver zebraidx tstflock
+all: dirs generate expat iconv libxml2 libxslt icu yaz dll zserver zebraidx tstflock
 
 # Directories
 # The current directory is supposed to be something like
@@ -330,6 +334,14 @@ LINK_PROGRAM= $(LINK) \
 		$(YAZLIB) \
 		$(BZIP2LIB) \
 		$(LINK_LIBS)
+
+
+# Generated sources
+generate: $(INCLDIR)\idzebra\version.h
+
+$(INCLDIR)\idzebra\version.h:
+	@cd $(ROOTDIR)\util
+	$(TCL) mk_version.tcl $(ROOTDIR)/configure.ac $(INCLDIR)\idzebra\version.h
 
 # Source and object modules
 # Note: Ordinary source files are not specified here at 
