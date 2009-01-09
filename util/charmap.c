@@ -18,8 +18,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 
-
-/*
+/**
+ * \file charmap.c
+ * \brief character conversions (.chr)
+ *  
  * Support module to handle character-conversions into and out of the
  * Zebra dictionary.
  */
@@ -131,25 +133,6 @@ static chr_t_entry *set_map_string(chr_t_entry *root, NMEM nmem,
 	    return 0;
     }
     return root;
-}
-
-static chr_t_entry *find_entry(chr_t_entry *t, const char **from, int len)
-{
-    chr_t_entry *res;
-
-    if (len && t->children && t->children[(unsigned char) **from])
-    {
-	const char *pos = *from;
-
-	(*from)++;
-	if ((res = find_entry(t->children[(unsigned char) *pos],
-                              from, len - 1)))
-	    return res;
-	/* no match */
-	*from = pos;
-    }
-    /* no children match. use ourselves, if we have a target */
-    return t->target ? t : 0;
 }
 
 static chr_t_entry *find_entry_x(chr_t_entry *t, const char **from, int *len, int first)
@@ -525,6 +508,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
     char line[512], *argv[50];
     chrmaptab res;
     int lineno = 0;
+    int no_directives = 0;
     int errors = 0;
     int argc, num = (int) *CHR_BASE, i;
     NMEM nmem;
@@ -577,6 +561,8 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
     res->base_uppercase = 0;
 
     while (!errors && (argc = readconf_line(f, &lineno, line, 512, argv, 50)))
+    {
+        no_directives++;
 	if (!yaz_matchstr(argv[0], "lowercase"))
 	{
 	    if (argc != 2)
@@ -721,35 +707,22 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
 	}
         else if (!yaz_matchstr(argv[0], "encoding"))
         {
-	    /*
-	     * Fix me. When t_unicode==0 and use encoding directive in *.chr file the beheviour of the
-	     * zebra need to comment next part of code.
-	     */
-
-	    /* Original code */
-#if 1
             if (t_unicode != 0)
                 yaz_iconv_close(t_unicode);
             t_unicode = yaz_iconv_open(ucs4_native, argv[1]);
-#endif
-	    /*
-	     * Fix me. It is additional staff for conversion of characters from local encoding
-	     * of *.chr file to UTF-8 (internal encoding).
-	     * NOTE: The derective encoding must be first directive in *.chr file.
-	     */
-	    /* For whatever reason Oleg enabled this.. */
-#if 0
-	    if (t_utf8 != 0)
-        	yaz_iconv_close(t_utf8);
-	    t_utf8 = yaz_iconv_open("UTF-8", argv[1]);
-#endif
         }
 	else
 	{
 	    yaz_log(YLOG_WARN, "Syntax error at '%s' in %s", line, name);
+            errors++;
 	}
-    
+    }   
     yaz_fclose(f);
+    if (no_directives == 0)
+    {
+        yaz_log(YLOG_WARN, "No directives in '%s'", name);
+        errors++;
+    }
     if (errors)
     {
 	chrmaptab_destroy(res);

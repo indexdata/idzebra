@@ -51,6 +51,16 @@ void tst2(void)
     chrmaptab_destroy(tab);
 }
 
+void tst3(void)
+{
+    /* open empty emptycharmap.chrr */
+    chrmaptab tab = chrmaptab_create(get_srcdir() /* tabpath */,
+				     "emptycharmap.chr" /* file */,
+				     0 /* tabroot */ );
+    YAZ_CHECK(!tab);
+    chrmaptab_destroy(tab);
+}
+
 int main(int argc, char **argv)
 {
     YAZ_CHECK_INIT(argc, argv);
@@ -58,6 +68,7 @@ int main(int argc, char **argv)
 
     tst1();
     tst2();
+    tst3();
 
     YAZ_CHECK_TERM;
 }

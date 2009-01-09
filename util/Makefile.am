@@ -7,7 +7,7 @@ TESTS = $(check_PROGRAMS)
 
 bin_SCRIPTS = idzebra-config-2.0
 
-EXTRA_DIST = zebrasrv.rh tstcharmap.chr tstpass.txt tstres.cfg mk_version.tcl
+EXTRA_DIST = zebrasrv.rh tstcharmap.chr emptycharmap.chr tstpass.txt tstres.cfg mk_version.tcl
 
 DISTCLEANFILES = idzebra-config-2.0
 
