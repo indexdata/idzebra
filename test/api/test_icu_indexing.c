@@ -53,6 +53,8 @@ static void tst(int argc, char **argv)
     ZebraService zs = tl_start_up("test_icu_indexing.cfg", argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
+    tl_check_filter(zs, "grs.xml");
+
     YAZ_CHECK(tl_init_data(zh, myrec));
 
     /* simple term */
