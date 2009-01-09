@@ -185,7 +185,7 @@ int key_file_read(struct key_file *f, char *key)
         key[i++] = c;
         while ((c = key_file_getc(f)))
         {
-            if (i < IT_MAX_WORD)
+            if (i <= IT_MAX_WORD)
                 key[i++] = c;
         }
         key[i++] = '\0';
