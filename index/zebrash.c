@@ -263,7 +263,7 @@ static int cmd_logf( char *args[], WRBUF outbuff)
 	i=2;
     else
 	lev=YLOG_LOG; /* this is in the default set!*/
-    yaz_log( lev, restargs(args,i));
+    yaz_log( lev, "%s", restargs(args,i));
     return 0; /* ok */
 }
  
