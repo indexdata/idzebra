@@ -328,23 +328,11 @@ void zebra_index_merge(ZebraHandle zh);
 ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh, 
                                       const char *buf, size_t buf_size,
                                       enum zebra_recctrl_action_t action,
-                                      int test_mode, 
                                       const char *recordType,
                                       zint *sysno,
                                       const char *match_criteria,
                                       const char *fname);
 
-ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh, 
-                                      struct ZebraRecStream *stream,
-                                      enum zebra_recctrl_action_t action,
-                                      int test_mode, 
-                                      const char *recordType,
-                                      zint *sysno,
-                                      const char *match_criteria,
-                                      const char *fname,
-                                      RecType recType,
-                                      void *recTypeClientData,
-                                      int *more);
 
 YAZ_EXPORT void zebra_create_stream_mem(struct ZebraRecStream *stream,
                                         const char *buf, size_t sz);

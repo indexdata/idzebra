@@ -64,6 +64,21 @@ static void zebra_init_log_level(void)
     }
 }
 
+static WRBUF wrbuf_hex_str(const char *cstr)
+{
+    size_t i;
+    WRBUF w = wrbuf_alloc();
+    for (i = 0; cstr[i]; i++)
+    {
+        if (cstr[i] < ' ' || cstr[i] > 126)
+            wrbuf_printf(w, "\\%02X", cstr[i] & 0xff);
+        else
+            wrbuf_putc(w, cstr[i]);
+    }
+    return w;
+}
+
+
 static void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
                                     int cmd, zebra_rec_keys_t skp);
 static void extract_schema_add(struct recExtractCtrl *p, Odr_oid *oid);
@@ -440,9 +455,6 @@ static char *get_match_from_spec(ZebraHandle zh,
 			attname_str[i++] = *s;
 		attname_str[i] = '\0';
 	    }
-
-            searchRecordKey(zh, reckeys, attname_str, ws, 32);
-
             if (*s != ')')
             {
                 yaz_log(YLOG_WARN, "Missing ) in match criteria %s in group %s",
@@ -450,6 +462,20 @@ static char *get_match_from_spec(ZebraHandle zh,
                 return NULL;
             }
             s++;
+
+            searchRecordKey(zh, reckeys, attname_str, ws, 32);
+            if (0) /* for debugging */
+            {   
+                for (i = 0; i<32; i++)
+                {
+                    if (ws[i])
+                    {
+                        WRBUF w = wrbuf_hex_str(ws[i]);
+                        yaz_log(YLOG_LOG, "ws[%d] = %s", i, wrbuf_cstr(w));
+                        wrbuf_destroy(w);
+                    }
+                }
+            }
 
             for (i = 0; i<32; i++)
                 if (ws[i])
@@ -534,6 +560,14 @@ static char *get_match_from_spec(ZebraHandle zh,
         return NULL;
     }
     *dst = '\0';
+
+    if (0) /* for debugging */
+    {
+        WRBUF w = wrbuf_hex_str(dstBuf);
+        yaz_log(YLOG_LOG, "get_match_from_spec %s", wrbuf_cstr(w));
+        wrbuf_destroy(w);
+    }
+
     return dstBuf;
 }
 
@@ -570,10 +604,10 @@ static void all_matches_add(struct recExtractCtrl *ctrl, zint record_id,
                               "", 0);
 }
 
+/* forward declaration */
 ZEBRA_RES zebra_extract_records_stream(ZebraHandle zh, 
                                        struct ZebraRecStream *stream,
                                        enum zebra_recctrl_action_t action,
-                                       int test_mode, 
                                        const char *recordType,
                                        zint *sysno,
                                        const char *match_criteria,
@@ -682,7 +716,6 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
     }
     r = zebra_extract_records_stream(zh, streamp,
                                      action,
-                                     0, /* tst_mode */
                                      zh->m_record_type,
                                      sysno,
                                      0, /*match_criteria */
@@ -704,7 +737,6 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
 ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh, 
                                       const char *buf, size_t buf_size,
                                       enum zebra_recctrl_action_t action,
-                                      int test_mode, 
                                       const char *recordType,
                                       zint *sysno,
                                       const char *match_criteria,
@@ -746,7 +778,6 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
 
     res = zebra_extract_records_stream(zh, &stream,
                                        action,
-                                       test_mode, 
                                        recordType,
                                        sysno,
                                        match_criteria,
@@ -756,69 +787,17 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
     return res;
 }
 
-ZEBRA_RES zebra_extract_records_stream(ZebraHandle zh, 
-                                       struct ZebraRecStream *stream,
-                                       enum zebra_recctrl_action_t action,
-                                       int test_mode, 
-                                       const char *recordType,
-                                       zint *sysno,
-                                       const char *match_criteria,
-                                       const char *fname,
-                                       RecType recType,
-                                       void *recTypeClientData)
-{
-    ZEBRA_RES res = ZEBRA_OK;
-    while (1)
-    {
-        int more = 0;
-        res = zebra_extract_record_stream(zh, stream,
-                                          action,
-                                          test_mode, 
-                                          recordType,
-                                          sysno,
-                                          match_criteria,
-                                          fname,
-                                          recType, recTypeClientData, &more);
-        if (!more)
-        {
-            res = ZEBRA_OK;
-            break;
-        }
-        if (res != ZEBRA_OK)
-            break;
-        if (sysno)
-            break;
-    }
-    return res;
-}
-
-
-static WRBUF wrbuf_hex_str(const char *cstr)
-{
-    size_t i;
-    WRBUF w = wrbuf_alloc();
-    for (i = 0; cstr[i]; i++)
-    {
-        if (cstr[i] < ' ' || cstr[i] > 126)
-            wrbuf_printf(w, "\\%02X", cstr[i] & 0xff);
-        else
-            wrbuf_putc(w, cstr[i]);
-    }
-    return w;
-}
-
-ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh, 
-                                      struct ZebraRecStream *stream,
-                                      enum zebra_recctrl_action_t action,
-                                      int test_mode, 
-                                      const char *recordType,
-                                      zint *sysno,
-                                      const char *match_criteria,
-                                      const char *fname,
-                                      RecType recType,
-                                      void *recTypeClientData,
-                                      int *more)
-
+static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh, 
+                                             struct ZebraRecStream *stream,
+                                             enum zebra_recctrl_action_t action,
+                                             const char *recordType,
+                                             zint *sysno,
+                                             const char *match_criteria,
+                                             const char *fname,
+                                             RecType recType,
+                                             void *recTypeClientData,
+                                             int *more)
+    
 {
     zint sysno0 = 0;
     RecordAttr *recordAttr;
@@ -917,14 +896,25 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
     }
 
     *more = 1;
+
+    if (zh->m_flag_rw == 0)
+    {
+        yaz_log(YLOG_LOG, "test %s %s " ZINT_FORMAT, recordType,
+                pr_fname, (zint) start_offset);
+        /* test mode .. Do not perform match */
+        return ZEBRA_OK;
+    }
+        
     if (!sysno)
     {
 	sysno = &sysno0;
-
-        if (match_criteria && *match_criteria) {
+        
+        if (match_criteria && *match_criteria)
             matchStr = match_criteria;
-        } else {
-            if (zh->m_record_id && *zh->m_record_id) {
+        else
+        {
+            if (zh->m_record_id && *zh->m_record_id)
+            {
                 matchStr = get_match_from_spec(zh, zh->reg->keys, pr_fname, 
                                                zh->m_record_id);
 		if (!matchStr)
@@ -932,6 +922,17 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
                     yaz_log(YLOG_LOG, "error %s %s " ZINT_FORMAT, recordType,
                              pr_fname, (zint) start_offset);
 		    return ZEBRA_FAIL;
+                }
+                if (0 && matchStr)
+                {
+                    WRBUF w = wrbuf_alloc();
+                    size_t i;
+                    for (i = 0; i < strlen(matchStr); i++)
+                    {
+                        wrbuf_printf(w, "%02X", matchStr[i] & 0xff);
+                    }
+                    yaz_log(YLOG_LOG, "Got match %s", wrbuf_cstr(w));
+                    wrbuf_destroy(w);
                 }
             }
         }
@@ -956,21 +957,13 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
        }
     }
 
-    if (zebra_rec_keys_empty(zh->reg->keys))
-    {
-	/* the extraction process returned no information - the record
-	   is probably empty - unless flagShowRecords is in use */
-	if (test_mode)
-	    return ZEBRA_OK;
-    }
-
     if (! *sysno)
     {
         /* new record AKA does not exist already */
         if (action == action_delete)
         {
-                yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
-                        pr_fname, (zint) start_offset);
+            yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
+                    pr_fname, (zint) start_offset);
             yaz_log(YLOG_WARN, "cannot delete record above (seems new)");
             return ZEBRA_FAIL;
         }
@@ -1208,6 +1201,52 @@ ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
     rec_put(zh->reg->records, &rec);
     logRecord(zh);
     return ZEBRA_OK;
+}
+
+/** \brief extracts records from stream
+    \param zh Zebra Handle
+    \param stream stream that we read from
+    \param action (action_insert, action_replace, action_delete, ..)
+    \param recordType Record filter type "grs.xml", etc.
+    \param sysno pointer to sysno if already known; NULL otherwise
+    \param match_criteria (NULL if not already given)
+    \param fname filename that we read from (for logging purposes only)
+    \param recType record type
+    \param recTypeClientData client data for record type
+    \returns ZEBRA_OK for success; ZEBRA_FAIL for failure
+*/
+ZEBRA_RES zebra_extract_records_stream(ZebraHandle zh, 
+                                       struct ZebraRecStream *stream,
+                                       enum zebra_recctrl_action_t action,
+                                       const char *recordType,
+                                       zint *sysno,
+                                       const char *match_criteria,
+                                       const char *fname,
+                                       RecType recType,
+                                       void *recTypeClientData)
+{
+    ZEBRA_RES res = ZEBRA_OK;
+    while (1)
+    {
+        int more = 0;
+        res = zebra_extract_record_stream(zh, stream,
+                                          action,
+                                          recordType,
+                                          sysno,
+                                          match_criteria,
+                                          fname,
+                                          recType, recTypeClientData, &more);
+        if (!more)
+        {
+            res = ZEBRA_OK;
+            break;
+        }
+        if (res != ZEBRA_OK)
+            break;
+        if (sysno)
+            break;
+    }
+    return res;
 }
 
 ZEBRA_RES zebra_extract_explain(void *handle, Record rec, data1_node *n)
@@ -1929,6 +1968,7 @@ void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
 /*
  * Local variables:
  * c-basic-offset: 4
+ * c-file-style: "Stroustrup"
  * indent-tabs-mode: nil
  * End:
  * vim: shiftwidth=4 tabstop=8 expandtab

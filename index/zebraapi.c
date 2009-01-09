@@ -2301,7 +2301,6 @@ ZEBRA_RES zebra_update_record(ZebraHandle zh,
 	return ZEBRA_FAIL;
     res = zebra_buffer_extract_record(zh, buf, buf_size, 
                                       action,
-                                      0, /* test_mode */
                                       recordType,
                                       sysno,   
                                       match, 
