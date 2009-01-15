@@ -219,11 +219,6 @@ const struct zebra_snippet_word *zebra_snippets_lookup(
     for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
     {
 	const zebra_snippet_word *doc_w;
-        doc_w = zebra_snippets_constlist(doc);
-        if (!doc_w)
-            {
-                yaz_log(YLOG_WARN, "zebra_snippets_constlist returns 0");
-            }
         for (doc_w = zebra_snippets_constlist(doc); doc_w; doc_w = doc_w->next)
         {
             if (doc_w->ord == hit_w->ord && doc_w->seqno == hit_w->seqno

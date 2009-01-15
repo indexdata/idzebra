@@ -1419,13 +1419,11 @@ static int ioread_ret(void *context, char *buffer, int len)
 {
     struct recRetrieveCtrl *p = context;
     int r = p->stream->readf(p->stream, buffer, len);
-    yaz_log(YLOG_LOG, "ioread_ret len=%d r=%d\%.*s", len, r, r, buffer);
     return r;
 }
 
 static int ioclose_ret(void *context)
 {
-    yaz_log(YLOG_LOG, "ioclose_ret");
     return 0;
 }
 
