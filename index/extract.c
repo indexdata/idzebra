@@ -302,7 +302,7 @@ static void snippet_token_add(RecWord *p)
 {
     struct snip_rec_info *h = p->extractCtrl->handle;
     ZebraHandle zh = h->zh;
-    zebra_map_t zm = zebra_map_get(zh->reg->zebra_maps, p->index_type);
+    zebra_map_t zm = zebra_map_get_or_add(zh->reg->zebra_maps, p->index_type);
 
     if (zm)
     {
