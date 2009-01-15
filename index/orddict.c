@@ -72,6 +72,7 @@ int dict_delete_subtree_ord(Dict d, int ord, void *client,
 /*
  * Local variables:
  * c-basic-offset: 4
+ * c-file-style: "Stroustrup"
  * indent-tabs-mode: nil
  * End:
  * vim: shiftwidth=4 tabstop=8 expandtab

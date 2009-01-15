@@ -515,6 +515,7 @@ int zebra_sort_read(zebra_sort_index_t si, zint *section_id, WRBUF w)
 /*
  * Local variables:
  * c-basic-offset: 4
+ * c-file-style: "Stroustrup"
  * indent-tabs-mode: nil
  * End:
  * vim: shiftwidth=4 tabstop=8 expandtab

@@ -184,6 +184,7 @@ const char *zebra_strmap_it_next(zebra_strmap_it it, void **data_buf,
 /*
  * Local variables:
  * c-basic-offset: 4
+ * c-file-style: "Stroustrup"
  * indent-tabs-mode: nil
  * End:
  * vim: shiftwidth=4 tabstop=8 expandtab

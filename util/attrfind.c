@@ -102,6 +102,7 @@ int attr_find(AttrType *src, const Odr_oid **attribute_set_id)
 /*
  * Local variables:
  * c-basic-offset: 4
+ * c-file-style: "Stroustrup"
  * indent-tabs-mode: nil
  * End:
  * vim: shiftwidth=4 tabstop=8 expandtab

@@ -629,6 +629,7 @@ int mf_area_directory_stat(MFile_area ma, int no, const char **directory,
 /*
  * Local variables:
  * c-basic-offset: 4
+ * c-file-style: "Stroustrup"
  * indent-tabs-mode: nil
  * End:
  * vim: shiftwidth=4 tabstop=8 expandtab

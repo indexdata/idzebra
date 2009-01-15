@@ -263,6 +263,7 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
 /*
  * Local variables:
  * c-basic-offset: 4
+ * c-file-style: "Stroustrup"
  * indent-tabs-mode: nil
  * End:
  * vim: shiftwidth=4 tabstop=8 expandtab

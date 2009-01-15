@@ -158,6 +158,7 @@ data1_varset *data1_read_varset (data1_handle dh, const char *file)
 /*
  * Local variables:
  * c-basic-offset: 4
+ * c-file-style: "Stroustrup"
  * indent-tabs-mode: nil
  * End:
  * vim: shiftwidth=4 tabstop=8 expandtab

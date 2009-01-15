@@ -121,6 +121,7 @@ void zebra_limit_for_rset(struct zebra_limit *zl,
 /*
  * Local variables:
  * c-basic-offset: 4
+ * c-file-style: "Stroustrup"
  * indent-tabs-mode: nil
  * End:
  * vim: shiftwidth=4 tabstop=8 expandtab

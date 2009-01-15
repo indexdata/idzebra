@@ -219,6 +219,11 @@ const struct zebra_snippet_word *zebra_snippets_lookup(
     for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
     {
 	const zebra_snippet_word *doc_w;
+        doc_w = zebra_snippets_constlist(doc);
+        if (!doc_w)
+            {
+                yaz_log(YLOG_WARN, "zebra_snippets_constlist returns 0");
+            }
         for (doc_w = zebra_snippets_constlist(doc); doc_w; doc_w = doc_w->next)
         {
             if (doc_w->ord == hit_w->ord && doc_w->seqno == hit_w->seqno
@@ -307,6 +312,7 @@ void zebra_snippets_ring(zebra_snippets *doc, const zebra_snippets *hit,
 /*
  * Local variables:
  * c-basic-offset: 4
+ * c-file-style: "Stroustrup"
  * indent-tabs-mode: nil
  * End:
  * vim: shiftwidth=4 tabstop=8 expandtab

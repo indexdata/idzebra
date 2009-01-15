@@ -1418,11 +1418,14 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 static int ioread_ret(void *context, char *buffer, int len)
 {
     struct recRetrieveCtrl *p = context;
-    return p->stream->readf(p->stream, buffer, len);
+    int r = p->stream->readf(p->stream, buffer, len);
+    yaz_log(YLOG_LOG, "ioread_ret len=%d r=%d\%.*s", len, r, r, buffer);
+    return r;
 }
 
 static int ioclose_ret(void *context)
 {
+    yaz_log(YLOG_LOG, "ioclose_ret");
     return 0;
 }
 
@@ -1563,6 +1566,7 @@ idzebra_filter
 /*
  * Local variables:
  * c-basic-offset: 4
+ * c-file-style: "Stroustrup"
  * indent-tabs-mode: nil
  * End:
  * vim: shiftwidth=4 tabstop=8 expandtab
