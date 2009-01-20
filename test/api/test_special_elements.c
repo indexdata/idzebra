@@ -38,8 +38,13 @@ static void tst(int argc, char **argv)
         = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\" base=\"Default\" type=\"grs.sgml\" rank=\"0\" size=\"41\" set=\"zebra::meta\"/>\n";
 
     const char * zebra_xml_index_title_p
-        = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\" set=\"zebra::index::title:p/\">\n"
+        = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\" set=\"zebra::index::title:p\">\n"
 "  <index name=\"title\" type=\"p\" seq=\"4\">my title</index>\n"
+"</record>\n";
+
+    const char * zebra_xml_index_title_s
+        = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\" set=\"zebra::index::title:s\">\n"
+"  <index name=\"title\" type=\"s\">my title</index>\n"
 "</record>\n";
 
     ZebraService zs = tl_start_up(0, argc, argv);
@@ -74,6 +79,10 @@ static void tst(int argc, char **argv)
     YAZ_CHECK_EQ(tl_fetch_first_compare(zh, "zebra::index::title:p", 
                                         yaz_oid_recsyn_xml,
                                         zebra_xml_index_title_p), ZEBRA_OK);
+    
+    YAZ_CHECK_EQ(tl_fetch_first_compare(zh, "zebra::index::title:s", 
+                                        yaz_oid_recsyn_xml,
+                                        zebra_xml_index_title_s), ZEBRA_OK);
     
     YAZ_CHECK_EQ(tl_fetch_first_compare(zh, "zebra::nonexistent", 
                                         yaz_oid_recsyn_xml, ""), ZEBRA_OK);
