@@ -1,3 +1,12 @@
+--- 2.0.36 2009/02/17
+
+Added implementation-codes directive for .mar files.
+
+Avoid error for missing recordId when zebraidx' option -s is in use.
+
+Fixed problem with some disk blocks not beeing freed correctly when
+'drop database' is used.
+
 --- 2.0.34 2008/11/06
 
 Facets can now be performed on sort registers (:s), not just regular indexes
