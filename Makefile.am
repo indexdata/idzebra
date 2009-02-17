@@ -17,7 +17,7 @@ EXTRA_DIST= README NEWS $(SPEC_FILE) $(SPEC_FILE).in \
 dist-hook:
 	if test -x /usr/bin/git -a -d .git; then git log >ChangeLog ; cp ChangeLog $(distdir); fi
 	cp $(srcdir)/LICENSE* $(distdir)
-	mkdir $(distdir)/win
+	test -d $(distdir)/win || mkdir $(distdir)/win
 	for i in $(srcdir)/win/*; do \
 		if test -f $$i; then \
 			cp $$i $(distdir)/win; \

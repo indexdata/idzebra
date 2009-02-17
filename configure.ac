@@ -1,5 +1,5 @@
 dnl This file is part of the Zebra server.
-dnl   Copyright (C) 1994-2008 Index Data
+dnl   Copyright (C) 1994-2009 Index Data
 dnl
 AC_PREREQ(2.60)
 AC_INIT([idzebra],[2.0.34],[zebra-help@indexdata.dk])
@@ -348,6 +348,7 @@ AC_OUTPUT([
   idzebra.spec
   idzebra-config-2.0
   Doxyfile
+  win/version.nsi
   include/idzebra/version.h
 ],[sed s%echo_source=yes%echo_source=no%g < idzebra-config-2.0 > util/idzebra-config-2.0 && chmod +x idzebra-config-2.0 util/idzebra-config-2.0])
 
