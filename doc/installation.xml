@@ -25,13 +25,23 @@
 
    <variablelist>
     <varlistentry>
-     <term><ulink url="&url.yaz;">yaz</ulink>
+     <term><ulink url="&url.yaz;">&yaz;</ulink>
       (required)</term>
      <listitem>
       <para>
        &zebra; uses &yaz; to support <ulink url="&url.z39.50;">&acro.z3950;</ulink> / 
-	<ulink url="&url.sru;">&acro.sru;</ulink>.
-	Also the memory management utilites from &yaz; is used by &zebra;.
+       <ulink url="&url.sru;">&acro.sru;</ulink>.
+       Zebra also uses a lot of other utilities (not related to networking),
+       such as memory management and XML support.
+      </para>
+      <para>
+       For the <link linkend="record-model-domxml">DOM XML</link>
+       / <link linkend="record-model-alvisxslt">ALVIS</link>
+       record filters, &yaz; must be compiled with 
+       <ulink url="&url.libxml2;">Libxml2</ulink>
+       and
+       <ulink url="&url.libxslt;">Libxslt</ulink>
+       support and Libxml2 must be version 2.6.15 or later.
       </para>
      </listitem>
     </varlistentry>
