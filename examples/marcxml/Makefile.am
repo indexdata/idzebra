@@ -4,7 +4,6 @@ EXTRA_DIST = zebra.cfg\
    MARC21slim2INDEX.xsl\
    MARC21slim2MADS.xsl\
    MARC21slim2MODS3-1.xsl\
-   MARC21slim2MODS3.xsl\
    MARC21slim2SRWDC.xsl\
    MARC21slimUtils.xsl\
    collection-2.xml\
