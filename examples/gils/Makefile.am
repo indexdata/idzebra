@@ -14,6 +14,9 @@ install-data-hook:
                 $(INSTALL_DATA) $$p $(DESTDIR)$(gilsdatadir)/records; \
         done
 
+uninstall-hook:
+	rm -r $(DESTDIR)$(gilsdatadir)/records
+
 dist-hook:
 	-mkdir $(distdir)/records
 	cp $(srcdir)/records/*.grs $(distdir)/records
