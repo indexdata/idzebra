@@ -3,6 +3,8 @@ gilsdatadir=$(datadir)/$(PACKAGE)$(PACKAGE_SUFFIX)-examples/gils
 	
 gilsdata_DATA = zebra.cfg
 
+EXTRA_DIST = $(gilsdata_DATA)
+
 clean:
 	rm -f *.mf *.LCK zebrasrv.pid
 
