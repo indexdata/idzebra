@@ -1,10 +1,10 @@
+marcxmldatadir=$(datadir)/$(PACKAGE)$(PACKAGE_SUFFIX)-examples/marcxml
 
-EXTRA_DIST = zebra.cfg\
+marcxmldata_DATA = zebra.cfg\
    README\
    MARC21slim2INDEX.xsl\
    MARC21slim2MADS.xsl\
    MARC21slim2MODS3-1.xsl\
-   MARC21slim2MODS3.xsl\
    MARC21slim2SRWDC.xsl\
    MARC21slimUtils.xsl\
    collection-2.xml\
@@ -17,7 +17,8 @@ EXTRA_DIST = zebra.cfg\
    identity.xsl\
    zebra.xsl
 
+EXTRA_DIST = $(marcxmldata_DATA)
 
 clean:
-	rm -f *.mf *..LCK zebrasrv.pid
+	rm -f *.mf *.LCK zebrasrv.pid
 

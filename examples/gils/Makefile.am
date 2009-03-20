@@ -3,6 +3,8 @@ gilsdatadir=$(datadir)/$(PACKAGE)$(PACKAGE_SUFFIX)-examples/gils
 	
 gilsdata_DATA = zebra.cfg
 
+EXTRA_DIST = $(gilsdata_DATA)
+
 clean:
 	rm -f *.mf *.LCK zebrasrv.pid
 
@@ -11,6 +13,9 @@ install-data-hook:
 	for p in $(srcdir)/records/*.grs; do \
                 $(INSTALL_DATA) $$p $(DESTDIR)$(gilsdatadir)/records; \
         done
+
+uninstall-hook:
+	rm -r $(DESTDIR)$(gilsdatadir)/records
 
 dist-hook:
 	-mkdir $(distdir)/records
