@@ -1,3 +1,8 @@
+Added new ranking handler: rank-2. This is a combination of rank-1 and
+static rank.. The staticrank is inverse (lowest value comes first, etc..).
+rank-2 thus substracts that from score. This allows a system to specify
+a "base" rank (=staticrank).
+
 --- 2.0.36 2009/02/17
 
 Added implementation-codes directive for .mar files.
