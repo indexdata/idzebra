@@ -407,6 +407,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     
     /* installing rank classes */
     zebraRankInstall(reg, rank_1_class);
+    zebraRankInstall(reg, rank_2_class);
     zebraRankInstall(reg, rank_similarity_class);
     zebraRankInstall(reg, rank_static_class);
 

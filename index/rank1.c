@@ -186,8 +186,8 @@ static void add(void *set_handle, int seqno, TERMID term)
  *  score should be between 0 and 1000. If score cannot be obtained
  *  -1 should be returned.
  */
-static int calc(void *set_handle, zint sysno, zint staticrank,
-                int *stop_flag)
+static int calc_1(void *set_handle, zint sysno, zint staticrank,
+                  int *stop_flag)
 {
     int i, lo, divisor, score = 0;
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
@@ -214,6 +214,13 @@ static int calc(void *set_handle, zint sysno, zint staticrank,
     return score;
 }
 
+static int calc_2(void *set_handle, zint sysno, zint staticrank,
+                  int *stop_flag)
+{
+    int score = calc_1(set_handle, sysno, staticrank, stop_flag);
+    return score - staticrank;
+}
+
 /*
  * Pseudo-meta code with sequence of calls as they occur in a
  * server. Handlers are prefixed by --:
@@ -232,17 +239,28 @@ static int calc(void *set_handle, zint sysno, zint staticrank,
  *     server close
  */
 
-static struct rank_control rank_control = {
+static struct rank_control rank_1_control = {
     "rank-1",
     create,
     destroy,
     begin,
     end,
-    calc,
+    calc_1,
+    add,
+};
+struct rank_control *rank_1_class = &rank_1_control;
+ 
+static struct rank_control rank_2_control = {
+    "rank-2",
+    create,
+    destroy,
+    begin,
+    end,
+    calc_2,
     add,
 };
  
-struct rank_control *rank_1_class = &rank_control;
+struct rank_control *rank_2_class = &rank_2_control;
 /*
  * Local variables:
  * c-basic-offset: 4

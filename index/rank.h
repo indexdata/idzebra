@@ -49,6 +49,7 @@ void zebraRankDestroy (struct zebra_register *reg);
 /* declaring externally defined rank class structures */
 /* remember to install rank classes in zebraapi.c as well!! */
 extern struct rank_control *rank_1_class;
+extern struct rank_control *rank_2_class;
 extern struct rank_control *rank_zv_class;
 extern struct rank_control *rank_static_class;
 extern struct rank_control *rank_similarity_class;

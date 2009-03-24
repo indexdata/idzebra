@@ -5,6 +5,7 @@
 <xsl:param name="snippet" select="''"/>
 <xsl:param name="score" select="''"/>
 <xsl:param name="id" select="''"/>
+<xsl:param name="rank" select="''"/>
 <xsl:output indent="yes"
       method="xml"
       version="1.0"
@@ -14,6 +15,7 @@
    <snippet>
      <id><xsl:value-of select="$id"/></id>
      <score><xsl:value-of select="$score"/></score>
+     <rank><xsl:value-of select="$rank"/></rank>
      <xsl:copy-of select="$snippet"/>
    </snippet>
  </xsl:template>
