@@ -54,7 +54,7 @@ struct rank_set_info {
     NMEM nmem;
 };
 
-static int log2_int (zint g)
+static int log2_int(zint g)
 {
     int n = 0;
     if (g < 0)
@@ -68,10 +68,10 @@ static int log2_int (zint g)
  * create: Creates/Initialises this rank handler. This routine is 
  *  called exactly once. The routine returns the class_handle.
  */
-static void *create (ZebraHandle zh)
+static void *create(ZebraHandle zh)
 {
     struct rank_class_info *ci = 
-        (struct rank_class_info *) xmalloc (sizeof(*ci));
+        (struct rank_class_info *) xmalloc(sizeof(*ci));
 
     if (!log_initialized)
     {
@@ -87,12 +87,12 @@ static void *create (ZebraHandle zh)
  *  when the handler is no longer needed - i.e. when the server
  *  dies. The class_handle was previously returned by create.
  */
-static void destroy (struct zebra_register *reg, void *class_handle)
+static void destroy(struct zebra_register *reg, void *class_handle)
 {
     struct rank_class_info *ci = (struct rank_class_info *) class_handle;
 
     yaz_log(log_level, "rank-1 destroy");
-    xfree (ci);
+    xfree(ci);
 }
 
 
@@ -101,12 +101,12 @@ static void destroy (struct zebra_register *reg, void *class_handle)
  *  each result set. The returned handle is a "set handle" and
  *  will be used in each of the handlers below.
  */
-static void *begin (struct zebra_register *reg, 
-                    void *class_handle, RSET rset, NMEM nmem,
-                    TERMID *terms, int numterms)
+static void *begin(struct zebra_register *reg, 
+                   void *class_handle, RSET rset, NMEM nmem,
+                   TERMID *terms, int numterms)
 {
     struct rank_set_info *si = 
-        (struct rank_set_info *) nmem_malloc (nmem,sizeof(*si));
+        (struct rank_set_info *) nmem_malloc(nmem,sizeof(*si));
     int i;
 
     yaz_log(log_level, "rank-1 begin");
@@ -114,18 +114,18 @@ static void *begin (struct zebra_register *reg,
     si->no_rank_entries = 0;
     si->nmem=nmem;
     si->entries = (struct rank_term_info *)
-	nmem_malloc (si->nmem, sizeof(*si->entries)*numterms); 
+	nmem_malloc(si->nmem, sizeof(*si->entries)*numterms); 
     for (i = 0; i < numterms; i++)
     {
 	zint g = rset_count(terms[i]->rset);
         yaz_log(log_level, "i=%d flags=%s '%s'", i, 
                 terms[i]->flags, terms[i]->name );
-	if  (!strncmp (terms[i]->flags, "rank,", 5)) 
+	if  (!strncmp(terms[i]->flags, "rank,", 5)) 
 	{
             const char *cp = strstr(terms[i]->flags+4, ",w=");
 	    si->entries[i].rank_flag = 1;
             if (cp)
-                si->entries[i].rank_weight = atoi (cp+3);
+                si->entries[i].rank_weight = atoi(cp+3);
             else
               si->entries[i].rank_weight = 34; /* sqrroot of 1000 */
             yaz_log(log_level, " i=%d weight=%d g="ZINT_FORMAT, i,
@@ -136,9 +136,9 @@ static void *begin (struct zebra_register *reg,
 	    si->entries[i].rank_flag = 0;
 	si->entries[i].local_occur = 0;  /* FIXME */
 	si->entries[i].global_occur = g;
-	si->entries[i].global_inv = 32 - log2_int (g);
+	si->entries[i].global_inv = 32 - log2_int(g);
 	yaz_log(log_level, " global_inv = %d g = " ZINT_FORMAT, 
-                (int) (32-log2_int (g)), g);
+                (int) (32-log2_int(g)), g);
         si->entries[i].term = terms[i];
         si->entries[i].term_index=i;
         terms[i]->rankpriv = &(si->entries[i]);
@@ -150,7 +150,7 @@ static void *begin (struct zebra_register *reg,
  * end: Terminates ranking process. Called after a result set
  *  has been ranked.
  */
-static void end (struct zebra_register *reg, void *set_handle)
+static void end(struct zebra_register *reg, void *set_handle)
 {
     yaz_log(log_level, "rank-1 end");
     /* no need to free anything, they are in nmems */
@@ -162,7 +162,7 @@ static void end (struct zebra_register *reg, void *set_handle)
  *  should be as fast as possible. This routine should "incrementally"
  *  update the score.
  */
-static void add (void *set_handle, int seqno, TERMID term)
+static void add(void *set_handle, int seqno, TERMID term)
 {
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
     struct rank_term_info *ti;
@@ -186,8 +186,8 @@ static void add (void *set_handle, int seqno, TERMID term)
  *  score should be between 0 and 1000. If score cannot be obtained
  *  -1 should be returned.
  */
-static int calc (void *set_handle, zint sysno, zint staticrank,
-		 int *stop_flag)
+static int calc(void *set_handle, zint sysno, zint staticrank,
+                int *stop_flag)
 {
     int i, lo, divisor, score = 0;
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
@@ -203,7 +203,7 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
 	    score += (8+log2_int (lo)) * si->entries[i].global_inv *
                 si->entries[i].rank_weight;
     }
-    divisor = si->no_rank_entries * (8+log2_int (si->last_pos/si->no_entries));
+    divisor = si->no_rank_entries * (8+log2_int(si->last_pos/si->no_entries));
     score = score / divisor;
     yaz_log(log_level, "calc sysno=" ZINT_FORMAT " score=%d", sysno, score);
     if (score > 1000)
