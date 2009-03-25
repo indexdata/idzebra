@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<yazgfs>
+  <listen id="tcp9999">tcp:@:9999</listen>
+  <server id="main" listenref="tcp9999">
+    <retrievalinfo>
+      <retrieval syntax="usmarc" name="F">
+        <backend syntax="xml" name="marc">
+          <marc inputformat="xml" outputformat="marc" outputcharset="marc-8"/>
+        </backend>
+      </retrieval>
+      <retrieval syntax="unimarc" name="F">
+        <backend syntax="xml" name="marc">
+          <marc inputformat="xml" outputformat="marc" outputcharset="utf-8"/>
+        </backend>
+      </retrieval>
+       <retrieval syntax="xml"/>
+    </retrievalinfo>
+  </server>
+</yazgfs>

@@ -15,7 +15,8 @@ marcxmldata_DATA = zebra.cfg\
    collection-subjmrc.xml\
    dom-config.xml\
    identity.xsl\
-   zebra.xsl
+   zebra.xsl \
+   yazgfs.xml
 
 EXTRA_DIST = $(marcxmldata_DATA)
 
