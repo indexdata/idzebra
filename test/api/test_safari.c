@@ -93,8 +93,10 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @and the of", 0));
 
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @prox 0 3 1 2 k 2 the gamle", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @prox 0 3 1 2 k 2 den gamle", 0));
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @prox 0 3 1 2 k 2 the art", 1));
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @prox 0 3 1 2 k 2 den gamle", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=any @prox 0 3 1 2 k 2 old mand", 1));
 
     YAZ_CHECK(tl_query(zh, "@attr 1=any hello", 1));
 
