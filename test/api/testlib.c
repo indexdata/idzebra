@@ -492,8 +492,9 @@ ZEBRA_RES tl_fetch_compare(ZebraHandle zh,
             res = ZEBRA_FAIL;
         if (res == ZEBRA_FAIL)
         {
+            int l = rec_len;
             yaz_log(YLOG_LOG, "Expected: %s", cmp_rec);
-            yaz_log(YLOG_LOG, "Got: %.*s", rec_len, rec_buf);
+            yaz_log(YLOG_LOG, "Got: %.*s", l, rec_buf);
         }
     }
     odr_destroy(odr);
