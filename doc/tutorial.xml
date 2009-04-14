@@ -220,7 +220,7 @@
      dc_language:w
      dc_rights:w
     </screen>
-    By default, searches do access the <literal>anr:w</literal> index,
+    By default, searches do access the <literal>any:w</literal> index,
     but we can direct searches to any access point by constructing the
     correct &acro.pqf; query. For example, to search in titles only,
     we use
