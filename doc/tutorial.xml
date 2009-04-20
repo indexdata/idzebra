@@ -211,24 +211,24 @@
     swith suffix <literal>:w</literal>):
     <screen>
      any:w 
-     dc_title:w
-     dc_creator:w
-     dc_subject:w
-     dc_description:w
-     dc_contributor:w
-     dc_publisher:w
-     dc_language:w
-     dc_rights:w
+     title:w
+     author:w
+     subject:w
+     description:w
+     contributor:w
+     publisher:w
+     language:w
+     rights:w
     </screen>
-    By default, searches do access the <literal>anr:w</literal> index,
+    By default, searches do access the <literal>any:w</literal> index,
     but we can direct searches to any access point by constructing the
     correct &acro.pqf; query. For example, to search in titles only,
     we use
     <ulink
      url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@attr
-     1=dc_title the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
+     1=title the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
      http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@attr
-     1=dc_title the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
+     1=title the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
     </ulink>
    </para>
 
@@ -236,45 +236,45 @@
     Similar we can direct searches to the other indexes defined. Or we
     can create boolean combinations of searches on different
     indexes. In this case we search for <literal>the</literal> in
-    <literal>dc_title</literal> and for <literal>fish</literal> in 
-    <literal>dc_description</literal> using the query 
-    <literal>@and @attr 1=dc_title the @attr 1=dc_description fish</literal>.
+    <literal>title</literal> and for <literal>fish</literal> in 
+    <literal>description</literal> using the query 
+    <literal>@and @attr 1=title the @attr 1=description fish</literal>.
     <ulink
      url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@and
-     @attr 1=dc_title the
-     @attr 1=dc_description
+     @attr 1=title the
+     @attr 1=description
      fish&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
      http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@and
-     @attr 1=dc_title the
-     @attr 1=dc_description fish&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
+     @attr 1=title the
+     @attr 1=description fish&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
     </ulink>
    </para>
 
 
   </sect1>
 
-  <sect1 id="tutorial-oai-sru-zebra-indexess">
+  <sect1 id="tutorial-oai-sru-zebra-indexes">
    <title>Investigating the content of the indexes</title>
 
    <para>
     How doess the magic work? What is inside the indexes? Why is a certain
-    record foound by a search, and another not?. The answer is in the
-    inverterd indexes. You can easily investigate them using the
+    record found by a search, and another not?. The answer is in the
+    inverted indexes. You can easily investigate them using the
     special &zebra; schema
     <literal>zebra::index::fieldname</literal>. In this example you
-    can see that the <literal>dc_title</literal> index has both word
+    can see that the <literal>title</literal> index has both word
     (type <literal>:w</literal>) and phrase (type
     <literal>:p</literal>) 
     indexed fields, 
-    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::index::dc_title">
-     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::index::dc_title
+    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::index::title">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::index::title
     </ulink>    
    </para>
 
    <para>
     But where in the indexes did the term match for the query occur?
     Easily answered with the special  &zebra; schema
-    <literal>zebra::snippet</literal>. The matching terma are
+    <literal>zebra::snippet</literal>. The matching terms are
     encapsulated by <literal>&lt;s&gt;</literal> tags. 
     <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::snippet">
      http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::snippet
@@ -286,9 +286,9 @@
     found inside my hit set? Try the special  &zebra; schema
     <literal>zebra::facet::fieldname:type</literal>. In this case, we
     investigate additional search terms for the
-    <literal>dc_title:w</literal> index.
-    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::dc_title:w">
-     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::dc_title:w
+    <literal>title:w</literal> index.
+    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::title:w">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::title:w
     </ulink>    
    </para>
 
@@ -296,8 +296,8 @@
     One can ask for multiple facets. Here, we want them from phrase
     indexes of type
     <literal>:p</literal>.
-    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::dc_publisher:p,dc_title:p">
-     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::dc_publisher:p,dc_title:p
+    <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::publisher:p,title:p">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::publisher:p,title:p
     </ulink>    
    </para>
 
@@ -326,7 +326,7 @@
    </para>
 
    <para>
-    The we are all set to start the &acro.sru;/acro.z3950; server including 
+    We are all set to start the &acro.sru;/acro.z3950; server including 
     &acro.pqf; and &acro.cql; query configuration. It uses the &yaz; frontend
     server configuration - just type
     <screen>
@@ -458,7 +458,7 @@
      Z> elements zebra::facet::any:w
      Z> show 1+1
      
-     Z> elements zebra::facet::dc_publisher:p,dc_title:p
+     Z> elements zebra::facet::publisher:p,title:p
      Z> show 1+1
     </screen>
    </para>
@@ -478,10 +478,10 @@
      Z> find @attr 1=oai_setspec @attr 4=3 7374617475733D756E707562
      Z> show 1+1
      
-     Z> find @attr 1=dc_title communication
+     Z> find @attr 1=title communication
      Z> show 1+1
      
-     Z> find @attr 1=dc_identifier @attr 4=3  
+     Z> find @attr 1=identifier @attr 4=3  
      http://resolver.caltech.edu/CaltechCSTR:1986.5228-tr-86
      Z> show 1+1
     </screen>
@@ -498,8 +498,8 @@
      Z> scan @attr 1=oai_datestamp @attr 4=3 1
      Z> scan @attr 1=oai_setspec @attr 4=3 2000
      Z>
-     Z> scan @attr 1=dc_title communication
-     Z> scan @attr 1=dc_identifier @attr 4=3 a
+     Z> scan @attr 1=title communication
+     Z> scan @attr 1=identifier @attr 4=3 a
     </screen>
    </para>
 
@@ -555,8 +555,8 @@
 
    <para>
     Notice that searching and scan on indexes
-    <literal>dc_contributor</literal>,  <literal>dc_language</literal>, 
-    <literal>dc_rights</literal>, and <literal>dc_source</literal> 
+    <literal>contributor</literal>,  <literal>language</literal>, 
+    <literal>rights</literal>, and <literal>source</literal> 
     might fail, simply because none of the records in the small example set 
     have these fields set, and consequently, these indexes might not
     been created. 
