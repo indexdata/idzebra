@@ -49,7 +49,7 @@ const char *myrec[] = {
         "  </Bounding-Coordinates></Spatial-Domain>\n"
         "</gils>\n",
 
-        "<gils>\n<title>My title x</title>\n</gils>\n" ,
+        "<gils>\n<title>My title x</title><abstract>a b c c c a y</abstract>\n</gils>\n" ,
 
         "<test_search>\n"
         " <date>2107-09-19 00:00:00</date>\n"
@@ -239,6 +239,9 @@ static void tst(int argc, char **argv)
 
     /* exl=1 distance=2 order=0 relation=3 (=), known, unit=word */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @prox 1 2 1 3 k 2 my x", 1));
+    
+    /* exl=0 distance=2 order=1 relation=2 (<=), known, unit=word */
+    YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 2 1 2 k 2 a y", 1));
 
     /* Non-indexed numeric use, but specified in bib1.att (bug #1142) */
     YAZ_CHECK(tl_query_x(zh, "@attr 1=1000 x", 0, 114));

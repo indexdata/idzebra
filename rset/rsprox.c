@@ -221,11 +221,14 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
                 
                 seqno[n++] = (*kctrl->getseq)(p->buf[0]);
                 while ((p->more[0] = rset_read (p->rfd[0],
-                                        p->buf[0], &p->terms[0])) >= -1 &&
-                       p->more[0] <= -1)
+                                        p->buf[0], &p->terms[0])))
+                {
+                    cmp = (*kctrl->cmp)(p->buf[0], p->buf[1]);
+                    if (cmp <= - rfd->rset->scope || cmp >= rfd->rset->scope)
+                        break;
                     if (n < 500)
                         seqno[n++] = (*kctrl->getseq)(p->buf[0]);
-                
+                }
                 for (i = 0; i<n; i++)
                 {
                     zint diff = (*kctrl->getseq)(p->buf[1]) - seqno[i];
