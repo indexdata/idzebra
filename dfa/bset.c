@@ -258,8 +258,9 @@ void pr_charBSet (BSetHandle *sh, BSet src, void (*f) (int))
         i1 = trav_BSet (sh, src, ++i);
         if (i1 == i)
         {
-            while ((i1=trav_BSet (sh, src, ++i)) == i)
-                ;
+            do
+                ++i;
+            while ((i1=trav_BSet (sh, src, i)) == i);
             if (i != i0+2)
                 f ('-');
             if (i-1 == '-')
