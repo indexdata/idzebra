@@ -199,11 +199,14 @@ ZebraService zebra_start_res(const char *configName, Res def_res, Res over_res)
         log_level = yaz_log_module_level("zebraapi");
         log_level_initialized = 1;
     }
-    
+
+    *system_str = '\0';
+    *version_str = '\0';
     zebra_get_version(version_str, system_str);
 
-    yaz_log(YLOG_LOG, "zebra_start %s %s", version_str,
-	    configName ? configName : "");
+    yaz_log(YLOG_LOG, "zebra_start %s %s", version_str, system_str);
+    if (configName)
+        yaz_log(YLOG_LOG, "config %s", configName);
 
     if ((res = res_open(def_res, over_res)))
     {
