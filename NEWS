@@ -1,3 +1,11 @@
+--- 2.0.37 2009/05/18
+
+Example with marc21 is now installed and part of packages.
+
+Fixed XSL for OAI example.
+
+Fixed problem with generic proximity handling.
+
 Added new ranking handler: rank-2. This is a combination of rank-1 and
 static rank.. The staticrank is inverse (lowest value comes first, etc..).
 rank-2 thus substracts that from score. This allows a system to specify
