@@ -24,6 +24,8 @@ Group: Libraries
 Requires: libyaz3 bzip2-libs
 %description -n lib%{name}
 Libraries for the Zebra search engine.
+%post -p /sbin/ldconfig 
+%postun -p /sbin/ldconfig 
 
 %package -n lib%{name}-modules
 Summary: Zebra modules
