@@ -61,9 +61,10 @@ static ZEBRA_RES zebra_check_handle(ZebraHandle zh)
 
 #define ZEBRA_CHECK_HANDLE(zh) if (zebra_check_handle(zh) != ZEBRA_OK) return ZEBRA_FAIL
 
-static void zebra_chdir(ZebraService zs)
+static int zebra_chdir(ZebraService zs)
 {
     const char *dir ;
+    int r;
     ASSERTZS;
     yaz_log(log_level, "zebra_chdir");
     dir = res_get(zs->global_res, "chdir");
@@ -71,10 +72,13 @@ static void zebra_chdir(ZebraService zs)
 	return;
     yaz_log(YLOG_DEBUG, "chdir %s", dir);
 #ifdef WIN32
-    _chdir(dir);
+    r = _chdir(dir);
 #else
-    chdir(dir);
+    r = chdir(dir);
 #endif
+    if (r)
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "chdir %s", dir);
+    return r;
 }
 
 static ZEBRA_RES zebra_flush_reg(ZebraHandle zh)
@@ -239,7 +243,11 @@ ZebraService zebra_start_res(const char *configName, Res def_res, Res over_res)
         zh->global_res = res;
         zh->sessions = 0;
         
-        zebra_chdir(zh);
+        if (zebra_chdir(zh))
+        {
+            xfree(zh);
+            return 0;
+        }
         
         zebra_mutex_cond_init(&zh->session_lock);
 	passwd_plain = res_get(zh->global_res, "passwd");
@@ -328,7 +336,6 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     int record_compression = REC_COMPRESS_NONE;
     const char *recordCompression = 0;
     const char *profilePath;
-    char cwd[1024];
     int sort_type = ZEBRA_SORT_TYPE_FLAT;
     ZEBRA_RES ret = ZEBRA_OK;
 
@@ -374,7 +381,6 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
 	}
     }
 
-    getcwd(cwd, sizeof(cwd)-1);
     profilePath = res_get_def(res, "profilePath", 0);
 
     data1_set_tabpath(reg->dh, profilePath);
@@ -1628,7 +1634,11 @@ static void zebra_get_state(ZebraHandle zh, char *val, int *seqno)
 
     if (f)
     {
-        fscanf(f, "%c %d", val, seqno);
+        if (fscanf(f, "%c %d", val, seqno))
+        {
+            yaz_log(YLOG_ERRNO|YLOG_WARN, "fscan fail %s",
+                    state_fname);
+        }
         fclose(f);
     }
     xfree(fname);

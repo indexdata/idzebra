@@ -770,7 +770,11 @@ static void bend_start(struct statserv_options_block *sob)
 	    char pidstr[30];
 	
 	    sprintf(pidstr, "%ld", (long) getpid());
-	    write(fd, pidstr, strlen(pidstr));
+	    if (write(fd, pidstr, strlen(pidstr)) != strlen(pidstr))
+            {
+                yaz_log(YLOG_ERRNO|YLOG_FATAL, "write fail %s", pidfname);
+                exit(1);
+            }
         }
     }
 #endif
