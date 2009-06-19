@@ -670,6 +670,7 @@ void close_block(ISAMB b, struct ISAMB_block *p)
                 p->pos, p->cat, p->pos/CAT_MAX);
         memcpy(p->buf, &b->file[p->cat].head.free_list, sizeof(zint));
         b->file[p->cat].head.free_list = p->pos;
+        b->file[p->cat].head_dirty = 1;
         if (!cache_block(b, p->pos, p->buf, 1))
         {
             yaz_log(b->log_io, "bf_write: close_block (deleted)");
