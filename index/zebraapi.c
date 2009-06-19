@@ -1634,7 +1634,7 @@ static void zebra_get_state(ZebraHandle zh, char *val, int *seqno)
 
     if (f)
     {
-        if (fscanf(f, "%c %d", val, seqno))
+        if (fscanf(f, "%c %d", val, seqno) != 2)
         {
             yaz_log(YLOG_ERRNO|YLOG_WARN, "fscan fail %s",
                     state_fname);
