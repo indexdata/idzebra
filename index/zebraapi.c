@@ -69,7 +69,7 @@ static int zebra_chdir(ZebraService zs)
     yaz_log(log_level, "zebra_chdir");
     dir = res_get(zs->global_res, "chdir");
     if (!dir)
-	return;
+	return 0;
     yaz_log(YLOG_DEBUG, "chdir %s", dir);
 #ifdef WIN32
     r = _chdir(dir);
