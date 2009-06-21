@@ -1,3 +1,9 @@
+--- 2.0.38 2009/06/19
+
+Improved estimated hits for AND operation (bug #2907)
+
+Fixed problem with register area growing after "drop DB". (bug #2913).
+
 --- 2.0.37 2009/05/18
 
 Example with marc21 is now installed and part of packages.

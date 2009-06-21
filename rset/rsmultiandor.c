@@ -52,7 +52,8 @@ static int r_forward_and(RSFD rfd, void *buf, TERMID *term,
                      const void *untilbuf);
 static int r_forward_or(RSFD rfd, void *buf, TERMID *term,
                      const void *untilbuf);
-static void r_pos (RSFD rfd, double *current, double *total);
+static void r_pos_and(RSFD rfd, double *current, double *total);
+static void r_pos_or(RSFD rfd, double *current, double *total);
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
 
 static const struct rset_control control_or = 
@@ -63,7 +64,7 @@ static const struct rset_control control_or =
     r_open_or,
     r_close,
     r_forward_or,
-    r_pos,
+    r_pos_or,
     r_read_or,
     r_write,
 };
@@ -76,7 +77,7 @@ static const struct rset_control control_and =
     r_open_and,
     r_close,
     r_forward_and,
-    r_pos,
+    r_pos_and,
     r_read_and,
     r_write,
 };
@@ -526,7 +527,8 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
             }
             if (p->skip)
                 continue;  /* skip again.. eventually tailcount will be 0 */
-	    (p->hits)++;
+            if (p->tailcount == 0)
+                (p->hits)++;
             return 1;
         } 
         /* not tailing, forward until all records match, and set up */
@@ -604,21 +606,31 @@ static int r_forward_and(RSFD rfd, void *buf, TERMID *term,
     return r_read_and(rfd,buf,term);
 }
 
-static void r_pos (RSFD rfd, double *current, double *total)
+static void r_pos_x(RSFD rfd, double *current, double *total, int and_op)
 {
     RSET ct = rfd->rset;
     struct rfd_private *mrfd = 
 	(struct rfd_private *)(rfd->priv);
-    double cur, tot;
-    double scur = 0.0, stot = 0.0;
+    double ratio = and_op ? 0.0 : 1.0;
     int i;
     for (i = 0; i<ct->no_children; i++){
+        double nratio, cur, tot;
         rset_pos(mrfd->items[i].fd, &cur, &tot);
-        yaz_log(log_level, "r_pos: %d %0.1f %0.1f", i, cur,tot); 
-        scur += cur;
-        stot += tot;
+        yaz_log(log_level, "r_pos: %d %0.1f %0.1f", i, cur,tot);
+        
+        nratio = cur / tot;
+        if (and_op)
+        {
+            if (nratio > ratio)
+                ratio = nratio;
+        }
+        else
+        {
+            if (nratio < ratio)
+                ratio = nratio;
+        }
     }
-    if (stot < 1.0) { /* nothing there */
+    if (ratio == 0.0 || ratio == 1.0) { /* nothing there */
         *current = 0;
         *total = 0;
         yaz_log(log_level, "r_pos: NULL  %0.1f %0.1f",  *current, *total);
@@ -626,9 +638,19 @@ static void r_pos (RSFD rfd, double *current, double *total)
     else
     {
 	*current = (double) (mrfd->hits);
-	*total = *current*stot/scur;
+	*total = *current / ratio;
 	yaz_log(log_level, "r_pos: =  %0.1f %0.1f",  *current, *total);
     }
+}
+
+static void r_pos_and(RSFD rfd, double *current, double *total)
+{
+    r_pos_x(rfd, current, total, 1);
+}
+
+static void r_pos_or(RSFD rfd, double *current, double *total)
+{
+    r_pos_x(rfd, current, total, 0);
 }
 
 static int r_write (RSFD rfd, const void *buf)

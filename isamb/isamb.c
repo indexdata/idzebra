@@ -569,6 +569,10 @@ struct ISAMB_block *new_block(ISAMB b, int leaf, int cat)
         zint block_no;
         block_no = b->file[cat].head.last_block++;
         p->pos = block_no * CAT_MAX + cat;
+        if (b->log_freelist)
+            yaz_log(b->log_freelist, "got block " 
+                    ZINT_FORMAT " from last %d:" ZINT_FORMAT, p->pos,
+                    cat, p->pos/CAT_MAX);
     }
     else
     {
@@ -584,8 +588,10 @@ struct ISAMB_block *new_block(ISAMB b, int leaf, int cat)
                 zebra_exit("isamb:new_block");
             }
         }
-        yaz_log(b->log_freelist, "got block " ZINT_FORMAT " from freelist %d:" ZINT_FORMAT, p->pos,
-                cat, p->pos/CAT_MAX);
+        if (b->log_freelist)
+            yaz_log(b->log_freelist, "got block " 
+                    ZINT_FORMAT " from freelist %d:" ZINT_FORMAT, p->pos,
+                    cat, p->pos/CAT_MAX);
         memcpy(&b->file[cat].head.free_list, p->buf, sizeof(zint));
     }
     p->cat = cat;
@@ -664,6 +670,7 @@ void close_block(ISAMB b, struct ISAMB_block *p)
                 p->pos, p->cat, p->pos/CAT_MAX);
         memcpy(p->buf, &b->file[p->cat].head.free_list, sizeof(zint));
         b->file[p->cat].head.free_list = p->pos;
+        b->file[p->cat].head_dirty = 1;
         if (!cache_block(b, p->pos, p->buf, 1))
         {
             yaz_log(b->log_io, "bf_write: close_block (deleted)");
