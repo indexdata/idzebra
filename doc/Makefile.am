@@ -8,6 +8,7 @@ XMLFILES =  \
    administration.xml \
    architecture.xml \
    field-structure.xml \
+   gpl-2.0.xml \
    indexdata.xml \
    installation.xml \
    introduction.xml \
