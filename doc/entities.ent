@@ -12,6 +12,7 @@
 <!ENTITY chap-recordmodel-grs SYSTEM "recordmodel-grs.xml">
 <!ENTITY chap-field-structure SYSTEM "field-structure.xml">
 <!ENTITY app-license SYSTEM "license.xml">
+<!ENTITY gpl2 SYSTEM "gpl-2.0.xml">
 <!ENTITY app-indexdata SYSTEM "indexdata.xml">
 <!ENTITY manref SYSTEM "manref.xml">
 <!ENTITY zebrasrv-synopsis SYSTEM "zebrasrv-synopsis.xml">
