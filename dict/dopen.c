@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "dict-p.h"
 
-static void common_init (Dict_BFile bf, int block_size, int cache)
+static void common_init(Dict_BFile bf, int block_size, int cache)
 {
     int i;
 
@@ -41,7 +41,7 @@ static void common_init (Dict_BFile bf, int block_size, int cache)
     bf->hits = bf->misses = 0;
 
     /* Allocate all blocks in one chunk. */
-    bf->all_data = xmalloc (block_size * cache);
+    bf->all_data = xmalloc(block_size * cache);
 
     /* Allocate and initialize hash array (as empty) */
     bf->hash_array = (struct Dict_file_block **)
@@ -51,7 +51,7 @@ static void common_init (Dict_BFile bf, int block_size, int cache)
 
     /* Allocate all block descriptors in one chunk */
     bf->all_blocks = (struct Dict_file_block *)
-	xmalloc (sizeof(*bf->all_blocks) * cache);
+	xmalloc(sizeof(*bf->all_blocks) * cache);
 
     /* Initialize the free list */
     bf->free_list = bf->all_blocks;
@@ -69,23 +69,23 @@ static void common_init (Dict_BFile bf, int block_size, int cache)
 }
 
 
-Dict_BFile dict_bf_open (BFiles bfs, const char *name, int block_size,
-			 int cache, int rw)
+Dict_BFile dict_bf_open(BFiles bfs, const char *name, int block_size,
+                        int cache, int rw)
 {
     Dict_BFile dbf;
-
-    dbf = (Dict_BFile) xmalloc (sizeof(*dbf));
-    dbf->bf = bf_open (bfs, name, block_size, rw);
+    
+    dbf = (Dict_BFile) xmalloc(sizeof(*dbf));
+    dbf->bf = bf_open(bfs, name, block_size, rw);
     if (!dbf->bf)
     {
         xfree(dbf);
         return 0;
     }
-    common_init (dbf, block_size, cache);
+    common_init(dbf, block_size, cache);
     return dbf;
 }
 
-void dict_bf_compact (Dict_BFile dbf)
+void dict_bf_compact(Dict_BFile dbf)
 {
     dbf->compact_flag = 1;
 }

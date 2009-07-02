@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "dict-p.h"
 
-static char *dict_look (Dict dict, const Dict_char *str, Dict_ptr ptr)
+static char *dict_look(Dict dict, const Dict_char *str, Dict_ptr ptr)
 {
     int mid, lo, hi;
     int cmp;
@@ -34,7 +34,7 @@ static char *dict_look (Dict dict, const Dict_char *str, Dict_ptr ptr)
     short *indxp;
     char *info;
 
-    dict_bf_readp (dict->dbf, ptr, &p);
+    dict_bf_readp(dict->dbf, ptr, &p);
     mid = lo = 0;
     hi = DICT_nodir(p)-1;
     indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));    
@@ -62,11 +62,11 @@ static char *dict_look (Dict dict, const Dict_char *str, Dict_ptr ptr)
             /* unsigned char        length of information */
             /* char *               information */
             info = (char*)p - indxp[-mid];
-            memcpy (&dc, info+sizeof(Dict_ptr), sizeof(Dict_char));
+            memcpy(&dc, info+sizeof(Dict_ptr), sizeof(Dict_char));
             cmp = dc- *str;
             if (!cmp)
             {
-                memcpy (&subptr, info, sizeof(Dict_ptr));
+                memcpy(&subptr, info, sizeof(Dict_ptr));
                 if (*++str == DICT_EOS)
                 {
                     if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
@@ -78,7 +78,7 @@ static char *dict_look (Dict dict, const Dict_char *str, Dict_ptr ptr)
                     if (subptr == 0)
                         return NULL;
                     ptr = subptr;
-                    dict_bf_readp (dict->dbf, ptr, &p);
+                    dict_bf_readp(dict->dbf, ptr, &p);
                     mid = lo = 0;
                     hi = DICT_nodir(p)-1;
                     indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
@@ -94,12 +94,12 @@ static char *dict_look (Dict dict, const Dict_char *str, Dict_ptr ptr)
     return NULL;
 }
 
-char *dict_lookup (Dict dict, const char *p)
+char *dict_lookup(Dict dict, const char *p)
 {
     dict->no_lookup++;
     if (!dict->head.root)
         return NULL;
-    return dict_look (dict, (const Dict_char *) p, dict->head.root);
+    return dict_look(dict, (const Dict_char *) p, dict->head.root);
 }
 /*
  * Local variables:

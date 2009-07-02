@@ -44,7 +44,7 @@ static int lookup_ec(Dict dict, Dict_ptr ptr,
     char *info;
     MatchWord match_mask = 1<<(mi->m-1);
 
-    dict_bf_readp (dict->dbf, ptr, &p);
+    dict_bf_readp(dict->dbf, ptr, &p);
     lo = 0;
     hi = DICT_nodir(p)-1;
     indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));    
@@ -93,7 +93,7 @@ static int lookup_ec(Dict dict, Dict_ptr ptr,
             /* unsigned char        length of information */
             /* char *               information */
             info = (char*)p - indxp[-lo];
-            memcpy (&ch, info+sizeof(Dict_ptr), sizeof(Dict_char));
+            memcpy(&ch, info+sizeof(Dict_ptr), sizeof(Dict_char));
             prefix[pos] = ch;
             
             sc = mi->s[ch & 255];
@@ -134,7 +134,7 @@ static MatchInfo *prepare_match(Dict_char *pattern)
     MatchInfo *mi;
 
     mi = (MatchInfo *) xmalloc(sizeof(*mi));
-    mi->m = dict_strlen (pattern);
+    mi->m = dict_strlen(pattern);
     mi->s = s = (MatchWord *) xmalloc(sizeof(*s)*256);  /* 256 !!! */
     for (i = 0; i < 256; i++)
         s[i] = 0;

@@ -1,19 +1,19 @@
 /* This file is part of the Zebra server.
    Copyright (C) 1994-2009 Index Data
 
-Zebra is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+   Zebra is free software; you can redistribute it and/or modify it under
+   the terms of the GNU General Public License as published by the Free
+   Software Foundation; either version 2, or (at your option) any later
+   version.
 
-Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
+   Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
@@ -35,7 +35,7 @@ static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
     short *indxp;
     char *info;
 
-    dict_bf_readp (dict->dbf, ptr, &p);
+    dict_bf_readp(dict->dbf, ptr, &p);
     hi = DICT_nodir(p)-1;
     if (start != -1)
         lo = start;
@@ -79,39 +79,39 @@ static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             /* char *               information */
 
             info = (char*)p - indxp[-lo];
-            memcpy (&dc, info+sizeof(Dict_ptr), sizeof(Dict_char));
+            memcpy(&dc, info+sizeof(Dict_ptr), sizeof(Dict_char));
             str[pos] = dc;
-	    memcpy (&subptr, info, sizeof(Dict_ptr));
+	    memcpy(&subptr, info, sizeof(Dict_ptr));
 	    if (dir>0 && info[sizeof(Dict_ptr)+sizeof(Dict_char)])
             {
-                 str[pos+1] = DICT_EOS;
-                 if ((*userfunc)((char*) str,
-                                 info+sizeof(Dict_ptr)+sizeof(Dict_char),
-                                 *count * dir, client))
-                 {
-                     *count = 0;
-                 }
-                 else
-                     --(*count);
+                str[pos+1] = DICT_EOS;
+                if ((*userfunc)((char*) str,
+                                info+sizeof(Dict_ptr)+sizeof(Dict_char),
+                                *count * dir, client))
+                {
+                    *count = 0;
+                }
+                else
+                    --(*count);
             }
             if (*count>0 && subptr)
             {
-	        scan_direction (dict, subptr, pos+1, str, -1, count, 
-                                client, userfunc, dir);
-                dict_bf_readp (dict->dbf, ptr, &p);
+	        scan_direction(dict, subptr, pos+1, str, -1, count, 
+                               client, userfunc, dir);
+                dict_bf_readp(dict->dbf, ptr, &p);
                 indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short)); 
 	    }
 	    if (*count>0 && dir<0 && info[sizeof(Dict_ptr)+sizeof(Dict_char)])
             {
-                 str[pos+1] = DICT_EOS;
-                 if ((*userfunc)((char*) str,
-                                 info+sizeof(Dict_ptr)+sizeof(Dict_char),
-                                 *count * dir, client))
-                 {
-                     *count = 0;
-                 }
-                 else
-                     --(*count);
+                str[pos+1] = DICT_EOS;
+                if ((*userfunc)((char*) str,
+                                info+sizeof(Dict_ptr)+sizeof(Dict_char),
+                                *count * dir, client))
+                {
+                    *count = 0;
+                }
+                else
+                    --(*count);
             }
         }
         lo += dir;
@@ -127,7 +127,7 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
     short *indxp;
     char *info;
 
-    dict_bf_readp (dict->dbf, ptr, &p);
+    dict_bf_readp(dict->dbf, ptr, &p);
     if (!p)
         return;
     mid = lo = 0;
@@ -142,7 +142,7 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             /* unsigned char        length of information */
             /* char *               information */
 	    info = (char*)p + indxp[-mid];
-	    cmp = dict_strcmp ((Dict_char*) info, str + pos);
+	    cmp = dict_strcmp((Dict_char*) info, str + pos);
 	    if (!cmp)
             {
                 if (*after)
@@ -170,11 +170,11 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             /* unsigned char        length of information */
             /* char *               information */
             info = (char*)p - indxp[-mid];
-            memcpy (&dc, info+sizeof(Dict_ptr), sizeof(Dict_char));
+            memcpy(&dc, info+sizeof(Dict_ptr), sizeof(Dict_char));
 	    cmp = dc - str[pos];
 	    if (!cmp)
             {
-		memcpy (&subptr, info, sizeof(Dict_ptr));
+		memcpy(&subptr, info, sizeof(Dict_ptr));
                 if (str[pos+1] == DICT_EOS)
                 {
 		    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
