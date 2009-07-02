@@ -90,6 +90,8 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
     void *p;
     short *indxp;
     char *info;
+    int r = 0;
+    Dict_ptr subptr = 0;
 
     if (!ptr)
 	return 0;
@@ -128,6 +130,7 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
 		    dict_bf_touch(dict->dbf, ptr);
 		    --hi;
 		    mid = lo = 0;
+                    r = 1; /* signal deleted */
                     /* start again (may not be the most efficient way to go)*/
 		    continue; 
 		}
@@ -146,14 +149,14 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
 		    DICT_type(p) = 1;
 		    (DICT_nodir(p))--;
 		    dict_bf_touch(dict->dbf, ptr);
-		    return 1;
+                    r = 1;
+                    break;
 		}
 	    }
         }
         else
         {
             Dict_char dc;
-            Dict_ptr subptr;
 
             /* Dict_ptr             subptr */
             /* Dict_char            sub char */
@@ -167,13 +170,9 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
                 memcpy(&subptr, info, sizeof(Dict_ptr));
                 if (*++str == DICT_EOS)
                 {
-		    if (sub_flag && subptr)
-		    {
-			Dict null_ptr = 0;
-			memcpy(info, &null_ptr, sizeof(Dict_ptr));
-		    }
                     if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
                     {
+                        /* entry does exist. Wipe it out */
                         info[sizeof(Dict_ptr)+sizeof(Dict_char)] = 0;
                         DICT_type(p) = 1;
                         dict_bf_touch(dict->dbf, ptr);
@@ -181,29 +180,48 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
 			if (f)
 			    (*f)(info+sizeof(Dict_ptr)+sizeof(Dict_char),
 				 client);
-			if (sub_flag && subptr)
-			    dict_del_subtree(dict, subptr, client, f);
-                        return 1;
+                        r = 1;
                     }
-		    if (sub_flag && subptr)
+		    if (sub_flag)
 		    {
+                        /* must delete all suffixes (subtrees) as well */
+                        hi = DICT_nodir(p)-1;
+                        while (mid < hi)
+                        {
+                            indxp[-mid] = indxp[-mid-1];
+                            mid++;
+                        }
+                        (DICT_nodir(p))--;
                         DICT_type(p) = 1;
                         dict_bf_touch(dict->dbf, ptr);
-			dict_del_subtree(dict, subptr, client, f);
 		    }
-                    return 0;
                 }
                 else
                 {
-                    if (subptr == 0)
-                        return 0;
-                    ptr = subptr;
+                    /* subptr may be 0 */
+                    r = dict_del_string(dict, str, subptr, sub_flag, client, f);
+
+                    /* recover */
                     dict_bf_readp(dict->dbf, ptr, &p);
-                    mid = lo = 0;
-                    hi = DICT_nodir(p)-1;
-                    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
-                    continue;
+                    indxp = (short*)
+                        ((char*) p+DICT_bsize(p)-sizeof(short));
+                    info = (char*)p - indxp[-mid];
+
+                    if (r == 2)
+                    {   /* subptr page is empty and already removed */
+                        hi = DICT_nodir(p)-1;
+                        while (mid < hi)
+                        {
+                            indxp[-mid] = indxp[-mid-1];
+                            mid++;
+                        }
+                        (DICT_nodir(p))--;
+                        dict_bf_touch(dict->dbf, ptr);
+                        r = 1;
+                    }
+                    subptr = 0; /* prevent dict_del_subtree (below) */
                 }
+                break;
             }
         }
         if (cmp < 0)
@@ -211,7 +229,17 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
         else
             hi = mid-1;
     }
-    return 0;
+    if (DICT_nodir(p) == 0 && ptr != dict->head.root)
+    {
+        DICT_backptr(p) = dict->head.freelist;
+        dict->head.freelist = ptr;
+        dict_bf_touch(dict->dbf, ptr);
+        r = 2;
+    }
+    if (subptr && sub_flag)
+        dict_del_subtree(dict, subptr, client, f);
+
+    return r;
 }
 
 int dict_delete(Dict dict, const char *p)
