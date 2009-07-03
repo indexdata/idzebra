@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /*
- *  Format of first block
+ *  Format of first block (assumes a 512 block size)
  *      next       (8 bytes)
  *      ref_count  (2 bytes)
  *      block      (500 bytes)
@@ -288,7 +288,7 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
     memset(&p->head, '\0', sizeof(p->head));
     p->compression_method = compression_method;
     p->rw = rw;
-    p->tmp_size = 1024;
+    p->tmp_size = 4096;
     p->tmp_buf = (char *) xmalloc(p->tmp_size);
     p->compression_chunk_size = 0;
     if (compression_method == REC_COMPRESS_BZIP2)
@@ -310,12 +310,12 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
             p->head.block_last[i] = 1;
             p->head.block_used[i] = 0;
         }
-        p->head.block_size[0] = 128;
+        p->head.block_size[0] = 256;
         p->head.block_move[0] = 0;
         for (i = 1; i<REC_BLOCK_TYPES; i++)
         {
-            p->head.block_size[i] = p->head.block_size[i-1] * 4;
-            p->head.block_move[i] = p->head.block_size[i] * 12;
+            p->head.block_size[i] = p->head.block_size[i-1] * 8;
+            p->head.block_move[i] = p->head.block_size[i] * 2;
         }
         if (rw)
 	{
