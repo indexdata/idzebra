@@ -420,7 +420,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     zebraRankInstall(reg, rank_similarity_class);
     zebraRankInstall(reg, rank_static_class);
 
-    compression_str = res_get_def(res, "compression_str", "none");
+    compression_str = res_get_def(res, "recordCompression", "none");
     if (!strcmp(compression_str, "none"))
 	record_compression = REC_COMPRESS_NONE;
     else if (!strcmp(compression_str, "bzip2"))
