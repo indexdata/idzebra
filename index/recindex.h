@@ -85,15 +85,26 @@ ZEBRA_RES rec_close (Records *p);
 */
 Records rec_open(BFiles bfs, int rw, int compression_method);
 
+/** \brief check whether a compression method is supported
+    \param compression_method (REC_COMPRESS_..)
+    \retval 0 if method is unsupported
+    \retval 1 if method is supported
+*/
+int rec_check_compression_method(int compression_method);
+
 char *rec_strdup(const char *s, size_t *len);
 void rec_prstat(Records p, int verbose);
 
 zint rec_sysno_to_int(zint sysno);
 
-/** \brief compression types */
+
+/** \brief No compression ("none") */
 #define REC_COMPRESS_NONE   0
+/** \brief BZIP2 compression (slow and requires big chunks) */
 #define REC_COMPRESS_BZIP2  1
+/** \brief zlib compression (faster and works off small chunks) */
 #define REC_COMPRESS_ZLIB   2
+
 
 enum { 
     recInfo_fileType, 

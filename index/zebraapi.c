@@ -433,6 +433,13 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
         ret = ZEBRA_FAIL;
     }
 
+    if (!rec_check_compression_method(record_compression))
+    {
+        yaz_log(YLOG_FATAL, "unsupported recordCompression: %s",
+                compression_str);
+        ret = ZEBRA_FAIL;
+    }
+
     {
 	const char *index_fname = res_get_def(res, "index", "default.idx");
 	if (index_fname && *index_fname && strcmp(index_fname, "none"))

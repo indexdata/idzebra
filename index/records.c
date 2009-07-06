@@ -280,6 +280,28 @@ static ZEBRA_RES rec_write_tmp_buf(Records p, int size, zint *sysnos)
     return ZEBRA_OK;
 }
 
+int rec_check_compression_method(int compression_method)
+{
+    switch(compression_method)
+    {
+    case REC_COMPRESS_ZLIB:
+#if HAVE_ZLIB_H
+        return 1;
+#else
+        return 0;
+#endif
+    case REC_COMPRESS_BZIP2:
+#if HAVE_BZLIB_H
+        return 1;
+#else
+        return 0;
+#endif
+    case REC_COMPRESS_NONE:
+        return 1;
+    }
+    return 0;
+}
+
 Records rec_open(BFiles bfs, int rw, int compression_method)
 {
     Records p;
