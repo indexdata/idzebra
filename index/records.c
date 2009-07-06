@@ -509,8 +509,6 @@ static ZEBRA_RES rec_flush_shared(Records p, short ref_count, zint *sysnos,
                 csize = destLen;
                 if (r == Z_OK)
                 {
-                    yaz_log(YLOG_LOG, "compress %4d %5d %5d", ref_count,
-                            out_offset, csize);
                     break;
                 }
                 if (r != Z_MEM_ERROR)
@@ -540,8 +538,6 @@ static ZEBRA_RES rec_flush_shared(Records p, short ref_count, zint *sysnos,
 		yaz_log(YLOG_WARN, "bzBuffToBuffCompress error code=%d", i);
 		csize = 0;
 	    }
-	    yaz_log(YLOG_LOG, "compress %4d %5d %5d", ref_count,
-                    out_offset, csize);
 #endif
 	    break;
 	case REC_COMPRESS_NONE:
@@ -803,7 +799,6 @@ static Record rec_get_int(Records p, zint sysno)
                            (const Bytef *) in_buf, in_size);
 	    if (i == Z_OK)
             {
-                yaz_log(YLOG_LOG, "decompress %5d %5d", in_size, bz_size);
                 bz_size = destLen; 
 		break;
             }
@@ -830,7 +825,6 @@ static Record rec_get_int(Records p, zint sysno)
 	    i = bzBuffToBuffDecompress
 #endif
                 (bz_buf, &bz_size, in_buf, in_size, 0, 0);
-	    yaz_log(YLOG_LOG, "decompress %5d %5d", in_size, bz_size);
 	    if (i == BZ_OK)
 		break;
 	    yaz_log(YLOG_LOG, "failed");
