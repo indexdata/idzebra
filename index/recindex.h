@@ -93,6 +93,7 @@ zint rec_sysno_to_int(zint sysno);
 /** \brief compression types */
 #define REC_COMPRESS_NONE   0
 #define REC_COMPRESS_BZIP2  1
+#define REC_COMPRESS_ZLIB   2
 
 enum { 
     recInfo_fileType, 

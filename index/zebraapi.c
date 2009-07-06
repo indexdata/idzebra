@@ -334,7 +334,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
 {
     struct zebra_register *reg;
     int record_compression = REC_COMPRESS_NONE;
-    const char *recordCompression = 0;
+    const char *compression_str = 0;
     const char *profilePath;
     int sort_type = ZEBRA_SORT_TYPE_FLAT;
     ZEBRA_RES ret = ZEBRA_OK;
@@ -420,11 +420,18 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     zebraRankInstall(reg, rank_similarity_class);
     zebraRankInstall(reg, rank_static_class);
 
-    recordCompression = res_get_def(res, "recordCompression", "none");
-    if (!strcmp(recordCompression, "none"))
+    compression_str = res_get_def(res, "compression_str", "none");
+    if (!strcmp(compression_str, "none"))
 	record_compression = REC_COMPRESS_NONE;
-    if (!strcmp(recordCompression, "bzip2"))
+    else if (!strcmp(compression_str, "bzip2"))
 	record_compression = REC_COMPRESS_BZIP2;
+    else if (!strcmp(compression_str, "zlib"))
+	record_compression = REC_COMPRESS_ZLIB;
+    else
+    {
+        yaz_log(YLOG_FATAL, "invalid recordCompression: %s", compression_str);
+        ret = ZEBRA_FAIL;
+    }
 
     {
 	const char *index_fname = res_get_def(res, "index", "default.idx");

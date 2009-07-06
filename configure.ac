@@ -174,6 +174,11 @@ else
     fi
 fi
 dnl
+dnl ------- zlib
+AC_CHECK_LIB([z],[compress2])
+if test "$ac_cv_lib_z_compress2" = "yes"; then
+    AC_CHECK_HEADERS([zlib.h])
+fi
 dnl ------ -lm
 AC_CHECK_LIB(m,sqrt)
 dnl ------ -ldl
