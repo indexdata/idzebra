@@ -44,6 +44,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #if HAVE_BZLIB_H
 #include <bzlib.h>
 #endif
+#if HAVE_ZLIB_H
+#include <zlib.h>
+#endif
 
 #define REC_BLOCK_TYPES 2
 #define REC_HEAD_MAGIC "recindex"
@@ -277,6 +280,28 @@ static ZEBRA_RES rec_write_tmp_buf(Records p, int size, zint *sysnos)
     return ZEBRA_OK;
 }
 
+int rec_check_compression_method(int compression_method)
+{
+    switch(compression_method)
+    {
+    case REC_COMPRESS_ZLIB:
+#if HAVE_ZLIB_H
+        return 1;
+#else
+        return 0;
+#endif
+    case REC_COMPRESS_BZIP2:
+#if HAVE_BZLIB_H
+        return 1;
+#else
+        return 0;
+#endif
+    case REC_COMPRESS_NONE:
+        return 1;
+    }
+    return 0;
+}
+
 Records rec_open(BFiles bfs, int rw, int compression_method)
 {
     Records p;
@@ -492,6 +517,32 @@ static ZEBRA_RES rec_flush_shared(Records p, short ref_count, zint *sysnos,
 	char compression_method = p->compression_method;
 	switch (compression_method)
 	{
+        case REC_COMPRESS_ZLIB:
+#if HAVE_ZLIB_H
+	    csize = out_offset + (out_offset >> 6) + 620;
+            while (1)
+            {
+                int r;
+                uLongf destLen = csize;
+                rec_tmp_expand(p, csize);
+                r = compress((Bytef *) p->tmp_buf+sizeof(zint)+sizeof(short)+
+                             sizeof(char),
+                             &destLen, (const Bytef *) out_buf, out_offset);
+                csize = destLen;
+                if (r == Z_OK)
+                {
+                    break;
+                }
+                if (r != Z_MEM_ERROR)
+                {
+                    yaz_log(YLOG_WARN, "compress error: %d", r);
+                    csize = 0;
+                    break;
+                }
+                csize = csize * 2;
+            }
+#endif
+            break;
 	case REC_COMPRESS_BZIP2:
 #if HAVE_BZLIB_H	
 	    csize = out_offset + (out_offset >> 6) + 620;
@@ -509,8 +560,6 @@ static ZEBRA_RES rec_flush_shared(Records p, short ref_count, zint *sysnos,
 		yaz_log(YLOG_WARN, "bzBuffToBuffCompress error code=%d", i);
 		csize = 0;
 	    }
-	    yaz_log(YLOG_LOG, "compress %4d %5d %5d", ref_count, out_offset,
-		  csize);
 #endif
 	    break;
 	case REC_COMPRESS_NONE:
@@ -708,9 +757,6 @@ static Record rec_get_int(Records p, zint sysno)
     char *nptr, *cptr;
     char *in_buf = 0;
     char *bz_buf = 0;
-#if HAVE_BZLIB_H
-    unsigned int bz_size;
-#endif
     char compression_method;
 
     assert(sysno > 0);
@@ -761,27 +807,57 @@ static Record rec_get_int(Records p, zint sysno)
     in_size = entry.size - sizeof(short) - sizeof(char);
     switch (compression_method)
     {
+    case REC_COMPRESS_ZLIB:
+#if HAVE_ZLIB_H
+        if (1)
+        {
+            unsigned int bz_size = entry.size * 20 + 100;
+            while (1)
+            {
+                uLongf destLen = bz_size;
+                bz_buf = (char *) xmalloc(bz_size);
+                i = uncompress((Bytef *) bz_buf, &destLen,
+                               (const Bytef *) in_buf, in_size);
+                if (i == Z_OK)
+                {
+                    bz_size = destLen; 
+                    break;
+                }
+                yaz_log(YLOG_LOG, "failed");
+                xfree(bz_buf);
+                bz_size *= 2;
+            }
+            in_buf = bz_buf;
+            in_size = bz_size;
+        }
+#else
+        yaz_log(YLOG_FATAL, "cannot decompress record(s) in ZLIB format");
+        return 0;
+#endif
+        break;
     case REC_COMPRESS_BZIP2:
 #if HAVE_BZLIB_H
-	bz_size = entry.size * 20 + 100;
-	while (1)
-	{
-	    bz_buf = (char *) xmalloc(bz_size);
+        if (1)
+        {
+            unsigned int bz_size = entry.size * 20 + 100;
+            while (1)
+            {
+                bz_buf = (char *) xmalloc(bz_size);
 #ifdef BZ_CONFIG_ERROR
-	    i = BZ2_bzBuffToBuffDecompress
+                i = BZ2_bzBuffToBuffDecompress
 #else
-	    i = bzBuffToBuffDecompress
+                    i = bzBuffToBuffDecompress
 #endif
-                (bz_buf, &bz_size, in_buf, in_size, 0, 0);
-	    yaz_log(YLOG_LOG, "decompress %5d %5d", in_size, bz_size);
-	    if (i == BZ_OK)
-		break;
-	    yaz_log(YLOG_LOG, "failed");
-	    xfree(bz_buf);
-            bz_size *= 2;
-	}
-	in_buf = bz_buf;
-	in_size = bz_size;
+                    (bz_buf, &bz_size, in_buf, in_size, 0, 0);
+                if (i == BZ_OK)
+                    break;
+                yaz_log(YLOG_LOG, "failed");
+                xfree(bz_buf);
+                bz_size *= 2;
+            }
+            in_buf = bz_buf;
+            in_size = bz_size;
+        }
 #else
 	yaz_log(YLOG_FATAL, "cannot decompress record(s) in BZIP2 format");
 	return 0;
