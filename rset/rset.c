@@ -405,7 +405,7 @@ int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
     
     while ((more = rset_read(rfd, buf, term)) > 0)
     {
-	if ((rfd->rset->keycontrol->cmp)(untilbuf, buf) <= 1)
+	if ((rfd->rset->keycontrol->cmp)(untilbuf, buf) < rset->scope)
 	    break;
     }
     if (log_level)
