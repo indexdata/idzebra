@@ -30,7 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 char *prog;
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
     char *arg;
     int ret;
@@ -48,38 +48,38 @@ int main (int argc, char **argv)
                 inputfile = arg;
             else
             {
-                yaz_log (YLOG_FATAL, "too many files specified\n");
-                exit (1);
+                yaz_log(YLOG_FATAL, "too many files specified\n");
+                exit(1);
             }
         }
         else if (ret == 'v')
         {
-            yaz_log_init (yaz_log_mask_str(arg), prog, NULL);
+            yaz_log_init(yaz_log_mask_str(arg), prog, NULL);
         }
         else if (ret == 'h')
         {
-            fprintf (stderr, "usage:\n"
-                     "  %s [-8] [-h] [-v n] [file]\n", prog);
-            exit (1);
+            fprintf(stderr, "usage:\n"
+                    "  %s [-8] [-h] [-v n] [file]\n", prog);
+            exit(1);
         }
         else if (ret == '8')
             use8 = 1;
         else
         {
-            yaz_log (YLOG_FATAL, "Unknown option '-%s'", arg);
-            exit (1);
+            yaz_log(YLOG_FATAL, "Unknown option '-%s'", arg);
+            exit(1);
         }
     }
     if (inputfile)
     {
-        ipf = fopen (inputfile, "r");
+        ipf = fopen(inputfile, "r");
         if (!ipf)
         {
-            yaz_log (YLOG_FATAL|YLOG_ERRNO, "cannot open '%s'", inputfile);
-            exit (1);
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "cannot open '%s'", inputfile);
+            exit(1);
         }
     }
-    while (fgets (ipf_buf, 1023, ipf))
+    while (fgets(ipf_buf, 1023, ipf))
     {
         char *ipf_ptr = ipf_buf;
         for (;*ipf_ptr && *ipf_ptr != '\n';ipf_ptr++)
@@ -95,7 +95,7 @@ int main (int argc, char **argv)
                     i++;
                 if (ipf_ptr[i])
                     ipf_ptr[i++] = '\0';
-                printf ("%s\n", ipf_ptr);
+                printf("%s\n", ipf_ptr);
                 ipf_ptr += (i-1);
             }
         }

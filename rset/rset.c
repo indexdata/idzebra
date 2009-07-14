@@ -99,7 +99,7 @@ void rset_close(RSFD rfd)
 	TERMID termid;
 	char buf[100];
 
-	while(rfd->counted_items <= rs->hits_limit
+	while (rfd->counted_items <= rs->hits_limit
 	      && rset_default_read(rfd, buf, &termid))
 	    ;
 	
@@ -108,7 +108,7 @@ void rset_close(RSFD rfd)
 		" hits_limit=" ZINT_FORMAT,
 		rs, rs->hits_count, rs->hits_limit);
 	rs->hits_approx = 0;
-	if (rs->hits_count > rs->hits_limit)
+	if (rs->hits_count > rs->hits_limit && rs->hits_limit > 0)
 	{
 	    double cur, tot;
 	    zint est;
@@ -134,7 +134,8 @@ void rset_close(RSFD rfd)
 		rs->hits_approx = 1;
 	    }
 	}
-	yaz_log(log_level, "rset_close p=%p count=" ZINT_FORMAT, rs,
+	yaz_log(log_level, "rset_close(%s) p=%p count=" ZINT_FORMAT, 
+                rs->control->desc, rs,
 		rs->hits_count);
     }
     rset_close_int(rs, rfd);
@@ -170,9 +171,8 @@ RSET rset_create_base(const struct rset_control *sel,
 
     rset = (RSET) nmem_malloc(nmem, sizeof(*rset));
     yaz_log(log_level, "rs_create(%s) rs=%p (nm=%p)", sel->desc, rset, nmem); 
-    yaz_log(log_level, " ref_id=%s limit=" ZINT_FORMAT, 
-	    (term && term->ref_id ? term->ref_id : "null"),
-	    rset->hits_limit);
+    yaz_log(log_level, " ref_id=%s", 
+	    (term && term->ref_id ? term->ref_id : "null"));
     rset->nmem = nmem;
     rset->control = sel;
     rset->refcount = 1;
@@ -405,12 +405,12 @@ int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
     
     while ((more = rset_read(rfd, buf, term)) > 0)
     {
-	if ((rfd->rset->keycontrol->cmp)(untilbuf, buf) <= 1)
+	if ((rfd->rset->keycontrol->cmp)(untilbuf, buf) < rset->scope)
 	    break;
     }
     if (log_level)
-	yaz_log (log_level, "rset_default_forward exiting m=%d c=%d",
-		 more, rset->scope);
+	yaz_log(log_level, "rset_default_forward exiting rfd=%p scope=%d m=%d c=%d",
+		rfd, rset->scope, more, rset->scope);
     
     return more;
 }

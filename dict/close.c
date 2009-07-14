@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "dict-p.h"
 
-int dict_close (Dict dict)
+int dict_close(Dict dict)
 {
     if (!dict)
 	return 0;
@@ -34,12 +34,12 @@ int dict_close (Dict dict)
     if (dict->rw)
     {
         void *head_buf;
-        dict_bf_readp (dict->dbf, 0, &head_buf);
-        memcpy (head_buf, &dict->head, sizeof(dict->head));
-        dict_bf_touch (dict->dbf, 0);        
+        dict_bf_readp(dict->dbf, 0, &head_buf);
+        memcpy(head_buf, &dict->head, sizeof(dict->head));
+        dict_bf_touch(dict->dbf, 0);        
     }
-    dict_bf_close (dict->dbf);
-    xfree (dict);
+    dict_bf_close(dict->dbf);
+    xfree(dict);
     return 0;
 }
 

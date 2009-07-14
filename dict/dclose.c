@@ -26,15 +26,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "dict-p.h"
 
-int dict_bf_close (Dict_BFile dbf)
+int dict_bf_close(Dict_BFile dbf)
 {
-    dict_bf_flush_blocks (dbf, -1);
+    dict_bf_flush_blocks(dbf, -1);
     
-    xfree (dbf->all_blocks);
-    xfree (dbf->all_data);
-    xfree (dbf->hash_array);
+    xfree(dbf->all_blocks);
+    xfree(dbf->all_data);
+    xfree(dbf->hash_array);
     bf_close(dbf->bf);
-    xfree (dbf);
+    xfree(dbf);
     return 0;
 }
 /*

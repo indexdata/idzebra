@@ -1,19 +1,19 @@
 /* This file is part of the Zebra server.
    Copyright (C) 1994-2009 Index Data
 
-Zebra is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+   Zebra is free software; you can redistribute it and/or modify it under
+   the terms of the GNU General Public License as published by the Free
+   Software Foundation; either version 2, or (at your option) any later
+   version.
 
-Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
+   Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
@@ -42,15 +42,15 @@ typedef unsigned MatchWord;
  */
 
 typedef struct {
-  int n;                 /* no of MatchWord needed */
-  int range;             /* max no. of errors */
-  int fact;              /* (range+1)*n */
-  MatchWord *match_mask; /* match_mask */
+    int n;                 /* no of MatchWord needed */
+    int range;             /* max no. of errors */
+    int fact;              /* (range+1)*n */
+    MatchWord *match_mask; /* match_mask */
 } MatchContext;
 
 #define INLINE 
 
-static INLINE void set_bit (MatchContext *mc, MatchWord *m, int ch, int state)
+static INLINE void set_bit(MatchContext *mc, MatchWord *m, int ch, int state)
 {
     int off = state & (WORD_BITS-1);
     int wno = state / WORD_BITS;
@@ -58,8 +58,8 @@ static INLINE void set_bit (MatchContext *mc, MatchWord *m, int ch, int state)
     m[mc->n * ch + wno] |= 1<<off;
 }
 
-static INLINE MatchWord get_bit (MatchContext *mc, MatchWord *m, int ch,
-                                 int state)
+static INLINE MatchWord get_bit(MatchContext *mc, MatchWord *m, int ch,
+                                int state)
 {
     int off = state & (WORD_BITS-1);
     int wno = state / WORD_BITS;
@@ -67,31 +67,31 @@ static INLINE MatchWord get_bit (MatchContext *mc, MatchWord *m, int ch,
     return m[mc->n * ch + wno] & (1<<off);
 }
 
-static MatchContext *mk_MatchContext (struct DFA *dfa, int range)
+static MatchContext *mk_MatchContext(struct DFA *dfa, int range)
 {
-    MatchContext *mc = (MatchContext *) xmalloc (sizeof(*mc));
+    MatchContext *mc = (MatchContext *) xmalloc(sizeof(*mc));
     int s;
 
     mc->n = (dfa->no_states+WORD_BITS) / WORD_BITS;
     mc->range = range;
     mc->fact = (range+1)*mc->n;
-    mc->match_mask = (MatchWord *) xcalloc (mc->n, sizeof(*mc->match_mask));
+    mc->match_mask = (MatchWord *) xcalloc(mc->n, sizeof(*mc->match_mask));
 
     for (s = 0; s<dfa->no_states; s++)
         if (dfa->states[s]->rule_no)
-            set_bit (mc, mc->match_mask, 0, s);
+            set_bit(mc, mc->match_mask, 0, s);
     return mc;
 }
 
-static void rm_MatchContext (MatchContext **mc)
+static void rm_MatchContext(MatchContext **mc)
 {
-    xfree ((*mc)->match_mask);
-    xfree (*mc);
+    xfree((*mc)->match_mask);
+    xfree(*mc);
     *mc = NULL;
 }
 
-static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
-                   struct DFA *dfa, int ch)
+static void mask_shift(MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
+                       struct DFA *dfa, int ch)
 {
     int j, s = 0;
     MatchWord *Rsrc_p = Rsrc, mask;
@@ -112,7 +112,7 @@ static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                     while (--i >= 0)
                         if (ch >= state->trans[i].ch[0] &&
                             ch <= state->trans[i].ch[1])
-                            set_bit (mc, Rdst, 0, state->trans[i].to);
+                            set_bit(mc, Rdst, 0, state->trans[i].to);
                 }
                 if (mask & 2)
                 {
@@ -121,7 +121,7 @@ static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                     while (--i >= 0)
                         if (ch >= state->trans[i].ch[0] &&
                             ch <= state->trans[i].ch[1])
-                            set_bit (mc, Rdst, 0, state->trans[i].to);
+                            set_bit(mc, Rdst, 0, state->trans[i].to);
                 }
                 if (mask & 4)
                 {
@@ -130,7 +130,7 @@ static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                     while (--i >= 0)
                         if (ch >= state->trans[i].ch[0] &&
                             ch <= state->trans[i].ch[1])
-                            set_bit (mc, Rdst, 0, state->trans[i].to);
+                            set_bit(mc, Rdst, 0, state->trans[i].to);
                 }
                 if (mask & 8)
                 {
@@ -139,7 +139,7 @@ static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                     while (--i >= 0)
                         if (ch >= state->trans[i].ch[0] &&
                             ch <= state->trans[i].ch[1])
-                            set_bit (mc, Rdst, 0, state->trans[i].to);
+                            set_bit(mc, Rdst, 0, state->trans[i].to);
                 }
             }
             s += 4;
@@ -150,8 +150,8 @@ static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
     }
 }
 
-static void shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
-                   struct DFA *dfa)
+static void shift(MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
+                  struct DFA *dfa)
 {
     int j, s = 0;
     MatchWord *Rsrc_p = Rsrc, mask;
@@ -169,28 +169,28 @@ static void shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                     struct DFA_state *state = dfa->states[s];
                     int i = state->tran_no;
                     while (--i >= 0)
-                        set_bit (mc, Rdst, 0, state->trans[i].to);
+                        set_bit(mc, Rdst, 0, state->trans[i].to);
                 }
                 if (mask & 2)
                 {
                     struct DFA_state *state = dfa->states[s+1];
                     int i = state->tran_no;
                     while (--i >= 0)
-                        set_bit (mc, Rdst, 0, state->trans[i].to);
+                        set_bit(mc, Rdst, 0, state->trans[i].to);
                 }
                 if (mask & 4)
                 {
                     struct DFA_state *state = dfa->states[s+2];
                     int i = state->tran_no;
                     while (--i >= 0)
-                        set_bit (mc, Rdst, 0, state->trans[i].to);
+                        set_bit(mc, Rdst, 0, state->trans[i].to);
                 }
                 if (mask & 8)
                 {
                     struct DFA_state *state = dfa->states[s+3];
                     int i = state->tran_no;
                     while (--i >= 0)
-                        set_bit (mc, Rdst, 0, state->trans[i].to);
+                        set_bit(mc, Rdst, 0, state->trans[i].to);
                 }
             }
             s += 4;
@@ -201,35 +201,35 @@ static void shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
     }
 }
 
-static void or (MatchContext *mc, MatchWord *Rdst,
-                MatchWord *Rsrc1, MatchWord *Rsrc2)
+static void or(MatchContext *mc, MatchWord *Rdst,
+               MatchWord *Rsrc1, MatchWord *Rsrc2)
 {
     int i;
     for (i = 0; i<mc->n; i++)
         Rdst[i] = Rsrc1[i] | Rsrc2[i];
 }
 
-static INLINE int move (MatchContext *mc, MatchWord *Rj1, MatchWord *Rj,
-                        Dict_char ch, struct DFA *dfa, MatchWord *Rtmp,
-                        int range)
+static INLINE int move(MatchContext *mc, MatchWord *Rj1, MatchWord *Rj,
+                       Dict_char ch, struct DFA *dfa, MatchWord *Rtmp,
+                       int range)
 {
     int d;
     MatchWord *Rtmp_2 = Rtmp + mc->n;
 
-    mask_shift (mc, Rj1, Rj, dfa, ch);
+    mask_shift(mc, Rj1, Rj, dfa, ch);
     for (d = 1; d <= mc->range; d++)
     {
-        or (mc, Rtmp, Rj, Rj1);                         /* 2,3 */
+        or(mc, Rtmp, Rj, Rj1);                         /* 2,3 */
         
-        shift (mc, Rtmp_2, Rtmp, dfa);
+        shift(mc, Rtmp_2, Rtmp, dfa);
 
-        mask_shift (mc, Rtmp, Rj+mc->n, dfa, ch);       /* 1 */
+        mask_shift(mc, Rtmp, Rj+mc->n, dfa, ch);       /* 1 */
                 
-        or (mc, Rtmp, Rtmp_2, Rtmp);                    /* 1,2,3*/
+        or(mc, Rtmp, Rtmp_2, Rtmp);                    /* 1,2,3*/
 
         Rj1 += mc->n;
         
-        or (mc, Rj1, Rtmp, Rj);                         /* 1,2,3,4 */
+        or(mc, Rj1, Rtmp, Rj);                         /* 1,2,3,4 */
 
         Rj += mc->n;
     }
@@ -249,7 +249,7 @@ static int grep(Dict dict, Dict_ptr ptr, MatchContext *mc,
     short *indxp;
     char *info;
 
-    dict_bf_readp (dict->dbf, ptr, &p);
+    dict_bf_readp(dict->dbf, ptr, &p);
     lo = 0;
     hi = DICT_nodir(p)-1;
     indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
@@ -281,7 +281,7 @@ static int grep(Dict dict, Dict_ptr ptr, MatchContext *mc,
                     if (was_match)
                     {
                         int ret = userfunc((char*) prefix, 
-                                       info+(j+1)*sizeof(Dict_char), client);
+                                           info+(j+1)*sizeof(Dict_char), client);
                         if (ret)
                             return ret;
                     }
@@ -291,7 +291,7 @@ static int grep(Dict dict, Dict_ptr ptr, MatchContext *mc,
                     range = mc->range;
                 else
                     range = 0;
-                move (mc, Rj1, Rj0, ch, dfa, Rj_tmp, range);
+                move(mc, Rj1, Rj0, ch, dfa, Rj_tmp, range);
                 for (d = mc->n; --d >= 0; )
                     if (Rj1[range*mc->n + d])
                         break;
@@ -318,7 +318,7 @@ static int grep(Dict dict, Dict_ptr ptr, MatchContext *mc,
             /* unsigned char        length of information */
             /* char *               information */
             info = (char*)p - indxp[-lo];
-            memcpy (&ch, info+sizeof(Dict_ptr), sizeof(Dict_char));
+            memcpy(&ch, info+sizeof(Dict_ptr), sizeof(Dict_char));
             prefix[pos] = ch;
             
             if (pos > *max_pos)
@@ -327,7 +327,7 @@ static int grep(Dict dict, Dict_ptr ptr, MatchContext *mc,
                 range = mc->range;
             else
                 range = 0;
-            move (mc, Rj1, Rj, ch, dfa, Rj_tmp, range);
+            move(mc, Rj1, Rj, ch, dfa, Rj_tmp, range);
             for (d = mc->n; --d >= 0; )
                 if (Rj1[range*mc->n + d])
                     break;
@@ -349,7 +349,7 @@ static int grep(Dict dict, Dict_ptr ptr, MatchContext *mc,
                             break;
                         }
                 }
-                memcpy (&subptr, info, sizeof(Dict_ptr));
+                memcpy(&subptr, info, sizeof(Dict_ptr));
                 if (subptr)
                 {
                     int ret = grep(dict, subptr, mc, Rj1, pos+1,
@@ -358,7 +358,7 @@ static int grep(Dict dict, Dict_ptr ptr, MatchContext *mc,
                     if (ret)
                         return ret;
 
-                    dict_bf_readp (dict->dbf, ptr, &p);
+                    dict_bf_readp(dict->dbf, ptr, &p);
                     indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
                 }
             }
@@ -393,21 +393,21 @@ int dict_lookup_grep(Dict dict, const char *pattern, int range, void *client,
     for (i = 0; pattern[i]; i++)
     {
 	yaz_log(YLOG_DEBUG, " %2d %3d  %c", i, pattern[i],
-	      (pattern[i] > ' ' && pattern[i] < 127) ? pattern[i] : '?');
+                (pattern[i] > ' ' && pattern[i] < 127) ? pattern[i] : '?');
     }
    
-    dfa_set_cmap (dfa, dict->grep_cmap_data, dict->grep_cmap);
+    dfa_set_cmap(dfa, dict->grep_cmap_data, dict->grep_cmap);
 
-    i = dfa_parse (dfa, &this_pattern);
+    i = dfa_parse(dfa, &this_pattern);
     if (i || *this_pattern)
     {
         yaz_log(YLOG_WARN, "dfa_parse fail=%d", i);
-        dfa_delete (&dfa);
+        dfa_delete(&dfa);
         return -1;
     }
-    dfa_mkstate (dfa);
+    dfa_mkstate(dfa);
 
-    mc = mk_MatchContext (dfa, range);
+    mc = mk_MatchContext(dfa, range);
 
     Rj = (MatchWord *) xcalloc((MAX_LENGTH+1) * mc->n, sizeof(*Rj));
 
@@ -415,15 +415,15 @@ int dict_lookup_grep(Dict dict, const char *pattern, int range, void *client,
     for (d = 1; d<=mc->range; d++)
     {
         int s;
-        memcpy (Rj + mc->n * d, Rj + mc->n * (d-1), mc->n * sizeof(*Rj));
+        memcpy(Rj + mc->n * d, Rj + mc->n * (d-1), mc->n * sizeof(*Rj));
         for (s = 0; s < dfa->no_states; s++)
         {
-            if (get_bit (mc, Rj, d-1, s))
+            if (get_bit(mc, Rj, d-1, s))
             {
                 struct DFA_state *state = dfa->states[s];
                 int i = state->tran_no;
                 while (--i >= 0)
-                    set_bit (mc, Rj, d, state->trans[i].to);
+                    set_bit(mc, Rj, d, state->trans[i].to);
             }
         }
     }
@@ -435,12 +435,12 @@ int dict_lookup_grep(Dict dict, const char *pattern, int range, void *client,
     yaz_log(YLOG_DEBUG, "max_pos = %d", *max_pos);
     dfa_delete(&dfa);
     xfree(Rj);
-    rm_MatchContext (&mc);
+    rm_MatchContext(&mc);
     return ret;
 }
 
-void dict_grep_cmap (Dict dict, void *vp,
-		     const char **(*cmap)(void *vp, const char **from, int len))
+void dict_grep_cmap(Dict dict, void *vp,
+                    const char **(*cmap)(void *vp, const char **from, int len))
 {
     dict->grep_cmap = cmap;
     dict->grep_cmap_data = vp;

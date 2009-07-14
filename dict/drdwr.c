@@ -1,19 +1,19 @@
 /* This file is part of the Zebra server.
    Copyright (C) 1994-2009 Index Data
 
-Zebra is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+   Zebra is free software; you can redistribute it and/or modify it under
+   the terms of the GNU General Public License as published by the Free
+   Software Foundation; either version 2, or (at your option) any later
+   version.
 
-Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
+   Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
@@ -31,18 +31,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "dict-p.h"
 
-void dict_pr_lru (Dict_BFile bf)
+void dict_pr_lru(Dict_BFile bf)
 {
     struct Dict_file_block *p;
     for (p=bf->lru_back; p; p = p->lru_next)
     {
-        printf (" %d", p->no);
+        printf(" %d", p->no);
     }
-    printf ("\n");
-    fflush (stdout);
+    printf("\n");
+    fflush(stdout);
 }
 
-static struct Dict_file_block *find_block (Dict_BFile bf, int no)
+static struct Dict_file_block *find_block(Dict_BFile bf, int no)
 {
     struct Dict_file_block *p;
 
@@ -52,9 +52,9 @@ static struct Dict_file_block *find_block (Dict_BFile bf, int no)
     return p;
 }
 
-static void release_block (Dict_BFile bf, struct Dict_file_block *p)
+static void release_block(Dict_BFile bf, struct Dict_file_block *p)
 {
-    assert (p);
+    assert(p);
 
     /* remove from lru queue */    
     if (p->lru_prev)
@@ -76,7 +76,7 @@ static void release_block (Dict_BFile bf, struct Dict_file_block *p)
     bf->free_list = p;
 }
 
-void dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush)
+void dict_bf_flush_blocks(Dict_BFile bf, int no_to_flush)
 {
     struct Dict_file_block *p;
     int i;
@@ -86,7 +86,7 @@ void dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush)
         if (p->dirty)
         {
 	    if (!bf->compact_flag)
-		bf_write (bf->bf, p->no, 0, 0, p->data);
+		bf_write(bf->bf, p->no, 0, 0, p->data);
 	    else
 	    {
 		int effective_block = p->no / bf->block_size;
@@ -96,44 +96,44 @@ void dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush)
 
 		if (remain >= p->nbytes)
 		{
-		    bf_write (bf->bf, effective_block, effective_offset,
-			      p->nbytes, p->data);
+		    bf_write(bf->bf, effective_block, effective_offset,
+                             p->nbytes, p->data);
 #if 0
-		    yaz_log (YLOG_LOG, "bf_write no=%d offset=%d size=%d",
-			  effective_block, effective_offset,
-			  p->nbytes);
+		    yaz_log(YLOG_LOG, "bf_write no=%d offset=%d size=%d",
+                            effective_block, effective_offset,
+                            p->nbytes);
 #endif
 			  
 		}
 		else
 		{
 #if 0
-		    yaz_log (YLOG_LOG, "bf_write1 no=%d offset=%d size=%d",
-			  effective_block, effective_offset,
-			  remain);
+		    yaz_log(YLOG_LOG, "bf_write1 no=%d offset=%d size=%d",
+                            effective_block, effective_offset,
+                            remain);
 #endif
-		    bf_write (bf->bf, effective_block, effective_offset,
-			      remain, p->data);
+		    bf_write(bf->bf, effective_block, effective_offset,
+                             remain, p->data);
 #if 0
-		    yaz_log (YLOG_LOG, "bf_write2 no=%d offset=%d size=%d",
-			  effective_block+1, 0, p->nbytes - remain);
+		    yaz_log(YLOG_LOG, "bf_write2 no=%d offset=%d size=%d",
+                            effective_block+1, 0, p->nbytes - remain);
 #endif
-		    bf_write (bf->bf, effective_block+1, 0,
-			      p->nbytes - remain, (char*)p->data + remain);
+		    bf_write(bf->bf, effective_block+1, 0,
+                             p->nbytes - remain, (char*)p->data + remain);
 		}
 	    }
         }
-        release_block (bf, p);
+        release_block(bf, p);
     }
 }
 
-static struct Dict_file_block *alloc_block (Dict_BFile bf, int no)
+static struct Dict_file_block *alloc_block(Dict_BFile bf, int no)
 {
     struct Dict_file_block *p, **pp;
 
     if (!bf->free_list)
-        dict_bf_flush_blocks (bf, 1);
-    assert (bf->free_list);
+        dict_bf_flush_blocks(bf, 1);
+    assert(bf->free_list);
     p = bf->free_list;
     bf->free_list = p->h_next;
     p->dirty = 0;
@@ -159,7 +159,7 @@ static struct Dict_file_block *alloc_block (Dict_BFile bf, int no)
     return p;
 }
 
-static void move_to_front (Dict_BFile bf, struct Dict_file_block *p)
+static void move_to_front(Dict_BFile bf, struct Dict_file_block *p)
 {
     /* Already at front? */
     if (!p->lru_next)
@@ -182,32 +182,32 @@ static void move_to_front (Dict_BFile bf, struct Dict_file_block *p)
     bf->lru_front = p;
 }
 
-int dict_bf_readp (Dict_BFile bf, int no, void **bufp)
+int dict_bf_readp(Dict_BFile bf, int no, void **bufp)
 {
     struct Dict_file_block *p;
     int i;
-    if ((p = find_block (bf, no)))
+    if ((p = find_block(bf, no)))
     {
         *bufp = p->data;
-        move_to_front (bf, p);
+        move_to_front(bf, p);
         bf->hits++;
         return 1;
     }
     bf->misses++;
-    p = alloc_block (bf, no);
+    p = alloc_block(bf, no);
 
     if (!bf->compact_flag)
-	i = bf_read (bf->bf, no, 0, 0, p->data);
+	i = bf_read(bf->bf, no, 0, 0, p->data);
     else
     {
 	int effective_block = no / bf->block_size;
 	int effective_offset = no - effective_block * bf->block_size;
 
-	i = bf_read (bf->bf, effective_block, effective_offset,
-		     bf->block_size - effective_offset, p->data);
+	i = bf_read(bf->bf, effective_block, effective_offset,
+                    bf->block_size - effective_offset, p->data);
 	if (i > 0 && effective_offset > 0)
-	    i = bf_read (bf->bf, effective_block+1, 0, effective_offset,
-			 (char*) p->data + bf->block_size - effective_offset);
+	    i = bf_read(bf->bf, effective_block+1, 0, effective_offset,
+			(char*) p->data + bf->block_size - effective_offset);
 	i = 1;
     }
     if (i > 0)
@@ -215,33 +215,33 @@ int dict_bf_readp (Dict_BFile bf, int no, void **bufp)
         *bufp = p->data;
         return i;
     }
-    release_block (bf, p);
+    release_block(bf, p);
     *bufp = NULL;
     return i;
 }
 
-int dict_bf_newp (Dict_BFile dbf, int no, void **bufp, int nbytes)
+int dict_bf_newp(Dict_BFile dbf, int no, void **bufp, int nbytes)
 {
     struct Dict_file_block *p;
-    if (!(p = find_block (dbf, no)))
-        p = alloc_block (dbf, no);
+    if (!(p = find_block(dbf, no)))
+        p = alloc_block(dbf, no);
     else
-        move_to_front (dbf, p);
+        move_to_front(dbf, p);
     *bufp = p->data;
-    memset (p->data, 0, dbf->block_size);
+    memset(p->data, 0, dbf->block_size);
     p->dirty = 1;
     p->nbytes = nbytes;
 #if 0
-    printf ("bf_newp of %d:", no);
-    dict_pr_lru (dbf);
+    printf("bf_newp of %d:", no);
+    dict_pr_lru(dbf);
 #endif
     return 1;
 }
 
-int dict_bf_touch (Dict_BFile dbf, int no)
+int dict_bf_touch(Dict_BFile dbf, int no)
 {
     struct Dict_file_block *p;
-    if ((p = find_block (dbf, no)))
+    if ((p = find_block(dbf, no)))
     {
         p->dirty = 1;
         return 0;
