@@ -921,7 +921,13 @@ static void set_record_info(struct filter_info *tinfo,
     
 
     if (id_p && *id_p)
-        sscanf((const char *)id_p, "%255s", extctr->match_criteria);
+    {
+        size_t l = strlen(id_p);
+        if (l >= sizeof(extctr->match_criteria))
+            l = sizeof(extctr->match_criteria)-1;
+        memcpy(extctr->match_criteria, id_p, l);
+        extctr->match_criteria[l] = '\0';
+    }
 
     if (rank_p && *rank_p)
         extctr->staticrank = atozint((const char *)rank_p);
@@ -1021,9 +1027,6 @@ static int attr_content_pi(const char **c_ptr, const char *name,
     const char *look = *c_ptr;
     int ret = 0;
 
-    *value = '\0';
-    while (*look && ' ' == *look)
-        look++;
     if (strlen(look) > name_len)
     {
         if (look[name_len] == '=' && !memcmp(look, name, name_len))
@@ -1040,8 +1043,6 @@ static int attr_content_pi(const char **c_ptr, const char *name,
             ret = 1;
         }
     }
-    while (*look && ' ' == *look)
-        look++;
     *c_ptr = look;
     return ret;
 }
@@ -1069,18 +1070,27 @@ static void process_xml_pi_node(struct filter_info *tinfo,
             *rank = '\0';
             *type = '\0';
             look += 6;
-            while (*look)
+            for (;;)
+            {
+                /* eat whitespace */
+                while (' ' == *look)
+                    look++;
+                if (*look == '\0')
+                    break;
                 if (attr_content_pi(&look, "id", id, sizeof(id)))
                     ;
                 else if (attr_content_pi(&look, "rank", rank, sizeof(rank)))
                     ;
                 else if (attr_content_pi(&look, "type", type, sizeof(type)))
+                    ;
+                else
                 {
                     dom_log(YLOG_WARN, tinfo, node,
                             "content '%s', can not parse '%s'",
                             pi_p, look);
                     break;
                 }
+            }
             set_record_info(tinfo, extctr, node, id, rank, type);
         } 
         /* parsing index instruction */
