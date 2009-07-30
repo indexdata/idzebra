@@ -312,6 +312,19 @@
      </varlistentry>
 
      <varlistentry>
+      <term>sortmax: <replaceable>integer</replaceable></term>
+      <listitem>
+       <para>
+    Specifies the maximum number of records that will be sorted
+    in a result set.  If the result set contains more than 
+    <replaceable>integer</replaceable> records, records after the
+    limit will not be sorted.  If omitted, the default value is
+    1,000.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
       <term>staticrank: <replaceable>integer</replaceable></term>
       <listitem>
        <para>
