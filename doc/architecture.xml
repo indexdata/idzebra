@@ -220,7 +220,7 @@
     </para>
     <para>
       The internal &acro.dom; &acro.xml; representation can be fed into four
-      different pipelines, consisting of arbitraily many sucessive
+      different pipelines, consisting of arbitrarily many successive
       &acro.xslt; transformations; these are for  
      <itemizedlist>
        <listitem><para>input parsing and initial
@@ -291,8 +291,8 @@
       static ranks. This imposes no overhead at all, both
       search and indexing perform still 
       <emphasis>O(1)</emphasis> irrespectively of document
-      collection size. This feature resembles Googles pre-ranking using
-      their Pagerank algorithm.
+      collection size. This feature resembles Google's pre-ranking using
+      their PageRank algorithm.
     </para>
     <para>
       Details on the experimental Alvis &acro.xslt; filter are found in 
@@ -442,7 +442,7 @@
     &zebra;'s internal index structure/data for a record.
     In particular, the regular record filters are not invoked when
     these are in use.
-    This can in some cases make the retrival faster than regular
+    This can in some cases make the retrieval faster than regular
     retrieval operations (for &acro.marc;, &acro.xml; etc).
    </para>
    <table id="special-retrieval-types">
@@ -564,7 +564,7 @@
       Z> elements zebra::meta
       Z> s 1+1
     </screen> 
-    displays all available metadata on the record. These include sytem
+    displays all available metadata on the record. These include system
     number, database name,  indexed filename,  filter used for indexing,
     score and static ranking information and finally bytesize of record.
    </para>

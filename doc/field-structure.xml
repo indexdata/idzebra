@@ -84,9 +84,9 @@
 	(non-space characters) separated by single space characters
 	(normalized to " " on display). When completeness is
 	disabled, each word is indexed as a separate entry. Complete subfield
-	indexing is most useful for fields which are typically browsed (eg.
+	indexing is most useful for fields which are typically browsed (e.g.,
 	titles, authors, or subjects), or instances where a match on a
-	complete subfield is essential (eg. exact title searching). For fields
+	complete subfield is essential (e.g., exact title searching). For fields
 	where completeness is disabled, the search engine will interpret a
 	search containing space characters as a word proximity search.
        </para>
@@ -146,7 +146,7 @@
      to them:
      <screen>
      # Traditional word index
-     # Used if completenss is 'incomplete field' (@attr 6=1) and
+     # Used if completeness is 'incomplete field' (@attr 6=1) and
      # structure is word/phrase/word-list/free-form-text/document-text
      index w
      completeness 0
@@ -295,7 +295,7 @@
 	  <para>
 	   Curly braces {} may be used to enclose ranges of single
 	   characters (possibly using the escape convention described in the
-	   preceding point), eg. {a-z} to introduce the
+	   preceding point), e.g., {a-z} to introduce the
 	   standard range of ASCII characters.
 	   Note that the interpretation of such a range depends on
 	   the concrete representation in your local, physical character set.
@@ -304,8 +304,8 @@
 
 	 <listitem>
 	  <para>
-	   paranthesises () may be used to enclose multi-byte characters -
-	   eg. diacritics or special national combinations (eg. Spanish
+	   parentheses () may be used to enclose multi-byte characters -
+	   e.g., diacritics or special national combinations (e.g., Spanish
 	   "ll"). When found in the input stream (or a search term),
 	   these characters are viewed and sorted as a single character, with a
 	   sorting value depending on the position of the group in the value
@@ -515,7 +515,7 @@
    <example id="indexing-marcxml-example"><title>MARCXML indexing using ICU</title>
     <para>
      The directory <filename>examples/marcxml</filename> includes
-     a complete sample with MARCXML recordst that are DOM XML indexed 
+     a complete sample with MARCXML records that are DOM XML indexed 
      using ICU chain rules. Study the
      <filename>README</filename> in the <filename>marcxml</filename>
      directory for details.

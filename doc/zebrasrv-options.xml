@@ -228,7 +228,7 @@ Heikki -->
 
   <para>
    The default behavior for <literal>zebrasrv</literal> - if started
-   as non-priviledged user - is to establish
+   as non-privileged user - is to establish
    a single TCP/IP listener, for the &acro.z3950; protocol, on port 9999.
    <screen>
     zebrasrv @

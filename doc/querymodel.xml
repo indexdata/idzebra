@@ -149,7 +149,7 @@
     The <ulink url="&url.yaz.pqf;">&acro.pqf; grammar</ulink>
     is documented in the &yaz; manual, and shall not be
     repeated here. This textual &acro.pqf; representation
-    is not transmistted to &zebra; during search, but it is in the
+    is not transmitted to &zebra; during search, but it is in the
     client mapped to the equivalent &acro.z3950; binary 
     query parse tree. 
    </para>
@@ -500,7 +500,7 @@
      <para>
       It is possible to search
       in any silly string index - if it's defined in your
-      indexation rules and can be parsed by the &acro.pqf; parser. 
+      indexing rules and can be parsed by the &acro.pqf; parser. 
       This is definitely not the recommended use of
       this facility, as it might confuse your users with some very
       unexpected results.
@@ -527,7 +527,7 @@
       <emphasis>string</emphasis> attributes which in appearance 
       <emphasis>resemble XPath queries</emphasis>. There are two
       problems with this approach: first, the XPath-look-alike has to
-      be defined at indexation time, no new undefined
+      be defined at indexing time, no new undefined
       XPath queries can entered at search time, and second, it might
       confuse users very much that an XPath-alike index name in fact
       gets populated from a possible entirely different &acro.xml; element
@@ -1157,7 +1157,7 @@
      <literal>Word list (6)</literal>
      is supported, and maps to the boolean <literal>AND</literal>
      combination of words supplied. The word list is useful when
-     google-like bag-of-word queries need to be translated from a GUI
+     Google-like bag-of-word queries need to be translated from a GUI
      query language to &acro.pqf;.  For example, the following queries
      are equivalent:
      <screen>
@@ -1406,7 +1406,7 @@
       search and scan in index <literal>type="p"</literal>.
      </para>
      <para>
-      The <literal>Complete subfield (2)</literal> is a reminiscens
+      The <literal>Complete subfield (2)</literal> is a reminiscent
       from the  happy <literal>&acro.marc;</literal>
       binary format days. &zebra; does not support it, but maps silently
       to <literal>Complete field (3)</literal>.
@@ -1681,14 +1681,14 @@
      </para>
      <para>
       By setting an estimation limit size of the resultset of the &acro.apt;
-      leaves, &zebra; stoppes processing the result set when the limit
+      leaves, &zebra; stops processing the result set when the limit
       length is reached.
       Hit counts under this limit are still precise, but hit counts over it
       are estimated using the statistics gathered from the chopped
       result set.
      </para>
      <para>
-      Specifying a limit of <literal>0</literal> resuts in exact hit counts.
+      Specifying a limit of <literal>0</literal> results in exact hit counts.
      </para>
      <para>
       For example, we might be interested in exact hit count for a, but
@@ -2188,19 +2188,19 @@
 	 <entry>key (@attr 4=3)</entry>
 	 <entry>ignored</entry>
 	 <entry>Null bitmap ('0')</entry>
-	 <entry>Used for non-tokenizated and non-normalized bit sequences</entry>
+	 <entry>Used for non-tokenized and non-normalized bit sequences</entry>
 	</row>
 	<row>
 	 <entry>year (@attr 4=4)</entry>
 	 <entry>ignored</entry>
 	 <entry>Year ('y')</entry>
-	 <entry>Non-tokenizated and non-normalized 4 digit numbers</entry>
+	 <entry>Non-tokenized and non-normalized 4 digit numbers</entry>
 	</row>
 	<row>
 	 <entry>date (@attr 4=5)</entry>
 	 <entry>ignored</entry>
 	 <entry>Date ('d')</entry>
-	 <entry>Non-tokenizated and non-normalized ISO date strings</entry>
+	 <entry>Non-tokenized and non-normalized ISO date strings</entry>
 	</row>
 	<row>
 	 <entry>ignored</entry>

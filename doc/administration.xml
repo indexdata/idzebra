@@ -341,10 +341,10 @@
       <term>estimatehits:: <replaceable>integer</replaceable></term>
       <listitem>
        <para>
-	Controls whether &zebra; should calculate approximite hit counts and
+	Controls whether &zebra; should calculate approximate hit counts and
 	at which hit count it is to be enabled.
-	A value of 0 disables approximiate hit counts.
-	For a positive value approximaite hit count is enabled
+	A value of 0 disables approximate hit counts.
+	For a positive value approximate hit count is enabled
 	if it is known to be larger than <replaceable>integer</replaceable>.
        </para>
        <para>
@@ -438,7 +438,7 @@
      <replaceable>permstring</replaceable></term>
      <listitem>
       <para>
-       Specifies permissions (priviledge) for a user that are allowed
+       Specifies permissions (privilege) for a user that are allowed
        to access &zebra; via the passwd system. There are two kinds
        of permissions currently: read (r) and write(w). By default
        users not listed in a permission directive are given the read
@@ -458,7 +458,7 @@
         <para>
 	  Names a file which lists database subscriptions for individual users.
 	  The access file should consists of lines of the form <literal>username:
-	  dbnames</literal>, where dbnames is a list of database names, seprated by
+	  dbnames</literal>, where dbnames is a list of database names, separated by
 	  '+'. No whitespace is allowed in the database list.
 	</para>
       </listitem>
@@ -1042,7 +1042,7 @@
   <title>Static Ranking</title>
   
    <para>
-    &zebra; uses internally inverted indexes to look up term occurencies
+    &zebra; uses internally inverted indexes to look up term frequencies
     in documents. Multiple queries from different indexes can be
     combined by the binary boolean operations <literal>AND</literal>, 
     <literal>OR</literal> and/or <literal>NOT</literal> (which
@@ -1133,7 +1133,7 @@
    <para>
      The default <literal>rank-1</literal> ranking module implements a 
      TF/IDF (Term Frequecy over Inverse Document Frequency) like
-     algorithm. In contrast to the usual defintion of TF/IDF
+     algorithm. In contrast to the usual definition of TF/IDF
      algorithms, which only considers searching in one full-text
      index, this one works on multiple indexes at the same time.
      More precisely, 
@@ -1846,7 +1846,7 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
    <sect2 id="administration-extended-services-debugging">
     <title>Extended services debugging guide</title>
     <para>
-     When debugging ES over PHP we recomment the following order of tests:
+     When debugging ES over PHP we recommend the following order of tests:
     </para>
 
     <itemizedlist>
@@ -1867,14 +1867,14 @@ where g = rset_count(terms[i]->rset) is the count of all documents in this speci
        <literal>yaz-client</literal> like described in
        <xref linkend="administration-extended-services-yaz-client"/>,
        and
-       remeber the <literal>-a</literal> option which tells you what
+       remember the <literal>-a</literal> option which tells you what
        goes over the wire! Notice also the section on permissions:
        try 
        <screen>
         perm.anonymous: rw
        </screen>
        in <literal>zebra.cfg</literal> to make sure you do not run into 
-       permission  problems (but never expose such an unsecure setup on the 
+       permission  problems (but never expose such an insecure setup on the 
        internet!!!). Then, make sure to set the general
        <literal>recordType</literal> instruction, pointing correctly
        to the GRS-1 filters,
