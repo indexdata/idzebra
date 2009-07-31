@@ -393,6 +393,8 @@ ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,
 ZEBRA_RES zebra_update_file_match(ZebraHandle zh, const char *path);
 ZEBRA_RES zebra_update_from_path(ZebraHandle zh, const char *path,
                                  enum zebra_recctrl_action_t action);
+ZEBRA_RES zebra_update_from_driver(ZebraHandle zh, const char *path,
+                                 enum zebra_recctrl_action_t action, char *useIndexDriver);
 ZEBRA_RES zebra_remove_file_match(ZebraHandle zh);
 
 struct rpn_char_map_info

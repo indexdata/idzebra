@@ -290,6 +290,10 @@ ZEBRA_MODULE(dom,[$def],   [  --enable-mod-dom        XML/XSLT filter (Requires 
 ZEBRA_MODULE(alvis,[$def], [  --enable-mod-alvis      ALVIS filter (Requires libxslt)])
 ZEBRA_MODULE(safari,shared,[  --enable-mod-safari     Safari filter (DBC)])
 
+
+AC_CHECK_HEADERS([mysql/mysql.h], [def="shared"], [def="disabled"], [])
+ZEBRA_MODULE(indexplugin_mysql,[$def],[  --enable-mod-indexplugin-mysql indexing plugin])
+
 dnl ------ ANSI C Header files
 AC_STDC_HEADERS
 if test "$ac_cv_header_stdc" = "no"; then

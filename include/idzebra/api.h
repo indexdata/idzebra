@@ -396,7 +396,7 @@ ZEBRA_RES zebra_compact(ZebraHandle zh);
 
 YAZ_EXPORT 
 ZEBRA_RES zebra_repository_index(ZebraHandle zh, const char *path,
-                                 enum zebra_recctrl_action_t action);
+                                 enum zebra_recctrl_action_t action, char *useIndexDriver);
 
 YAZ_EXPORT 
 ZEBRA_RES zebra_repository_update(ZebraHandle zh, const char *path);

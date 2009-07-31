@@ -55,6 +55,11 @@ mod_text_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
 mod_text_la_LADD =
 mod_text_la_LIBADD = $(zebralib) $(mod_text_la_LADD)
 
+mod_indexplugin_mysql_la_SOURCES = mod_indexplugin_mysql.c
+mod_indexplugin_mysql_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
+mod_indexplugin_mysql_la_LADD =
+mod_indexplugin_mysql_la_LIBADD = $(zebralib) $(mod_indexplugin_mysql_la_LADD) -lmysqlclient
+
 modlib_LTLIBRARIES = $(SHARED_MODULE_LA) 
 EXTRA_LTLIBRARIES = \
 	mod-grs-regx.la \
@@ -63,7 +68,8 @@ EXTRA_LTLIBRARIES = \
 	mod-safari.la \
 	mod-alvis.la \
 	mod-dom.la \
-	mod-text.la
+	mod-text.la \
+	mod-indexplugin_mysql.la
 
 EXTRA_libidzebra_2_0_la_SOURCES = \
  $(mod_grs_regx_la_SOURCES) \
@@ -72,7 +78,8 @@ EXTRA_libidzebra_2_0_la_SOURCES = \
  $(mod_safari_la_SOURCES) \
  $(mod_alvis_la_SOURCES) \
  $(mod_dom_la_SOURCES) \
- $(mod_text_la_SOURCES)
+ $(mod_text_la_SOURCES) \
+ $(mod_indexplugin_mysql_la_SOURCES)
 
 lib_LTLIBRARIES = $(zebralib)
 
@@ -97,7 +104,8 @@ libidzebra_2_0_la_SOURCES = \
   rpnscan.c rpnsearch.c sortidx.c stream.c \
   update_path.c update_file.c trunc.c untrans.c isam_methods.c \
   zaptterm.c zebraapi.c zinfo.c zinfo.h zsets.c key_block.c key_block.h \
-  check_res.c rset_isam.c
+  check_res.c rset_isam.c \
+  update_driver.c
 
 bin_PROGRAMS = zebraidx zebrasrv
 
@@ -111,7 +119,7 @@ AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) \
   -DDEFAULT_MODULE_PATH=\"$(modlibdir)\" \
   $(TCL_INCLUDE)
 
-LDADD = $(zebralib) $(YAZLALIB) 
+LDADD = $(zebralib) $(YAZLALIB) -ldl 
 
 zebrash_LDADD= $(LDADD) $(READLINE_LIBS)
 

@@ -1999,16 +1999,18 @@ ZEBRA_RES zebra_end_transaction(ZebraHandle zh, ZebraTransactionStatus *status)
 
 ZEBRA_RES zebra_repository_update(ZebraHandle zh, const char *path)
 {
-    return zebra_repository_index(zh, path, action_update);
+    /* Both of these probably need to be thought out better */
+    return zebra_repository_index(zh, path, action_update, NULL);
 }
 
 ZEBRA_RES zebra_repository_delete(ZebraHandle zh, const char *path)
 {
-    return zebra_repository_index(zh, path, action_delete);
+    /* Both of these probably need to be thought out better */
+    return zebra_repository_index(zh, path, action_delete, NULL);
 }
 
 ZEBRA_RES zebra_repository_index(ZebraHandle zh, const char *path,
-                                 enum zebra_recctrl_action_t action)
+                                 enum zebra_recctrl_action_t action, char *useIndexDriver)
 {
     ASSERTZH;
     assert(path);
@@ -2022,10 +2024,20 @@ ZEBRA_RES zebra_repository_index(ZebraHandle zh, const char *path,
     else
         yaz_log(log_level, "update action=%d", (int) action);
 
-    if (zh->m_record_id && !strcmp(zh->m_record_id, "file"))
-        return zebra_update_file_match(zh, path);
+    if(!useIndexDriver)
+    {        
+           if (zh->m_record_id && !strcmp(zh->m_record_id, "file"))
+                return zebra_update_file_match(zh, path);
+           else
+                return zebra_update_from_path(zh, path, action);
+    }
     else
-        return zebra_update_from_path(zh, path, action);
+    {
+                /* This is used if we indicate we'll be indexing from the plugin
+                   rather than any of the file input systems */
+           zebra_update_from_driver(zh, path, action, useIndexDriver);
+    }
+
 }
 
 ZEBRA_RES zebra_repository_show(ZebraHandle zh, const char *path)
