@@ -17,8 +17,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-#ifndef INDEXPLUGINH
-#define INDEXPLUGINH
+#ifndef ZEBRA_INDEXPLUGINH
+#define ZEBRA_INDEXPLUGINH
 
 #include "index.h"
 
