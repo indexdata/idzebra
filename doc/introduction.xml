@@ -43,7 +43,7 @@
    <ulink url="http://indexdata.dk/zebra/">&zebra;</ulink>
    is a high-performance, general-purpose structured text
    indexing and retrieval engine. It reads records in a
-   variety of input formats (eg. email, &acro.xml;, &acro.marc;) and provides access
+   variety of input formats (e.g. email, &acro.xml;, &acro.marc;) and provides access
    to them through a powerful combination of boolean search
    expressions and relevance-ranked free-text queries.
   </para>
@@ -207,7 +207,7 @@
        <entry>Predefined field types</entry>
        <entry>user defined</entry>
        <entry>Data fields can be indexed as phrase, as into word
-       tokenized text, as numeric values, url's, dates, and raw binary
+       tokenized text, as numeric values, URLs, dates, and raw binary
        data.</entry> 
        <entry><xref linkend="character-map-files"/> and
               <xref linkend="querymodel-pqf-apt-mapping-structuretype"/>
@@ -217,7 +217,7 @@
        <entry>Regular expression matching</entry>
        <entry>available</entry>
        <entry>Full regular expression matching and "approximate
-        matching" (eg. spelling mistake corrections) are handled.</entry>
+        matching" (e.g. spelling mistake corrections) are handled.</entry>
        <entry><xref linkend="querymodel-regular"/></entry>
       </row>
       <row>
@@ -780,7 +780,7 @@
      Why does Kete wants to use Zebra?? Speed, Scalability and easy
  integration with Koha. Read their
  <ulink
-     url="http://kete.net.nz/blog/topics/show/44-who-what-why-when-answering-some-of-the-niggly-development-questions">detailled
+     url="http://kete.net.nz/blog/topics/show/44-who-what-why-when-answering-some-of-the-niggly-development-questions">detailed
  reasoning here.</ulink>
     </para>
    </section>
@@ -960,7 +960,7 @@
     &zebra; has been used by a variety of institutions to construct
     indexes of large web sites, typically in the region of tens of
     millions of pages.  In this role, it functions somewhat similarly
-    to the engine of google or altavista, but for a selected intranet
+    to the engine of Google or AltaVista, but for a selected intranet
     or a subset of the whole Web.
    </para>
    <para>

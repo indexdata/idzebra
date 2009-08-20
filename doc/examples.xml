@@ -28,7 +28,7 @@
 
     <listitem>
      <para>
-      What record schemas to support.  (Subsidiary files specifiy how
+      What record schemas to support.  (Subsidiary files specify how
       to index the contents of records in those schemas, and what
       format to use when presenting records in those schemas to client
       software.)
@@ -264,7 +264,7 @@ xelm /Zthes/termModifiedBy      termModifiedBy:w
    <calloutlist>
     <callout arearefs="attset.zthes">
      <para>
-      Declare Thesausus attribute set. See <filename>zthes.att</filename>.
+      Declare Thesaurus attribute set. See <filename>zthes.att</filename>.
      </para>
     </callout>
     <callout arearefs="attset.attset">
@@ -283,7 +283,7 @@ xelm /Zthes/termModifiedBy      termModifiedBy:w
     <callout arearefs="termName">
      <para>
       Make <literal>termName</literal> word searchable by both
-      Zthes attribute termName (1002) and &acro.bib1; atttribute title (4).
+      Zthes attribute termName (1002) and &acro.bib1; attribute title (4).
      </para>
     </callout>
    </calloutlist>

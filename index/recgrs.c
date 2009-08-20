@@ -1164,7 +1164,6 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	yaz_log(YLOG_DEBUG, "grs_retrieve: schema mapping");
 	for (map = node->u.root.absyn->maptabs; map; map = map->next)
 	{
-	    // if (map->target_absyn_ref == requested_schema)
 	    if (!oid_oidcmp(map->oid, requested_schema))
 	    {
 		onode = node;

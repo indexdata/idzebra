@@ -60,7 +60,7 @@ records.</para></note>
 for &acro.marc; records. This term helps to understand the notation of extended indexing of MARC records
 by &zebra;. Our definition is based on the document <ulink url="http://www.rba.ru/rusmarc/soft/Z39-50.htm">"The
 table of conformity for &acro.z3950; use attributes and R&acro.usmarc; fields"</ulink>.
-The document is available only in russian language.</para>
+The document is available only in Russian language.</para>
 
 <para>The <emphasis>index-formula</emphasis> is the combination of subfields presented in such way:</para>
 

@@ -47,7 +47,7 @@
         which describes the specific &acro.marc; structure of the input record as
         well as the indexing rules.
        </para>
-       <para>The <literal>grs.marc</literal> uses an internal represtantion
+       <para>The <literal>grs.marc</literal> uses an internal representation
 	which is not &acro.xml; conformant. In particular &acro.marc; tags are
 	presented as elements with the same name. And &acro.xml; elements
 	may not start with digits. Therefore this filter is only
@@ -99,7 +99,7 @@
        </para>
        <para>
 	The loadable <literal>grs.xml</literal> filter module
-	is packagged in the GNU/Debian package
+	is packaged in the GNU/Debian package
         <literal>libidzebra2.0-mod-grs-xml</literal>
         </para>
       </listitem>
@@ -473,7 +473,7 @@
            <listitem>
             <para>
              Begin a new record. The following parameter should be the
-             name of the schema that describes the structure of the record, eg.
+             name of the schema that describes the structure of the record, e.g.,
              <literal>gils</literal> or <literal>wais</literal> (see below).
              The <literal>begin record</literal> call should precede
              any other use of the <replaceable>begin</replaceable> statement.
@@ -1590,7 +1590,7 @@
          provides a default variant request for
          use when the individual element requests (see below) do not contain a
          variant request. Variant requests consist of a blank-separated list of
-         variant components. A variant compont is a comma-separated,
+         variant components. A variant component is a comma-separated,
          parenthesized triple of variant class, type, and value (the two former
          values being represented as integers). The value can currently only be
          entered as a string (this will change to depend on the definition of
@@ -1809,7 +1809,7 @@
        ISO2709-based formats (&acro.usmarc;, etc.). Only records with a
        two-level structure (corresponding to fields and subfields) can be
        directly mapped to ISO2709. For records with a different structuring
-       (eg., GILS), the representation in a structure like &acro.usmarc; involves a
+       (e.g., GILS), the representation in a structure like &acro.usmarc; involves a
        schema-mapping (see <xref linkend="schema-mapping"/>), to an
        "implied" &acro.usmarc; schema (implied,
        because there is no formal schema which specifies the use of the
@@ -1894,7 +1894,7 @@
      Our definition is based on the document
      <ulink url="http://www.rba.ru/rusmarc/soft/Z39-50.htm">"The table
       of conformity for &acro.z3950; use attributes and R&acro.usmarc; fields"</ulink>.
-     The document is available only in russian language.</para>
+     The document is available only in Russian language.</para>
     
     <para>
      The <emphasis>index-formula</emphasis> is the combination of

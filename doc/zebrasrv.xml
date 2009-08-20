@@ -30,7 +30,7 @@
   <refsect1><title>DESCRIPTION</title>
   <para>Zebra is a high-performance, general-purpose structured text indexing
    and retrieval engine. It reads structured records in a variety of input
-   formats (eg. email, &acro.xml;, &acro.marc;) and allows access to them through exact
+   formats (e.g. email, &acro.xml;, &acro.marc;) and allows access to them through exact
    boolean search expressions and relevance-ranked free-text queries. 
   </para>
   <para>
@@ -238,7 +238,7 @@
     This will display the &acro.xml;-formatted &acro.sru; response that includes the
     first record in the result-set found by the query
     <literal>mineral</literal>.  (For clarity, the &acro.sru; URL is shown
-    here broken across lines, but the lines should be joined to gether
+    here broken across lines, but the lines should be joined together
     to make single-line URL for the browser to submit.)
    </para>
   </note>
@@ -372,7 +372,7 @@
     new alpha stuff, and a lot of work has yet to be done ..
    </para>
    <para>
-    There is no linkeage whatsoever between the &acro.z3950; explain model
+    There is no linkage whatsoever between the &acro.z3950; explain model
     and the &acro.sru; explain response (well, at least not implemented
     in Zebra, that is ..).  Zebra does not provide a means using
     &acro.z3950; to obtain the ZeeRex record.

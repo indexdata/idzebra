@@ -461,7 +461,7 @@
          found. Therefore,
          invalid document processing is aborted, and any content of
          the <literal>&lt;extract&gt;</literal> and 
-         <literal>&lt;store&gt;</literal> pipelines is discarted.
+         <literal>&lt;store&gt;</literal> pipelines is discarded.
           A warning is issued in the logs. 
          </para>
        </listitem>
@@ -819,7 +819,7 @@
    <title>Debuggig &acro.dom; Filter Configurations</title>
    <para>
     It can be very hard to debug a &acro.dom; filter setup due to the many
-    sucessive &acro.marc; syntax translations, &acro.xml; stream splitting and 
+    successive &acro.marc; syntax translations, &acro.xml; stream splitting and 
     &acro.xslt; transformations involved. As an aid, you have always the
     power of the <literal>-s</literal> command line switch to the 
     <literal>zebraidz</literal> indexing command at your hand: 

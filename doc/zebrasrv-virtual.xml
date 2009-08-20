@@ -6,7 +6,7 @@
 <para>
  The Virtual hosts mechanism allows a &yaz; frontend server to
  support multiple backends. A backend is selected on the basis of
- the TCP/IP binding (port+listening adddress) and/or the virtual host.
+ the TCP/IP binding (port+listening address) and/or the virtual host.
 </para>
 <para>
  A backend can be configured to execute in a particular working
@@ -86,7 +86,7 @@
     <para>
      Specifies listener for this server. If this attribute is not
      given, the server is accessible from all listener. In order
-     for the server to be used for real, howeever, the virtual host
+     for the server to be used for real, however, the virtual host
      must match (if specified in the configuration).
     </para>
    </listitem>
@@ -106,7 +106,7 @@
    <listitem>
     <para>
      Specifies a working directory for this backend server. If
-     specifid, the &yaz; fronend changes current working directory
+     specified, the &yaz; frontend changes current working directory
      to this directory whenever a backend of this type is
      started (backend handler bend_start), stopped (backend handler hand_stop)
      and initialized (bend_init).

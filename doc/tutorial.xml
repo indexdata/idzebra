@@ -22,8 +22,8 @@
    </para>
    <para> 
     Additional OAI test records can be downloaded by running a shell
-    script (you may want to abort the script when you have waitet
-    longer than your coffe brews ..).
+    script (you may want to abort the script when you have waited
+    longer than your coffee brews ..).
     <screen>
      cd data
      ./fetch_OAI_data.sh
@@ -105,7 +105,7 @@
 
    <para>
     Searching and retrieving &acro.xml; records is easy. For example,
-    you can point your browser to one of the following url's to
+    you can point your browser to one of the following URLs to
     search for the term <literal>the</literal>. Just point your
     browser at this link:
     <ulink
@@ -115,14 +115,14 @@
 
    <warning>
     <para>
-     These URL's woun't work unless you have indexed the example data
+     These URLs won't work unless you have indexed the example data
      and started an &zebra; server as outlined in the previous section.
     </para>
    </warning>
 
    <para>
     In case we actually want to retrieve one record, we need to alter
-    our URl to the following
+    our URL to the following
     <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
      http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
     </ulink>
@@ -159,7 +159,7 @@
     <literal>conf/oai2dc.xsl</literal>, and
     the <literal>zebra</literal> schema implemented in 
     <literal>conf/oai2zebra.xsl</literal>. 
-    The URL's for acessing both are the same, except for the different
+    The URLs for accessing both are the same, except for the different
     value of the <literal>recordSchema</literal> parameter:
     <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
      http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
@@ -208,7 +208,7 @@
     The &acro.oai; indexing example defines many different index
     names, a study of the <literal>conf/oai2index.xsl</literal>
     stylesheet reveals the following word type indexes (i.e. those
-    swith suffix <literal>:w</literal>):
+    with suffix <literal>:w</literal>):
     <screen>
      any:w 
      title:w
@@ -257,7 +257,7 @@
    <title>Investigating the content of the indexes</title>
 
    <para>
-    How doess the magic work? What is inside the indexes? Why is a certain
+    How does the magic work? What is inside the indexes? Why is a certain
     record found by a search, and another not?. The answer is in the
     inverted indexes. You can easily investigate them using the
     special &zebra; schema
@@ -310,13 +310,13 @@
    <para>
     The &acro.sru; specification mandates that the &acro.cql; query
     language is supported and properly configure. Also, the server
-    needs to be able to emmit a proper  &acro.explain; &acro.xml;
+    needs to be able to emit a proper  &acro.explain; &acro.xml;
     record, which is used to determine the capabilities of the
     specific server instance.
    </para>
 
    <para>
-    In this example configuration we expoit the similarities between
+    In this example configuration we exploit the similarities between
     the &acro.explain; record and the &acro.cql; query language
     configuration, we generate the later from the former using an
     &acro.xslt; transformation.
@@ -374,11 +374,11 @@
      url="http://localhost:9999/?version=1.1&amp;operation=scan&amp;scanClause=dc.identifier=fish">
      http://localhost:9999/?version=1.1&amp;operation=scan&amp;scanClause=dc.identifier=fish 
     </ulink>
-    accesses the indexed indentifiers.
+    accesses the indexed identifiers.
    </para>
 
    <para>
-    In addition, all &zebra; internal special elemen sets or record
+    In addition, all &zebra; internal special element sets or record
     schema's of the form   
     <literal>zebra::</literal> just work right out of the box
     <ulink

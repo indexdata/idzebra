@@ -9,7 +9,7 @@
   <para>
    The software is regularly tested on
    <ulink url="&url.debian;">Debian GNU/Linux</ulink>,
-   <ulink url="&url.redhat;">Redhat Linux</ulink>,
+   <ulink url="&url.redhat;">Red Hat Linux</ulink>,
    <ulink url="&url.gentoo;">Gentoo Linux</ulink>,
    <ulink url="&url.suse;">SuSE Linux</ulink>,
    <ulink url="&url.freebsd;">FreeBSD (i386)</ulink>,
@@ -458,7 +458,7 @@
     </para>
    </note>
    <para>
-    The attribute set defintion files may no longer contain
+    The attribute set definition files may no longer contain
     redirection to other fields. 
     For example the following snippet of
     a custom <filename>custom/bib1.att</filename> 
