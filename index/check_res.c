@@ -72,6 +72,9 @@ int zebra_check_res(Res res)
     res_add(v, "facetNumRecs", "");
     res_add(v, "facetMaxChunks", "");
     
+    //I think this makes things more elegant (names can change of course)
+    res_add(v, "indexplugin", "s");
+    
     errors = res_check(res, v);
  
     res_close(v);

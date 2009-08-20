@@ -72,6 +72,8 @@ int main(int argc, char **argv)
     sprintf(nbuf, "%.40s(%ld)", *argv, (long) getpid());
     yaz_log_init_prefix(nbuf);
 #endif
+    /* For indexing driver support */
+    char *useIndexDriver = NULL;
     prog = *argv;
     if (argc < 2)
     {
@@ -96,13 +98,18 @@ int main(int argc, char **argv)
         " -l <file>     Write log to <file>.\n"
         " -L            Don't follow symbolic links.\n"
         " -f <n>        Display information for the first <n> records.\n"
+        " -i <driver>   Select which index driver to use.\n"
+        "               Note:   when using a driver, the <dir> gets passed\n"
+        "                       to the driver as an argument.\n"
+        "               Current drivers available:\n"
+        "               -       indexplugin_mysql\n\n"
         " -V            Show version.\n", *argv
                  );
         exit(1);
     }
     res_set(default_res, "profilePath", DEFAULT_PROFILE_PATH);
     res_set(default_res, "modulePath", DEFAULT_MODULE_PATH);
-    while ((ret = options("sVt:c:g:d:m:v:nf:l:L", argv, argc, &arg)) != -2)
+    while ((ret = options("sVt:c:g:d:m:v:nf:l:L:i:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -195,13 +202,13 @@ int main(int argc, char **argv)
                 switch (cmd)
                 {
                 case 'u':
-                    res = zebra_repository_index(zh, arg, action_update);
+                    res = zebra_repository_index(zh, arg, action_update, useIndexDriver);
                     break;
                 case 'd':
-                    res = zebra_repository_index(zh, arg, action_delete);
+                    res = zebra_repository_index(zh, arg, action_delete, useIndexDriver);
                     break;
                 case 'a':
-                    res = zebra_repository_index(zh, arg, action_a_delete);
+                    res = zebra_repository_index(zh, arg, action_a_delete, useIndexDriver);
                     break;
                 case 's':
                     res = zebra_repository_show(zh, arg);
@@ -253,6 +260,8 @@ int main(int argc, char **argv)
         }
         else if (ret == 'v')
             yaz_log_init_level(yaz_log_mask_str(arg));
+        else if (ret == 'i')
+            useIndexDriver = arg;
 	else if (ret == 'l')
 	    yaz_log_init_file(arg);
         else if (ret == 'm')

@@ -332,6 +332,22 @@ int res_get_match(Res r, const char *name, const char *value, const char *s)
     return 0;
 }
 
+const char *res_get_named(Res r, const char *resName, const char *name)
+{
+    //This part relies on dynamic stack allocation cus I'm lazy
+    //resName.name = strlen(resName) + 1 + strlen(name) + (space for \0)
+    unsigned int resLen = strlen(resName) + strlen(name) + 2;
+    char wholeName[resLen];
+    memset(wholeName, NULL, resLen);
+
+    strcat(wholeName, resName);
+    strcat(wholeName, ".");
+    strcat(wholeName, name);
+
+    const char *nr = res_get(r, wholeName);
+    return nr;
+}
+
 void res_set(Res r, const char *name, const char *value)
 {
     struct res_entry *re;
