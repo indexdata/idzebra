@@ -1,3 +1,13 @@
+--- 2.0.41 2009/08/24
+
+Fix typos and other errors in the documentation. Thanks to Galen
+Charlton.
+
+Fix DOM filter so that full record ID (z:id) if given is used verbatim
+rather than truncated until first blank - in other words use memcpy
+rather than sscanf. For PI fix record attributes parsing which was
+completely broken.
+
 --- 2.0.40 2009/07/13
 
 Fixed problem in result set handling and segment handling.
