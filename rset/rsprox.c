@@ -194,10 +194,11 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
             }
             if (i == ct->no_children)
             {
-                memcpy (buf, p->buf[0], kctrl->key_size);
+                i = ct->no_children-1;
+                memcpy(buf, p->buf[i], kctrl->key_size);
                 if (term)
-                    *term = p->terms[0];
-                p->more[0] = rset_read (p->rfd[0], p->buf[0], &p->terms[0]);
+                    *term = p->terms[i];
+                p->more[i] = rset_read(p->rfd[i], p->buf[i], &p->terms[i]);
                 p->hits++;
                 return 1;
             }
