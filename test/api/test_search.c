@@ -243,6 +243,24 @@ static void tst(int argc, char **argv)
     /* exl=0 distance=2 order=1 relation=2 (<=), known, unit=word */
     YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 2 1 2 k 2 a y", 1));
 
+    /* exl=0 distance=1 order=1 relation=3 (=), known, unit=word */
+    YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 3 k 2 a b", 1));
+
+    /* 3 term @prox test.. */
+    YAZ_CHECK(tl_query(zh, "@attr 1=1016 \"a b c\"", 1));
+
+    /* exl=0 distance=1 order=1 relation=2 (<=), known, unit=word */
+    /* right associative (does not work, so zero hits) */
+    YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 2 k 2 a @prox 0 1 1 2 k 2 b c", 0));
+    /* left associative (works fine) */
+    YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 2 k 2 @prox 0 1 1 2 k 2 a b c", 1));
+
+    /* exl=0 distance=1 order=1 relation=3 (=), known, unit=word *
+    /* right associative (does not work, so zero hits) */
+    YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 3 k 2 a @prox 0 1 1 3 k 2 b c", 0));
+    /* left associative (works fine) */
+    YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 3 k 2 @prox 0 1 1 3 k 2 a b c", 1));
+
     /* Non-indexed numeric use, but specified in bib1.att (bug #1142) */
     YAZ_CHECK(tl_query_x(zh, "@attr 1=1000 x", 0, 114));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=1000 @attr 14=0 x", 0, 114));

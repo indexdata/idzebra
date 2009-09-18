@@ -104,7 +104,7 @@ install-data-hook:
 	cd $(DESTDIR)$(man1dir) && ln -sf idzebra-config$(PACKAGE_SUFFIX).1 idzebra-config.1
 	if test -f index.html; then d=.; else d="$(srcdir)"; fi; \
 	for p in $$d/*.html; do \
-		$(docDATA_INSTALL) $$p $(DESTDIR)$(docdir); \
+		$(INSTALL_DATA) $$p $(DESTDIR)$(docdir); \
 	done
 
 uninstall-hook:
