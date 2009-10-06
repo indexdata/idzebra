@@ -246,6 +246,12 @@ static void tst(int argc, char **argv)
     /* exl=0 distance=1 order=1 relation=3 (=), known, unit=word */
     YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 3 k 2 a b", 1));
 
+
+    /* exl=0 distance=1 order=1 relation=3 (=), known, unit=word */
+    YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 3 k 2 c a", 1));
+    /* exl=0 distance=1 order=1 relation=2 (<=), known, unit=word */
+    YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 2 k 2 c a", 1));
+
     /* 3 term @prox test.. */
     YAZ_CHECK(tl_query(zh, "@attr 1=1016 \"a b c\"", 1));
 
@@ -255,7 +261,7 @@ static void tst(int argc, char **argv)
     /* left associative (works fine) */
     YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 2 k 2 @prox 0 1 1 2 k 2 a b c", 1));
 
-    /* exl=0 distance=1 order=1 relation=3 (=), known, unit=word *
+    /* exl=0 distance=1 order=1 relation=3 (=), known, unit=word */
     /* right associative (does not work, so zero hits) */
     YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 3 k 2 a @prox 0 1 1 3 k 2 b c", 0));
     /* left associative (works fine) */

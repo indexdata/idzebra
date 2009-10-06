@@ -230,51 +230,60 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
                     if (n < 500)
                         seqno[n++] = (*kctrl->getseq)(p->buf[0]);
                 }
-                for (i = 0; i<n; i++)
+                /* set up return buffer.. (save buf[1]) */
+                memcpy(buf, p->buf[1], kctrl->key_size);
+                if (term)
+                    *term = p->terms[1];
+                while (1)
                 {
-                    zint diff = (*kctrl->getseq)(p->buf[1]) - seqno[i];
-                    int excl = info->exclusion;
-                    if (!info->ordered && diff < 0)
-                        diff = -diff;
-                    switch (info->relation)
+                    for (i = 0; i < n; i++)
                     {
-                    case 1:      /* < */
-                        if (diff < info->distance && diff >= 0)
-                            excl = !excl;
-                        break;
-                    case 2:      /* <= */
-                        if (diff <= info->distance && diff >= 0)
-                            excl = !excl;
-                        break;
-                    case 3:      /* == */
-                        if (diff == info->distance && diff >= 0)
-                            excl = !excl;
-                        break;
-                    case 4:      /* >= */
-                        if (diff >= info->distance && diff >= 0)
-                            excl = !excl;
-                        break;
-                    case 5:      /* > */
-                        if (diff > info->distance && diff >= 0)
-                            excl = !excl;
-                        break;
-                    case 6:      /* != */
-                        if (diff != info->distance && diff >= 0)
-                            excl = !excl;
-                        break;
+                        zint diff = (*kctrl->getseq)(p->buf[1]) - seqno[i];
+                        int excl = info->exclusion;
+                        if (!info->ordered && diff < 0)
+                            diff = -diff;
+                        switch (info->relation)
+                        {
+                        case 1:      /* < */
+                            if (diff < info->distance && diff >= 0)
+                                excl = !excl;
+                            break;
+                        case 2:      /* <= */
+                            if (diff <= info->distance && diff >= 0)
+                                excl = !excl;
+                            break;
+                        case 3:      /* == */
+                            if (diff == info->distance && diff >= 0)
+                                excl = !excl;
+                            break;
+                        case 4:      /* >= */
+                            if (diff >= info->distance && diff >= 0)
+                                excl = !excl;
+                            break;
+                        case 5:      /* > */
+                            if (diff > info->distance && diff >= 0)
+                                excl = !excl;
+                            break;
+                        case 6:      /* != */
+                            if (diff != info->distance && diff >= 0)
+                                excl = !excl;
+                            break;
+                        }
+                        if (excl)
+                        {
+                            p->more[1] = rset_read ( p->rfd[1], p->buf[1],
+                                                     &p->terms[1]);
+                            p->hits++;
+                            return 1;
+                        }
                     }
-                    if (excl)
-                    {
-                        memcpy (buf, p->buf[1], kctrl->key_size);
-                        if (term)
-                            *term = p->terms[1];
-                        p->more[1] = rset_read ( p->rfd[1], p->buf[1],
-                                                 &p->terms[1]);
-                        p->hits++;
-                        return 1;
-                    }
+                    p->more[1] = rset_read(p->rfd[1], p->buf[1], &p->terms[1]);
+                    if (!p->more[1])
+                        break;
+                    cmp = (*kctrl->cmp)(buf, p->buf[1]);
+                    if (cmp <= - rfd->rset->scope || cmp >= rfd->rset->scope)
+                        break;
                 }
-                p->more[1] = rset_read (p->rfd[1], p->buf[1], &p->terms[1]);
             }
         }
     }
