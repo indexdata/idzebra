@@ -185,7 +185,7 @@ int key_file_read(struct key_file *f, char *key)
         key[i++] = c;
         while ((c = key_file_getc(f)))
         {
-            if (i <= IT_MAX_WORD)
+            if (i < INP_NAME_MAX-2)
                 key[i++] = c;
         }
         key[i++] = '\0';
@@ -360,7 +360,7 @@ static int heap_read_one(struct heap_info *hi, char *name, char *key)
 /* for debugging only */
 void zebra_log_dict_entry(ZebraHandle zh, const char *s)
 {
-    char dst[IT_MAX_WORD+1];
+    char dst[INP_NAME_MAX+1];
     int ord;
     int len = key_SU_decode(&ord, (const unsigned char *) s);
     const char *index_type;
