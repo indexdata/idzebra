@@ -50,6 +50,7 @@ const char *myrec[] = {
         "</gils>\n",
 
         "<gils>\n<title>My title x</title><abstract>a b c c c a y</abstract>\n</gils>\n" ,
+        "<gils>\n<title>test</title><abstract>a1 a2 c a1 a2 a3</abstract>\n</gils>\n" ,
 
         "<test_search>\n"
         " <date>2107-09-19 00:00:00</date>\n"
@@ -173,8 +174,8 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 title", 2));
 
     /* always-matches relation */
-    YAZ_CHECK(tl_query(zh, "@attr 1=_ALLRECORDS @attr 2=103 {ym}", 4));
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=103 {x my}", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=_ALLRECORDS @attr 2=103 {ym}", 5));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=103 {x my}", 4));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=1 @attr 2=103 {x my}", 0, 114));
 
     /* and searches */
@@ -251,6 +252,10 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 3 k 2 c a", 1));
     /* exl=0 distance=1 order=1 relation=2 (<=), known, unit=word */
     YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 2 k 2 c a", 1));
+
+    /* exl=0 distance=1 order=1 relation=2 (<=), known, unit=word */
+    YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 2 k 2 @prox 0 1 1 2 k 2 a1 a2 a3", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 1 1 3 k 2 @prox 0 1 1 3 k 2 a1 a2 a3", 1));
 
     /* 3 term @prox test.. */
     YAZ_CHECK(tl_query(zh, "@attr 1=1016 \"a b c\"", 1));

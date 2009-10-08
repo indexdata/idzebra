@@ -154,8 +154,7 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
             p->more[0] = rset_forward(p->rfd[0], p->buf[0], 
                                       &p->terms[0], untilbuf);
     }
-    if (info->ordered && info->relation == 3 && info->exclusion == 0
-        && info->distance == 1)
+    if (info->ordered && info->relation <= 3 && info->exclusion == 0)
     {
         while (p->more[0]) 
         {
@@ -166,8 +165,8 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
                     p->more[0] = 0; /* saves us a goto out of while loop. */
                     break;
                 }
-                cmp = (*kctrl->cmp) (p->buf[i], p->buf[i-1]);
-                if (cmp >= rfd->rset->scope )  /* cmp>1 */
+                cmp = (*kctrl->cmp)(p->buf[i], p->buf[i-1]);
+                if (cmp >= rfd->rset->scope)  /* not same record */
                 {
                     p->more[i-1] = rset_forward (p->rfd[i-1],
                                                  p->buf[i-1],
@@ -175,20 +174,25 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
                                                  p->buf[i]);
                     break;
                 }
-                else if ( cmp>0 ) /* cmp == 1*/
+                else if (cmp > 0) /* within record and ordered */
                 {
-                    if ((*kctrl->getseq)(p->buf[i-1]) +1 != 
-                        (*kctrl->getseq)(p->buf[i]))
-                    { /* FIXME - We need more flexible multilevel stuff */
-                        p->more[i-1] = rset_read ( p->rfd[i-1], p->buf[i-1],
-                                                   &p->terms[i-1]);
-                        break;
-                    }
+                    zint diff = (*kctrl->getseq)(p->buf[i]) -
+                        (*kctrl->getseq)(p->buf[i-1]);
+                    if (info->relation == 3 && diff == info->distance)
+                        continue;
+                    else if (info->relation == 2 && diff <= info->distance)
+                        continue;
+                    else if (info->relation == 1 && diff < info->distance)
+                        continue;
+
+                    p->more[i-1] = rset_read(p->rfd[i-1], p->buf[i-1],
+                                             &p->terms[i-1]);
+                    break;
                 }
-                else
+                else  /* within record - wrong order */
                 {
-                    p->more[i] = rset_forward (p->rfd[i], 
-                                  p->buf[i], &p->terms[i], p->buf[i-1]);
+                    p->more[i] = rset_forward(p->rfd[i], p->buf[i],
+                                              &p->terms[i], p->buf[i-1]);
                     break;
                 }
             }
