@@ -1,3 +1,14 @@
+--- 2.0.42 2009/10/08
+
+Proximity modifications. The optimized proximity now deals with more
+cases, ie all prox of the form @prox 0 d 1 1,2,3 k 2 ..
+That's exlusive==0, any distance, ordered (true), relation (<, =, <=),
+known unit word.
+
+Fix bug WRT inconsistent registers, bug #3062.
+
+Fix install doc rule so it's compatible with Automake 1.11.
+
 --- 2.0.41 2009/08/24
 
 Fix typos and other errors in the documentation. Thanks to Galen
