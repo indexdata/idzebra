@@ -29,13 +29,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define RSET_DEBUG 0
 #endif
 
-static RSFD r_open (RSET ct, int flag);
-static void r_close (RSFD rfd);
-static void r_delete (RSET ct);
+static RSFD r_open(RSET ct, int flag);
+static void r_close(RSFD rfd);
+static void r_delete(RSET ct);
 static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf);
-static int r_read (RSFD rfd, void *buf, TERMID *term);
-static int r_write (RSFD rfd, const void *buf);
-static void r_pos (RSFD rfd, double *current, double *total);
+static int r_read(RSFD rfd, void *buf, TERMID *term);
+static int r_write(RSFD rfd, const void *buf);
+static void r_pos(RSFD rfd, double *current, double *total);
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
 
 static const struct rset_control control = 
@@ -85,11 +85,11 @@ RSET rset_create_prox(NMEM nmem, struct rset_key_control *kcontrol,
     return rnew;
 }
 
-static void r_delete (RSET ct)
+static void r_delete(RSET ct)
 {
 }
 
-static RSFD r_open (RSET ct, int flag)
+static RSFD r_open(RSET ct, int flag)
 {
     RSFD rfd;
     struct rset_prox_rfd *p;
@@ -103,10 +103,11 @@ static RSFD r_open (RSET ct, int flag)
     rfd = rfd_create_base(ct);
     if (rfd->priv)
         p = (struct rset_prox_rfd *)(rfd->priv);
-    else {
+    else
+    {
         p = (struct rset_prox_rfd *) nmem_malloc(ct->nmem,sizeof(*p));
         rfd->priv = p;
-        p->more = nmem_malloc (ct->nmem,sizeof(*p->more) * ct->no_children);
+        p->more = nmem_malloc(ct->nmem,sizeof(*p->more) * ct->no_children);
         p->buf = nmem_malloc(ct->nmem,sizeof(*p->buf) * ct->no_children);
         p->terms = nmem_malloc(ct->nmem,sizeof(*p->terms) * ct->no_children);
         for (i = 0; i < ct->no_children; i++) 
@@ -118,22 +119,23 @@ static RSFD r_open (RSET ct, int flag)
     }
     yaz_log(YLOG_DEBUG,"rsprox (%s) open [%p] n=%d", 
             ct->control->desc, rfd, ct->no_children);
-
-    for (i = 0; i < ct->no_children; i++) {
-        p->rfd[i] = rset_open (ct->children[i], RSETF_READ);
-        p->more[i] = rset_read (p->rfd[i], p->buf[i], &p->terms[i]);
+    
+    for (i = 0; i < ct->no_children; i++)
+    {
+        p->rfd[i] = rset_open(ct->children[i], RSETF_READ);
+        p->more[i] = rset_read(p->rfd[i], p->buf[i], &p->terms[i]);
     }
     p->hits = 0;
     return rfd;
 }
 
-static void r_close (RSFD rfd)
+static void r_close(RSFD rfd)
 {
     RSET ct = rfd->rset;
     struct rset_prox_rfd *p = (struct rset_prox_rfd *)(rfd->priv);
     
     int i;
-    for (i = 0; i<ct->no_children; i++)
+    for (i = 0; i < ct->no_children; i++)
         rset_close(p->rfd[i]);
 }
 
@@ -149,8 +151,8 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
     if (untilbuf)
     {
         /* it is enough to forward first one. Other will follow. */
-        if ( p->more[0] &&   /* was: cmp >=2 */
-           ((kctrl->cmp)(untilbuf, p->buf[0]) >= rfd->rset->scope) ) 
+        if (p->more[0] &&   /* was: cmp >=2 */
+            ((kctrl->cmp)(untilbuf, p->buf[0]) >= rfd->rset->scope) ) 
             p->more[0] = rset_forward(p->rfd[0], p->buf[0], 
                                       &p->terms[0], untilbuf);
     }
@@ -168,10 +170,10 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
                 cmp = (*kctrl->cmp)(p->buf[i], p->buf[i-1]);
                 if (cmp >= rfd->rset->scope)  /* not same record */
                 {
-                    p->more[i-1] = rset_forward (p->rfd[i-1],
-                                                 p->buf[i-1],
-                                                 &p->terms[i-1],
-                                                 p->buf[i]);
+                    p->more[i-1] = rset_forward(p->rfd[i-1],
+                                                p->buf[i-1],
+                                                &p->terms[i-1],
+                                                p->buf[i]);
                     break;
                 }
                 else if (cmp > 0) /* within record and ordered */
@@ -184,7 +186,7 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
                         continue;
                     else if (info->relation == 1 && diff < info->distance)
                         continue;
-
+                    
                     p->more[i-1] = rset_read(p->rfd[i-1], p->buf[i-1],
                                              &p->terms[i-1]);
                     break;
@@ -214,19 +216,19 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
         {
             int cmp = (*kctrl->cmp)(p->buf[0], p->buf[1]);
             if ( cmp <= - rfd->rset->scope) /* cmp<-1*/
-                p->more[0] = rset_forward (p->rfd[0], p->buf[0], 
-                                           &p->terms[0],p->buf[1]);
+                p->more[0] = rset_forward(p->rfd[0], p->buf[0], 
+                                          &p->terms[0],p->buf[1]);
             else if ( cmp >= rfd->rset->scope ) /* cmp>1 */
-                p->more[1] = rset_forward (p->rfd[1], p->buf[1], 
-                                           &p->terms[1],p->buf[0]);
+                p->more[1] = rset_forward(p->rfd[1], p->buf[1], 
+                                          &p->terms[1],p->buf[0]);
             else
             {
                 zint seqno[500]; /* FIXME - why 500 ?? */
                 int n = 0;
                 
                 seqno[n++] = (*kctrl->getseq)(p->buf[0]);
-                while ((p->more[0] = rset_read (p->rfd[0],
-                                        p->buf[0], &p->terms[0])))
+                while ((p->more[0] = rset_read(p->rfd[0],
+                                               p->buf[0], &p->terms[0])))
                 {
                     cmp = (*kctrl->cmp)(p->buf[0], p->buf[1]);
                     if (cmp <= - rfd->rset->scope || cmp >= rfd->rset->scope)
@@ -275,8 +277,8 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
                         }
                         if (excl)
                         {
-                            p->more[1] = rset_read ( p->rfd[1], p->buf[1],
-                                                     &p->terms[1]);
+                            p->more[1] = rset_read( p->rfd[1], p->buf[1],
+                                                    &p->terms[1]);
                             p->hits++;
                             return 1;
                         }
@@ -295,18 +297,18 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
 }
 
 
-static int r_read (RSFD rfd, void *buf, TERMID *term)
+static int r_read(RSFD rfd, void *buf, TERMID *term)
 {
     return r_forward(rfd, buf, term, 0);
 }
 
-static int r_write (RSFD rfd, const void *buf)
+static int r_write(RSFD rfd, const void *buf)
 {
     yaz_log(YLOG_FATAL, "prox set type is read-only");
     return -1;
 }
 
-static void r_pos (RSFD rfd, double *current, double *total)
+static void r_pos(RSFD rfd, double *current, double *total)
 {
     RSET ct = rfd->rset;
     struct rset_prox_rfd *p = (struct rset_prox_rfd *)(rfd->priv);
@@ -320,30 +322,36 @@ static void r_pos (RSFD rfd, double *current, double *total)
     for (i = 0; i < ct->no_children; i++)
     {
         rset_pos(p->rfd[i],  &cur, &tot);
-        if (tot>0) {
+        if (tot > 0)
+        {
             scur += cur;
             stot += tot;
         }
     }
-    if (tot <0) {  /* nothing found */
+    if (tot < 0)
+    {  /* nothing found */
         *current = -1;
         *total = -1;
-    } else if (tot < 1) { /* most likely tot==0 */
+    }
+    else if (tot < 1)
+    { /* most likely tot==0 */
         *current = 0;
         *total = 0;
-    } else {
+    }
+    else
+    {
         r = scur/stot; 
         *current = (double) p->hits;
-        *total=*current/r ; 
+        *total = *current/r ; 
     }
     yaz_log(YLOG_DEBUG,"prox_pos: [%d] %0.1f/%0.1f= %0.4f ",
-                    i,*current, *total, r);
+            i,*current, *total, r);
 }
 
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
 {
     int i;
-    for (i = 0; i<ct->no_children; i++)
+    for (i = 0; i < ct->no_children; i++)
         rset_getterms(ct->children[i], terms, maxterms, curterm);
 }
 
