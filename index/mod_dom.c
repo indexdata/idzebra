@@ -1467,7 +1467,7 @@ static int filter_retrieve(void *clientData, struct recRetrieveCtrl *p)
     {
         p->diagnostic =
             YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
-        p->addinfo = odr_strdup(p->odr, esn);
+        p->addinfo = odr_strdup_null(p->odr, esn);
         return 0;
     }
 
