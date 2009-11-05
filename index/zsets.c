@@ -113,6 +113,7 @@ static ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
     rpn_get_top_approx_limit(zh, rpn->RPNStructure, &sset->approx_limit);
 
     res = rpn_search_top(zh, rpn->RPNStructure, rpn->attributeSetId,
+                         sset->approx_limit,
 			 nmem, rset_nmem,
 			 sort_sequence,
 			 sset->num_bases, sset->basenames,
@@ -125,7 +126,8 @@ static ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
     for (i = 0; sort_sequence->specs[i]; i++)
         ;
     sort_sequence->num_specs = i;
-    rset->hits_limit = sset->approx_limit;
+    rset_set_hits_limit(rset, sset->approx_limit);
+
     if (!i)
     {
         res = resultSetRank(zh, sset, rset, rset_nmem);
@@ -1144,6 +1146,11 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
                 }
 		if (rfd->counted_items > rset->hits_limit)
                     stop_flag = 1;
+                if (stop_flag)
+                {
+                    zebraSet->estimated_hit_count = 1;
+                    break;
+                }
 		if (psysno)
 		{   /* only if we did have a previous record */
 		    score = (*rc->calc)(handle, psysno, pstaticrank,
@@ -1152,12 +1159,6 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 		    resultSetInsertRank(zh, sort_info, psysno, score, 'A');
 		    count++;
 		}
-                if (stop_flag)
-                {
-                    zebraSet->estimated_hit_count = 1;
-                    rset_set_hits_limit(rset, 0);
-                    break;
-                }
 		psysno = this_sys;
 		if (zh->m_staticrank)
 		    pstaticrank = key.mem[0];

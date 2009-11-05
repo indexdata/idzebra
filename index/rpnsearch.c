@@ -891,9 +891,10 @@ ZEBRA_RES zebra_term_limits_APT(ZebraHandle zh,
     AttrType term_ref_id_attr;
     AttrType hits_limit_attr;
     int term_ref_id_int;
+    zint hits_limit_from_attr;
  
     attr_init_APT(&hits_limit_attr, zapt, 11);
-    *hits_limit_value  = attr_find(&hits_limit_attr, NULL);
+    hits_limit_from_attr  = attr_find(&hits_limit_attr, NULL);
 
     attr_init_APT(&term_ref_id_attr, zapt, 10);
     term_ref_id_int = attr_find_ex(&term_ref_id_attr, NULL, term_ref_id_str);
@@ -903,26 +904,9 @@ ZEBRA_RES zebra_term_limits_APT(ZebraHandle zh,
 	sprintf(res, "%d", term_ref_id_int);
 	*term_ref_id_str = res;
     }
+    if (hits_limit_from_attr != -1)
+        *hits_limit_value = hits_limit_from_attr;
 
-    /* no limit given ? */
-    if (*hits_limit_value == -1)
-    {
-	if (*term_ref_id_str)
-	{
-	    /* use global if term_ref is present */
-	    *hits_limit_value = zh->approx_limit;
-	}
-	else
-	{
-	    /* no counting if term_ref is not present */
-	    *hits_limit_value = 0;
-	}
-    }
-    else if (*hits_limit_value == 0)
-    {
-	/* 0 is the same as global limit */
-	*hits_limit_value = zh->approx_limit;
-    }
     yaz_log(YLOG_DEBUG, "term_limits_APT ref_id=%s limit=" ZINT_FORMAT,
 	    *term_ref_id_str ? *term_ref_id_str : "none",
 	    *hits_limit_value);
@@ -934,7 +918,8 @@ ZEBRA_RES zebra_term_limits_APT(ZebraHandle zh,
 static ZEBRA_RES search_term(ZebraHandle zh,
                              Z_AttributesPlusTerm *zapt,
                              const char **term_sub, 
-                             const Odr_oid *attributeSet, NMEM stream,
+                             const Odr_oid *attributeSet,
+                             zint hits_limit, NMEM stream,
                              struct grep_info *grep_info,
                              const char *index_type, int complete_flag,
                              const char *rank_type, 
@@ -946,7 +931,7 @@ static ZEBRA_RES search_term(ZebraHandle zh,
 {
     ZEBRA_RES res;
     struct ord_list *ol;
-    zint hits_limit_value;
+    zint hits_limit_value = hits_limit;
     const char *term_ref_id_str = 0;
     WRBUF term_dict = wrbuf_alloc();
     WRBUF display_term = wrbuf_alloc();
@@ -1290,6 +1275,7 @@ static ZEBRA_RES search_terms_chrmap(ZebraHandle zh,
                                      Z_AttributesPlusTerm *zapt,
                                      const char *termz,
                                      const Odr_oid *attributeSet,
+                                     zint hits_limit,
                                      NMEM stream,
                                      const char *index_type, int complete_flag,
                                      const char *rank_type,
@@ -1320,7 +1306,7 @@ static ZEBRA_RES search_terms_chrmap(ZebraHandle zh,
 	    alloc_sets = alloc_sets + add;
 	    *result_sets = rnew;
 	}
-        res = search_term(zh, zapt, &termp, attributeSet,
+        res = search_term(zh, zapt, &termp, attributeSet, hits_limit,
                           stream, &grep_info,
                           index_type, complete_flag,
                           rank_type,
@@ -1366,6 +1352,7 @@ static ZEBRA_RES search_terms_list(ZebraHandle zh,
                                    Z_AttributesPlusTerm *zapt,
                                    const char *termz,
                                    const Odr_oid *attributeSet,
+                                   zint hits_limit,
                                    NMEM stream,
                                    const char *index_type, int complete_flag,
                                    const char *rank_type,
@@ -1377,7 +1364,7 @@ static ZEBRA_RES search_terms_list(ZebraHandle zh,
     zebra_map_t zm = zebra_map_get_or_add(zh->reg->zebra_maps, index_type);
     if (zebra_maps_is_icu(zm))
         zebra_map_tokenize_start(zm, termz, strlen(termz));
-    return search_terms_chrmap(zh, zapt, termz, attributeSet,
+    return search_terms_chrmap(zh, zapt, termz, attributeSet, hits_limit,
                                stream, index_type, complete_flag,
                                rank_type, xpath_use,
                                rset_nmem, result_sets, num_result_sets,
@@ -1455,6 +1442,7 @@ static ZEBRA_RES rpn_search_APT_phrase(ZebraHandle zh,
 				       Z_AttributesPlusTerm *zapt,
 				       const char *termz_org,
 				       const Odr_oid *attributeSet,
+                                       zint hits_limit,
 				       NMEM stream,
 				       const char *index_type,
                                        int complete_flag,
@@ -1467,7 +1455,7 @@ static ZEBRA_RES rpn_search_APT_phrase(ZebraHandle zh,
     RSET *result_sets = 0;
     int num_result_sets = 0;
     ZEBRA_RES res =
-	search_terms_list(zh, zapt, termz_org, attributeSet,
+	search_terms_list(zh, zapt, termz_org, attributeSet, hits_limit,
                           stream, index_type, complete_flag,
                           rank_type, xpath_use,
                           rset_nmem,
@@ -1520,6 +1508,7 @@ static ZEBRA_RES rpn_search_APT_or_list(ZebraHandle zh,
 					Z_AttributesPlusTerm *zapt,
 					const char *termz_org,
 					const Odr_oid *attributeSet,
+                                        zint hits_limit,
 					NMEM stream,
 					const char *index_type, 
                                         int complete_flag,
@@ -1533,7 +1522,7 @@ static ZEBRA_RES rpn_search_APT_or_list(ZebraHandle zh,
     int num_result_sets = 0;
     int i;
     ZEBRA_RES res =
-	search_terms_list(zh, zapt, termz_org, attributeSet,
+	search_terms_list(zh, zapt, termz_org, attributeSet, hits_limit,
                           stream, index_type, complete_flag,
                           rank_type, xpath_use,
                           rset_nmem,
@@ -1587,6 +1576,7 @@ static ZEBRA_RES rpn_search_APT_and_list(ZebraHandle zh,
 					 Z_AttributesPlusTerm *zapt,
 					 const char *termz_org,
 					 const Odr_oid *attributeSet,
+                                         zint hits_limit,
 					 NMEM stream,
 					 const char *index_type, 
                                          int complete_flag,
@@ -1600,7 +1590,7 @@ static ZEBRA_RES rpn_search_APT_and_list(ZebraHandle zh,
     int num_result_sets = 0;
     int i;
     ZEBRA_RES res =
-	search_terms_list(zh, zapt, termz_org, attributeSet,
+	search_terms_list(zh, zapt, termz_org, attributeSet, hits_limit,
                           stream, index_type, complete_flag,
                           rank_type, xpath_use,
                           rset_nmem,
@@ -2223,14 +2213,16 @@ ZEBRA_RES rpn_search_xpath(ZebraHandle zh,
 
 static ZEBRA_RES rpn_search_database(ZebraHandle zh, 
                                      Z_AttributesPlusTerm *zapt,
-                                     const Odr_oid *attributeSet, NMEM stream,
+                                     const Odr_oid *attributeSet,
+                                     zint hits_limit, NMEM stream,
                                      Z_SortKeySpecList *sort_sequence,
                                      NMEM rset_nmem,
                                      RSET *rset,
                                      struct rset_key_control *kc);
 
 static ZEBRA_RES rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-				const Odr_oid *attributeSet, NMEM stream,
+				const Odr_oid *attributeSet,
+                                zint hits_limit, NMEM stream,
 				Z_SortKeySpecList *sort_sequence,
 				int num_bases, const char **basenames, 
 				NMEM rset_nmem,
@@ -2250,7 +2242,7 @@ static ZEBRA_RES rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             res = ZEBRA_FAIL;
             break;
         }
-        res = rpn_search_database(zh, zapt, attributeSet, stream,
+        res = rpn_search_database(zh, zapt, attributeSet, hits_limit, stream,
                                   sort_sequence,
                                   rset_nmem, rsets+i, kc);
         if (res != ZEBRA_OK)
@@ -2277,7 +2269,8 @@ static ZEBRA_RES rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
 static ZEBRA_RES rpn_search_database(ZebraHandle zh, 
                                      Z_AttributesPlusTerm *zapt,
-                                     const Odr_oid *attributeSet, NMEM stream,
+                                     const Odr_oid *attributeSet,
+                                     zint hits_limit, NMEM stream,
                                      Z_SortKeySpecList *sort_sequence,
                                      NMEM rset_nmem,
                                      RSET *rset,
@@ -2350,7 +2343,8 @@ static ZEBRA_RES rpn_search_database(ZebraHandle zh,
     */
     if (!strcmp(search_type, "phrase"))
     {
-        res = rpn_search_APT_phrase(zh, zapt, termz, attributeSet, stream,
+        res = rpn_search_APT_phrase(zh, zapt, termz, attributeSet, hits_limit,
+                                    stream,
 				    index_type, complete_flag, rank_type,
 				    xpath_use,
 				    rset_nmem,
@@ -2358,7 +2352,8 @@ static ZEBRA_RES rpn_search_database(ZebraHandle zh,
     }
     else if (!strcmp(search_type, "and-list"))
     {
-        res = rpn_search_APT_and_list(zh, zapt, termz, attributeSet, stream,
+        res = rpn_search_APT_and_list(zh, zapt, termz, attributeSet, hits_limit,
+                                      stream,
 				      index_type, complete_flag, rank_type,
 				      xpath_use,
 				      rset_nmem,
@@ -2366,7 +2361,8 @@ static ZEBRA_RES rpn_search_database(ZebraHandle zh,
     }
     else if (!strcmp(search_type, "or-list"))
     {
-        res = rpn_search_APT_or_list(zh, zapt, termz, attributeSet, stream,
+        res = rpn_search_APT_or_list(zh, zapt, termz, attributeSet, hits_limit,
+                                     stream,
 				     index_type, complete_flag, rank_type,
 				     xpath_use,
                                      rset_nmem,
@@ -2399,7 +2395,8 @@ static ZEBRA_RES rpn_search_database(ZebraHandle zh,
 }
 
 static ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
-				      const Odr_oid *attributeSet, 
+				      const Odr_oid *attributeSet,
+                                      zint hits_limit,
 				      NMEM stream, NMEM rset_nmem,
 				      Z_SortKeySpecList *sort_sequence,
 				      int num_bases, const char **basenames,
@@ -2440,6 +2437,7 @@ ZEBRA_RES rpn_get_top_approx_limit(ZebraHandle zh, Z_RPNStructure *zs,
 
 ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
 			 const Odr_oid *attributeSet, 
+                         zint hits_limit,
 			 NMEM stream, NMEM rset_nmem,
 			 Z_SortKeySpecList *sort_sequence,
 			 int num_bases, const char **basenames,
@@ -2450,7 +2448,7 @@ ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
     ZEBRA_RES res;
     struct rset_key_control *kc = zebra_key_control_create(zh);
 
-    res = rpn_search_structure(zh, zs, attributeSet,
+    res = rpn_search_structure(zh, zs, attributeSet, hits_limit,
 			       stream, rset_nmem,
 			       sort_sequence, 
 			       num_bases, basenames,
@@ -2476,7 +2474,7 @@ ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
 }
 
 ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
-			       const Odr_oid *attributeSet, 
+			       const Odr_oid *attributeSet, zint hits_limit,
 			       NMEM stream, NMEM rset_nmem,
 			       Z_SortKeySpecList *sort_sequence,
 			       int num_bases, const char **basenames,
@@ -2495,7 +2493,7 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
 	int num_result_sets_r = 0;
 
         res = rpn_search_structure(zh, zs->u.complex->s1,
-				   attributeSet, stream, rset_nmem,
+				   attributeSet, hits_limit, stream, rset_nmem,
 				   sort_sequence,
 				   num_bases, basenames,
 				   &result_sets_l, &num_result_sets_l,
@@ -2508,7 +2506,7 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
 	    return res;
 	}
         res = rpn_search_structure(zh, zs->u.complex->s2,
-				   attributeSet, stream, rset_nmem,
+				   attributeSet, hits_limit, stream, rset_nmem,
 				   sort_sequence,
 				   num_bases, basenames,
 				   &result_sets_r, &num_result_sets_r,
@@ -2603,7 +2601,8 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
         {
             yaz_log(YLOG_DEBUG, "rpn_search_APT");
             res = rpn_search_APT(zh, zs->u.simple->u.attributesPlusTerm,
-				 attributeSet, stream, sort_sequence,
+				 attributeSet, hits_limit,
+                                 stream, sort_sequence,
 				 num_bases, basenames, rset_nmem, &rset,
 				 kc);
 	    if (res != ZEBRA_OK)

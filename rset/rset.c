@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 static int log_level = 0;
 static int log_level_initialized = 0;
 
+
 /**
    \brief Common constuctor for RFDs
    \param rs Result set handle.
@@ -83,6 +84,7 @@ static void rset_close_int(RSET rs, RSFD rfd)
 
 void rset_set_hits_limit(RSET rs, zint l)
 {
+    yaz_log(log_level, "rset_set_hits_limit %p l=" ZINT_FORMAT, rs, l);
     rs->hits_limit = l;
 }
 
