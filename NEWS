@@ -1,3 +1,8 @@
+--- 2.0.43 2009/11/05
+
+Fix hits counts for searches when @attr 12=n is in use. This bug
+was introduced in 2.0.40.
+
 --- 2.0.42 2009/10/08
 
 Proximity modifications. The optimized proximity now deals with more
