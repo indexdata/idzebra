@@ -71,7 +71,7 @@ static void tst(int argc, char **argv)
 	    exit(1);
 	}
         yaz_pqf_destroy(parser);
-        zebra_deleteResultSet(zh, Z_DeleteRequest_list,
+        zebra_deleteResultSet(zh, Z_DeleteResultSetRequest_list,
                               1, &setnamep, &status);
         odr_destroy(odr_input);
         odr_destroy(odr_output);
