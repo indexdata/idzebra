@@ -78,10 +78,8 @@ static Z_Variant *make_variant(data1_node *n, int num, ODR o)
 	assert(p->which == DATA1N_variant);
 	t = v->triples[num] = (Z_Triple *)odr_malloc(o, sizeof(*t));
 	t->variantSetId = 0;
-	t->zclass = (int *)odr_malloc(o, sizeof(int));
-	*t->zclass = p->u.variant.type->zclass->zclass;
-	t->type = (int *)odr_malloc(o, sizeof(int));
-	*t->type = p->u.variant.type->type;
+        t->zclass = odr_intdup(o, p->u.variant.type->zclass->zclass);
+	t->type = odr_intdup(o, p->u.variant.type->type);
 
 	switch (p->u.variant.type->datatype)
 	{
@@ -192,8 +190,7 @@ static Z_ElementData *nodetoelementdata(data1_handle dh, data1_node *n,
 	{
         case DATA1I_num:
             res->which = Z_ElementData_numeric;
-            res->u.numeric = (int *)odr_malloc(o, sizeof(int));
-            *res->u.numeric = atoi_n (cp, toget);
+            res->u.numeric = odr_intdup(o, atoi_n(cp, toget));
             *len += 4;
             break;
         case DATA1I_text:
@@ -295,14 +292,12 @@ static Z_TaggedElement *nodetotaggedelement(data1_handle dh, data1_node *n,
 	return 0;
     }
 
-    res->tagType = (int *)odr_malloc(o, sizeof(int));
-    *res->tagType = (tag && tag->tagset) ? tag->tagset->type : 3;
+    res->tagType = odr_intdup(o, (tag && tag->tagset) ? tag->tagset->type : 3);
     res->tagValue = (Z_StringOrNumeric *)odr_malloc(o, sizeof(Z_StringOrNumeric));
     if (tag && tag->which == DATA1T_numeric)
     {
 	res->tagValue->which = Z_StringOrNumeric_numeric;
-	res->tagValue->u.numeric = (int *)odr_malloc(o, sizeof(int));
-	*res->tagValue->u.numeric = tag->value.numeric;
+	res->tagValue->u.numeric = odr_intdup(o, tag->value.numeric);
     }
     else
     {
