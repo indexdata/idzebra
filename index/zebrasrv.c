@@ -224,7 +224,7 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
         se->subqueryId = term_ref_id ? 
 	    odr_strdup(r->stream, term_ref_id) : 0;
 	    
-        se->fullQuery = odr_intdup(r->stream, 0);
+        se->fullQuery = odr_booldup(r->stream, 0);
         se->subqueryExpression = 
             odr_malloc(r->stream, sizeof(Z_QueryExpression));
         se->subqueryExpression->which = 
@@ -516,10 +516,10 @@ int bend_esrequest(void *handle, bend_esrequest_rr *rr)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     
-    yaz_log(YLOG_LOG, "function: %d", *rr->esr->function);
+    yaz_log(YLOG_LOG, "function: " ODR_INT_PRINTF, *rr->esr->function);
     if (rr->esr->packageName)
     	yaz_log(YLOG_LOG, "packagename: %s", rr->esr->packageName);
-    yaz_log(YLOG_LOG, "Waitaction: %d", *rr->esr->waitAction);
+    yaz_log(YLOG_LOG, "Waitaction: " ODR_INT_PRINTF, *rr->esr->waitAction);
 
     if (!rr->esr->taskSpecificParameters)
     {
@@ -566,7 +566,8 @@ int bend_esrequest(void *handle, bend_esrequest_rr *rr)
 		    yaz_log(YLOG_LOG, "start");
 		    break;
 		default:
-		    yaz_log(YLOG_LOG, " unknown (%d)", *toKeep->action);
+		    yaz_log(YLOG_LOG, " unknown (" ODR_INT_PRINTF ")",
+                            *toKeep->action);
 		}
 	    }
 	    if (toKeep->databaseName)
