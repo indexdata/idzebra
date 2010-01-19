@@ -68,18 +68,15 @@ static int is_data_tag (ExpHandle *eh, data1_node *c)
     return 1;
 }
 
-static int *f_integer(ExpHandle *eh, data1_node *c)
+static Odr_int *f_integer(ExpHandle *eh, data1_node *c)
 {
-    int *r;
     char intbuf[64];
 
     c = c->child;
-    if (!is_data_tag (eh, c) || c->u.data.len > 63)
+    if (!is_data_tag (eh, c) || c->u.data.len >= sizeof(intbuf))
 	return 0;
-    r = (int *)odr_malloc(eh->o, sizeof(*r));
     sprintf(intbuf, "%.*s", c->u.data.len, c->u.data.data);
-    *r = atoi(intbuf);
-    return r;
+    return odr_intdup(eh->o, atoi(intbuf));
 }
 
 static char *f_string(ExpHandle *eh, data1_node *c)
@@ -251,7 +248,7 @@ Z_RpnCapabilities *f_rpnCapabilities (ExpHandle *eh, data1_node *n)
 		(res->num_operators)++;
 	    }
 	    if (res->num_operators)
-		res->operators = (int **)
+		res->operators = (Odr_int **)
 		    odr_malloc (eh->o, res->num_operators
 				* sizeof(*res->operators));
 	    for (n = c->child; n; n = n->next)
@@ -388,9 +385,8 @@ static Z_AccessInfo *f_accessInfo(ExpHandle *eh, data1_node *n)
     return res;
 }
 
-static int *f_recordCount(ExpHandle *eh, data1_node *c, int *which)
+static Odr_int *f_recordCount(ExpHandle *eh, data1_node *c, int *which)
 {
-    int *r= (int *)odr_malloc(eh->o, sizeof(*r));
     int *wp = which;
     char intbuf[64];
 
@@ -403,11 +399,11 @@ static int *f_recordCount(ExpHandle *eh, data1_node *c, int *which)
 	*wp = Z_DatabaseInfo_approxNumber;
     else
 	return 0;
-    if (!c->child || c->child->which != DATA1N_data)
+    if (!c->child || c->child->which != DATA1N_data || 
+        c->child->u.data.len >= sizeof(intbuf))
 	return 0;
     sprintf(intbuf, "%.*s", c->child->u.data.len, c->child->u.data.data);
-    *r = atoi(intbuf);
-    return r;
+    return odr_intdup(eh->o, atoi(intbuf));
 }
 
 static Z_ContactInfo *f_contactInfo(ExpHandle *eh, data1_node *n)
