@@ -1977,7 +1977,7 @@ static ZEBRA_RES rpn_sort_spec(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     sk->u.sortAttributes->id = odr_oiddup_nmem(stream, attributeSet);
     sk->u.sortAttributes->list = zapt->attributes;
 
-    sks->sortRelation = (int *)
+    sks->sortRelation = (Odr_int *)
         nmem_malloc(stream, sizeof(*sks->sortRelation));
     if (sort_relation_value == 1)
         *sks->sortRelation = Z_SortKeySpec_ascending;
@@ -1986,7 +1986,7 @@ static ZEBRA_RES rpn_sort_spec(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     else 
         *sks->sortRelation = Z_SortKeySpec_ascending;
 
-    sks->caseSensitivity = (int *)
+    sks->caseSensitivity = (Odr_int *)
         nmem_malloc(stream, sizeof(*sks->caseSensitivity));
     *sks->caseSensitivity = 0;
 
