@@ -1,5 +1,5 @@
 /* This file is part of the Zebra server.
-   Copyright (C) 1994-2009 Index Data
+   Copyright (C) 1994-2010 Index Data
 
 Zebra is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -698,6 +698,9 @@ int zebra_map_tokenize_next(zebra_map_t zm,
 int zebra_map_tokenize_start(zebra_map_t zm,
                              const char *buf, size_t len)
 {
+#if YAZ_HAVE_ICU
+    int ret;
+#endif
     assert(zm->use_chain);
 
     wrbuf_rewind(zm->input_str);
@@ -716,10 +719,9 @@ int zebra_map_tokenize_start(zebra_map_t zm,
             yaz_log(YLOG_LOG, "input %s", 
                     wrbuf_cstr(zm->print_str)); 
         }
-        icu_chain_assign_cstr(zm->icu_chain,
-                              wrbuf_cstr(zm->input_str),
-                              &status);
-        if (!U_SUCCESS(status))
+        ret = icu_chain_assign_cstr(zm->icu_chain,
+                                    wrbuf_cstr(zm->input_str), &status);
+        if (!ret && !U_SUCCESS(status))
         {
             if (zm->debug)
             {

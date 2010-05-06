@@ -3,10 +3,6 @@ Things to change for version update
 configure.ac:  AC_INIT, PACKAGE_SUFFIX, ZEBRALIBS_VERSION_INFO
          AC_OUTPUT (idzebra-config-2.0 - 5 places!)
  
-include/idzebra/version.h
- 
 debian/changelog + debian/rules
-
-win/zebra.nsi
 
 idzebra.spec.in

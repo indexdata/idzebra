@@ -1,5 +1,5 @@
 /* This file is part of the Zebra server.
-   Copyright (C) 1994-2009 Index Data
+   Copyright (C) 1994-2010 Index Data
 
 Zebra is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -104,12 +104,18 @@ static int sp_range(struct source_parser *sp, data1_node *n, RecWord *wrd)
 	return 0;	
     sp_lex(sp);
     
-    if (wrd->term_buf && wrd->term_len)
+    if (wrd->term_buf)
     {
-	wrd->term_buf += start;
-	wrd->term_len -= start;
-	if (wrd->term_len > len)
-	    wrd->term_len = len;
+        if (start >= wrd->term_len)
+            wrd->term_len = 0;
+        else
+        {
+            wrd->term_len -= start;
+            wrd->term_buf += start;
+
+            if (wrd->term_len > len)
+                wrd->term_len = len;
+        }
     }
     return 1;
 }
@@ -563,7 +569,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
 		memcpy(&wrd_tl, wrd, sizeof(*wrd));
 		if (tl->source)
 		    sp_parse(sp, n, &wrd_tl, tl->source);
-                
+
                 /* this is just the old fashioned attribute based index */
                 wrd_tl.index_name = tl->index_name;
                 if (p->flagShowRecords)

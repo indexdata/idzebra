@@ -1,5 +1,5 @@
 /* This file is part of the Zebra server.
-   Copyright (C) 1994-2009 Index Data
+   Copyright (C) 1994-2010 Index Data
 
 Zebra is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static int log_level = 0;
 static int log_level_initialized = 0;
+
 
 /**
    \brief Common constuctor for RFDs
@@ -83,6 +84,7 @@ static void rset_close_int(RSET rs, RSFD rfd)
 
 void rset_set_hits_limit(RSET rs, zint l)
 {
+    yaz_log(log_level, "rset_set_hits_limit %p l=" ZINT_FORMAT, rs, l);
     rs->hits_limit = l;
 }
 

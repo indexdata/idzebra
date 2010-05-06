@@ -1,5 +1,5 @@
 /* This file is part of the Zebra server.
-   Copyright (C) 1994-2009 Index Data
+   Copyright (C) 1994-2010 Index Data
 
 Zebra is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -613,11 +613,12 @@ static void r_pos_x(RSFD rfd, double *current, double *total, int and_op)
 	(struct rfd_private *)(rfd->priv);
     double ratio = and_op ? 0.0 : 1.0;
     int i;
+    double sum_cur = 0.0;
+    double sum_tot = 0.0;
     for (i = 0; i<ct->no_children; i++){
         double nratio, cur, tot;
         rset_pos(mrfd->items[i].fd, &cur, &tot);
         yaz_log(log_level, "r_pos: %d %0.1f %0.1f", i, cur,tot);
-        
         nratio = cur / tot;
         if (and_op)
         {
@@ -626,10 +627,12 @@ static void r_pos_x(RSFD rfd, double *current, double *total, int and_op)
         }
         else
         {
-            if (nratio < ratio)
-                ratio = nratio;
+            sum_cur += cur;
+            sum_tot += tot;
         }
     }
+    if (!and_op)
+        ratio = sum_cur / sum_tot;
     if (ratio == 0.0 || ratio == 1.0) { /* nothing there */
         *current = 0;
         *total = 0;

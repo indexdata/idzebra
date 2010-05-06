@@ -1,5 +1,5 @@
 /* This file is part of the Zebra server.
-   Copyright (C) 1994-2009 Index Data
+   Copyright (C) 1994-2010 Index Data
 
 Zebra is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -1467,7 +1467,7 @@ static int filter_retrieve(void *clientData, struct recRetrieveCtrl *p)
     {
         p->diagnostic =
             YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
-        p->addinfo = odr_strdup(p->odr, esn);
+        p->addinfo = odr_strdup_null(p->odr, esn);
         return 0;
     }
 

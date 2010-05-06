@@ -1,5 +1,5 @@
 /* This file is part of the Zebra server.
-   Copyright (C) 1994-2009 Index Data
+   Copyright (C) 1994-2010 Index Data
 
 Zebra is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -150,18 +150,21 @@ FILE *data1_path_fopen (data1_handle dh, const char *file, const char *mode)
     FILE *f;
     const char *path = data1_get_tabpath(dh);
     const char *root = data1_get_tabroot(dh);
-    if (!path || !*path)
-    {
-        yaz_log(YLOG_DEBUG, "data1_fath_fopen file=%s mode=%s no open",
-                file, mode);
-	return 0;
-    }
-    yaz_log(YLOG_DEBUG, "data1_fath_fopen path=%s root=%s "
+
+    yaz_log(YLOG_DEBUG, "data1_path_fopen path=%s root=%s "
             "file=%s mode=%s", path ? path : "NULL",
             root ? root : "NULL", file, mode);
-    f = yaz_fopen(path, file, "r", root);
+    if (!path || !*path)
+	return 0;
+    f = yaz_fopen(path, file, mode, root);
     if (!f)
+    {
 	yaz_log(YLOG_WARN|YLOG_ERRNO, "Couldn't open %s", file);
+        if (root)
+            yaz_log(YLOG_LOG, "for root=%s", root);
+        if (path)
+            yaz_log(YLOG_LOG, "for profilePath=%s", path);
+    }
     return f;
 }
 

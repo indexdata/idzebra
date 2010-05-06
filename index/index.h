@@ -1,5 +1,5 @@
 /* This file is part of the Zebra server.
-   Copyright (C) 1994-2009 Index Data
+   Copyright (C) 1994-2010 Index Data
 
 Zebra is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -257,7 +257,7 @@ void zebra_limit_for_rset(struct zebra_limit *zl,
 struct rset_key_control *zebra_key_control_create(ZebraHandle zh);
 
 ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
-			 const Odr_oid *attributeSet, 
+			 const Odr_oid *attributeSet, zint hits_limit,
 			 NMEM stream, NMEM rset_nmem,
 			 Z_SortKeySpecList *sort_sequence,
 			 int num_bases, const char **basenames,

@@ -1,5 +1,5 @@
 /* This file is part of the Zebra server.
-   Copyright (C) 1994-2009 Index Data
+   Copyright (C) 1994-2010 Index Data
 
 Zebra is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -71,7 +71,7 @@ static void tst(int argc, char **argv)
 	    exit(1);
 	}
         yaz_pqf_destroy(parser);
-        zebra_deleteResultSet(zh, Z_DeleteRequest_list,
+        zebra_deleteResultSet(zh, Z_DeleteResultSetRequest_list,
                               1, &setnamep, &status);
         odr_destroy(odr_input);
         odr_destroy(odr_output);
