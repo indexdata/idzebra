@@ -464,6 +464,17 @@
       </listitem>
     </varlistentry>
 
+    <varlistentry>
+      <term>encoding <replaceable>charsetname</replaceable></term>
+      <listitem>
+        <para>
+	  Tells Zebra to interpret the terms in Z39.50 queries as
+	  having been encoded using the specified character
+	  encoding.  The default is <literal>ISO-8859-1</literal>; one
+	  useful alternative is <literal>UTF-8</literal>.
+	</para>
+      </listitem>
+    </varlistentry>
    </variablelist>
   </para>
   
