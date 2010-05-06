@@ -15,3 +15,6 @@ dox
 ChangeLog
 *~
 win/version.nsi
+build-stamp
+config.guess
+config.sub
