@@ -83,7 +83,6 @@ rm -fr ${RPM_BUILD_ROOT}
 /usr/include/idzebra-2.0/*
 /usr/lib/*.so
 /usr/lib/*.a
-/usr/lib/*.la
 /usr/share/man/*/idzebra-config-*
 /usr/share/aclocal/*.m4
 
