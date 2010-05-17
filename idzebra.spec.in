@@ -53,6 +53,7 @@ make CFLAGS="$RPM_OPT_FLAGS"
 %install
 rm -fr ${RPM_BUILD_ROOT}
 make prefix=${RPM_BUILD_ROOT}/usr mandir=${RPM_BUILD_ROOT}/usr/share/man install
+rm ${RPM_BUILD_ROOT}/usr/lib/*.la
 rm ${RPM_BUILD_ROOT}/usr/bin/zebraidx
 rm ${RPM_BUILD_ROOT}/usr/share/man/man1/zebraidx.*
 rm ${RPM_BUILD_ROOT}/usr/bin/zebrasrv
