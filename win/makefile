@@ -5,6 +5,7 @@
 ###########################################################
 
 DEBUG=0   # 0 for release, 1 for debug
+USE_MANIFEST = 1
 
 # TCL is optional - ONLY needed for source straight from Git
 TCL="C:\Tcl\bin\tclsh85.exe"
@@ -295,6 +296,12 @@ RELEASE_C_OPTIONS=  \
 ### Linker options
 LINK=link.exe
 
+!if $(USE_MANIFEST)
+MT=mt.exe /nologo
+!else
+MT=echo
+!endif
+
 LINK_LIBS= kernel32.lib user32.lib   gdi32.lib   winspool.lib \
            comdlg32.lib advapi32.lib shell32.lib ole32.lib    \
            oleaut32.lib uuid.lib     odbc32.lib  odbccp32.lib \
@@ -514,16 +521,19 @@ $(ZSERVER) : "$(BINDIR)" $(ZSERVER_OBJS) $(IMPLIB)
 	$(LINK_PROGRAM) \
 		$(ZSERVER_OBJS) \
 		/out:$(ZSERVER)
+	$(MT) -manifest $@.manifest -outputresource:$@;1
 
 $(ZEBRAIDX) : "$(BINDIR)" $(ZEBRAIDX_OBJS) $(IMPLIB)
 	$(LINK_PROGRAM) \
 		$(ZEBRAIDX_OBJS) \
 		/out:$(ZEBRAIDX)
+	$(MT) -manifest $@.manifest -outputresource:$@;1
 
 $(TSTFLOCK) : "$(BINDIR)" $(TSTFLOCK_OBJS) $(IMPLIB)
 	$(LINK_PROGRAM) \
 		$(TSTFLOCK_OBJS) \
 		/out:$(TSTFLOCK) 
+	$(MT) -manifest $@.manifest -outputresource:$@;1
 
 # Resources
 RES=$(OBJDIR)\zebra.res
@@ -550,7 +560,8 @@ $(DLL) $(IMPLIB): "$(BINDIR)" $(ZEBRALIB_OBJS) $(RES)
 		/out:$(DLL) \
 		$(YAZLIB) \
 		/implib:"$(IMPLIB)" \
-		/map:"$(LIBDIR)\idzebra.map" \
+		/map:"$(LIBDIR)\idzebra.map" 
+	$(MT) -manifest $@.manifest -outputresource:$@;2
 
 # Other rules
 
