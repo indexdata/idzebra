@@ -189,7 +189,7 @@ static void get_data2(data1_node *n, int *len, char *dst, size_t max)
             }
             *len += n->u.data.len;
         }
-        if (n->which == DATA1N_tag)
+        if (n->which == DATA1N_tag && *len == 0)
             n = n->child;
 	else if (n->which == DATA1N_data)
             n = n->next;
