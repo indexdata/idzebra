@@ -238,11 +238,10 @@ MOD_DOM_CFLAGS=
 
 COMMON_C_OPTIONS=          \
   /nologo /W3 /EHsc /FD /c \
-  /D "WIN32"               \
-  /D"_CONSOLE" /D"_MBCS"   \
   /DYAZ_USE_NEW_LOG=1      \
   /D"_CRT_SECURE_NO_DEPRECATE" \
   /D"_CRT_NONSTDC_NO_DEPRECATE" \
+  /D "WIN32"               \
   $(ICONV_DEF)             \
   $(EXPAT_DEF)             \
   $(LIBXML2_DEF)           \
@@ -270,11 +269,11 @@ COMMON_C_INCLUDES= \
   $(BZIP2INCLUDE)
 
 DEBUG_C_OPTIONS=  \
-  /D "_DEBUG"      \
-  /MDd  /Od /YX /Zi /Gm
+  /D "_DEBUG"     \
+  /MDd /Od /Zi /Gm
 
-RELEASE_C_OPTIONS=  \
-  /D "NDEBUG"        \
+RELEASE_C_OPTIONS= \
+  /D "NDEBUG"      \
   /MD /O2
 
 # /W3  = warning level
@@ -302,10 +301,9 @@ MT=mt.exe /nologo
 MT=echo
 !endif
 
-LINK_LIBS= kernel32.lib user32.lib   gdi32.lib   winspool.lib \
-           comdlg32.lib advapi32.lib shell32.lib ole32.lib    \
-           oleaut32.lib uuid.lib     odbc32.lib  odbccp32.lib \
-           wsock32.lib  advapi32.lib \
+# wsock32.lib  advapi32.lib \
+
+LINK_LIBS= kernel32.lib advapi32.lib \
 	   $(ICONV_LIB) $(EXPAT_LIB) $(LIBXML2_LIB) $(LIBXSLT_LIB) $(ICU_LIB)
 
 COMMON_LNK_OPTIONS= /nologo /machine:i386 /incremental:no
@@ -518,21 +516,15 @@ ZEBRALIB_OBJS= \
 # Linking
 
 $(ZSERVER) : "$(BINDIR)" $(ZSERVER_OBJS) $(IMPLIB)
-	$(LINK_PROGRAM) \
-		$(ZSERVER_OBJS) \
-		/out:$(ZSERVER)
+	$(LINK_PROGRAM) $(ZSERVER_OBJS)  /out:$@
 	$(MT) -manifest $@.manifest -outputresource:$@;1
 
 $(ZEBRAIDX) : "$(BINDIR)" $(ZEBRAIDX_OBJS) $(IMPLIB)
-	$(LINK_PROGRAM) \
-		$(ZEBRAIDX_OBJS) \
-		/out:$(ZEBRAIDX)
+	$(LINK_PROGRAM) $(ZEBRAIDX_OBJS) /out:$@
 	$(MT) -manifest $@.manifest -outputresource:$@;1
 
 $(TSTFLOCK) : "$(BINDIR)" $(TSTFLOCK_OBJS) $(IMPLIB)
-	$(LINK_PROGRAM) \
-		$(TSTFLOCK_OBJS) \
-		/out:$(TSTFLOCK) 
+	$(LINK_PROGRAM) $(TSTFLOCK_OBJS) /out:$@
 	$(MT) -manifest $@.manifest -outputresource:$@;1
 
 # Resources
@@ -557,7 +549,7 @@ $(DLL) $(IMPLIB): "$(BINDIR)" $(ZEBRALIB_OBJS) $(RES)
 		$(DLL_LINK_OPTIONS) \
 		$(ZEBRALIB_OBJS) \
 		$(RES) \
-		/out:$(DLL) \
+		/out:$@ \
 		$(YAZLIB) \
 		/implib:"$(IMPLIB)" \
 		/map:"$(LIBDIR)\idzebra.map" 
