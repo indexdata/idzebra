@@ -34,7 +34,7 @@ if test "$ac_cv_lib_crypt_crypt" = "yes"; then
 fi
 dnl
 dnl ------ YAZ
-YAZ_INIT([server icu],[3.0.17])
+YAZ_INIT([server icu],[3.0.47])
 if test "$YAZVERSION" = "NONE"; then
     AC_MSG_ERROR([YAZ development libraries required])
 fi
