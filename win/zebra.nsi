@@ -1,14 +1,22 @@
 !include version.nsi
 
-; VS 2005
-; !define VS_RUNTIME_DLL      "c:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\msvcr80.dll"
-; !define VS_RUNTIME_MANIFEST "c:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\Microsoft.VC80.CRT.manifest"
+; Microsoft runtime CRT 
+; Uncomment exactly ONE of the sections below
+; 1: MSVC 6
+; !define VS_RUNTIME_DLL ""
+; !define VS_RUNTIME_MANIFEST ""
 
-; VS 2003
-; !define VS_RUNTIME_DLL "c:\Program files\Microsoft Visual Studio .NET 2003\SDK\v1.1\Bin\msvcr71.dll"
+; 2: VS 2003
+; !define VS_RUNTIME_DLL "c:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\Bin\msvcr71.dll"
+;!define VS_RUNTIME_MANIFEST ""
 
-; VS 6.0
-; (no defines)
+; 3: VS 2005
+;!define VS_RUNTIME_DLL      "c:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\msvcr80.dll"
+;!define VS_RUNTIME_MANIFEST "c:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\Microsoft.VC80.CRT.manifest"
+
+; 4: VS 2008
+!define VS_RUNTIME_DLL      "c:\Program Files\Microsoft Visual Studio 9.0\VC\redist\x86\Microsoft.VC90.CRT\msvc*90.dll"
+!define VS_RUNTIME_MANIFEST "c:\Program Files\Microsoft Visual Studio 9.0\VC\redist\x86\Microsoft.VC90.CRT\Microsoft.VC90.CRT.manifest"
 
 !include "MUI.nsh"
 
@@ -76,23 +84,17 @@ SectionEnd ; end of default section
 Section "Zebra Runtime"
 	SectionIn 1 2
 	SetOutPath $INSTDIR\bin
-!ifdef VS_RUNTIME_DLL
 	File "${VS_RUNTIME_DLL}"
-!endif
-!ifdef VS_RUNTIME_MANIFEST
 	File "${VS_RUNTIME_MANIFEST}"
-	File ..\bin\*.manifest
-!endif
 	File ..\bin\*.exe
 	File ..\bin\idzebra.dll
 	File ..\bin\iconv.dll
 	File ..\bin\zlib1.dll
 	File ..\bin\libxml2.dll
 	File ..\bin\libxslt.dll
-	File ..\bin\yaz3.dll
-	File ..\bin\libexpat.dll
+	File ..\bin\yaz*.dll
 	File ..\bin\icu*.dll
-	File ..\bin\yaz_icu3.dll
+	File ..\bin\libexpat.dll
 SectionEnd
 
 Section "Zebra Development"
