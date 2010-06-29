@@ -20,11 +20,11 @@ ICONV_DIR=c:\iconv-1.9.2.win32
 
 # libxslt. For mod_dom and mod_alvis
 HAVE_LIBXSLT=1
-LIBXSLT_DIR=c:\libxslt-1.1.24.win32
+LIBXSLT_DIR=c:\libxslt-1.1.26.win32
 
 # libxml2. Used by libxslt
 HAVE_LIBXML2=1
-LIBXML2_DIR=c:\libxml2-2.7.1.win32
+LIBXML2_DIR=c:\libxml2-2.7.6.win32
 
 # zlib compression.  Used by libxml2
 ZLIB_DIR = c:\zlib-1.2.3.win32
@@ -51,19 +51,19 @@ YAZDIR=$(ROOTDIR)\..\yaz  # or \program files\yaz
 
 YAZBINDIR=$(YAZDIR)\bin
 !if $(DEBUG)
-YAZLIB="$(YAZDIR)\lib\yaz3d.lib"
+YAZLIB="$(YAZDIR)\lib\yaz4d.lib"
 !if $(HAVE_ICU)
-YAZLIB=$(YAZLIB) "$(YAZDIR)\lib\yaz_icu3d.lib"
+YAZLIB=$(YAZLIB) "$(YAZDIR)\lib\yaz_icu4d.lib"
 !endif
-YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz3d.dll"
-YAZ_DLL_TARGET="$(BINDIR)\yaz3d.dll"
+YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz4d.dll"
+YAZ_DLL_TARGET="$(BINDIR)\yaz4d.dll"
 !else
-YAZLIB="$(YAZDIR)\lib\yaz3.lib"
+YAZLIB="$(YAZDIR)\lib\yaz4.lib"
 !if $(HAVE_ICU)
-YAZLIB=$(YAZLIB) "$(YAZDIR)\lib\yaz_icu3.lib"
+YAZLIB=$(YAZLIB) "$(YAZDIR)\lib\yaz_icu4.lib"
 !endif
-YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz3.dll"
-YAZ_DLL_TARGET="$(BINDIR)\yaz3.dll"
+YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz4.dll"
+YAZ_DLL_TARGET="$(BINDIR)\yaz4.dll"
 !endif
 
 # BZIP2 settings. Uncomment and specify if you wish to use LIBBZIP2.
@@ -203,14 +203,14 @@ libxslt:
 !if $(HAVE_ICU)
 ICU_DEF= /DYAZ_HAVE_ICU=1  /I"$(ICU_DIR)\include"
 ICU_LIB= $(ICU_DIR)\lib\icudt.lib $(ICU_DIR)\lib\icuin.lib $(ICU_DIR)\lib\icuuc.lib
-icu: $(BINDIR)\icudt40.dll $(BINDIR)\icuin40.dll $(BINDIR)\icuuc40.dll
+icu: $(BINDIR)\icudt42.dll $(BINDIR)\icuin42.dll $(BINDIR)\icuuc42.dll
 
-$(BINDIR)\icudt40.dll:
-	  copy "$(ICU_DIR)\bin\icudt40.dll" $(BINDIR)
-$(BINDIR)\icuin40.dll:
-	  copy "$(ICU_DIR)\bin\icuin40.dll" $(BINDIR)
-$(BINDIR)\icuuc40.dll:
-	  copy "$(ICU_DIR)\bin\icuuc40.dll" $(BINDIR)
+$(BINDIR)\icudt42.dll:
+	  copy "$(ICU_DIR)\bin\icudt42.dll" $(BINDIR)
+$(BINDIR)\icuin42.dll:
+	  copy "$(ICU_DIR)\bin\icuin42.dll" $(BINDIR)
+$(BINDIR)\icuuc42.dll:
+	  copy "$(ICU_DIR)\bin\icuuc42.dll" $(BINDIR)
 !else
 ICU_DEF=  /DYAZ_HAVE_ICU=0
 ICU_LIB=
