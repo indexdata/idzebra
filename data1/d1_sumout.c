@@ -25,18 +25,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/proto.h>
 #include <idzebra/data1.h>
 
-static int *f_integer(data1_node *c, ODR o)
+static Odr_int *f_integer(data1_node *c, ODR o)
 {
-    int *r;
     char intbuf[64];
 
     if (!c->child || c->child->which != DATA1N_data ||
 	c->child->u.data.len > 63)
 	return 0;
-    r = (int *)odr_malloc(o, sizeof(*r));
     sprintf(intbuf, "%.*s", 63, c->child->u.data.data);
-    *r = atoi(intbuf);
-    return r;
+    return odr_intdup(o, atoi(intbuf));
 }
 
 static char *f_string(data1_node *c, ODR o)
