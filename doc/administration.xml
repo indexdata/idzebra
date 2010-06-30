@@ -797,9 +797,7 @@
    The value of the <literal>register</literal> setting is a sequence
    of tokens. Each token takes the form:
    
-   <screen>
-    <emphasis>dir</emphasis><literal>:</literal><emphasis>size</emphasis> 
-   </screen>
+   <emphasis>dir</emphasis><literal>:</literal><emphasis>size</emphasis> 
    
    The <emphasis>dir</emphasis> specifies a directory in which index files
    will be stored and the <emphasis>size</emphasis> specifies the maximum

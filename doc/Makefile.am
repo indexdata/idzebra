@@ -20,7 +20,7 @@ XMLFILES =  \
    recordmodel-grs.xml \
    manref.xml \
    tutorial.xml \
-   zebra.xml \
+   idzebra.xml \
    zebrasrv-options.xml \
    zebrasrv-synopsis.xml \
    zebrasrv-virtual.xml 
@@ -59,17 +59,13 @@ idzebra-config$(PACKAGE_SUFFIX).1: idzebra-config.xml
 
 $(HTMLFILES): $(XMLFILES) $(PNGFILES)
 	rm -f *.html
-	$(HTML_COMPILE) $(srcdir)/zebra.xml
+	$(HTML_COMPILE) $(srcdir)/idzebra.xml
 
-index.tkl: $(XMLFILES)
-	rm -f *.tkl
-	$(TKL_COMPILE) $(srcdir)/zebra.xml
-
-zebra.pdf: $(XMLFILES) domfilter.pdf
+idzebra.pdf: $(XMLFILES) domfilter.pdf
 	for i in $(PNGFILES); do \
 		if test ! -f $$i; then cp $(srcdir)/$$i .; fi; \
 	done
-	$(PDF_COMPILE) $(srcdir)/zebra.xml
+	$(PDF_COMPILE) $(srcdir)/idzebra.xml
 
 manref.xml: $(XMLMAN) $(srcdir)/common/ref2dbinc.xsl
 	rm -f manref.xml
@@ -111,7 +107,7 @@ domfilter.png: domfilter.svg
 	unset DISPLAY; inkscape --export-png=$@ --export-width=600 $?
 
 domfilter.eps: domfilter.svg
-	unset DISPLAY; inkscape --export-eps=$@ --export-bbox-page $?
+	unset DISPLAY; inkscape --export-eps=$@ $?
 
 doc-clean:
 	rm -f manref.xml *.html *.pdf *.[0-9] domfilter.png domfilter.eps

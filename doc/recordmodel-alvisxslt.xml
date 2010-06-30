@@ -50,7 +50,7 @@
         &lt;schema name="index" identifier="http://indexdata.dk/zebra/xslt/1"
             stylesheet="xsl/oai2index.xsl" /&gt;
         &lt;schema name="dc" stylesheet="xsl/oai2dc.xsl" /&gt;
-        &lt;!-- use split level 2 when indexing whole &acro.oai; Record lists --&gt;
+        &lt;!-- use split level 2 when indexing whole OAI Record lists --&gt;
         &lt;split level="2"/&gt;
       &lt;/schemaInfo&gt;
     </screen> 
