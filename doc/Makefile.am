@@ -32,9 +32,6 @@ XMLFILES =  \
 HTMLFILES = index.html
 
 PNGFILES = zebra.png domfilter.png
-EPSFILES = zebra.eps domfilter.eps
-PDFFILES = zebra.pdf domfilter.pdf
-
 
 MANFILES=zebraidx$(PACKAGE_SUFFIX).1 \
 	zebrasrv$(PACKAGE_SUFFIX).8 \
