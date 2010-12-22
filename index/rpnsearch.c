@@ -154,7 +154,7 @@ static int grep_handle(char *name, const char *info, void *p)
 }
 
 static int term_pre(zebra_map_t zm, const char **src,
-		    const char *ct1, const char *ct2, int first)
+		    const char *ct1, int first)
 {
     const char *s1, *s0 = *src;
     const char **map;
@@ -163,8 +163,6 @@ static int term_pre(zebra_map_t zm, const char **src,
     while (*s0)
     {
         if (ct1 && strchr(ct1, *s0))
-            break;
-        if (ct2 && strchr(ct2, *s0))
             break;
         s1 = s0;
         map = zebra_maps_input(zm, &s1, strlen(s1), first);
@@ -297,7 +295,7 @@ static int term_100(zebra_map_t zm,
     const char *space_start = 0;
     const char *space_end = 0;
 
-    if (!term_pre(zm, src, NULL, NULL, !space_split))
+    if (!term_pre(zm, src, 0, !space_split))
         return 0;
     s0 = *src;
     while (*s0)
@@ -350,7 +348,7 @@ static int term_101(zebra_map_t zm,
     const char **map;
     int i = 0;
 
-    if (!term_pre(zm, src, "#", "#", !space_split))
+    if (!term_pre(zm, src, "#", !space_split))
         return 0;
     s0 = *src;
     while (*s0)
@@ -387,7 +385,7 @@ static int term_103(zebra_map_t zm, const char **src,
     const char *s0;
     const char **map;
 
-    if (!term_pre(zm, src, "^\\()[].*+?|", "(", !space_split))
+    if (!term_pre(zm, src, "^\\()[].*+?|", !space_split))
         return 0;
     s0 = *src;
     if (errors && *s0 == '+' && s0[1] && s0[2] == '+' && s0[3] &&
@@ -440,7 +438,7 @@ static int term_104(zebra_map_t zm, const char **src,
     const char **map;
     int i = 0;
 
-    if (!term_pre(zm, src, "?*#", "?*#", !space_split))
+    if (!term_pre(zm, src, "?*#", !space_split))
         return 0;
     s0 = *src;
     while (*s0)
@@ -510,7 +508,7 @@ static int term_105(zebra_map_t zm, const char **src,
     const char **map;
     int i = 0;
 
-    if (!term_pre(zm, src, "*!", "*!", !space_split))
+    if (!term_pre(zm, src, "\\*!", !space_split))
         return 0;
     s0 = *src;
     while (*s0)
@@ -526,6 +524,13 @@ static int term_105(zebra_map_t zm, const char **src,
         {
             i++;
             wrbuf_putc(term_dict, '.');
+            wrbuf_putc(display_term, *s0);
+            s0++;
+        }
+        else if (*s0 == '\\')
+        {
+            i++;
+            wrbuf_puts(term_dict, "\\\\");
             wrbuf_putc(display_term, *s0);
             s0++;
         }
