@@ -1,3 +1,12 @@
+--- 2.0.45 2010/12/22
+
+Add Debian package for Ubuntu maverick.
+
+Update to newer Libxml2/Libxslt for Windows package.
+
+Escape-sequences are disabled for RPN-queries with truncation=105/106.
+These, unlike regular expressions, do not support \-sequences .
+
 --- 2.0.44 2010/06/29
 
 grs1: avoid term_len < 0 for .abs operator 'range'
