@@ -350,7 +350,6 @@ AC_OUTPUT([
   examples/marcxml/Makefile 
   examples/oai-pmh/Makefile
   examples/zthes/Makefile
-  idzebra.spec
   idzebra-config-2.0
   Doxyfile
   win/version.nsi

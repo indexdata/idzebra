@@ -11,7 +11,7 @@ aclocal_DATA = m4/idzebra-2.0.m4
 
 SPEC_FILE=idzebra.spec
 
-EXTRA_DIST= README NEWS IDMETA $(SPEC_FILE) $(SPEC_FILE).in \
+EXTRA_DIST= README NEWS IDMETA $(SPEC_FILE) \
  idzebra-config-2.0.in m4/idzebra-2.0.m4 m4/yaz.m4 buildconf.sh Doxyfile.in
 
 dist-hook:

@@ -1,5 +1,5 @@
 Name: idzebra-2.0
-Version: @VERSION@
+Version: 2.0.45
 Release: 1
 Requires: lib%{name}-modules = %{version}
 License: GPL
