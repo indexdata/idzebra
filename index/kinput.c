@@ -50,7 +50,12 @@ struct key_file {
     Res res;
 };
 
-#if 0
+
+#define PR_KEY_LOW 0
+#define PR_KEY_TOP 0
+
+#if PR_KEY_LOW || PR_KEY_TOP
+
 static void pkey(const char *b, int mode)
 {
     key_logdump_txt(YLOG_LOG, b, mode ? "i" : "d");
@@ -354,8 +359,6 @@ static int heap_read_one(struct heap_info *hi, char *name, char *key)
     return 1;
 }
 
-#define PR_KEY_LOW 0
-#define PR_KEY_TOP 0
 
 /* for debugging only */
 void zebra_log_dict_entry(ZebraHandle zh, const char *s)
@@ -415,7 +418,7 @@ int heap_cread_item2(void *vp, char **dst, int *insertMode)
 	    p->look_level++;
 	}
 	memcpy(*dst, p->key_1, p->sz_1);
-#if 0
+#if PR_KEY_TOP
 	yaz_log(YLOG_LOG, "DUP level=%d", p->look_level);
 	pkey(*dst, *insertMode);
 #endif
@@ -490,7 +493,8 @@ int heap_cread_item2(void *vp, char **dst, int *insertMode)
     }
     p->look_level = level;
     memcpy(*dst, p->key_1, p->sz_1);
-#if 0
+#if PR_KEY_TOP
+    yaz_log(YLOG_LOG, "TOP");
     pkey(*dst, *insertMode);
 #endif
     (*dst) += p->sz_1;
