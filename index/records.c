@@ -934,6 +934,21 @@ Record rec_get_root(Records p)
     return rec_get(p, rec_sysno_to_ext(1));
 }
 
+Record rec_get_next(Records p, Record rec)
+{
+    Record next = 0;
+    zint next_sysno_int = rec_sysno_to_int(rec->sysno);
+
+    while (!next)
+    {
+         ++next_sysno_int;
+        if (next_sysno_int == p->head.index_last)
+            break;
+        next = rec_get(p, rec_sysno_to_ext(next_sysno_int));
+    }
+    return next;
+}
+
 static Record rec_new_int(Records p)
 {
     int i;

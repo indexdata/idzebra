@@ -76,6 +76,15 @@ Record rec_get(Records p, zint sysno);
     \returns record pointer (or NULL on error)
 */
 Record rec_get_root(Records p);
+
+
+/** \brief gets next record - with given records
+    \param p records handle
+    \param rec record
+    \returns record pointer (or NULL on error)
+*/
+Record rec_get_next(Records p, Record rec);
+
 ZEBRA_RES rec_close (Records *p);
 
 /** \brief opens records system
