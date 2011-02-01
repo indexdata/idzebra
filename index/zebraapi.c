@@ -2194,6 +2194,33 @@ ZEBRA_RES zebra_compact(ZebraHandle zh)
     return ZEBRA_OK;
 }
 
+ZEBRA_RES zebra_register_check(ZebraHandle zh)
+{
+    ZEBRA_RES res = ZEBRA_FAIL;
+    if (zebra_begin_read(zh) == ZEBRA_OK)
+    {
+        zint no_records = 0;
+        if (zh->reg)
+        {
+            Record rec = rec_get_root(zh->reg->records);
+            
+            while (rec)
+            {
+                Record r1;
+                
+                r1 = rec_get_next(zh->reg->records, rec);
+                rec_free(&rec);
+                rec = r1;
+                no_records++;
+            }
+            res = ZEBRA_OK;
+        }
+        zebra_end_read(zh);
+        yaz_log(YLOG_LOG, ZINT_FORMAT " records scanned", no_records);
+    }
+    return res;
+}
+
 void zebra_result(ZebraHandle zh, int *code, char **addinfo)
 {
     yaz_log(log_level, "zebra_result");

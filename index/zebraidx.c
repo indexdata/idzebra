@@ -177,6 +177,11 @@ int main(int argc, char **argv)
                 {
                     show_filters(zs);
                 }
+		else if (!strcmp(arg, "check"))
+		{
+                    if (zebra_register_check(zh) != ZEBRA_OK)
+                        yaz_log(YLOG_WARN, "register check failed");
+		}
                 else
                 {
                     yaz_log(YLOG_FATAL, "unknown command: %s", arg);

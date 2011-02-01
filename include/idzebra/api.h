@@ -510,6 +510,9 @@ ZEBRA_RES zebra_set_break_handler(ZebraHandle zh,
                                   int (*f)(void *client_data),
                                   void *client_data);
 
+YAZ_EXPORT
+ZEBRA_RES zebra_register_check(ZebraHandle zh);
+
 YAZ_END_CDECL				      
 
 /** \mainpage Zebra
