@@ -2194,12 +2194,74 @@ ZEBRA_RES zebra_compact(ZebraHandle zh)
     return ZEBRA_OK;
 }
 
+static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
+                                    zint *no_keys)
+{
+    ZEBRA_RES res = ZEBRA_FAIL;
+    zebra_rec_keys_t keys = zebra_rec_keys_open();
+    zebra_rec_keys_set_buf(keys, rec->info[recInfo_delKeys],
+                           rec->size[recInfo_delKeys], 0);
+    
+    *no_keys = 0;
+    if (!zebra_rec_keys_rewind(keys))
+    {
+        ;
+    }
+    else
+    {
+        size_t slen;
+        const char *str;
+        struct it_key key_in;
+        int no_long_dict_entries = 0;
+        int no_failed_dict_lookup = 0;
+
+        while (zebra_rec_keys_read(keys, &str, &slen, &key_in))
+        {
+            int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
+            char ord_buf[IT_MAX_WORD];
+            int ord_len = key_SU_encode(ord, ord_buf);
+            
+            memcpy(ord_buf + ord_len, str, slen);
+            ord_buf[ord_len + slen] = '\0'; 
+            if (ord_len + slen >= IT_MAX_WORD)
+                ++no_long_dict_entries;
+            else
+            {
+                char *info = dict_lookup(zh->reg->dict, ord_buf);
+                if (!info)
+                    no_failed_dict_lookup++;
+                else
+                {
+                    ;
+                }
+            }
+            (*no_keys)++;
+        }
+        if (no_long_dict_entries)
+        {
+            yaz_log(YLOG_WARN, "Record id " ZINT_FORMAT
+                    " has %d dictionary entries that are too long",
+                    rec->sysno, no_long_dict_entries);
+        }            
+        if (no_failed_dict_lookup)
+        {
+            yaz_log(YLOG_WARN, "Record id " ZINT_FORMAT
+                    " has %d terms that do not exist in dictionary",
+                    rec->sysno, no_failed_dict_lookup);
+        }            
+        res = ZEBRA_OK;
+    }
+    zebra_rec_keys_close(keys);
+    return res;
+}
+
 ZEBRA_RES zebra_register_check(ZebraHandle zh)
 {
     ZEBRA_RES res = ZEBRA_FAIL;
     if (zebra_begin_read(zh) == ZEBRA_OK)
     {
         zint no_records = 0;
+        zint total_keys = 0;
         if (zh->reg)
         {
             Record rec = rec_get_root(zh->reg->records);
@@ -2207,16 +2269,20 @@ ZEBRA_RES zebra_register_check(ZebraHandle zh)
             while (rec)
             {
                 Record r1;
-                
+                zint no_keys;
+    
+                zebra_record_check(zh, rec, &no_keys);
                 r1 = rec_get_next(zh->reg->records, rec);
                 rec_free(&rec);
                 rec = r1;
                 no_records++;
+                total_keys += no_keys;
             }
             res = ZEBRA_OK;
+            yaz_log(YLOG_LOG, "records: " ZINT_FORMAT, no_records);
+            yaz_log(YLOG_LOG, "keys:    " ZINT_FORMAT, total_keys);
         }
         zebra_end_read(zh);
-        yaz_log(YLOG_LOG, ZINT_FORMAT " records scanned", no_records);
     }
     return res;
 }
