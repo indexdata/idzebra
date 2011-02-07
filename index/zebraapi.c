@@ -2195,9 +2195,15 @@ ZEBRA_RES zebra_compact(ZebraHandle zh)
 }
 
 static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
-                                    zint *no_keys, int verbose_level)
+                                    zint *no_keys, int verbose_level,
+                                    int *no_long_dict_entries,
+                                    int *no_failed_dict_lookup,
+                                    int *no_invalid_keys,
+                                    int *no_invalid_dict_infos,
+                                    int *no_invalid_isam_entries
+    )
 {
-    ZEBRA_RES res = ZEBRA_FAIL;
+    ZEBRA_RES res = ZEBRA_OK;
     zebra_rec_keys_t keys = zebra_rec_keys_open();
     zebra_rec_keys_set_buf(keys, rec->info[recInfo_delKeys],
                            rec->size[recInfo_delKeys], 0);
@@ -2212,14 +2218,11 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
         size_t slen;
         const char *str;
         struct it_key key_in;
-        int no_long_dict_entries = 0;
-        int no_failed_dict_lookup = 0;
-        int no_invalid_keys = 0;
         NMEM nmem = nmem_create();
 
         while (zebra_rec_keys_read(keys, &str, &slen, &key_in))
         {
-            int do_log = 0;
+            int do_fail = 0;
             int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
             char ord_buf[IT_MAX_WORD+20];
             int ord_len = key_SU_encode(ord, ord_buf);
@@ -2229,6 +2232,8 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
 
             if (ord_len + slen >= sizeof(ord_buf)-1)
             {
+                (*no_long_dict_entries)++;
+                res = ZEBRA_FAIL;
                 if (verbose_level >= 1)
                 {
                     /* so bad it can not fit into our ord_buf */
@@ -2236,53 +2241,152 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
                             ": long dictionary entry %d + %d",
                             rec->sysno, ord_len, (int) slen);
                 }
-                ++no_long_dict_entries;
                 continue;
             }
             memcpy(ord_buf + ord_len, str, slen);
             ord_buf[ord_len + slen] = '\0'; 
             if (ord_len + slen >= IT_MAX_WORD)
             {
+                do_fail = 1;
+                (*no_long_dict_entries)++;
                 if (verbose_level >= 1)
                 {
-                    do_log = 1;
                     yaz_log(YLOG_WARN, "Record " ZINT_FORMAT 
                             ": long dictionary entry %d + %d",
                             rec->sysno, (int) ord_len, (int) slen);
                 }
-                ++no_long_dict_entries;
             }
             info = dict_lookup(zh->reg->dict, ord_buf);
             if (!info)
             {
+                do_fail = 1;
+                (*no_failed_dict_lookup)++;
                 if (verbose_level >= 1)
                 {
-                    do_log = 1;
                     yaz_log(YLOG_WARN, "Record " ZINT_FORMAT
                             ": term do not exist in dictionary", rec->sysno);
                 }
-                no_failed_dict_lookup++;
+            }
+            else
+            {
+                ISAM_P pos;
+
+                if (*info != sizeof(pos))
+                {
+                    do_fail = 1;
+                    (*no_invalid_dict_infos)++;
+                    if (verbose_level >= 1)
+                    {
+                        yaz_log(YLOG_WARN, "Record " ZINT_FORMAT 
+                                ": long dictionary entry %d + %d",
+                                rec->sysno, (int) ord_len, (int) slen);
+                    }
+                }
+                else
+                {
+                    int scope = 1;
+                    memcpy(&pos, info+1, sizeof(pos));
+                    if (zh->reg->isamb)
+                    {
+                        ISAMB_PP ispt = isamb_pp_open(zh->reg->isamb, pos,
+                                                      scope);
+                        if (!ispt)
+                        {
+                            do_fail = 1;
+                            (*no_invalid_isam_entries)++;
+                            if (verbose_level >= 1)
+                            {
+                                yaz_log(YLOG_WARN, "Record " ZINT_FORMAT 
+                                        ": isamb_pp_open entry " ZINT_FORMAT
+                                        " not found",
+                                        rec->sysno, pos);
+                            }
+                        }
+                        else if (zh->m_staticrank)
+                        {
+                            isamb_pp_close(ispt);
+                        }
+                        else
+                        {
+                            struct it_key until_key;
+                            struct it_key isam_key;
+                            int r;
+                            int i = 0;
+                            
+                            until_key.len = key_in.len - 1;
+                            for (i = 0; i < until_key.len; i++)
+                                until_key.mem[i] = key_in.mem[i+1];
+                            
+                            if (until_key.mem[0] == 0)
+                                until_key.mem[0] = rec->sysno;
+                            r = isamb_pp_forward(ispt, &isam_key, &until_key);
+                            if (r != 1)
+                            {
+                                do_fail = 1;
+                                (*no_invalid_isam_entries)++;
+                                if (verbose_level >= 1)
+                                {
+                                    yaz_log(YLOG_WARN, "Record " ZINT_FORMAT 
+                                            ": isamb_pp_forward " ZINT_FORMAT
+                                            " returned no entry",
+                                            rec->sysno, pos);
+                                }
+                            }
+                            else
+                            {
+                                int cmp = key_compare(&until_key, &isam_key);
+                                if (cmp != 0)
+                                {
+                                    do_fail = 1;
+                                    (*no_invalid_isam_entries)++;
+                                    if (verbose_level >= 1)
+                                    {
+                                        yaz_log(YLOG_WARN, "Record "
+                                                ZINT_FORMAT 
+                                                ": isamb_pp_forward "
+                                                ZINT_FORMAT
+                                                " returned different entry",
+                                                rec->sysno, pos);
+
+                                        key_logdump_txt(YLOG_LOG,
+                                                        &until_key,
+                                                        "until");
+
+                                        key_logdump_txt(YLOG_LOG,
+                                                        &isam_key,
+                                                        "isam");
+
+                                    }
+                                }
+                            }
+                            isamb_pp_close(ispt);
+                        }
+
+                    }
+                }
             }
             if (key_in.len < 2 || key_in.len > 4)
             {
+                do_fail = 1;
+                (*no_invalid_keys)++;
                 if (verbose_level >= 1)
                 {
                     yaz_log(YLOG_WARN, "Record " ZINT_FORMAT
                             ": unexpected key length %d",
                             rec->sysno, key_in.len);
-                    do_log = 1;
                 }
-                no_invalid_keys++;
             }
-            if (do_log)
+            if (do_fail)
             {
-                zebra_it_key_str_dump(zh, &key_in, str,
-                                      slen, nmem, YLOG_LOG);
-                nmem_reset(nmem);
+                res = ZEBRA_FAIL;
+                if (verbose_level >= 1)
+                {
+                    zebra_it_key_str_dump(zh, &key_in, str,
+                                          slen, nmem, YLOG_LOG);
+                    nmem_reset(nmem);
+                }
             }
         }
-        if (!no_long_dict_entries && !no_failed_dict_lookup && !no_invalid_keys)
-            res = ZEBRA_OK;
         nmem_destroy(nmem);
     }
     zebra_rec_keys_close(keys);
@@ -2306,8 +2410,20 @@ ZEBRA_RES zebra_register_check(ZebraHandle zh, int verbose_level)
             {
                 Record r1;
                 zint no_keys;
+
+                int no_long_dict_entries = 0;
+                int no_failed_dict_lookup = 0;
+                int no_invalid_keys = 0;
+                int no_invalid_dict_infos = 0;
+                int no_invalid_isam_entries = 0;
     
-                if (zebra_record_check(zh, rec, &no_keys, verbose_level)
+                if (zebra_record_check(zh, rec, &no_keys, verbose_level,
+                                       &no_long_dict_entries,
+                                       &no_failed_dict_lookup,
+                                       &no_invalid_keys,
+                                       &no_invalid_dict_infos,
+                                       &no_invalid_isam_entries
+                                       )
                     != ZEBRA_OK)
                 {
                     res = ZEBRA_FAIL;
