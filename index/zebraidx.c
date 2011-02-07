@@ -177,9 +177,14 @@ int main(int argc, char **argv)
                 {
                     show_filters(zs);
                 }
-		else if (!strcmp(arg, "check"))
+		else if (!strcmp(arg, "check0"))
 		{
-                    if (zebra_register_check(zh) != ZEBRA_OK)
+                    if (zebra_register_check(zh, 0) != ZEBRA_OK)
+                        yaz_log(YLOG_WARN, "register check failed");
+		}
+		else if (!strcmp(arg, "check1") || !strcmp(arg, "check"))
+		{
+                    if (zebra_register_check(zh, 1) != ZEBRA_OK)
                         yaz_log(YLOG_WARN, "register check failed");
 		}
                 else

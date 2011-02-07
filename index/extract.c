@@ -1333,6 +1333,56 @@ ZEBRA_RES zebra_extract_explain(void *handle, Record rec, data1_node *n)
     return ZEBRA_OK;
 }
 
+void zebra_it_key_str_dump(ZebraHandle zh, struct it_key *key,
+                           const char *str, size_t slen, NMEM nmem, int level)
+{
+    char keystr[200]; /* room for zints to print */
+    char *dst_term = 0;
+    int ord = CAST_ZINT_TO_INT(key->mem[0]);
+    const char *index_type;
+    int i;
+    const char *string_index;
+    
+    zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type,
+                            0/* db */, &string_index);
+    assert(index_type);
+    zebra_term_untrans_iconv(zh, nmem, index_type,
+                             &dst_term, str);
+    *keystr = '\0';
+    for (i = 0; i < key->len; i++)
+    {
+        sprintf(keystr + strlen(keystr), ZINT_FORMAT " ", key->mem[i]);
+    }
+    
+    if (*str < CHR_BASE_CHAR)
+    {
+        int i;
+        char dst_buf[200]; /* room for special chars */
+        
+        strcpy(dst_buf , "?");
+        
+        if (!strcmp(str, ""))
+            strcpy(dst_buf, "alwaysmatches");
+        if (!strcmp(str, FIRST_IN_FIELD_STR))
+            strcpy(dst_buf, "firstinfield");
+        else if (!strcmp(str, CHR_UNKNOWN))
+            strcpy(dst_buf, "unknown");
+        else if (!strcmp(str, CHR_SPACE))
+            strcpy(dst_buf, "space");
+        
+        for (i = 0; i<slen; i++)
+        {
+            sprintf(dst_buf + strlen(dst_buf), " %d", str[i] & 0xff);
+        }
+        yaz_log(level, "%s%s %s %s", keystr, index_type,
+                string_index, dst_buf);
+        
+    }
+    else
+        yaz_log(level, "%s%s %s \"%s\"", keystr, index_type,
+                string_index, dst_term);
+}
+
 void extract_rec_keys_log(ZebraHandle zh, int is_insert,
                           zebra_rec_keys_t reckeys,
                           int level)
@@ -1346,52 +1396,7 @@ void extract_rec_keys_log(ZebraHandle zh, int is_insert,
 
 	while(zebra_rec_keys_read(reckeys, &str, &slen, &key))
         {
-            char keystr[200]; /* room for zints to print */
-            char *dst_term = 0;
-            int ord = CAST_ZINT_TO_INT(key.mem[0]);
-            const char *index_type;
-            int i;
-            const char *string_index;
-            
-            zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type,
-                                    0/* db */, &string_index);
-            assert(index_type);
-            zebra_term_untrans_iconv(zh, nmem, index_type,
-                                     &dst_term, str);
-            *keystr = '\0';
-            for (i = 0; i<key.len; i++)
-            {
-                sprintf(keystr + strlen(keystr), ZINT_FORMAT " ", key.mem[i]);
-            }
-
-            if (*str < CHR_BASE_CHAR)
-            {
-                int i;
-                char dst_buf[200]; /* room for special chars */
-
-                strcpy(dst_buf , "?");
-
-                if (!strcmp(str, ""))
-                    strcpy(dst_buf, "alwaysmatches");
-                if (!strcmp(str, FIRST_IN_FIELD_STR))
-                    strcpy(dst_buf, "firstinfield");
-                else if (!strcmp(str, CHR_UNKNOWN))
-                    strcpy(dst_buf, "unknown");
-                else if (!strcmp(str, CHR_SPACE))
-                    strcpy(dst_buf, "space");
-                
-                for (i = 0; i<slen; i++)
-                {
-                    sprintf(dst_buf + strlen(dst_buf), " %d", str[i] & 0xff);
-                }
-                yaz_log(level, "%s%s %s %s", keystr, index_type,
-                        string_index, dst_buf);
-                
-            }
-            else
-                yaz_log(level, "%s%s %s \"%s\"", keystr, index_type,
-                        string_index, dst_term);
-
+            zebra_it_key_str_dump(zh, &key, str, slen, nmem, level);
             nmem_reset(nmem);
         }
         nmem_destroy(nmem);

@@ -434,6 +434,9 @@ RSET zebra_create_rset_isam(ZebraHandle zh,
                             NMEM rset_nmem, struct rset_key_control *kctl,
                             int scope, ISAM_P pos, TERMID termid);
 
+void zebra_it_key_str_dump(ZebraHandle zh, struct it_key *key,
+                           const char *str, size_t slen, NMEM nmem, int level);
+
 YAZ_END_CDECL
 
 #endif
