@@ -995,7 +995,7 @@ static void zebraExplain_writeCategoryList(ZebraExplainInfo zei,
     assert(zcl);
     if (!zcl->dirty)
 	return ;
-    zcl->dirty = 1;
+    zcl->dirty = 0;
     node_categoryList = zcl->data1_categoryList;
 
 #if ZINFO_DEBUG
