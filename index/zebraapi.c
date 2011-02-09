@@ -2196,11 +2196,11 @@ ZEBRA_RES zebra_compact(ZebraHandle zh)
 
 static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
                                     zint *no_keys, int verbose_level,
-                                    int *no_long_dict_entries,
-                                    int *no_failed_dict_lookup,
-                                    int *no_invalid_keys,
-                                    int *no_invalid_dict_infos,
-                                    int *no_invalid_isam_entries
+                                    zint *no_long_dict_entries,
+                                    zint *no_failed_dict_lookups,
+                                    zint *no_invalid_keys,
+                                    zint *no_invalid_dict_infos,
+                                    zint *no_invalid_isam_entries
     )
 {
     ZEBRA_RES res = ZEBRA_OK;
@@ -2260,7 +2260,7 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
             if (!info)
             {
                 do_fail = 1;
-                (*no_failed_dict_lookup)++;
+                (*no_failed_dict_lookups)++;
                 if (verbose_level >= 1)
                 {
                     yaz_log(YLOG_WARN, "Record " ZINT_FORMAT
@@ -2401,29 +2401,31 @@ ZEBRA_RES zebra_register_check(ZebraHandle zh, int verbose_level)
         zint no_records_total = 0;
         zint no_records_fail = 0;
         zint total_keys = 0;
+
+        
         if (zh->reg)
         {
             Record rec = rec_get_root(zh->reg->records);
             
+            zint no_long_dict_entries = 0;
+            zint no_failed_dict_lookups = 0;
+            zint no_invalid_keys = 0;
+            zint no_invalid_dict_infos = 0;
+            zint no_invalid_isam_entries = 0;
+
             res = ZEBRA_OK;
             while (rec)
             {
                 Record r1;
                 zint no_keys;
 
-                int no_long_dict_entries = 0;
-                int no_failed_dict_lookup = 0;
-                int no_invalid_keys = 0;
-                int no_invalid_dict_infos = 0;
-                int no_invalid_isam_entries = 0;
-    
                 if (zebra_record_check(zh, rec, &no_keys, verbose_level,
                                        &no_long_dict_entries,
-                                       &no_failed_dict_lookup,
+                                       &no_failed_dict_lookups,
                                        &no_invalid_keys,
                                        &no_invalid_dict_infos,
                                        &no_invalid_isam_entries
-                                       )
+                        )
                     != ZEBRA_OK)
                 {
                     res = ZEBRA_FAIL;
@@ -2436,9 +2438,20 @@ ZEBRA_RES zebra_register_check(ZebraHandle zh, int verbose_level)
                 no_records_total++;
                 total_keys += no_keys;
             }
-            yaz_log(YLOG_LOG, "records total: " ZINT_FORMAT, no_records_total);
-            yaz_log(YLOG_LOG, "records fail:  " ZINT_FORMAT, no_records_fail);
-            yaz_log(YLOG_LOG, "keys:    " ZINT_FORMAT, total_keys);
+            yaz_log(YLOG_LOG, "records total:        " ZINT_FORMAT,
+                    no_records_total);
+            yaz_log(YLOG_LOG, "records fail:         " ZINT_FORMAT,
+                    no_records_fail);
+            yaz_log(YLOG_LOG, "total keys:           " ZINT_FORMAT,
+                    total_keys);
+            yaz_log(YLOG_LOG, "long dict entries:    " ZINT_FORMAT,
+                    no_long_dict_entries);
+            yaz_log(YLOG_LOG, "failed dict lookups:  " ZINT_FORMAT,
+                    no_failed_dict_lookups);
+            yaz_log(YLOG_LOG, "invalid dict infos:   " ZINT_FORMAT,
+                    no_invalid_dict_infos);
+            yaz_log(YLOG_LOG, "invalid isam entries: " ZINT_FORMAT,
+                    no_invalid_isam_entries);
         }
         zebra_end_read(zh);
     }
