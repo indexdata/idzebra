@@ -32,27 +32,27 @@ mod_grs_xml_la_LIBADD = $(zebralib) $(mod_grs_xml_la_LADD)
 
 mod_grs_marc_la_SOURCES = mod_grs_marc.c marcomp.c marcomp.h inline.c inline.h
 mod_grs_marc_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
-mod_grs_marc_la_LADD =
+mod_grs_marc_la_LADD = $(YAZLALIB)
 mod_grs_marc_la_LIBADD = $(zebralib) $(mod_grs_marc_la_LADD)
 
 mod_safari_la_SOURCES = mod_safari.c
 mod_safari_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
-mod_safari_la_LADD =
+mod_safari_la_LADD = $(YAZLALIB)
 mod_safari_la_LIBADD = $(zebralib) $(mod_safari_la_LADD)
 
 mod_alvis_la_SOURCES = mod_alvis.c
 mod_alvis_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
-mod_alvis_la_LADD =
+mod_alvis_la_LADD = $(YAZLALIB)
 mod_alvis_la_LIBADD = $(zebralib) $(mod_alvis_la_LADD)
 
 mod_dom_la_SOURCES = mod_dom.c
 mod_dom_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
-mod_dom_la_LADD =
+mod_dom_la_LADD = $(YAZLALIB)
 mod_dom_la_LIBADD = $(zebralib) $(mod_dom_la_LADD)
 
 mod_text_la_SOURCES = mod_text.c
 mod_text_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
-mod_text_la_LADD =
+mod_text_la_LADD = $(YAZLALIB)
 mod_text_la_LIBADD = $(zebralib) $(mod_text_la_LADD)
 
 modlib_LTLIBRARIES = $(SHARED_MODULE_LA) 
