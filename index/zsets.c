@@ -905,7 +905,6 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     {
         Z_SortKeySpec *sks = sort_sequence->specs[i];
         Z_SortKey *sk;
-        ZEBRA_RES res;
         
         sort_criteria[i].ord = (int *)
             nmem_malloc(nmem, sizeof(int)*numbases);
@@ -977,13 +976,12 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
             for (ib = 0; ib < numbases; ib++)
             {
                 zebraExplain_curDatabase(zh->reg->zei, zh->basenames[ib]);
-                res = zebra_sort_get_ord(zh, sk->u.sortAttributes,
-                                         &sort_criteria[i].ord[ib],
-                                         &sort_criteria[i].numerical[ib]);
+                if (zebra_sort_get_ord(zh, sk->u.sortAttributes,
+                                       &sort_criteria[i].ord[ib],
+                                       &sort_criteria[i].numerical[ib]) != 
+                    ZEBRA_OK && sks->which != Z_SortKeySpec_null)
+                    return ZEBRA_FAIL;
             }
-            
-            if (sks->which != Z_SortKeySpec_null && res != ZEBRA_OK)
-                return ZEBRA_FAIL;
             break;
         }
         /* right now we look up the index type based on the first database
