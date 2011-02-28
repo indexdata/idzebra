@@ -2195,7 +2195,7 @@ ZEBRA_RES zebra_compact(ZebraHandle zh)
 }
 
 static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
-                                    zint *no_keys, int verbose_level,
+                                    zint *no_keys, int message_limit,
                                     zint *no_long_dict_entries,
                                     zint *no_failed_dict_lookups,
                                     zint *no_invalid_keys,
@@ -2230,12 +2230,25 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
 
             (*no_keys)++;
 
+            if (key_in.len < 2 || key_in.len > IT_KEY_LEVEL_MAX)
+            {
+                res = ZEBRA_FAIL;
+                (*no_invalid_keys)++;
+                if (*no_invalid_keys <= message_limit)
+                {
+                    do_fail = 1;
+                    yaz_log(YLOG_WARN, "Record " ZINT_FORMAT
+                            ": unexpected key length %d",
+                            rec->sysno, key_in.len);
+                }
+            }
             if (ord_len + slen >= sizeof(ord_buf)-1)
             {
-                (*no_long_dict_entries)++;
                 res = ZEBRA_FAIL;
-                if (verbose_level >= 1)
+                (*no_long_dict_entries)++;
+                if (*no_long_dict_entries <= message_limit)
                 {
+                    do_fail = 1;
                     /* so bad it can not fit into our ord_buf */
                     yaz_log(YLOG_WARN, "Record " ZINT_FORMAT
                             ": long dictionary entry %d + %d",
@@ -2247,10 +2260,11 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
             ord_buf[ord_len + slen] = '\0'; 
             if (ord_len + slen >= IT_MAX_WORD)
             {
-                do_fail = 1;
+                res = ZEBRA_FAIL;
                 (*no_long_dict_entries)++;
-                if (verbose_level >= 1)
+                if (*no_long_dict_entries <= message_limit)
                 {
+                    do_fail = 1;
                     yaz_log(YLOG_WARN, "Record " ZINT_FORMAT 
                             ": long dictionary entry %d + %d",
                             rec->sysno, (int) ord_len, (int) slen);
@@ -2259,10 +2273,11 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
             info = dict_lookup(zh->reg->dict, ord_buf);
             if (!info)
             {
-                do_fail = 1;
+                res = ZEBRA_FAIL;
                 (*no_failed_dict_lookups)++;
-                if (verbose_level >= 1)
+                if (*no_failed_dict_lookups <= message_limit)
                 {
+                    do_fail = 1;
                     yaz_log(YLOG_WARN, "Record " ZINT_FORMAT
                             ": term do not exist in dictionary", rec->sysno);
                 }
@@ -2273,10 +2288,11 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
 
                 if (*info != sizeof(pos))
                 {
-                    do_fail = 1;
+                    res = ZEBRA_FAIL;
                     (*no_invalid_dict_infos)++;
-                    if (verbose_level >= 1)
+                    if (*no_invalid_dict_infos <= message_limit)
                     {
+                        do_fail = 1;
                         yaz_log(YLOG_WARN, "Record " ZINT_FORMAT 
                                 ": long dictionary entry %d + %d",
                                 rec->sysno, (int) ord_len, (int) slen);
@@ -2292,10 +2308,11 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
                                                       scope);
                         if (!ispt)
                         {
-                            do_fail = 1;
+                            res = ZEBRA_FAIL;
                             (*no_invalid_isam_entries)++;
-                            if (verbose_level >= 1)
+                            if (*no_invalid_isam_entries <= message_limit)
                             {
+                                do_fail = 1;
                                 yaz_log(YLOG_WARN, "Record " ZINT_FORMAT 
                                         ": isamb_pp_open entry " ZINT_FORMAT
                                         " not found",
@@ -2322,10 +2339,11 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
                             r = isamb_pp_forward(ispt, &isam_key, &until_key);
                             if (r != 1)
                             {
-                                do_fail = 1;
+                                res = ZEBRA_FAIL;
                                 (*no_invalid_isam_entries)++;
-                                if (verbose_level >= 1)
+                                if (*no_invalid_isam_entries <= message_limit)
                                 {
+                                    do_fail = 1;
                                     yaz_log(YLOG_WARN, "Record " ZINT_FORMAT 
                                             ": isamb_pp_forward " ZINT_FORMAT
                                             " returned no entry",
@@ -2337,10 +2355,12 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
                                 int cmp = key_compare(&until_key, &isam_key);
                                 if (cmp != 0)
                                 {
-                                    do_fail = 1;
+                                    res = ZEBRA_FAIL;
                                     (*no_invalid_isam_entries)++;
-                                    if (verbose_level >= 1)
+                                    if (*no_invalid_isam_entries
+                                        <= message_limit)
                                     {
+                                        do_fail = 1;
                                         yaz_log(YLOG_WARN, "Record "
                                                 ZINT_FORMAT 
                                                 ": isamb_pp_forward "
@@ -2365,26 +2385,11 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
                     }
                 }
             }
-            if (key_in.len < 2 || key_in.len > 4)
-            {
-                do_fail = 1;
-                (*no_invalid_keys)++;
-                if (verbose_level >= 1)
-                {
-                    yaz_log(YLOG_WARN, "Record " ZINT_FORMAT
-                            ": unexpected key length %d",
-                            rec->sysno, key_in.len);
-                }
-            }
             if (do_fail)
             {
-                res = ZEBRA_FAIL;
-                if (verbose_level >= 1)
-                {
-                    zebra_it_key_str_dump(zh, &key_in, str,
-                                          slen, nmem, YLOG_LOG);
-                    nmem_reset(nmem);
-                }
+                zebra_it_key_str_dump(zh, &key_in, str,
+                                      slen, nmem, YLOG_LOG);
+                nmem_reset(nmem);
             }
         }
         nmem_destroy(nmem);
@@ -2393,7 +2398,7 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
     return res;
 }
 
-ZEBRA_RES zebra_register_check(ZebraHandle zh, int verbose_level)
+ZEBRA_RES zebra_register_check(ZebraHandle zh, int message_limit)
 {
     ZEBRA_RES res = ZEBRA_FAIL;
     if (zebra_begin_read(zh) == ZEBRA_OK)
@@ -2419,7 +2424,7 @@ ZEBRA_RES zebra_register_check(ZebraHandle zh, int verbose_level)
                 Record r1;
                 zint no_keys;
 
-                if (zebra_record_check(zh, rec, &no_keys, verbose_level,
+                if (zebra_record_check(zh, rec, &no_keys, message_limit,
                                        &no_long_dict_entries,
                                        &no_failed_dict_lookups,
                                        &no_invalid_keys,
