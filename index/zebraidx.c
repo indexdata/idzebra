@@ -179,9 +179,19 @@ int main(int argc, char **argv)
                 }
 		else if (!strncmp(arg, "check", 5))
 		{
-                    if (zebra_register_check(zh, 10) != ZEBRA_OK)
-                        yaz_log(YLOG_WARN, "register check failed");
-		}
+                    const char *spec = 0;
+                    if (arg[5] == ':')
+                        spec = arg + 6;
+                    else if (arg[5] != '\0')
+                    {
+                        yaz_log(YLOG_FATAL, "missing colon after check");
+                        exit(1);
+                    }
+                    if (zebra_register_check(zh, spec) != ZEBRA_OK)
+                    {
+                        yaz_log(YLOG_WARN, "zebra_register_check failed");
+                    }
+ 		}
                 else
                 {
                     yaz_log(YLOG_FATAL, "unknown command: %s", arg);

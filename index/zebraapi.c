@@ -2194,14 +2194,17 @@ ZEBRA_RES zebra_compact(ZebraHandle zh)
     return ZEBRA_OK;
 }
 
+#define ZEBRA_CHECK_DICT 1
+#define ZEBRA_CHECK_ISAM 2
+
 static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
                                     zint *no_keys, int message_limit,
+                                    unsigned flags,
                                     zint *no_long_dict_entries,
                                     zint *no_failed_dict_lookups,
                                     zint *no_invalid_keys,
                                     zint *no_invalid_dict_infos,
-                                    zint *no_invalid_isam_entries
-    )
+                                    zint *no_invalid_isam_entries)
 {
     ZEBRA_RES res = ZEBRA_OK;
     zebra_rec_keys_t keys = zebra_rec_keys_open();
@@ -2270,6 +2273,8 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
                             rec->sysno, (int) ord_len, (int) slen);
                 }
             }
+            if ((flags & ZEBRA_CHECK_DICT) == 0)
+                continue;
             info = dict_lookup(zh->reg->dict, ord_buf);
             if (!info)
             {
@@ -2282,7 +2287,7 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
                             ": term do not exist in dictionary", rec->sysno);
                 }
             }
-            else
+            else if (flags & ZEBRA_CHECK_ISAM)
             {
                 ISAM_P pos;
 
@@ -2398,16 +2403,30 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
     return res;
 }
 
-ZEBRA_RES zebra_register_check(ZebraHandle zh, int message_limit)
+ZEBRA_RES zebra_register_check(ZebraHandle zh, const char *spec)
 {
     ZEBRA_RES res = ZEBRA_FAIL;
+    unsigned flags = 0;
+    int message_limit = 10;
+    
+    if (!spec || *spec == '\0'
+        || !strcmp(spec, "dict") || !strcmp(spec, "default"))
+        flags = ZEBRA_CHECK_DICT;
+    else if (!strcmp(spec, "isam") || !strcmp(spec, "full"))
+        flags = ZEBRA_CHECK_DICT|ZEBRA_CHECK_ISAM;
+    else if (!strcmp(spec, "quick"))
+        flags = 0;
+    else
+        return ZEBRA_FAIL;
+
+    yaz_log(YLOG_LOG, "zebra_register_check begin flags=%u message_limit=%d",
+            flags, message_limit);
     if (zebra_begin_read(zh) == ZEBRA_OK)
     {
         zint no_records_total = 0;
         zint no_records_fail = 0;
         zint total_keys = 0;
 
-        
         if (zh->reg)
         {
             Record rec = rec_get_root(zh->reg->records);
@@ -2425,6 +2444,7 @@ ZEBRA_RES zebra_register_check(ZebraHandle zh, int message_limit)
                 zint no_keys;
 
                 if (zebra_record_check(zh, rec, &no_keys, message_limit,
+                                       flags,
                                        &no_long_dict_entries,
                                        &no_failed_dict_lookups,
                                        &no_invalid_keys,
@@ -2451,15 +2471,20 @@ ZEBRA_RES zebra_register_check(ZebraHandle zh, int message_limit)
                     total_keys);
             yaz_log(YLOG_LOG, "long dict entries:    " ZINT_FORMAT,
                     no_long_dict_entries);
-            yaz_log(YLOG_LOG, "failed dict lookups:  " ZINT_FORMAT,
-                    no_failed_dict_lookups);
-            yaz_log(YLOG_LOG, "invalid dict infos:   " ZINT_FORMAT,
-                    no_invalid_dict_infos);
-            yaz_log(YLOG_LOG, "invalid isam entries: " ZINT_FORMAT,
-                    no_invalid_isam_entries);
+            if (flags & ZEBRA_CHECK_DICT)
+            {
+                yaz_log(YLOG_LOG, "failed dict lookups:  " ZINT_FORMAT,
+                        no_failed_dict_lookups);
+                yaz_log(YLOG_LOG, "invalid dict infos:   " ZINT_FORMAT,
+                        no_invalid_dict_infos);
+            }
+            if (flags & ZEBRA_CHECK_ISAM)
+                yaz_log(YLOG_LOG, "invalid isam entries: " ZINT_FORMAT,
+                        no_invalid_isam_entries);
         }
         zebra_end_read(zh);
     }
+    yaz_log(YLOG_LOG, "zebra_register_check end ret=%d", res);
     return res;
 }
 

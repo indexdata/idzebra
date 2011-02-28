@@ -511,7 +511,7 @@ ZEBRA_RES zebra_set_break_handler(ZebraHandle zh,
                                   void *client_data);
 
 YAZ_EXPORT
-ZEBRA_RES zebra_register_check(ZebraHandle zh, int message_limit);
+ZEBRA_RES zebra_register_check(ZebraHandle zh, const char *spec);
 
 YAZ_END_CDECL				      
 
