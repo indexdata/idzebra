@@ -84,6 +84,7 @@ int main(int argc, char **argv)
         " drop <db>     Drop database <db>\n"
         " commit        Commit changes\n"
         " clean         Clean shadow files\n"
+        " check:mode    Check register; mode is one of: default, full, quick\n"
         "Options:\n"
 	" -t <type>     Index files as <type> (grs or text).\n"
 	" -c <config>   Read configuration file <config>.\n"
