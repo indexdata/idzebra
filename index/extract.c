@@ -47,11 +47,18 @@ static int log_level_initialized = 0;
 /* eventually this the 0-case code will be removed */
 #define FLUSH2 1
 
-void extract_flush_record_keys2(ZebraHandle zh, zint sysno,
-                                zebra_rec_keys_t ins_keys,
-                                zint ins_rank,
-                                zebra_rec_keys_t del_keys,
-                                zint del_rank);
+#if FLUSH2
+static void extract_flush_record_keys2(ZebraHandle zh, zint sysno,
+                                       zebra_rec_keys_t ins_keys,
+                                       zint ins_rank,
+                                       zebra_rec_keys_t del_keys,
+                                       zint del_rank);
+#else
+static void extract_flush_record_keys(ZebraHandle zh, zint sysno,
+                                      int cmd,
+                                      zebra_rec_keys_t reckeys,
+                                      zint staticrank);
+#endif
 
 static void zebra_init_log_level(void)
 {
@@ -1455,9 +1462,53 @@ void extract_rec_keys_adjust(ZebraHandle zh, int is_insert,
     }
 }
 
-void extract_flush_record_keys2(ZebraHandle zh, zint sysno,
-                                zebra_rec_keys_t ins_keys, zint ins_rank,
-                                zebra_rec_keys_t del_keys, zint del_rank)
+static void extract_flush_record_keys(
+    ZebraHandle zh, zint sysno, int cmd,
+    zebra_rec_keys_t reckeys,
+    zint staticrank)
+{
+    ZebraExplainInfo zei = zh->reg->zei;
+
+    extract_rec_keys_adjust(zh, cmd, reckeys);
+
+    if (log_level_details)
+    {
+        yaz_log(log_level_details, "Keys for record " ZINT_FORMAT " %s",
+                sysno, cmd ? "insert" : "delete");
+        extract_rec_keys_log(zh, cmd, reckeys, log_level_details);
+    }
+
+    if (!zh->reg->key_block)
+    {
+        int mem = 1024*1024 * atoi( res_get_def( zh->res, "memmax", "8"));
+        const char *key_tmp_dir = res_get_def(zh->res, "keyTmpDir", ".");
+        int use_threads = atoi(res_get_def(zh->res, "threads", "1"));
+        zh->reg->key_block = key_block_create(mem, key_tmp_dir, use_threads);
+    }
+    zebraExplain_recordCountIncrement(zei, cmd ? 1 : -1);
+
+#if 0
+    yaz_log(YLOG_LOG, "sysno=" ZINT_FORMAT " cmd=%d", sysno, cmd);
+    print_rec_keys(zh, reckeys);
+#endif
+    if (zebra_rec_keys_rewind(reckeys))
+    {
+        size_t slen;
+        const char *str;
+        struct it_key key_in;
+        while(zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
+        {
+            key_block_write(zh->reg->key_block, sysno, 
+                            &key_in, cmd, str, slen,
+                            staticrank, zh->m_staticrank);
+        }
+    }
+}
+
+static void extract_flush_record_keys2(
+    ZebraHandle zh, zint sysno,
+    zebra_rec_keys_t ins_keys, zint ins_rank,
+    zebra_rec_keys_t del_keys, zint del_rank)
 {
     ZebraExplainInfo zei = zh->reg->zei;
     int normal = 0;
