@@ -313,39 +313,27 @@ static void r_pos(RSFD rfd, double *current, double *total)
     RSET ct = rfd->rset;
     struct rset_prox_rfd *p = (struct rset_prox_rfd *)(rfd->priv);
     int i;
-    double r = 0.0;
-    double cur, tot = -1.0;
-    double scur = 0.0, stot = 0.0;
-
-    yaz_log(YLOG_DEBUG, "rsprox_pos");
-
+    double ratio = 0.0;
+    
     for (i = 0; i < ct->no_children; i++)
     {
-        rset_pos(p->rfd[i],  &cur, &tot);
-        if (tot > 0)
+        double cur, tot;
+        rset_pos(p->rfd[i], &cur, &tot);
+        if (tot > 0.0)
         {
-            scur += cur;
-            stot += tot;
+            double nratio = cur / tot;
+            if (ratio < nratio)
+                ratio = nratio;
         }
     }
-    if (tot < 0)
-    {  /* nothing found */
-        *current = -1;
-        *total = -1;
-    }
-    else if (tot < 1)
-    { /* most likely tot==0 */
-        *current = 0;
-        *total = 0;
-    }
+    *current = (double) p->hits;
+    if (ratio > 0.0)
+        *total = *current/ratio;
     else
-    {
-        r = scur/stot; 
-        *current = (double) p->hits;
-        *total = *current/r ; 
-    }
-    yaz_log(YLOG_DEBUG,"prox_pos: [%d] %0.1f/%0.1f= %0.4f ",
-            i,*current, *total, r);
+        *total = 0.0;
+    
+    yaz_log(YLOG_DEBUG, "prox_pos: [%d] %0.1f/%0.1f= %0.4f ",
+            i, *current, *total, ratio);
 }
 
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
