@@ -1,3 +1,10 @@
+--- 2.0.46 2011/03/23
+
+Fix bug in dictionary component of Zebra that could lead to
+inconsistent register assert for large deleteions.
+
+Improve estimate hits for phrase searches.
+
 --- 2.0.45 2010/12/22
 
 Add Debian package for Ubuntu maverick.
