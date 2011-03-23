@@ -207,19 +207,31 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
                         ((char*) p+DICT_bsize(p)-sizeof(short));
                     info = (char*)p - indxp[-mid];
 
+                    subptr = 0; /* avoid dict_del_subtree (end of function)*/
                     if (r == 2)
-                    {   /* subptr page is empty and already removed */
-                        hi = DICT_nodir(p)-1;
-                        while (mid < hi)
+                    {   /* subptr page became empty and is removed */
+                        
+                        /* see if this entry is a real one or if it just
+                           serves as pointer to subptr */
+                        if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
                         {
-                            indxp[-mid] = indxp[-mid-1];
-                            mid++;
+                            /* this entry do exist, set subptr to 0 */
+                            memcpy(info, &subptr, sizeof(subptr));
                         }
-                        (DICT_nodir(p))--;
+                        else
+                        {
+                            /* this entry ONLY points to subptr. remove it */
+                            hi = DICT_nodir(p)-1;
+                            while (mid < hi)
+                            {
+                                indxp[-mid] = indxp[-mid-1];
+                                mid++;
+                            }
+                            (DICT_nodir(p))--;
+                        }
                         dict_bf_touch(dict->dbf, ptr);
                         r = 1;
                     }
-                    subptr = 0; /* prevent dict_del_subtree (below) */
                 }
                 break;
             }
