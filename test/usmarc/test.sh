@@ -3,6 +3,7 @@ test -d tmp || mkdir tmp
 test -d lock || mkdir lock
 echo Loading Records
 if [ -x ../../index/zebraidx ]; then
+	../../index/zebraidx init
 	../../index/zebraidx update records
 fi
 echo Starting Server
