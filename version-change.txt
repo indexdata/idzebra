@@ -5,4 +5,4 @@ configure.ac:  AC_INIT, PACKAGE_SUFFIX, ZEBRALIBS_VERSION_INFO
  
 debian/changelog + debian/rules
 
-idzebra.spec.in
+idzebra.spec
