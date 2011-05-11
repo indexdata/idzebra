@@ -146,11 +146,6 @@ static int scan_handle2(char *name, const char *info, int pos, void *client)
     len_prefix = strlen(scan_info->prefix);
     if (memcmp(name, scan_info->prefix, len_prefix))
         return 1;
-
-    /* skip special terms such as first-in-field specials */
-    if (name[len_prefix] < CHR_BASE_CHAR)
-        return 1;
-
     wrbuf_rewind(scan_info->term);
     wrbuf_puts(scan_info->term, name+len_prefix);
 
@@ -184,29 +179,32 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
     {
         if (ar[i].isam_p && strcmp(wrbuf_cstr(ar[i].term), term) == 0)
         {
-            struct ord_list *ol = ord_list_create(nmem);
-            RSET rset_t;
-
-            ol = ord_list_append(nmem, ol, ar[i].ord);
-
-            assert(ol);
-            rset_t = rset_trunc(
+            if (strcmp(term, FIRST_IN_FIELD_STR))
+            {
+                struct ord_list *ol = ord_list_create(nmem);
+                RSET rset_t;
+                
+                ol = ord_list_append(nmem, ol, ar[i].ord);
+                
+                assert(ol);
+                rset_t = rset_trunc(
                     zh, &ar[i].isam_p, 1,
                     wrbuf_buf(ar[i].term), wrbuf_len(ar[i].term),
                     NULL, 1, zapt->term->which, nmem, 
                     kc, kc->scope, ol, index_type, 
                     0 /* hits_limit_value */,
                     0 /* term_ref_id_str */);
-            if (!rset)
-                rset = rset_t;
-            else
-            {
-                RSET rsets[2];
-                
-                rsets[0] = rset;
-                rsets[1] = rset_t;
-                rset = rset_create_or(nmem, kc, kc->scope, 0 /* termid */,
-                                      2, rsets);
+                if (!rset)
+                    rset = rset_t;
+                else
+                {
+                    RSET rsets[2];
+                    
+                    rsets[0] = rset;
+                    rsets[1] = rset_t;
+                    rset = rset_create_or(nmem, kc, kc->scope, 0 /* termid */,
+                                          2, rsets);
+                }
             }
             ar[i].isam_p = 0;
         }
@@ -375,7 +373,6 @@ static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
     {
         /* did not get all terms; adjust the real position and reduce
            number of entries */
-        yaz_log(YLOG_LOG, "before terms dif=%d", dif);
         glist = glist + dif;
         *num_entries -= dif;
         *position -= dif;
