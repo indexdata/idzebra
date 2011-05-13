@@ -253,9 +253,7 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
         se->subqueryExpression->u.term->termComment = 0;
         se->subqueryInterpretation = 0;
         se->subqueryRecommendation = 0;
-	if (count > 2147483646)
-	    count = 2147483647;
-        se->subqueryCount = odr_intdup(r->stream, CAST_ZINT_TO_INT(count));
+        se->subqueryCount = odr_intdup(r->stream, count);
         se->subqueryWeight = 0;
         se->resultsByDB = 0;
     }
@@ -296,9 +294,7 @@ int bend_search(void *handle, bend_search_rr *r)
 	    zebra_result(zh, &r->errcode, &r->errstring);
 	else
 	{
-	    if (zhits > 2147483646)
-		zhits = 2147483647;
-            r->hits = CAST_ZINT_TO_INT(zhits);
+            r->hits = zhits;
             search_terms(zh, r);
 	}
         break;
@@ -382,8 +378,7 @@ static int bend_scan(void *handle, bend_scan_rr *r)
 	{
 	    r->entries[i].term = entries[i].term;
 	    r->entries[i].display_term = entries[i].display_term;
-	    r->entries[i].occurrences =
-                CAST_ZINT_TO_INT(entries[i].occurrences);
+            r->entries[i].occurrences = entries[i].occurrences;
 	}
     }
     else
