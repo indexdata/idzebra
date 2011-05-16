@@ -35,7 +35,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/ill.h>
 #include <yaz/yaz-util.h>
 #include <yaz/diagbib1.h>
-
+#include <yaz/querytowrbuf.h>
+#include <yaz/pquery.h>
 #include <sys/types.h>
 
 #include <yaz/backend.h>
@@ -259,7 +260,6 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
     }
 }
 
-
 static int break_handler(void *client_data)
 {
     bend_association assoc =(bend_association) client_data;    
@@ -268,11 +268,78 @@ static int break_handler(void *client_data)
     return 0;
 }
 
+static Z_RPNQuery *query_add_sortkeys(ODR o, Z_RPNQuery *query,
+                                      const char *sortKeys)
+{
+    /* sortkey layour: path,schema,ascending,caseSensitive,missingValue */
+    /* see cql_sortby_to_sortkeys of YAZ. */
+    char **sortspec;
+    int num_sortspec;
+    int i;
+
+    nmem_strsplit_blank(odr_getmem(o), sortKeys, &sortspec, &num_sortspec);
+    if (num_sortspec > 0)
+    {
+        Z_RPNQuery *nquery;
+        WRBUF w = wrbuf_alloc();
+
+        /* left operand 'd' will be replaced by original query */
+        wrbuf_puts(w, "@or d");
+        for (i = 0; i < num_sortspec; i++)
+        {
+            char **arg;
+            int num_arg;
+            int ascending = 1;
+            nmem_strsplitx(odr_getmem(o), ",", sortspec[i], &arg, &num_arg, 0);
+            
+            if (num_arg != 5)
+            {
+                yaz_log(YLOG_WARN, "Invalid sort spec '%s' num_arg=%d",
+                        sortspec[i], num_arg);
+                break;
+            }
+            if (arg[2][0])
+                ascending = atoi(arg[2]);
+            
+            if (i < num_sortspec-1)
+                wrbuf_puts(w, " @or");
+            wrbuf_puts(w, " @attr 1=");
+            yaz_encode_pqf_term(w, arg[0], strlen(arg[0]));
+            wrbuf_printf(w, "@attr 7=%d %d", ascending ? 1 : 2, i);
+        }
+        nquery = p_query_rpn(o, wrbuf_cstr(w));
+        if (!nquery)
+        {
+            yaz_log(YLOG_WARN, "query_add_sortkeys: bad RPN: '%s'",
+                    wrbuf_cstr(w));
+        }
+        else
+        {
+            Z_RPNStructure *s = nquery->RPNStructure;
+            
+            if (s->which != Z_RPNStructure_complex)
+            {
+                yaz_log(YLOG_WARN, "query_add_sortkeys: not complex operand");
+            }
+            else
+            {
+                /* left operand 'd' is replaced by origial query */
+                s->u.complex->s1 = query->RPNStructure;
+                /* and original query points to our new or+sort things */
+                query->RPNStructure = s;
+            }
+        }
+        wrbuf_destroy(w);
+    }
+    return query;
+}
+
 int bend_search(void *handle, bend_search_rr *r)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     zint zhits = 0;
     ZEBRA_RES res;
+    Z_RPNQuery *q2;
 
     res = zebra_select_databases(zh, r->num_bases,
 				  (const char **) r->basenames);
@@ -286,7 +353,8 @@ int bend_search(void *handle, bend_search_rr *r)
     switch (r->query->which)
     {
     case Z_Query_type_1: case Z_Query_type_101:
-	res = zebra_search_RPN_x(zh, r->stream, r->query->u.type_1,
+        q2 = query_add_sortkeys(r->stream, r->query->u.type_1, r->srw_sortKeys);
+	res = zebra_search_RPN_x(zh, r->stream, q2,
                                  r->setname, &zhits,
                                  &r->estimated_hit_count,
                                  &r->partial_resultset);
