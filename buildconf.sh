@@ -103,12 +103,10 @@ Or just build the Debian packages without configuring
   dpkg-buildpackage -rfakeroot
 
 When building from Git, you need these Debian packages:
-  autoconf, automake, libtool, gcc, bison, any tcl,
-  xsltproc, docbook, docbook-xml, docbook-xsl,
-  libxslt1-dev, libssl-dev, libreadline5-dev, libwrap0-dev,
-  libpcap0.8-dev
-
-Also perhaps: libgnutls-dev libicu-dev
+  autoconf automake libtool gcc tcl8.4
+  xsltproc docbook docbook-xml docbook-xsl inkscape
+  libxslt1-dev libgnutls-dev libreadline5-dev libexpat1-dev
+  pkg-config libexpat1-dev
 
 And if you want to make a Debian package: dpkg-dev fakeroot debhelper
 (Then run "dpkg-buildpackage -rfakeroot" in this directory.)
