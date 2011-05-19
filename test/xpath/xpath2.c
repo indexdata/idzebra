@@ -17,6 +17,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "../api/testlib.h"
 
 /** xpath2.c - index a a bit more complex sgml record and search in it */

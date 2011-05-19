@@ -17,6 +17,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "testlib.h"
 
 static void create_search_drop(ZebraHandle zh)

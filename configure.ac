@@ -3,6 +3,7 @@ dnl   Copyright (C) 1994-2011 Index Data
 dnl
 AC_PREREQ(2.60)
 AC_INIT([idzebra],[2.0.46],[zebra-help@indexdata.dk])
+AC_CONFIG_HEADERS(include/config.h)
 AC_CONFIG_SRCDIR(configure.ac)
 AC_CONFIG_AUX_DIR(config)
 AM_INIT_AUTOMAKE([1.9])
@@ -23,7 +24,6 @@ dnl ------ Checking programs
 AC_PROG_CC
 AC_PROG_CPP
 AM_PROG_LIBTOOL
-AC_DEFINE_UNQUOTED(HOST_TRIPLET,"${host}")
 dnl
 dnl ------ headers
 AC_CHECK_HEADERS([sys/resource.h sys/time.h sys/wait.h sys/utsname.h unistd.h])
@@ -102,33 +102,6 @@ dnl
 dnl ------ various functions
 AC_CHECK_FUNCS(mkstemp atoll)
 dnl
-dnl ------ GNU Readline
-READLINE_SHARED_LIBADD=""
-AC_CHECK_LIB(ncurses, tgetent, [READLINE_SHARED_LIBADD="-lncurses"],
-    AC_CHECK_LIB(termcap, tgetent, [READLINE_SHARED_LIBADD="-ltermcap"])
-)
-READLINE_LIBS=""
-AC_CHECK_LIB(readline, readline, [READLINE_LIBS="$READLINE_LIBS -lreadline $READLINE_SHARED_LIBADD"],,$READLINE_SHARED_LIBADD)
-AC_CHECK_LIB(history, add_history, [READLINE_LIBS="$READLINE_LIBS -lhistory"])
-if test "$ac_cv_lib_readline_readline" = "yes"; then
-    AC_CHECK_HEADERS(readline/readline.h readline/history.h)
-    xLIBS=$LIBS
-    LIBS="$LIBS $READLINE_LIBS"
-    AC_TRY_LINK([
-        #include <stdio.h>
-        #include <readline/readline.h>
-        ],[
-	    rl_attempted_completion_over = 0;
-	    ],AC_DEFINE(HAVE_READLINE_COMPLETION_OVER))
-    AC_TRY_LINK([
-        #include <stdio.h>
-        #include <readline/readline.h>
-	    ],[
-	    rl_completion_matches (0, 0);
-	    ],AC_DEFINE(HAVE_READLINE_RL_COMPLETION_MATCHES))
-    LIBS=$xLIBS
-fi
-dnl
 dnl ------ iconv
 AC_ARG_WITH(iconv, [  --with-iconv[=DIR]        iconv library in DIR])
 if test "$with_iconv" != "no"; then
@@ -144,7 +117,7 @@ if test "$with_iconv" != "no"; then
 	    ],[
 	    iconv_t t = iconv_open("", "");
 	    ],[
-	    AC_DEFINE(HAVE_ICONV_H)
+	    AC_DEFINE([HAVE_ICONV_H],[1],[Whether iconv.h is defined])
 	    AC_MSG_RESULT(yes)
 	    ],[
 	    LIBS="$LIBS -liconv"
@@ -153,7 +126,7 @@ if test "$with_iconv" != "no"; then
 		    ],[
 		    iconv_t t = iconv_open("", "");
 		    ],[
-		    AC_DEFINE(HAVE_ICONV_H)
+		    AC_DEFINE([HAVE_ICONV_H],[1])
 		    AC_MSG_RESULT(yes)
 		    ],[
 		    LIBS="$oldLIBS"
@@ -214,7 +187,7 @@ else
     ZINT_VALUE=0
 fi 
 ZEBRA_CFLAGS="-DZEBRA_ZINT=${ZINT_VALUE}"
-AC_DEFINE_UNQUOTED(ZEBRA_ZINT,${ZINT_VALUE})
+AC_DEFINE_UNQUOTED([ZEBRA_ZINT],${ZINT_VALUE},[Whehter zint is long long])
 dnl ------ Modules
 AC_SUBST(SHARED_MODULE_LA)
 SHARED_MODULE_LA=""
@@ -254,15 +227,19 @@ AC_DEFUN([ZEBRA_MODULE],[
 	fi
 	])
 
-AC_DEFINE(IDZEBRA_STATIC_GRS_SGML)
+AC_DEFINE([IDZEBRA_STATIC_GRS_SGML],[1],[Whether module grs.sgml is static])
+AC_DEFINE([IDZEBRA_STATIC_TEXT],[0],[Whether module text is static])
 ZEBRA_MODULE(text,shared,    [  --enable-mod-text       Text filter])
+AC_DEFINE([IDZEBRA_STATIC_GRS_REGX],[0],[Whether module grs.regx is static])
 ZEBRA_MODULE(grs-regx,shared,[  --enable-mod-grs-regx   REGX/TCL filter])
+AC_DEFINE([IDZEBRA_STATIC_GRS_MARC],[0],[Whether module grs.marc is static])
 ZEBRA_MODULE(grs-marc,shared,[  --enable-mod-grs-marc   MARC filter])
 if test "$ac_cv_header_expat_h" = "yes"; then
     def="shared"
 else
     def="disabled"
 fi
+AC_DEFINE([IDZEBRA_STATIC_GRS_XML],[0],[Whether module grs.xml is static])
 ZEBRA_MODULE(grs-xml,[$def], [  --enable-mod-grs-xml    XML filter (Expat based)])
 oldCPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS $YAZINC"
@@ -286,8 +263,11 @@ AC_PREPROC_IFELSE(
    [def="shared"],
    [def="disabled"])
 CPPFLAGS=$oldCPPFLAGS
+AC_DEFINE([IDZEBRA_STATIC_DOM],[0],[Whether module dom is static])
 ZEBRA_MODULE(dom,[$def],   [  --enable-mod-dom        XML/XSLT filter (Requires libxslt)])
+AC_DEFINE([IDZEBRA_STATIC_ALVIS],[0],[Whether module alvis is static])
 ZEBRA_MODULE(alvis,[$def], [  --enable-mod-alvis      ALVIS filter (Requires libxslt)])
+AC_DEFINE([IDZEBRA_STATIC_SAFARI],[0],[Whether module safari is static])
 ZEBRA_MODULE(safari,shared,[  --enable-mod-safari     Safari filter (DBC)])
 
 dnl ------ ANSI C Header files

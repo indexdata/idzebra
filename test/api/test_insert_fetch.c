@@ -19,6 +19,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /* insert a small pile of records, search and fetch them */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "testlib.h"
 
 const char *myrec[] = {

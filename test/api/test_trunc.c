@@ -19,6 +19,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /* Insert a number of randomly generated words and truncate */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "testlib.h"
 
 static void tst(int argc, char **argv)

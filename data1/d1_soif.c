@@ -24,6 +24,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * concatenating the tag names at each level.
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <yaz/wrbuf.h>
 #include <idzebra/data1.h>
 

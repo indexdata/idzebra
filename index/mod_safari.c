@@ -17,6 +17,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <yaz/oid_db.h>
 #include <stdio.h>
 #include <assert.h>
@@ -299,7 +302,7 @@ static struct recType filter_type2 = {
 };
 
 RecType
-#ifdef IDZEBRA_STATIC_SAFARI
+#if IDZEBRA_STATIC_SAFARI
 idzebra_filter_safari
 #else
 idzebra_filter

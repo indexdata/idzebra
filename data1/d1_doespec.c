@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *   
  *  See http://www.loc.gov/z3950/agency/defns/variant1.html
  */
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <assert.h>
 #include <stdlib.h>
 

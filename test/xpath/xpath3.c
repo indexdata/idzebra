@@ -17,6 +17,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "../api/testlib.h"
 
 /** xpath3.c - attributes, with Danish characters */
@@ -27,7 +30,7 @@ const char *myrec[] = {
     "  <first attr=\"danish\">content</first> \n"
     "  <second attr=\"danish lake\">content</second> \n"
     "  <!-- Oslash in Latin-1 encoded below.. --> \n"
-    "  <third attr=\"dansk sø\">content<third> \n"
+    "  <third attr=\"dansk s\xf8\">content</third> \n"
     "</root> \n",
     0};
 

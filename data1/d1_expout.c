@@ -21,6 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * This module converts data1 tree to Z39.50 Explain records  
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>

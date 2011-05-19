@@ -19,6 +19,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /* converts data1 tree to XML record */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <string.h>
 
 #include <idzebra/data1.h>

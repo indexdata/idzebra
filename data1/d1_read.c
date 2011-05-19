@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * This module reads "loose" SGML and converts it to data1 tree 
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

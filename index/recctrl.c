@@ -18,6 +18,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
@@ -55,7 +58,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 {
     struct recTypeClass *rts = 0;
 
-#ifdef IDZEBRA_STATIC_GRS_SGML
+#if IDZEBRA_STATIC_GRS_SGML
     if (1)
     {
 	extern RecType idzebra_filter_grs_sgml[];
@@ -63,7 +66,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     }
 #endif
 
-#ifdef IDZEBRA_STATIC_TEXT
+#if IDZEBRA_STATIC_TEXT
     if (1)
     {
 	extern RecType idzebra_filter_text[];
@@ -71,7 +74,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     }
 #endif
 
-#ifdef IDZEBRA_STATIC_GRS_XML
+#if IDZEBRA_STATIC_GRS_XML
 #if HAVE_EXPAT_H
     if (1)
     {
@@ -81,7 +84,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 #endif
 #endif
 
-#ifdef IDZEBRA_STATIC_GRS_REGX
+#if IDZEBRA_STATIC_GRS_REGX
     if (1)
     {
 	extern RecType idzebra_filter_grs_regx[];
@@ -89,7 +92,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     }
 #endif
 
-#ifdef IDZEBRA_STATIC_GRS_MARC
+#if IDZEBRA_STATIC_GRS_MARC
     if (1)
     {
 	extern RecType idzebra_filter_grs_marc[];
@@ -97,7 +100,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     }
 #endif
 
-#ifdef IDZEBRA_STATIC_SAFARI
+#if IDZEBRA_STATIC_SAFARI
     if (1)
     {
 	extern RecType idzebra_filter_safari[];
@@ -105,7 +108,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     }
 #endif
 
-#ifdef IDZEBRA_STATIC_ALVIS
+#if IDZEBRA_STATIC_ALVIS
     if (1)
     {
 	extern RecType idzebra_filter_alvis[];
@@ -113,7 +116,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     }
 #endif
 
-#ifdef IDZEBRA_STATIC_DOM
+#if IDZEBRA_STATIC_DOM
     if (1)
     {
 	extern RecType idzebra_filter_dom[];

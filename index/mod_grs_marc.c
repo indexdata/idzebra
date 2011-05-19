@@ -17,6 +17,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <stdio.h>
 #include <ctype.h>
 #include <assert.h>
@@ -892,7 +895,7 @@ static struct recType marcxml_type = {
 };
 
 RecType
-#ifdef IDZEBRA_STATIC_GRS_MARC
+#if IDZEBRA_STATIC_GRS_MARC
 idzebra_filter_grs_marc
 #else
 idzebra_filter

@@ -21,6 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * TODO:
  *   Reduction to lower categories in isamc_merge
  */
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>

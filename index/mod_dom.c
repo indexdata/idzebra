@@ -17,6 +17,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
@@ -1561,7 +1564,7 @@ static struct recType filter_type = {
 };
 
 RecType
-#ifdef IDZEBRA_STATIC_DOM
+#if IDZEBRA_STATIC_DOM
 idzebra_filter_dom
 #else
 idzebra_filter

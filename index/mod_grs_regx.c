@@ -17,6 +17,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -2014,7 +2017,7 @@ static struct recType tcl_type = {
 #endif
 
 RecType
-#ifdef IDZEBRA_STATIC_GRS_REGX
+#if IDZEBRA_STATIC_GRS_REGX
 idzebra_filter_grs_regx
 #else
 idzebra_filter
