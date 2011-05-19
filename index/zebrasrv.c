@@ -17,6 +17,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -274,10 +277,11 @@ static Z_RPNQuery *query_add_sortkeys(ODR o, Z_RPNQuery *query,
     /* sortkey layour: path,schema,ascending,caseSensitive,missingValue */
     /* see cql_sortby_to_sortkeys of YAZ. */
     char **sortspec;
-    int num_sortspec;
+    int num_sortspec = 0;
     int i;
 
-    nmem_strsplit_blank(odr_getmem(o), sortKeys, &sortspec, &num_sortspec);
+    if (sortKeys)
+        nmem_strsplit_blank(odr_getmem(o), sortKeys, &sortspec, &num_sortspec);
     if (num_sortspec > 0)
     {
         Z_RPNQuery *nquery;
