@@ -37,6 +37,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/log.h>
 #include <yaz/ill.h>
 #include <yaz/yaz-util.h>
+#include <yaz/yaz-version.h>
 #include <yaz/diagbib1.h>
 #include <yaz/querytowrbuf.h>
 #include <yaz/pquery.h>
@@ -274,6 +275,7 @@ static int break_handler(void *client_data)
 static Z_RPNQuery *query_add_sortkeys(ODR o, Z_RPNQuery *query,
                                       const char *sortKeys)
 {
+#if YAZ_VERSIONL >= 0x40200
     /* sortkey layour: path,schema,ascending,caseSensitive,missingValue */
     /* see cql_sortby_to_sortkeys of YAZ. */
     char **sortspec;
@@ -335,6 +337,12 @@ static Z_RPNQuery *query_add_sortkeys(ODR o, Z_RPNQuery *query,
         }
         wrbuf_destroy(w);
     }
+#else
+    if (sortKeys)
+    {
+        yaz_log(YLOG_WARN, "sortkeys ignored because YAZ version < 4.2.0");
+    }
+#endif
     return query;
 }
 
