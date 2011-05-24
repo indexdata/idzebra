@@ -2,7 +2,7 @@ dnl This file is part of the Zebra server.
 dnl   Copyright (C) 1994-2011 Index Data
 dnl
 AC_PREREQ(2.60)
-AC_INIT([idzebra],[2.0.46],[zebra-help@indexdata.dk])
+AC_INIT([idzebra],[2.0.47],[zebra-help@indexdata.dk])
 AC_CONFIG_HEADERS(include/config.h)
 AC_CONFIG_SRCDIR(configure.ac)
 AC_CONFIG_AUX_DIR(config)

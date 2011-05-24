@@ -1,3 +1,13 @@
+--- 2.0.47 2011/05/24
+
+RPM: Store libraries in /usr/lib64 on 64-bit platforms.
+
+Zebra honors SRU sortkeys. If used with YAZ 4.2.0 or later,
+CQL sortby is honored as well.
+
+Fix scan's handling of normalized terms. Some terms were incorrectly
+ignored in the scan results, CJK terms in particular.
+
 --- 2.0.46 2011/03/23
 
 Fix bug in dictionary component of Zebra that could lead to

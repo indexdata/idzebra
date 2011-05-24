@@ -1,5 +1,5 @@
 Name: idzebra-2.0
-Version: 2.0.46
+Version: 2.0.47
 Release: 1indexdata
 Requires: lib%{name}-modules = %{version}
 License: GPL
