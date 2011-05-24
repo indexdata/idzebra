@@ -48,18 +48,20 @@ Development libraries for the Zebra search engine.
 %build
 
 CFLAGS="$RPM_OPT_FLAGS" \
- ./configure --prefix=/usr --enable-shared --with-yaz=/usr/bin
+ ./configure --prefix=/usr --libdir=%{_libdir} --mandir=%{_mandir}\
+	--enable-shared --with-yaz=/usr/bin
 make CFLAGS="$RPM_OPT_FLAGS"
 
 %install
 rm -fr ${RPM_BUILD_ROOT}
-make prefix=${RPM_BUILD_ROOT}/usr mandir=${RPM_BUILD_ROOT}/usr/share/man install
-rm ${RPM_BUILD_ROOT}/usr/lib/*.la
-rm ${RPM_BUILD_ROOT}/usr/bin/zebraidx
-rm ${RPM_BUILD_ROOT}/usr/share/man/man1/zebraidx.*
-rm ${RPM_BUILD_ROOT}/usr/bin/zebrasrv
-rm ${RPM_BUILD_ROOT}/usr/share/man/man8/zebrasrv.*
-rm ${RPM_BUILD_ROOT}/usr/share/man/man1/idzebra-config.*
+make prefix=${RPM_BUILD_ROOT}/usr mandir=${RPM_BUILD_ROOT}/%{_mandir} \
+        libdir=${RPM_BUILD_ROOT}/%{_libdir} install
+rm ${RPM_BUILD_ROOT}/%{_libdir}/*.la
+rm ${RPM_BUILD_ROOT}/%{_bindir}/zebraidx
+rm ${RPM_BUILD_ROOT}/%{_mandir}/man1/zebraidx.*
+rm ${RPM_BUILD_ROOT}/%{_bindir}/zebrasrv
+rm ${RPM_BUILD_ROOT}/%{_mandir}/man8/zebrasrv.*
+rm ${RPM_BUILD_ROOT}/%{_mandir}/man1/idzebra-config.*
 
 %clean
 rm -fr ${RPM_BUILD_ROOT}
@@ -68,23 +70,24 @@ rm -fr ${RPM_BUILD_ROOT}
 %defattr(-,root,root)
 %doc README LICENSE.zebra NEWS
 %config /usr/share/idzebra-2.0/tab
-/usr/bin/zebrasrv-*
-/usr/bin/zebraidx-*
+%{_bindir}/zebrasrv-*
+%{_bindir}/zebraidx-*
 /usr/share/doc/idzebra-2.0
-/usr/share/man/*/zebraidx-*
-/usr/share/man/*/zebrasrv-*
+%{_mandir}/*/zebraidx-*
+%{_mandir}/*/zebrasrv-*
 /usr/share/idzebra-2.0-examples
+
 %files -n lib%{name}
-/usr/lib/*.so.*
+%{_libdir}/*.so.*
 
 %files -n lib%{name}-modules
-/usr/lib/idzebra-2.0/modules/*
+%{_libdir}/idzebra-2.0/modules/*
 
 %files -n lib%{name}-devel
-/usr/bin/idzebra-config-*
-/usr/include/idzebra-2.0/*
-/usr/lib/*.so
-/usr/lib/*.a
-/usr/share/man/*/idzebra-config-*
+%{_bindir}/idzebra-config-*
+%{_includedir}/idzebra-2.0
+%{_libdir}/*.so
+%{_libdir}/*.a
+%{_mandir}/*/idzebra-config-*
 /usr/share/aclocal/*.m4
 
