@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<user xmlns="http://www.technomat.hu/Classic/" id="pop">
-	<name>Peter Popovics</name>
-        <description xml:lang="hu">Leiras</description>
-        <description xml:lang="en">Description</description>
-	<email>pop@technomat.hu</email>
-	<url>http://www.technomat.hu/pop</url>
-	<age>29</age>
-</user>

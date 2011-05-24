@@ -319,7 +319,6 @@ AC_OUTPUT([
   test/rusmarc/Makefile test/cddb/Makefile test/malxml/Makefile 
   test/mbox/Makefile
   test/config/Makefile
-  test/xelm/Makefile
   test/dmoz/Makefile test/zsh/Makefile
   test/marcxml/Makefile test/charmap/Makefile test/codec/Makefile
   test/espec/Makefile
