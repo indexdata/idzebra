@@ -298,13 +298,13 @@ static Z_RPNQuery *query_add_sortkeys(ODR o, Z_RPNQuery *query,
             int ascending = 1;
             nmem_strsplitx(odr_getmem(o), ",", sortspec[i], &arg, &num_arg, 0);
             
-            if (num_arg != 5)
+            if (num_arg > 5 || num_arg < 1)
             {
                 yaz_log(YLOG_WARN, "Invalid sort spec '%s' num_arg=%d",
                         sortspec[i], num_arg);
                 break;
             }
-            if (arg[2][0])
+            if (num_arg > 2 && arg[2][0])
                 ascending = atoi(arg[2]);
             
             if (i < num_sortspec-1)
