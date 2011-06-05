@@ -242,7 +242,6 @@ ucs4_t zebra_prim_w(ucs4_t **s)
     ucs4_t i = 0;
     char fmtstr[8];
 
-    yaz_log(YLOG_DEBUG, "prim_w %.3s", (char *) *s);
     if (**s == '\\' && 1[*s])
     {
 	(*s)++;
@@ -487,7 +486,14 @@ static int scan_string(char *s_native,
             ++s;
 	    s0 = s; i = 0;
 	    while (*s != ')' || s[-1] == '\\')
+            {
+                if (*s == '\0')
+                {
+                    yaz_log(YLOG_FATAL, "Missing ) in charmap");
+                    return -1;
+                }
 		arg_prim[i++] = zebra_prim_w(&s);
+            }
 	    arg_prim[i] = 0;
             if (scan_to_utf8(t_utf8, arg_prim, zebra_ucs4_strlen(arg_prim), str, sizeof(str)-1))
                 return -1;
@@ -731,7 +737,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
 	chrmaptab_destroy(res);
 	res = 0;
     }
-    yaz_log(YLOG_DEBUG, "maptab %s close %d errors", name, errors);
+    yaz_log(YLOG_DEBUG, "maptab %s num=%d close %d errors", name, num, errors);
     if (t_utf8 != 0)
         yaz_iconv_close(t_utf8);
     if (t_unicode != 0)
