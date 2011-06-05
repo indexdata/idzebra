@@ -212,6 +212,7 @@ static void snippet_add_complete_field(RecWord *p, int ord,
     if (last && start != last && zebra_maps_is_index(zm))
         zebra_snippets_appendn(h->snippets, p->seqno, 0, ord,
                                start, last - start);
+    p->seqno++;
 }
 
 static void snippet_add_incomplete_field(RecWord *p, int ord, zebra_map_t zm)
@@ -1858,6 +1859,7 @@ static void extract_add_complete_field(RecWord *p, zebra_map_t zm)
     if (!i)
 	return;
     extract_add_string(p, zm, buf, i);
+    p->seqno++;
 }
 
 static void extract_add_icu(RecWord *p, zebra_map_t zm)
