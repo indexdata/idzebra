@@ -1,3 +1,10 @@
+--- 2.0.48 2011/06/28
+
+Utility idebra-abs2dom part of distribution and deb+RPM packages.
+
+Fix problem with scan and complete subfields (:p) . In some cases,
+the display scan terms, would be invalid.
+
 --- 2.0.47 2011/05/24
 
 RPM: Store libraries in /usr/lib64 on 64-bit platforms.
