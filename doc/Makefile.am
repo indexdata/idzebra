@@ -2,13 +2,14 @@ SUBDIRS = common
 
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
-XMLMAN = zebraidx.xml zebrasrv.xml idzebra-config.xml
+XMLMAN = zebraidx.xml zebrasrv.xml idzebra-config.xml idzebra-abs2dom.xml
 
 XMLFILES =  \
    administration.xml \
    architecture.xml \
    field-structure.xml \
    gpl-2.0.xml \
+   idzebra-abs2dom.xml \
    indexdata.xml \
    installation.xml \
    introduction.xml \
@@ -56,6 +57,9 @@ zebrasrv$(PACKAGE_SUFFIX).8: zebrasrv.xml  zebrasrv-options.xml \
 idzebra-config$(PACKAGE_SUFFIX).1: idzebra-config.xml
 	$(MAN_COMPILE) $(srcdir)/idzebra-config.xml
 	mv idzebra-config.1 idzebra-config$(PACKAGE_SUFFIX).1
+
+idzebra-abs2dom.1: idzebra-abs2dom.xml
+	$(MAN_COMPILE) $(srcdir)/idzebra-abs2dom.xml
 
 $(HTMLFILES): $(XMLFILES) $(PNGFILES)
 	rm -f *.html

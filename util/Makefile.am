@@ -5,7 +5,7 @@ check_PROGRAMS = tstcharmap tstflock tstlockscope tstpass tstres test_strmap
 
 TESTS = $(check_PROGRAMS)
 
-bin_SCRIPTS = idzebra-config-2.0
+bin_SCRIPTS = idzebra-config-2.0 idzebra-abs2dom
 
 EXTRA_DIST = zebrasrv.rh tstcharmap.chr emptycharmap.chr tstpass.txt tstres.cfg mk_version.tcl
 

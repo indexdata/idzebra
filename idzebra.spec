@@ -72,9 +72,11 @@ rm -fr ${RPM_BUILD_ROOT}
 %config /usr/share/idzebra-2.0/tab
 %{_bindir}/zebrasrv-*
 %{_bindir}/zebraidx-*
+%{_bindir}/idzebra-abs2dom*
 /usr/share/doc/idzebra-2.0
 %{_mandir}/*/zebraidx-*
 %{_mandir}/*/zebrasrv-*
+%{_mandir}/*/idzebra-abs2dom*
 /usr/share/idzebra-2.0-examples
 
 %files -n lib%{name}

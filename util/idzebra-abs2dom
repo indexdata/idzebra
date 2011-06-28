@@ -4,11 +4,11 @@
 # Generate a dom-filter indexing stylesheet based upon an .abs file
 # Should be called either this way
 #
-#   abs2dom something.abs > something.xsl
+#   idzebra-abs2dom something.abs > something.xsl
 #
 # or in a streaming way
 #
-#   something | abs2dom > something.xsl
+#   something | idzebra-abs2dom > something.xsl
 #
 # The output xslt stylesheet generally needs a little bit of tweaking to be
 # ready for indexing. In particular, watch out for the precedence rules of
