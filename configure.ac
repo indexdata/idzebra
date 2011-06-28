@@ -3,22 +3,21 @@ dnl   Copyright (C) 1994-2011 Index Data
 dnl
 AC_PREREQ(2.60)
 AC_INIT([idzebra],[2.0.47],[zebra-help@indexdata.dk])
-AC_CONFIG_HEADERS(include/config.h)
-AC_CONFIG_SRCDIR(configure.ac)
-AC_CONFIG_AUX_DIR(config)
+AC_CONFIG_HEADERS([include/config.h])
+AC_CONFIG_SRCDIR([configure.ac])
+AC_CONFIG_AUX_DIR([config])
 AM_INIT_AUTOMAKE([1.9])
 PACKAGE_SUFFIX="-2.0"
 AC_SUBST(PACKAGE_SUFFIX)
 dnl http://www.gnu.org/software/libtool/manual.html#Versioning
 ZEBRALIBS_VERSION_INFO=0:1:0
-AC_SUBST(ZEBRALIBS_VERSION_INFO)
+AC_SUBST([ZEBRALIBS_VERSION_INFO])
 main_zebralib=index/libidzebra${PACKAGE_SUFFIX}.la
 AC_SUBST(main_zebralib)
 dnl ------ Substitutions
-AC_SUBST(TCL_INCLUDE)
-AC_SUBST(TCL_LIB)
-AC_SUBST(READLINE_LIBS)
-AC_SUBST(ZEBRA_CFLAGS)
+AC_SUBST([TCL_INCLUDE])
+AC_SUBST([TCL_LIB])
+AC_SUBST([ZEBRA_CFLAGS])
 dnl
 dnl ------ Checking programs
 AC_PROG_CC
@@ -30,7 +29,7 @@ AC_CHECK_HEADERS([sys/resource.h sys/time.h sys/wait.h sys/utsname.h unistd.h])
 dnl ------ crypt
 AC_CHECK_LIB([crypt],[crypt])
 if test "$ac_cv_lib_crypt_crypt" = "yes"; then
-    AC_CHECK_HEADERS(crypt.h)
+    AC_CHECK_HEADERS([crypt.h])
 fi
 dnl
 dnl ------ YAZ
@@ -153,13 +152,13 @@ if test "$ac_cv_lib_z_compress2" = "yes"; then
     AC_CHECK_HEADERS([zlib.h])
 fi
 dnl ------ -lm
-AC_CHECK_LIB(m,sqrt)
+AC_CHECK_LIB([m], [sqrt])
 dnl ------ -ldl
-AC_CHECK_LIB(dl,dlopen)
+AC_CHECK_LIB([dl], [dlopen])
 dnl
 dnl ------ EXPAT
 expat=yes
-AC_SUBST(EXPAT_LIBS)
+AC_SUBST([EXPAT_LIBS])
 AC_ARG_WITH(expat,   [  --with-expat[=DIR]        EXPAT library in DIR],[expat=$withval])
 if test "$expat" != "no"; then
     xLIBS="$LIBS";
@@ -189,11 +188,11 @@ fi
 ZEBRA_CFLAGS="-DZEBRA_ZINT=${ZINT_VALUE}"
 AC_DEFINE_UNQUOTED([ZEBRA_ZINT],${ZINT_VALUE},[Whehter zint is long long])
 dnl ------ Modules
-AC_SUBST(SHARED_MODULE_LA)
+AC_SUBST([SHARED_MODULE_LA])
 SHARED_MODULE_LA=""
-AC_SUBST(STATIC_MODULE_OBJ)
+AC_SUBST([STATIC_MODULE_OBJ])
 STATIC_MODULE_OBJ=""
-AC_SUBST(STATIC_MODULE_LADD)
+AC_SUBST([STATIC_MODULE_LADD])
 STATIC_MODULE_LADD=""
 AC_DEFUN([ZEBRA_MODULE],[
 	AC_ARG_ENABLE(mod-$1,[$3],[myen=$enableval],[myen=$2])
@@ -275,8 +274,8 @@ AC_STDC_HEADERS
 if test "$ac_cv_header_stdc" = "no"; then
     AC_MSG_WARN([Your system does not seem to support ANSI C])
 fi
-AC_SUBST(IDZEBRA_SRC_ROOT)
-AC_SUBST(IDZEBRA_BUILD_ROOT)
+AC_SUBST([IDZEBRA_SRC_ROOT])
+AC_SUBST([IDZEBRA_BUILD_ROOT])
 IDZEBRA_SRC_ROOT=`cd ${srcdir}; pwd`
 IDZEBRA_BUILD_ROOT=`pwd`
 dnl
