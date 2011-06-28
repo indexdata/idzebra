@@ -36,7 +36,8 @@ PNGFILES = zebra.png domfilter.png
 
 MANFILES=zebraidx$(PACKAGE_SUFFIX).1 \
 	zebrasrv$(PACKAGE_SUFFIX).8 \
-	idzebra-config$(PACKAGE_SUFFIX).1
+	idzebra-config$(PACKAGE_SUFFIX).1 \
+	idzebra-abs2dom.1
 
 doc_DATA = $(HTMLFILES) $(PNGFILES)
 man_MANS = $(MANFILES)
