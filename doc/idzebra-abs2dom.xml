@@ -12,11 +12,13 @@
  <refentryinfo>
   <productname>zebra</productname>
   <productnumber>&version;</productnumber>
+  <info><orgname>Index Data</orgname></info>
  </refentryinfo>
 
  <refmeta>
   <refentrytitle>idzebra-abs2dom</refentrytitle>
   <manvolnum>1</manvolnum>
+  <refmiscinfo class="manual">Commands</refmiscinfo>
  </refmeta>
  
  <refnamediv>
