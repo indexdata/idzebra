@@ -433,7 +433,7 @@ static int term_102(zebra_map_t zm, const char **src,
 }
 
 
-/* term_104: handle term, process # and ! */
+/* term_104: handle term, process ?n * # */
 static int term_104(zebra_map_t zm, const char **src, 
                     WRBUF term_dict, int space_split, WRBUF display_term)
 {
@@ -502,7 +502,7 @@ static int term_104(zebra_map_t zm, const char **src,
     return i;
 }
 
-/* term_105/106: handle term, where trunc = Process * and ! and right trunc */
+/* term_105/106: handle term, process * ! and possibly right_truncate */
 static int term_105(zebra_map_t zm, const char **src, 
                     WRBUF term_dict, int space_split,
 		    WRBUF display_term, int right_truncate)
@@ -1147,7 +1147,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             }
             wrbuf_putc(term_dict, ')');
             break;
-        case 104:        /* process # and ! in term */
+        case 104:        /* process ?n * # term */
             wrbuf_putc(term_dict, '(');
             if (!term_104(zm, &termp, term_dict, space_split, display_term))
             {
@@ -1156,7 +1156,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             }
             wrbuf_putc(term_dict, ')');
             break;
-        case 105:        /* process * and ! in term */
+        case 105:        /* process * ! in term and right truncate */
             wrbuf_putc(term_dict, '(');
             if (!term_105(zm, &termp, term_dict, space_split, display_term, 1))
             {
@@ -1165,7 +1165,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             }
             wrbuf_putc(term_dict, ')');
             break;
-        case 106:        /* process * and ! in term */
+        case 106:        /* process * ! in term */
             wrbuf_putc(term_dict, '(');
             if (!term_105(zm, &termp, term_dict, space_split, display_term, 0))
             {
