@@ -427,7 +427,7 @@ static int scan_string(char *s_native,
 
     ucs4_t arg[512];
     ucs4_t arg_prim[512];
-    ucs4_t *s0, *s = arg;
+    ucs4_t *s = arg;
     ucs4_t c, begin, end;
     size_t i;
 
@@ -484,7 +484,7 @@ static int scan_string(char *s_native,
 	    break;
 	case '(':
             ++s;
-	    s0 = s; i = 0;
+	    i = 0;
 	    while (*s != ')' || s[-1] == '\\')
             {
                 if (*s == '\0')
