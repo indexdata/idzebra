@@ -149,69 +149,9 @@ static void snippet_add_complete_field(RecWord *p, int ord,
                                        zebra_map_t zm)
 {
     struct snip_rec_info *h = p->extractCtrl->handle;
-
-    const char *b = p->term_buf;
-    char buf[IT_MAX_WORD+1];
-    const char **map = 0;
-    int i = 0, remain = p->term_len;
-    const char *start = b;
-    const char *last = 0;
-
-    if (remain > 0)
-	map = zebra_maps_input(zm, &b, remain, 1);
-
-    while (remain > 0 && i < IT_MAX_WORD)
-    {
-	while (map && *map && **map == *CHR_SPACE)
-	{
-	    remain = p->term_len - (b - p->term_buf);
-
-            if (i == 0)
-                start = b;  /* set to first non-ws area */
-	    if (remain > 0)
-	    {
-		int first = i ? 0 : 1;  /* first position */
-
-		map = zebra_maps_input(zm, &b, remain, first);
-	    }
-	    else
-		map = 0;
-	}
-	if (!map)
-	    break;
-
-	if (i && i < IT_MAX_WORD)
-	    buf[i++] = *CHR_SPACE;
-	while (map && *map && **map != *CHR_SPACE)
-	{
-	    const char *cp = *map;
-
-	    if (**map == *CHR_CUT)
-	    {
-		i = 0;
-	    }
-	    else
-	    {
-		if (i >= IT_MAX_WORD)
-		    break;
-		while (i < IT_MAX_WORD && *cp)
-		    buf[i++] = *(cp++);
-	    }
-            last = b;
-	    remain = p->term_len  - (b - p->term_buf);
-	    if (remain > 0)
-	    {
-		map = zebra_maps_input(zm, &b, remain, 0);
-	    }
-	    else
-		map = 0;
-	}
-    }
-    if (!i)
-	return;
-    if (last && start != last && zebra_maps_is_index(zm))
+    if (p->term_len && p->term_buf && zebra_maps_is_index(zm))
         zebra_snippets_appendn(h->snippets, p->seqno, 0, ord,
-                               start, last - start);
+                               p->term_buf, p->term_len);
     p->seqno++;
 }
 
