@@ -132,7 +132,6 @@ static int cf_commit_hash (CFile cf)
     int r = 0;
     int i;
     zint bucket_no;
-    int hash_bytes;
     struct CFile_ph_bucket *p;
 #if CF_OPTIMIZE_COMMIT
     struct map_cache *m_p;
@@ -143,7 +142,6 @@ static int cf_commit_hash (CFile cf)
 #endif
 
     p = (struct CFile_ph_bucket *) xmalloc (sizeof(*p));
-    hash_bytes = cf->head.hash_size * sizeof(zint);
     bucket_no = cf->head.first_bucket;
     for (; bucket_no < cf->head.next_bucket; bucket_no++)
     {
