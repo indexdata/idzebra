@@ -733,8 +733,6 @@ static void index_termlist(struct source_parser *sp, data1_node *par,
                             struct recExtractCtrl *p, int level, RecWord *wrd)
 {
     data1_termlist *tlist = 0;
-    data1_datatype dtype = DATA1K_string;
-
     /*
      * cycle up towards the root until we find a tag with an att..
      * this has the effect of indexing locally defined tags with
@@ -746,9 +744,6 @@ static void index_termlist(struct source_parser *sp, data1_node *par,
             break;
     if (!par || !(tlist = par->u.tag.element->termlists))
         return;
-    if (par->u.tag.element->tag)
-        dtype = par->u.tag.element->tag->kind;
-
     for (; tlist; tlist = tlist->next)
     {
 	/* consider source */
