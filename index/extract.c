@@ -170,8 +170,7 @@ static void snippet_add_incomplete_field(RecWord *p, int ord, zebra_map_t zm)
 
     while (map)
     {
-	char buf[IT_MAX_WORD+1];
-	int i, remain;
+	int remain;
 
 	/* Skip spaces */
 	while (map && *map && **map == *CHR_SPACE)
@@ -189,17 +188,10 @@ static void snippet_add_incomplete_field(RecWord *p, int ord, zebra_map_t zm)
         {
             zebra_snippets_appendn(h->snippets, p->seqno, 1, ord,
                                    start, last - start);
-
         }
         start = last;
-
-	i = 0;
 	while (map && *map && **map != *CHR_SPACE)
 	{
-	    const char *cp = *map;
-
-	    while (i < IT_MAX_WORD && *cp)
-		buf[i++] = *(cp++);
 	    remain = p->term_len - (b - p->term_buf);
             last = b;
 	    if (remain > 0)
@@ -207,8 +199,8 @@ static void snippet_add_incomplete_field(RecWord *p, int ord, zebra_map_t zm)
 	    else
 		map = 0;
 	}
-	if (!i)
-	    return;
+        if (start == last)
+            return ;
 
         if (first)
         {   
@@ -285,7 +277,6 @@ void extract_snippet(ZebraHandle zh, zebra_snippets *sn,
 {
     struct recExtractCtrl extractCtrl;
     struct snip_rec_info info;
-    int r;
 
     extractCtrl.stream = stream;
     extractCtrl.first_record = 1;
@@ -308,8 +299,7 @@ void extract_snippet(ZebraHandle zh, zebra_snippets *sn,
 
     extractCtrl.setStoreData = 0;
 
-    r = (*rt->extract)(recTypeClientData, &extractCtrl);
-
+    (*rt->extract)(recTypeClientData, &extractCtrl);
 }
 
 static void searchRecordKey(ZebraHandle zh,
@@ -575,7 +565,6 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
     char gprefix[128];
     char ext[128];
     char ext_res[128];
-    struct file_read_info *fi = 0;
     const char *original_record_type = 0;
     RecType recType;
     void *recTypeClientData;
@@ -641,7 +630,6 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
     if (sysno && (action == action_delete || action == action_a_delete))
     {
         streamp = 0;
-        fi = 0;
     }
     else
     {
