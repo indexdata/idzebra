@@ -45,10 +45,10 @@ static int handler(char *name, const char *info, int pos, void *client)
     else
 	idx = -pos - 1;
 
-    yaz_log(YLOG_DEBUG, "pos=%d idx=%d name=%s", pos, idx, name);
+    yaz_log(YLOG_LOG, "scan_handler name=%s pos=%d idx=%d", name, pos, idx);
     if (idx < 0)
 	return 0;
-    if (idx < hi->start_cut || idx >= hi->end_cut)
+    if (idx < hi->start_cut || idx > hi->end_cut)
     {
         return 1;
     }
@@ -75,7 +75,7 @@ int do_scan(Dict dict, int before, int after, const char *sterm,
     hi.a = after;
     hi.b = before;
     hi.ar = malloc(sizeof(char*) * (after+before+1));
-    for (i = 0; i<after+before; i++)
+    for (i = 0; i <= after+before; i++)
 	hi.ar[i] = 0;
     yaz_log(YLOG_DEBUG, "dict_scan before=%d after=%d term=%s",
             before, after, scan_term);
@@ -84,7 +84,7 @@ int do_scan(Dict dict, int before, int after, const char *sterm,
     {
         if (!cmp_strs)
         {
-            if (i >= start_cut &&  i < end_cut)
+            if (i >= start_cut &&  i <= end_cut)
             {
                 if (!hi.ar[i])
                 {
@@ -103,7 +103,7 @@ int do_scan(Dict dict, int before, int after, const char *sterm,
         }
         else
 	{
-            if (i >= start_cut && i < end_cut)
+            if (i >= start_cut && i <= end_cut)
             {
                 if (!hi.ar[i])
                 {
@@ -178,25 +178,44 @@ static void tst(Dict dict, int start, int number)
         YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(v), &v), 1);
     }
 
+#if 1
     {
         char *cs[] = {
             "4497",
             "4498",
             "4499",
             "45"};
+        yaz_log(YLOG_LOG, "---------------------1 ---------------" );
         YAZ_CHECK_EQ(do_scan(dict, 2, 2, "4499", cs, 0, 0, 3), 0);
     }
+#endif
+#if 1
     {
         char *cs[] = {
             "4498",
             "4499",
             "45",
             "450"};
+        yaz_log(YLOG_LOG, "---------------------2 ---------------" );
         YAZ_CHECK_EQ(do_scan(dict, 2, 2, "45", cs, 0, 0, 3), 0);
     }
-
+#endif
+#if 0
+    /* bug 4592 */
+    {
+        char *cs[] = {
+            "4499",
+            "45", /* missing entry ! */
+            "450",
+            "4500"};
+        yaz_log(YLOG_LOG, "---------------------3 ---------------" );
+        YAZ_CHECK_EQ(do_scan(dict, 4, 0, "4501", cs, 0, 0, 4), 0);
+    }
+#endif
+#if 1
     for (i = 0; i < 20; i++)
         YAZ_CHECK_EQ(do_scan(dict, 20, 20, "45", 0, 0, 20-i, 20+i), 0);
+#endif
 }
 
 int main(int argc, char **argv)
@@ -245,7 +264,7 @@ int main(int argc, char **argv)
     if (bfs)
     {
         bf_reset(bfs);
-        dict = dict_open(bfs, "dict", 10, 1, 0, 0);
+        dict = dict_open(bfs, "dict", 100, 1, 0, 0);
         YAZ_CHECK(dict);
     }
     if (dict)
