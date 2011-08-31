@@ -199,10 +199,27 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 		        scan_direction(dict, subptr, pos+1, str, -1, 
                                        after, client, userfunc, 1);
                 }
-		else if (subptr)
+		else
                 {
-                    dict_scan_r(dict, subptr, pos+1, str, before, after,
-                                client, userfunc);
+                    if (subptr)
+                        dict_scan_r(dict, subptr, pos+1, str, before, after,
+                                    client, userfunc);
+             	    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
+                    {
+                        if (*before)
+                        {
+                            str[pos+1] = DICT_EOS;
+                            if ((*userfunc)((char*) str,
+                                            info+sizeof(Dict_ptr)+
+                                            sizeof(Dict_char),
+                                            - *before, client))
+                            {
+                                *before = 0;
+                            }
+                            else
+                                --(*before);
+                        }
+                    }
                 }
                 break;
             }
