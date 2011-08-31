@@ -45,7 +45,6 @@ static int handler(char *name, const char *info, int pos, void *client)
     else
 	idx = -pos - 1;
 
-    yaz_log(YLOG_LOG, "scan_handler name=%s pos=%d idx=%d", name, pos, idx);
     if (idx < 0)
 	return 0;
     if (idx < hi->start_cut || idx > hi->end_cut)
@@ -185,7 +184,6 @@ static void tst(Dict dict, int start, int number)
             "4498",
             "4499",
             "45"};
-        yaz_log(YLOG_LOG, "---------------------1 ---------------" );
         YAZ_CHECK_EQ(do_scan(dict, 2, 2, "4499", cs, 0, 0, 3), 0);
     }
 #endif
@@ -196,11 +194,10 @@ static void tst(Dict dict, int start, int number)
             "4499",
             "45",
             "450"};
-        yaz_log(YLOG_LOG, "---------------------2 ---------------" );
         YAZ_CHECK_EQ(do_scan(dict, 2, 2, "45", cs, 0, 0, 3), 0);
     }
 #endif
-#if 0
+#if 1
     /* bug 4592 */
     {
         char *cs[] = {
@@ -208,8 +205,31 @@ static void tst(Dict dict, int start, int number)
             "45", /* missing entry ! */
             "450",
             "4500"};
-        yaz_log(YLOG_LOG, "---------------------3 ---------------" );
         YAZ_CHECK_EQ(do_scan(dict, 4, 0, "4501", cs, 0, 0, 4), 0);
+    }
+#endif
+#if 1
+    {
+        char *cs[] = {
+            "9996",
+            "9997",
+            "9998",
+            "9999"};
+        YAZ_CHECK_EQ(do_scan(dict, 4, 0, "a", cs, 0, 0, 4), 0);
+        YAZ_CHECK_EQ(do_scan(dict, 3, 1, "9999", cs, 0, 0, 4), 0);
+    }
+#endif
+#if 1
+    {
+        char *cs[] = {
+            "10",
+            "100",
+            "1000",
+            "1001" };
+        YAZ_CHECK_EQ(do_scan(dict, 0, 4, "10", cs, 0, 0, 4), 0);
+        YAZ_CHECK_EQ(do_scan(dict, 0, 4, "1", cs, 0, 0, 4), 0);
+        YAZ_CHECK_EQ(do_scan(dict, 0, 4, " ", cs, 0, 0, 4), 0);
+        YAZ_CHECK_EQ(do_scan(dict, 0, 4, "", cs, 0, 0, 4), 0);
     }
 #endif
 #if 1
