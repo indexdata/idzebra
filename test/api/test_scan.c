@@ -136,9 +136,30 @@ static void tst(int argc, char **argv)
 	YAZ_CHECK(tl_scan(zh, "@attr 1=4 0", 10, 100, 1, 6, 1, ent));
     }
 
+
     {
-	const char *ent[] = { "a", "b", "c", "d", "e", "f", 0 };
+	const char *ent[] = { 0 };
 	YAZ_CHECK(tl_scan(zh, "@attr 1=4 0", 22, 10, 1, 0, 1, ent));
+    }
+
+    {
+	const char *ent[] = { "a", "b", "c", "d", 0 };
+	YAZ_CHECK(tl_scan(zh, "@attr 1=4 f", 6, 4, 6, 4, 0, ent));
+    }
+
+    {
+	const char *ent[] = { "a", "b", "c", "d", "e", 0 };
+	YAZ_CHECK(tl_scan(zh, "@attr 1=4 f", 6, 5, 6, 5, 0, ent));
+    }
+
+    {
+	const char *ent[] = { "a", "b", 0 };
+	YAZ_CHECK(tl_scan(zh, "@attr 1=4 c", 6, 5, 3, 2, 1, ent));
+    }
+
+    {
+	const char *ent[] = { "c", "d", "e", "f", 0 };
+	YAZ_CHECK(tl_scan(zh, "@attr 1=4 c", 1, 6, 1, 4, 1, ent));
     }
 
     {

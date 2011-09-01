@@ -300,13 +300,6 @@ static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
         odr_malloc(stream, *num_entries * sizeof(*glist));
 
     *is_partial = 0;
-    if (*position > *num_entries+1)
-    {
-        *is_partial = 1;
-        *position = 1;
-        *num_entries = 0;
-        return ZEBRA_OK;
-    }
     rpn_char_map_prepare(zh->reg, zm, &rcmi);
 
     for (i = 0; i < ord_no; i++)
@@ -376,8 +369,13 @@ static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
     {
         /* did not get all terms; adjust the real position and reduce
            number of entries */
-        glist = glist + dif;
-        *num_entries -= dif;
+        if (dif < *num_entries)
+        {
+            glist = glist + dif;
+            *num_entries -= dif;
+        }
+        else
+            *num_entries = 0;
         *position -= dif;
 	*is_partial = 1;
     }
@@ -438,7 +436,7 @@ static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
             pos++;
 
     }
-    if (pos != *num_entries)
+    if (pos < *num_entries)
     {
         if (pos >= 0)
             *num_entries = pos;
