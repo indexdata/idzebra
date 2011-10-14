@@ -338,7 +338,7 @@
 
 
      <varlistentry>
-      <term>estimatehits:: <replaceable>integer</replaceable></term>
+      <term>estimatehits: <replaceable>integer</replaceable></term>
       <listitem>
        <para>
 	Controls whether &zebra; should calculate approximate hit counts and
@@ -453,22 +453,23 @@
     </varlistentry>
 
     <varlistentry>
-      <term>dbaccess <replaceable>accessfile</replaceable></term>
+      <term>dbaccess: <replaceable>accessfile</replaceable></term>
       <listitem>
         <para>
 	  Names a file which lists database subscriptions for individual users.
-	  The access file should consists of lines of the form <literal>username:
-	  dbnames</literal>, where dbnames is a list of database names, separated by
-	  '+'. No whitespace is allowed in the database list.
+	  The access file should consists of lines of the form
+          <literal>username: dbnames</literal>, where dbnames is a list of
+          database names, separated by '+'. No whitespace is allowed in the
+          database list.
 	</para>
       </listitem>
     </varlistentry>
 
     <varlistentry>
-      <term>encoding <replaceable>charsetname</replaceable></term>
+      <term>encoding: <replaceable>charsetname</replaceable></term>
       <listitem>
         <para>
-	  Tells Zebra to interpret the terms in Z39.50 queries as
+	  Tells &zebra; to interpret the terms in Z39.50 queries as
 	  having been encoded using the specified character
 	  encoding.  The default is <literal>ISO-8859-1</literal>; one
 	  useful alternative is <literal>UTF-8</literal>.
@@ -480,7 +481,7 @@
       <term>storeKeys: <replaceable>value</replaceable></term>
       <listitem>
         <para>
-          Specifies whether Zebra keeps a copy of indexed keys.
+          Specifies whether &zebra; keeps a copy of indexed keys.
           Use a value of 1 to enable; 0 to disable. If storeKeys setting is
           omitted, it is enabled. Enabled storeKeys
           are required for updating and deleting records.  Disable only 
@@ -493,7 +494,7 @@
       <term>storeData: <replaceable>value</replaceable></term>
       <listitem>
         <para>
-          Specifies whether Zebra keeps a copy of indexed records.
+          Specifies whether &zebra; keeps a copy of indexed records.
           Use a value of 1 to enable; 0 to disable. If storeData setting is
           omitted, it is enabled. A storeData setting of 0 (disabled) makes
           Zebra fetch records from the original locaction in the file 
