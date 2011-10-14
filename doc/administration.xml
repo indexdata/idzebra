@@ -475,6 +475,34 @@
 	</para>
       </listitem>
     </varlistentry>
+
+    <varlistentry>
+      <term>storeKeys: <replaceable>value</replaceable></term>
+      <listitem>
+        <para>
+          Specifies whether Zebra keeps a copy of indexed keys.
+          Use a value of 1 to enable; 0 to disable. If storeKeys setting is
+          omitted, it is enabled. Enabled storeKeys
+          are required for updating and deleting records.  Disable only 
+          storeKeys to save space and only plan to index data once.
+	</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term>storeData: <replaceable>value</replaceable></term>
+      <listitem>
+        <para>
+          Specifies whether Zebra keeps a copy of indexed records.
+          Use a value of 1 to enable; 0 to disable. If storeData setting is
+          omitted, it is enabled. A storeData setting of 0 (disabled) makes
+          Zebra fetch records from the original locaction in the file 
+          system using filename, file offset and file length. For the
+          DOM and ALVIS filter, the storeData setting is ignored.
+	</para>
+      </listitem>
+    </varlistentry>
+
    </variablelist>
   </para>
   
