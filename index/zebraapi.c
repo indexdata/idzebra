@@ -1816,8 +1816,6 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
             zh->reg->seqno = seqno;
         else
         {
-            zebra_set_state(zh, 'o', seqno);
-            
             zebra_unlock(zh->lock_shadow);
             zebra_unlock(zh->lock_normal);
 
