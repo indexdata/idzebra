@@ -1627,7 +1627,11 @@ static void zebra_set_state(ZebraHandle zh, int val, int seqno)
     sprintf(state_fname, "state.%s.LCK", zh->reg_name);
     fname = zebra_mk_fname(res_get(zh->res, "lockDir"), state_fname);
     f = fopen(fname, "w");
-
+    if (!f)
+    {
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "open %s w", state_fname);
+        exit(1); 
+    }
     yaz_log(YLOG_DEBUG, "zebra_set_state: %c %d %ld", val, seqno, p);
     fprintf(f, "%c %d %ld\n", val, seqno, p);
     fclose(f);
