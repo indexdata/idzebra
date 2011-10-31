@@ -1812,9 +1812,7 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
         zh->reg = zebra_register_open(zh->service, zh->reg_name,
 				      1, rval ? 1 : 0, zh->res,
 				      zh->path_reg);
-        if (zh->reg)
-            zh->reg->seqno = seqno;
-        else
+        if (!zh->reg)
         {
             zebra_unlock(zh->lock_shadow);
             zebra_unlock(zh->lock_normal);
@@ -1827,6 +1825,7 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
             yaz_log(YLOG_FATAL, "%s", zh->errString);
             return ZEBRA_FAIL;
         }
+        zh->reg->seqno = seqno;
 	zebraExplain_curDatabase(zh->reg->zei, zh->basenames[0]);
     }
     else
