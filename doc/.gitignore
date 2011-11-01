@@ -3,11 +3,7 @@ Makefile.in
 domfilter.eps
 domfilter.png
 domfilter.pdf
-zebra.tex
-zebra.out
-zebra.log
-zebra.aux
-zebra.pdf
+idzebra.pdf
 local.ent
 manpage.links
 manpage.refs
