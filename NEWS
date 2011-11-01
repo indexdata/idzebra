@@ -1,3 +1,9 @@
+--- 2.0.50 2011/11/01
+
+Fix a bug in zebra_begin_trans where Zebra could mark a transaction
+complete when it actually failed. This could happen if register files
+could not be opened.
+
 --- 2.0.49 2011/09/02
 
 Scan: allow preferred position > number + 1
