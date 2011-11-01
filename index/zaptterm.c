@@ -50,9 +50,13 @@ ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                         &outbuf, &outleft);
             if (ret == (size_t)(-1))
             {
+                int iconv_error = yaz_iconv_error(zh->iconv_to_utf8);
+
                 ret = yaz_iconv(zh->iconv_to_utf8, 0, 0, 0, 0);
 		zebra_setError(
-		    zh, 
+		    zh,
+                    iconv_error == YAZ_ICONV_E2BIG ?
+                    YAZ_BIB1_TOO_MANY_CHARS_IN_SEARCH_STATEMENT :
 		    YAZ_BIB1_QUERY_TERM_INCLUDES_CHARS_THAT_DO_NOT_TRANSLATE_INTO_,
 		    0);
                 return ZEBRA_FAIL;
