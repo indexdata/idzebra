@@ -1811,6 +1811,7 @@ static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
 					Z_AttributesPlusTerm *zapt,
 					const char *termz,
 					const Odr_oid *attributeSet,
+                                        zint hits_limit,
 					NMEM stream,
 					const char *index_type, 
                                         int complete_flag,
@@ -1826,7 +1827,7 @@ static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
     ZEBRA_RES res;
     struct grep_info grep_info;
     int alloc_sets = 0;
-    zint hits_limit_value;
+    zint hits_limit_value = hits_limit;
     const char *term_ref_id_str = 0;
 
     zebra_term_limits_APT(zh, zapt, &hits_limit_value, &term_ref_id_str,
@@ -2383,7 +2384,8 @@ static ZEBRA_RES rpn_search_database(ZebraHandle zh,
     }
     else if (!strcmp(search_type, "numeric"))
     {
-        res = rpn_search_APT_numeric(zh, zapt, termz, attributeSet, stream,
+        res = rpn_search_APT_numeric(zh, zapt, termz, attributeSet, hits_limit,
+                                     stream,
 				     index_type, complete_flag, rank_type,
 				     xpath_use,
 				     rset_nmem,
