@@ -130,8 +130,11 @@ SectionEnd
 
 Section "Zebra Source"
 	SectionIn 1
+	SetOutPath $INSTDIR
+	File ..\IDMETA
 	SetOutPath $INSTDIR\util
 	File ..\util\*.c
+	File ..\util\*.tcl
 	SetOutPath $INSTDIR\dfa
 	File ..\dfa\*.c
 	File ..\dfa\*.h
