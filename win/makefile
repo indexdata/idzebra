@@ -344,9 +344,9 @@ LINK_PROGRAM= $(LINK) \
 # Generated sources
 generate: $(INCLDIR)\idzebra\version.h
 
-$(INCLDIR)\idzebra\version.h:
+$(INCLDIR)\idzebra\version.h: $(ROOTDIR)/IDMETA 
 	@cd $(ROOTDIR)\util
-	$(TCL) mk_version.tcl $(ROOTDIR)/configure.ac $(INCLDIR)\idzebra\version.h
+	$(TCL) mk_version.tcl $(ROOTDIR)/IDMETA $(INCLDIR)\idzebra\version.h
 
 # Source and object modules
 # Note: Ordinary source files are not specified here at 
