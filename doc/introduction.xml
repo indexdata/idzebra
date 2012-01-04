@@ -785,26 +785,6 @@
     </para>
    </section>
 
-  <section id="emilda-ils">
-   <title>Emilda open source ILS</title>
-   <para>
-     <ulink url="http://www.emilda.org/">Emilda</ulink> 
-     is a complete Integrated Library System, released under the 
-     GNU General Public License. It has a
-     full featured Web-OPAC, allowing comprehensive system management
-     from virtually any computer with an Internet connection, has
-     template based layout allowing anyone to alter the visual
-     appearance of Emilda, and is
-     &acro.xml; based language for fast and easy portability to virtually any
-     language.
-     Currently, Emilda is used at three schools in Espoo, Finland.
-    </para>
-    <para>
-     As a surplus, 100% &acro.marc; compatibility has been achieved using the
-    &zebra; Server from Index Data as backend server. 
-    </para> 
-   </section>
-
   <section id="reindex-ils">
    <title>ReIndex.Net web based ILS</title>
     <para>
