@@ -828,53 +828,10 @@
    </para>
    <para>
     More information can be found at
-    <ulink url="http://www.dtv.dk/"/> and
+    <ulink url="http://www.dtic.dtu.dk/"/> and
     <ulink url="http://dads.dtv.dk"/>
    </para>
   </section>
-
-  <section id="infonet-eprints">
-   <title>Infonet Eprints</title>
-   <para>
-     The InfoNet Eprints service from the 
-     <ulink url="http://www.dtv.dk/">
-      Technical Knowledge Center of Denmark</ulink>
-     provides access to documents stored in
-     eprint/preprint servers and institutional research archives around
-     the world. The service is based on Open Archives Initiative metadata
-     harvesting of selected scientific archives around the world. These
-     open archives offer free and unrestricted access to their contents.
-    </para>
-   <para>
-    Infonet Eprints currently holds 1.4 million records from 16 archives.
-    The online search facility is found at
-    <ulink url="http://preprints.cvt.dk"/>.
-   </para>
-  </section>
-
-  <section id="alvis-project">
-   <title>Alvis</title>
-   <para>
-     The <ulink url="http://www.alvis.info/alvis/">Alvis</ulink> EU
-     project run under the 6th Framework (IST-1-002068-STP)
-     is building a semantic-based peer-to-peer search engine. A
-     consortium of eleven partners from six different European
-     Community countries plus Switzerland and China contribute
-     with expertise in a broad range of specialties including network
-     topologies, routing algorithms, linguistic analysis and
-     bioinformatics. 
-    </para>
-    <para>
-     The &zebra; information retrieval indexing machine is used inside
-     the Alvis framework to
-     manage huge collections of natural language processed and
-     enhanced &acro.xml; data, coming from a topic relevant web crawl.
-     In this application, &zebra; swallows and manages 37GB of &acro.xml; data
-     in about 4 hours, resulting in search times of fractions of
-     seconds. 
-     </para>
-   </section>
-
 
   <section id="uls">
    <title>ULS (Union List of Serials)</title>
@@ -901,36 +858,6 @@
    <para>
     More information can be found at
     <ulink url="http://www.m25lib.ac.uk/ULS/"/>
-   </para>
-  </section>
-
-  <section id="nli">
-   <title>NLI-&acro.z3950; - a Natural Language Interface for Libraries</title>
-   <para>
-    Fernuniversit&#x00E4;t Hagen in Germany have developed a natural
-    language interface for access to library databases.
-    <!-- <ulink
-    url="http://ki212.fernuni-hagen.de/nli/NLIintro.html"/> -->
-    In order to evaluate this interface for recall and precision, they
-    chose &zebra; as the basis for retrieval effectiveness.  The &zebra;
-    server contains a copy of the GIRT database, consisting of more
-    than 76000 records in &acro.sgml; format (bibliographic records from
-    social science), which are mapped to &acro.marc; for presentation.
-   </para>
-   <para>
-    (GIRT is the German Indexing and Retrieval Testdatabase.  It is a
-    standard German-language test database for intelligent indexing
-    and retrieval systems.  See
-    <ulink url="http://www.gesis.org/forschung/informationstechnologie/clef-delos.htm"/>)
-   </para>
-   <para>
-    Evaluation will take place as part of the TREC/CLEF campaign 2003 
-    <ulink url="http://clef.iei.pi.cnr.it"/>.
-    <!-- or <ulink url="http://www4.eurospider.ch/CLEF/"/> -->
-   </para>
-   <para>
-    For more information, contact Johannes Leveling
-    <email>Johannes.Leveling@FernUni-Hagen.De</email>
    </para>
   </section>
 
