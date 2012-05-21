@@ -1823,7 +1823,6 @@ static void extract_token_add(RecWord *p)
 {
     ZebraHandle zh = p->extractCtrl->handle;
     zebra_map_t zm = zebra_map_get_or_add(zh->reg->zebra_maps, p->index_type);
-    WRBUF wrbuf;
 
     if (log_level_details)
     {
@@ -1831,11 +1830,6 @@ static void extract_token_add(RecWord *p)
                 "type=%s index=%s seqno=" ZINT_FORMAT " s=%.*s",
                 p->index_type, p->index_name, 
                 p->seqno, p->term_len, p->term_buf);
-    }
-    if ((wrbuf = zebra_replace(zm, 0, p->term_buf, p->term_len)))
-    {
-        p->term_buf = wrbuf_buf(wrbuf);
-        p->term_len = wrbuf_len(wrbuf);
     }
     if (zebra_maps_is_icu(zm))
     {
