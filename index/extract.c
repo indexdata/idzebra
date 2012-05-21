@@ -1798,6 +1798,11 @@ static void extract_add_icu(RecWord *p, zebra_map_t zm)
     zebra_map_tokenize_start(zm, p->term_buf, p->term_len);
     while (zebra_map_tokenize_next(zm, &res_buf, &res_len, 0, 0))
     {
+        if (res_len > IT_MAX_WORD)
+        {
+            yaz_log(YLOG_LOG, "Truncating long term %ld", (long) res_len);
+            res_len = IT_MAX_WORD;
+        }
         extract_add_string(p, zm, res_buf, res_len);
         p->seqno++;
     }

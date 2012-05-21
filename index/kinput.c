@@ -328,6 +328,8 @@ static void key_heap_insert(struct heap_info *hi, const char *buf, int nbytes,
 {
     int cur, parent;
 
+    assert(nbytes < INP_NAME_MAX);
+
     cur = ++(hi->heapnum);
     memcpy(hi->info.buf[hi->ptr[cur]], buf, nbytes);
     hi->info.file[hi->ptr[cur]] = kf;
