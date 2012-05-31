@@ -2,12 +2,22 @@ Source: idzebra
 Priority: optional
 Maintainer: Adam Dickmeiss <adam@indexdata.dk>
 Standards-Version: 3.6.0
-Build-Depends: debhelper (>= 4.0.0), libyaz4-dev (>= 4.2.0), libexpat1-dev, tcl8.4-dev, libbz2-dev, libxslt1-dev, zlib1g-dev
+Build-Depends: debhelper (>= 4.0.0),
+ libyaz4-dev (>= 4.2.0),
+ libexpat1-dev,
+ tcl8.4-dev,
+ libbz2-dev,
+ libxslt1-dev,
+ zlib1g-dev
 
 Package: idzebra-2.0
 Section: text
 Architecture: any
-Depends: idzebra-2.0-common, libidzebra-2.0-dev, idzebra-2.0-utils (= ${Source-Version}), libidzebra-2.0-modules, idzebra-2.0-doc
+Depends: idzebra-2.0-common,
+ libidzebra-2.0-dev,
+ idzebra-2.0-utils (= ${Source-Version}),
+ libidzebra-2.0-modules,
+ idzebra-2.0-doc
 Description: virtual package with most components
  This virtual package installs all the necessary packages to start
  working with IDZebra - including utility programs, development libraries,
@@ -21,7 +31,12 @@ Description: virtual package with most components
 Package: libidzebra-2.0-modules
 Section: libs
 Architecture: any
-Depends: libidzebra-2.0-mod-alvis, libidzebra-2.0-mod-dom, libidzebra-2.0-mod-grs-xml, libidzebra-2.0-mod-grs-regx, libidzebra-2.0-mod-grs-marc, libidzebra-2.0-mod-text
+Depends: libidzebra-2.0-mod-alvis,
+ libidzebra-2.0-mod-dom,
+ libidzebra-2.0-mod-grs-xml,
+ libidzebra-2.0-mod-grs-regx,
+ libidzebra-2.0-mod-grs-marc,
+ libidzebra-2.0-mod-text
 Description: record filter modules
  This virtual package contains all base IDZebra filter modules.
  .
