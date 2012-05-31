@@ -1,3 +1,8 @@
+
+Fix buffer overrun for terms using ICU normalization.
+
+Increase max size of indexing term from 256 to 512.
+
 --- 2.0.50 2011/11/01
 
 Fix a bug in zebra_begin_trans where Zebra could mark a transaction
