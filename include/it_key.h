@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 YAZ_BEGIN_CDECL
 
-#define IT_MAX_WORD 256
+#define IT_MAX_WORD 512
 
 #define IT_KEY_LEVEL_MAX 5
 struct it_key {
