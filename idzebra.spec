@@ -2,7 +2,7 @@
 Name: idzebra
 %define namev idzebra-2.0
 Version: %{idmetaversion}
-Release: 2indexdata
+Release: 1indexdata
 License: GPL
 Vendor: Index Data ApS <info@indexdata.dk>
 Source: idzebra-%{version}.tar.gz

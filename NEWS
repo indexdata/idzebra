@@ -1,3 +1,7 @@
+--- 2.0.52 2012/05/31
+
+Fix problem in dictionary due to increase max size of term.
+
 --- 2.0.51 2012/05/31
 
 Fix buffer overrun for terms using ICU normalization.
