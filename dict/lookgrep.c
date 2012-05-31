@@ -412,7 +412,7 @@ int dict_lookup_grep(Dict dict, const char *pattern, int range, void *client,
 
     mc = mk_MatchContext(dfa, range);
 
-    Rj = (MatchWord *) xcalloc((MAX_LENGTH+1) * mc->n, sizeof(*Rj));
+    Rj = (MatchWord *) xcalloc((MAX_LENGTH+2) * mc->fact, sizeof(*Rj));
 
     set_bit (mc, Rj, 0, 0);
     for (d = 1; d<=mc->range; d++)
