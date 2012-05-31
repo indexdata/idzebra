@@ -1,8 +1,9 @@
 %define idmetaversion %(. ./IDMETA; echo $VERSION|tr -d '\n')
-Name: idzebra-2.0
+Name: idzebra
+%define namev idzebra-2.0
 Version: %{idmetaversion}
 Release: 1indexdata
-Requires: lib%{name}-modules = %{version}
+Requires: lib%{namev}-modules = %{version}
 License: GPL
 Group: Applications/Databases
 Vendor: Index Data ApS <info@indexdata.dk>
@@ -20,27 +21,27 @@ and retrieval engine. It reads structured records in a variety of input
 formats (eg. email, XML, MARC) and allows access to them through exact
 boolean search expressions and relevance-ranked free-text queries. 
 
-%package -n lib%{name}
+%package -n lib%{namev}
 Summary: Zebra libraries
 Group: Libraries
 Requires: libyaz4 bzip2-libs
-%description -n lib%{name}
+%description -n lib%{namev}
 Libraries for the Zebra search engine.
 %post -p /sbin/ldconfig 
 %postun -p /sbin/ldconfig 
 
-%package -n lib%{name}-modules
+%package -n lib%{namev}-modules
 Summary: Zebra modules
 Group: Libraries
-Requires: lib%{name} = %{version} expat tcl
-%description -n lib%{name}-modules
+Requires: lib%{namev} = %{version} expat tcl
+%description -n lib%{namev}-modules
 Modules for the Zebra search engine.
 
-%package -n lib%{name}-devel
+%package -n lib%{namev}-devel
 Summary: Zebra development libraries
 Group: Development/Libraries
-Requires: lib%{name} = %{version} libyaz4-devel bzip2-devel 
-%description -n lib%{name}-devel
+Requires: lib%{namev} = %{version} libyaz4-devel bzip2-devel 
+%description -n lib%{namev}-devel
 Development libraries for the Zebra search engine.
 
 %prep
@@ -80,13 +81,13 @@ rm -fr ${RPM_BUILD_ROOT}
 %{_mandir}/*/idzebra-abs2dom*
 /usr/share/idzebra-2.0-examples
 
-%files -n lib%{name}
+%files -n lib%{namev}
 %{_libdir}/*.so.*
 
-%files -n lib%{name}-modules
+%files -n lib%{namev}-modules
 %{_libdir}/idzebra-2.0/modules/*
 
-%files -n lib%{name}-devel
+%files -n lib%{namev}-devel
 %{_bindir}/idzebra-config-*
 %{_includedir}/idzebra-2.0
 %{_libdir}/*.so
