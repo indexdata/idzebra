@@ -2,10 +2,8 @@
 Name: idzebra
 %define namev idzebra-2.0
 Version: %{idmetaversion}
-Release: 1indexdata
-Requires: lib%{namev}-modules = %{version}
+Release: 2indexdata
 License: GPL
-Group: Applications/Databases
 Vendor: Index Data ApS <info@indexdata.dk>
 Source: idzebra-%{version}.tar.gz
 BuildRoot: %{_tmppath}/idzebra-%{version}-root
@@ -14,12 +12,23 @@ URL: http://www.indexdata.dk/zebra/
 BuildRequires: libyaz4-devel >= 4.2.0
 BuildRequires: expat-devel, bzip2-devel, tcl, zlib-devel
 Summary: High-performance, structured text indexing and retrival engine.
-
+Group: Applications/Databases
 %description
 Zebra is a high-performance, general-purpose structured text indexing
 and retrieval engine. It reads structured records in a variety of input
 formats (eg. email, XML, MARC) and allows access to them through exact
 boolean search expressions and relevance-ranked free-text queries. 
+
+%package -n %{namev}
+Summary: High-performance, structured text indexing and retrival engine.
+Group: Applications/Databases
+Requires: lib%{namev}-modules = %{version}
+%description -n %{namev}
+Zebra is a high-performance, general-purpose structured text indexing
+and retrieval engine. It reads structured records in a variety of input
+formats (eg. email, XML, MARC) and allows access to them through exact
+boolean search expressions and relevance-ranked free-text queries. 
+
 
 %package -n lib%{namev}
 Summary: Zebra libraries
@@ -45,7 +54,7 @@ Requires: lib%{namev} = %{version} libyaz4-devel bzip2-devel
 Development libraries for the Zebra search engine.
 
 %prep
-%setup -n idzebra-%{version}
+%setup
 
 %build
 
@@ -68,7 +77,7 @@ rm ${RPM_BUILD_ROOT}/%{_mandir}/man1/idzebra-config.*
 %clean
 rm -fr ${RPM_BUILD_ROOT}
 
-%files
+%files -n %{namev}
 %defattr(-,root,root)
 %doc README LICENSE.zebra NEWS
 %config /usr/share/idzebra-2.0/tab
