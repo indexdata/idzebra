@@ -29,7 +29,7 @@
   </para>
 
   <para>
-   Version 2.1 of Zebra can also be configured - per field - to use the
+   Version 2.0.20 of Zebra can also be configured - per field - to use the
    <ulink url="&url.icu;">ICU</ulink> library to perform tokenization and
    normalization of strings. This is an alternative to the "charmap"
    files which has been part of Zebra since its first release.
