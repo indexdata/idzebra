@@ -237,7 +237,7 @@ static void add_non_space(const char *start, const char *end,
 static int term_100_icu(zebra_map_t zm,
                         const char **src, WRBUF term_dict, int space_split,
                         WRBUF display_term,
-                        int right_trunc)
+                        int mode)
 {
     int i;
     const char *res_buf = 0;
@@ -251,7 +251,7 @@ static int term_100_icu(zebra_map_t zm,
         return 0;
     }
     wrbuf_write(display_term, display_buf, display_len);
-    if (right_trunc)
+    if (mode)
     {
         /* ICU sort keys seem to be of the form
            basechars \x01 accents \x01 length
@@ -272,6 +272,8 @@ static int term_100_icu(zebra_map_t zm,
         }
         res_len = i; /* reduce res_len */
     }
+    if (mode & 2)
+        wrbuf_puts(term_dict, ".*");
     for (i = 0; i < res_len; i++)
     {
         if (strchr(REGEX_CHARS "\\", res_buf[i]))
@@ -281,8 +283,11 @@ static int term_100_icu(zebra_map_t zm,
             
         wrbuf_putc(term_dict, res_buf[i]);
     }
-    if (right_trunc)
+    if (mode & 1)
         wrbuf_puts(term_dict, ".*");
+    else if (mode)
+        wrbuf_puts(term_dict, "\x01\x01.*");
+        
     return 1;
 }
 
@@ -1050,6 +1055,20 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                 break;
             case 1:          /* right truncation */
                 if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 1))
+                {
+                    *term_sub = 0;
+                    return ZEBRA_OK;
+                }
+                break;
+            case 2:
+                if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 2))
+                {
+                    *term_sub = 0;
+                    return ZEBRA_OK;
+                }
+                break;
+            case 3:
+                if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 3))
                 {
                     *term_sub = 0;
                     return ZEBRA_OK;
