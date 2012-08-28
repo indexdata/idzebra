@@ -234,20 +234,109 @@ static void add_non_space(const char *start, const char *end,
 }
 
 
+static int term_102_icu(zebra_map_t zm,
+                        const char **src, WRBUF term_dict, int space_split,
+                        WRBUF display_term)
+{
+    int no_terms = 0;
+    const char *s0 = *src, *s1;
+    while (*s0 == ' ')
+        s0++;
+    s1 = s0;
+    for (;;)
+    {
+        if (*s1 == ' ' && space_split)
+            break;
+        else if (*s1 && !strchr(REGEX_CHARS "-", *s1))
+            s1++;
+        else
+        {
+            /* EOF or regex reserved char */
+            if (s0 != s1)
+            {
+                const char *res_buf = 0;
+                size_t res_len = 0;
+                const char *display_buf;
+                size_t display_len;
+
+                zebra_map_tokenize_start(zm, s0, s1 - s0);
+
+                if (zebra_map_tokenize_next(zm, &res_buf, &res_len,
+                                            &display_buf, &display_len))
+                {
+                    size_t i = res_len;
+                    while (--i >= 0 && res_buf[i] != '\x01')
+                        ;
+                    if (i > 0)
+                    {
+                        while (--i >= 0 && res_buf[i] != '\x01')
+                            ;
+                    }
+                    res_len = i; /* reduce res_len */
+                    for (i = 0; i < res_len; i++)
+                    {
+                        if (strchr(REGEX_CHARS "\\", res_buf[i]))
+                            wrbuf_putc(term_dict, '\\');
+                        if (res_buf[i] < 32)
+                            wrbuf_putc(term_dict, '\x01');
+                        
+                        wrbuf_putc(term_dict, res_buf[i]);
+                    }
+                    wrbuf_write(display_term, display_buf, display_len);
+
+                    no_terms++;
+                }
+            }
+            if (*s1 == '\0')
+                break;
+            
+            wrbuf_putc(term_dict, *s1);
+            wrbuf_putc(display_term, *s1);
+
+            s1++;
+            s0 = s1;
+        }
+    }
+    if (no_terms)
+        wrbuf_puts(term_dict, "\x01\x01.*");
+    *src = s1;
+    return no_terms;
+}
+
 static int term_100_icu(zebra_map_t zm,
                         const char **src, WRBUF term_dict, int space_split,
                         WRBUF display_term,
                         int mode)
 {
-    int i;
+    size_t i;
     const char *res_buf = 0;
     size_t res_len = 0;
     const char *display_buf;
     size_t display_len;
+    const char *s0 = *src, *s1;
+
+    while (*s0 == ' ')
+        s0++;
+    
+    if (*s0 == '\0')
+        return 0;
+    
+    if (space_split)
+    {
+        s1 = s0;
+        while (*s1 && *s1 != ' ')
+            s1++;
+    }
+    else
+        s1 = s0 + strlen(s0);
+
+    *src = s1;
+
+    zebra_map_tokenize_start(zm, s0, s1 - s0);
+    
     if (!zebra_map_tokenize_next(zm, &res_buf, &res_len,
                                  &display_buf, &display_len))
     {
-        *src += strlen(*src);
         return 0;
     }
     wrbuf_write(display_term, display_buf, display_len);
@@ -279,15 +368,14 @@ static int term_100_icu(zebra_map_t zm,
         if (strchr(REGEX_CHARS "\\", res_buf[i]))
             wrbuf_putc(term_dict, '\\');
         if (res_buf[i] < 32)
-            wrbuf_putc(term_dict, 1);
-            
+            wrbuf_putc(term_dict, '\x01');
+        
         wrbuf_putc(term_dict, res_buf[i]);
     }
     if (mode & 1)
         wrbuf_puts(term_dict, ".*");
     else if (mode)
         wrbuf_puts(term_dict, "\x01\x01.*");
-        
     return 1;
 }
 
@@ -1053,6 +1141,13 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                     return ZEBRA_OK;
                 }
                 break;
+            case 102:
+                if (!term_102_icu(zm, &termp, term_dict, space_split, display_term))
+                {
+                    *term_sub = 0;
+                    return ZEBRA_OK;
+                }
+                break;                
             case 1:          /* right truncation */
                 if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 1))
                 {
@@ -1389,8 +1484,6 @@ static ZEBRA_RES search_terms_list(ZebraHandle zh,
                                    struct rset_key_control *kc)
 {
     zebra_map_t zm = zebra_map_get_or_add(zh->reg->zebra_maps, index_type);
-    if (zebra_maps_is_icu(zm))
-        zebra_map_tokenize_start(zm, termz, strlen(termz));
     return search_terms_chrmap(zh, zapt, termz, attributeSet, hits_limit,
                                stream, index_type, complete_flag,
                                rank_type, xpath_use,
@@ -2063,7 +2156,7 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
         return rset_create_null(rset_nmem, kc, 0);
     else
     {
-        int i, r, max_pos;
+        int i, max_pos;
         char ord_buf[32];
         RSET rset;
         WRBUF term_dict = wrbuf_alloc();
@@ -2081,8 +2174,8 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
         wrbuf_puts(term_dict, term);
         
         grep_info.isam_p_indx = 0;
-        r = dict_lookup_grep(zh->reg->dict, wrbuf_cstr(term_dict), 0,
-                             &grep_info, &max_pos, 0, grep_handle);
+        dict_lookup_grep(zh->reg->dict, wrbuf_cstr(term_dict), 0,
+                         &grep_info, &max_pos, 0, grep_handle);
         yaz_log(YLOG_DEBUG, "%s %d positions", term,
                 grep_info.isam_p_indx);
         rset = rset_trunc(zh, grep_info.isam_p_buf,
