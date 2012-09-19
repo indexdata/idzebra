@@ -58,7 +58,7 @@ void inline_destroy_field(inline_field *p)
 static inline_subfield *inline_mk_subfield(inline_subfield *parent)
 {
     inline_subfield *p = (inline_subfield *)xmalloc(sizeof(*p));
-    
+
     if (p)
     {
 	memset(p, 0, sizeof(*p));
@@ -98,10 +98,10 @@ int inline_parse(inline_field *pif, const char *tag, const char *s)
 {
     inline_field *pf = pif;
     char *p = (char *)s;
-    
+
     if (!pf)
 	return -1;
-	
+
     if (pf->name[0] == '\0')
     {
 	if ((sscanf(p, "%3s", pf->name)) != 1)
@@ -123,10 +123,10 @@ int inline_parse(inline_field *pif, const char *tag, const char *s)
     else
     {
 	inline_subfield *psf = inline_mk_subfield(0);
-	
+
 	sscanf(tag, "%1s", psf->name);
 	psf->data = xstrdup(p);
-	
+
 	if (!pf->list)
 	{
 	    pf->list = psf;

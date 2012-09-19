@@ -78,7 +78,7 @@ char *data1_nodetosoif (data1_handle dh, data1_node *n, int select, int *len)
     char buf[128];
 
     wrbuf_rewind(b);
-    
+
     if (n->which != DATA1N_root)
 	return 0;
     sprintf(buf, "@%s{\n", n->u.root.type);

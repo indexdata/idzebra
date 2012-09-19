@@ -65,7 +65,7 @@ data1_tag *data1_gettagbynum (data1_handle dh, data1_tagset *s,
 			      int type, int value)
 {
     data1_tag *r;
-    
+
     for (; s; s = s->next)
     {
 	/* scan local set */
@@ -173,7 +173,7 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
 		fclose(f);
 		return 0;
 	    }
-	    
+
 	    /* read namelist */
 	    nm = names;
 	    npp = &rr->names;
@@ -204,7 +204,7 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
 	else if (!strcmp(cmd, "reference"))
 	{
 	    char *name;
-	    
+
 	    if (argc != 2)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Bad # args to reference",

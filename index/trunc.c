@@ -149,23 +149,23 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
 	int cmp_border = preserve_position ? 0 : 1;
 	NMEM rset_nmem_sub = nmem_create(); /* all sub rsets not needed
 					       after this */
-        
+
         rset = (RSET *) xmalloc(sizeof(*rset) * rsmax);
         rsfd = (RSFD *) xmalloc(sizeof(*rsfd) * rsmax);
-        
+
         for (i = from; i < to; i += i_add)
         {
             if (i_add <= to - i)
                 rset[rscur] = rset_trunc_r(zi, term, length, flags,
 					   isam_p, i, i+i_add,
 					   merge_chunk, preserve_position,
-					   term_type, rset_nmem_sub, 
+					   term_type, rset_nmem_sub,
 					   kctrl, scope, 0);
             else
                 rset[rscur] = rset_trunc_r(zi, term, length, flags,
 					   isam_p, i, to,
 					   merge_chunk, preserve_position,
-					   term_type, rset_nmem_sub, 
+					   term_type, rset_nmem_sub,
 					   kctrl, scope, 0);
             rscur++;
         }
@@ -414,7 +414,7 @@ RSET rset_trunc(ZebraHandle zh, ISAM_P *isam_p, int no,
 
     termid = rset_term_create(term, length, flags, term_type, rset_nmem, ol,
 			      *index_type, hits_limit, term_ref_id);
-    
+
     if (no < 1)
 	return rset_create_null(rset_nmem, kctrl, termid);
     else if (no == 1)

@@ -45,7 +45,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=/root/first content",1));
     YAZ_CHECK(tl_query(zh, "@attr {1=/root/first[@attr='danish']} content",1));
     YAZ_CHECK(tl_query(zh, "@attr {1=/root/second[@attr='danish lake']} content",1));
-    YAZ_CHECK(tl_query(zh, "@attr {1=/root/third[@attr='dansk s\xc3\xb8']} content",1)); 
+    YAZ_CHECK(tl_query(zh, "@attr {1=/root/third[@attr='dansk s\xc3\xb8']} content",1));
     /* FIXME - This triggers bug200 */
 
     YAZ_CHECK(tl_close_down(zh, zs));

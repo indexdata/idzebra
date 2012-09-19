@@ -90,10 +90,10 @@ CFile cf_open(MFile mf, MFile_area area, const char *fname,
     memset(cf, 'Z', sizeof(*cf));
 
     yaz_log(YLOG_DEBUG, "cf: open %s %s", fname, wflag ? "rdwr" : "rd");
-   
+
     cf->block_mf = 0;
     cf->hash_mf = 0;
-    cf->rmf = mf; 
+    cf->rmf = mf;
 
     assert(firstp);
 
@@ -138,7 +138,7 @@ CFile cf_open(MFile mf, MFile_area area, const char *fname,
         cf->head.block_size = block_size;
         cf->head.hash_size = 199;
         hash_bytes = cf->head.hash_size * sizeof(zint);
-        cf->head.flat_bucket = cf->head.next_bucket = cf->head.first_bucket = 
+        cf->head.flat_bucket = cf->head.next_bucket = cf->head.first_bucket =
             (hash_bytes+sizeof(cf->head))/HASH_BSIZE + 2;
         cf->head.next_block = 1;
         cf->array = (zint *) xmalloc(hash_bytes);
@@ -205,7 +205,7 @@ static void release_bucket(CFile cf, struct CFile_hash_bucket *p)
     *p->h_prev = p->h_next;
     if (p->h_next)
         p->h_next->h_prev = p->h_prev;
-    
+
     --(cf->bucket_in_memory);
     xfree(p);
 }
@@ -254,7 +254,7 @@ static struct CFile_hash_bucket *alloc_bucket(CFile cf, zint block_no, int hno)
         cf->bucket_lru_front->lru_next = p;
     else
         cf->bucket_lru_back = p;
-    cf->bucket_lru_front = p; 
+    cf->bucket_lru_front = p;
 
     pp = cf->parray + hno;
     p->h_next = *pp;
@@ -396,7 +396,7 @@ static int cf_moveto_flat(CFile cf)
     yaz_log(YLOG_DEBUG, "cf: Moving to flat shadow: %s", cf->rmf->name);
     yaz_log(YLOG_DEBUG, "cf: hits=%d miss=%d bucket_in_memory=" ZINT_FORMAT " total="
 	  ZINT_FORMAT,
-	cf->no_hits, cf->no_miss, cf->bucket_in_memory, 
+	cf->no_hits, cf->no_miss, cf->bucket_in_memory,
         cf->head.next_bucket - cf->head.first_bucket);
     assert(cf->head.state == CFILE_STATE_HASH);
     if (flush_bucket(cf, -1))
@@ -449,10 +449,10 @@ static zint cf_new_hash(CFile cf, zint no)
 {
     int hno = cf_hash(cf, no);
     struct CFile_hash_bucket *hbprev = NULL, *hb = cf->parray[hno];
-    zint *bucketpp = &cf->array[hno]; 
+    zint *bucketpp = &cf->array[hno];
     int i;
     zint vno = (cf->head.next_block)++;
-  
+
     for (hb = cf->parray[hno]; hb; hb = hb->h_next)
         if (!hb->ph.vno[HASH_BUCKET-1])
             for (i = 0; i<HASH_BUCKET; i++)
@@ -542,7 +542,7 @@ int cf_read(CFile cf, zint no, int offset, int nbytes, void *buf)
 {
     zint block;
     int ret;
-    
+
     assert(cf);
     zebra_mutex_lock(&cf->mutex);
     ret = cf_lookup(cf, no, &block);

@@ -109,7 +109,7 @@ struct MFile_area_struct
 MFile_area mf_init(const char *name, const char *spec, const char *base,
                    int only_shadow_files)
     ZEBRA_GCC_ATTR((warn_unused_result));
-    
+
 /** \brief destroys metafile area handle
     \param ma metafile area handle
 */
@@ -124,7 +124,7 @@ void mf_destroy(MFile_area ma);
  */
 MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     ZEBRA_GCC_ATTR((warn_unused_result));
-    
+
 /** \brief closes metafile
     \param mf metafile handle
     \retval 0 OK
@@ -143,7 +143,7 @@ int mf_close(MFile mf);
  */
 int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf)
     ZEBRA_GCC_ATTR((warn_unused_result));
-    
+
 /** \brief writes block to metafile
     \param mf metafile handle
     \param no block position
@@ -154,8 +154,8 @@ int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf)
     \retval -1 error (block not written)
 */
 int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
-    ZEBRA_GCC_ATTR((warn_unused_result));    
-    
+    ZEBRA_GCC_ATTR((warn_unused_result));
+
 /** \brief reset all files in a metafile area (optionally delete them as well)
     \param ma metafile area
     \param unlink_flag if unlink_flag=1 all files are removed from FS
@@ -175,10 +175,10 @@ void mf_reset(MFile_area ma, int unlink_flag);
    on same platform depending on whether 64-bit is enabled or not.
    Note that if an area has unlimited size, that is represented
    as max_bytes = -1.
-*/ 
+*/
 int mf_area_directory_stat(MFile_area ma, int no, const char **directory,
 			   double *bytes_used, double *bytes_max);
-    
+
 YAZ_END_CDECL
 
 #endif

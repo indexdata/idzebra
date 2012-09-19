@@ -75,11 +75,11 @@ static void shellsort(void *ar, int r, size_t s,
     char v[100];
     int h, i, j, k;
     static const int incs[16] = { 1391376, 463792, 198768, 86961, 33936,
-                                  13776, 4592, 1968, 861, 336, 
+                                  13776, 4592, 1968, 861, 336,
                                   112, 48, 21, 7, 3, 1 };
     for ( k = 0; k < 16; k++)
         for (h = incs[k], i = h; i < r; i++)
-        { 
+        {
             memcpy (v, a+s*i, s);
             j = i;
             while (j > h && (*cmp)(a + s*(j-h), v) > 0)
@@ -88,7 +88,7 @@ static void shellsort(void *ar, int r, size_t s,
                 j -= h;
             }
             memcpy (a+s*j, v, s);
-        } 
+        }
 }
 #endif
 
@@ -105,7 +105,7 @@ static void encode_key_write(const char *k, struct encode_info *i, FILE *outf)
     char *bp = i->buf, *bp0;
     const char *src = (char *) &key;
     size_t klen = strlen(k);
-    
+
     if (fwrite (k, klen+1, 1, outf) != 1)
     {
         yaz_log (YLOG_FATAL|YLOG_ERRNO, "fwrite");
@@ -150,7 +150,7 @@ static void encode_key_write(const char *k, struct encode_info *i, FILE *outf)
 }
 
 static void encode_key_flush (struct encode_info *i, FILE *outf)
-{ 
+{
     iscz1_stop(i->encode_handle);
     iscz1_stop(i->decode_handle);
 }
@@ -165,22 +165,22 @@ static void *thread_func(void *vp)
     while (1)
     {
         pthread_mutex_lock(&p->mutex);
-        
+
         while (!p->is_sorting && !p->exit_flag)
             pthread_cond_wait(&p->work_available, &p->mutex);
 
         if (p->exit_flag)
             break;
-            
+
         pthread_mutex_unlock(&p->mutex);
-        
-        key_block_flush_int(p, p->thread_key_buf, 
+
+        key_block_flush_int(p, p->thread_key_buf,
                             p->thread_ptr_top, p->thread_ptr_i);
-        
+
         pthread_mutex_lock(&p->mutex);
         p->is_sorting = 0;
         pthread_cond_signal(&p->cond_sorting);
-        pthread_mutex_unlock(&p->mutex);        
+        pthread_mutex_unlock(&p->mutex);
     }
     pthread_mutex_unlock(&p->mutex);
     return 0;
@@ -231,20 +231,20 @@ void key_block_destroy(zebra_key_block_t *pp)
         {
 #if YAZ_POSIX_THREADS
             pthread_mutex_lock(&p->mutex);
-            
+
             while (p->is_sorting)
                 pthread_cond_wait(&p->cond_sorting, &p->mutex);
-            
+
             p->exit_flag = 1;
-            
+
             pthread_cond_broadcast(&p->work_available);
-            
+
             pthread_mutex_unlock(&p->mutex);
             pthread_join(p->thread_id, 0);
             pthread_cond_destroy(&p->work_available);
             pthread_cond_destroy(&p->cond_sorting);
             pthread_mutex_destroy(&p->mutex);
-            
+
 #endif
             xfree(p->alt_buf);
         }
@@ -269,30 +269,30 @@ void key_block_write(zebra_key_block_t p, zint sysno, struct it_key *key_in,
     assert(p->ptr_i > 0);
     (p->key_buf)[p->ptr_top - p->ptr_i] =
         (char*)p->key_buf + p->key_buf_used;
-    
+
     /* key_in->mem[0] ord/ch */
     /* key_in->mem[1] filter specified record ID */
-    
+
     /* encode the ordinal value (field/use/attribute) .. */
     ch = CAST_ZINT_TO_INT(key_in->mem[0]);
     p->key_buf_used +=
         key_SU_encode(ch, (char*)p->key_buf +
                       p->key_buf_used);
-    
+
     /* copy the 0-terminated stuff from str to output */
     memcpy((char*)p->key_buf + p->key_buf_used, str_buf, str_len);
     p->key_buf_used += str_len;
     ((char*)p->key_buf)[(p->key_buf_used)++] = '\0';
-    
+
     /* the delete/insert indicator */
     ((char*)p->key_buf)[(p->key_buf_used)++] = cmd;
-    
+
     if (static_rank_enable)
     {
         assert(staticrank >= 0);
         key_out.mem[j++] = staticrank;
     }
-    
+
     if (key_in->mem[1]) /* filter specified record ID */
         key_out.mem[j++] = key_in->mem[1];
     else
@@ -300,7 +300,7 @@ void key_block_write(zebra_key_block_t p, zint sysno, struct it_key *key_in,
     for (i = 2; i < key_in->len; i++)
         key_out.mem[j++] = key_in->mem[i];
     key_out.len = j;
-    
+
     memcpy((char*)p->key_buf + p->key_buf_used,
            &key_out, sizeof(key_out));
     (p->key_buf_used) += sizeof(key_out);
@@ -317,7 +317,7 @@ void key_block_flush_int(zebra_key_block_t p,
 
     if (ptr_i == 0)
         return ;
-        
+
     (p->key_file_no)++;
     yaz_log(YLOG_DEBUG, "sorting section %d", (p->key_file_no));
 
@@ -339,10 +339,10 @@ void key_block_flush_int(zebra_key_block_t p,
     }
     yaz_log(YLOG_DEBUG, "writing section %d", p->key_file_no);
     prevcp = cp = (key_buf)[ptr_top - ptr_i];
-    
+
     encode_key_init (&encode_info);
     encode_key_write (cp, &encode_info, outf);
-    
+
     while (--ptr_i > 0)
     {
         cp = (key_buf)[ptr_top - ptr_i];
@@ -374,24 +374,24 @@ void key_block_flush(zebra_key_block_t p, int is_final)
     {
 #if YAZ_POSIX_THREADS
         char **tmp;
-    
+
         pthread_mutex_lock(&p->mutex);
-        
+
         while (p->is_sorting)
             pthread_cond_wait(&p->cond_sorting, &p->mutex);
-        
+
         p->is_sorting = 1;
-        
+
         p->thread_ptr_top = p->ptr_top;
         p->thread_ptr_i = p->ptr_i;
         p->thread_key_buf = p->key_buf;
-        
+
         tmp = p->key_buf;
         p->key_buf = p->alt_buf;
         p->alt_buf = tmp;
-        
+
         pthread_cond_signal(&p->work_available);
-        
+
         if (is_final)
         {
             while (p->is_sorting)

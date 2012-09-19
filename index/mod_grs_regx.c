@@ -61,7 +61,7 @@ struct regxCode {
 };
 
 struct lexRuleAction {
-    int which; 
+    int which;
     union {
         struct {
             struct DFA *dfa;    /* REGX_PATTERN */
@@ -130,7 +130,7 @@ struct lexSpec {
     data1_node **d1_stack;
     int d1_level;
     int stop_flag;
-    
+
     int *arg_start;
     int *arg_end;
     int arg_no;
@@ -184,7 +184,7 @@ static int f_win_advance (struct lexSpec *spec, int *pos)
 {
     int size;
     char *buf;
-    
+
     if (*pos >= spec->f_win_start && *pos < spec->f_win_end)
         return spec->f_win_buf[(*pos)++ - spec->f_win_start];
     if (*pos == F_WIN_EOF)
@@ -208,7 +208,7 @@ static void regxCodeDel (struct regxCode **pp)
 	if (p->tcl_obj)
 	    Tcl_DecrRefCount (p->tcl_obj);
 #endif
-        xfree (p->str); 
+        xfree (p->str);
         xfree (p);
         *pp = NULL;
     }
@@ -302,7 +302,7 @@ static struct lexSpec *lexSpecCreate (const char *name, data1_handle dh)
 {
     struct lexSpec *p;
     int i;
-    
+
     p = (struct lexSpec *) xmalloc (sizeof(*p));
     p->name = (char *) xmalloc (strlen(name)+1);
     strcpy (p->name, name);
@@ -528,7 +528,7 @@ int readOneSpec (struct lexSpec *spec, const char *s)
     }
     if (!spec->context)
 	spec->context = lexContextCreate ("main");
-       
+
     switch (tok)
     {
     case REGX_BEGIN:
@@ -623,7 +623,7 @@ int readFileSpec (struct lexSpec *spec)
         else
         {
             int addLine = 0;
-	    
+
             while (1)
             {
                 int c1 = c;
@@ -661,7 +661,7 @@ int readFileSpec (struct lexSpec *spec)
     }
     if (errors)
         return -1;
-    
+
     return 0;
 }
 
@@ -688,10 +688,10 @@ static void execData (struct lexSpec *spec,
     }
     else if (elen > 0)
         yaz_log (YLOG_LOG, "data(%d bytes) %.*s", elen, elen, ebuf);
-    else 
+    else
         yaz_log (YLOG_LOG, "data(%d bytes)", elen);
 #endif
-        
+
     if (spec->d1_level <= 1)
         return;
 
@@ -732,22 +732,22 @@ static void execData (struct lexSpec *spec,
 	    nv[strlen(nv)+elen] = '\0';
 	    (*ap)->value = nv;
 	}
-    } 
-    else 
+    }
+    else
     {
-	if ((res = spec->d1_stack[spec->d1_level]) && 
+	if ((res = spec->d1_stack[spec->d1_level]) &&
 	    res->which == DATA1N_data)
 	    org_len = res->u.data.len;
 	else
 	{
 	    org_len = 0;
-	    
+
 	    res = data1_mk_node2 (spec->dh, spec->m, DATA1N_data, parent);
 	    res->u.data.what = DATA1I_text;
 	    res->u.data.len = 0;
 	    res->u.data.formatted_text = formatted_text;
 	    res->u.data.data = 0;
-	    
+
 	    if (spec->d1_stack[spec->d1_level])
 		spec->d1_stack[spec->d1_level]->next = res;
 	    spec->d1_stack[spec->d1_level] = res;
@@ -755,7 +755,7 @@ static void execData (struct lexSpec *spec,
 	if (org_len + elen >= spec->concatBuf[spec->d1_level].max)
 	{
 	    char *old_buf, *new_buf;
-	    
+
 	    spec->concatBuf[spec->d1_level].max = org_len + elen + 256;
 	    new_buf = (char *) xmalloc (spec->concatBuf[spec->d1_level].max);
 	    if ((old_buf = spec->concatBuf[spec->d1_level].buf))
@@ -779,9 +779,9 @@ static void execDataP (struct lexSpec *spec,
 static void tagDataRelease (struct lexSpec *spec)
 {
     data1_node *res;
-    
+
     if ((res = spec->d1_stack[spec->d1_level]) &&
-	res->which == DATA1N_data && 
+	res->which == DATA1N_data &&
 	res->u.data.what == DATA1I_text)
     {
 	assert (!res->u.data.data);
@@ -795,7 +795,7 @@ static void tagDataRelease (struct lexSpec *spec)
     }
 }
 
-static void variantBegin (struct lexSpec *spec, 
+static void variantBegin (struct lexSpec *spec,
 			  const char *class_str, int class_len,
 			  const char *type_str, int type_len,
 			  const char *value_str, int value_len)
@@ -821,7 +821,7 @@ static void variantBegin (struct lexSpec *spec,
     memcpy (ttype, type_str, type_len);
     ttype[type_len] = '\0';
 
-#if REGX_DEBUG 
+#if REGX_DEBUG
     yaz_log (YLOG_LOG, "variant begin(%s,%s,%d)", tclass, ttype,
 	  spec->d1_level);
 #endif
@@ -830,7 +830,7 @@ static void variantBegin (struct lexSpec *spec,
 	  data1_getvartypeby_absyn(spec->dh, parent->root->u.root.absyn,
 				   tclass, ttype)))
 	return;
-    
+
     if (parent->which != DATA1N_variant)
     {
 	res = data1_mk_node2 (spec->dh, spec->m, DATA1N_variant, parent);
@@ -846,7 +846,7 @@ static void variantBegin (struct lexSpec *spec,
 	    break;
 	}
 
-#if REGX_DEBUG 
+#if REGX_DEBUG
     yaz_log (YLOG_LOG, "variant node(%d)", spec->d1_level);
 #endif
     parent = spec->d1_stack[spec->d1_level-1];
@@ -859,7 +859,7 @@ static void variantBegin (struct lexSpec *spec,
     res->lbuf[value_len] = '\0';
 
     res->u.variant.value = res->lbuf;
-    
+
     if (spec->d1_stack[spec->d1_level])
 	tagDataRelease (spec);
     spec->d1_stack[spec->d1_level] = res;
@@ -879,7 +879,7 @@ static void tagStrip (const char **tag, int *len)
     *len -= i;
 }
 
-static void tagBegin (struct lexSpec *spec, 
+static void tagBegin (struct lexSpec *spec,
                       const char *tag, int len)
 {
     if (spec->d1_level == 0)
@@ -891,7 +891,7 @@ static void tagBegin (struct lexSpec *spec,
     if (spec->d1_stack[spec->d1_level])
 	tagDataRelease (spec);
 
-#if REGX_DEBUG 
+#if REGX_DEBUG
     yaz_log (YLOG_LOG, "begin tag(%.*s, %d)", len, tag, spec->d1_level);
 #endif
 
@@ -1093,7 +1093,7 @@ static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
 	yaz_log (YLOG_LOG, "begin record %s", absynName);
 #endif
         res = data1_mk_root (spec->dh, spec->m, absynName);
-        
+
 	spec->d1_level = 0;
 
         spec->d1_stack[spec->d1_level++] = res;
@@ -1140,7 +1140,7 @@ static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
     struct lexSpec *spec = (struct lexSpec *) clientData;
     if (argc < 2)
 	return TCL_ERROR;
-    
+
     if (!strcmp (argv[1], "record"))
     {
 	while (spec->d1_level)
@@ -1196,7 +1196,7 @@ static int cmd_tcl_data (ClientData clientData, Tcl_Interp *interp,
     const char *element = 0;
     const char *attribute = 0;
     struct lexSpec *spec = (struct lexSpec *) clientData;
-    
+
     while (argi < argc)
     {
 	if (!strcmp("-text", argv[argi]))
@@ -1227,7 +1227,7 @@ static int cmd_tcl_data (ClientData clientData, Tcl_Interp *interp,
 #if TCL_MAJOR_VERSION > 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION > 0)
 	Tcl_DString ds;
 	char *native = Tcl_UtfToExternalDString(0, argv[argi], -1, &ds);
-	execData (spec, native, strlen(native), textFlag, attribute, 
+	execData (spec, native, strlen(native), textFlag, attribute,
 		  attribute ? strlen(attribute) : 0);
 	Tcl_DStringFree (&ds);
 #else
@@ -1248,7 +1248,7 @@ static int cmd_tcl_unread (ClientData clientData, Tcl_Interp *interp,
     int argi = 1;
     int offset = 0;
     int no;
-    
+
     while (argi < argc)
     {
 	if (!strcmp("-offset", argv[argi]))
@@ -1273,17 +1273,17 @@ static int cmd_tcl_unread (ClientData clientData, Tcl_Interp *interp,
 }
 
 static void execTcl (struct lexSpec *spec, struct regxCode *code)
-{   
+{
     int i;
     int ret;
     for (i = 0; i < spec->arg_no; i++)
     {
 	char var_name[10], *var_buf;
 	int var_len, ch;
-	
+
 	sprintf (var_name, "%d", i);
 	var_buf = f_win_get (spec, spec->arg_start[i], spec->arg_end[i],
-			     &var_len);	
+			     &var_len);
 	if (var_buf)
 	{
 	    ch = var_buf[var_len];
@@ -1300,7 +1300,7 @@ static void execTcl (struct lexSpec *spec, struct regxCode *code)
     if (ret != TCL_OK)
     {
     	const char *err = Tcl_GetVar(spec->tcl_interp, "errorInfo", 0);
-	yaz_log(YLOG_FATAL, "Tcl error, line=%d, \"%s\"\n%s", 
+	yaz_log(YLOG_FATAL, "Tcl error, line=%d, \"%s\"\n%s",
 	    spec->tcl_interp->errorLine,
 	    spec->tcl_interp->result,
 	    err ? err : "[NO ERRORINFO]");
@@ -1314,12 +1314,12 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
     const char *s = code->str;
     int cmd_len, r;
     const char *cmd_str;
-    
+
     r = execTok (spec, &s, &cmd_str, &cmd_len);
     while (r)
     {
         char *p, ptmp[64];
-        
+
         if (r == 1)
         {
             r = execTok (spec, &s, &cmd_str, &cmd_len);
@@ -1353,7 +1353,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                     yaz_log (YLOG_LOG, "begin record %s", absynName);
 #endif
                     res = data1_mk_root (spec->dh, spec->m, absynName);
-                    
+
 		    spec->d1_level = 0;
 
                     spec->d1_stack[spec->d1_level++] = res;
@@ -1373,7 +1373,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                     continue;
                 tagBegin (spec, cmd_str, cmd_len);
                 r = execTok (spec, &s, &cmd_str, &cmd_len);
-            } 
+            }
 	    else if (!strcmp (p, "variant"))
 	    {
 		int class_len;
@@ -1401,8 +1401,8 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 
                 variantBegin (spec, class_str, class_len,
 			      type_str, type_len, value_str, value_len);
-		
-		
+
+
 		r = execTok (spec, &s, &cmd_str, &cmd_len);
 	    }
 	    else if (!strcmp (p, "context"))
@@ -1421,7 +1421,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 			spec->context_stack[++(spec->context_stack_top)] = lc;
 		    else
 			yaz_log (YLOG_WARN, "unknown context %s", p);
-		    
+
 		}
 		r = execTok (spec, &s, &cmd_str, &cmd_len);
 	    }
@@ -1484,7 +1484,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 		if (spec->context_stack_top)
 		    (spec->context_stack_top)--;
 		r = execTok (spec, &s, &cmd_str, &cmd_len);
-	    }	    
+	    }
 	    else
 		yaz_log (YLOG_WARN, "bad keyword '%s' after end", p);
 	}
@@ -1495,7 +1495,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
             const char *element_str = NULL;
 	    int attribute_len;
 	    const char *attribute_str = NULL;
-            
+
             while ((r = execTok (spec, &s, &cmd_str, &cmd_len)) == 3)
             {
                 if (cmd_len==5 && !memcmp ("-text", cmd_str, cmd_len))
@@ -1506,14 +1506,14 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                     if (r < 2)
                         break;
                 }
-                else if (cmd_len==10 && !memcmp ("-attribute", cmd_str, 
+                else if (cmd_len==10 && !memcmp ("-attribute", cmd_str,
 						 cmd_len))
                 {
                     r = execTok (spec, &s, &attribute_str, &attribute_len);
                     if (r < 2)
                         break;
                 }
-                else 
+                else
                     yaz_log (YLOG_WARN, "bad data option: %.*s",
                           cmd_len, cmd_str);
             }
@@ -1577,7 +1577,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 		struct lexContext *lc = spec->context;
 		r = execTok (spec, &s, &cmd_str, &cmd_len);
 		p = regxStrz (cmd_str, cmd_len, ptmp);
-		
+
 		while (lc && strcmp (p, lc->name))
 		    lc = lc->next;
 		if (lc)
@@ -1800,7 +1800,7 @@ int lexNode (struct lexSpec *spec, int *ptr)
                     {
                         last_rule = state->rule_no;
                         last_ptr = *ptr;
-                    } 
+                    }
                     else if (state->rule_nno)
                     {
                         last_rule = state->rule_nno;
@@ -1825,7 +1825,7 @@ static data1_node *lexRoot (struct lexSpec *spec, off_t offset,
 
     spec->stop_flag = 0;
     spec->d1_level = 0;
-    spec->context_stack_top = 0;    
+    spec->context_stack_top = 0;
     while (lt)
     {
 	if (!strcmp (lt->name, context_name))

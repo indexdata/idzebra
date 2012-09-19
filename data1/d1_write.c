@@ -175,7 +175,7 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
                     while (l)
                     {
                         int wlen;
-                        
+
                         while (l && d1_isspace(*p))
                             p++, l--;
                         if (!l)
@@ -230,9 +230,9 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
 char *data1_nodetoidsgml (data1_handle dh, data1_node *n, int select, int *len)
 {
     WRBUF b = data1_get_wrbuf (dh);
-    
+
     wrbuf_rewind(b);
-    
+
     if (!data1_is_xmlmode (dh))
     {
         wrbuf_puts (b, "<");

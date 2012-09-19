@@ -120,12 +120,12 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
     do
     {
         int i = 0;
-            
+
         r = buf_getchar(tinfo, fi, w);
         while (r > 0 && i < 511 && w[i] != '\n' && w[i] != '\r')
         {
             i++;
-            r = buf_getchar(tinfo, fi, w + i); 
+            r = buf_getchar(tinfo, fi, w + i);
 	}
         if (i)
         {
@@ -232,7 +232,7 @@ static int filter_retrieve(void *clientData, struct recRetrieveCtrl *p)
     }
     p->output_format = yaz_oid_recsyn_sutrs;
     p->rec_buf = filter_buf;
-    p->rec_len = filter_ptr; 
+    p->rec_len = filter_ptr;
     return 0;
 }
 

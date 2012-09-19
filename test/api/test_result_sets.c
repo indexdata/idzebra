@@ -43,10 +43,10 @@ static void tst(int argc, char **argv)
         char setname[20];
         char *setnamep = setname;
         int status;
-        ODR odr_input = odr_createmem (ODR_DECODE);    
-        ODR odr_output = odr_createmem (ODR_ENCODE);    
+        ODR odr_input = odr_createmem (ODR_DECODE);
+        ODR odr_output = odr_createmem (ODR_ENCODE);
         YAZ_PQF_Parser parser = yaz_pqf_create();
-        Z_RPNQuery *query = yaz_pqf_parse(parser, odr_input, 
+        Z_RPNQuery *query = yaz_pqf_parse(parser, odr_input,
                                           "@attr 1=4 my");
         zint hits;
         if (zebra_begin_trans (zh, 1) != ZEBRA_OK)
@@ -59,7 +59,7 @@ static void tst(int argc, char **argv)
 	    fprintf(stderr, "zebra_begin_trans failed\n");
 	    exit(1);
 	}
-        
+
         sprintf(setname, "s%d", i+1);
         zebra_search_RPN (zh, odr_input, query, setname, &hits);
 

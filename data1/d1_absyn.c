@@ -116,7 +116,7 @@ void data1_hash_insert(struct data1_hash_table *ht, const char *str,
 void *data1_hash_lookup(struct data1_hash_table *ht, const char *str)
 {
     struct data1_hash_entry **he = &ht->ar[data1_hash_calc(ht, str)];
-    
+
     for (; *he && yaz_matchstr(str, (*he)->str); he = &(*he)->next)
 	;
     if (*he)
@@ -130,14 +130,14 @@ struct data1_systag {
     struct data1_systag *next;
 };
 
-struct data1_absyn_cache_info 
+struct data1_absyn_cache_info
 {
     char *name;
     data1_absyn *absyn;
     data1_absyn_cache next;
 };
 
-struct data1_attset_cache_info 
+struct data1_attset_cache_info
 {
     char *name;
     data1_attset *attset;
@@ -169,14 +169,14 @@ data1_absyn *data1_absyn_search (data1_handle dh, const char *name)
     return 0;
 }
 /* *ostrich*
-   We need to destroy DFAs, in xp_element (xelm) definitions 
+   We need to destroy DFAs, in xp_element (xelm) definitions
    pop, 2002-12-13
 */
 
 void data1_absyn_destroy (data1_handle dh)
 {
     data1_absyn_cache p = *data1_absyn_cache_get (dh);
-    
+
     while (p)
     {
         data1_absyn *abs = p->absyn;
@@ -185,7 +185,7 @@ void data1_absyn_destroy (data1_handle dh)
 	    data1_xpelement *xpe = abs->xp_elements;
 	    while (xpe) {
 		yaz_log (YLOG_DEBUG,"Destroy xp element %s",xpe->xpath_expr);
-		if (xpe->dfa) 
+		if (xpe->dfa)
                     dfa_delete (&xpe->dfa);
 		xpe = xpe->next;
 	    }
@@ -267,7 +267,7 @@ data1_attset *data1_attset_add (data1_handle dh, const char *name)
 {
     NMEM mem = data1_nmem_get (dh);
     data1_attset *attset;
-    
+
     attset = data1_read_attset (dh, name);
     if (!attset)
 	yaz_log (YLOG_WARN|YLOG_ERRNO, "Couldn't load attribute set %s", name);
@@ -276,7 +276,7 @@ data1_attset *data1_attset_add (data1_handle dh, const char *name)
 	data1_attset_cache p = (data1_attset_cache)
 	    nmem_malloc (mem, sizeof(*p));
 	data1_attset_cache *pp = data1_attset_cache_get (dh);
-	
+
 	attset->name = p->name = nmem_strdup(mem, name);
 	p->attset = attset;
 	p->next = *pp;
@@ -337,7 +337,7 @@ data1_element *data1_getelementbytagname (data1_handle dh, data1_absyn *abs,
 	for (; r; r = r->next)
 	{
 	    data1_name *n;
-	    
+
 	    for (n = r->tag->names; n; n = n->next)
 		data1_hash_insert(ht, n->name, r, 0);
 	}
@@ -419,7 +419,7 @@ void fix_element_ref (data1_handle dh, data1_absyn *absyn, data1_element *e)
 
  */
 
-static const char * mk_xpath_regexp (data1_handle dh, const char *expr) 
+static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
 {
     const char *p = expr;
     int abs = 1;
@@ -427,12 +427,12 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
     char *stack[32];
     char *res_p, *res = 0;
     size_t res_size = 1;
-    
+
     if (*p != '/')
 	return ("");
     p++;
-    if (*p == '/') 
-    { 
+    if (*p == '/')
+    {
 	abs =0;
 	p++;
     }
@@ -453,10 +453,10 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
 		is_predicate=1;
 	    else if (*pp == ']')
 		is_predicate=0;
-	    else 
+	    else
 	    {
 		if (!is_predicate) {
-		    if (*pp == '*') 
+		    if (*pp == '*')
 			*s++ = '.';
 		    *s++ = *pp;
 		}
@@ -480,7 +480,7 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
     }
     if (!abs)
     {
-	sprintf(res_p, ".*"); 
+	sprintf(res_p, ".*");
 	res_p += 2;
     }
     sprintf (res_p, "$");
@@ -543,7 +543,7 @@ static int parse_termlists(data1_handle dh, data1_termlist ***tpp,
 	*tp = (data1_termlist *)
 	    nmem_malloc(data1_nmem_get(dh), sizeof(**tp));
 	(*tp)->next = 0;
-        
+
         if (*attname == '!')
         {
             if (!xpelement && element_name)
@@ -568,10 +568,10 @@ static int parse_termlists(data1_handle dh, data1_termlist ***tpp,
 	    source = "data";    /* ok: default is leaf data */
 	(*tp)->source = (char *)
 	    nmem_strdup (data1_nmem_get (dh), source);
-	
+
 	if (r < 2) /* is the structure qualified? */
 	    (*tp)->structure = "w";
-	else 
+	else
 	    (*tp)->structure = (char *)
 		nmem_strdup (data1_nmem_get (dh), structure);
 	tp = &(*tp)->next;
@@ -600,7 +600,7 @@ static int melm2xpath(char *melm, char *buf)
     else
 	fieldtype = "datafield";
     sprintf(buf, "/*/%s[@tag=\"%s\"]", fieldtype, field);
-    if (*subfield) 
+    if (*subfield)
 	sprintf(buf + strlen(buf), "/subfield[@code=\"%s\"]", subfield);
     else if (field[0] != '0' || field[1] != '0')
 	strcat(buf, "/subfield");
@@ -626,7 +626,7 @@ int read_absyn_line(FILE *f, int *lineno, char *line, int len,
     char *p;
     int argc;
     int quoted = 0;
-    
+
     while ((p = fgets(line, len, f)))
     {
 	(*lineno)++;
@@ -637,7 +637,7 @@ int read_absyn_line(FILE *f, int *lineno, char *line, int len,
     }
     if (!p)
 	return 0;
-    
+
     for (argc = 0; *p ; argc++)
     {
 	if (*p == '#')  /* trailing comment */
@@ -697,13 +697,13 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
     char *argv[50], line[512];
 
     f = data1_path_fopen(dh, file, "r");
-    
+
     res = (data1_absyn *) nmem_malloc(data1_nmem_get(dh), sizeof(*res));
     res->name = 0;
     res->oid = 0;
     res->tagset = 0;
     res->encoding = 0;
-    res->xpath_indexing = 
+    res->xpath_indexing =
         (f ? DATA1_XPATH_INDEXING_DISABLE : default_xpath);
     res->systags = 0;
     systagsp = &res->systags;
@@ -749,7 +749,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 		cur_elements->elements = NULL;
 		cur_elements->name = "main";
 		res->sub_elements = cur_elements;
-		
+
 		level = 0;
     		ppl[level] = &cur_elements->elements;
             }
@@ -771,17 +771,17 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 	    }
 	    level = i;
 	    new_element = *ppl[level-1] = data1_mk_element(dh);
-	    
+
 	    tp = &new_element->termlists;
 	    ppl[level-1] = &new_element->next;
 	    ppl[level] = &new_element->children;
-	    
+
 	    /* consider subtree (if any) ... */
 	    if ((sub_p = strchr (p, ':')) && sub_p[1])
 	    {
 		*sub_p++ = '\0';
 		new_element->sub_name =
-		    nmem_strdup (data1_nmem_get(dh), sub_p);		
+		    nmem_strdup (data1_nmem_get(dh), sub_p);
 	    }
 	    /* well-defined tag */
 	    if (sscanf(p, "(%d,%d)", &type, &value) == 2)
@@ -811,7 +811,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 		nt->which = DATA1T_string;
 		nt->value.string = nmem_strdup(data1_nmem_get (dh), p);
 		nt->names = (data1_name *)
-		    nmem_malloc(data1_nmem_get(dh), 
+		    nmem_malloc(data1_nmem_get(dh),
 				sizeof(*new_element->tag->names));
 		nt->names->name = nt->value.string;
 		nt->names->next = 0;
@@ -842,9 +842,9 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 	/* *ostrich*
 	   New code to support xelm directive
 	   for each xelm a dfa is built. xelms are stored in res->xp_elements
-           
+
 	   maybe we should use a simple sscanf instead of dfa?
-           
+
 	   pop, 2002-12-13
 
 	   Now [] predicates are supported. regexps and xpath structure is
@@ -863,7 +863,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 	    char melm_xpath[128];
             data1_xpelement *xp_ele = 0;
             data1_xpelement *last_match = 0;
-            
+
 	    if (argc != 3)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to %s",
@@ -909,23 +909,23 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 #if OPTIMIZE_MELM
             (*cur_xpelement)->regexp = regexp;
 #endif
-	    (*cur_xpelement)->xpath_expr = nmem_strdup(data1_nmem_get (dh), 
-                                                       xpath_expr); 
-	    
+	    (*cur_xpelement)->xpath_expr = nmem_strdup(data1_nmem_get (dh),
+                                                       xpath_expr);
+
             if (dfa)
                 dfa_mkstate (dfa);
             (*cur_xpelement)->dfa = dfa;
-            
-#ifdef ENHANCED_XELM 
+
+#ifdef ENHANCED_XELM
             (*cur_xpelement)->xpath_len =
                 zebra_parse_xpath_str(
-                    xpath_expr, 
+                    xpath_expr,
                     (*cur_xpelement)->xpath, XPATH_STEP_COUNT,
                     data1_nmem_get(dh));
 #endif
 	    (*cur_xpelement)->termlists = 0;
 	    tp = &(*cur_xpelement)->termlists;
-            
+
 	    /* parse termList definitions */
 	    p = termlists;
 	    if (*p != '-')
@@ -943,7 +943,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
  	else if (!strcmp(cmd, "section"))
 	{
 	    char *name;
-	    
+
 	    if (argc < 2)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to section",
@@ -951,14 +951,14 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 		continue;
 	    }
 	    name = argv[1];
-	    
+
             cur_elements = (data1_sub_elements *)
 		nmem_malloc(data1_nmem_get(dh), sizeof(*cur_elements));
 	    cur_elements->next = res->sub_elements;
 	    cur_elements->elements = NULL;
 	    cur_elements->name = nmem_strdup (data1_nmem_get(dh), name);
 	    res->sub_elements = cur_elements;
-	    
+
 	    level = 0;
     	    ppl[level] = &cur_elements->elements;
 	}
@@ -1015,7 +1015,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 	else if (!strcmp(cmd, "reference"))
 	{
 	    char *name;
-	    
+
 	    if (argc != 2)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to reference",
@@ -1024,11 +1024,11 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 	    }
 	    name = argv[1];
             res->oid = yaz_string_to_oid_nmem(yaz_oid_std(),
-                                              CLASS_SCHEMA, name, 
+                                              CLASS_SCHEMA, name,
                                               data1_nmem_get(dh));
             if (!res->oid)
 	    {
-		yaz_log(YLOG_WARN, "%s:%d: Unknown tagset ref '%s'", 
+		yaz_log(YLOG_WARN, "%s:%d: Unknown tagset ref '%s'",
 		     file, lineno, name);
 		continue;
 	    }
@@ -1037,7 +1037,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 	{
            char *name;
            data1_attset *attset;
-           
+
            if (argc != 2)
            {
                yaz_log(YLOG_WARN, "%s:%d: Bad # of args to attset",
@@ -1109,7 +1109,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 	    }
 	    name = argv[1];
 	    fname = argv[2];
-	    
+
 	    *esetpp = (data1_esetname *)
 		nmem_malloc(data1_nmem_get(dh), sizeof(**esetpp));
 	    (*esetpp)->name = nmem_strdup(data1_nmem_get(dh), name);
@@ -1127,7 +1127,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 	else if (!strcmp(cmd, "maptab"))
 	{
 	    char *name;
-	    
+
 	    if (argc != 2)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Bad # of args for maptab",
@@ -1146,7 +1146,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 	else if (!strcmp(cmd, "marc"))
 	{
 	    char *name;
-	    
+
 	    if (argc != 2)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Bad # or args for marc",
@@ -1188,14 +1188,14 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
         }
 	else
 	{
-	    yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'", file, 
+	    yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'", file,
                     lineno, cmd);
 	    continue;
 	}
     }
     if (f)
         fclose(f);
-    
+
     for (cur_elements = res->sub_elements; cur_elements;
 	 cur_elements = cur_elements->next)
     {

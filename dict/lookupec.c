@@ -50,7 +50,7 @@ static int lookup_ec(Dict dict, Dict_ptr ptr,
     dict_bf_readp(dict->dbf, ptr, &p);
     lo = 0;
     hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));    
+    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     while (lo <= hi)
     {
         if (indxp[-lo] > 0)
@@ -98,7 +98,7 @@ static int lookup_ec(Dict dict, Dict_ptr ptr,
             info = (char*)p - indxp[-lo];
             memcpy(&ch, info+sizeof(Dict_ptr), sizeof(Dict_char));
             prefix[pos] = ch;
-            
+
             sc = mi->s[ch & 255];
             ri[1+range] = SH(ri[0]) & sc;
             for (i=1; i<=range; i++)
@@ -120,7 +120,7 @@ static int lookup_ec(Dict dict, Dict_ptr ptr,
                     lookup_ec(dict, subptr, mi, ri, pos+1,
                               userfunc, range, prefix);
                     dict_bf_readp(dict->dbf, ptr, &p);
-                    indxp = (short*) ((char*) p + 
+                    indxp = (short*) ((char*) p +
                                       DICT_bsize(p)-sizeof(short));
                 }
             }
@@ -156,14 +156,14 @@ int dict_lookup_ec(Dict dict, char *pattern, int range,
 
     if (!dict->head.root)
         return 0;
-    
+
     mi = prepare_match((Dict_char*) pattern);
-    
+
     ri = (MatchWord *) xmalloc((dict_strlen((Dict_char*) pattern)+range+2)
                                * (range+1)*sizeof(*ri));
     for (i = 0; i <= range; i++)
         ri[i] = (2<<i)-1;
-    
+
     ret = lookup_ec(dict, dict->head.root, mi, ri, 0, userfunc,
                     range, prefix);
     xfree(ri);

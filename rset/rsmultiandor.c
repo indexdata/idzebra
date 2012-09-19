@@ -59,7 +59,7 @@ static void r_pos_and(RSFD rfd, double *current, double *total);
 static void r_pos_or(RSFD rfd, double *current, double *total);
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
 
-static const struct rset_control control_or = 
+static const struct rset_control control_or =
 {
     "multi-or",
     r_delete,
@@ -72,7 +72,7 @@ static const struct rset_control control_or =
     r_write,
 };
 
-static const struct rset_control control_and = 
+static const struct rset_control control_and =
 {
     "multi-and",
     r_delete,
@@ -85,12 +85,12 @@ static const struct rset_control control_and =
     r_write,
 };
 
-/* The heap structure: 
- * The rset contains a list or rsets we are ORing together 
+/* The heap structure:
+ * The rset contains a list or rsets we are ORing together
  * The rfd contains a heap of heap-items, which contain
  * a rfd opened to those rsets, and a buffer for one key.
- * They also contain a ptr to the rset list in the rset 
- * itself, for practical reasons. 
+ * They also contain a ptr to the rset list in the rset
+ * itself, for practical reasons.
  */
 
 struct heap_item {
@@ -139,7 +139,7 @@ static void heap_dump_item( HEAP h, int i, int level)
     if (i>h->heapnum)
         return;
     (void)rset_pos(h->heap[i]->rset,h->heap[i]->fd, &cur, &tot);
-    yaz_log(log_level," %d %*s i=%p buf=%p %0.1f/%0.1f",i, level, "",  
+    yaz_log(log_level," %d %*s i=%p buf=%p %0.1f/%0.1f",i, level, "",
                     &(h->heap[i]), h->heap[i]->buf, cur,tot );
     heap_dump_item(h, 2*i, level+1);
     heap_dump_item(h, 2*i+1, level+1);
@@ -168,7 +168,7 @@ static int heap_empty(HEAP h)
     return ( 0==h->heapnum );
 }
 
-/** \brief deletes the first item in the heap, and balances the rest 
+/** \brief deletes the first item in the heap, and balances the rest
  */
 static void heap_delete (HEAP h)
 {
@@ -190,8 +190,8 @@ static void heap_delete (HEAP h)
 }
 
 /** \brief puts item into heap.
-    The heap root element has changed value (to bigger) 
-    Swap downwards until the heap is ordered again 
+    The heap root element has changed value (to bigger)
+    Swap downwards until the heap is ordered again
 */
 static void heap_balance (HEAP h)
 {
@@ -272,9 +272,9 @@ int compare_ands(const void *x, const void *y)
 }
 
 static RSET rsmulti_andor_create(NMEM nmem,
-				 struct rset_key_control *kcontrol, 
+				 struct rset_key_control *kcontrol,
 				 int scope, TERMID termid,
-				 int no_rsets, RSET* rsets, 
+				 int no_rsets, RSET* rsets,
 				 const struct rset_control *ctrl)
 {
     RSET rnew = rset_create_base(ctrl, nmem, kcontrol, scope, termid,
@@ -329,7 +329,7 @@ static RSFD r_open_andor (RSET ct, int flag, int is_and)
         assert(p->items);
         /* all other pointers shouls already be allocated, in right sizes! */
     }
-    else 
+    else
     {
         p = (struct rfd_private *) nmem_malloc (ct->nmem,sizeof(*p));
         rfd->priv = p;
@@ -337,9 +337,9 @@ static RSFD r_open_andor (RSET ct, int flag, int is_and)
         p->tailbits = 0;
         if (is_and)
             p->tailbits = nmem_malloc(ct->nmem, ct->no_children*sizeof(char) );
-        else 
+        else
             p->h = heap_create( ct->nmem, ct->no_children, kctrl);
-        p->items = (struct heap_item *) 
+        p->items = (struct heap_item *)
 	    nmem_malloc(ct->nmem, ct->no_children*sizeof(*p->items));
         for (i = 0; i<ct->no_children; i++)
 	{
@@ -360,7 +360,7 @@ static RSFD r_open_andor (RSET ct, int flag, int is_and)
             p->tailbits[i] = 0;
         }
         qsort(p->items, ct->no_children, sizeof(p->items[0]), compare_ands);
-    } 
+    }
     else
     { /* fill the heap for ORing */
         for (i = 0; i<ct->no_children; i++){
@@ -390,12 +390,12 @@ static void r_close (RSFD rfd)
 
     if (p->h)
         heap_destroy (p->h);
-    for (i = 0; i<rfd->rset->no_children; i++) 
+    for (i = 0; i<rfd->rset->no_children; i++)
         if (p->items[i].fd)
             rset_close(p->items[i].fd);
 }
 
-static int r_forward_or(RSFD rfd, void *buf, 
+static int r_forward_or(RSFD rfd, void *buf,
                         TERMID *term, const void *untilbuf)
 { /* while heap head behind untilbuf, forward it and rebalance heap */
     struct rfd_private *p = rfd->priv;
@@ -407,7 +407,7 @@ static int r_forward_or(RSFD rfd, void *buf,
         if (rset_forward(p->h->heap[1]->fd,p->h->heap[1]->buf,
                          &p->h->heap[1]->term, untilbuf))
             heap_balance(p->h);
-        else 
+        else
         {
             heap_delete(p->h);
             if (heap_empty(p->h))
@@ -460,7 +460,7 @@ static int r_read_or (RSFD rfd, void *buf, TERMID *term)
     \param term resulting term
     \retval 0 EOF
     \retval 1 item could be read
-    
+
     Has to return all hits where each item points to the
     same sysno (scope), in order. Keep an extra key (hitkey)
     as long as all records do not point to hitkey, forward
@@ -477,11 +477,11 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
     int i;
 
     while (1) {
-        if (p->tailcount) 
+        if (p->tailcount)
         { /* we are tailing, find lowest tail and return it */
             int mintail = -1;
             int cmp;
-                 
+
             for (i = 0; i<ct->no_children; i++)
             {
                 if (p->tailbits[i])
@@ -500,7 +500,7 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
                         /* store segment if not stored already */
                         if (!p->segment && segment)
                             p->segment = segment;
-                        
+
                         /* skip rest entirely if segments don't match */
                         if (p->segment && segment && p->segment != segment)
                             p->skip = 1;
@@ -508,14 +508,14 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
                 }
             }
             /* return the lowest tail */
-            memcpy(buf, p->items[mintail].buf, kctrl->key_size); 
+            memcpy(buf, p->items[mintail].buf, kctrl->key_size);
             if (term)
                 *term = p->items[mintail].term;
             if (!rset_read(p->items[mintail].fd, p->items[mintail].buf,
                            &p->items[mintail].term))
             {
                 p->eof = 1; /* game over, once tails have been returned */
-                p->tailbits[mintail] = 0; 
+                p->tailbits[mintail] = 0;
                 (p->tailcount)--;
             }
             else
@@ -533,33 +533,33 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
             if (p->tailcount == 0)
                 (p->hits)++;
             return 1;
-        } 
+        }
         /* not tailing, forward until all records match, and set up */
         /* as tails. the earlier 'if' will then return the hits */
         if (p->eof)
             return 0; /* nothing more to see */
         i = 1; /* assume items[0] is highest up */
-        while (i < ct->no_children) 
+        while (i < ct->no_children)
         {
             int cmp = (*kctrl->cmp)(p->items[0].buf, p->items[i].buf);
             if (cmp <= -rfd->rset->scope) { /* [0] was behind, forward it */
-                if (!rset_forward(p->items[0].fd, p->items[0].buf, 
+                if (!rset_forward(p->items[0].fd, p->items[0].buf,
                                   &p->items[0].term, p->items[i].buf))
                 {
                     p->eof = 1; /* game over */
                     return 0;
                 }
                 i = 0; /* start forwarding from scratch */
-            } 
+            }
             else if (cmp>=rfd->rset->scope)
             { /* [0] was ahead, forward i */
-                if (!rset_forward(p->items[i].fd, p->items[i].buf, 
+                if (!rset_forward(p->items[i].fd, p->items[i].buf,
                                   &p->items[i].term, p->items[0].buf))
                 {
                     p->eof = 1; /* game over */
                     return 0;
                 }
-            } 
+            }
             else
                 i++;
         } /* while i */
@@ -575,9 +575,9 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
 }
 
 
-static int r_forward_and(RSFD rfd, void *buf, TERMID *term, 
+static int r_forward_and(RSFD rfd, void *buf, TERMID *term,
                          const void *untilbuf)
-{ 
+{
     struct rfd_private *p = rfd->priv;
     RSET ct = rfd->rset;
     const struct rset_key_control *kctrl = ct->keycontrol;
@@ -591,7 +591,7 @@ static int r_forward_and(RSFD rfd, void *buf, TERMID *term,
         if (cmp <= -rfd->rset->scope)
         {
             killtail = 1; /* we are moving to a different hit */
-            if (!rset_forward(p->items[i].fd, p->items[i].buf, 
+            if (!rset_forward(p->items[i].fd, p->items[i].buf,
                               &p->items[i].term, untilbuf))
             {
                 p->eof = 1; /* game over */
@@ -600,7 +600,7 @@ static int r_forward_and(RSFD rfd, void *buf, TERMID *term,
             }
         }
     }
-    if (killtail) 
+    if (killtail)
     {
         for (i = 0; i<ct->no_children; i++)
             p->tailbits[i] = 0;
@@ -612,7 +612,7 @@ static int r_forward_and(RSFD rfd, void *buf, TERMID *term,
 static void r_pos_x(RSFD rfd, double *current, double *total, int and_op)
 {
     RSET ct = rfd->rset;
-    struct rfd_private *mrfd = 
+    struct rfd_private *mrfd =
 	(struct rfd_private *)(rfd->priv);
     double ratio = and_op ? 0.0 : 1.0;
     int i;
@@ -671,9 +671,9 @@ static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
 	rset_get_one_term(ct, terms, maxterms, curterm);
     else
     {
-	/* Special case: Some multi-ors have all terms pointing to the same 
+	/* Special case: Some multi-ors have all terms pointing to the same
 	   term. We do not want to duplicate those. Other multiors (and ands)
-	   have different terms under them. Those we want. 
+	   have different terms under them. Those we want.
 	*/
 	int firstterm= *curterm;
 	int i;
@@ -683,7 +683,7 @@ static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
 	    rset_getterms(ct->children[i], terms, maxterms, curterm);
 	    if ( ( *curterm > firstterm+1 ) &&
 		 ( *curterm <= maxterms ) &&
-		 ( terms[(*curterm)-1] == terms[firstterm] ) 
+		 ( terms[(*curterm)-1] == terms[firstterm] )
 		)
 		(*curterm)--; /* forget the term, seen that before */
 	}

@@ -40,7 +40,7 @@ static char *dict_look(Dict dict, const Dict_char *str, Dict_ptr ptr)
     dict_bf_readp(dict->dbf, ptr, &p);
     mid = lo = 0;
     hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));    
+    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     while (lo <= hi)
     {
         mid = (lo+hi)/2;

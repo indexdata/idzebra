@@ -31,7 +31,7 @@ zebra_rec_keys_t zebra_rec_keys_open(void);
 
 void zebra_rec_keys_close(zebra_rec_keys_t p);
 
-void zebra_rec_keys_write(zebra_rec_keys_t keys, 
+void zebra_rec_keys_write(zebra_rec_keys_t keys,
 			  const char *str, size_t slen,
 			  const struct it_key *key);
 void zebra_rec_keys_reset(zebra_rec_keys_t keys);

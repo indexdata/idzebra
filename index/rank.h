@@ -28,7 +28,7 @@ struct rank_control {
     char *name;
     void *(*create)(ZebraHandle zh);
     void (*destroy)(struct zebra_register *reg, void *class_handle);
-    void *(*begin)(struct zebra_register *reg, 
+    void *(*begin)(struct zebra_register *reg,
                    void *class_handle, RSET rset, NMEM nmem,
                    TERMID *terms, int numterms);
     /* ### Could add parameters to begin:

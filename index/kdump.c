@@ -49,7 +49,7 @@ int key_file_decode (FILE *f)
     int c, d;
 
     c = getc (f);
-    switch (c & 192) 
+    switch (c & 192)
     {
     case 0:
         d = c;
@@ -172,7 +172,7 @@ int main (int argc, char **argv)
         op = key_info[0];
         memcpy (&k, 1+key_info, sizeof(k));
 
-	from += 2;  
+	from += 2;
 	while (*from)
 	{
 	    const char *res = zebra_maps_output (zm, reg_type, &from);
@@ -194,7 +194,7 @@ int main (int argc, char **argv)
     }
     exit (0);
 }
-#endif    
+#endif
 /*
  * Local variables:
  * c-basic-offset: 4

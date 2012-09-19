@@ -29,7 +29,7 @@ static void tst(int argc, char **argv)
 
     {
         ZebraService zs = tl_start_up(0, argc, argv);
-        ZebraHandle  zh = 0;        
+        ZebraHandle  zh = 0;
         YAZ_CHECK(zs);
 
         if (zs)
@@ -37,7 +37,7 @@ static void tst(int argc, char **argv)
             zh = zebra_open(zs, 0);
             YAZ_CHECK(zh);
         }
-        
+
         YAZ_CHECK(tl_close_down(zh, zs));
     }
 }

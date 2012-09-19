@@ -145,7 +145,7 @@ void zebra_create_stream_fd(struct ZebraRecStream *stream,
     fc->fd = fd;
     fc->record_offset = start_offset;
     fc->offset_end = 0;
-    
+
     stream->fh = fc;
     stream->readf = zebra_ext_read;
     stream->seekf = zebra_ext_seek;

@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
- 
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -69,7 +69,7 @@ static void pkey(const char *b, int mode)
 void getFnameTmp(Res res, char *fname, int no)
 {
     const char *pre;
-    
+
     pre = res_get_def(res, "keyTmpDir", ".");
     sprintf(fname, "%s/key%d.tmp", pre, no);
 }
@@ -77,7 +77,7 @@ void getFnameTmp(Res res, char *fname, int no)
 void extract_get_fname_tmp(ZebraHandle zh, char *fname, int no)
 {
     const char *pre;
-    
+
     pre = res_get_def(zh->res, "keyTmpDir", ".");
     sprintf(fname, "%s/key%d.tmp", pre, no);
 }
@@ -313,7 +313,7 @@ static void key_heap_delete(struct heap_info *hi)
             child++;
         if ((*hi->cmp)(&hi->info.buf[hi->ptr[cur]],
                        &hi->info.buf[hi->ptr[child]]) > 0)
-        {            
+        {
             key_heap_swap(hi, cur, child);
             cur = child;
             child = 2*cur;
@@ -505,7 +505,7 @@ int heap_cread_item2(void *vp, char **dst, int *insertMode)
     (*dst) += p->sz_1;
     return 1;
 }
-      
+
 int heap_cread_item(void *vp, char **dst, int *insertMode)
 {
     struct heap_cread_info *p = (struct heap_cread_info *) vp;
@@ -568,14 +568,14 @@ int heap_inpc(struct heap_cread_info *hci, struct heap_info *hi)
                 if (!dict_delete(hi->reg->dict, this_name))
                     abort();
             }
-            else 
+            else
             {
                 hi->no_updates++;
                 if (isamc_p2 != isamc_p)
                     dict_insert(hi->reg->dict, this_name,
                                  sizeof(ISAM_P), &isamc_p2);
             }
-        } 
+        }
         else
         {
 	    isamc_p = 0;
@@ -588,7 +588,7 @@ int heap_inpc(struct heap_cread_info *hci, struct heap_info *hi)
     }
     xfree(isamc_i);
     return 0;
-} 
+}
 
 int heap_inpb(struct heap_cread_info *hci, struct heap_info *hi)
 {
@@ -622,14 +622,14 @@ int heap_inpb(struct heap_cread_info *hci, struct heap_info *hi)
                 if (!dict_delete(hi->reg->dict, this_name))
                     abort();
             }
-            else 
+            else
             {
                 hi->no_updates++;
                 if (isamc_p2 != isamc_p)
                     dict_insert(hi->reg->dict, this_name,
                                  sizeof(ISAM_P), &isamc_p2);
             }
-        } 
+        }
         else
         {
 	    isamc_p = 0;
@@ -642,7 +642,7 @@ int heap_inpb(struct heap_cread_info *hci, struct heap_info *hi)
     }
     xfree(isamc_i);
     return 0;
-} 
+}
 
 int heap_inps(struct heap_cread_info *hci, struct heap_info *hi)
 {
@@ -674,7 +674,7 @@ int heap_inps(struct heap_cread_info *hci, struct heap_info *hi)
     }
     xfree(isams_i);
     return 0;
-} 
+}
 
 struct progressInfo {
     time_t   startTime;
@@ -722,7 +722,7 @@ void zebra_index_merge(ZebraHandle zh)
 
     if (nkeys == 0)
         return;
-    
+
     if (nkeys < 0)
     {
         char fname[1024];
@@ -752,7 +752,7 @@ void zebra_index_merge(ZebraHandle zh)
     }
     hi = key_heap_init_file(zh, nkeys, key_qsort_compare);
     hi->reg = zh->reg;
-    
+
     for (i = 1; i<=nkeys; i++)
         if ((r = key_file_read(kf[i], rbuf)))
             key_heap_insert(hi, rbuf, r, kf[i]);
@@ -760,7 +760,7 @@ void zebra_index_merge(ZebraHandle zh)
     if (1)
     {
         struct heap_cread_info hci;
-        
+
         hci.key = (char *) xmalloc(KEY_SIZE);
 	hci.key_1 = (char *) xmalloc(KEY_SIZE);
 	hci.key_2 = (char *) xmalloc(KEY_SIZE);
@@ -768,20 +768,20 @@ void zebra_index_merge(ZebraHandle zh)
 	hci.first_in_list = 1;
 	hci.hi = hi;
 	hci.look_level = 0;
-	hci.more = heap_read_one(hi, hci.cur_name, hci.key);    
-	
+	hci.more = heap_read_one(hi, hci.cur_name, hci.key);
+
 	if (zh->reg->isams)
 	    heap_inps(&hci, hi);
 	if (zh->reg->isamc)
 	    heap_inpc(&hci, hi);
 	if (zh->reg->isamb)
 	    heap_inpb(&hci, hi);
-	
+
 	xfree(hci.key);
 	xfree(hci.key_1);
 	xfree(hci.key_2);
     }
-	
+
     for (i = 1; i<=nkeys; i++)
     {
         extract_get_fname_tmp (zh, rbuf, i);
@@ -792,7 +792,7 @@ void zebra_index_merge(ZebraHandle zh)
     xfree(kf);
     if (hi->no_iterations)
     { /* do not log if nothing happened */
-        yaz_log(YLOG_LOG, "Iterations: isam/dict " 
+        yaz_log(YLOG_LOG, "Iterations: isam/dict "
                 ZINT_FORMAT "/" ZINT_FORMAT,
                 hi->no_iterations, hi->no_diffs);
         yaz_log(YLOG_LOG, "Dict: inserts/updates/deletions: "

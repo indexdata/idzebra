@@ -37,7 +37,7 @@ void check_koi8r(void)
 
 static void tst(int argc, char **argv)
 {
-    
+
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
     char path[256];

@@ -76,7 +76,7 @@ struct rset_key_control *zebra_key_control_create(ZebraHandle zh)
         kc->get_segment = 0;
     }
 
-    zebra_limit_for_rset(zh->m_limit, 
+    zebra_limit_for_rset(zh->m_limit,
 			 &kc->filter_func,
 			 &cp->filter_destroy,
 			 &kc->filter_data);

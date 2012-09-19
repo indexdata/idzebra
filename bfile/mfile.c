@@ -45,7 +45,7 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
     /*
      * If no definition is given, use current directory, unlimited.
      */
-    char dirname[FILENAME_MAX+1]; 
+    char dirname[FILENAME_MAX+1];
     mf_dir **dp = &ma->dirs, *dir = *dp;
 
     if (!ad)
@@ -134,7 +134,7 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
     \retval -1 ERROR
     \retval -2 OK, but file does not created (read-only)
 */
-   
+
 static zint file_position(MFile mf, zint pos, int offset)
 {
     zint off = 0, ps;
@@ -203,7 +203,7 @@ MFile_area mf_init(const char *name, const char *spec, const char *base,
     struct dirent *dent;
     int fd, number;
     char metaname[FILENAME_MAX+1], tmpnam[FILENAME_MAX+1];
-    
+
     yaz_log(YLOG_DEBUG, "mf_init(%s)", name);
     strcpy(ma->name, name);
     ma->mfiles = 0;
@@ -544,9 +544,9 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 	    	yaz_log(YLOG_FATAL, "mf_write: %s error (4) no more space",
                         mf->name);
     	        for (dp = mf->ma->dirs; dp ; dp = dp->next) {
-                    yaz_log(YLOG_FATAL,"%s: max=" ZINT_FORMAT 
-                           " used=" ZINT_FORMAT " available=" ZINT_FORMAT, 
-                        dp->name, (zint)dp->max_bytes, 
+                    yaz_log(YLOG_FATAL,"%s: max=" ZINT_FORMAT
+                           " used=" ZINT_FORMAT " available=" ZINT_FORMAT,
+                        dp->name, (zint)dp->max_bytes,
                         (zint)(dp->max_bytes - dp->avail_bytes), (zint)dp->avail_bytes );
                 }
                 yaz_log(YLOG_FATAL,"Adjust the limits in your zebra.cfg");
@@ -573,7 +573,7 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
                 yaz_log(YLOG_FATAL, "mf_write: %s error (5)", mf->name);
                 ret = -1;
                 goto out;
-            }	
+            }
 	}
 	else
 	{
@@ -597,7 +597,7 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
     return ret;
 }
 
-/** \brief metafile area statistics 
+/** \brief metafile area statistics
     \param ma metafile area handle
     \param no area number (0=first, 1=second, ..)
     \param directory holds directory upon completion (if non-NULL)

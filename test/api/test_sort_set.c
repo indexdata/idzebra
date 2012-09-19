@@ -37,8 +37,8 @@ static void tst(int argc, char **argv)
     int status;
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open (zs, 0);
-    ODR odr_input = odr_createmem (ODR_DECODE);    
-    ODR odr_output = odr_createmem (ODR_ENCODE);    
+    ODR odr_input = odr_createmem (ODR_DECODE);
+    ODR odr_output = odr_createmem (ODR_ENCODE);
     YAZ_PQF_Parser parser = yaz_pqf_create();
     Z_RPNQuery *query = yaz_pqf_parse(parser, odr_input, "@attr 1=4 my");
     Z_SortKeySpecList *spec = yaz_sort_spec (odr_output, "1=4 <!");
@@ -47,14 +47,14 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_init_data(zh, recs));
 
     YAZ_CHECK(zebra_begin_trans(zh, 0) == ZEBRA_OK);
-        
+
     YAZ_CHECK(zebra_search_RPN(zh, odr_input, query, setname1, &hits) ==
 	      ZEBRA_OK);
 
     YAZ_CHECK(zebra_sort(zh, odr_output, 1, &setname1, setname2, spec,
 			 &status)
 	      == ZEBRA_OK);
-    YAZ_CHECK(zebra_sort(zh, odr_output, 1, &setname2, setname3, spec, 
+    YAZ_CHECK(zebra_sort(zh, odr_output, 1, &setname2, setname3, spec,
 			 &status) == ZEBRA_OK);
 
     spec = yaz_sort_spec(odr_output, "1=5 <!"); /* invalid sort spec */
@@ -69,7 +69,7 @@ static void tst(int argc, char **argv)
     /*
      zebra_deleteResultSet(zh, Z_DeleteRequest_list,
                           1, &setnamep, &status);
-    */  
+    */
     odr_destroy(odr_input);
     odr_destroy(odr_output);
 

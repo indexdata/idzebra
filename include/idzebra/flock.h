@@ -42,7 +42,7 @@ int zebra_lock_w (ZebraLockHandle h);
 YAZ_EXPORT
 int zebra_lock_r (ZebraLockHandle h);
 
-YAZ_EXPORT 
+YAZ_EXPORT
 void zebra_flock_init(void);
 
 YAZ_END_CDECL

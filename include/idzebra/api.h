@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /** \file api.h
     \brief Zebra API
-    
+
     Return codes:
     Most functions has return type ZEBRA_RES, where ZEBRA_FAIL indicates
     failure; ZEBRA_OK indicates success.
@@ -53,7 +53,7 @@ typedef struct {
     char *buf;           /* record buffer (void pointer really) */
     int len;             /* length */
     const Odr_oid *format; /* record syntax */
-    char *base; 
+    char *base;
     zint sysno;
     int  score;
 } ZebraRetrievalRecord;
@@ -77,7 +77,7 @@ typedef struct zebra_service *ZebraService;
 
 /** \brief Creates a Zebra Service.
     \param configName name of configuration file
-    
+
     This function is a simplified version of zebra_start_res.
 */
 YAZ_EXPORT
@@ -88,7 +88,7 @@ ZebraService zebra_start(const char *configName
     \param configName name of configuration file
     \param def_res default resources
     \param over_res overriding resources
-    
+
     This function typically called once in a program. A Zebra Service
     acts as a factory for Zebra session handles.
 */
@@ -99,7 +99,7 @@ ZebraService zebra_start_res(const char *configName,
 
 /** \brief stops a Zebra service.
     \param zs service handle
-    
+
     Frees resources used by the service.
 */
 YAZ_EXPORT
@@ -118,10 +118,10 @@ void zebra_filter_info(ZebraService zs, void *cd,
 /** \brief Creates a Zebra session handle within service.
     \param zs service handle.
     \param res resources to be used for the service (NULL for none)
-    
+
     There should be one handle for each thread doing something
-    with zebra, be that searching or indexing. In simple apps 
-    one handle is sufficient 
+    with zebra, be that searching or indexing. In simple apps
+    one handle is sufficient
 */
 YAZ_EXPORT
 ZebraHandle zebra_open(ZebraService zs, Res res
@@ -170,7 +170,7 @@ const char *zebra_get_encoding(ZebraHandle zh);
 /** \brief Set limit before Zebra does approx hit count
     \param zh session handle
     \param approx_limit the limit
-    
+
     Results will be approximiate if hit count is greater than the
     limit specified. By default there is a high-limit (no limit).
 */
@@ -229,7 +229,7 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 				 const Odr_oid *input_format,
 				 int num_recs,
 				 ZebraRetrievalRecord *recs);
-/** \brief Deletes one or more resultsets 
+/** \brief Deletes one or more resultsets
     \param zh session handle
     \param function Z_DeleteResultSetRequest_{list,all}
     \param num_setnames number of result sets
@@ -246,7 +246,7 @@ int zebra_deleteResultSet(ZebraHandle zh, int function,
     \param zh session handle
     \param setname result set name
     \param num_terms number of terms returned in this integer
-    
+
     This function is used in conjunction with zebra_result_set_term_info.
     If operation was successful, ZEBRA_OK is returned; otherwise
     ZEBRA_FAIL is returned (typically non-existing setname)
@@ -259,12 +259,12 @@ ZEBRA_RES zebra_result_set_term_no(ZebraHandle zh, const char *setname,
     \param zh session handle
     \param setname result set name
     \param no the term we want to know about (0=first, 1=second,..)
-    \param count the number of occurrences of this term, aka hits (output) 
+    \param count the number of occurrences of this term, aka hits (output)
     \param approx about hits: 0=exact,1=approx (output)
     \param termbuf buffer for term string (intput, output)
     \param termlen size of termbuf (input=max, output=actual length)
     \param term_ref_id if non-NULL *term_ref_id holds term reference
-    
+
     Returns information about one search term associated with result set.
     Use zebra_result_set_term_no to read total number of terms associated
     with result set. If this function can not return information,
@@ -286,7 +286,7 @@ ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
     \param zapt Attribute plus Term (start term)
     \param attributeset Attributeset for Attribute plus Term
     \param position input/output position
-    \param num_entries number of terms requested / returned 
+    \param num_entries number of terms requested / returned
     \param entries list of resulting terms (ODR allocated)
     \param is_partial upon return 1=partial, 0=complete
     \param setname limit scan by this set (NULL means no limit)
@@ -304,7 +304,7 @@ YAZ_EXPORT ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream,
     \param stream ODR handle for result
     \param query PQF scan query
     \param position input/output position
-    \param num_entries number of terms requested / returned 
+    \param num_entries number of terms requested / returned
     \param entries list of resulting terms (ODR allocated)
     \param is_partial upon return 1=partial, 0=complete
     \param setname limit scan by this set (NULL means no limit)
@@ -333,7 +333,7 @@ ZEBRA_RES zebra_auth(ZebraHandle zh, const char *user, const char *pass);
 */
 YAZ_EXPORT
 int zebra_string_norm(ZebraHandle zh, const char *index_type,
-                      const char *input_str, 
+                      const char *input_str,
 		      int input_len, char *output_str, int output_len);
 
 /** \brief Creates a database
@@ -363,14 +363,14 @@ YAZ_EXPORT
 ZEBRA_RES zebra_admin_import_begin(ZebraHandle zh, const char *database,
 				   const char *record_type);
 
-YAZ_EXPORT 
+YAZ_EXPORT
 ZEBRA_RES zebra_admin_import_segment(ZebraHandle zh,
 				     Z_Segment *segment);
 
-YAZ_EXPORT 
+YAZ_EXPORT
 ZEBRA_RES zebra_admin_import_end(ZebraHandle zh);
 
-YAZ_EXPORT 
+YAZ_EXPORT
 ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw
     ) ZEBRA_GCC_ATTR((warn_unused_result));
 
@@ -394,17 +394,17 @@ ZEBRA_RES zebra_init(ZebraHandle zh);
 YAZ_EXPORT
 ZEBRA_RES zebra_compact(ZebraHandle zh);
 
-YAZ_EXPORT 
+YAZ_EXPORT
 ZEBRA_RES zebra_repository_index(ZebraHandle zh, const char *path,
                                  enum zebra_recctrl_action_t action);
 
-YAZ_EXPORT 
+YAZ_EXPORT
 ZEBRA_RES zebra_repository_update(ZebraHandle zh, const char *path);
 
-YAZ_EXPORT 
+YAZ_EXPORT
 ZEBRA_RES zebra_repository_delete(ZebraHandle zh, const char *path);
 
-YAZ_EXPORT 
+YAZ_EXPORT
 ZEBRA_RES zebra_repository_show(ZebraHandle zh, const char *path);
 
 /** \brief Simple update record
@@ -415,9 +415,9 @@ ZEBRA_RES zebra_repository_show(ZebraHandle zh, const char *path);
     This function is a simple wrapper or zebra_update_record with
     action=action_update (insert or replace) .
 */
-YAZ_EXPORT 
+YAZ_EXPORT
 ZEBRA_RES zebra_add_record(ZebraHandle zh, const char *buf, int buf_size);
-			       
+
 /** \brief Updates record
     \param zh session handle
     \param action (insert,replace,delete or update (replace/insert)
@@ -429,24 +429,24 @@ ZEBRA_RES zebra_add_record(ZebraHandle zh, const char *buf, int buf_size);
     \param buf_size record buffer size
 */
 YAZ_EXPORT
-ZEBRA_RES zebra_update_record(ZebraHandle zh, 
+ZEBRA_RES zebra_update_record(ZebraHandle zh,
                               enum zebra_recctrl_action_t action,
                               const char *recordType,
                               zint *sysno, const char *match,
                               const char *fname,
                               const char *buf, int buf_size);
 
-YAZ_EXPORT 
+YAZ_EXPORT
 ZEBRA_RES zebra_sort(ZebraHandle zh, ODR stream,
 		     int num_input_setnames,
 		     const char **input_setnames,
 		     const char *output_setname,
 		     Z_SortKeySpecList *sort_sequence,
 		     int *sort_status
-    ) ZEBRA_GCC_ATTR((warn_unused_result));    
+    ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 YAZ_EXPORT
-ZEBRA_RES zebra_select_databases(ZebraHandle zh, int num_bases, 
+ZEBRA_RES zebra_select_databases(ZebraHandle zh, int num_bases,
 				 const char **basenames
     ) ZEBRA_GCC_ATTR((warn_unused_result));
 
@@ -470,7 +470,7 @@ ZEBRA_RES zebra_octet_term_encoding(ZebraHandle zh, const char *encoding);
 YAZ_EXPORT
 void zebra_set_resource(ZebraHandle zh, const char *name, const char *value);
 YAZ_EXPORT
-const char *zebra_get_resource(ZebraHandle zh, 
+const char *zebra_get_resource(ZebraHandle zh,
 			       const char *name, const char *defaultvalue);
 
 
@@ -492,28 +492,28 @@ ZebraMetaRecord *zebra_meta_records_create(ZebraHandle zh,
 
 YAZ_EXPORT
 ZebraMetaRecord *zebra_meta_records_create_range(ZebraHandle zh,
-						 const char *name, 
+						 const char *name,
 						 zint start, int num);
 
 YAZ_EXPORT
 void zebra_meta_records_destroy(ZebraHandle zh, ZebraMetaRecord *records,
 				int num);
 
-YAZ_EXPORT 
+YAZ_EXPORT
 struct BFiles_struct *zebra_get_bfs(ZebraHandle zh);
 
 YAZ_EXPORT
 ZEBRA_RES zebra_set_limit(ZebraHandle zh, int complement_flag, zint *ids);
 
 YAZ_EXPORT
-ZEBRA_RES zebra_set_break_handler(ZebraHandle zh, 
+ZEBRA_RES zebra_set_break_handler(ZebraHandle zh,
                                   int (*f)(void *client_data),
                                   void *client_data);
 
 YAZ_EXPORT
 ZEBRA_RES zebra_register_check(ZebraHandle zh, const char *spec);
 
-YAZ_END_CDECL				      
+YAZ_END_CDECL
 
 /** \mainpage Zebra
  *
@@ -534,7 +534,7 @@ YAZ_END_CDECL
  *
  * \section res Resources
  *
- * The resources system (res.h) is a manager of configuration 
+ * The resources system (res.h) is a manager of configuration
  * resources. The resources can be viewed as a simple database.
  * Resources can be read from a configurtion file, they can be
  * read or written by an application. Resources can also be written,
@@ -563,7 +563,7 @@ YAZ_END_CDECL
  *
  * Zebra has more than one ISAM system. The old and stable ISAM system
  * is named isamc (see isamc.h). Another version isams is a write-once
- * isam system that is quite compact - suitable for CD-ROMs (isams.h). 
+ * isam system that is quite compact - suitable for CD-ROMs (isams.h).
  * The newest ISAM system, isamb, is implemented as a B-Tree (see isamb.h).
  *
  * \section data1 Data-1

@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <assert.h> 
+#include <assert.h>
 #include <string.h>
 
 #include <yaz/log.h>
@@ -158,7 +158,7 @@ static int sort_term_code_read(void *vp, char **dst, int *insertMode)
         return 0;
 
     (s->no)--;
-    
+
     *insertMode = s->insert_flag;
     memcpy(*dst, &s->st, sizeof(s->st));
     *dst += sizeof(s->st);
@@ -282,7 +282,7 @@ int zebra_sort_type(zebra_sort_index_t si, int id)
     case ZEBRA_SORT_TYPE_ISAMB:
         method.codec.encode = sort_term_encode1;
         method.codec.decode = sort_term_decode1;
-        
+
         sprintf(fname, "sortb%d", id);
         sf->u.isamb = isamb_open2(si->bfs, fname, si->write_flag, &method,
                                   /* cache */ 0,
@@ -302,7 +302,7 @@ int zebra_sort_type(zebra_sort_index_t si, int id)
         isam_block_size = 32768;
         method.codec.encode = sort_term_encode2;
         method.codec.decode = sort_term_decode2;
-        
+
         sprintf(fname, "sortm%d", id);
         sf->u.isamb = isamb_open2(si->bfs, fname, si->write_flag, &method,
                                   /* cache */ 0,
@@ -376,12 +376,12 @@ void zebra_sort_delete(zebra_sort_index_t si, zint section_id)
             s.st.section_id = section_id;
             s.st.length = 0;
             s.st.term[0] = '\0';
-            
+
             s.no = 1;
             s.insert_flag = 0;
             isamc_i.clientData = &s;
             isamc_i.read_item = sort_term_code_read;
-            
+
             isamb_merge(sf->u.isamb, &sf->isam_p, &isamc_i);
             sf->no_deleted++;
         }
@@ -403,7 +403,7 @@ void zebra_sort_add(zebra_sort_index_t si, zint section_id, WRBUF wrbuf)
         len = strlen(wrbuf_buf(wrbuf));
         if (len > SORT_IDX_ENTRYSIZE)
             len = SORT_IDX_ENTRYSIZE;
-        
+
         memcpy(si->entry_buf, wrbuf_buf(wrbuf), len);
         if (len < SORT_IDX_ENTRYSIZE-len)
             memset(si->entry_buf+len, 0, SORT_IDX_ENTRYSIZE-len);
@@ -432,7 +432,7 @@ void zebra_sort_add(zebra_sort_index_t si, zint section_id, WRBUF wrbuf)
             s.insert_flag = 1;
             isamc_i.clientData = &s;
             isamc_i.read_item = sort_term_code_read;
-            
+
             isamb_merge(sf->u.isamb, &sf->isam_p, &isamc_i);
             sf->no_inserted++;
         }
@@ -457,7 +457,7 @@ void zebra_sort_add(zebra_sort_index_t si, zint section_id, WRBUF wrbuf)
             s.insert_flag = 1;
             isamc_i.clientData = &s;
             isamc_i.read_item = sort_term_code_read;
-            
+
             isamb_merge(sf->u.isamb, &sf->isam_p, &isamc_i);
             sf->no_inserted++;
         }

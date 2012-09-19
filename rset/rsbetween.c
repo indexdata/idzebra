@@ -20,13 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /* rsbetween is (mostly) used for xml searches. It returns the hits of the
  * "middle" rset, that are in between the "left" and "right" rsets. For
- * example "Shakespeare" in between "<author>" and </author>. The thing is 
+ * example "Shakespeare" in between "<author>" and </author>. The thing is
  * complicated by the inclusion of attributes (from their own rset). If attrs
  * specified, they must match the "left" rset (start tag). "Hamlet" between
  * "<title lang = eng>" and "</title>". (This assumes that the attributes are
  * indexed to the same seqno as the tags).
  *
-*/ 
+*/
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -43,21 +43,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 static RSFD r_open(RSET ct, int flag);
 static void r_close(RSFD rfd);
 static void r_delete(RSET ct);
-static int r_forward(RSFD rfd, void *buf, 
+static int r_forward(RSFD rfd, void *buf,
                     TERMID *term, const void *untilbuf);
 static int r_read(RSFD rfd, void *buf, TERMID *term );
 static int r_write(RSFD rfd, const void *buf);
 static void r_pos(RSFD rfd, double *current, double *total);
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
 
-static const struct rset_control control = 
+static const struct rset_control control =
 {
     "between",
     r_delete,
     r_get_terms,
     r_open,
     r_close,
-    r_forward, 
+    r_forward,
     r_pos,
     r_read,
     r_write,
@@ -84,7 +84,7 @@ struct rset_between_rfd {
     int depth; /* number of start-tags without end-tags */
     int attrdepth; /* on what depth the attr matched */
     zint hits;
-};    
+};
 
 static int log_level = 0;
 static int log_level_initialized = 0;
@@ -111,7 +111,7 @@ RSET rset_create_between(NMEM nmem, struct rset_key_control *kcontrol,
         (struct rset_between_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     RSET rsetarray[4];
     int n = 4;
-    
+
     if (!log_level_initialized)
     {
         log_level = yaz_log_module_level("rsbetween");
@@ -137,11 +137,11 @@ RSET rset_create_between(NMEM nmem, struct rset_key_control *kcontrol,
     else
     {
         info->attrterm = NULL;
-        n = 3; 
+        n = 3;
     }
     rnew->no_children = 1;
     rnew->children = nmem_malloc(rnew->nmem, sizeof(RSET *));
-    rnew->children[0] = rset_create_and(nmem, kcontrol, 
+    rnew->children[0] = rset_create_and(nmem, kcontrol,
                                         scope, n, rsetarray);
     rnew->priv = info;
     yaz_log(log_level, "create rset at %p", rnew);
@@ -164,14 +164,14 @@ static RSFD r_open(RSET ct, int flag)
         return NULL;
     }
     rfd = rfd_create_base(ct);
-    if (rfd->priv)  
+    if (rfd->priv)
         p=(struct rset_between_rfd *)rfd->priv;
     else {
         p = (struct rset_between_rfd *) nmem_malloc(ct->nmem, (sizeof(*p)));
         rfd->priv = p;
-        p->recbuf = nmem_malloc(ct->nmem, ct->keycontrol->key_size); 
-        p->startbuf = nmem_malloc(ct->nmem, ct->keycontrol->key_size); 
-        p->attrbuf = nmem_malloc(ct->nmem, ct->keycontrol->key_size); 
+        p->recbuf = nmem_malloc(ct->nmem, ct->keycontrol->key_size);
+        p->startbuf = nmem_malloc(ct->nmem, ct->keycontrol->key_size);
+        p->attrbuf = nmem_malloc(ct->nmem, ct->keycontrol->key_size);
     }
     p->andrfd = rset_open(ct->children[0], RSETF_READ);
     p->hits = -1;
@@ -190,7 +190,7 @@ static void r_close(RSFD rfd)
     rset_close(p->andrfd);
 }
 
-static int r_forward(RSFD rfd, void *buf, 
+static int r_forward(RSFD rfd, void *buf,
                      TERMID *term, const void *untilbuf)
 {
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
@@ -209,7 +209,7 @@ static void checkattr(RSFD rfd)
     int cmp;
     if (p->attrdepth)
         return; /* already found one */
-    if (!info->attrterm) 
+    if (!info->attrterm)
     {
         p->attrdepth=-1; /* matches always */
         return;
@@ -240,7 +240,7 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
     {
         yaz_log(log_level,"read loop term=%p d=%d ad=%d",
                 *term, p->depth, p->attrdepth);
-        if (p->hits<0) 
+        if (p->hits<0)
         {/* first time? */
             memcpy(p->recbuf, buf, kctrl->key_size);
             p->hits = 0;
@@ -252,7 +252,7 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
         }
 
         if (cmp>=rfd->rset->scope)
-        { 
+        {
             yaz_log(log_level, "new record");
             p->depth = 0;
             p->attrdepth = 0;
@@ -284,12 +284,12 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
             p->attrbufok = 1;
             checkattr(rfd); /* in case the start tag came first */
         }
-        else 
+        else
         { /* mut be a real hit */
             if (p->depth && p->attrdepth)
             {
                 p->hits++;
-                yaz_log(log_level,"got a hit h="ZINT_FORMAT" d=%d ad=%d", 
+                yaz_log(log_level,"got a hit h="ZINT_FORMAT" d=%d ad=%d",
                         p->hits, p->depth, p->attrdepth);
                 return 1; /* we have everything in place already! */
             } else
@@ -322,7 +322,7 @@ static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
     rset_getterms(ct->children[0], terms, maxterms, curterm);
 }
 
- 
+
 /*
  * Local variables:
  * c-basic-offset: 4

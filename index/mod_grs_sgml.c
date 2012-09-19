@@ -40,7 +40,7 @@ int sgml_getc (void *clientData)
 {
     struct sgml_getc_info *p = (struct sgml_getc_info *) clientData;
     int res;
-    
+
     if (p->off < p->size)
 	return p->buf[(p->off)++];
     if (p->size < p->buf_size)
@@ -62,7 +62,7 @@ static data1_node *grs_read_sgml (struct grs_read_info *p)
     struct sgml_getc_info *sgi = (struct sgml_getc_info *) p->clientData;
     data1_node *node;
     int res;
-    
+
     sgi->moffset = p->stream->tellf(p->stream);
     sgi->stream = p->stream;
     sgi->off = 0;

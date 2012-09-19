@@ -34,31 +34,31 @@ static int log_level_initialized = 0;
 /**
    \brief Common constuctor for RFDs
    \param rs Result set handle.
-   
-   Creates an rfd. Either allocates a new one, in which case the priv 
-   pointer is null, and will have to be filled in, or picks up one 
+
+   Creates an rfd. Either allocates a new one, in which case the priv
+   pointer is null, and will have to be filled in, or picks up one
    from the freelist, in which case the priv is already allocated,
-   and presumably everything that hangs from it as well 
+   and presumably everything that hangs from it as well
 */
 RSFD rfd_create_base(RSET rs)
 {
     RSFD rnew = rs->free_list;
 
-    if (rnew) 
+    if (rnew)
     {
         rs->free_list = rnew->next;
         assert(rnew->rset==rs);
-        yaz_log(log_level, "rfd_create_base (fl): rfd=%p rs=%p fl=%p priv=%p", 
-		rnew, rs, rs->free_list, rnew->priv); 
-    } 
+        yaz_log(log_level, "rfd_create_base (fl): rfd=%p rs=%p fl=%p priv=%p",
+		rnew, rs, rs->free_list, rnew->priv);
+    }
     else
     {
         rnew = nmem_malloc(rs->nmem, sizeof(*rnew));
 	rnew->counted_buf = nmem_malloc(rs->nmem, rs->keycontrol->key_size);
 	rnew->priv = 0;
         rnew->rset = rs;
-        yaz_log(log_level, "rfd_create_base (new): rfd=%p rs=%p fl=%p priv=%p", 
-		rnew, rs, rs->free_list, rnew->priv); 
+        yaz_log(log_level, "rfd_create_base (new): rfd=%p rs=%p fl=%p priv=%p",
+		rnew, rs, rs->free_list, rnew->priv);
     }
     rnew->next = rs->use_list;
     rs->use_list = rnew;
@@ -70,9 +70,9 @@ static void rset_close_int(RSET rs, RSFD rfd)
 {
     RSFD *pfd;
     (*rs->control->f_close)(rfd);
-    
+
     yaz_log(log_level, "rfd_delete_base: rfd=%p rs=%p priv=%p fl=%p",
-            rfd, rs, rfd->priv, rs->free_list); 
+            rfd, rs, rfd->priv, rs->free_list);
     for (pfd = &rs->use_list; *pfd; pfd = &(*pfd)->next)
 	if (*pfd == rfd)
 	{
@@ -107,7 +107,7 @@ void rset_close(RSFD rfd)
 	while (rfd->counted_items <= rs->hits_limit
 	      && rset_default_read(rfd, buf, &termid))
 	    ;
-	
+
 	rs->hits_count = rfd->counted_items;
 	yaz_log(log_level, "rset_close rset=%p hits_count=" ZINT_FORMAT
 		" hits_limit=" ZINT_FORMAT,
@@ -117,7 +117,7 @@ void rset_close(RSFD rfd)
 	{
 	    double cur, tot;
 	    zint est;
-	    rset_pos(rfd, &cur, &tot); 
+	    rset_pos(rfd, &cur, &tot);
 	    if (tot > 0) {
 		int i;
 		double ratio = cur/tot;
@@ -139,7 +139,7 @@ void rset_close(RSFD rfd)
 		rs->hits_approx = 1;
 	    }
 	}
-	yaz_log(log_level, "rset_close(%s) p=%p count=" ZINT_FORMAT, 
+	yaz_log(log_level, "rset_close(%s) p=%p count=" ZINT_FORMAT,
                 rs->control->desc, rs,
 		rs->hits_count);
     }
@@ -155,28 +155,28 @@ void rset_close(RSFD rfd)
    \param term Information about term for it (NULL for none).
    \param no_children number of child rsets (0 for none)
    \param children child rsets (NULL for none).
-   
-   Creates an rfd. Either allocates a new one, in which case the priv 
-   pointer is null, and will have to be filled in, or picks up one 
+
+   Creates an rfd. Either allocates a new one, in which case the priv
+   pointer is null, and will have to be filled in, or picks up one
    from the freelist, in which case the priv is already allocated,
-   and presumably everything that hangs from it as well 
+   and presumably everything that hangs from it as well
 */
-RSET rset_create_base(const struct rset_control *sel, 
+RSET rset_create_base(const struct rset_control *sel,
                       NMEM nmem, struct rset_key_control *kcontrol,
                       int scope, TERMID term,
 		      int no_children, RSET *children)
 {
     RSET rset;
     assert(nmem);
-    if (!log_level_initialized) 
+    if (!log_level_initialized)
     {
         log_level = yaz_log_module_level("rset");
         log_level_initialized = 1;
     }
 
     rset = (RSET) nmem_malloc(nmem, sizeof(*rset));
-    yaz_log(log_level, "rs_create(%s) rs=%p (nm=%p)", sel->desc, rset, nmem); 
-    yaz_log(log_level, " ref_id=%s", 
+    yaz_log(log_level, "rs_create(%s) rs=%p (nm=%p)", sel->desc, rset, nmem);
+    yaz_log(log_level, " ref_id=%s",
 	    (term && term->ref_id ? term->ref_id : "null"));
     rset->nmem = nmem;
     rset->control = sel;
@@ -211,7 +211,7 @@ RSET rset_create_base(const struct rset_control *sel,
 /**
    \brief Destructor RSETs
    \param rs Handle for result set.
-   
+
    Destroys a result set and all its children.
    The f_delete method of control is called for the result set.
 */
@@ -219,7 +219,7 @@ void rset_delete(RSET rs)
 {
     (rs->refcount)--;
     yaz_log(log_level, "rs_delete(%s), rs=%p, refcount=%d",
-            rs->control->desc, rs, rs->refcount); 
+            rs->control->desc, rs, rs->refcount);
     if (!rs->refcount)
     {
 	int i;
@@ -236,7 +236,7 @@ void rset_delete(RSET rs)
 /**
    \brief Test for last use of RFD
    \param rfd RFD handle.
-   
+
    Returns 1 if this RFD is the last reference to it; 0 otherwise.
 */
 int rfd_is_last(RSFD rfd)
@@ -249,18 +249,18 @@ int rfd_is_last(RSFD rfd)
 /**
    \brief Duplicate an RSET
    \param rs Handle for result set.
-   
+
    Duplicates a result set by incrementing the reference count to it.
 */
 RSET rset_dup (RSET rs)
 {
     (rs->refcount)++;
     yaz_log(log_level, "rs_dup(%s), rs=%p, refcount=%d",
-            rs->control->desc, rs, rs->refcount); 
+            rs->control->desc, rs, rs->refcount);
     return rs;
 }
 
-/** 
+/**
     \brief Estimates hit count for result set.
     \param rs Result Set.
 
@@ -381,7 +381,7 @@ int rset_default_read(RSFD rfd, void *buf, TERMID *term)
             got_scope = rset->scope+1;
         else
             got_scope = rset->keycontrol->cmp(buf, rfd->counted_buf);
-       
+
 #if 0
         key_logdump_txt(YLOG_LOG, buf, "rset_default_read");
         yaz_log(YLOG_LOG, "rset_scope=%d got_scope=%d", rset->scope, got_scope);
@@ -407,7 +407,7 @@ int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
 	assert (rset->control->f_forward != rset_default_forward);
 	return rset->control->f_forward(rfd, buf, term, untilbuf);
     }
-    
+
     while ((more = rset_read(rfd, buf, term)) > 0)
     {
 	if ((rfd->rset->keycontrol->cmp)(untilbuf, buf) < rset->scope)
@@ -416,7 +416,7 @@ int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
     if (log_level)
 	yaz_log(log_level, "rset_default_forward exiting rfd=%p scope=%d m=%d c=%d",
 		rfd, rset->scope, more, rset->scope);
-    
+
     return more;
 }
 

@@ -49,7 +49,7 @@ static void dump_file_dict(Dict dict)
     int before = 10;
     int after = 1000;
     char term[1000];
-    
+
     strcpy(term, "0");
     dict_scan(dict, term, &before, &after, 0, dump_file_dict_func);
 }
@@ -77,7 +77,7 @@ static void fileDelete_r(ZebraHandle zh,
             sprintf(tmppath, "%s%s", base, dst->path);
             zebra_extract_file(zh, &dst->sysno, tmppath, action_delete);
             strcpy(tmppath, dst->path);
-            dst = dirs_read(di); 
+            dst = dirs_read(di);
             dirs_del(di, tmppath);
             break;
         case dirs_dir:
@@ -93,7 +93,7 @@ static void fileDelete_r(ZebraHandle zh,
 
 static void file_update_r(ZebraHandle zh,
                           struct dirs_info *di, struct dirs_entry *dst,
-                          const char *base, char *src, 
+                          const char *base, char *src,
                           int level)
 {
     struct dir_entry *e_src;
@@ -136,7 +136,7 @@ static void file_update_r(ZebraHandle zh,
             src[src_len] = '/';
             src[++src_len] = '\0';
         }
-        dst = dirs_read(di); 
+        dst = dirs_read(di);
     }
     dir_sort(e_src);
 
@@ -165,7 +165,7 @@ static void file_update_r(ZebraHandle zh,
         {
             strcpy(src + src_len, e_src[i_src].name);
             sprintf(tmppath, "%s%s", base, src);
-            
+
             switch(e_src[i_src].kind)
             {
             case dirs_file:
@@ -186,7 +186,7 @@ static void file_update_r(ZebraHandle zh,
                 yaz_log(YLOG_DEBUG, "last is %s", dst ? dst->path : "null");
                 break;
             default:
-                dst = dirs_read(di); 
+                dst = dirs_read(di);
             }
             i_src++;
         }
@@ -200,7 +200,7 @@ static void file_update_r(ZebraHandle zh,
             {
             case dirs_file:
                 if (zebra_extract_file(zh, &sysno, tmppath, action_update) == ZEBRA_OK)
-                    dirs_add(di, src, sysno, e_src[i_src].mtime);            
+                    dirs_add(di, src, sysno, e_src[i_src].mtime);
                 break;
             case dirs_dir:
                 file_update_r(zh, di, dst, base, src, level+1);
@@ -257,7 +257,7 @@ static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
     if (ret == -1)
     {
         yaz_log(YLOG_WARN|YLOG_ERRNO, "Cannot access path %s", src);
-    } 
+    }
     else if (S_ISREG(sbuf.st_mode))
     {
         struct dirs_entry *e_dst;
@@ -315,7 +315,7 @@ static ZEBRA_RES zebra_open_fmatch(ZebraHandle zh, Dict *dictp)
 ZEBRA_RES zebra_remove_file_match(ZebraHandle zh)
 {
     Dict dict;
-    
+
     if (zebra_open_fmatch(zh, &dict) != ZEBRA_OK)
         return ZEBRA_FAIL;
 
@@ -336,7 +336,7 @@ ZEBRA_RES zebra_update_file_match(ZebraHandle zh, const char *path)
     }
     if (zebra_open_fmatch(zh, &dict) != ZEBRA_OK)
         return ZEBRA_FAIL;
-    
+
     if (!strcmp(path, "") || !strcmp(path, "-"))
     {
         char src[1024];

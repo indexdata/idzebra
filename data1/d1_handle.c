@@ -82,9 +82,9 @@ void data1_destroy (data1_handle dh)
 {
     if (!dh)
 	return;
-    
+
     /* *ostrich*
-       We need to destroy DFAs, in xp_element (xelm) definitions 
+       We need to destroy DFAs, in xp_element (xelm) definitions
        pop, 2002-12-13
     */
     data1_absyn_destroy(dh);
@@ -99,7 +99,7 @@ void data1_destroy (data1_handle dh)
     if (dh->map_buf)
         xfree (dh->map_buf);
     nmem_destroy (dh->mem);
-    
+
     xfree (dh);
 }
 

@@ -64,7 +64,7 @@ int tst_encode(int num)
 	    char *dst = (char *) &key;
 	    const char *src0 = src;
 	    iscz1_decode(codec_handle, &dst, &src);
-	    
+
 	    if (key.len != 2)
 	    {
 		printf ("%s: i=%d key.len=%d expected 2\n", prog,
@@ -137,7 +137,7 @@ void tstcodec1(void)
 
     dst = (char*) &key2;
     src = buf;
-    
+
     iscz1_decode(codec_handle, &dst, &src);
 
     iscz1_stop(codec_handle);
@@ -179,7 +179,7 @@ int tstcodec2(int num)
 	    const char *src = (const char *) &ar1;
 	    char *dst = dstbuf;
 	    iscz1_encode(encode_handle, &dst, &src);
-	    
+
 	    src = dstbuf;
 	    dst = (char *) &ar2;
 	    iscz1_decode(decode_handle, &dst, &src);
@@ -223,7 +223,7 @@ int main(int argc, char **argv)
     ret = tst_encode(num);
     exit(ret);
 }
-    
+
 /*
  * Local variables:
  * c-basic-offset: 4

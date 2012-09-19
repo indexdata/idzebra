@@ -30,22 +30,22 @@ const char *myrec[] = {
     "  <title>bar</title> \n"
     "  <author>gryf</author> \n"
     "</record> \n",
-    
+
     "<record> \n"
     "  <title>foo bar</title> \n"
     "  <author>gryf</author> \n"
     "</record> \n",
-   
+
     "<record> \n"
     "  <title lang=en>foo gryf</title> \n"
     "  <author>grunt</author> \n"
     "</record> \n",
-  
+
     "<record> \n"
     "  <title lang=da>foo grunt</title> \n"
     "  <value>bar</value> \n"
     "</record> \n",
- 
+
     "<record> \n"
     "  <title lang=en>double english</title> \n"
     "  <title lang=da>double danish</title> \n"
@@ -99,10 +99,10 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='da'] foo",1));
     YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='en'] foo",1));
 
-    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='en'] english",1)); 
-    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='da'] english",0)); 
-    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='da'] danish",1));  
-    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='en'] danish",0));  
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='en'] english",1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='da'] english",0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='da'] danish",1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=/record/title[@lang='en'] danish",0));
 
     YAZ_CHECK(tl_query(zh, "@attr 1=/record/title @and foo bar",2));
     /* The previous one returns two hits, as the and applies to the whole

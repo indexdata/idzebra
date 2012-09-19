@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <config.h>
 #endif
 #include "testlib.h"
-	
+
 static void tst(int argc, char **argv)
 {
     char path[256];
@@ -49,7 +49,7 @@ static void tst(int argc, char **argv)
 
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);
-    
+
     YAZ_CHECK(tl_close_down(zh, zs));
 }
 

@@ -51,7 +51,7 @@ void tst2(void)
     YAZ_CHECK(f);
 
     YAZ_CHECK_EQ(mf_read(f, 0, 0, 0, buf), 0);
-    
+
     memset(buf, 'a', BLOCK_SIZE);
     YAZ_CHECK_EQ(mf_write(f, 0, 0, 0, buf), 0);
 

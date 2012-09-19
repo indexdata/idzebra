@@ -59,7 +59,7 @@ static void rect_log_item(int level, const void *b, const char *txt)
         memcpy(&ent, (const char *)b + sizeof(sys) + 1, len);
         yaz_log(YLOG_LOG, "%s " ZINT_FORMAT " next=" ZINT_FORMAT " sz=%d", txt, sys,
                 ent.next, ent.size);
-            
+
     }
     else
         yaz_log(YLOG_LOG, "%s " ZINT_FORMAT, txt, sys);
@@ -136,7 +136,7 @@ recindex_t recindex_open(BFiles bfs, int rw, int use_isamb)
     recindex_t p = xmalloc(sizeof(*p));
     p->index_BFile = 0;
     p->isamb = 0;
-    
+
     p->index_fname = "reci";
     p->index_BFile = bf_open(bfs, p->index_fname, RIDX_CHUNK, rw);
     if (p->index_BFile == NULL)
@@ -145,7 +145,7 @@ recindex_t recindex_open(BFiles bfs, int rw, int use_isamb)
         xfree(p);
         return 0;
     }
-    
+
     if (use_isamb)
     {
         int isam_block_size = 4096;
@@ -212,7 +212,7 @@ ZEBRA_RES recindex_write_head(recindex_t p, const void *buf, size_t len)
     assert(p);
 
     assert(p->index_BFile);
-    
+
     r = bf_write(p->index_BFile, 0, 0, len, buf);
     if (r)
     {
@@ -222,7 +222,7 @@ ZEBRA_RES recindex_write_head(recindex_t p, const void *buf, size_t len)
     return ZEBRA_OK;
 }
 
-int recindex_read_indx(recindex_t p, zint sysno, void *buf, int itemsize, 
+int recindex_read_indx(recindex_t p, zint sysno, void *buf, int itemsize,
                        int ignoreError)
 {
     int r = 0;
@@ -233,17 +233,17 @@ int recindex_read_indx(recindex_t p, zint sysno, void *buf, int itemsize,
             char item[256];
             char *st = item;
             char untilbuf[sizeof(zint) + 1];
-            
+
             ISAMB_PP isam_pp = isamb_pp_open(p->isamb, p->isam_p, 1);
-            
+
             memcpy(untilbuf, &sysno, sizeof(sysno));
             untilbuf[sizeof(sysno)] = 0;
             r = isamb_pp_forward(isam_pp, st, untilbuf);
-            
+
             isamb_pp_close(isam_pp);
             if (!r)
                 return 0;
-            
+
             if (item[sizeof(sysno)] != itemsize)
             {
                 yaz_log(YLOG_WARN, "unexpected entry size %d != %d",
@@ -258,10 +258,10 @@ int recindex_read_indx(recindex_t p, zint sysno, void *buf, int itemsize,
         zint pos = (sysno-1)*itemsize;
         int off = CAST_ZINT_TO_INT(pos%RIDX_CHUNK);
         int sz1 = RIDX_CHUNK - off;    /* sz1 is size of buffer to read.. */
-        
+
         if (sz1 > itemsize)
             sz1 = itemsize;  /* no more than itemsize bytes */
-        
+
         r = bf_read(p->index_BFile, 1+pos/RIDX_CHUNK, off, sz1, buf);
         if (r == 1 && sz1 < itemsize) /* boundary? - must read second part */
             r = bf_read(p->index_BFile, 2+pos/RIDX_CHUNK, 0, itemsize - sz1,
@@ -275,7 +275,7 @@ int recindex_read_indx(recindex_t p, zint sysno, void *buf, int itemsize,
 #if 0
     {
         struct record_index_entry *ep = buf;
-        yaz_log(YLOG_LOG, "read r=%d sysno=" ZINT_FORMAT " next=" ZINT_FORMAT 
+        yaz_log(YLOG_LOG, "read r=%d sysno=" ZINT_FORMAT " next=" ZINT_FORMAT
             " sz=%d", r, sysno, ep->next, ep->size);
     }
 #endif
@@ -293,12 +293,12 @@ struct code_read_data {
 int bt_code_read(void *vp, char **dst, int *insertMode)
 {
     struct code_read_data *s = (struct code_read_data *) vp;
-    
+
     if (s->no == 0)
         return 0;
 
     (s->no)--;
-    
+
     memcpy(*dst, &s->sysno, sizeof(zint));
     *dst += sizeof(zint);
     **dst = s->itemsize;
@@ -335,10 +335,10 @@ void recindex_write_indx(recindex_t p, zint sysno, void *buf, int itemsize)
         zint pos = (sysno-1)*itemsize;
         int off = CAST_ZINT_TO_INT(pos%RIDX_CHUNK);
         int sz1 = RIDX_CHUNK - off;    /* sz1 is size of buffer to read.. */
-        
+
         if (sz1 > itemsize)
             sz1 = itemsize;  /* no more than itemsize bytes */
-        
+
         bf_write(p->index_BFile, 1+pos/RIDX_CHUNK, off, sz1, buf);
         if (sz1 < itemsize)   /* boundary? must write second part */
             bf_write(p->index_BFile, 2+pos/RIDX_CHUNK, 0, itemsize - sz1,

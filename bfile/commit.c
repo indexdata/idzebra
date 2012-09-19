@@ -98,7 +98,7 @@ static int map_cache_flush(struct map_cache *m_p)
         if (mf_write(m_p->cf->rmf, m_p->map[i].to, 0, 0,
                      m_p->buf + m_p->map[i].from * m_p->cf->head.block_size))
             return -1;
-    }    
+    }
     m_p->no = 0;
     return 0;
 }
@@ -128,7 +128,7 @@ static int map_cache_add(struct map_cache *m_p, int from, int to)
 #endif
 
 static int cf_commit_hash (CFile cf)
-{ 
+{
     int r = 0;
     int i;
     zint bucket_no;

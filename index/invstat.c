@@ -42,7 +42,7 @@ struct inv_stat_info {
     int dumpwords;
 };
 
-#define SINGLETON_TYPE 8 /* the type to use for singletons that */ 
+#define SINGLETON_TYPE 8 /* the type to use for singletons that */
                          /* have no block and no block type */
 
 static void print_dict_item (ZebraHandle zh, const char *s, zint count,
@@ -124,7 +124,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         int level;
         zint size;
         zint blocks;
-        
+
         pp = isamb_pp_open_x(stat_info->zh->reg->isamb, isam_p, &level, 0);
 
         while (isamb_pp_read(pp, &key))
@@ -295,7 +295,7 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
     fprintf (stdout, "%7d-        %7d\n",
              prev, stat_info.isam_occurrences[i]);
     rec_prstat(zh->reg->records, 0);
-    xmalloc_trav("unfreed"); /*! while hunting memory leaks */    
+    xmalloc_trav("unfreed"); /*! while hunting memory leaks */
     zebra_end_read (zh);
     return 0;
 }

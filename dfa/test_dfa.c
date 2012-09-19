@@ -30,7 +30,7 @@ int test_parse(struct DFA *dfa, const char *pattern)
     i = dfa_parse(dfa, &cp);
     return i;
 }
-    
+
 static void tst(int argc, char **argv)
 {
     struct DFA *dfa = dfa_init();

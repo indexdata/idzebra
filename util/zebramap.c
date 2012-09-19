@@ -170,7 +170,7 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
     }
     else if (!zm)
     {
-        yaz_log(YLOG_WARN, "%s:%d: Missing sort/index before '%s'",  
+        yaz_log(YLOG_WARN, "%s:%d: Missing sort/index before '%s'",
                 fname, lineno, argv[0]);
         return -1;
     }
@@ -215,8 +215,8 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
             zm->u.sort.entry_size = atoi(argv[1]);
         else
         {
-            yaz_log(YLOG_WARN, 
-                    "%s:%d: entrysize only valid in sort section",  
+            yaz_log(YLOG_WARN,
+                    "%s:%d: entrysize only valid in sort section",
                     fname, lineno);
             return -1;
         }
@@ -251,14 +251,14 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
 #if YAZ_HAVE_ICU
             UErrorCode status;
             xmlNode *xml_node = xmlDocGetRootElement(zm->doc);
-            zm->icu_chain = 
+            zm->icu_chain =
                 icu_chain_xml_config(xml_node,
 /* not sure about sort for this function yet.. */
 #if 1
                                      1,
 #else
                                      zm->type == ZEBRA_MAP_TYPE_SORT,
-#endif                                    
+#endif
                                      &status);
             if (!zm->icu_chain)
             {
@@ -284,7 +284,7 @@ static int parse_command(zebra_maps_t zms, int argc, char **argv,
     }
     else
     {
-        yaz_log(YLOG_WARN, "%s:%d: Unrecognized directive '%s'",  
+        yaz_log(YLOG_WARN, "%s:%d: Unrecognized directive '%s'",
                 fname, lineno, argv[0]);
         return -1;
     }
@@ -366,7 +366,7 @@ zebra_map_t zebra_map_get_or_add(zebra_maps_t zms, const char *id)
     if (!zm)
     {
         zm = zebra_add_map(zms, id, ZEBRA_MAP_TYPE_INDEX);
-	
+
 	/* no reason to warn if no maps are read from file */
 	if (zms->no_files_read)
 	    yaz_log(YLOG_WARN, "Unknown register type: %s", id);
@@ -401,7 +401,7 @@ const char **zebra_maps_input(zebra_map_t zm,
     chrmaptab maptab = zebra_charmap_get(zm);
     if (maptab)
 	return chr_map_input(maptab, from, len, first);
-    
+
     zm->zebra_maps->temp_map_str[0] = **from;
 
     (*from)++;
@@ -412,7 +412,7 @@ const char **zebra_maps_search(zebra_map_t zm,
 			       const char **from, int len,  int *q_map_match)
 {
     chrmaptab maptab;
-    
+
     *q_map_match = 0;
     maptab = zebra_charmap_get(zm);
     if (maptab)
@@ -447,7 +447,7 @@ const char *zebra_maps_output(zebra_map_t zm,
 /* ------------------------------------ */
 
 int zebra_maps_is_complete(zebra_map_t zm)
-{ 
+{
     if (zm)
 	return zm->completeness;
     return 0;
@@ -473,7 +473,7 @@ int zebra_maps_is_staticrank(zebra_map_t zm)
 	return zm->type == ZEBRA_MAP_TYPE_STATICRANK;
     return 0;
 }
-    
+
 int zebra_maps_is_sort(zebra_map_t zm)
 {
     if (zm)
@@ -572,11 +572,11 @@ int zebra_maps_attr(zebra_maps_t zms, Z_AttributesPlusTerm *zapt,
 	break;
     case 106: /* document-text */
         *search_type = "or-list";
-	break;	
+	break;
     case -1:
     case 1:   /* phrase */
     case 2:   /* word */
-    case 108: /* string */ 
+    case 108: /* string */
 	*search_type = "phrase";
 	break;
     case 107: /* local-number */
@@ -718,9 +718,9 @@ int zebra_map_tokenize_start(zebra_map_t zm,
             wrbuf_rewind(zm->print_str);
             wrbuf_write_escaped(zm->print_str, wrbuf_buf(zm->input_str),
                                 wrbuf_len(zm->input_str));
-            
-            yaz_log(YLOG_LOG, "input %s", 
-                    wrbuf_cstr(zm->print_str)); 
+
+            yaz_log(YLOG_LOG, "input %s",
+                    wrbuf_cstr(zm->print_str));
         }
         ret = icu_chain_assign_cstr(zm->icu_chain,
                                     wrbuf_cstr(zm->input_str), &status);

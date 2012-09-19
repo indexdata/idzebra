@@ -41,7 +41,7 @@ struct rank_set_info {
 };
 
 /*
- * create: Creates/Initialises this rank handler. This routine is 
+ * create: Creates/Initialises this rank handler. This routine is
  *  called exactly once. The routine returns the class_handle.
  */
 static void *create (ZebraHandle zh)
@@ -71,11 +71,11 @@ static void destroy (struct zebra_register *reg, void *class_handle)
  *  each result set. The returned handle is a "set handle" and
  *  will be used in each of the handlers below.
  */
-static void *begin (struct zebra_register *reg, 
+static void *begin (struct zebra_register *reg,
                     void *class_handle, RSET rset, NMEM nmem,
                     TERMID *terms, int numterms)
 {
-    struct rank_set_info *si = 
+    struct rank_set_info *si =
         (struct rank_set_info *) nmem_malloc (nmem, sizeof(*si));
     int i;
 
@@ -86,7 +86,7 @@ static void *begin (struct zebra_register *reg,
     {
 	struct ord_list *ol = terms[i]->ol;
 
-        yaz_log(log_level, "i=%d flags=%s '%s'", i, 
+        yaz_log(log_level, "i=%d flags=%s '%s'", i,
                 terms[i]->flags, terms[i]->name );
 
 	for (; ol; ol = ol->next)
@@ -107,7 +107,7 @@ static void *begin (struct zebra_register *reg,
 		yaz_log(log_level, " ord=%d index_type=%s db=%s set=%d use=%d",
                         ol->ord, index_type, db, set, use);
 	}
-	if (!strncmp (terms[i]->flags, "rank,", 5)) 
+	if (!strncmp (terms[i]->flags, "rank,", 5))
 	    (si->no_rank_entries)++;
     }
     return si;
@@ -133,7 +133,7 @@ static void add (void *set_handle, int seqno, TERMID term)
 }
 
 /*
- * calc: Called for each document in a result. This handler should 
+ * calc: Called for each document in a result. This handler should
  *  produce a score based on previous call(s) to the add handler. The
  *  score should be between 0 and 1000. If score cannot be obtained
  *  -1 should be returned.
@@ -181,7 +181,7 @@ static struct rank_control rank_control = {
     calc,
     add,
 };
- 
+
 struct rank_control *rank_static_class = &rank_control;
 /*
  * Local variables:

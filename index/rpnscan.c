@@ -54,7 +54,7 @@ static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         const char *res_buf;
         size_t res_len;
         zebra_map_tokenize_start(zm, term_utf8, strlen(term_utf8));
-        
+
         if (zebra_map_tokenize_next(zm, &res_buf, &res_len, 0, 0))
         {
             memcpy(termz, res_buf, res_len);
@@ -72,7 +72,7 @@ static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         int i = 0;
         const char *space_map = NULL;
         int len;
-            
+
         while ((len = (cp_end - cp)) > 0)
         {
             map = zebra_maps_input(zm, &cp, len, 0);
@@ -93,8 +93,8 @@ static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     return ZEBRA_OK;
 }
 
-static void get_first_snippet_from_rset(ZebraHandle zh, 
-                                        RSET rset, zebra_snippets *snippets, 
+static void get_first_snippet_from_rset(ZebraHandle zh,
+                                        RSET rset, zebra_snippets *snippets,
                                         zint *sysno)
 {
     struct it_key key;
@@ -162,7 +162,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
                          struct rset_key_control *kc,
                          Z_AttributesPlusTerm *zapt,
                          RSET limit_set,
-                         const char *term, 
+                         const char *term,
                          const char *index_type,
                          struct scan2_info_entry *ar, int ord_no,
                          ZebraScanEntry *glist, int pos)
@@ -173,11 +173,11 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
     AttrType global_hits_limit_attr;
     int l;
     attr_init_APT(&global_hits_limit_attr, zapt, 12);
-            
+
     l = attr_find(&global_hits_limit_attr, NULL);
     if (l != -1)
         approx_limit = l;
-    
+
     for (i = 0; i < ord_no; i++)
     {
         if (ar[i].isam_p && strcmp(wrbuf_cstr(ar[i].term), term) == 0)
@@ -186,15 +186,15 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
             {
                 struct ord_list *ol = ord_list_create(nmem);
                 RSET rset_t;
-                
+
                 ol = ord_list_append(nmem, ol, ar[i].ord);
-                
+
                 assert(ol);
                 rset_t = rset_trunc(
                     zh, &ar[i].isam_p, 1,
                     wrbuf_buf(ar[i].term), wrbuf_len(ar[i].term),
-                    NULL, 1, zapt->term->which, nmem, 
-                    kc, kc->scope, ol, index_type, 
+                    NULL, 1, zapt->term->which, nmem,
+                    kc, kc->scope, ol, index_type,
                     0 /* hits_limit_value */,
                     0 /* term_ref_id_str */);
                 if (!rset)
@@ -202,7 +202,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
                 else
                 {
                     RSET rsets[2];
-                    
+
                     rsets[0] = rset;
                     rsets[1] = rset_t;
                     rset = rset_create_or(nmem, kc, kc->scope, 0 /* termid */,
@@ -221,7 +221,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
             RSET rsets[2];
             rsets[0] = rset;
             rsets[1] = rset_dup(limit_set);
-            
+
             rset = rset_create_and(nmem, kc, kc->scope, 2, rsets);
         }
         /* count it */
@@ -234,7 +234,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
 
             glist[pos].term = 0;
             glist[pos].display_term = 0;
-            
+
             get_first_snippet_from_rset(zh, rset, hit_snippets, &sysno);
             if (sysno)
             {
@@ -242,7 +242,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
                 int code = zebra_get_rec_snippets(zh, sysno, rec_snippets);
                 if (code == 0)
                 {
-                    const struct zebra_snippet_word *w = 
+                    const struct zebra_snippet_word *w =
                         zebra_snippets_lookup(rec_snippets, hit_snippets);
                     if (w)
                     {
@@ -283,7 +283,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
 static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
                                struct rset_key_control *kc,
                                Z_AttributesPlusTerm *zapt,
-                               int *position, int *num_entries, 
+                               int *position, int *num_entries,
                                ZebraScanEntry **list,
                                int *is_partial, RSET limit_set,
                                const char *index_type,
@@ -309,12 +309,12 @@ static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
     {
         char termz[IT_MAX_WORD+20];
         int prefix_len = 0;
-        
+
         prefix_len = key_SU_encode(ords[i], termz);
         termz[prefix_len] = 0;
         strcpy(ar[i].prefix, termz);
-        
-        if (trans_scan_term(zh, zapt, termz+prefix_len, zm) == 
+
+        if (trans_scan_term(zh, zapt, termz+prefix_len, zm) ==
             ZEBRA_FAIL)
         {
             for (i = 0; i < ord_no; i++)
@@ -352,7 +352,7 @@ static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
         /* get maximum after scan */
         for (i = 0; i < ord_no; i++)
         {
-            if (ar[i].isam_p 
+            if (ar[i].isam_p
                 && (hi == 0 || strcmp(wrbuf_cstr(ar[i].term), hi) > 0))
                 hi = wrbuf_cstr(ar[i].term);
         }
@@ -383,12 +383,12 @@ static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
     {
         char termz[IT_MAX_WORD+20];
         int prefix_len = 0;
-        
+
         prefix_len = key_SU_encode(ords[i], termz);
         termz[prefix_len] = 0;
         strcpy(ar[i].prefix, termz);
-        
-        if (trans_scan_term(zh, zapt, termz+prefix_len, zm) == 
+
+        if (trans_scan_term(zh, zapt, termz+prefix_len, zm) ==
             ZEBRA_FAIL)
             return ZEBRA_FAIL;
         wrbuf_rewind(ar[i].term);
@@ -424,7 +424,7 @@ static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
         /* get minimum after scan */
         for (i = 0; i < ord_no; i++)
         {
-            if (ar[i].isam_p 
+            if (ar[i].isam_p
                 && (lo == 0 || strcmp(wrbuf_cstr(ar[i].term), lo) < 0))
                 lo = wrbuf_cstr(ar[i].term);
         }
@@ -505,7 +505,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
             {
                 char resname[32];
                 sprintf(resname, "%d", termset_value_numeric);
-                set_name = odr_strdup(stream, resname); 
+                set_name = odr_strdup(stream, resname);
             }
             else
                 set_name = odr_strdup(stream, termset_value_string);
@@ -515,10 +515,10 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     if (set_name)
     {
         limit_set = resultSetRef(zh, set_name);
-        
+
         if (!limit_set)
         {
-            zebra_setError(zh, 
+            zebra_setError(zh,
                            YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST,
                            set_name);
             return ZEBRA_FAIL;
@@ -527,7 +527,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 
     yaz_log(YLOG_DEBUG, "position = %d, num = %d",
 	    *position, *num_entries);
-        
+
     if (zebra_maps_attr(zh->reg->zebra_maps, zapt, &index_type, &search_type,
 			rank_type, &complete_flag, &sort_flag))
     {
@@ -551,7 +551,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    *num_entries = 0;
 	    return ZEBRA_FAIL;
 	}
-        if (zebra_apt_get_ord(zh, zapt, index_type, 0, attributeset, &ord) 
+        if (zebra_apt_get_ord(zh, zapt, index_type, 0, attributeset, &ord)
             != ZEBRA_OK)
             continue;
         ords[ord_no++] = ord;

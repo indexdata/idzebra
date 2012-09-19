@@ -62,7 +62,7 @@ int main(int argc, char **argv)
     char *database = 0;
     Res res = res_open(0, 0);
     Res default_res = res_open(0, 0);
-    
+
     int trans_started = 0;
 #ifndef WIN32
     char nbuf[100];
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
                     {
 			yaz_log(YLOG_FATAL, "Cannot read config %s", config);
                         exit(1);
-	            }	
+	            }
                     zh = zebra_open(zs, 0);
 		    zebra_shadow_enable(zh, enable_commit);
                 }
@@ -240,7 +240,7 @@ int main(int argc, char **argv)
                     const char *add = zebra_errAdd(zh);
 		    yaz_log(YLOG_FATAL, "Operation failed: %s %s",
                             zebra_errString(zh), add ? add : "");
-                    
+
                     if (trans_started)
                         if (zebra_end_trans(zh) != ZEBRA_OK)
                             yaz_log(YLOG_WARN, "zebra_end_trans failed");

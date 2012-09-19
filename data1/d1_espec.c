@@ -87,7 +87,7 @@ static Z_Occurrences *read_occurrences(char *occ, NMEM nmem,
 {
     Z_Occurrences *op = (Z_Occurrences *)nmem_malloc(nmem, sizeof(*op));
     char *p;
-    
+
     if (!occ)
     {
 	op->which = Z_Occurrences_values;
@@ -109,7 +109,7 @@ static Z_Occurrences *read_occurrences(char *occ, NMEM nmem,
     else
     {
 	Z_OccurValues *ov = (Z_OccurValues *)nmem_malloc(nmem, sizeof(*ov));
-    
+
 	if (!d1_isdigit(*occ))
 	{
 	    yaz_log(YLOG_WARN, "%s:%d: Bad occurrences-spec %s",
@@ -135,7 +135,7 @@ static Z_ETagUnit *read_tagunit(char *buf, NMEM nmem,
     int terms;
     int type;
     char value[512], occ[512];
-    
+
     if (*buf == '*')
     {
 	u->which = Z_ETagUnit_wildPath;
@@ -156,7 +156,7 @@ static Z_ETagUnit *read_tagunit(char *buf, NMEM nmem,
 	Z_SpecificTag *t;
 	char *valp = value;
 	int force_string = 0;
-	
+
 	if (*valp == '\'')
 	{
 	    valp++;
@@ -218,10 +218,10 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
     int argc, size_esn = 0;
     char *argv[50], line[512];
     Z_Espec1 *res = (Z_Espec1 *)nmem_malloc(nmem, sizeof(*res));
-    
+
     if (!(f = data1_path_fopen(dh, file, "r")))
 	return 0;
-    
+
     res->num_elementSetNames = 0;
     res->elementSetNames = 0;
     res->defaultVariantSetId = 0;
@@ -229,19 +229,19 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
     res->defaultTagType = 0;
     res->num_elements = 0;
     res->elements = 0;
-    
+
     while ((argc = readconf_line(f, &lineno, line, 512, argv, 50)))
 	if (!strcmp(argv[0], "elementsetnames"))
 	{
 	    int nnames = argc-1, i;
-	    
+
 	    if (!nnames)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Empty elementsetnames directive",
 			file, lineno);
 		continue;
 	    }
-	    
+
 	    res->elementSetNames =
 		(char **)nmem_malloc(nmem, sizeof(char**)*nnames);
 	    for (i = 0; i < nnames; i++)
@@ -294,7 +294,7 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
 	    char *path = argv[1];
 	    char *ep;
 	    int num, i = 0;
-	    
+
 	    if (!res->elements)
 		res->elements = (Z_ElementRequest **)
 		    nmem_malloc(nmem, size_esn = 24*sizeof(er));
@@ -312,7 +312,7 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
 			file, lineno, argv[0]);
 		continue;
 	    }
-	    
+
 	    res->elements[res->num_elements++] = er =
 		(Z_ElementRequest *)nmem_malloc(nmem, sizeof(*er));
 	    er->which = Z_ERequest_simpleElement;
@@ -328,14 +328,14 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
 		;
 	    tp->tags = (Z_ETagUnit **)
 		nmem_malloc(nmem, sizeof(Z_ETagUnit*)*num);
-	    
+
 	    for ((ep = strchr(path, '/')) ; path ;
 		 (void)((path = ep) && (ep = strchr(path, '/'))))
 	    {
 		Z_ETagUnit *tagunit;
 		if (ep)
 		    ep++;
-		
+
 		assert(i<num);
 		tagunit = read_tagunit(path, nmem, file, lineno);
 		if (!tagunit)
@@ -346,7 +346,7 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
 		}
 		tp->tags[tp->num_tags++] = tagunit;
 	    }
-	    
+
 	    if (argc > 2 && !strcmp(argv[2], "variant"))
 		se->variantRequest=
 		    read_variant(argc-3, argv+3, nmem, file, lineno);

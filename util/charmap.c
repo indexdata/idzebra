@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 /**
  * \file charmap.c
  * \brief character conversions (.chr)
- *  
+ *
  * Support module to handle character-conversions into and out of the
  * Zebra dictionary.
  */
@@ -71,7 +71,7 @@ struct chr_t_entry
 /*
  * General argument structure for callback functions (internal use only)
  */
-typedef struct chrwork 
+typedef struct chrwork
 {
     chrmaptab map;
     char string[CHR_MAXSTR+1];
@@ -103,10 +103,10 @@ static chr_t_entry *set_map_string(chr_t_entry *root, NMEM nmem,
     }
     if (!len)
     {
-	if (!root->target || !root->target[0] || 
+	if (!root->target || !root->target[0] ||
 	    strcmp((const char *) root->target[0], to))
 	{
-            if (from_0 && 
+            if (from_0 &&
                 root->target && root->target[0] && root->target[0][0] &&
                 strcmp((const char *) root->target[0], CHR_UNKNOWN))
             {
@@ -163,8 +163,8 @@ static chr_t_entry *find_entry_x(chr_t_entry *t, const char **from, int *len, in
             else
 	        res = 0;
 	    /* otherwhise there was no match on beginning of field, move on */
-	} 
-	
+	}
+
 	if (!res && t->children[(unsigned char) **from])
 	{
 	    (*len)--;
@@ -210,7 +210,7 @@ const char **chr_map_q_input(chrmaptab maptab,
     chr_t_entry *t = maptab->q_input;
     chr_t_entry *res;
     int len_tmp[2];
-    
+
     len_tmp[0] = len;
     len_tmp[1] = -1;
     if (!(res = find_entry_x(t, from, len_tmp, first)))
@@ -253,7 +253,7 @@ ucs4_t zebra_prim_w(ucs4_t **s)
 	case 'n': c = '\n'; (*s)++; break;
 	case 't': c = '\t'; (*s)++; break;
 	case 's': c = ' '; (*s)++; break;
-	case 'x': 
+	case 'x':
 	    if (zebra_ucs4_strlen(*s) >= 3)
 	    {
 		fmtstr[0] = (*s)[1];
@@ -319,14 +319,14 @@ static void fun_addentry(const char *s, void *data, int num)
 {
     chrmaptab tab = (chrmaptab) data;
     char tmp[2];
-    
+
     tmp[0] = num; tmp[1] = '\0';
     tab->input = set_map_string(tab->input, tab->nmem, s, strlen(s), tmp, 0);
     tab->output[num + tab->base_uppercase] =
 	(unsigned char *) nmem_strdup(tab->nmem, s);
 }
 
-/* 
+/*
  * Callback function.
  * Add a space-entry to the value space.
  */
@@ -337,7 +337,7 @@ static void fun_addspace(const char *s, void *data, int num)
 				(char*) CHR_SPACE, 0);
 }
 
-/* 
+/*
  * Callback function.
  * Add a space-entry to the value space.
  */
@@ -369,7 +369,7 @@ static void fun_mkstring(const char *s, void *data, int num)
 static void fun_add_equivalent_string(const char *s, void *data, int num)
 {
     chr_equiv_work *arg = (chr_equiv_work *) data;
-    
+
     if (arg->no_eq == CHR_MAXEQUIV)
 	return;
     arg->eq[arg->no_eq++] = nmem_strdup(arg->nmem, s);
@@ -396,7 +396,7 @@ static int scan_to_utf8(yaz_iconv_t t, ucs4_t *from, size_t inlen,
     size_t inbytesleft = inlen * sizeof(ucs4_t);
     char *inbuf = (char*) from;
     size_t ret;
-   
+
     if (t == 0)
         *outbuf++ = *from;  /* ISO-8859-1 is OK here */
     else
@@ -404,8 +404,8 @@ static int scan_to_utf8(yaz_iconv_t t, ucs4_t *from, size_t inlen,
         ret = yaz_iconv(t, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
         if (ret != (size_t) (-1))
             ret = yaz_iconv(t, 0, 0, &outbuf, &outbytesleft);
-        
-            
+
+
         if (ret == (size_t) (-1))
         {
 	    yaz_log(YLOG_LOG, "from: %2X %2X %2X %2X",
@@ -437,18 +437,18 @@ static int scan_string(char *s_native,
         char *inbuf = s_native;
         size_t outbytesleft = sizeof(arg)-4;
         size_t inbytesleft = strlen(s_native);
-        size_t ret;        	
+        size_t ret;
 	ret = yaz_iconv(t_unicode, &inbuf, &inbytesleft,
                         &outbuf, &outbytesleft);
         if (ret != (size_t)(-1))
             ret = yaz_iconv(t_unicode, 0, 0, &outbuf, &outbytesleft);
-            
+
         if (ret == (size_t)(-1))
             return -1;
         i = (outbuf - (char*) arg)/sizeof(ucs4_t);
     }
     else
-    { 
+    {
         for (i = 0; s_native[i]; i++)
             arg[i] = s_native[i] & 255; /* ISO-8859-1 conversion */
     }
@@ -672,7 +672,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
 	    }
 	    w.nmem = res->nmem;
 	    w.no_eq = 0;
-	    if (scan_string(argv[1], t_unicode, t_utf8, 
+	    if (scan_string(argv[1], t_unicode, t_utf8,
                             fun_add_equivalent_string, &w, 0) < 0)
 	    {
 		yaz_log(YLOG_FATAL, "equivalent: invalid string");
@@ -725,7 +725,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
 	    yaz_log(YLOG_WARN, "Syntax error at '%s' in %s", line, name);
             errors++;
 	}
-    }   
+    }
     yaz_fclose(f);
     if (no_directives == 0)
     {

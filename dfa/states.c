@@ -38,7 +38,7 @@ int init_DFA_states (struct DFA_states **dfasp, DFASetType st, int hash)
     struct DFA_states *dfas;
     struct DFA_trans *tm;
     int i;
-    
+
     dfas = (struct DFA_states *) imalloc (sizeof(struct DFA_states));
     assert (dfas);
     dfas->hasharray = (struct DFA_state **)
@@ -117,7 +117,7 @@ int add_DFA_state (struct DFA_states *dfas, DFASet *s, struct DFA_state **sp)
         sb = (DFA_stateb *) imalloc (sizeof(*sb));
         sb->next = dfas->statemem;
         dfas->statemem = sb;
-        sb->state_block = si = dfas->freelist = 
+        sb->state_block = si = dfas->freelist =
             (struct DFA_state *) imalloc (sizeof(struct DFA_state)*DFA_CHUNK);
         for (i = 0; i<DFA_CHUNK-1; i++, si++)
             si->next = si+1;

@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /** \file d1_doespec.c
  *  \brief handle Z39.50 variant-1 specs
- *   
+ *
  *  See http://www.loc.gov/z3950/agency/defns/variant1.html
  */
 #if HAVE_CONFIG_H
@@ -60,7 +60,7 @@ static Z_Triple *find_triple(Z_Variant *var, const Odr_oid *universal_oid,
         const Odr_oid *cur_oid = var->triples[i]->variantSetId;
         if (!cur_oid)
             cur_oid = var->globalVariantSetId;
-        if (cur_oid && var_oid 
+        if (cur_oid && var_oid
             && !oid_oidcmp(var_oid, cur_oid) && *var->triples[i]->type == type)
 	    return var->triples[i];
     }
@@ -121,9 +121,9 @@ static void match_triple(data1_handle dh, Z_Variant *vreq,
     {
 	int remove_flag = 0;
 	Z_Triple *r;
-	
+
 	assert ((*c)->which == DATA1N_variant);
-	
+
 	if ((*c)->u.variant.type->zclass->zclass == 4 &&
 	    (*c)->u.variant.type->type == 1)
 	{
@@ -160,7 +160,7 @@ static int match_node_and_attr (data1_node *c, const char *spec)
     data1_tag *tag = 0;
     if (c->u.tag.element)
 	tag = c->u.tag.element->tag;
-    
+
     *predicate = '\0';
     sscanf(spec, "%63[^[]%c%63[^]]", elem, &dummy_ch, predicate);
     if (data1_matchstr(elem, tag ? tag->value.string : c->u.tag.tag))
@@ -190,7 +190,7 @@ static int match_node_and_attr (data1_node *c, const char *spec)
     }
     return 0;
 }
-				
+
 static int match_children_here (data1_handle dh, data1_node *n,
 				Z_Espec1 *e, int i,
 				Z_ETagUnit **t, int num,
@@ -237,7 +237,7 @@ static int match_children_here (data1_handle dh, data1_node *n,
 #if 1
 		if (!match_node_and_attr(c, str_val))
 		    continue;
-#else	   
+#else
 		if (data1_matchstr(str_val,
 				   tag ? tag->value.string : c->u.tag.tag))
 		    continue;
@@ -294,7 +294,7 @@ static int match_children_here (data1_handle dh, data1_node *n,
 			/*
 			 * 6,5: meta-data requested, variant list.
 			 */
-			if (find_triple(vreq, e->defaultVariantSetId, 
+			if (find_triple(vreq, e->defaultVariantSetId,
                                         var_oid, 6, 5))
 			    show_variantlist = 1;
 			/*
@@ -360,7 +360,7 @@ int data1_doespec1 (data1_handle dh, data1_node *n, Z_Espec1 *e)
     n = data1_get_root_tag (dh, n);
     if (n && n->which == DATA1N_tag)
         n->u.tag.node_selected = 1;
-    
+
     for (i = 0; i < e->num_elements; i++)
     {
         if (e->elements[i]->which != Z_ERequest_simpleElement)

@@ -167,7 +167,7 @@ data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
 	    }
 	    mapp = &(*mapp)->next;
 	}
-	else 
+	else
 	    yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'",
 		    file, lineno, argv[0]);
 
@@ -234,7 +234,7 @@ static data1_node *dup_child (data1_handle dh, data1_node *n,
     {
         *last = *m = (data1_node *) nmem_malloc (mem, sizeof(**m));
         memcpy (*m, n, sizeof(**m));
-        
+
         (*m)->parent = parent;
         (*m)->root = parent->root;
         (*m)->child = dup_child(dh, n->child, &(*m)->last_child, mem, *m);
@@ -289,11 +289,11 @@ static int map_children(data1_handle dh, data1_node *n, data1_maptab *map,
                                 {
                                     cur = data1_mk_tag (
                                         dh, mem, tag->names->name, 0, pn);
-                                    
+
                                 }
                             }
 			}
-			
+
 			if (mt->next)
 			    pn = cur;
 			else if (!m->no_data)

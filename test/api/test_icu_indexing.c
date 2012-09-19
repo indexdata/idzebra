@@ -49,7 +49,7 @@ const char *myrec[] = {
         "<gils>\n<title>B" char_aring "d</title>\n"
         "<abstract>זיהוי סדר הארועים בסיפור המרד הגדול מאת צביה בן-שלום 提示:直接点击数据库名称,将进入单库检索 Ngày xửa ngày xưa D.W. all wet</abstract>\n</gils>\n" ,
 	0} ;
-	
+
 static void tst(int argc, char **argv)
 {
 #if YAZ_HAVE_ICU
@@ -62,7 +62,7 @@ static void tst(int argc, char **argv)
 
     /* simple term */
     YAZ_CHECK(tl_query(zh, "@attr 1=title notfound", 0));
- 
+
     YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 3));
 
     YAZ_CHECK(tl_query(zh, "@attr 5=1 @attr 1=title computer", 3));
@@ -154,7 +154,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 5=1 ב", 1));
 
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 5=102 בן", 1));
-    
+
     /* phrase search */
     YAZ_CHECK(tl_query(zh, "@attr 1=title {my computer}", 2));
     YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=1 {my computer}", 2));
@@ -169,10 +169,10 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 2=103 {}", 5));
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 2=103 {}", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 2=103 {does not match}", 1));
-    
+
     /* scan */
     {   /* word search */
-        const char *ent[] = { char_ae "rme", "B" char_aring "d", "computer", 
+        const char *ent[] = { char_ae "rme", "B" char_aring "d", "computer",
                               "My", "x", 0 };
         YAZ_CHECK(tl_scan(zh, "@attr 1=title 0", 1, 10, 1, 5, 1, ent));
     }
@@ -186,7 +186,7 @@ static void tst(int argc, char **argv)
         const char *ent[] = { char_ae "rme", "B" char_aring "d", "My computer" };
         YAZ_CHECK(tl_scan(zh, "@attr 1=title @attr 6=2 0", 1, 3, 1, 3, 0, ent));
     }
-    
+
     YAZ_CHECK(tl_close_down(zh, zs));
 #endif
 }

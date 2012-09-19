@@ -111,7 +111,7 @@ void zebra_snippets_log(const zebra_snippets *l, int log_level, int all)
 
         if (all || w->mark)
             yaz_log(log_level, "term='%s'%s mark=%d seqno=" ZINT_FORMAT " ord=%d",
-                    wrbuf_cstr(wr_term), 
+                    wrbuf_cstr(wr_term),
                     (w->match && !w->ws ? "*" : ""), w->mark,
                     w->seqno, w->ord);
         wrbuf_destroy(wr_term);
@@ -189,7 +189,7 @@ zebra_snippets *zebra_snippets_window(const zebra_snippets *doc,
 		     hit_w = hit_w->next)
 		{
 		    if (hit_w->ord == ord && hit_w->seqno == doc_w->seqno)
-			
+
 		    {
 			match = 1;
 			break;
@@ -197,7 +197,7 @@ zebra_snippets *zebra_snippets_window(const zebra_snippets *doc,
 		}
 		zebra_snippets_append_match(result, doc_w->seqno,
                                             doc_w->ws,
-					    ord, doc_w->term, 
+					    ord, doc_w->term,
                                             strlen(doc_w->term), match);
 	    }
     }
@@ -269,7 +269,7 @@ void zebra_snippets_ring(zebra_snippets *doc, const zebra_snippets *hit,
                         doc_w->mark = 1;
                         break;
                     }
-                    
+
                 }
                 /* mark following terms */
                 if (doc_w)
@@ -277,7 +277,7 @@ void zebra_snippets_ring(zebra_snippets *doc, const zebra_snippets *hit,
                     zebra_snippet_word *w = doc_w->next;
                     while (w)
                         if (w->ord == ord
-                            && hit_w->seqno - before < w->seqno 
+                            && hit_w->seqno - before < w->seqno
                             && hit_w->seqno + after > w->seqno)
                         {
                             w->mark = 1;
@@ -292,7 +292,7 @@ void zebra_snippets_ring(zebra_snippets *doc, const zebra_snippets *hit,
                     zebra_snippet_word *w = doc_w->prev;
                     while (w)
                         if (w->ord == ord
-                            && hit_w->seqno - before < w->seqno 
+                            && hit_w->seqno - before < w->seqno
                             && hit_w->seqno + after > w->seqno)
                         {
                             w->mark = 1;
@@ -306,7 +306,7 @@ void zebra_snippets_ring(zebra_snippets *doc, const zebra_snippets *hit,
     }
 }
 
-			 
+
 /*
  * Local variables:
  * c-basic-offset: 4

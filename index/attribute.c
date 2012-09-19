@@ -89,7 +89,7 @@ ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
     {
         /* we have a use attribute and attribute set */
         int r;
-        
+
         r = att_getentbyatt(zh, curAttributeSet, use_value, &use_string);
         if (r == -2)
         {
@@ -107,12 +107,12 @@ ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
         zebra_setError(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, 0);
         return ZEBRA_FAIL;
     }
-    *ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat, 
+    *ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat,
                                         index_type, use_string);
     if (*ord == -1)
     {
-        /* attribute 14=1 does not issue a diagnostic even 
-           1) the attribute is numeric but listed in .att 
+        /* attribute 14=1 does not issue a diagnostic even
+           1) the attribute is numeric but listed in .att
            2) the use attribute is string
         */
         AttrType unsup;
@@ -149,7 +149,7 @@ ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
 
     if (relation_value == 103) /* always matches */
         cat = zinfo_index_category_alwaysmatches;
-    
+
     if (!xpath_use)
     {
         res = zebra_attr_list_get_ord(zh, zapt->attributes,
@@ -158,10 +158,10 @@ ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
         /* use attribute not found. But it the relation is
            always matches and the regulare index attribute is found
            return a different diagnostic */
-        if (res != ZEBRA_OK && 
+        if (res != ZEBRA_OK &&
             relation_value == 103
             &&  zebra_attr_list_get_ord(
-                zh, zapt->attributes, 
+                zh, zapt->attributes,
                 zinfo_index_category_index, index_type,
                 curAttributeSet, ord) == ZEBRA_OK)
             zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_RELATION_ATTRIBUTE, 103);
@@ -181,7 +181,7 @@ ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
         {
             yaz_log(YLOG_LOG, "zebra_apt_get_ord OK xpath=%s index_type=%s",
                     xpath_use, index_type);
-            
+
         }
     }
     return res;

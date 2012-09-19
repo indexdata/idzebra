@@ -134,7 +134,7 @@ static void load_from_dir(RecTypeClass *rts, NMEM nmem, const char *dirname)
     if (dir)
     {
         struct dirent *de;
-        
+
         while ((de = readdir(dir)))
         {
             size_t dlen = strlen(de->d_name);
@@ -165,7 +165,7 @@ static void load_from_dir(RecTypeClass *rts, NMEM nmem, const char *dirname)
                     const char *err = dlerror();
                     yaz_log(YLOG_WARN, "dlopen failed %s %s",
                             fname, err ? err : "none");
-                    
+
                 }
             }
         }
@@ -182,11 +182,11 @@ void recTypeClass_load_modules(RecTypeClass *rts, NMEM nmem,
         const char *comp_ptr;
         char comp[FILENAME_MAX+1];
         size_t len;
-        
+
         len = yaz_filepath_comp(&module_path, &comp_ptr);
         if (!len || len >= FILENAME_MAX)
             break;
-        
+
         memcpy(comp, comp_ptr, len);
         comp[len] = '\0';
 
@@ -201,7 +201,7 @@ static void recTypeClass_add(struct recTypeClass **rts, RecType *rt,
     {
 	struct recTypeClass *r = (struct recTypeClass *)
 	    nmem_malloc (nmem, sizeof(*r));
-	
+
 	r->next = *rts;
 	*rts = r;
 
@@ -236,7 +236,7 @@ RecTypes recTypes_init(RecTypeClass rtc, data1_handle dh)
     RecTypes rts = (RecTypes) nmem_malloc(data1_nmem_get(dh), sizeof(*rts));
 
     struct recTypeInstance **rti = &rts->entries;
-    
+
     rts->dh = dh;
 
     for (; rtc; rtc = rtc->next)

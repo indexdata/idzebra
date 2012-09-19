@@ -98,7 +98,7 @@ int main(int argc, char **argv)
         exit (3);
     }
     z = ZOOM_connection_new (target, 0);
-    
+
     if ((error = ZOOM_connection_error(z, &errmsg, &addinfo)))
     {
 	printf ("Error: %s (%d) %s\n", errmsg, error, addinfo);
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
             ZOOM_record_get(
                 ZOOM_resultset_record(r, pos + retrieve_offset),
                 "render", &len);
-        
+
         if (rec)
             fwrite (rec, 1, len, stdout);
     }

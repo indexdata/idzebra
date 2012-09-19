@@ -51,13 +51,13 @@ struct special_fetch_s {
     NMEM nmem;
 };
 
-static int zebra_create_record_stream(ZebraHandle zh, 
+static int zebra_create_record_stream(ZebraHandle zh,
                                       Record *rec,
                                       struct ZebraRecStream *stream)
 {
     RecordAttr *recordAttr = rec_init_attr(zh->reg->zei, *rec);
 
-    if ((*rec)->size[recInfo_storeData] > 0 
+    if ((*rec)->size[recInfo_storeData] > 0
         || (*rec)->info[recInfo_filename] == 0)
         zebra_create_stream_mem(stream, (*rec)->info[recInfo_storeData],
                                 (*rec)->size[recInfo_storeData]);
@@ -65,7 +65,7 @@ static int zebra_create_record_stream(ZebraHandle zh,
     {
         char full_rep[1024];
         int fd;
-            
+
         if (zh->path_reg && !yaz_is_abspath((*rec)->info[recInfo_filename])){
             strcpy(full_rep, zh->path_reg);
             strcat(full_rep, "/");
@@ -73,7 +73,7 @@ static int zebra_create_record_stream(ZebraHandle zh,
         }
         else
             strcpy(full_rep, (*rec)->info[recInfo_filename]);
-            
+
         if ((fd = open(full_rep, O_BINARY|O_RDONLY)) == -1){
             yaz_log(YLOG_WARN|YLOG_ERRNO, "Retrieve fail; missing file: %s",
                      full_rep);
@@ -84,7 +84,7 @@ static int zebra_create_record_stream(ZebraHandle zh,
     }
     return 0;
 }
-   
+
 
 struct index_spec {
     const char *index_name;
@@ -129,7 +129,7 @@ struct index_spec *parse_index_spec(const char *elem, NMEM nmem,
             {
                 cp++;
                 cp0 = cp;
-                
+
                 while (*cp != '\0' && *cp != ',' && *cp != ':')
                     cp++;
                 spec->index_type = nmem_strdupn(nmem, cp0, cp - cp0);
@@ -138,7 +138,7 @@ struct index_spec *parse_index_spec(const char *elem, NMEM nmem,
             {
                 cp++;
                 cp0 = cp;
-                
+
                 while (*cp != '\0' && *cp != ',' && *cp != ':')
                     cp++;
                 spec->extra = nmem_strdupn(nmem, cp0, cp - cp0);
@@ -185,7 +185,7 @@ static int sort_fetch(
         WRBUF wrbuf_result = result;
         int off = 0;
 
-        zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db, 
+        zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db,
                                 &string_index);
         if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
         {
@@ -201,7 +201,7 @@ static int sort_fetch(
         }
         else
         {
-            yaz_log(YLOG_WARN, "unsupported format for element set zebra::%s", 
+            yaz_log(YLOG_WARN, "unsupported format for element set zebra::%s",
                     elemsetname);
             *output_format = 0;
             wrbuf_destroy(wrbuf_str);
@@ -217,10 +217,10 @@ static int sort_fetch(
             assert(off < wrbuf_len(wrbuf_str));
             zebra_term_untrans(zh, index_type, dst_buf,
                                wrbuf_buf(wrbuf_str)+off);
-            
+
             if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
             {
-                wrbuf_printf(wrbuf_result, "  <index name=\"%s\"", 
+                wrbuf_printf(wrbuf_result, "  <index name=\"%s\"",
                              string_index);
                 wrbuf_printf(wrbuf_result, " type=\"%s\">", index_type);
                 wrbuf_xmlputs(wrbuf_result, dst_buf);
@@ -241,7 +241,7 @@ static int sort_fetch(
         return 0;
     }
 }
-                            
+
 static int special_index_fetch(
     struct special_fetch_s *fi, const char *elemsetname,
     const Odr_oid *input_format,
@@ -254,7 +254,7 @@ static int special_index_fetch(
     ZebraHandle zh = fi->zh;
     struct index_spec *spec, *spec_list;
     int error;
-    
+
     /* set output variables before processing possible error states */
     /* *rec_lenp = 0; */
 
@@ -262,7 +262,7 @@ static int special_index_fetch(
     if (oid_oidcmp(input_format, yaz_oid_recsyn_xml)
         && oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
     {
-        yaz_log(YLOG_WARN, "unsupported format for element set zebra::%s", 
+        yaz_log(YLOG_WARN, "unsupported format for element set zebra::%s",
                 elemsetname);
         *output_format = 0;
         return YAZ_BIB1_NO_SYNTAXES_AVAILABLE_FOR_THIS_REQUEST;
@@ -318,7 +318,7 @@ static int special_index_fetch(
             const char *string_index = 0;
             char dst_buf[IT_MAX_WORD];
             int match = 0;
-            
+
             zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db,
                                     &string_index);
             if (!spec_list)
@@ -338,31 +338,31 @@ static int special_index_fetch(
             {
                 if (zebra_term_untrans(zh, index_type, dst_buf, str))
                     *dst_buf = '\0'; /* untrans failed */
-                
+
                 if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
                 {
-                    wrbuf_printf(wrbuf, "  <index name=\"%s\"", 
+                    wrbuf_printf(wrbuf, "  <index name=\"%s\"",
                                  string_index);
-                    
+
                     wrbuf_printf(wrbuf, " type=\"%s\"", index_type);
-                    
-                    wrbuf_printf(wrbuf, " seq=\"" ZINT_FORMAT "\">", 
+
+                    wrbuf_printf(wrbuf, " seq=\"" ZINT_FORMAT "\">",
                                  key_in.mem[key_in.len -1]);
                     wrbuf_xmlputs(wrbuf, dst_buf);
                     wrbuf_printf(wrbuf, "</index>\n");
                 }
-                else 
+                else
                 {
                     wrbuf_printf(wrbuf, "%s ", string_index);
-                    
+
                     wrbuf_printf(wrbuf, "%s", index_type);
-                    
+
                     for (i = 1; i < key_in.len; i++)
-                        wrbuf_printf(wrbuf, " " ZINT_FORMAT, 
+                        wrbuf_printf(wrbuf, " " ZINT_FORMAT,
                                      key_in.mem[i]);
-                    
+
                     wrbuf_printf(wrbuf, " %s", dst_buf);
-                    
+
                     wrbuf_printf(wrbuf, "\n");
                 }
             }
@@ -423,8 +423,8 @@ static void snippet_check_fields(ZebraHandle zh, WRBUF wrbuf,
             const char *index_type;
             const char *db = 0;
             const char *string_index = 0;
-            
-            zebraExplain_lookup_ord(zh->reg->zei, w->ord, 
+
+            zebraExplain_lookup_ord(zh->reg->zei, w->ord,
                                     &index_type, &db, &string_index);
             /* only report for same index type */
             if (!strcmp(w_index_type, index_type))
@@ -455,12 +455,12 @@ static void snippet_xml_record(ZebraHandle zh, WRBUF wrbuf, zebra_snippets *doc)
             const char *db = 0;
             const char *string_index = 0;
 
-            zebraExplain_lookup_ord(zh->reg->zei, doc_w->ord, 
+            zebraExplain_lookup_ord(zh->reg->zei, doc_w->ord,
                                     &index_type, &db, &string_index);
 
             if (mark_state == 0)
             {
-                
+
                 wrbuf_printf(wrbuf, "  <snippet name=\"%s\"",  string_index);
                 wrbuf_printf(wrbuf, " type=\"%s\"", index_type);
                 snippet_check_fields(zh, wrbuf, doc, doc_w, index_type);
@@ -469,7 +469,7 @@ static void snippet_xml_record(ZebraHandle zh, WRBUF wrbuf, zebra_snippets *doc)
             if (doc_w->match)
                 wrbuf_puts(wrbuf, "<s>");
             /* not printing leading ws */
-            if (mark_state || !doc_w->ws || doc_w->match) 
+            if (mark_state || !doc_w->ws || doc_w->match)
                 wrbuf_xmlputs(wrbuf, doc_w->term);
             if (doc_w->match)
                 wrbuf_puts(wrbuf, "</s>");
@@ -549,18 +549,18 @@ static int snippet_fetch(
         yaz_log(YLOG_LOG, "HIT SNIPPET:");
         zebra_snippets_log(hit_snippet, YLOG_LOG, 1);
 #endif
-        
+
         zebra_snippets_ring(rec_snippets, hit_snippet, 5, 5);
-        
+
 #if 0
         yaz_log(YLOG_LOG, "---------------------------");
         yaz_log(YLOG_LOG, "RING SNIPPET:");
         zebra_snippets_log(rec_snippets, YLOG_LOG, 1);
 #endif
         snippet_xml_record(zh, wrbuf, rec_snippets);
-        
+
         *output_format = yaz_oid_recsyn_xml;
-        
+
         zebra_snippets_destroy(hit_snippet);
     }
     zebra_snippets_destroy(rec_snippets);
@@ -581,19 +581,19 @@ static zint freq_term(ZebraHandle zh, int ord, const char *term, RSET rset_set)
     char *info;
     zint hits = 0;
     NMEM nmem = nmem_create();
-    
+
     strcpy(ord_buf + ord_len, term);
-    
+
     info = dict_lookup(zh->reg->dict, ord_buf);
     if (info)
     {
         ISAM_P isam_p;
         RSET rsets[2], rset;
         memcpy(&isam_p, info+1, sizeof(ISAM_P));
-        
+
         rsets[0] = zebra_create_rset_isam(zh, nmem, kc, kc->scope, isam_p, 0);
         rsets[1] = rset_dup(rset_set);
-        
+
         rset = rset_create_and(nmem, kc, kc->scope, 2, rsets);
 
         zebra_count_set(zh, rset, &hits, zh->approx_limit);
@@ -642,7 +642,7 @@ static void term_collect_freq(ZebraHandle zh,
     qsort(col, no_terms_collect, sizeof(*col), term_qsort_handle);
 }
 
-static struct term_collect *term_collect_create(zebra_strmap_t sm, 
+static struct term_collect *term_collect_create(zebra_strmap_t sm,
                                                 int no_terms_collect,
                                                 NMEM nmem)
 {
@@ -650,7 +650,7 @@ static struct term_collect *term_collect_create(zebra_strmap_t sm,
     void *data_buf;
     size_t data_len;
     zebra_strmap_it it;
-    struct term_collect *col = nmem_malloc(nmem, 
+    struct term_collect *col = nmem_malloc(nmem,
                                            sizeof *col *no_terms_collect);
     int i;
     for (i = 0; i < no_terms_collect; i++)
@@ -668,11 +668,11 @@ static struct term_collect *term_collect_create(zebra_strmap_t sm,
         int oc = *(int*) data_buf;
         int j = 0;
         /* insertion may be slow but terms terms will be "infrequent" and
-           thus number of iterations should be small below 
+           thus number of iterations should be small below
         */
         while (j < no_terms_collect && oc > col[j].oc)
             j++;
-        if (j) 
+        if (j)
         {   /* oc <= col[j] and oc > col[j-1] */
             --j;
             memmove(col, col+1, sizeof(*col) * j);
@@ -698,10 +698,10 @@ static int perform_facet_sort(ZebraHandle zh, int no_ord, int *ord_array,
         {
             if (!poset[rec_i].sysno)
                 continue;
-            
+
             zebra_sort_sysno(zh->reg->sort_index, poset[rec_i].sysno);
             zebra_sort_type(zh->reg->sort_index, ord_array[ord_i]);
-            
+
             wrbuf_rewind(w);
             if (zebra_sort_read(zh->reg->sort_index, 0, w))
             {
@@ -762,8 +762,8 @@ static int perform_facet_index(ZebraHandle zh,
             zebra_rec_keys_t keys = zebra_rec_keys_open();
             zebra_rec_keys_set_buf(keys, rec->info[recInfo_delKeys],
                                    rec->size[recInfo_delKeys], 0);
-            
-            yaz_log(YLOG_DEBUG, "rec %d " ZINT_FORMAT " %s", 
+
+            yaz_log(YLOG_DEBUG, "rec %d " ZINT_FORMAT " %s",
                     j, sysnos[j], zebra_rec_keys_empty(keys) ? "empty" : "non-empty");
             if (zebra_rec_keys_rewind(keys))
             {
@@ -771,16 +771,16 @@ static int perform_facet_index(ZebraHandle zh,
                 {
                     int ord_i;
                     struct index_spec *spec;
-                    for (spec = spec_list, ord_i = 0; ord_i < no_ord; 
+                    for (spec = spec_list, ord_i = 0; ord_i < no_ord;
                          ord_i++, spec = spec->next)
                     {
                         int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
-                        if (ord == ord_array[ord_i] && 
+                        if (ord == ord_array[ord_i] &&
                             str[0] != FIRST_IN_FIELD_CHAR)
                         {
                             int *freq;
                             zebra_strmap_t sm = map_array[ord_i];
-                            
+
                             freq = zebra_strmap_lookup(sm, str, 0, 0);
                             if (freq)
                                 (*freq)++;
@@ -800,7 +800,7 @@ static int perform_facet_index(ZebraHandle zh,
     return 0;
 }
 
-static int perform_facet(ZebraHandle zh,  
+static int perform_facet(ZebraHandle zh,
                          struct special_fetch_s *fi,
                          WRBUF result,
                          int num_recs, ZebraMetaRecord *poset,
@@ -836,16 +836,16 @@ static int perform_facet(ZebraHandle zh,
         NMEM nmem = nmem_create();
         struct term_collect *col;
         int no_collect_terms = 20;
-        
+
         if (spec->extra)
             no_collect_terms = atoi(spec->extra);
         if (no_collect_terms < 1)
             no_collect_terms = 1;
         col = term_collect_create(map_array[i], no_collect_terms, nmem);
         term_collect_freq(zh, col, no_collect_terms, ord_array[i],
-                          resultSetRef(zh, fi->setname), 
+                          resultSetRef(zh, fi->setname),
                           cat == zinfo_index_category_sort ? 1.0 : -1.0);
-        
+
         if (use_xml)
             wrbuf_printf(wr, "  <facet type=\"%s\" index=\"%s\">\n",
                          spec->index_type, spec->index_name);
@@ -862,7 +862,7 @@ static int perform_facet(ZebraHandle zh,
                 {
                     wrbuf_printf(wr, "    <term coccur=\"%d\"", col[j].oc);
                     if (col[j].set_occur)
-                        wrbuf_printf(wr, " occur=\"" ZINT_FORMAT "\"", 
+                        wrbuf_printf(wr, " occur=\"" ZINT_FORMAT "\"",
                                      col[j].set_occur);
                     wrbuf_printf(wr, ">");
                     wrbuf_xmlputs(wr, dst_buf);
@@ -872,7 +872,7 @@ static int perform_facet(ZebraHandle zh,
                 {
                     wrbuf_printf(wr, "term %d", col[j].oc);
                     if (col[j].set_occur)
-                        wrbuf_printf(wr, " " ZINT_FORMAT, 
+                        wrbuf_printf(wr, " " ZINT_FORMAT,
                                      col[j].set_occur);
                     wrbuf_printf(wr, ": %s\n", dst_buf);
                 }
@@ -916,12 +916,12 @@ static int facet_fetch(
         use_xml = 1;
 
     spec_list = parse_index_spec(elemsetname, fi->nmem, &error);
-              
+
     if (!spec_list || error)
     {
         return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
-    }          
-  
+    }
+
     for (spec = spec_list; spec; spec = spec->next)
     {
         if (!spec->index_type)
@@ -956,7 +956,7 @@ static int facet_fetch(
             if (ord == -1)
                 break;
             ord_array[i] = ord;
-            
+
         }
     }
     if (spec)
@@ -1001,11 +1001,11 @@ static int zebra_special_fetch(
     struct special_fetch_s *fi = (struct special_fetch_s *) handle;
     ZebraHandle zh = fi->zh;
     zint sysno = fi->sysno;
-    
+
     /* processing zebra::facet */
     if (elemsetname && 0 == strncmp(elemsetname, "facet", 5))
     {
-        return facet_fetch(fi, elemsetname + 5, 
+        return facet_fetch(fi, elemsetname + 5,
                            input_format, output_format,
                            result, addinfo);
     }
@@ -1025,7 +1025,7 @@ static int zebra_special_fetch(
         {
             wrbuf_printf(result, ZINT_FORMAT, fi->sysno);
             *output_format = input_format;
-        } 
+        }
         else if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
         {
             wrbuf_printf(result, ZEBRA_XML_HEADER_STR
@@ -1059,11 +1059,11 @@ static int zebra_special_fetch(
         return YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
     }
 
-    /* processing special elementsetnames zebra::data */    
+    /* processing special elementsetnames zebra::data */
     if (elemsetname && 0 == strcmp(elemsetname, "data"))
     {
         struct ZebraRecStream stream;
-        RecordAttr *recordAttr = rec_init_attr(zh->reg->zei, rec); 
+        RecordAttr *recordAttr = rec_init_attr(zh->reg->zei, rec);
         char *b;
 
         zebra_create_record_stream(zh, &rec, &stream);
@@ -1082,12 +1082,12 @@ static int zebra_special_fetch(
     if (elemsetname && 0 == strcmp(elemsetname, "meta"))
     {
         int ret = 0;
-        RecordAttr *recordAttr = rec_init_attr(zh->reg->zei, rec); 
+        RecordAttr *recordAttr = rec_init_attr(zh->reg->zei, rec);
 
         if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
         {
             *output_format = input_format;
-            
+
             wrbuf_printf(result, ZEBRA_XML_HEADER_STR
                          " sysno=\"" ZINT_FORMAT "\"", sysno);
             retrieve_puts_attr(result, "base", rec->info[recInfo_databaseName]);
@@ -1095,7 +1095,7 @@ static int zebra_special_fetch(
             retrieve_puts_attr(result, "type", rec->info[recInfo_fileType]);
             if (fi->score >= 0)
                 retrieve_puts_attr_int(result, "score", fi->score);
-           
+
             wrbuf_printf(result,
                          " rank=\"" ZINT_FORMAT "\""
                          " size=\"%i\""

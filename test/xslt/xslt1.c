@@ -37,7 +37,7 @@ void tst(int argc, char **argv)
 
     zebra_init(zh);
 
-    sprintf(profile_path, "%s:%s/../../tab", 
+    sprintf(profile_path, "%s:%s/../../tab",
             tl_get_srcdir(), tl_get_srcdir());
     zebra_set_resource(zh, "profilePath", profile_path);
 
@@ -54,7 +54,7 @@ void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 1));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=titl computer", 0, 114));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=4 computer", 0, 121));
-    
+
     YAZ_CHECK(tl_close_down(zh, zs));
 }
 

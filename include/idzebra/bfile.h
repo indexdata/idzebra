@@ -51,7 +51,7 @@ BFiles bfs_create (const char *spec, const char *base);
 
 /** \brief destroys a block files handle
     \param bfiles block files handle
-   
+
     The files in the block files collection are not deleted. Only the
     handle is freed.
 */
@@ -77,7 +77,7 @@ int bf_close2(BFile bf);
     \param more_info more information to be stored in file (header)
     \retval 0 success
     \retval -1 failure (can never happen as the code is now)
-*/    
+*/
 YAZ_EXPORT
 int bf_xclose(BFile bf, int version, const char *more_info);
 
@@ -249,7 +249,7 @@ int bfs_register_directory_stat(BFiles bfs, int no, const char **directory,
    on same platform depending on whether 64-bit is enabled or not.
    Note that if a shadow area has unlimited size, that is represented
    as max_bytes = -1.
-*/ 
+*/
 YAZ_EXPORT
 int bfs_shadow_directory_stat(BFiles bfs, int no, const char **directory,
 			      double *used_bytes, double *max_bytes);

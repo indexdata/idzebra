@@ -28,16 +28,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "dict-p.h"
 
 static void dict_del_subtree(Dict dict, Dict_ptr ptr,
-                             void *client, 
+                             void *client,
                              int (*f)(const char *, void *))
 {
     void *p = 0;
     short *indxp;
     int i, hi;
-    
+
     if (!ptr)
 	return;
-	
+
     dict_bf_readp(dict->dbf, ptr, &p);
     indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     hi = DICT_nodir(p)-1;
@@ -56,14 +56,14 @@ static void dict_del_subtree(Dict dict, Dict_ptr ptr,
 	else
 	{
 	    Dict_ptr subptr;
-	    
+
 	    /* Dict_ptr             subptr */
 	    /* Dict_char            sub char */
 	    /* unsigned char        length of information */
 	    /* char *               information */
 	    char *info = (char*)p - indxp[-i];
 	    memcpy(&subptr, info, sizeof(Dict_ptr));
-	    
+
 	    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
 	    {
 		if (f)
@@ -72,7 +72,7 @@ static void dict_del_subtree(Dict dict, Dict_ptr ptr,
 	    if (subptr)
 	    {
 		dict_del_subtree(dict, subptr, client, f);
-	
+
 		/* page may be gone. reread it .. */
 		dict_bf_readp(dict->dbf, ptr, &p);
 		indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
@@ -85,7 +85,7 @@ static void dict_del_subtree(Dict dict, Dict_ptr ptr,
 }
 
 static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
-                           int sub_flag, void *client, 
+                           int sub_flag, void *client,
                            int (*f)(const char *, void *))
 {
     int mid, lo, hi;
@@ -101,7 +101,7 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
     dict_bf_readp(dict->dbf, ptr, &p);
     mid = lo = 0;
     hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));    
+    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     while (lo <= hi)
     {
         mid = (lo+hi)/2;
@@ -135,7 +135,7 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
 		    mid = lo = 0;
                     r = 1; /* signal deleted */
                     /* start again (may not be the most efficient way to go)*/
-		    continue; 
+		    continue;
 		}
 	    }
 	    else
@@ -213,7 +213,7 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
                     subptr = 0; /* avoid dict_del_subtree (end of function)*/
                     if (r == 2)
                     {   /* subptr page became empty and is removed */
-                        
+
                         /* see if this entry is a real one or if it just
                            serves as pointer to subptr */
                         if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])

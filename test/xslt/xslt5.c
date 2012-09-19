@@ -41,10 +41,10 @@ static void tst(int argc, char **argv)
     tl_check_filter(zs, "alvis");
 
     YAZ_CHECK_EQ(zebra_select_database(zh, "Default"), ZEBRA_OK);
-    
+
     zebra_init(zh);
 
-    sprintf(profile_path, "%s:%s/../../tab", 
+    sprintf(profile_path, "%s:%s/../../tab",
             tl_get_srcdir(), tl_get_srcdir());
     zebra_set_resource(zh, "profilePath", profile_path);
 
@@ -62,7 +62,7 @@ static void tst(int argc, char **argv)
         record_buf[r] = '\0';
 
 #if 0
-/* disable this test for now: bug #730 */ 
+/* disable this test for now: bug #730 */
 /* http://xmlsoft.org/html/libxml-parser.html#xmlReadIO */
 #if YAZ_HAVE_XML2
         /* On Mac OSX using Libxml 2.6.16, we xmlTextReaderExpand does

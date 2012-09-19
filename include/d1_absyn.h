@@ -30,11 +30,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 typedef struct data1_xpelement
 {
     char *xpath_expr;
-#ifdef ENHANCED_XELM 
+#ifdef ENHANCED_XELM
     struct xpath_location_step xpath[XPATH_STEP_COUNT];
     int xpath_len;
 #endif
-    struct DFA *dfa;  
+    struct DFA *dfa;
     data1_termlist *termlists;
     struct data1_xpelement *next;
 #if OPTIMIZE_MELM

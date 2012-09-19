@@ -42,10 +42,10 @@ static void tst_res(void)
 
     temp_res = res_open(0, 0); /* completely empty */
     YAZ_CHECK(temp_res);
-    
+
     zs = zebra_start_res(0, default_res, temp_res);
     YAZ_CHECK(zs);
-    
+
     zh = zebra_open(zs, 0);
     YAZ_CHECK(zh);
 
@@ -65,10 +65,10 @@ static void tst_res(void)
 	/* we should find the name1 from temp_res */
 	val = zebra_get_resource(zh, "name1", 0);
 	YAZ_CHECK(val && !strcmp(val, "value2"));
-	
+
 	val = zebra_get_resource(zh, "name4", 0);
 	YAZ_CHECK(val && !strcmp(val, "value4"));
-	
+
 	res_clear(temp_res);
     }
     zebra_close(zh);
@@ -94,9 +94,9 @@ static void tst_no_config(void)
     YAZ_CHECK_EQ(zebra_select_database(zh, "Default"), ZEBRA_OK);
 
     YAZ_CHECK_EQ(zebra_init(zh), ZEBRA_OK);
-    
+
     zebra_set_resource(zh, "profilePath", "${srcdir:-.}/../../tab");
-    
+
     YAZ_CHECK_EQ(zebra_update_record(zh /* handle */,
                                      action_insert,
 				     "grs.sgml" /* record type */,

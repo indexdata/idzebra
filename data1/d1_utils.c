@@ -37,20 +37,20 @@ void data1_remove_node (data1_handle dh, data1_node *n)
 
         /* n is the only child */
         if(! n->next){
-            n->parent->last_child = 0;                
+            n->parent->last_child = 0;
         }
-    } 
+    }
     /* n is one of the following childrens */
     else {
         data1_node * before;
-        
+
         /* need to find sibling before me */
         before = n->parent->child;
         while (before->next != n)
             before = before->next;
-        
+
         before->next = n->next;
-        
+
         /* n is last child of many */
         if ( n->parent->last_child == n){
             n->parent->last_child = before;
@@ -74,16 +74,16 @@ void data1_remove_idzebra_subtree (data1_handle dh, data1_node *n)
             if (!strcmp(n->u.tag.tag, "idzebra")){
                 if (n->u.tag.attributes){
                     data1_xattr *xattr = n->u.tag.attributes;
-                    
+
                     for (; xattr; xattr = xattr->next){
-                        if (!strcmp(xattr->name, "xmlns") 
-                            & !strcmp(xattr->value, 
+                        if (!strcmp(xattr->name, "xmlns")
+                            & !strcmp(xattr->value,
                                       "http://www.indexdata.dk/zebra/"))
                             data1_remove_node (dh, n);
                     }
                 }
             }
-                
+
             break;
             /*
         case DATA1N_data:
@@ -110,7 +110,7 @@ void data1_remove_idzebra_subtree (data1_handle dh, data1_node *n)
                         n->parent->last_child, n);
         }
     */
-    
+
 }
 
 

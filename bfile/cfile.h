@@ -68,7 +68,7 @@ struct CFile_head {
 typedef struct CFile_struct
 {
     struct CFile_head head;
-    
+
     MFile block_mf;  /**< block meta file */
     MFile hash_mf;   /**< hash or index file (depending on state) */
     zint *array;     /**< array for hash */

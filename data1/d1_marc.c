@@ -42,7 +42,7 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
     char line[512], *argv[50];
     int lineno = 0;
     int argc;
-    
+
     if (!(f = data1_path_fopen(dh, file, "r")))
 	return 0;
 
@@ -61,7 +61,7 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
     res->force_indicator_length = -1;
     res->force_identifier_length = -1;
     strcpy(res->user_systems, "z  ");
-    
+
     while ((argc = readconf_line(f, &lineno, line, 512, argv, 50)))
 	if (!strcmp(*argv, "name"))
 	{
@@ -82,7 +82,7 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 		continue;
 	    }
             res->oid = yaz_string_to_oid_nmem(yaz_oid_std(),
-                                              CLASS_TAGSET, argv[1], 
+                                              CLASS_TAGSET, argv[1],
                                               mem);
 	    if (!res->oid)
 	    {
@@ -197,7 +197,7 @@ static void get_data2(data1_node *n, int *len, char *dst, size_t max)
 	else if (n->which == DATA1N_data)
             n = n->next;
 	else
-            break;	
+            break;
     }
 }
 
@@ -260,11 +260,11 @@ static int nodetomarc(data1_handle dh,
 	    continue;
 	if (selected && !field->u.tag.node_selected)
 	    continue;
-	    
+
 	subf = field->child;
         if (!subf)
             continue;
-	
+
 	if (!yaz_matchstr(field->u.tag.tag, "mc?"))
 	    continue;
 	else if (!strcmp(field->u.tag.tag, "leader"))
@@ -300,13 +300,13 @@ static int nodetomarc(data1_handle dh,
             + p->length_implementation;
 
         if (!control_field)
-            len += p->indicator_length;  
+            len += p->indicator_length;
 
 	/* we'll allow no indicator if length is not 2 */
 	/* select when old XML format, since indicator is an element */
 	if (marc_xml == 0 && is_indicator (p, subf))
 	    subf = subf->child;
-	
+
         for (; subf; subf = subf->next)
         {
             if (!control_field)
@@ -324,7 +324,7 @@ static int nodetomarc(data1_handle dh,
 	*buf = (char *)xmalloc(*size = len);
     else if (*size <= len)
 	*buf = (char *)xrealloc(*buf, *size = len);
-	
+
     op = *buf;
 
     /* we know the base address now */
@@ -333,7 +333,7 @@ static int nodetomarc(data1_handle dh,
     /* copy temp leader to real output buf op */
     memcpy (op, leader, 24);
     memint (op, len, 5);
-    
+
     entry_p = 24;
     data_p = base_address;
 
@@ -358,7 +358,7 @@ static int nodetomarc(data1_handle dh,
 	subf = field->child;
         if (!subf)
             continue;
-	
+
 	if (!yaz_matchstr(field->u.tag.tag, "mc?"))
 	    continue;
 	else if (!strcmp(field->u.tag.tag, "leader"))
@@ -419,7 +419,7 @@ static int nodetomarc(data1_handle dh,
 		    if (strcmp(subf->u.tag.tag, "subfield"))
 			yaz_log(YLOG_WARN, "Unhandled tag %s",
 				subf->u.tag.tag);
-		    
+
 		    for (xa = subf->u.tag.attributes; xa; xa = xa->next)
 			if (!strcmp(xa->name, "code"))
 			    identifier = xa->value;
@@ -450,7 +450,7 @@ static int nodetomarc(data1_handle dh,
 	if (!tag || strlen(tag) != 3)
 	    tag = "000";
 	memcpy (op + entry_p, tag, 3);
-	
+
         entry_p += 3;
         memint (op + entry_p, data_p - data_0, p->length_data_entry);
         entry_p += p->length_data_entry;

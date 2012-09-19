@@ -133,7 +133,7 @@ bend_initresult *bend_init(bend_initrequest *q)
         yaz_get_proposal_charneg(nmem, q->charneg_request,
                                  &charsets, &num_charsets,
                                  &langs, &num_langs, &selected);
-        
+
         for (i = 0; i < num_charsets; i++)
         {
             const char *right_name = "";
@@ -143,7 +143,7 @@ bend_initresult *bend_init(bend_initrequest *q)
     	     * because a lot servers in Russia to use own in during
     	     * character set and language negotiation still.
     	     */
-            
+
             if (!yaz_matchstr(charsets[i], "win")) {
                 right_name = "WINDOWS-1251";
             } else if (!yaz_matchstr(charsets[i], "koi")) {
@@ -226,13 +226,13 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
 				   &count, &approx, outbuf, &len,
 				   &term_ref_id);
         se = sr->elements[i] = odr_malloc(r->stream, sizeof(**sr->elements));
-        se->subqueryId = term_ref_id ? 
+        se->subqueryId = term_ref_id ?
 	    odr_strdup(r->stream, term_ref_id) : 0;
-	    
+
         se->fullQuery = odr_booldup(r->stream, 0);
-        se->subqueryExpression = 
+        se->subqueryExpression =
             odr_malloc(r->stream, sizeof(Z_QueryExpression));
-        se->subqueryExpression->which = 
+        se->subqueryExpression->which =
             Z_QueryExpression_term;
         se->subqueryExpression->u.term =
             odr_malloc(r->stream, sizeof(Z_QueryExpressionTerm));
@@ -266,7 +266,7 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
 
 static int break_handler(void *client_data)
 {
-    bend_association assoc =(bend_association) client_data;    
+    bend_association assoc =(bend_association) client_data;
     if (!bend_assoc_is_alive(assoc))
         return 1;
     return 0;
@@ -297,7 +297,7 @@ static Z_RPNQuery *query_add_sortkeys(ODR o, Z_RPNQuery *query,
             int num_arg;
             int ascending = 1;
             nmem_strsplitx(odr_getmem(o), ",", sortspec[i], &arg, &num_arg, 0);
-            
+
             if (num_arg > 5 || num_arg < 1)
             {
                 yaz_log(YLOG_WARN, "Invalid sort spec '%s' num_arg=%d",
@@ -306,7 +306,7 @@ static Z_RPNQuery *query_add_sortkeys(ODR o, Z_RPNQuery *query,
             }
             if (num_arg > 2 && arg[2][0])
                 ascending = atoi(arg[2]);
-            
+
             if (i < num_sortspec-1)
                 wrbuf_puts(w, " @or");
             wrbuf_puts(w, " @attr 1=");
@@ -322,7 +322,7 @@ static Z_RPNQuery *query_add_sortkeys(ODR o, Z_RPNQuery *query,
         else
         {
             Z_RPNStructure *s = nquery->RPNStructure;
-            
+
             if (s->which != Z_RPNStructure_complex)
             {
                 yaz_log(YLOG_WARN, "query_add_sortkeys: not complex operand");
@@ -397,7 +397,7 @@ int bend_fetch(void *handle, bend_fetch_rr *r)
     ZEBRA_RES res;
 
     retrievalRecord.position = r->number;
-    
+
     r->last_in_set = 0;
     res = zebra_records_retrieve(zh, r->stream, r->setname, r->comp,
 				  r->request_format, 1, &retrievalRecord);
@@ -431,7 +431,7 @@ static int bend_scan(void *handle, bend_scan_rr *r)
     int is_partial, i;
     ZEBRA_RES res;
 
-    res = zebra_select_databases(zh, r->num_bases, 
+    res = zebra_select_databases(zh, r->num_bases,
 				 (const char **) r->basenames);
     if (res != ZEBRA_OK)
     {
@@ -446,7 +446,7 @@ static int bend_scan(void *handle, bend_scan_rr *r)
     res = zebra_scan(zh, r->stream, r->term,
 		     r->attributeset,
 		     &r->term_position,
-		     &r->num_entries, &entries, &is_partial, 
+		     &r->num_entries, &entries, &is_partial,
 		     0 /* setname */);
     if (res == ZEBRA_OK)
     {
@@ -590,7 +590,7 @@ int bend_segment(void *handle, bend_segment_rr *rr)
 int bend_esrequest(void *handle, bend_esrequest_rr *rr)
 {
     ZebraHandle zh = (ZebraHandle) handle;
-    
+
     yaz_log(YLOG_LOG, "function: " ODR_INT_PRINTF, *rr->esr->function);
     if (rr->esr->packageName)
     	yaz_log(YLOG_LOG, "packagename: %s", rr->esr->packageName);
@@ -613,7 +613,7 @@ int bend_esrequest(void *handle, bend_esrequest_rr *rr)
 	    Z_IUUpdateEsRequest *esRequest = up->u.esRequest;
 	    Z_IUOriginPartToKeep *toKeep = esRequest->toKeep;
 	    Z_IUSuppliedRecords *notToKeep = esRequest->notToKeep;
-	    
+
 	    yaz_log(YLOG_LOG, "action");
 	    if (toKeep->action)
 	    {
@@ -746,7 +746,7 @@ int bend_esrequest(void *handle, bend_esrequest_rr *rr)
                             rr->errstring = "unsupported ES Update action";
                             break;
                         }
-                        
+
                         if (opaque_recid)
 			{
                             size_t l = opaque_recid->len;
@@ -787,7 +787,7 @@ int bend_esrequest(void *handle, bend_esrequest_rr *rr)
         yaz_log(YLOG_WARN, "Unknown Extended Service(%d)",
 		 rr->esr->taskSpecificParameters->which);
         rr->errcode = YAZ_BIB1_ES_EXTENDED_SERVICE_TYPE_UNSUPP;
-	
+
     }
     return 0;
 }
@@ -808,9 +808,9 @@ static void bend_start(struct statserv_options_block *sob)
 	exit(1);
     }
 #ifdef WIN32
-    
+
 #else
-    if (!sob->inetd && !sob->background) 
+    if (!sob->inetd && !sob->background)
     {
 	char pidfname[4096];
         struct flock area;
@@ -844,7 +844,7 @@ static void bend_start(struct statserv_options_block *sob)
         else
         {
 	    char pidstr[30];
-	
+
 	    sprintf(pidstr, "%ld", (long) getpid());
 	    if (write(fd, pidstr, strlen(pidstr)) != strlen(pidstr))
             {
@@ -861,7 +861,7 @@ static void bend_stop(struct statserv_options_block *sob)
 #ifdef WIN32
 
 #else
-    if (!sob->inetd && !sob->background && sob->handle) 
+    if (!sob->inetd && !sob->background && sob->handle)
     {
 	char pidfname[4096];
 	zebra_pidfname(sob->handle, pidfname);

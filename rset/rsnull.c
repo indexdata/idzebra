@@ -32,7 +32,7 @@ static void r_pos(RSFD rfd, double *current, double *total);
 static int r_read(RSFD rfd, void *buf, TERMID *term);
 static int r_write(RSFD rfd, const void *buf);
 
-static const struct rset_control control = 
+static const struct rset_control control =
 {
     "null",
     r_delete,

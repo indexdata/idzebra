@@ -118,7 +118,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     {
 	data1_node *lead;
 	const char *attr[] = { "xmlns", "http://www.loc.gov/MARC21/slim", 0};
-			 
+
 	res_top = data1_mk_tag (p->dh, p->mem, "record", attr, res_root);
 
 	lead = data1_mk_tag(p->dh, p->mem, "leader", 0, res_top);
@@ -194,7 +194,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 	    res = parent;
 	else
 	    res = data1_mk_tag_n (p->dh, p->mem, tag, 3, 0 /* attr */, parent);
-	
+
 #if MARC_DEBUG
         fprintf (outf, "%s ", tag);
 #endif
@@ -210,7 +210,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 	    yaz_log(YLOG_WARN, "MARC: Bad offsets in data. Skipping rest");
 	    break;
 	}
-	
+
         if (memcmp (tag, "00", 2) && indicator_length)
         {
             /* generate indicator node */
@@ -234,7 +234,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 
 		    attr[0] = str1;
 		    attr[1] = str2;
-		    
+
 		    data1_tag_add_attr (p->dh, p->mem, res, attr);
 		}
 	    }
@@ -243,7 +243,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 #if MARC_DEBUG
 		int j;
 #endif
-		res = data1_mk_tag_n (p->dh, p->mem, 
+		res = data1_mk_tag_n (p->dh, p->mem,
 				      buf+i, indicator_length, 0 /* attr */, res);
 #if MARC_DEBUG
 		for (j = 0; j<indicator_length; j++)
@@ -251,17 +251,17 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 #endif
 	    }
 	    i += indicator_length;
-        } 
+        }
 	else
 	{
 	    if (marc_xml)
 	    {
 		const char *attr[10];
-		
+
 		attr[0] = "tag";
 		attr[1] = tag;
 		attr[2] = 0;
-		
+
 		res = data1_mk_tag(p->dh, p->mem, "controlfield", attr, res);
 	    }
 	}
@@ -278,7 +278,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 		    int j;
 		    const char *attr[3];
 		    char code[10];
-		    
+
 		    for (j = 1; j<identifier_length && j < 9; j++)
 			code[j-1] = buf[i+j];
 		    code[j-1] = 0;
@@ -291,11 +291,11 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 		else
 		{
 		    res = data1_mk_tag_n (p->dh, p->mem,
-					   buf+i+1, identifier_length-1, 
+					   buf+i+1, identifier_length-1,
 					   0 /* attr */, parent);
 		}
 #if MARC_DEBUG
-                fprintf (outf, " $"); 
+                fprintf (outf, " $");
                 for (j = 1; j<identifier_length; j++)
                     fprintf (outf, "%c", buf[j+i]);
                 fprintf (outf, " ");
@@ -365,7 +365,7 @@ static char *get_data(data1_node *n, int *len)
 	else if (n->which == DATA1N_data)
             n = n->next;
 	else
-            break;	
+            break;
     }
     r = "";
     *len = strlen(r);
@@ -375,7 +375,7 @@ static char *get_data(data1_node *n, int *len)
 static data1_node *lookup_subfield(data1_node *node, const char *name)
 {
     data1_node *p;
-    
+
     for (p=node; p; p=p->next)
     {
 	if (!yaz_matchstr(p->u.tag.tag, name))
@@ -388,7 +388,7 @@ static inline_subfield *lookup_inline_subfield(inline_subfield *pisf,
 					       const char *name)
 {
     inline_subfield *p;
-    
+
     for (p=pisf; p; p=p->next)
     {
 	if (!yaz_matchstr(p->name, name))
@@ -401,13 +401,13 @@ static inline_subfield *cat_inline_subfield(mc_subfield *psf, WRBUF buf,
 					    inline_subfield *pisf)
 {
     mc_subfield *p;
-    
+
     for (p = psf; p && pisf; p = p->next)
     {
 	if (p->which == MC_SF)
 	{
 	    inline_subfield *found = lookup_inline_subfield(pisf, p->name);
-	    
+
 	    if (found)
 	    {
 	    	if (strcmp(p->prefix, "_"))
@@ -432,14 +432,14 @@ static inline_subfield *cat_inline_subfield(mc_subfield *psf, WRBUF buf,
 		}
 #if MARCOMP_DEBUG
 		yaz_log(YLOG_LOG, "cat_inline_subfield(): add subfield $%s", found->name);
-#endif		
+#endif
 		pisf = found->next;
 	    }
 	}
 	else if (p->which == MC_SFVARIANT)
 	{
 	    inline_subfield *next;
-	    
+
 	    do {
 		next = cat_inline_subfield(p->u.child, buf, pisf);
 		if (next == pisf)
@@ -451,7 +451,7 @@ static inline_subfield *cat_inline_subfield(mc_subfield *psf, WRBUF buf,
 	{
 	    mc_subfield *pp;
 	    int found;
-	    
+
 	    for (pp = p->u.child, found = 0; pp; pp = pp->next)
 	    {
 		if (!yaz_matchstr(pisf->name, p->name))
@@ -468,11 +468,11 @@ static inline_subfield *cat_inline_subfield(mc_subfield *psf, WRBUF buf,
 	    }
 	}
     }
-    return pisf; 
+    return pisf;
 }
 
 static void cat_inline_field(mc_field *pf, WRBUF buf, data1_node *subfield)
-{    
+{
     if (!pf || !subfield)
 	return;
 
@@ -481,13 +481,13 @@ static void cat_inline_field(mc_field *pf, WRBUF buf, data1_node *subfield)
 	int len;
 	inline_field *pif=NULL;
 	data1_node *psubf;
-	
+
 	if (yaz_matchstr(subfield->u.tag.tag, "1"))
 	{
 	    subfield = subfield->next;
 	    continue;
 	}
-	
+
 	psubf = subfield;
 	pif = inline_mk_field();
 	do
@@ -498,13 +498,13 @@ static void cat_inline_field(mc_field *pf, WRBUF buf, data1_node *subfield)
 		yaz_log(YLOG_WARN, "inline subfield ($%s): parse error",
 		    psubf->u.tag.tag);
 		inline_destroy_field(pif);
-		return;	
+		return;
 	    }
 	    psubf = psubf->next;
 	} while (psubf && yaz_matchstr(psubf->u.tag.tag, "1"));
-	
+
 	subfield = psubf;
-	
+
 	if (pif && !yaz_matchstr(pif->name, pf->name))
 	{
 	    if (!pf->list && pif->list)
@@ -521,12 +521,12 @@ static void cat_inline_field(mc_field *pf, WRBUF buf, data1_node *subfield)
 
 		ind1 = (pif->ind1[0] == ' ') ? '_':pif->ind1[0];
 		ind2 = (pif->ind2[0] == ' ') ? '_':pif->ind2[0];
-    
+
 		if (((pf->ind1[0] == '.') || (ind1 == pf->ind1[0])) &&
 		    ((pf->ind2[0] == '.') || (ind2 == pf->ind2[0])))
 		{
 		    cat_inline_subfield(pf->list, buf, pif->list);
-		    
+
 		    /*
 		    	add separator for inline fields
 		    */
@@ -543,7 +543,7 @@ static void cat_inline_field(mc_field *pf, WRBUF buf, data1_node *subfield)
 	}
 	inline_destroy_field(pif);
     }
-#if MARCOMP_DEBUG    
+#if MARCOMP_DEBUG
     yaz_log(YLOG_LOG, "cat_inline_field(): got buffer {%s}", buf);
 #endif
 }
@@ -552,23 +552,23 @@ static data1_node *cat_subfield(mc_subfield *psf, WRBUF buf,
 				data1_node *subfield)
 {
     mc_subfield *p;
-    
+
     for (p = psf; p && subfield; p = p->next)
     {
 	if (p->which == MC_SF)
 	{
 	    data1_node *found = lookup_subfield(subfield, p->name);
-	    
+
 	    if (found)
 	    {
 		int len;
-		
+
 		if (strcmp(p->prefix, "_"))
 		{
 		    wrbuf_puts(buf, " ");
 		    wrbuf_puts(buf, p->prefix);
 		}
-		
+
 		if (p->u.in_line)
 		{
 		    cat_inline_field(p->u.in_line, buf, found);
@@ -588,9 +588,9 @@ static data1_node *cat_subfield(mc_subfield *psf, WRBUF buf,
 		    wrbuf_puts(buf, p->suffix);
 		    wrbuf_puts(buf, " ");
 		}
-#if MARCOMP_DEBUG		
+#if MARCOMP_DEBUG
 		yaz_log(YLOG_LOG, "cat_subfield(): add subfield $%s", found->u.tag.tag);
-#endif		
+#endif
 		subfield = found->next;
 	    }
 	}
@@ -608,7 +608,7 @@ static data1_node *cat_subfield(mc_subfield *psf, WRBUF buf,
 	{
 	    mc_subfield *pp;
 	    int found;
-	    
+
 	    for (pp = p->u.child, found = 0; pp; pp = pp->next)
 	    {
 		if (!yaz_matchstr(subfield->u.tag.tag, pp->name))
@@ -633,27 +633,27 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
 {
     data1_node *subfield;
     int ind1, ind2;
-    
+
     if (!pf || !field)
 	return 0;
 
-    
+
     if (yaz_matchstr(field->u.tag.tag, pf->name))
 	return field->next;
 
     subfield = field->child;
-    
+
     if (!subfield)
 	return field->next;
 
     /*
 	check subfield without indicators
     */
-    
+
     if (!pf->list && subfield->which == DATA1N_data)
     {
 	int len;
-	
+
 	if (pf->interval.start == -1)
 	{
 	    wrbuf_puts(buf, get_data(field, &len));
@@ -669,14 +669,14 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
 #endif
 	return field->next;
     }
-    
+
     /*
 	check indicators
     */
 
     ind1 = (subfield->u.tag.tag[0] == ' ') ? '_':subfield->u.tag.tag[0];
     ind2 = (subfield->u.tag.tag[1] == ' ') ? '_':subfield->u.tag.tag[1];
-    
+
     if (!(
 	((pf->ind1[0] == '.') || (ind1 == pf->ind1[0])) &&
 	((pf->ind2[0] == '.') || (ind2 == pf->ind2[0]))
@@ -687,25 +687,25 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
 #endif
 	return field->next;
     }
-    
+
     subfield = subfield->child;
-    
+
     if (!subfield)
 	return field->next;
 
     cat_subfield(pf->list, buf, subfield);
 
-#if MARCOMP_DEBUG    
+#if MARCOMP_DEBUG
     yaz_log(YLOG_LOG, "cat_field(): got buffer {%s}", buf);
 #endif
-    
-    return field->next;    
+
+    return field->next;
 }
 
 static int is_empty(char *s)
 {
     char *p = s;
-    
+
     for (p = s; *p; p++)
     {
 	if (!isspace(*(unsigned char *)p))
@@ -723,21 +723,21 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
     mc_context *c;
     mc_field *pf;
     WRBUF buf;
-    
+
     c = mc_mk_context(mc_stmnt+3);
-    
+
     if (!c)
 	return;
-	
+
     pf = mc_getfield(c);
-    
+
     if (!pf)
     {
 	mc_destroy_context(c);
 	return;
     }
     buf = wrbuf_alloc();
-#if MARCOMP_DEBUG    
+#if MARCOMP_DEBUG
     yaz_log(YLOG_LOG, "parse_data1_tree(): statement -{%s}", mc_stmnt);
 #endif
     if (!yaz_matchstr(pf->name, "ldr"))
@@ -746,7 +746,7 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
 #if MARCOMP_DEBUG
 	yaz_log(YLOG_LOG,"parse_data1_tree(): try LEADER from {%d} to {%d} positions",
 	    pf->interval.start, pf->interval.end);
-#endif	
+#endif
         if (marctab)
         {
             new = data1_mk_tag_n(p->dh, p->mem, mc_stmnt, strlen(mc_stmnt), 0, top);
@@ -757,21 +757,21 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
     else
     {
 	field=top->child;
-	
+
 	while(field)
 	{
 	    if (!yaz_matchstr(field->u.tag.tag, pf->name))
 	    {
 		data1_node *new;
 		char *pb;
-#if MARCOMP_DEBUG		
+#if MARCOMP_DEBUG
 		yaz_log(YLOG_LOG, "parse_data1_tree(): try field {%s}", field->u.tag.tag);
-#endif		
+#endif
 		wrbuf_rewind(buf);
 		wrbuf_puts(buf, "");
 
 		field = cat_field(p, pf, buf, field);
-		
+
 		wrbuf_cstr(buf);
                 pb = wrbuf_buf(buf);
 		for (pb = strtok(pb, "\n"); pb; pb = strtok(NULL, "\n"))
@@ -801,11 +801,11 @@ data1_node *grs_read_marcxml(struct grs_read_info *p)
 
     if (!root)
 	return 0;
-	
+
     for (e = data1_absyn_getelements(p->dh, root); e; e=e->next)
     {
 	data1_tag *tag = e->tag;
-	
+
 	if (tag && tag->which == DATA1T_string &&
 	    !yaz_matchstr(tag->value.string, "mc?"))
 		parse_data1_tree(p, tag->value.string, root);
@@ -820,11 +820,11 @@ data1_node *grs_read_marc(struct grs_read_info *p)
 
     if (!root)
 	return 0;
-	
+
     for (e = data1_absyn_getelements(p->dh, root); e; e=e->next)
     {
 	data1_tag *tag = e->tag;
-	
+
 	if (tag && tag->which == DATA1T_string &&
 	    !yaz_matchstr(tag->value.string, "mc?"))
 		parse_data1_tree(p, tag->value.string, root);
@@ -906,7 +906,7 @@ idzebra_filter
     &marcxml_type,
     0,
 };
-    
+
 /*
  * Local variables:
  * c-basic-offset: 4

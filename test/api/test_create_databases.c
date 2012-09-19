@@ -37,7 +37,7 @@ static void tst(int argc, char **argv)
 
     zh = zebra_open(zs, 0);
     YAZ_CHECK(zh);
-    
+
     YAZ_CHECK(zebra_begin_trans (zh, 1) == ZEBRA_OK);
 
     for (i = 0; i<no_db; i++)
@@ -47,7 +47,7 @@ static void tst(int argc, char **argv)
 
 	sprintf(dbstr, "%d", i);
 	YAZ_CHECK(zebra_select_database(zh, dbstr) == ZEBRA_OK);
-    
+
 	sprintf(rec_buf, "<gils><title>title %d</title></gils>\n", i);
 	zebra_add_record (zh, rec_buf, strlen(rec_buf));
 

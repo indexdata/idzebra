@@ -46,7 +46,7 @@ YAZ_EXPORT const char **chr_map_input_x(chrmaptab t,
 					const char **from, int *len, int first);
 YAZ_EXPORT const char **chr_map_q_input(chrmaptab maptab,
 					const char **from, int len, int first);
-    
+
 YAZ_EXPORT const char *chr_map_output(chrmaptab t, const char **from, int len);
 
 YAZ_END_CDECL

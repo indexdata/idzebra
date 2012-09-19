@@ -58,7 +58,7 @@ void tst(int argc, char **argv)
 TL_MAIN
 
 /*
- * Local variables: 
+ * Local variables:
  * c-basic-offset: 4
  * c-file-style: "Stroustrup"
  * indent-tabs-mode: nil

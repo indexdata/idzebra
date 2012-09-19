@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *      ref_count  (2 bytes)
  *      block      (500 bytes)
  *
- *  Format of subsequent blocks 
+ *  Format of subsequent blocks
  *      next  (8 bytes)
  *      block (502 bytes)
  *
@@ -189,7 +189,7 @@ static ZEBRA_RES rec_release_blocks(Records p, zint sysno)
             /* the list of blocks can all be removed (ref == 0) */
             first = 0;
 	}
-	
+
         if (bf_write(p->data_BFile[dst_type], freeblock, 0, sizeof(freeblock),
                       &p->head.block_free[dst_type]))
         {
@@ -271,7 +271,7 @@ static ZEBRA_RES rec_write_tmp_buf(Records p, int size, zint *sysnos)
             cptr = p->tmp_buf + no_written;
         }
         block_prev = block_free;
-        no_written += CAST_ZINT_TO_INT(p->head.block_size[dst_type]) 
+        no_written += CAST_ZINT_TO_INT(p->head.block_size[dst_type])
             - sizeof(zint);
         p->head.block_used[dst_type]++;
     }
@@ -347,7 +347,7 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
         }
         if (rw)
 	{
-            if (recindex_write_head(p->recindex, 
+            if (recindex_write_head(p->recindex,
                                     &p->head, sizeof(p->head)) != ZEBRA_OK)
 		ret = ZEBRA_FAIL;
 	}
@@ -480,7 +480,7 @@ static void rec_cache_flush_block1(Records p, Record rec, Record last_rec,
 	}
 	if (i == 0)
 	{
-	    rec_encode_zint(rec_sysno_to_int(rec->sysno), 
+	    rec_encode_zint(rec_sysno_to_int(rec->sysno),
 			    (unsigned char *) *out_buf + *out_offset, &len);
 	    (*out_offset) += len;
 	}
@@ -547,13 +547,13 @@ static ZEBRA_RES rec_flush_shared(Records p, short ref_count, zint *sysnos,
 #endif
             break;
 	case REC_COMPRESS_BZIP2:
-#if HAVE_BZLIB_H	
+#if HAVE_BZLIB_H
 	    csize = out_offset + (out_offset >> 6) + 620;
 	    rec_tmp_expand(p, csize);
 #ifdef BZ_CONFIG_ERROR
-	    i = BZ2_bzBuffToBuffCompress 
+	    i = BZ2_bzBuffToBuffCompress
 #else
-	    i = bzBuffToBuffCompress 
+	    i = bzBuffToBuffCompress
 #endif
 			 	    (p->tmp_buf+sizeof(zint)+sizeof(short)+
 				      sizeof(char),
@@ -568,7 +568,7 @@ static ZEBRA_RES rec_flush_shared(Records p, short ref_count, zint *sysnos,
 	case REC_COMPRESS_NONE:
 	    break;
 	}
-	if (!csize)  
+	if (!csize)
 	{
 	    /* either no compression or compression not supported ... */
 	    csize = out_offset;
@@ -581,7 +581,7 @@ static ZEBRA_RES rec_flush_shared(Records p, short ref_count, zint *sysnos,
 	memcpy(p->tmp_buf + sizeof(zint), &ref_count, sizeof(ref_count));
 	memcpy(p->tmp_buf + sizeof(zint)+sizeof(short),
 		&compression_method, sizeof(compression_method));
-		
+
 	/* -------- compression */
 	if (rec_write_tmp_buf(p, csize + sizeof(short) + sizeof(char), sysnos)
 	    != ZEBRA_OK)
@@ -661,7 +661,7 @@ static ZEBRA_RES rec_cache_flush(Records p, int saveCount)
     {
         struct record_cache_entry *e = p->record_cache + i;
         rec_free(&e->rec);
-    } 
+    }
     /* i still being used ... */
     for (j = 0; j<saveCount; j++, i++)
         memcpy(p->record_cache+j, p->record_cache+i,
@@ -779,7 +779,7 @@ static Record rec_get_int(Records p, zint sysno)
     freeblock = entry.next / 8;
 
     assert(freeblock > 0);
-    
+
     rec_tmp_expand(p, entry.size);
 
     cptr = p->tmp_buf;
@@ -793,7 +793,7 @@ static Record rec_get_int(Records p, zint sysno)
         zint tmp;
 
         cptr += p->head.block_size[dst_type] - sizeof(freeblock);
-        
+
         memcpy(&tmp, cptr, sizeof(tmp));
         r = bf_read(p->data_BFile[dst_type], freeblock, 0, 0, cptr);
 	if (r < 0)
@@ -823,7 +823,7 @@ static Record rec_get_int(Records p, zint sysno)
                                (const Bytef *) in_buf, in_size);
                 if (i == Z_OK)
                 {
-                    bz_size = destLen; 
+                    bz_size = destLen;
                     break;
                 }
                 yaz_log(YLOG_LOG, "failed");
@@ -1093,7 +1093,7 @@ void rec_prstat(Records records, int verbose)
 {
     int i;
     zint total_bytes = 0;
-    
+
     yaz_log (YLOG_LOG,
           "Total records                        %8" ZINT_FORMAT0,
           records->head.no_records);

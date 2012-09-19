@@ -72,7 +72,7 @@ static void flush_blocks (ISAMC is, struct isamc_merge_block *mb, int ptr,
     for (i = 0; i<ptr; i++)
     {
         /* consider this block number */
-        if (!mb[i].block) 
+        if (!mb[i].block)
         {
             mb[i].block = isamc_alloc_block (is, cat);
             mb[i].dirty = 1;
@@ -81,7 +81,7 @@ static void flush_blocks (ISAMC is, struct isamc_merge_block *mb, int ptr,
         /* consider next block pointer */
         if (last && i == ptr-1)
             mb[i+1].block = 0;
-        else if (!mb[i+1].block)       
+        else if (!mb[i+1].block)
         {
             mb[i+1].block = isamc_alloc_block (is, cat);
             mb[i+1].dirty = 1;
@@ -141,11 +141,11 @@ static int get_border (ISAMC is, struct isamc_merge_block *mb, zint ptr,
    /* Border set to initial fill or block size depending on
       whether we are creating a new one or updating and old one.
     */
-    
+
     int fill = mb[ptr].block ? is->method->filecat[cat].bsize :
                                is->method->filecat[cat].ifill;
     int off = (ptr||firstpos) ? ISAMC_BLOCK_OFFSET_N : ISAMC_BLOCK_OFFSET_1;
-    
+
     assert (ptr < 199);
 
     return mb[ptr].offset + fill - off;
@@ -157,12 +157,12 @@ void isamc_merge (ISAMC is, ISAM_P *ipos, ISAMC_I *data)
     char i_item[128], *i_item_ptr;
     int i_more, i_mode, i;
 
-    ISAMC_PP pp; 
+    ISAMC_PP pp;
     char f_item[128], *f_item_ptr;
     int f_more;
     int last_dirty = 0;
     int debug = is->method->debug;
- 
+
     struct isamc_merge_block mb[200];
 
     zint firstpos = 0;
@@ -207,10 +207,10 @@ void isamc_merge (ISAMC is, ISAM_P *ipos, ISAMC_I *data)
         {
             /* block to block boundary in the original file. */
             f_more = 1;
-            if (cat == pp->cat) 
+            if (cat == pp->cat)
             {
                 /* the resulting output is of the same category as the
-                   the original 
+                   the original
 		*/
                 if (r_offset <= mb[ptr].offset +is->method->filecat[cat].mfill)
                 {
@@ -338,7 +338,7 @@ void isamc_merge (ISAMC is, ISAM_P *ipos, ISAMC_I *data)
             int new_offset;
 
             (*is->method->codec.encode)(r_clientData, &r_out_ptr, &src);
-            new_offset = r_out_ptr - r_buf; 
+            new_offset = r_out_ptr - r_buf;
 
             numKeys++;
 
@@ -383,7 +383,7 @@ void isamc_merge (ISAMC is, ISAM_P *ipos, ISAMC_I *data)
         if (cat < is->max_cat && ptr >= is->method->filecat[cat].mblocks)
         {
             /* Max number blocks in current category reached ->
-               must switch to next category (with larger block size) 
+               must switch to next category (with larger block size)
             */
             int j = 0;
 
@@ -428,8 +428,8 @@ void isamc_merge (ISAMC is, ISAM_P *ipos, ISAMC_I *data)
     }
     if (mb[ptr].offset < r_offset)
     {   /* make the final boundary offset */
-        mb[++ptr].dirty = 1; 
-        mb[ptr].block = 0; 
+        mb[++ptr].dirty = 1;
+        mb[ptr].block = 0;
         mb[ptr].offset = r_offset;
     }
     else

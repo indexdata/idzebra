@@ -45,7 +45,7 @@ static int file_lock(int fd, int type, int cmd)
     area.l_type = type;
     area.l_whence = SEEK_SET;
     area.l_len = area.l_start = 0L;
-    
+
     return fcntl(fd, cmd, &area);
 }
 

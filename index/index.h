@@ -68,7 +68,7 @@ struct dirs_entry {
 };
 
 void getFnameTmp(Res res, char *fname, int no);
-        
+
 struct dirs_info *dirs_open(Dict dict, const char *rep, int rw);
 struct dirs_info *dirs_fopen(Dict dict, const char *path, int rw);
 struct dirs_entry *dirs_read(struct dirs_info *p);
@@ -125,7 +125,7 @@ typedef struct zebra_rank_class {
 
 struct zebra_register {
     char *name;
-    
+
     ISAMS isams;
     ISAMC isamc;
     ISAMB isamb;
@@ -198,7 +198,7 @@ struct zebra_session {
     int partial_result;
 #if HAVE_SYS_TIMES_H
     struct tms tms1;
-    struct tms tms2;    
+    struct tms tms2;
 #endif
     int  shadow_enable;
 
@@ -307,7 +307,7 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet, RSET rset,
 void resultSetInvalidate(ZebraHandle zh);
 
 int zebra_record_fetch(ZebraHandle zh, const char *setname,
-                       zint sysno, int score, 
+                       zint sysno, int score,
                        ODR stream,
                        const Odr_oid *input_format, Z_RecordComposition *comp,
                        const Odr_oid **output_format, char **rec_bufp,
@@ -325,7 +325,7 @@ int zebra_get_rec_snippets(ZebraHandle zh, zint sysno,
 
 void zebra_index_merge(ZebraHandle zh);
 
-ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh, 
+ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
                                       const char *buf, size_t buf_size,
                                       enum zebra_recctrl_action_t action,
                                       const char *recordType,
@@ -362,7 +362,7 @@ Dict dict_open_res(BFiles bfs, const char *name, int cache, int rw,
 void zebra_setError(ZebraHandle zh, int code, const char *addinfo);
 void zebra_setError_zint(ZebraHandle zh, int code, zint i);
 
-int zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream, 
+int zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream,
                              const char *index_type,
                              char **dst, const char *src);
 
@@ -422,7 +422,7 @@ ZEBRA_RES zebra_term_limits_APT(ZebraHandle zh,
                                 const char **term_ref_id_str,
                                 NMEM nmem);
 
-ZEBRA_RES zebra_result_recid_to_sysno(ZebraHandle zh, 
+ZEBRA_RES zebra_result_recid_to_sysno(ZebraHandle zh,
                                       const char *setname,
                                       zint recid,
                                       zint *sysnos, int *no_sysnos);

@@ -125,7 +125,7 @@ static char *xstrdup_env(const char *src)
 		strcpy(dst+j, env_val);
 		j += strlen(env_val);
 	    }
-	    else if (src[i] == ':' && src[i+1] == '-') 
+	    else if (src[i] == ':' && src[i+1] == '-')
 	    {
 		i = i + 2;
 		while (src[i] && !strchr("}\n\r\f", src[i]))
@@ -163,12 +163,12 @@ ZEBRA_RES res_read_file(Res r, const char *fname)
         int lineno = 1;
         WRBUF wrbuf_val = wrbuf_alloc();
         yaz_tok_cfg_t yt = yaz_tok_cfg_create();
-        
+
         while ((line = fgets(fr_buf, sizeof(fr_buf)-1, fr)))
         {
             yaz_tok_parse_t tp = yaz_tok_parse_buf(yt, line);
             int t = yaz_tok_move(tp);
-            
+
             if (t == YAZ_TOK_STRING)
             {
                 size_t sz;
@@ -200,7 +200,7 @@ ZEBRA_RES res_read_file(Res r, const char *fname)
                 {
                     /* name:   value */
                     t = yaz_tok_move(tp);
-                    
+
                     if (t != YAZ_TOK_STRING)
                     {
                         resp->value = xstrdup("");
@@ -221,7 +221,7 @@ ZEBRA_RES res_read_file(Res r, const char *fname)
             }
             lineno++;
             yaz_tok_parse_destroy(tp);
-        }         
+        }
         fclose(fr);
         yaz_tok_cfg_destroy(yt);
         wrbuf_destroy(wrbuf_val);
@@ -276,7 +276,7 @@ const char *res_get_prefix(Res r, const char *name, const char *prefix,
     if (prefix)
     {
 	char rname[128];
-	
+
 	if (strlen(name) + strlen(prefix) >= (sizeof(rname)-2))
 	    return 0;
 	strcpy(rname, prefix);
@@ -298,7 +298,7 @@ const char *res_get(Res r, const char *name)
 
     if (!r)
 	return 0;
-    
+
     v = res_get(r->over_res, name);
     if (v)
 	return v;
@@ -360,7 +360,7 @@ int res_trav(Res r, const char *prefix, void *p,
     struct res_entry *re;
     int l = 0;
     int no = 0;
-    
+
     if (!r)
         return 0;
     no = res_trav(r->over_res, prefix, p, f);
@@ -454,22 +454,22 @@ void res_add(Res r, const char *name, const char *value)
     re->value = xstrdup_env(value);
 }
 
-void res_dump(Res r, int level) 
+void res_dump(Res r, int level)
 {
     struct res_entry *re;
-    
+
     if (!r)
 	return;
-    
+
     for (re = r->first; re; re=re->next) {
 	printf("%*s - %s:='%s'\n",level * 4,"",re->name,re->value);
     }
-    
+
     if (r->def_res) {
 	printf("%*s DEF ",level * 4,"");
 	res_dump(r->def_res, level + 1);
     }
-    
+
     if (r->over_res) {
 	printf("%*s OVER ",level * 4,"");
 	res_dump(r->over_res, level + 1);
@@ -480,7 +480,7 @@ int res_check(Res r_i, Res r_v)
 {
     struct res_entry *e_i;
     int errors = 0;
-    
+
     for (e_i = r_i->first; e_i; e_i = e_i->next)
     {
         struct res_entry *e_v;
@@ -498,7 +498,7 @@ int res_check(Res r_i, Res r_v)
                 prefix_allowed = 1;
             if (strchr(e_v->value, 's'))
                 suffix_allowed = 1;
-            
+
             first_dot = strchr(name, '.');
             if (prefix_allowed && first_dot)
             {

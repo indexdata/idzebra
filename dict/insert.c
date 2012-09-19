@@ -99,7 +99,7 @@ static int split_page(Dict dict, Dict_ptr ptr, void *p)
                     best_indxp = indxp;
                 }
             }
-            else 
+            else
             {   /* new char prefix. restore */
                 prev_char = dc;
                 no_current = 1;
@@ -145,7 +145,7 @@ static int split_page(Dict dict, Dict_ptr ptr, void *p)
 }
 
 static void clean_page(Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
-                       Dict_ptr subptr, char *userinfo)             
+                       Dict_ptr subptr, char *userinfo)
 {
     char *np = (char *) xmalloc(dict->head.page_size);
     int i, slen, no = 0;
@@ -180,8 +180,8 @@ static void clean_page(Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
 		    info2 += *userinfo + 1;
 		}
 		else
-		    *info2++ = 0;	
-                subptr = 0; 
+		    *info2++ = 0;
+                subptr = 0;
 	        ++no;
                 continue;
 	    }
@@ -211,7 +211,7 @@ static void clean_page(Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
         ++no;
     }
 #if 1
-    memcpy((char*)p+DICT_infoffset, 
+    memcpy((char*)p+DICT_infoffset,
            (char*)np+DICT_infoffset,
            info2 - ((char*)np+DICT_infoffset));
     memcpy((char*)p + ((char*)indxp2 - (char*)np),
@@ -243,7 +243,7 @@ static int dict_ins(Dict dict, const Dict_char *str,
     void *p;
 
     dict_bf_readp(dict->dbf, ptr, &p);
-        
+
     assert(p);
     assert(ptr);
 
@@ -341,7 +341,7 @@ static int dict_ins(Dict dict, const Dict_char *str,
                             return dict_ins(dict, str-1, ptr,
                                             userlen, userinfo);
                         }
-                        if (split_page(dict, ptr, p)) 
+                        if (split_page(dict, ptr, p))
                         {
                             yaz_log(YLOG_FATAL, "Unable to split page %d\n", ptr);
                             assert(0);

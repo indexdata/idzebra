@@ -42,7 +42,7 @@ void tst(void)
 	return;
 
     YAZ_CHECK(max_block * block_size < 4 * 1000000); /* 4M */
-    
+
     r = mkdir("register", 0777);
     YAZ_CHECK(r == 0 || (r == -1 && errno == EEXIST));
 
@@ -152,7 +152,7 @@ void tst(void)
     {
 	zint bno = 0;
 	int step = max_block / 50;
-       
+
 	while (bno < max_block)
 	{
 	    memset(buf, ' ', block_size);

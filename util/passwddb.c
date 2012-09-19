@@ -57,7 +57,7 @@ Passwd_db passwd_db_open (void)
 }
 
 static int get_entry (const char **p, char *dst, int max)
-{	
+{
     int i = 0;
     while ((*p)[i] != ':' && (*p)[i])
 	i++;
@@ -109,7 +109,7 @@ void passwd_db_close(Passwd_db db)
     while (pe)
     {
 	struct passwd_entry *pe_next = pe->next;
-	
+
 	xfree (pe->name);
 	xfree (pe->des);
 	xfree (pe);
@@ -166,7 +166,7 @@ int passwd_db_auth(Passwd_db db, const char *user, const char *pass)
 	if (strcmp (pe->des, pass))
 	    return -2;
     }
-    return 0;	
+    return 0;
 }
 
 int passwd_db_file_crypt(Passwd_db db, const char *fname)

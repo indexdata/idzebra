@@ -107,7 +107,7 @@ void *run_func(void *arg)
 
         if (use_write_lock == 2) /* random lock */
             write_lock = (rand() & 3) == 3 ? 1 : 0;
-            
+
         if (write_lock)
         {
             zebra_lock_w(lh);
@@ -115,21 +115,21 @@ void *run_func(void *arg)
             write(test_fd, "L", 1);
             *seqp++ = 'L';
             small_sleep();
-            *seqp++ = 'U';  
+            *seqp++ = 'U';
             write(test_fd, "U", 1);
-          
+
             zebra_unlock(lh);
         }
         else
         {
             zebra_lock_r(lh);
-            
+
             write(test_fd, "l", 1);
             *seqp++ = 'l';
             small_sleep();
             *seqp++ = 'u';
             write(test_fd, "u", 1);
-            
+
             zebra_unlock(lh);
         }
     }
@@ -190,7 +190,7 @@ static void tst_thread(int num, int write_flag)
     for (i = 0; i < num; i++)
         YAZ_CHECK(id[i] == 123);
     *seqp++ = '\0';
-    yaz_log(YLOG_LOG, "tst_thread(%d,%d) returns seq=%s", 
+    yaz_log(YLOG_LOG, "tst_thread(%d,%d) returns seq=%s",
             num, write_flag, seq);
 }
 

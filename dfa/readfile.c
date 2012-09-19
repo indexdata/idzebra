@@ -101,9 +101,9 @@ static void read_rules (struct DFA *dfa)
             /* copy rest of line to output */
             fputs (s, outf);
         else
-        { 
+        {
             /* preprocess regular expression */
-            prep (&s);                   
+            prep (&s);
             /* now parse regular expression */
             sc = s;
             i = dfa_parse (dfa, &sc);

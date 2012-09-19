@@ -23,9 +23,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/yaz-util.h>
 /* unfortunately we need the isam includes here, for the arguments for */
 /* rsisamX_create */
-#include <idzebra/isamb.h> 
-#include <idzebra/isamc.h> 
-#include <idzebra/isams.h> 
+#include <idzebra/isamb.h>
+#include <idzebra/isamc.h>
+#include <idzebra/isams.h>
 
 YAZ_BEGIN_CDECL
 
@@ -42,8 +42,8 @@ struct ord_list *ord_list_append(NMEM nmem, struct ord_list *list, int ord);
 struct ord_list *ord_list_dup(NMEM nmem, struct ord_list *list);
 void ord_list_print(struct ord_list *list);
 
-/** 
- * rset_term is all we need to know of a term to do ranking etc. 
+/**
+ * rset_term is all we need to know of a term to do ranking etc.
  * As far as the rsets are concerned, it is just a dummy pointer to
  * be passed around.
  */
@@ -64,7 +64,7 @@ struct rset_term {
     struct ord_list *ol;
 };
 
-typedef struct rset_term *TERMID; 
+typedef struct rset_term *TERMID;
 TERMID rset_term_create (const char *name, int length, const char *flags,
 			 int type, NMEM nmem, struct ord_list *ol,
 			 int reg_type, zint hits_limit, const char *ref_id);
@@ -79,7 +79,7 @@ struct rsfd {  /* the stuff common to all rsfd's. */
 };
 
 
-/** 
+/**
  * rset_control has function pointers to all the important functions
  * of a rset. Each type of rset will have its own control block, pointing
  * to the functions for that type. They all have their own create function
@@ -89,7 +89,7 @@ struct rsfd {  /* the stuff common to all rsfd's. */
 struct rset_control
 {
     /** text description of set type (for debugging) */
-    char *desc; 
+    char *desc;
 /* RSET rs_something_create(const struct rset_control *sel, ...); */
     void (*f_delete)(RSET ct);
 
@@ -118,7 +118,7 @@ int rset_default_read(RSFD rfd, void *buf, TERMID *term);
 void rset_get_one_term(RSET ct,TERMID *terms,int maxterms,int *curterm);
 
 /**
- * key_control contains all there is to know about the keys stored in 
+ * key_control contains all there is to know about the keys stored in
  * an isam, and therefore operated by the rsets. Other than this info,
  * all we assume is that all keys are the same size, and they can be
  * memcpy'd around
@@ -163,9 +163,9 @@ typedef struct rset
     zint hits_limit;
     zint hits_count;
     zint hits_round;
-    int hits_approx; 
+    int hits_approx;
 } rset;
-/* rset is a "virtual base class", which will never exist on its own 
+/* rset is a "virtual base class", which will never exist on its own
  * all instances are rsets of some specific type, like rsisamb, or rsbool
  * They keep their own stuff behind the priv pointer.  */
 
@@ -175,8 +175,8 @@ typedef struct rset
  * In more complex isams we can specify on what level we wish to do the
  * matching and counting of hits. For example, we can have book / chapter /
  * verse, and a seqno. Scope 2 means then "give me all verses that match",
- * 3 would be chapters, 4 books. 
- * The resolution tells how much of the occurences we need to return. If we 
+ * 3 would be chapters, 4 books.
+ * The resolution tells how much of the occurences we need to return. If we
  * are doing some sort of proximity, we need to get the seqnos of all
  * occurences, whereas if we are only counting hits, we do not need anything
  * below the scope. Again 1 is seqnos, 2 sysnos (or verses), 3 books, etc.
@@ -185,7 +185,7 @@ typedef struct rset
 RSFD rfd_create_base(RSET rs);
 int rfd_is_last(RSFD rfd);
 
-RSET rset_create_base(const struct rset_control *sel, 
+RSET rset_create_base(const struct rset_control *sel,
                       NMEM nmem,
 		      struct rset_key_control *kcontrol,
                       int scope,
@@ -234,7 +234,7 @@ RSET rset_create_not(NMEM nmem, struct rset_key_control *kcontrol,
                      int scope, RSET rset_l, RSET rset_r);
 
 RSET rset_create_between(NMEM nmem, struct rset_key_control *kcontrol,
-                         int scope, RSET rset_l, RSET rset_m, RSET rset_r, 
+                         int scope, RSET rset_l, RSET rset_m, RSET rset_r,
                          RSET rset_attr);
 
 RSET rset_create_or(NMEM nmem, struct rset_key_control *kcontrol,

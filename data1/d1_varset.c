@@ -77,7 +77,7 @@ data1_varset *data1_read_varset (data1_handle dh, const char *file)
 	if (!strcmp(argv[0], "class"))
 	{
 	    data1_varclass *r;
-	    
+
 	    if (argc != 3)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Bad # or args to class",
@@ -151,10 +151,10 @@ data1_varset *data1_read_varset (data1_handle dh, const char *file)
 		continue;
 	    }
 	}
-	else 
+	else
 	    yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'",
 		    file, lineno, argv[0]);
-    
+
     fclose(f);
     return res;
 }

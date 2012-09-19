@@ -39,7 +39,7 @@ static void tst(void)
 {
     char path[1024];
     Passwd_db db;
-    
+
     db = passwd_db_open();
     YAZ_CHECK(db);
     if (!db)

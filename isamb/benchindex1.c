@@ -101,10 +101,10 @@ int code_read(void *vp, char **dst, int *insertMode)
 
     if (b->current_entry >= b->no_entries)
 	return 0;
-    
+
     t = b->ar[b->current_entry];
     b->current_entry++;
-    
+
     key.len = 3;
     key.mem[0] = t->word_id;
     key.mem[1] = t->docid;
@@ -136,7 +136,7 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
     zint number_of_int_splits = isamb_get_int_splits(isb);
     zint number_of_leaf_splits = isamb_get_leaf_splits(isb);
     zint number_of_dict_splits = dict_get_no_split(dict);
-    
+
     b->ar = xmalloc(sizeof(*b->ar) * b->no_entries);
     for (i = 0; i < b->no_entries; i++, t = t->next)
     {
@@ -144,7 +144,7 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
         b->ar[i] = t;
     }
     assert(!t);
-    
+
     qsort(b->ar, b->no_entries, sizeof(*b->ar), cmp_ar);
     tim_dict = yaz_timing_create();
 #if 0
@@ -190,7 +190,7 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
         }
     }
     dict_insert(dict, "_w", sizeof(word_id_seq), &word_id_seq);
-    
+
     yaz_timing_stop(tim_dict);
     tim_isamb = yaz_timing_create();
 
@@ -199,7 +199,7 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
     if (b->no_entries)
     {
         ISAMC_I isamc_i;
-        
+
         isamc_i.clientData = b;
         isamc_i.read_item = code_read;
 
@@ -222,7 +222,7 @@ void index_block_flush(struct index_block *b, ISAMB isb, Dict dict,
     }
     b->round++;
     printf("%5d %9.6f %9.6f %5.2f %5.2f %9.6f %5.2f %5.2f "
-           "%6" ZINT_FORMAT0 " %6" ZINT_FORMAT0 
+           "%6" ZINT_FORMAT0 " %6" ZINT_FORMAT0
            " %8d %8d %6d %6d" " %5" ZINT_FORMAT0 "\n",
            b->round,
            yaz_timing_get_real(tim_dict) + yaz_timing_get_real(tim_isamb),
@@ -309,7 +309,7 @@ void index_wrbuf(struct index_block *b, WRBUF wrbuf, zint docid,
             {  /* continuation line */
                 for (i = 0; i<4 && *cp; i++, cp++)
                     ;
-            }   
+            }
         }
         nl = 0;
         if (*cp == '\n')
@@ -350,7 +350,7 @@ void index_wrbuf(struct index_block *b, WRBUF wrbuf, zint docid,
                 sz++;
             }
             cp++;
-        }            
+        }
     }
     if (sz)
         index_term(b, term, docid, &seqno);
@@ -450,7 +450,7 @@ void index_marc_from_file(ISAMB isb,
             long off = ftell(inf) - 5;
             if (verbose || print_offset)
                 printf("<!-- Skipping bad byte %d (0x%02X) at offset "
-                       "%ld (0x%lx) -->\n", 
+                       "%ld (0x%lx) -->\n",
                        *buf & 0xff, *buf & 0xff,
                        off, off);
             for (i = 0; i<4; i++)
@@ -478,7 +478,7 @@ void index_marc_from_file(ISAMB isb,
         if (r < rlen)
             break;
         yaz_marc_read_iso2709(mt, buf, len);
-        
+
         if (yaz_marc_write_line(mt, wrbuf))
             break;
 
@@ -543,7 +543,7 @@ int main(int argc, char **argv)
             }
             break;
         case 'c':
-            if (sscanf(arg, "%d:%d", &dict_cache_size, &isam_cache_size) 
+            if (sscanf(arg, "%d:%d", &dict_cache_size, &isam_cache_size)
                 != 2)
             {
                 fprintf(stderr, "bad cache sizes for -c\n");
@@ -561,7 +561,7 @@ int main(int argc, char **argv)
             exit_usage();
         }
     }
-	
+
     if (fname)
     {
         inf = fopen(fname, "rb");
@@ -621,7 +621,7 @@ int main(int argc, char **argv)
     }
 
     if (!strcmp(type, "iso2709"))
-        index_marc_from_file(isb_postings, dict, &docid_seq, inf, memory, 
+        index_marc_from_file(isb_postings, dict, &docid_seq, inf, memory,
                              0 /* verbose */ , 0 /* print_offset */);
     else if (!strcmp(type, "line"))
         index_marc_line_records(isb_postings, dict, &docid_seq, inf, memory);
@@ -642,7 +642,7 @@ int main(int argc, char **argv)
             yaz_timing_get_real(tim),
             yaz_timing_get_user(tim),
             yaz_timing_get_sys(tim));
-    
+
     yaz_timing_destroy(&tim);
 
     exit(0);

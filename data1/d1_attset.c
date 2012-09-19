@@ -32,7 +32,7 @@ data1_att *data1_getattbyname(data1_handle dh, data1_attset *s, const char *name
 {
     data1_att *r;
     data1_attset_child *c;
-    
+
     /* scan local set */
     for (r = s->atts; r; r = r->next)
         if (!data1_matchstr(r->name, name))
@@ -87,7 +87,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 	    char *name;
             char *endptr;
 	    data1_att *t;
-	    
+
 	    if (argc < 3)
 	    {
 		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to att", file, lineno);
@@ -106,7 +106,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 		continue;
             }
 	    name = argv[2];
-	    
+
 	    t = *attp = (data1_att *)nmem_malloc(mem, sizeof(*t));
 	    t->parent = res;
 	    t->name = nmem_strdup(mem, name);
@@ -167,7 +167,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 		yaz_log(YLOG_WARN, "%s:%d: Include of attset %s failed",
 			file, lineno, name);
 		continue;
-		
+
 	    }
 	    *childp = (data1_attset_child *)
 		nmem_malloc (mem, sizeof(**childp));

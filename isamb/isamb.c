@@ -101,7 +101,7 @@ struct ISAMB_s {
     int log_io;        /* log level for bf_read/bf_write calls */
     int log_freelist;  /* log level for freelist handling */
     zint skipped_numbers; /* on a leaf node */
-    zint returned_numbers; 
+    zint returned_numbers;
     zint skipped_nodes[ISAMB_MAX_LEVEL]; /* [0]=skipped leaves, 1 = higher etc */
     zint accessed_nodes[ISAMB_MAX_LEVEL]; /* nodes we did not skip */
     zint number_of_int_splits;
@@ -136,7 +136,7 @@ struct ISAMB_PP_s {
     zint total_size;
     zint no_blocks;
     zint skipped_numbers; /* on a leaf node */
-    zint returned_numbers; 
+    zint returned_numbers;
     zint skipped_nodes[ISAMB_MAX_LEVEL]; /* [0]=skipped leaves, 1 = higher etc */
     zint accessed_nodes[ISAMB_MAX_LEVEL]; /* nodes we did not skip */
     struct ISAMB_block **block;
@@ -315,7 +315,7 @@ ISAMB isamb_open2(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 		pos++;
 		if (!bf_read(isamb->file[i].bf, pos, 0, 0, hbuf + pos*sizes[i]))
 		{
-		    yaz_log(YLOG_WARN, "truncated isamb header for " 
+		    yaz_log(YLOG_WARN, "truncated isamb header for "
                             "file=%s len=%d pos=%d",
                             fname, len, pos);
                     isamb_close(isamb);
@@ -352,7 +352,7 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 {
     int sizes[CAT_NO];
     int i, b_size = ISAMB_MIN_SIZE;
-    
+
     for (i = 0; i<CAT_NO; i++)
     {
         sizes[i] = b_size;
@@ -382,7 +382,7 @@ static void flush_blocks(ISAMB b, int cat)
 static int cache_block(ISAMB b, ISAM_P pos, unsigned char *userbuf, int wr)
 {
     int cat = (int) (pos&CAT_MASK);
-    int off = (int) (((pos/CAT_MAX) & 
+    int off = (int) (((pos/CAT_MAX) &
                       (ISAMB_CACHE_ENTRY_SIZE / b->file[cat].head.block_size - 1))
                      * b->file[cat].head.block_size);
     zint norm = pos / (CAT_MASK*ISAMB_CACHE_ENTRY_SIZE / b->file[cat].head.block_size);
@@ -400,13 +400,13 @@ static int cache_block(ISAMB b, ISAM_P pos, unsigned char *userbuf, int wr)
         {
             ce_this = *ce;
             *ce = (*ce)->next;   /* remove from list */
-            
+
             ce_this->next = b->file[cat].cache_entries;  /* move to front */
             b->file[cat].cache_entries = ce_this;
-            
+
             if (wr)
             {
-                memcpy(ce_this->buf + off, userbuf, 
+                memcpy(ce_this->buf + off, userbuf,
                        b->file[cat].head.block_size);
                 ce_this->dirty = 1;
             }
@@ -513,9 +513,9 @@ void isamb_close(ISAMB isamb)
    0: leader byte, != 0 leaf, == 0, non-leaf
    1-2: used size of block
    3-7*: number of items and all children
-   
+
    * Reserve 5 bytes for large block sizes. 1 for small ones .. Number
-   of items. We can thus have at most 2^40 nodes. 
+   of items. We can thus have at most 2^40 nodes.
 */
 static struct ISAMB_block *open_block(ISAMB b, ISAM_P pos)
 {
@@ -573,7 +573,7 @@ struct ISAMB_block *new_block(ISAMB b, int leaf, int cat)
         block_no = b->file[cat].head.last_block++;
         p->pos = block_no * CAT_MAX + cat;
         if (b->log_freelist)
-            yaz_log(b->log_freelist, "got block " 
+            yaz_log(b->log_freelist, "got block "
                     ZINT_FORMAT " from last %d:" ZINT_FORMAT, p->pos,
                     cat, p->pos/CAT_MAX);
     }
@@ -592,7 +592,7 @@ struct ISAMB_block *new_block(ISAMB b, int leaf, int cat)
             }
         }
         if (b->log_freelist)
-            yaz_log(b->log_freelist, "got block " 
+            yaz_log(b->log_freelist, "got block "
                     ZINT_FORMAT " from freelist %d:" ZINT_FORMAT, p->pos,
                     cat, p->pos/CAT_MAX);
         memcpy(&b->file[cat].head.free_list, p->buf, sizeof(zint));
@@ -637,7 +637,7 @@ static void check_block(ISAMB b, struct ISAMB_block *p)
         char *endp = p->bytes + p->size;
         ISAM_P pos;
 	void *c1 = (*b->method->codec.start)();
-            
+
         decode_ptr(&src, &pos);
         assert((pos&CAT_MASK) == p->cat);
         while (src != endp)
@@ -686,7 +686,7 @@ void close_block(ISAMB b, struct ISAMB_block *p)
         int size = p->size + offset;
 	char *dst =  (char*)p->buf + 3;
         assert(p->size >= 0);
-	
+
 	/* memset becuase encode_ptr usually does not write all bytes */
 	memset(p->buf, 0, b->file[p->cat].head.block_offset);
         p->buf[0] = p->leaf;
@@ -748,7 +748,7 @@ int insert_int(ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             assert(sub_p1);
 	    diff_terms -= sub_p1->no_items;
             more = insert_sub(b, &sub_p1, lookahead_item, mode,
-                              stream, &sub_p2, 
+                              stream, &sub_p2,
                               sub_item, &sub_size, file_item_buf);
 	    diff_terms += sub_p1->no_items;
             src = src0;
@@ -764,7 +764,7 @@ int insert_int(ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             assert(sub_p1);
 	    diff_terms -= sub_p1->no_items;
             more = insert_sub(b, &sub_p1, lookahead_item, mode,
-                              stream, &sub_p2, 
+                              stream, &sub_p2,
                               sub_item, &sub_size, src);
 	    diff_terms += sub_p1->no_items;
             src = src0;
@@ -780,7 +780,7 @@ int insert_int(ISAMB b, struct ISAMB_block *p, void *lookahead_item,
         sub_p1 = open_block(b, pos);
         assert(sub_p1);
 	diff_terms -= sub_p1->no_items;
-        more = insert_sub(b, &sub_p1, lookahead_item, mode, stream, &sub_p2, 
+        more = insert_sub(b, &sub_p1, lookahead_item, mode, stream, &sub_p2,
                           sub_item, &sub_size, last_max_item);
 	diff_terms += sub_p1->no_items;
     }
@@ -802,7 +802,7 @@ int insert_int(ISAMB b, struct ISAMB_block *p, void *lookahead_item,
         assert(sub_size < DST_ITEM_MAX && sub_size > 1);
 
         memcpy(dst, startp, src - startp);
-                
+
         dst += src - startp;
 
 #if INT_ENCODE
@@ -846,7 +846,7 @@ int insert_int(ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             const char *half;
             src = dst_buf;
             endp = dst;
-            
+
             b->number_of_int_splits++;
 
 	    p->dirty = 1;
@@ -948,7 +948,7 @@ int insert_leaf(ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
     {
         char file_item_buf[DST_ITEM_MAX];
         char *file_item = file_item_buf;
-            
+
         src = p->bytes;
         endp = p->bytes + p->size;
         (*b->method->codec.decode)(c1, &file_item, &src);
@@ -958,12 +958,12 @@ int insert_leaf(ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
             char *lookahead_next;
 	    char *dst_0 = dst;
             int d = -1;
-            
+
             if (lookahead_item)
                 d = (*b->method->compare_item)(file_item_buf, lookahead_item);
-            
+
 	    /* d now holds comparison between existing file item and
-	       lookahead item 
+	       lookahead item
 	       d = 0: equal
                d > 0: lookahead before file
 	       d < 0: lookahead after file
@@ -981,7 +981,7 @@ int insert_leaf(ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
             }
             else if (d == 0 && *lookahead_mode == 2)
             {
-                /* For mode == 2, we insert the new key anyway - even 
+                /* For mode == 2, we insert the new key anyway - even
                    though the comparison is 0. */
                 dst_item = lookahead_item;
                 p->dirty = 1;
@@ -1005,11 +1005,11 @@ int insert_leaf(ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
 
 		/* encode the resulting item */
                 (*b->method->codec.encode)(c2, &dst, &dst_item);
-                
+
                 cut_item_size = dst_item - dst_item_0;
 		assert(cut_item_size > 0);
                 memcpy(cut_item_buf, dst_item_0, cut_item_size);
-                
+
                 half2 = dst;
 		no_items_1 = no_items;
 		no_items++;
@@ -1022,7 +1022,7 @@ int insert_leaf(ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
 	    }
 
 	    /* now move "pointers" .. result has been encoded .. */
-            if (d > 0)  
+            if (d > 0)
             {
 		/* we must move the lookahead pointer */
 
@@ -1049,7 +1049,7 @@ int insert_leaf(ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
 			   leaf. Mark it as "gone" */
                         lookahead_item = 0;
                     }
-                    
+
                     p->dirty = 1;
                 }
             }
@@ -1090,7 +1090,7 @@ int insert_leaf(ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         char *dst_item;
 	const char *src = lookahead_item;
         char *dst_0 = dst;
-        
+
 	/* if we have a lookahead item, we stop if we exceed the value of it */
         if (max_item &&
             (*b->method->compare_item)(max_item, lookahead_item) <= 0)
@@ -1108,13 +1108,13 @@ int insert_leaf(ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         {
             const char *src_0 = src;
             half1 = dst; /* candidate for splitting */
-            
+
             (*b->method->codec.encode)(c2, &dst, &src);
-            
+
             cut_item_size = src - src_0;
 	    assert(cut_item_size > 0);
             memcpy(cut_item_buf, src_0, cut_item_size);
-            
+
 	    no_items_1 = no_items;
             half2 = dst;
         }
@@ -1138,7 +1138,7 @@ int insert_leaf(ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         }
     }
     new_size = dst - dst_buf;
-    if (p && p->cat != b->no_cat-1 && 
+    if (p && p->cat != b->no_cat-1 &&
         new_size > b->file[p->cat].head.block_max)
     {
         /* non-btree block will be removed */
@@ -1166,7 +1166,7 @@ int insert_leaf(ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         assert(half2);
 
 	assert(cut_item_size > 0);
-	
+
 	/* first half */
         p->size = half1 - dst_buf;
 	assert(p->size <=  b->file[p->cat].head.block_max);
@@ -1214,7 +1214,7 @@ int insert_sub(ISAMB b, struct ISAMB_block **p, void *new_item,
                const void *max_item)
 {
     if (!*p || (*p)->leaf)
-        return insert_leaf(b, p, new_item, mode, stream, sp, sub_item, 
+        return insert_leaf(b, p, new_item, mode, stream, sp, sub_item,
                            sub_size, max_item);
     else
         return insert_int(b, *p, new_item, mode, stream, sp, sub_item,
@@ -1238,7 +1238,7 @@ int isamb_unlink(ISAMB b, ISAM_P pos)
 #endif
 	decode_ptr(&src, &sub_p);
 	isamb_unlink(b, sub_p);
-	
+
 	while (src != p1->bytes + p1->size)
 	{
 #if INT_ENCODE
@@ -1289,7 +1289,7 @@ void isamb_merge(ISAMB b, ISAM_P *pos, ISAMC_I *stream)
         struct ISAMB_block *p = 0, *sp = 0;
         char sub_item[DST_ITEM_MAX];
         int sub_size;
-        
+
         if (*pos)
             p = open_block(b, *pos);
         more = insert_sub(b, &p, item_buf, &i_mode, stream, &sp,
@@ -1314,7 +1314,7 @@ void isamb_merge(ISAMB b, ISAM_P *pos, ISAMC_I *stream)
             dst += sub_size;
 #endif
             encode_ptr(&dst, sp->pos);
-            
+
             p2->size = dst - p2->bytes;
 	    p2->no_items = p->no_items + sp->no_items;
             *pos = p2->pos;  /* return new super page */
@@ -1374,7 +1374,7 @@ ISAMB_PP isamb_pp_open_x(ISAMB isamb, ISAM_P pos, int *level, int scope)
         decode_ptr(&src, &pos);
         p->offset = src - p->bytes;
         pp->level++;
-        pp->accessed_nodes[pp->level]++; 
+        pp->accessed_nodes[pp->level]++;
     }
     pp->block[pp->level+1] = 0;
     pp->maxlevel = pp->level;
@@ -1393,7 +1393,7 @@ void isamb_pp_close_x(ISAMB_PP pp, zint *size, zint *blocks)
     int i;
     if (!pp)
         return;
-    yaz_log(YLOG_DEBUG, "isamb_pp_close lev=%d returned "ZINT_FORMAT" values, " 
+    yaz_log(YLOG_DEBUG, "isamb_pp_close lev=%d returned "ZINT_FORMAT" values, "
             "skipped "ZINT_FORMAT,
             pp->maxlevel, pp->skipped_numbers, pp->returned_numbers);
     for (i = pp->maxlevel; i>=0; i--)
@@ -1466,7 +1466,7 @@ static void isamb_dump_r(ISAMB b, ISAM_P pos, void (*pr)(const char *str),
 	    p->offset = src - (char*) p->bytes;
 
 	    isamb_dump_r(b, sub, pr, level+1);
-	    
+
 	    while (p->offset < p->size)
 	    {
 #if INT_ENCODE
@@ -1483,11 +1483,11 @@ static void isamb_dump_r(ISAMB b, ISAM_P pos, void (*pr)(const char *str),
 		src += item_len;
 #endif
 		decode_ptr(&src, &sub);
-		
+
 		p->offset = src - (char*) p->bytes;
-		
+
 		isamb_dump_r(b, sub, pr, level+1);
-	    }		
+	    }
 	}
 	close_block(b, p);
     }
@@ -1509,7 +1509,7 @@ void isamb_pp_pos(ISAMB_PP pp, double *current, double *total)
   /* occureences in the isam tree, based on the current leaf */
     assert(total);
     assert(current);
-    
+
     /* if end-of-stream PP may not be leaf */
 
     *total = (double) (pp->block[0]->no_items);
@@ -1548,19 +1548,19 @@ int isamb_pp_forward(ISAMB_PP pp, void *buf, const void *untilb)
             pp->block[pp->level] = 0;
             (pp->level)--;
             p = pp->block[pp->level];
-            assert(!p->leaf);  
+            assert(!p->leaf);
         }
 
 	assert(!p->leaf);
         src = p->bytes + p->offset;
-       
+
 #if INT_ENCODE
 	c1 = (*b->method->codec.start)();
 	(*b->method->codec.decode)(c1, &file_item, &src);
 #else
         decode_ptr(&src, &item_len);
         src += item_len;
-#endif        
+#endif
         decode_ptr(&src, &pos);
         p->offset = src - (char*) p->bytes;
 
@@ -1599,18 +1599,18 @@ int isamb_pp_forward(ISAMB_PP pp, void *buf, const void *untilb)
 
             pp->total_size += p->size;
             pp->no_blocks++;
-            
-            if (p->leaf) 
+
+            if (p->leaf)
             {
                 break;
             }
-	    
+
             src = p->bytes + p->offset;
 	    while(1)
 	    {
 		decode_ptr(&src, &pos);
 		p->offset = src - (char*) p->bytes;
-		
+
 		if (!untilb || p->offset == p->size)
 		    break;
 		assert(p->offset < p->size);
@@ -1650,7 +1650,7 @@ int isamb_pp_forward(ISAMB_PP pp, void *buf, const void *untilb)
 	dst = dst0;
 	if (p->offset == p->size) goto again;
     }
-    pp->returned_numbers++; 
+    pp->returned_numbers++;
     return 1;
 }
 

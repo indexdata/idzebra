@@ -68,15 +68,15 @@ typedef struct {
 /** \brief record reader stream */
 struct ZebraRecStream {
     /** client data */
-    void      *fh;    
+    void      *fh;
     /** \brief read function */
     int       (*readf)(struct ZebraRecStream *s, char *buf, size_t count);
     /** \brief seek function */
     off_t     (*seekf)(struct ZebraRecStream *s, off_t offset);
     /** \brief tell function */
-    off_t     (*tellf)(struct ZebraRecStream *s);              
+    off_t     (*tellf)(struct ZebraRecStream *s);
     /** \brief set and get of record position */
-    off_t     (*endf)(struct ZebraRecStream *s, off_t *offset);   
+    off_t     (*endf)(struct ZebraRecStream *s, off_t *offset);
     /** \brief close and destroy stream */
     void      (*destroy)(struct ZebraRecStream *s);
 };
@@ -127,14 +127,14 @@ struct recRetrieveCtrl {
     int       recordSize;             /* size of record in bytes */
     char      *fname;                 /* name of file (or NULL if internal) */
     data1_handle dh;
-    
+
     /* response */
     const Odr_oid * output_format;    /* output format OID */
     void *     rec_buf;
     int        rec_len;
     int        diagnostic;
     char *     addinfo;
-    
+
     /* special fetch to be included in retrieved response (say snippets) */
     void *handle;
     int (*special_fetch)(void *handle, const char *esn,

@@ -36,19 +36,19 @@ static RSFD r_open(RSET ct, int flag);
 static void r_close(RSFD rfd);
 static void r_delete(RSET ct);
 static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf);
-static void r_pos(RSFD rfd, double *current, double *total); 
+static void r_pos(RSFD rfd, double *current, double *total);
 static int r_read_not(RSFD rfd, void *buf, TERMID *term);
 static int r_write(RSFD rfd, const void *buf);
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
 
-static const struct rset_control control_not = 
+static const struct rset_control control_not =
 {
     "not",
     r_delete,
     r_get_terms,
     r_open,
     r_close,
-    r_forward, 
+    r_forward,
     r_pos,
     r_read_not,
     r_write,
@@ -70,7 +70,7 @@ struct rfd_private {
     TERMID term_l;
     TERMID term_r;
     int tail;
-};    
+};
 
 static RSET rsbool_create_base(const struct rset_control *ctrl,
 			       NMEM nmem,
@@ -151,8 +151,8 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term,
         p->more_l = rset_forward(p->rfd_l, p->buf_l, &p->term_l, untilbuf);
     if ( p->more_r && ((kctrl->cmp)(untilbuf,p->buf_r)>=rfd->rset->scope))
         p->more_r = rset_forward(p->rfd_r, p->buf_r, &p->term_r, untilbuf);
-    p->tail = 0; 
-    return rset_read(rfd,buf,term); 
+    p->tail = 0;
+    return rset_read(rfd,buf,term);
 }
 
 
@@ -196,7 +196,7 @@ static int r_read_not(RSFD rfd, void *buf, TERMID *term)
         }
         else if (cmp >= rfd->rset->scope)   /* cmp >1 */
         {
-            p->more_r = rset_forward( p->rfd_r, p->buf_r, 
+            p->more_r = rset_forward( p->rfd_r, p->buf_r,
                                       &p->term_r, p->buf_l);
         }
         else
@@ -205,7 +205,7 @@ static int r_read_not(RSFD rfd, void *buf, TERMID *term)
             if (term)
                 *term = p->term_l;
             do
-            { 
+            {
                 p->more_l = rset_read(p->rfd_l, p->buf_l, &p->term_l);
                 if (!p->more_l)
                     break;
@@ -246,18 +246,18 @@ static void r_pos(RSFD rfd, double *current, double *total)
         *current = rcur;  /* return same as you got */
         *total = rtot;    /* probably -1 for not available */
     }
-    if (rtot < 0) 
-	rtot = rcur = 0; /* if only one useful, use it */ 
-    if (ltot < 0) 
+    if (rtot < 0)
+	rtot = rcur = 0; /* if only one useful, use it */
+    if (ltot < 0)
 	ltot = lcur = 0;
-    if (rtot+ltot < 1) 
+    if (rtot+ltot < 1)
     {   /* empty rset */
         *current = *total = 0;
         return;
     }
     r = 1.0*(lcur+rcur)/(ltot+rtot); /* weighed average of l and r */
     *current = (double) (p->hits);
-    *total = *current/r ; 
+    *total = *current/r ;
 #if RSET_DEBUG
     yaz_log(YLOG_DEBUG,"bool_pos: (%s/%s) %0.1f/%0.1f= %0.4f ",
                     info->rset_l->control->desc, info->rset_r->control->desc,

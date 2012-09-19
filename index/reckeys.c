@@ -94,7 +94,7 @@ zebra_rec_keys_t zebra_rec_keys_open(void)
     p->buf = 0;
     p->owner_of_buffer = 1;
     p->encode_handle = iscz1_start();
-    p->decode_handle = iscz1_start(); 
+    p->decode_handle = iscz1_start();
 
     p->custom_record_id = 0;
     p->nmem = nmem_create();
@@ -129,7 +129,7 @@ void zebra_rec_keys_set_buf(zebra_rec_keys_t p, char *buf, size_t sz,
     }
     p->owner_of_buffer = copy_buf;
 }
-	
+
 void zebra_rec_keys_get_buf(zebra_rec_keys_t p, char **buf, size_t *sz)
 {
     *buf = p->buf;
@@ -144,7 +144,7 @@ void zebra_rec_keys_close(zebra_rec_keys_t p)
 {
     if (!p)
 	return;
-    
+
     if (p->owner_of_buffer)
 	xfree(p->buf);
     if (p->encode_handle)
@@ -155,7 +155,7 @@ void zebra_rec_keys_close(zebra_rec_keys_t p)
     xfree(p);
 }
 
-int zebra_rec_keys_add_hash(zebra_rec_keys_t keys, 
+int zebra_rec_keys_add_hash(zebra_rec_keys_t keys,
 			    const char *str, size_t slen,
 			    const struct it_key *key)
 {
@@ -185,13 +185,13 @@ int zebra_rec_keys_add_hash(zebra_rec_keys_t keys,
     return 1;
 }
 
-void zebra_rec_keys_write(zebra_rec_keys_t keys, 
+void zebra_rec_keys_write(zebra_rec_keys_t keys,
 			  const char *str, size_t slen,
 			  const struct it_key *key)
 {
     char *dst;
     const char *src = (char*) key;
-    
+
     assert(keys->owner_of_buffer);
 
     if (key->mem[1]) /* record_id custom */
@@ -231,7 +231,7 @@ void zebra_rec_keys_reset(zebra_rec_keys_t keys)
 {
     assert(keys);
     keys->buf_used = 0;
-    
+
     iscz1_reset(keys->encode_handle);
 
     init_hash(keys);
@@ -267,17 +267,17 @@ int zebra_rec_keys_read(zebra_rec_keys_t keys,
     {
 	const char *src = keys->buf + keys->fetch_offset;
 	char *dst = (char*) key;
-	
+
 	assert (keys->fetch_offset < keys->buf_used);
 
 	/* store the destination key */
 	iscz1_decode(keys->decode_handle, &dst, &src);
-	
+
 	/* store pointer to string and length of it */
 	*str = src;
 	*slen = strlen(src);
 	src += *slen + 1;
-	
+
 	keys->fetch_offset = src - keys->buf;
     }
     return 1;

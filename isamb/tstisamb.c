@@ -130,7 +130,7 @@ void tst_insert(ISAMB isb, int n)
 
     isamc_i.clientData = &ri;
     isamc_i.read_item = code_read;
-    
+
     isamc_p = 0; /* new list */
     isamb_merge (isb, &isamc_p , &isamc_i);
 
@@ -174,7 +174,7 @@ void tst_insert(ISAMB isb, int n)
 
     isamc_i.clientData = &ri;
     isamc_i.read_item = code_read;
-    
+
     isamb_merge (isb, &isamc_p , &isamc_i);
 
     /* delete a number of entries (odd ones) */
@@ -187,7 +187,7 @@ void tst_insert(ISAMB isb, int n)
 
     isamc_i.clientData = &ri;
     isamc_i.read_item = code_read;
-    
+
     isamb_merge (isb, &isamc_p, &isamc_i);
 
     if (isamc_p)
@@ -216,13 +216,13 @@ void tst_forward(ISAMB isb, int n)
 
     isamc_i.clientData = &ri;
     isamc_i.read_item = code_read;
-    
+
     isamc_p = 0;
     isamb_merge (isb, &isamc_p, &isamc_i);
 
     /* read the entries */
     pp = isamb_pp_open (isb, isamc_p, 1);
-    
+
     for (i = 0; i<ri.max; i +=2 )
     {
 	int x = -1;
@@ -237,7 +237,7 @@ void tst_forward(ISAMB isb, int n)
 	ri.no++;
     }
     isamb_pp_close(pp);
-    
+
     pp = isamb_pp_open (isb, isamc_p, 1);
     for (i = 0; i<ri.max; i += 100)
     {
@@ -301,10 +301,10 @@ void tst_append(ISAMB isb, int n)
 	ri.val = 0;
 	ri.step = 1;
 	ri.insertMode = 1;
-	
+
 	isamc_i.clientData = &ri;
 	isamc_i.read_item = code_read;
-	
+
 	isamb_merge (isb, &isamb_p , &isamc_i);
     }
 }
@@ -329,7 +329,7 @@ int tst_random_read(void *vp, char **dst, int *insertMode)
     }
     if (ri->idx >= ri->max)
 	return 0;
-    
+
     if (ri->delta[ri->idx] > 0)
     {
 	ri->level++;
@@ -357,7 +357,7 @@ void tst_random(ISAMB isb, int n, int rounds, int max_dups)
     int i, j;
     for (i = 0; i<n; i++)
 	freq[i] = 0;
-    
+
     for (j = 0; j<rounds; j++)
     {
 	yaz_log(YLOG_DEBUG, "round %d", j);
@@ -372,18 +372,18 @@ void tst_random(ISAMB isb, int n, int rounds, int max_dups)
 	{
 	    ISAMC_I isamc_i;
 	    struct random_read_info ri;
-	    
+
 	    ri.delta = delta;
 	    ri.idx = 0;
 	    ri.max = n;
 	    ri.level = 0;
-	    
+
 	    isamc_i.clientData = &ri;
 	    isamc_i.read_item = tst_random_read;
 
 	    isamb_merge (isb, &isamb_p , &isamc_i);
 	}
-	
+
 	yaz_log(YLOG_DEBUG, "dump %d", j);
 	isamb_dump(isb, isamb_p, log_pr);
 
@@ -464,7 +464,7 @@ void tst_minsert(ISAMB isb, int n)
     isamc_i.clientData = &ri;
 
     /* all have same value = 1 */
-    ri.val = 1;  
+    ri.val = 1;
     ri.step = 0;
 
     isamc_i.read_item = code_read;
@@ -477,7 +477,7 @@ void tst_minsert(ISAMB isb, int n)
     isamb_merge (isb, &isamb_p , &isamc_i);
 
     isamb_dump(isb, isamb_p, log_pr);
-    
+
     ri.no = 0;
     ri.max = n - n/2;
 
@@ -535,10 +535,10 @@ int main(int argc, char **argv)
     BFiles bfs;
     ISAMB isb;
     ISAMC_M method;
-    
+
     if (argc == 2)
 	yaz_log_init_level(YLOG_ALL);
-	
+
     /* setup method (attributes) */
     method.compare_item = compare_item;
     method.log_item = log_item;
@@ -580,7 +580,7 @@ int main(int argc, char **argv)
 
     if (0)
 	identical_keys_tests(isb);
-    
+
     isamb_close(isb);
 
     /* exit block system */

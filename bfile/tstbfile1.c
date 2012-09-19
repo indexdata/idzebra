@@ -32,16 +32,16 @@ void tst1(BFiles bfs)
     const char *more_info = 0;
 
     bf_reset(bfs);
-    bf = bf_xopen(bfs, "tst", /* block size */ 32, 
+    bf = bf_xopen(bfs, "tst", /* block size */ 32,
 		  /* wr */ 1, "tstmagic",	&version, 0 /* more_info */);
     YAZ_CHECK(bf);
     if (!bf)
         return;
     bf_xclose(bf, version, "more info");
-    
-    bf = bf_xopen(bfs, "tst", /* block size */ 32, 
+
+    bf = bf_xopen(bfs, "tst", /* block size */ 32,
 		  /* wr */ 1, "tstmagic",	&version, &more_info);
-    
+
     YAZ_CHECK(bf);
     if (!bf)
         return;
@@ -58,7 +58,7 @@ void tst2(BFiles bfs)
     BFile bf;
     bf_reset(bfs);
 
-    bf = bf_xopen(bfs, "tst", /* block size */ 32, 
+    bf = bf_xopen(bfs, "tst", /* block size */ 32,
 			/* wr */ 1, "tstmagic",	&version, 0 /* more_info */);
     YAZ_CHECK(bf);
     if (!bf)
@@ -98,7 +98,7 @@ void tst3(BFiles bfs)
     for(i = 0; i<BLOCKS; i++)
 	blocks[i] = 0;
 
-    bf = bf_xopen(bfs, "tst", /* block size */ 32, 
+    bf = bf_xopen(bfs, "tst", /* block size */ 32,
 			/* wr */ 1, "tstmagic",	&version, 0 /* more_info */);
     YAZ_CHECK(bf);
     if (!bf)
@@ -157,7 +157,7 @@ void tst3(BFiles bfs)
 	else
 	{
 	    bf_xclose(bf, version, 0);
-	    bf = bf_xopen(bfs, "tst", /* block size */ 32, 
+	    bf = bf_xopen(bfs, "tst", /* block size */ 32,
 			  /* wr */ 1, "tstmagic", &version, 0 /* more_info */);
 	}
     }

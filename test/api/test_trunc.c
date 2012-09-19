@@ -31,7 +31,7 @@ static void tst(int argc, char **argv)
     ZebraHandle zh = zebra_open(zs, 0);
 
     srand(17);
-    
+
     YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
     zebra_init(zh);
     zebra_close(zh);
@@ -44,7 +44,7 @@ static void tst(int argc, char **argv)
 	YAZ_CHECK(zh);
 
 	YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
-	
+
 	YAZ_CHECK(zebra_begin_trans (zh, 1) == ZEBRA_OK);
 
 	for (l = 0; l<100; l++)

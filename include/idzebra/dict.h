@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /** \file dict.h
     \brief Zebra dictionary
-    
+
     The dictionary is a hash that maps a string to a value.
     The value is opaque and is defined as a sequence of bytes
     with a length in the range 0 to 255.
@@ -49,7 +49,7 @@ typedef struct Dict_struct *Dict;
     \param page_size page size of disc block
     \returns dictionary handle
 */
-YAZ_EXPORT 
+YAZ_EXPORT
 Dict dict_open(BFiles bfs, const char *name, int cache, int rw,
                int compact_flag, int page_size);
 
@@ -116,7 +116,7 @@ int dict_delete_subtree(Dict dict, const char *p, void *client,
     \param f function be called for each match (NULL for no call of f)
     \retval 0 OK
     \retval -1 error
-    
+
     Function f is called for each item matched.
 */
 YAZ_EXPORT
@@ -133,9 +133,9 @@ int dict_lookup_ec(Dict dict, char *p, int range, int (*f)(char *name));
     \retval 0 Operation complete. Function f returned zero value always
     \retval >0 Operation incomplete. Function f returned a non-zero value
     \retval -1 error (such as bad regular expression)
-    
+
     The function f is called for each match. If function f returns
-    non-zero value the grep operation is stopped and the returned 
+    non-zero value the grep operation is stopped and the returned
     non-zero value is also returned by dict_lookup_ec.
 */
 YAZ_EXPORT
@@ -158,7 +158,7 @@ int dict_lookup_grep(Dict dict, const char *p, int range, void *client,
     the scan operation is cancelled.
 */
 YAZ_EXPORT
-int dict_scan(Dict dict, char *str, 
+int dict_scan(Dict dict, char *str,
               int *before, int *after, void *client,
               int (*f)(char *name, const char *info, int pos, void *client));
 
@@ -167,11 +167,11 @@ int dict_scan(Dict dict, char *str,
     \param dict dictionary handle
     \param vp client data to be passed to cmap function handler
     \param cmap function be called for each character
-    
+
     This function must be called prior to using dict_grep_lookup.
     If vp is NULL, no character mapping takes place for dict_lookup_grep.
 */
-YAZ_EXPORT 
+YAZ_EXPORT
 void dict_grep_cmap(Dict dict, void *vp,
                     const char **(*cmap)(void *vp,
                                          const char **from, int len));
@@ -190,21 +190,21 @@ int dict_copy_compact(BFiles bfs, const char *from, const char *to);
 YAZ_EXPORT
 void dict_clean(Dict dict);
 
-/** \brief get number of lookup operations, since dict_open 
+/** \brief get number of lookup operations, since dict_open
     \param dict dictionary handle
     \returns number of operatons
 */
 YAZ_EXPORT
 zint dict_get_no_lookup(Dict dict);
 
-/** \brief get number of insert operations, since dict_open 
+/** \brief get number of insert operations, since dict_open
     \param dict dictionary handle
     \returns number of operatons
 */
 YAZ_EXPORT
 zint dict_get_no_insert(Dict dict);
 
-/** \brief get number of page split operations, since dict_open 
+/** \brief get number of page split operations, since dict_open
     \param dict dictionary handle
     \returns number of operatons
 */
@@ -212,7 +212,7 @@ YAZ_EXPORT
 zint dict_get_no_split(Dict dict);
 
 YAZ_END_CDECL
-   
+
 #endif
 /*
  * Local variables:

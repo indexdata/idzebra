@@ -42,7 +42,7 @@ static void tst(int argc, char **argv)
     zebra_repository_update(zh, path);
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);
-    
+
     YAZ_CHECK(tl_query(zh, "@and "
 	     "@attr 1=54 eng "
 	     "@and @attr 1=1003 jack @attr 1=4 computer", 2));

@@ -31,17 +31,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <bset.h>
 #include "imalloc.h"
 
-#define GET_BIT(s,m) (s[(m)/(sizeof(BSetWord)*8)]&(1<<(m&(sizeof(BSetWord)*8-1)))) 
+#define GET_BIT(s,m) (s[(m)/(sizeof(BSetWord)*8)]&(1<<(m&(sizeof(BSetWord)*8-1))))
 #define SET_BIT(s,m) (s[(m)/(sizeof(BSetWord)*8)]|=(1<<(m&(sizeof(BSetWord)*8-1))))
 
 BSetHandle *mk_BSetHandle (int size, int chunk)
 {
-    int wsize = 1+size/(sizeof(BSetWord)*8);    
+    int wsize = 1+size/(sizeof(BSetWord)*8);
     BSetHandle *sh;
 
     if (chunk <= 1)
         chunk = 32;
-    sh = (BSetHandle *) imalloc (sizeof(BSetHandle) + 
+    sh = (BSetHandle *) imalloc (sizeof(BSetHandle) +
                                 chunk*sizeof(BSetWord)*wsize);
 
     sh->size = size;
@@ -94,7 +94,7 @@ BSet mk_BSet (BSetHandle **shp)
     off = sh->offset;
     if ((off + sh->wsize) > sh->chunk)
     {
-        sh1 = (BSetHandle *) imalloc (sizeof(BSetHandle) + 
+        sh1 = (BSetHandle *) imalloc (sizeof(BSetHandle) +
                                      sh->chunk*sizeof(BSetWord));
         sh1->size = sh->size;
         sh1->wsize = sh->wsize;

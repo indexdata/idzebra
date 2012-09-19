@@ -41,9 +41,9 @@ void dict_clean(Dict dict)
     dict->head.freelist = 0;
     dict->head.page_size = page_size;
     dict->head.compact_flag = compact_flag;
-    
+
     /* create header with information (page 0) */
-    if (dict->rw) 
+    if (dict->rw)
         dict_bf_newp(dict->dbf, 0, &head_buf, page_size);
 }
 

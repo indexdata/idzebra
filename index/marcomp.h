@@ -92,12 +92,12 @@ typedef enum
 typedef struct mc_context
 {
     int offset;
-    
+
     int crrval;
     mc_token crrtok;
-    
+
     mc_errcode errcode;
-    
+
     int len;
     const char *data;
 } mc_context;

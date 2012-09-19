@@ -66,21 +66,21 @@ const char *mc_error(mc_errcode no)
 mc_context *mc_mk_context(const char *s)
 {
     mc_context *p=0;
-    
+
     if (s && strlen(s))
     {
 	p = (mc_context*) xmalloc(sizeof(*p));
-	
+
 	if (!p)
 	    return 0;
-	
+
 	memset(p, 0, sizeof(*p));
 	p->errcode = EMCOK;
 	p->data = s;
 	p->len = strlen(s);
 	p->crrtok = NOP;
     }
-    
+
     return p;
 }
 void mc_destroy_context(mc_context *c)
@@ -104,7 +104,7 @@ mc_token mc_gettoken(mc_context *c)
 	case '[': c->crrtok = LINTERVAL; break;
 	case ']': c->crrtok = RINTERVAL; break;
 	default:
-	    if (isspace(*(unsigned char *) (c->data+c->offset)) 
+	    if (isspace(*(unsigned char *) (c->data+c->offset))
 			    || *(c->data+c->offset) == '\n')
 	    {
 		c->crrtok = NOP;
@@ -136,7 +136,7 @@ int mc_getval(mc_context *c)
 int mc_getdata(mc_context *c, char *s, int sz)
 {
     int i;
-    
+
     for (i=0; i<sz; i++)
     {
 	if (mc_gettoken(c)!=REGULAR)
@@ -147,33 +147,33 @@ int mc_getdata(mc_context *c, char *s, int sz)
 	s[i] = mc_getval(c);
     }
     s[i] = '\0';
-    
+
     return i;
 }
 void mc_getinterval(mc_context *c, int *start, int *end)
 {
     char buf[6+1];
     int start_pos, end_pos;
-    
+
     start_pos = end_pos = -1;
-       
+
     if (mc_gettoken(c) == LINTERVAL)
     {
         int i;
-	
+
 	for (i=0;i<6;i++)
         {
             mc_token tok = mc_gettoken(c);
-	    
+
 	    if (tok == RINTERVAL || tok == NOP)
 		break;
-		
+
 	    buf[i] = mc_getval(c);
 	}
-	
+
 	buf[i] = '\0';
 	i = sscanf(buf, "%d-%d", &start_pos, &end_pos);
-	
+
 	if (i == 1)
 	    end_pos = start_pos;
 	else if ( i == 0)
@@ -200,13 +200,13 @@ mc_field *mc_mk_field(void)
 	p->interval.start = p->interval.end = -1;
     }
     return p;
-}    
+}
 void mc_destroy_field(mc_field *p)
 {
     if (!p)
         return;
-    if (p->name) xfree(p->name);     
-    if (p->ind1) xfree(p->ind1);     
+    if (p->name) xfree(p->name);
+    if (p->ind1) xfree(p->ind1);
     if (p->ind2) xfree(p->ind2);
     if (p->list) mc_destroy_subfields_recursive(p->list);
     xfree(p);
@@ -216,7 +216,7 @@ mc_field *mc_getfield(mc_context *c)
     mc_field *pf;
 
     pf = mc_mk_field();
-    
+
     if (!pf)
     {
 	c->errcode = EMCNOMEM;
@@ -226,9 +226,9 @@ mc_field *mc_getfield(mc_context *c)
     if (mc_getdata(c, pf->name, SZ_FNAME) == SZ_FNAME)
     {
 	mc_token nexttok = mc_gettoken(c);
-	
+
 	mc_ungettoken(c);
-	
+
 	if (nexttok == LINTERVAL)
 	{
 	    mc_getinterval(c, &pf->interval.start, &pf->interval.end);
@@ -237,7 +237,7 @@ mc_field *mc_getfield(mc_context *c)
 		pf->interval.end);
 #endif
 	}
-	
+
 	if ((mc_getdata(c, pf->ind1, SZ_IND) == SZ_IND) &&
 	    (mc_getdata(c, pf->ind2, SZ_IND) == SZ_IND))
 	{
@@ -250,7 +250,7 @@ mc_field *mc_getfield(mc_context *c)
 	mc_destroy_field(pf);
 	return 0;
     }
-    	
+
     return pf;
 }
 mc_subfield *mc_mk_subfield(mc_subfield *parent)
@@ -276,7 +276,7 @@ void mc_destroy_subfield(mc_subfield *p)
 {
     if (!p)
         return;
-    
+
     if (p->which == MC_SFGROUP || p->which == MC_SFVARIANT)
     {
         if (p->u.child)
@@ -287,8 +287,8 @@ void mc_destroy_subfield(mc_subfield *p)
         if (p->u.in_line)
             mc_destroy_field(p->u.in_line);
     }
-    if (p->name) xfree(p->name);     
-    if (p->prefix) xfree(p->prefix);     
+    if (p->name) xfree(p->name);
+    if (p->prefix) xfree(p->prefix);
     if (p->suffix) xfree(p->suffix);
     if (p->parent) p->parent->next = p->next;
     xfree(p);
@@ -299,7 +299,7 @@ void mc_destroy_subfields_recursive(mc_subfield *p)
         return;
 
     mc_destroy_subfields_recursive(p->next);
-	
+
     if (p->which == MC_SFGROUP || p->which == MC_SFVARIANT)
     {
         if (p->u.child)
@@ -310,7 +310,7 @@ void mc_destroy_subfields_recursive(mc_subfield *p)
         if (p->u.in_line)
             mc_destroy_field(p->u.in_line);
     }
-	
+
     if (p->name) xfree(p->name);
     if (p->prefix) xfree(p->prefix);
     if (p->suffix) xfree(p->suffix);
@@ -321,10 +321,10 @@ mc_subfield *mc_getsubfields(mc_context *c, mc_subfield *parent)
 {
     mc_subfield *psf=0;
     mc_token tok = mc_gettoken(c);
-    
+
     if (tok == NOP)
         return 0;
-	
+
     if (tok == LGROUP)
     {
         if (!(psf = mc_mk_subfield(parent)))
@@ -335,7 +335,7 @@ mc_subfield *mc_getsubfields(mc_context *c, mc_subfield *parent)
 
 	psf->which = MC_SFGROUP;
 	psf->u.child = mc_getsubfields(c, psf);
-	
+
 	if (mc_gettoken(c) == RGROUP)
 	    psf->next = mc_getsubfields(c, psf);
 	else
@@ -355,7 +355,7 @@ mc_subfield *mc_getsubfields(mc_context *c, mc_subfield *parent)
 
 	psf->which = MC_SFVARIANT;
 	psf->u.child = mc_getsubfields(c, psf);
-	
+
 	if (mc_gettoken(c) == RVARIANT)
 	    psf->next = mc_getsubfields(c, psf);
 	else
@@ -387,7 +387,7 @@ mc_subfield *mc_getsubfields(mc_context *c, mc_subfield *parent)
             mc_token tok = mc_gettoken(c);
 
 	    mc_ungettoken(c);
-	    
+
 	    if (tok == LINTERVAL)
             {
         	mc_getinterval(c, &psf->interval.start, &psf->interval.end);
@@ -403,7 +403,7 @@ mc_subfield *mc_getsubfields(mc_context *c, mc_subfield *parent)
 		    return 0;
 		}
 	    }
-	
+
 	    if (mc_getdata(c, psf->suffix, SZ_SUFFIX) == SZ_SUFFIX)
 	    {
         	psf->which = MC_SF;
@@ -416,7 +416,7 @@ mc_subfield *mc_getsubfields(mc_context *c, mc_subfield *parent)
 		return 0;
             }
         }
-    }     
+    }
     return psf;
 }
 /*

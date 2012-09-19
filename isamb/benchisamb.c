@@ -132,7 +132,7 @@ void bench_insert(ISAMB isb, int number_of_trees,
     ri.step = 1;
     ri.insertMode = 1;
     ri.sz = sizeof(int) + 1 + extra_size;
-    
+
     for (round = 0; round < number_of_rounds; round++)
     {
         yaz_timing_t t = yaz_timing_create();
@@ -143,17 +143,17 @@ void bench_insert(ISAMB isb, int number_of_trees,
 
             /* insert a number of entries */
             ri.no = 0;
-          
+
             ri.val = (rand());
-            if (RAND_MAX < 65536)  
+            if (RAND_MAX < 65536)
                 ri.val = ri.val + 65536*rand();
 
             // ri.val = number_of_elements * round;
             ri.max = number_of_elements;
-            
+
             isamc_i.clientData = &ri;
             isamc_i.read_item = code_read;
-            
+
             isamb_merge (isb, &isamc_p[i] , &isamc_i);
 
             if (0)
@@ -188,7 +188,7 @@ int main(int argc, char **argv)
     int number_of_isams = 1000;
     int extra_size = 0;
     yaz_timing_t t = 0;
-    
+
     while ((ret = options("z:r:n:i:", argv, argc, &arg)) != -2)
     {
         switch(ret)
@@ -213,7 +213,7 @@ int main(int argc, char **argv)
             exit_usage();
         }
     }
-	
+
     /* setup method (attributes) */
     method.compare_item = compare_item;
     method.log_item = log_item;
@@ -224,7 +224,7 @@ int main(int argc, char **argv)
     method.codec.stop = code_stop;
 
     t = yaz_timing_create();
-    
+
     yaz_timing_start(t);
 
     /* create block system */
@@ -246,7 +246,7 @@ int main(int argc, char **argv)
     }
     bench_insert(isb, number_of_isams, number_of_rounds, number_of_items,
                  extra_size);
-    
+
     isamb_close(isb);
 
     /* exit block system */

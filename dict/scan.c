@@ -28,7 +28,7 @@
 
 #include "dict-p.h"
 
-static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
+static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                            int start, int *count, void *client,
                            int (*userfunc)(char *, const char *, int, void *),
                            int dir)
@@ -49,7 +49,7 @@ static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
         else
             lo = 0;
     }
-    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short)); 
+    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
 
     while (lo <= hi && lo >= 0 && *count > 0)
     {
@@ -99,10 +99,10 @@ static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             }
             if (*count>0 && subptr)
             {
-	        scan_direction(dict, subptr, pos+1, str, -1, count, 
+	        scan_direction(dict, subptr, pos+1, str, -1, count,
                                client, userfunc, dir);
                 dict_bf_readp(dict->dbf, ptr, &p);
-                indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short)); 
+                indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
 	    }
 	    if (*count>0 && dir<0 && info[sizeof(Dict_ptr)+sizeof(Dict_char)])
             {
@@ -121,7 +121,7 @@ static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
     }
 }
 
-void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
+void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 		 int *before, int *after, void *client,
                  int (*userfunc)(char *, const char *, int, void *))
 {
@@ -152,7 +152,7 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                 {
                     if ((*userfunc)((char *) str, info+
                                     (dict_strlen((Dict_char*) info)+1)
-                                    *sizeof(Dict_char), 
+                                    *sizeof(Dict_char),
                                     *after, client))
                     {
                         *after = 0;
@@ -196,7 +196,7 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                         }
                     }
                     if (*after && subptr)
-		        scan_direction(dict, subptr, pos+1, str, -1, 
+		        scan_direction(dict, subptr, pos+1, str, -1,
                                        after, client, userfunc, 1);
                 }
 		else
@@ -235,7 +235,7 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
         scan_direction(dict, ptr, pos, str, cmp ? mid : mid+1, after,
                        client, userfunc, 1);
     if (*before && mid > 0)
-        scan_direction(dict, ptr, pos, str, mid-1, before, 
+        scan_direction(dict, ptr, pos, str, mid-1, before,
                        client, userfunc, -1);
 }
 

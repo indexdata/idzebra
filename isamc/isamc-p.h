@@ -35,7 +35,7 @@ typedef struct ISAMC_file_s {
     ISAMC_head head;
     BFile bf;
     int head_is_dirty;
-    
+
     int no_writes;
     int no_reads;
     int no_skip_writes;
@@ -64,7 +64,7 @@ struct ISAMC_s {
     char *merge_buf;
     ISAMC_M *method;
     ISAMC_file files;
-}; 
+};
 
 struct ISAMC_PP_s {
     char *buf;
@@ -79,7 +79,7 @@ struct ISAMC_PP_s {
     zint numKeys;
 };
 
-/* 
+/*
   first block consists of
       next pointer : zint
       size         : ISAMC_BLOCK_SIZE (int)
@@ -90,8 +90,8 @@ struct ISAMC_PP_s {
       size :         ISAMC_BLOCK_SIZE (int)
       data
 */
-#define ISAMC_BLOCK_OFFSET_1 (sizeof(zint)+sizeof(ISAMC_BLOCK_SIZE)+sizeof(zint)) 
-#define ISAMC_BLOCK_OFFSET_N (sizeof(zint)+sizeof(ISAMC_BLOCK_SIZE)) 
+#define ISAMC_BLOCK_OFFSET_1 (sizeof(zint)+sizeof(ISAMC_BLOCK_SIZE)+sizeof(zint))
+#define ISAMC_BLOCK_OFFSET_N (sizeof(zint)+sizeof(ISAMC_BLOCK_SIZE))
 
 zint isamc_alloc_block (ISAMC is, int cat);
 void isamc_release_block (ISAMC is, int cat, zint pos);

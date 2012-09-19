@@ -62,13 +62,13 @@ static int dirs_client_proc(char *name, const char *info, int pos,
     entry = ci->entries + ci->no_cur;
     if (info[0] == sizeof(entry->sysno)+sizeof(entry->mtime))
     {
-        strcpy(entry->path, name + ci->prelen); 
+        strcpy(entry->path, name + ci->prelen);
         entry->kind = dirs_file;
         memcpy(&entry->sysno, info+1, sizeof(entry->sysno));
-        memcpy(&entry->mtime, info+1+sizeof(entry->sysno), 
+        memcpy(&entry->mtime, info+1+sizeof(entry->sysno),
                 sizeof(entry->mtime));
         ci->no_cur++;
-    } 
+    }
     else if (info[0] == sizeof(entry->mtime))
     {
         strcpy(entry->path, name + ci->prelen);
@@ -120,10 +120,10 @@ struct dirs_info *dirs_fopen(Dict dict, const char *path, int rw)
     info = dict_lookup(dict, path);
     if (info && info[0] == sizeof(entry->sysno)+sizeof(entry->mtime))
     {
-        strcpy(entry->path, path); 
+        strcpy(entry->path, path);
         entry->kind = dirs_file;
         memcpy(&entry->sysno, info+1, sizeof(entry->sysno));
-        memcpy(&entry->mtime, info+1+sizeof(entry->sysno), 
+        memcpy(&entry->mtime, info+1+sizeof(entry->sysno),
                 sizeof(entry->mtime));
         p->no_cur++;
     }

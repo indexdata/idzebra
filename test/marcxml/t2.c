@@ -33,7 +33,7 @@ static void tst(int argc, char **argv)
     zebra_init(zh);
 
     zebra_set_resource(zh, "recordType", "grs.marcxml.record");
-    
+
     YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
 
     sprintf(path, "%.200s/sample-marc", tl_get_srcdir());

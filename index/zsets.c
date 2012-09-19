@@ -112,7 +112,7 @@ static ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
                     sizeof(*sort_sequence->specs));
     for (i = 0; i<sort_sequence->num_specs; i++)
         sort_sequence->specs[i] = 0;
-    
+
     rpn_get_top_approx_limit(zh, rpn->RPNStructure, &sset->approx_limit);
 
     res = rpn_search_top(zh, rpn->RPNStructure, rpn->attributeSetId,
@@ -163,10 +163,10 @@ ZEBRA_RES resultSetAddRPN(ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
     zebraSet->locked = 1;
     zebraSet->rpn = 0;
     zebraSet->nmem = m;
-    zebraSet->rset_nmem = nmem_create(); 
+    zebraSet->rset_nmem = nmem_create();
 
     zebraSet->num_bases = num_bases;
-    zebraSet->basenames = 
+    zebraSet->basenames =
         nmem_malloc(zebraSet->nmem, num_bases * sizeof(*zebraSet->basenames));
     for (i = 0; i<num_bases; i++)
         zebraSet->basenames[i] = nmem_strdup(zebraSet->nmem, basenames[i]);
@@ -186,7 +186,7 @@ ZEBRA_RES resultSetAddRPN(ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
 }
 
 void resultSetAddTerm(ZebraHandle zh, ZebraSet s, int reg_type,
-                      const char *db, const char *index_name, 
+                      const char *db, const char *index_name,
                       const char *term)
 {
     assert(zh); /* compiler shut up */
@@ -197,7 +197,7 @@ void resultSetAddTerm(ZebraHandle zh, ZebraSet s, int reg_type,
         int i;
         s->term_entries_max = 1000;
         s->term_entries =
-            nmem_malloc(s->nmem, s->term_entries_max * 
+            nmem_malloc(s->nmem, s->term_entries_max *
                         sizeof(*s->term_entries));
         for (i = 0; i < s->term_entries_max; i++)
             s->term_entries[i].term = 0;
@@ -220,7 +220,7 @@ ZebraSet resultSetAdd(ZebraHandle zh, const char *name, int ov)
     for (s = zh->sets; s; s = s->next)
         if (!strcmp(s->name, name))
             break;
-    
+
     if (!log_level_set)
         loglevels();
     if (s)
@@ -322,7 +322,7 @@ ZEBRA_RES resultSetGetBaseNames(ZebraHandle zh, const char *setname,
 void resultSetInvalidate(ZebraHandle zh)
 {
     ZebraSet s = zh->sets;
-    
+
     yaz_log(log_level_resultsets, "invalidating result sets");
     for (; s; s = s->next)
     {
@@ -345,7 +345,7 @@ void resultSetDestroy(ZebraHandle zh, int num, char **names,int *statuses)
 {
     ZebraSet * ss = &zh->sets;
     int i;
-    
+
     if (statuses)
         for (i = 0; i<num; i++)
             statuses[i] = Z_DeleteStatus_resultSetDidNotExist;
@@ -367,11 +367,11 @@ void resultSetDestroy(ZebraHandle zh, int num, char **names,int *statuses)
         if (i < 0)
         {
             *ss = s->next;
-            
+
             xfree(s->sort_info->all_entries);
             xfree(s->sort_info->entries);
             xfree(s->sort_info);
-            
+
             if (s->nmem)
                 nmem_destroy(s->nmem);
             if (s->rset)
@@ -391,7 +391,7 @@ void resultSetDestroy(ZebraHandle zh, int num, char **names,int *statuses)
 }
 
 ZebraMetaRecord *zebra_meta_records_create_range(ZebraHandle zh,
-						 const char *name, 
+						 const char *name,
 						 zint start, int num)
 {
     zint pos_small[10];
@@ -404,18 +404,18 @@ ZebraMetaRecord *zebra_meta_records_create_range(ZebraHandle zh,
 
     if (num > 10)
 	pos = xmalloc(sizeof(*pos) * num);
-    
+
     for (i = 0; i<num; i++)
 	pos[i] = start+i;
 
     mr = zebra_meta_records_create(zh, name, num, pos);
-    
+
     if (num > 10)
 	xfree(pos);
     return mr;
 }
 
-ZebraMetaRecord *zebra_meta_records_create(ZebraHandle zh, const char *name, 
+ZebraMetaRecord *zebra_meta_records_create(ZebraHandle zh, const char *name,
 					   int num, zint *positions)
 {
     ZebraSet sset;
@@ -465,7 +465,7 @@ ZebraMetaRecord *zebra_meta_records_create(ZebraHandle zh, const char *name,
         if (sort_info)
         {
             zint position;
-            
+
             for (i = 0; i<num; i++)
             {
                 position = positions[i];
@@ -491,12 +491,12 @@ ZebraMetaRecord *zebra_meta_records_create(ZebraHandle zh, const char *name,
             zint psysno = 0;
             RSFD rfd;
             struct it_key key;
-            
+
             if (sort_info)
                 position = sort_info->num_entries;
             while (num_i < num && positions[num_i] <= position)
                 num_i++;
-	    
+
 	    if (sset->cache_rfd &&
 		num_i < num && positions[num_i] > sset->cache_position)
 	    {
@@ -574,7 +574,7 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
     {
         char *this_entry_buf = tmp_cmp_buf[i];
         memset(this_entry_buf, '\0', SORT_IDX_ENTRYSIZE);
-        
+
         if (criteria[i].ord[database_no] != -1)
         {
             yaz_log(log_level_sort, "pre zebra_sort_type ord is %d",
@@ -621,7 +621,7 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
         for (j = 0; j<num_criteria; j++)
         {
             char *this_entry_buf = tmp_cmp_buf[j];
-            char *other_entry_buf = 
+            char *other_entry_buf =
                 cmp_buf[j] + i * SORT_IDX_ENTRYSIZE;
             if (criteria[j].numerical[database_no])
             {
@@ -634,7 +634,7 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
                 zebra_term_untrans(zh, index_type, other_entry_org,
                                    other_entry_buf);
                 diff = atof(this_entry_org) - atof(other_entry_org);
-                
+
                 if (diff > 0.0)
                     rel = 1;
                 else if (diff < 0.0)
@@ -647,11 +647,11 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
                 rel = memcmp(this_entry_buf, other_entry_buf,
                              SORT_IDX_ENTRYSIZE);
             }
-            /* when the compare is equal, continue to next criteria, 
+            /* when the compare is equal, continue to next criteria,
                else break out */
             if (rel)
                 break;
-        }       
+        }
         if (!rel)
             break;
         if (criteria[j].relation == 'A')
@@ -739,7 +739,7 @@ void resultSetInsertRank(ZebraHandle zh, struct zset_sort_info *sort_info,
         --j;
     else
         j = (sort_info->num_entries)++;
-    
+
     new_entry = sort_info->entries[j];
     while (j != i)
     {
@@ -811,7 +811,7 @@ ZebraSet resultSetClone(ZebraHandle zh, const char *setname,
     nset->nmem = nmem_create();
 
     nset->num_bases = rset->num_bases;
-    nset->basenames = 
+    nset->basenames =
         nmem_malloc(nset->nmem, nset->num_bases * sizeof(*rset->basenames));
     for (i = 0; i<rset->num_bases; i++)
         nset->basenames[i] = nmem_strdup(nset->nmem, rset->basenames[i]);
@@ -885,7 +885,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     TERMID *terms;
     int numTerms = 0;
     size_t sysno_mem_index = 0;
-    
+
     int numbases = zh->num_basenames;
     yaz_log(log_level_sort, "searching %d databases",numbases);
 
@@ -908,12 +908,12 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     {
         Z_SortKeySpec *sks = sort_sequence->specs[i];
         Z_SortKey *sk;
-        
+
         sort_criteria[i].ord = (int *)
             nmem_malloc(nmem, sizeof(int)*numbases);
         sort_criteria[i].numerical = (int *)
             nmem_malloc(nmem, sizeof(int)*numbases);
-        
+
         /* initialize ord and numerical for each database */
         for (ib = 0; ib < numbases; ib++)
         {
@@ -944,7 +944,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
         {
 	    zebra_setError(zh, YAZ_BIB1_SORT_ILLEGAL_SORT, 0);
             return ZEBRA_FAIL;
-        }       
+        }
         sk = sks->sortElement->u.generic;
         switch (sk->which)
         {
@@ -954,7 +954,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
             {
                 zebraExplain_curDatabase(zh->reg->zei, zh->basenames[ib]);
                 sort_criteria[i].numerical[ib] = 0;
-                sort_criteria[i].ord[ib] = 
+                sort_criteria[i].ord[ib] =
                     zebraExplain_lookup_attr_str(zh->reg->zei,
                                                  zinfo_index_category_sort,
                                                  0, sk->u.sortField);
@@ -981,7 +981,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
                 zebraExplain_curDatabase(zh->reg->zei, zh->basenames[ib]);
                 if (zebra_sort_get_ord(zh, sk->u.sortAttributes,
                                        &sort_criteria[i].ord[ib],
-                                       &sort_criteria[i].numerical[ib]) != 
+                                       &sort_criteria[i].numerical[ib]) !=
                     ZEBRA_OK && sks->which != Z_SortKeySpec_null)
                     return ZEBRA_FAIL;
             }
@@ -1064,7 +1064,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     }
 
     yaz_log(log_level_sort, ZINT_FORMAT " keys, " ZINT_FORMAT " sysnos, sort",
-	    kno, sset->hits);   
+	    kno, sset->hits);
     for (i = 0; i < numTerms; i++)
         yaz_log(log_level_sort, "term=\"%s\" type=%s count=" ZINT_FORMAT,
                 terms[i]->name, terms[i]->flags, terms[i]->rset->hits_count);
@@ -1135,7 +1135,7 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 	    kno++;
 	    if (log_level_searchhits)
 		key_logdump_txt(log_level_searchhits, &key, termid->name);
-	    if (this_sys != psysno) 
+	    if (this_sys != psysno)
 	    {   /* new record .. */
                 if (!(rfd->counted_items & 255) && zh->break_handler_func)
                 {
@@ -1286,7 +1286,7 @@ ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
 	    TERMID *term_array = xmalloc(num_terms * sizeof(*term_array));
 	    zint *hits_array = xmalloc(num_terms * sizeof(*hits_array));
 	    int *approx_array = xmalloc(num_terms * sizeof(*approx_array));
-	    
+
 	    trav_rset_for_termids(sset->rset, term_array,
 				  hits_array, approx_array);
 
@@ -1304,14 +1304,14 @@ ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
 		{
 		    char *outbuf = termbuf;
 		    size_t ret;
-		    
+
 		    ret = yaz_iconv(zh->iconv_from_utf8, &inbuf, &inleft,
 				    &outbuf, &outleft);
 		    if (ret == (size_t)(-1))
 			*termlen = 0;
 		    else
                     {
-		        yaz_iconv(zh->iconv_from_utf8, 0, 0, 
+		        yaz_iconv(zh->iconv_from_utf8, 0, 0,
                                   &outbuf, &outleft);
 			*termlen = outbuf - termbuf;
                     }
@@ -1351,12 +1351,12 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 	NMEM nmem = nmem_create();
 	struct it_key key;
 	RSET rsets[2], rset_comb;
-	RSET rset_temp = rset_create_temp(nmem, kc, kc->scope, 
+	RSET rset_temp = rset_create_temp(nmem, kc, kc->scope,
                                           res_get(zh->res, "setTmpDir"),0 );
-	
+
 	TERMID termid;
 	RSFD rsfd = rset_open(rset_temp, RSETF_WRITE);
-	
+
 	key.mem[0] = sysno;
 	key.mem[1] = 0;
 	key.mem[2] = 0;
@@ -1367,7 +1367,7 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 
 	rsets[0] = rset_temp;
 	rsets[1] = rset_dup(sset->rset);
-	
+
 	rset_comb = rset_create_and(nmem, kc, kc->scope, 2, rsets);
 
 	rsfd = rset_open(rset_comb, RSETF_READ);
@@ -1385,7 +1385,7 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 	    }
 	}
 	rset_close(rsfd);
-	
+
 	rset_delete(rset_comb);
 	nmem_destroy(nmem);
 	kc->dec(kc);
@@ -1393,7 +1393,7 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
     return ZEBRA_OK;
 }
 
-static ZEBRA_RES zebra_recid_to_sysno(ZebraHandle zh, 
+static ZEBRA_RES zebra_recid_to_sysno(ZebraHandle zh,
                                       const char **basenames, int num_bases,
                                       zint recid,
                                       zint *sysnos, int *no_sysnos)
@@ -1401,7 +1401,7 @@ static ZEBRA_RES zebra_recid_to_sysno(ZebraHandle zh,
     ZEBRA_RES res = ZEBRA_OK;
     int sysnos_offset = 0;
     int i;
-    
+
     if (!zh->reg->isamb || !zh->m_segment_indexing)
     {
         if (sysnos_offset < *no_sysnos)
@@ -1426,9 +1426,9 @@ static ZEBRA_RES zebra_recid_to_sysno(ZebraHandle zh,
                     char ord_buf[32];
                     int ord_len = key_SU_encode(ord, ord_buf);
                     char *info;
-                
+
                     ord_buf[ord_len] = '\0';
-                
+
                     info = dict_lookup(zh->reg->dict, ord_buf);
                     if (info)
                     {
@@ -1443,9 +1443,9 @@ static ZEBRA_RES zebra_recid_to_sysno(ZebraHandle zh,
                             struct it_key key_until, key_found;
                             int i = 0;
                             int r;
-                        
+
                             memcpy(&isam_p, info+1, sizeof(ISAM_P));
-                        
+
                             pt = isamb_pp_open(zh->reg->isamb, isam_p, 2);
                             if (!pt)
                                 res = ZEBRA_FAIL;
@@ -1457,12 +1457,12 @@ static ZEBRA_RES zebra_recid_to_sysno(ZebraHandle zh,
                                     key_until.mem[i++] = 0; /* segment */
                                 key_until.mem[i++] = 0;
                                 key_until.len = i;
-                            
+
                                 r = isamb_pp_forward(pt, &key_found, &key_until);
                                 while (r && key_found.mem[0] == recid)
                                 {
                                     if (sysnos_offset < *no_sysnos)
-                                        sysnos[sysnos_offset++] = 
+                                        sysnos[sysnos_offset++] =
                                             key_found.mem[key_found.len-1];
                                     r = isamb_pp_read(pt, &key_found);
                                 }
@@ -1478,7 +1478,7 @@ static ZEBRA_RES zebra_recid_to_sysno(ZebraHandle zh,
     return res;
 }
 
-ZEBRA_RES zebra_result_recid_to_sysno(ZebraHandle zh, 
+ZEBRA_RES zebra_result_recid_to_sysno(ZebraHandle zh,
                                       const char *setname,
                                       zint recid,
                                       zint *sysnos, int *no_sysnos)
@@ -1520,7 +1520,7 @@ void zebra_count_set(ZebraHandle zh, RSET rset, zint *count,
     rset_close(rfd);
     *count = rset->hits_count;
 }
-                   
+
 
 /*
  * Local variables:

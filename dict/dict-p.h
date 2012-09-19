@@ -54,15 +54,15 @@ typedef struct Dict_file_struct
 {
     int cache;
     BFile bf;
-    
+
     struct Dict_file_block *all_blocks;
     struct Dict_file_block *free_list;
     struct Dict_file_block **hash_array;
-    
+
     struct Dict_file_block *lru_back, *lru_front;
     int hash_size;
     void *all_data;
-    
+
     int  block_size;
     int  hits;
     int  misses;
@@ -120,7 +120,7 @@ int dict_strlen (const Dict_char *s);
    dir[0..nodir-1]
    ptr,info,string
  */
-     
+
 YAZ_END_CDECL
 
 #endif

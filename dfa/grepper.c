@@ -46,7 +46,7 @@ typedef struct {
 
 #define INFBUF_SIZE 16384
 
-#define INLINE 
+#define INLINE
 
 static INLINE void set_bit (MatchContext *mc, MatchWord *m, int ch, int state)
 {
@@ -82,7 +82,7 @@ static MatchContext *mk_MatchContext (struct DFA *dfa, int range)
     mc->n = (dfa->no_states+WORD_BITS) / WORD_BITS;
     mc->range = range;
     mc->Sc = icalloc (sizeof(*mc->Sc) * 256 * mc->n);
-    
+
     for (i=0; i<dfa->no_states; i++)
     {
         int j;
@@ -94,7 +94,7 @@ static MatchContext *mk_MatchContext (struct DFA *dfa, int range)
             int ch0 = state->trans[j].ch[0];
             int ch1 = state->trans[j].ch[1];
             assert (ch0 >= 0 && ch1 >= 0);
-            
+
             for (ch = ch0; ch <= ch1; ch++)
                 set_bit (mc, mc->Sc, ch, i);
         }
@@ -260,7 +260,7 @@ static int go (MatchContext *mc, struct DFA *dfa, FILE *inf)
     while ((ch = getc (inf)) != EOF)
     {
         MatchWord *Rj_t;
-        
+
         infbuf[inf_ptr] = ch;
         if (ch == '\n')
         {
@@ -336,7 +336,7 @@ static int grep_file (struct DFA *dfa, const char *fname, int range)
     }
     else
         inf = stdin;
-     
+
     mc = mk_MatchContext (dfa, range);
 
     go (mc, dfa, inf);

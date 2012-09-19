@@ -17,7 +17,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-/** \file 
+/** \file
     \brief sort using various sortindex types
  */
 
@@ -35,7 +35,7 @@ const char *myrec[] = {
     "</gils>\n",
 
     /* 3 */
-    "<gils>\n" 
+    "<gils>\n"
     "  <title>My x title</title>\n"
     "  <title>B</title>\n"
     "</gils>\n",
@@ -46,7 +46,7 @@ const char *myrec[] = {
     "  <title>A</title>\n"
     "</gils>\n" ,
     0} ;
-	
+
 static void tst_sortindex(int argc, char **argv, const char *type)
 {
     zint ids[5];
@@ -58,7 +58,7 @@ static void tst_sortindex(int argc, char **argv, const char *type)
     res_set(res, "sortindex", type);
 
     zh = zebra_open(zs, res);
-    
+
     YAZ_CHECK(tl_init_data(zh, myrec));
 
     if (strcmp(type, "m"))

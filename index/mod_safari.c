@@ -151,9 +151,9 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
             recWord.index_type = type_cstr;
             if (tinfo->segments)
             {
-                if (sscanf(cp, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT 
+                if (sscanf(cp, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT
                            ZINT_FORMAT " %39s %n",
-                           &recWord.record_id, &recWord.section_id, 
+                           &recWord.record_id, &recWord.section_id,
                            &recWord.segment,
                            &recWord.seqno,
                            field, &nor) < 5)
@@ -277,7 +277,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     }
     p->output_format = yaz_oid_recsyn_sutrs;
     p->rec_buf = filter_buf;
-    p->rec_len = filter_ptr; 
+    p->rec_len = filter_ptr;
     return 0;
 }
 

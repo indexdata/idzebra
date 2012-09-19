@@ -70,30 +70,30 @@ static int sp_range(struct source_parser *sp, data1_node *n, RecWord *wrd)
 {
     int start, len;
     RecWord tmp_w;
-    
+
     /* ( */
     sp_lex(sp);
     if (sp->lookahead != '(')
 	return 0;
     sp_lex(sp); /* skip ( */
-    
+
     /* 1st arg: string */
     if (!sp_expr(sp, n, wrd))
 	return 0;
-    
+
     if (sp->lookahead != ',')
-	return 0;	
+	return 0;
     sp_lex(sp); /* skip , */
-    
+
     /* 2nd arg: start */
     if (!sp_expr(sp, n, &tmp_w))
 	return 0;
     start = atoi_n(tmp_w.term_buf, tmp_w.term_len);
-    
+
     if (sp->lookahead == ',')
     {
 	sp_lex(sp); /* skip , */
-	
+
 	/* 3rd arg: length */
 	if (!sp_expr(sp, n, &tmp_w))
 	    return 0;
@@ -101,12 +101,12 @@ static int sp_range(struct source_parser *sp, data1_node *n, RecWord *wrd)
     }
     else
 	len = wrd->term_len;
-    
+
     /* ) */
     if (sp->lookahead != ')')
-	return 0;	
+	return 0;
     sp_lex(sp);
-    
+
     if (wrd->term_buf)
     {
         if (start >= wrd->term_len)
@@ -138,7 +138,7 @@ static int sp_first(struct source_parser *sp, data1_node *n, RecWord *wrd)
 	RecWord search_w;
 	int i;
 	sp_lex(sp); /* skip , */
-	
+
 	if (!sp_expr(sp, n, &search_w))
 	    return 0;
 	for (i = 0; i<wrd->term_len; i++)
@@ -182,7 +182,7 @@ static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
     else if (sp->len == 3 && !memcmp(sp->tok, "tag", sp->len))
     {
 	if (n->which == DATA1N_tag)
-	{		
+	{
 	    wrd->term_buf = n->u.tag.tag;
 	    wrd->term_len = strlen(n->u.tag.tag);
 	}
@@ -198,13 +198,13 @@ static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
 
 	if (!sp_expr(sp, n, &tmp_w))
 	    return 0;
-	
+
 	wrd->term_buf = "";
 	wrd->term_len = 0;
 	if (n->which == DATA1N_tag)
 	{
 	    data1_xattr *p = n->u.tag.attributes;
-	    while (p && strlen(p->name) != tmp_w.term_len && 
+	    while (p && strlen(p->name) != tmp_w.term_len &&
 		   memcmp (p->name, tmp_w.term_buf, tmp_w.term_len))
 		p = p->next;
 	    if (p)
@@ -243,7 +243,7 @@ static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
 	wrd->term_buf = b;
 	sp_lex(sp);
     }
-    else 
+    else
     {
 	wrd->term_buf = "";
 	wrd->term_len = 0;
@@ -267,8 +267,8 @@ static void source_parser_destroy(struct source_parser *sp)
     nmem_destroy(sp->nmem);
     xfree(sp);
 }
-    
-static int sp_parse(struct source_parser *sp, 
+
+static int sp_parse(struct source_parser *sp,
 		    data1_node *n, RecWord *wrd, const char *src)
 {
     sp->len = 0;
@@ -286,14 +286,14 @@ int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
     int res = 1;
     char *attname;
     data1_xattr *attr;
-    
+
     if (!p) {
         return 1;
     } else {
         if (p->which == XPATH_PREDICATE_RELATION) {
             if (p->u.relation.name[0]) {
                 if (*p->u.relation.name != '@') {
-                    yaz_log(YLOG_WARN, 
+                    yaz_log(YLOG_WARN,
                          "  Only attributes (@) are supported in xelm xpath predicates");
                     yaz_log(YLOG_WARN, "predicate %s ignored", p->u.relation.name);
                     return 1;
@@ -305,14 +305,14 @@ int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
                     if (!strcmp(attr->name, attname)) {
                         if (p->u.relation.op[0]) {
                             if (*p->u.relation.op != '=') {
-                                yaz_log(YLOG_WARN, 
+                                yaz_log(YLOG_WARN,
                                      "Only '=' relation is supported (%s)",p->u.relation.op);
                                 yaz_log(YLOG_WARN, "predicate %s ignored", p->u.relation.name);
                                 res = 1; break;
                             } else {
                                 if (!strcmp(attr->value, p->u.relation.value)) {
                                     res = 1; break;
-                                } 
+                                }
                             }
                         } else {
                             /* attribute exists, no value specified */
@@ -324,15 +324,15 @@ int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
             } else {
                 return 1;
             }
-        } 
+        }
         else if (p->which == XPATH_PREDICATE_BOOLEAN) {
             if (!strcmp(p->u.boolean.op,"and")) {
-                return d1_check_xpath_predicate(n, p->u.boolean.left) 
-                    && d1_check_xpath_predicate(n, p->u.boolean.right); 
+                return d1_check_xpath_predicate(n, p->u.boolean.left)
+                    && d1_check_xpath_predicate(n, p->u.boolean.right);
             }
             else if (!strcmp(p->u.boolean.op,"or")) {
-                return (d1_check_xpath_predicate(n, p->u.boolean.left) 
-                        || d1_check_xpath_predicate(n, p->u.boolean.right)); 
+                return (d1_check_xpath_predicate(n, p->u.boolean.left)
+                        || d1_check_xpath_predicate(n, p->u.boolean.right));
             } else {
                 yaz_log(YLOG_WARN, "Unknown boolean relation %s, ignored",p->u.boolean.op);
                 return 1;
@@ -350,7 +350,7 @@ static int dfa_match_first(struct DFA_state **dfaar, const char *text)
     int i;
     const char *p = text;
     unsigned char c;
-    
+
     for (c = *p++, t = s->trans, i = s->tran_no; --i >= 0; t++)
     {
 	if (c >= t->ch[0] && c <= t->ch[1])
@@ -375,7 +375,7 @@ static int dfa_match_first(struct DFA_state **dfaar, const char *text)
 }
 
 /* *ostrich*
-   
+
 New function, looking for xpath "element" definitions in abs, by
 tagpath, using a kind of ugly regxp search.The DFA was built while
 parsing abs, so here we just go trough them and try to match
@@ -397,11 +397,11 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 
     data1_xpelement *xpe = 0;
     data1_node *nn;
-#ifdef ENHANCED_XELM 
+#ifdef ENHANCED_XELM
     struct xpath_location_step *xp;
 #endif
     char *pexpr = xmalloc(strlen(tagpath)+5);
-    
+
     sprintf(pexpr, "/%s\n", tagpath);
 
     for (xpe = abs->xp_elements; xpe; xpe = xpe->next)
@@ -426,14 +426,14 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
         }
         assert(ok == 0 || ok == 1);
         if (ok) {
-#ifdef ENHANCED_XELM 
+#ifdef ENHANCED_XELM
             /* we have to check the perdicates up to the root node */
             xp = xpe->xpath;
-            
+
             /* find the first tag up in the node structure */
             for (nn = n; nn && nn->which != DATA1N_tag; nn = nn->parent)
 		;
-            
+
             /* go from inside out in the node structure, while going
                backwards trough xpath location steps ... */
             for (i = xpe->xpath_len - 1; i>0; i--)
@@ -443,7 +443,7 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
                     ok = 0;
                     break;
                 }
-                
+
                 if (nn->which == DATA1N_tag)
                     nn = nn->parent;
             }
@@ -451,10 +451,10 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
             if (ok)
                 break;
 	}
-    } 
-    
+    }
+
     xfree(pexpr);
-    
+
     if (xpe) {
         return xpe->termlists;
     } else {
@@ -474,7 +474,7 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
   *ostrich*
 
   Now, if there is a matching xelm described in abs, for the
-  indexed element or the attribute,  then the data is handled according 
+  indexed element or the attribute,  then the data is handled according
   to those definitions...
 
   modified by pop, 2002-12-13
@@ -490,7 +490,7 @@ static void index_xpath_attr(char *tag_path, char *name, char *value,
     wrd->term_buf = tag_path;
     wrd->term_len = strlen(tag_path);
     (*p->tokenAdd)(wrd);
-    
+
     if (value) {
 	wrd->index_name = ZEBRA_XPATH_ATTR_CDATA;
         wrd->index_type = "w";
@@ -529,7 +529,7 @@ static void mk_tag_path_full(char *tag_path_full, size_t max, data1_node *n)
     }
     tag_path_full[flen] = 0;
 }
-	
+
 
 static void index_xpath(struct source_parser *sp, data1_node *n,
 			struct recExtractCtrl *p,
@@ -543,8 +543,8 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
     int termlist_only = 1;
     data1_termlist *tl;
 
-    if (!n->root->u.root.absyn 
-        || 
+    if (!n->root->u.root.absyn
+        ||
         n->root->u.root.absyn->xpath_indexing == DATA1_XPATH_INDEXING_ENABLE)
     {
 	termlist_only = 0;
@@ -558,9 +558,9 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
         wrd->term_len = n->u.data.len;
 
 	mk_tag_path_full(tag_path_full, sizeof(tag_path_full), n);
-	
+
 	/* If we have a matching termlist... */
-	if (n->root->u.root.absyn && 
+	if (n->root->u.root.absyn &&
 	    (tl = xpath_termlist_by_tagpath(tag_path_full, n)))
 	{
             zint max_seqno = 0;
@@ -598,9 +598,9 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
 	    }
             if (max_seqno)
                 wrd->seqno = max_seqno;
-                
+
 	}
-	/* xpath indexing is done, if there was no termlist given, 
+	/* xpath indexing is done, if there was no termlist given,
 	   or no ! in the termlist, and default indexing is enabled... */
 	if (!p->flagShowRecords && !termlist_only)
 	{
@@ -631,23 +631,23 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
 
             if (!termlist_only)
                 (*p->tokenAdd)(wrd);   /* index element pag (AKA tag path) */
-            
+
             if (xpath_is_start == 1) /* only for the starting tag... */
             {
 #define MAX_ATTR_COUNT 50
                 data1_termlist *tll[MAX_ATTR_COUNT];
-                
+
                 int i = 0;
                 for (xp = n->u.tag.attributes; xp; xp = xp->next) {
                     char comb[512];
-                    char attr_tag_path_full[1024]; 
-                    
+                    char attr_tag_path_full[1024];
+
                     /* this could be cached as well */
                     sprintf(attr_tag_path_full, "@%s/%s",
                              xp->name, tag_path_full);
 
                     tll[i] = xpath_termlist_by_tagpath(attr_tag_path_full,n);
-                    
+
                     if (!termlist_only)
                     {
                         /* attribute  (no value) */
@@ -655,11 +655,11 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                         wrd->index_name = ZEBRA_XPATH_ATTR_NAME;
                         wrd->term_buf = xp->name;
                         wrd->term_len = strlen(xp->name);
-                        
+
                         wrd->seqno--;
                         (*p->tokenAdd)(wrd);
-                        
-                        if (xp->value 
+
+                        if (xp->value
                             &&
                             strlen(xp->name) + strlen(xp->value) < sizeof(comb)-2)
                         {
@@ -667,25 +667,25 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                             strcpy(comb, xp->name);
                             strcat(comb, "=");
                             strcat(comb, xp->value);
-                            
+
                             wrd->index_name = ZEBRA_XPATH_ATTR_NAME;
                             wrd->index_type = "0";
                             wrd->term_buf = comb;
                             wrd->term_len = strlen(comb);
                             wrd->seqno--;
-                            
+
                             (*p->tokenAdd)(wrd);
                         }
-                    }     
+                    }
                     i++;
                 }
-                
+
                 i = 0;
                 for (xp = n->u.tag.attributes; xp; xp = xp->next) {
                     data1_termlist *tl;
                     char attr_tag_path_full[1024];
                     int xpdone = 0;
-                    
+
                     sprintf(attr_tag_path_full, "@%s/%s",
                              xp->name, tag_path_full);
                     if ((tl = tll[i]))
@@ -702,7 +702,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                                 xpdone = 1;
                             } else {
                                 /* index attribute value (only path/@attr) */
-                                if (xp->value) 
+                                if (xp->value)
 				{
 				    wrd->index_name = tl->index_name;
                                     wrd->index_type = tl->structure;
@@ -713,8 +713,8 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                             }
                         }
                     }
-                    /* if there was no termlist for the given path, 
-                       or the termlist didn't have a ! element, index 
+                    /* if there was no termlist for the given path,
+                       or the termlist didn't have a ! element, index
                        the attribute as "w" */
                     if (!xpdone && !termlist_only)
                     {
@@ -738,7 +738,7 @@ static void index_termlist(struct source_parser *sp, data1_node *par,
      * this has the effect of indexing locally defined tags with
      * the attribute of their ancestor in the record.
      */
-    
+
     while (!par->u.tag.element)
         if (!par->parent || !(par=get_parent_tag(p->dh, par->parent)))
             break;
@@ -825,7 +825,7 @@ static int dumpkeys_r(struct source_parser *sp,
             index_termlist(sp, n, n, p, level, wrd);
             /* index start tag */
 	    if (n->root->u.root.absyn)
-      	        index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_ELM_BEGIN, 
+      	        index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_ELM_BEGIN,
 			    1 /* is start */);
  	}
 
@@ -854,14 +854,14 @@ static int dumpkeys_r(struct source_parser *sp,
 	    if (par)
 		index_termlist(sp, par, n, p, level, wrd);
 
-	    index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_CDATA, 
+	    index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_CDATA,
 			0 /* is start */);
  	}
 
 	if (n->which == DATA1N_tag)
 	{
             /* index end tag */
-	    index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_ELM_END, 
+	    index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_ELM_END,
 			0 /* is start */);
 	}
 
@@ -889,7 +889,7 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
         (*p->schemaAdd)(p, n->u.root.absyn->oid);
     (*p->init)(p, &wrd);
 
-    /* data1_pr_tree(p->dh, n, stdout); */ 
+    /* data1_pr_tree(p->dh, n, stdout); */
 
     return dumpkeys(n, p, &wrd);
 }
@@ -1021,7 +1021,7 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c,
 }
 
 /* Add Zebra info in separate namespace ...
-        <root 
+        <root
          ...
          <metadata xmlns="http://www.indexdata.dk/zebra/">
           <size>359</size>
@@ -1050,7 +1050,7 @@ static void zebra_xml_metadata(struct recRetrieveCtrl *p, data1_node *top,
     data1_mk_text(p->dh, mem, "\n", top);
 
     data1_mk_text(p->dh, mem, i4, n);
-    
+
     data1_mk_tag_data_int(p->dh, n, "size", p->recordSize, mem);
 
     if (p->score != -1)
@@ -1082,7 +1082,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     const Odr_oid *requested_schema = 0;
     data1_marctab *marctab;
     int dummy;
-    
+
     mem = nmem_create();
     gri.stream = p->stream;
     gri.mem = mem;
@@ -1116,7 +1116,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	sprintf(dnew->u.data.data, "%d", p->recordSize);
 	dnew->u.data.len = strlen(dnew->u.data.data);
     }
-    
+
     tagname = data1_systag_lookup(node->u.root.absyn, "rank", "rank");
     if (tagname && p->score >= 0 &&
 	(dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
@@ -1136,7 +1136,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
         yaz_log(YLOG_DEBUG, "grs_retrieve: %s", tagname);
 	dnew->u.data.what = DATA1I_text;
 	dnew->u.data.data = dnew->lbuf;
-        
+
 	sprintf(dnew->u.data.data, ZINT_FORMAT, p->localno);
 	dnew->u.data.len = strlen(dnew->u.data.data);
     }
@@ -1161,7 +1161,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
         requested_schema = p->comp->u.complex->generic->schema.oid;
     }
     /* If schema has been specified, map if possible, then check that
-     * we got the right one 
+     * we got the right one
      */
     if (requested_schema)
     {
@@ -1180,7 +1180,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 		break;
 	    }
 	}
-	if (node->u.root.absyn 
+	if (node->u.root.absyn
             && oid_oidcmp(requested_schema, node->u.root.absyn->oid))
 	{
 	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
@@ -1210,13 +1210,13 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
             }
         }
     yaz_log(YLOG_DEBUG, "grs_retrieve: schemaIdentifier");
-    if (node->u.root.absyn && node->u.root.absyn->oid 
+    if (node->u.root.absyn && node->u.root.absyn->oid
         && !oid_oidcmp(p->input_format, yaz_oid_recsyn_grs_1))
     {
         char oid_str[OID_STR_MAX];
         char *dot_str = oid_oid_to_dotstring(node->u.root.absyn->oid, oid_str);
-        
-        if (dot_str && (dnew = data1_mk_tag_data_wd(p->dh, top, 
+
+        if (dot_str && (dnew = data1_mk_tag_data_wd(p->dh, top,
                                                     "schemaIdentifier", mem)))
         {
             dnew->u.data.what = DATA1I_oid;
@@ -1278,7 +1278,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     {
 	/* ensure our data1 tree is UTF-8 */
 	data1_iconv(p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
-	
+
 	if (!(p->rec_buf = data1_nodetoexplain(p->dh, node, selected,
 					       p->odr)))
 	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;

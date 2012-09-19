@@ -52,7 +52,7 @@ static void repositoryExtractR(ZebraHandle zh, char *rep, int level,
         rep[rep_len] = '/';
     else
         --rep_len;
-    
+
     for (i=0; e[i].name; i++)
     {
 	char *ecp;
@@ -87,19 +87,19 @@ void repositoryShow(ZebraHandle zh, const char *path)
         yaz_log(YLOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
 	return;
     }
-    
+
     strncpy(src, path, sizeof(src)-1);
     src[sizeof(src)-1]='\0';
     src_len = strlen(src);
-    
+
     if (src_len && src[src_len-1] != '/')
     {
         src[src_len] = '/';
         src[++src_len] = '\0';
     }
-    
+
     di = dirs_open(dict, src, zh->m_flag_rw);
-    
+
     while ((dst = dirs_read(di)))
         yaz_log(YLOG_LOG, "%s", dst->path);
     dirs_free(&di);
@@ -140,13 +140,13 @@ static void repositoryExtract(ZebraHandle zh,
 }
 
 
-ZEBRA_RES zebra_update_from_path(ZebraHandle zh, const char *path, 
+ZEBRA_RES zebra_update_from_path(ZebraHandle zh, const char *path,
                                  enum zebra_recctrl_action_t action)
 {
     if (!strcmp(path, "") || !strcmp(path, "-"))
     {
         char src[1024];
-	
+
         while (scanf("%1020s", src) == 1)
             repositoryExtract(zh, src, action);
     }

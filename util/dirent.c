@@ -52,7 +52,7 @@ DIR *opendir (const char *name)
     dd->handle = FindFirstFile(fullName, &dd->find_data);
     return dd;
 }
-                                                          
+
 struct dirent *readdir (DIR *dd)
 {
     if (dd->handle == INVALID_HANDLE_VALUE)

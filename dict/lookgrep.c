@@ -34,11 +34,11 @@ typedef unsigned MatchWord;
 #define WORD_BITS 32
 #define MAX_LENGTH 1024
 
-/* This code is based 
+/* This code is based
  * Sun Wu and Udi Manber: Fast Text Searching Allowing Errors.
  *      Communications of the ACM, pp. 83-91, Vol. 35, No. 10, Oct. 1992, USA.
  *      PostScript version of the paper in its submitted form: agrep1.ps)
- *      recommended reading to understand AGREP ! 
+ *      recommended reading to understand AGREP !
  *
  * http://www.tgries.de/agrep/#AGREP1PS
  * http://www.tgries.de/agrep/doc/agrep1ps.zip
@@ -51,13 +51,13 @@ typedef struct {
     MatchWord *match_mask; /* match_mask */
 } MatchContext;
 
-#define INLINE 
+#define INLINE
 
 static INLINE void set_bit(MatchContext *mc, MatchWord *m, int ch, int state)
 {
     int off = state & (WORD_BITS-1);
     int wno = state / WORD_BITS;
-  
+
     m[mc->n * ch + wno] |= 1<<off;
 }
 
@@ -223,15 +223,15 @@ static INLINE int move(MatchContext *mc, MatchWord *Rj1, MatchWord *Rj,
     for (d = 1; d <= mc->range; d++)
     {
         or(mc, Rtmp, Rj, Rj1);                         /* 2,3 */
-        
+
         shift(mc, Rtmp_2, Rtmp, dfa);
 
         mask_shift(mc, Rtmp, Rj+mc->n, dfa, ch);       /* 1 */
-                
+
         or(mc, Rtmp, Rtmp_2, Rtmp);                    /* 1,2,3*/
 
         Rj1 += mc->n;
-        
+
         or(mc, Rj1, Rtmp, Rj);                         /* 1,2,3,4 */
 
         Rj += mc->n;
@@ -283,7 +283,7 @@ static int grep(Dict dict, Dict_ptr ptr, MatchContext *mc,
                 {
                     if (was_match)
                     {
-                        int ret = userfunc((char*) prefix, 
+                        int ret = userfunc((char*) prefix,
                                            info+(j+1)*sizeof(Dict_char), client);
                         if (ret)
                             return ret;
@@ -323,7 +323,7 @@ static int grep(Dict dict, Dict_ptr ptr, MatchContext *mc,
             info = (char*)p - indxp[-lo];
             memcpy(&ch, info+sizeof(Dict_ptr), sizeof(Dict_char));
             prefix[pos] = ch;
-            
+
             if (pos > *max_pos)
                 *max_pos = pos;
             if (pos >= init_pos)
@@ -398,7 +398,7 @@ int dict_lookup_grep(Dict dict, const char *pattern, int range, void *client,
 	yaz_log(YLOG_DEBUG, " %2d %3d  %c", i, pattern[i],
                 (pattern[i] > ' ' && pattern[i] < 127) ? pattern[i] : '?');
     }
-   
+
     dfa_set_cmap(dfa, dict->grep_cmap_data, dict->grep_cmap);
 
     i = dfa_parse(dfa, &this_pattern);

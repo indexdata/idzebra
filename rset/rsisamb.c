@@ -35,27 +35,27 @@ static int r_read(RSFD rfd, void *buf, TERMID *term);
 static int r_read_filter(RSFD rfd, void *buf, TERMID *term);
 static int r_write(RSFD rfd, const void *buf);
 
-static const struct rset_control control = 
+static const struct rset_control control =
 {
     "isamb",
     r_delete,
     rset_get_one_term,
     r_open,
     r_close,
-    r_forward, 
+    r_forward,
     r_pos,
     r_read,
     r_write,
 };
 
-static const struct rset_control control_filter = 
+static const struct rset_control control_filter =
 {
     "isamb",
     r_delete,
     rset_get_one_term,
     r_open,
     r_close,
-    r_forward, 
+    r_forward,
     r_pos,
     r_read_filter,
     r_write,
@@ -141,7 +141,7 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
     if (rc && term)
         *term = rfd->rset->term;
     yaz_log(log_level, "rsisamb_forward");
-    return rc; 
+    return rc;
 }
 
 static void r_pos(RSFD rfd, double *current, double *total)

@@ -28,7 +28,7 @@ const char *myrec[] = {
         "<gils>\n<title>c d</title>\n</gils>\n",
         "<gils>\n<title>e f</title>\n</gils>\n" ,
 	0} ;
-	
+
 static void tst(int argc, char **argv)
 {
     ZebraService zs = tl_start_up(0, argc, argv);

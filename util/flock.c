@@ -85,12 +85,12 @@ char *zebra_mk_fname(const char *dir, const char *name)
 {
     int dlen = dir ? strlen(dir) : 0;
     char *fname = xmalloc(dlen + strlen(name) + 3);
-    
+
 #ifdef WIN32
     if (dlen)
     {
         int last_one = dir[dlen-1];
-        
+
         if (!strchr("/\\:", last_one))
             sprintf(fname, "%s\\%s", dir, name);
         else
@@ -135,7 +135,7 @@ ZebraLockHandle zebra_lock_create(const char *dir, const char *name)
     if (!p)
     {   /* didn't match (or we didn't want it to match! */
         p = (struct zebra_lock_info *) xmalloc(sizeof(*p));
-        
+
         p->ref_count = 0;
 #ifdef WIN32
         p->fd = open(name, O_BINARY|O_RDONLY);
@@ -147,7 +147,7 @@ ZebraLockHandle zebra_lock_create(const char *dir, const char *name)
         if (p->fd == -1)
         {
             xfree(p);
-            yaz_log(YLOG_WARN | YLOG_ERRNO, 
+            yaz_log(YLOG_WARN | YLOG_ERRNO,
                     "zebra_lock_create fail fname=%s", fname);
             p = 0;
         }
@@ -243,7 +243,7 @@ static int unixLock(int fd, int type, int cmd)
         yaz_log(YLOG_WARN|YLOG_ERRNO, "fcntl FAIL type=%d fd=%d", type, fd);
     else
         yaz_log(log_level, "fcntl type=%d OK fd=%d", type, fd);
-    
+
     return r;
 }
 #endif
@@ -252,7 +252,7 @@ int zebra_lock_w(ZebraLockHandle h)
 {
     int r = 0;
     int do_lock = 0;
-    yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s begin", 
+    yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s begin",
             h->p->fd, h, h->p->fname);
 
 #ifdef WIN32
@@ -279,7 +279,7 @@ int zebra_lock_w(ZebraLockHandle h)
 
     h->write_flag = 1;
 #endif
-    yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s end", 
+    yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s end",
             h->p->fd, h, h->p->fname);
 
     return r;
@@ -290,7 +290,7 @@ int zebra_lock_r(ZebraLockHandle h)
     int r = 0;
     int do_lock = 0;
 
-    yaz_log(log_level, "zebra_lock_r fd=%d p=%p fname=%s begin", 
+    yaz_log(log_level, "zebra_lock_r fd=%d p=%p fname=%s begin",
             h->p->fd, h, h->p->fname);
 #ifdef WIN32
     while ((r = _locking(h->p->fd, _LK_LOCK, 1)))
@@ -313,10 +313,10 @@ int zebra_lock_r(ZebraLockHandle h)
         assert(posix_locks);
     }
     zebra_mutex_unlock(&h->p->file_mutex);
-    
+
     h->write_flag = 0;
 #endif
-    yaz_log(log_level, "zebra_lock_r fd=%d p=%p fname=%s end", 
+    yaz_log(log_level, "zebra_lock_r fd=%d p=%p fname=%s end",
             h->p->fd, h, h->p->fname);
     return r;
 }
@@ -363,7 +363,7 @@ int zebra_unlock(ZebraLockHandle h)
     return r;
 }
 
-/** \brief see if the fcntl locking is not POSIX 
+/** \brief see if the fcntl locking is not POSIX
  *
  * The default posix_locks=1 is assumed.. This function sets posix_locks
  * to zero if linuxthreads is in use.

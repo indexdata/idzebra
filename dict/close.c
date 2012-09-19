@@ -39,7 +39,7 @@ int dict_close(Dict dict)
         void *head_buf;
         dict_bf_readp(dict->dbf, 0, &head_buf);
         memcpy(head_buf, &dict->head, sizeof(dict->head));
-        dict_bf_touch(dict->dbf, 0);        
+        dict_bf_touch(dict->dbf, 0);
     }
     dict_bf_close(dict->dbf);
     xfree(dict);

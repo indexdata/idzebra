@@ -46,7 +46,7 @@ struct ISAMS_s {
     int block_size;
     int debug;
     BFile bf;
-}; 
+};
 
 struct ISAMS_PP_s {
     ISAMS is;
@@ -139,13 +139,13 @@ ISAM_P isams_merge (ISAMS is, ISAMS_I data)
 	char *tmp_ptr = i_item;
 	i_more = (*data->read_item)(data->clientData, &tmp_ptr, &i_mode);
 	assert (i_mode);
-	
+
 	if (!i_more)
 	    break;
 	else
 	{
 	    char *r_out_ptr = is->merge_buf + is->head.last_offset;
-	    
+
 	    const char *i_item_ptr = i_item;
 	    (*is->method->codec.encode)(r_clientData, &r_out_ptr, &i_item_ptr);
 	    is->head.last_offset = r_out_ptr - is->merge_buf;
@@ -246,7 +246,7 @@ int isams_read_item (ISAMS_PP pp, char **dst)
     }
     src = pp->buf + pp->block_offset;
     (*pp->is->method->codec.decode)(pp->decodeClientData, dst, &src);
-    pp->block_offset = src - pp->buf; 
+    pp->block_offset = src - pp->buf;
     return 1;
 }
 

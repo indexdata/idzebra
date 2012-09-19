@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /*
- * This module converts data1 tree to Z39.50 Explain records  
+ * This module converts data1 tree to Z39.50 Explain records
  */
 
 #if HAVE_CONFIG_H
@@ -116,7 +116,7 @@ static Odr_oid *f_oid(ExpHandle *eh, data1_node *c, oid_class oclass)
     c = c->child;
     if (!is_data_tag (eh, c) || c->u.data.len > 63)
 	return 0;
-    yaz_snprintf(oidstr, sizeof(oidstr)-1, 
+    yaz_snprintf(oidstr, sizeof(oidstr)-1,
                  "%.*s", c->u.data.len, c->u.data.data);
 
     return yaz_string_to_oid_odr(yaz_oid_std(),
@@ -190,7 +190,7 @@ Odr_oid **f_oid_seq (ExpHandle *eh, data1_node *n, int *num, oid_class oclass)
 	    res[i++] = f_oid (eh, c, oclass);
     return res;
 }
-    
+
 char **f_string_seq (ExpHandle *eh, data1_node *n, int *num)
 {
     char **res;
@@ -402,7 +402,7 @@ static Odr_int *f_recordCount(ExpHandle *eh, data1_node *c, int *which)
 	*wp = Z_DatabaseInfo_approxNumber;
     else
 	return 0;
-    if (!c->child || c->child->which != DATA1N_data || 
+    if (!c->child || c->child->which != DATA1N_data ||
         c->child->u.data.len >= sizeof(intbuf))
 	return 0;
     sprintf(intbuf, "%.*s", c->child->u.data.len, c->child->u.data.data);
@@ -414,13 +414,13 @@ static Z_ContactInfo *f_contactInfo(ExpHandle *eh, data1_node *n)
     Z_ContactInfo *res = (Z_ContactInfo *)
 	odr_malloc (eh->o, sizeof(*res));
     data1_node *c;
-    
+
     res->name = 0;
     res->description = 0;
     res->address = 0;
     res->email = 0;
     res->phone = 0;
-    
+
     for (c = n->child; c; c = c->next)
     {
 	switch (is_numeric_tag (eh, c))
@@ -440,10 +440,10 @@ static Z_DatabaseList *f_databaseList(ExpHandle *eh, data1_node *n)
     data1_node *c;
     Z_DatabaseList *res;
     int i = 0;
-    
+
     for (c = n->child; c; c = c->next)
     {
-	if (!is_numeric_tag (eh, c) != 102) 
+	if (!is_numeric_tag (eh, c) != 102)
 	    continue;
 	++i;
     }
@@ -451,7 +451,7 @@ static Z_DatabaseList *f_databaseList(ExpHandle *eh, data1_node *n)
 	return NULL;
 
     res = (Z_DatabaseList *)odr_malloc (eh->o, sizeof(*res));
-    
+
     res->num_databases = i;
     res->databases = (char **)odr_malloc (eh->o, sizeof(*res->databases) * i);
     i = 0;
@@ -469,7 +469,7 @@ static Z_NetworkAddressIA *f_networkAddressIA(ExpHandle *eh, data1_node *n)
     Z_NetworkAddressIA *res = (Z_NetworkAddressIA *)
 	odr_malloc (eh->o, sizeof(*res));
     data1_node *c;
-    
+
     res->hostAddress = 0;
     res->port = 0;
 
@@ -505,13 +505,13 @@ static Z_NetworkAddressOther *f_networkAddressOther(ExpHandle *eh,
     return res;
 }
 
-static Z_NetworkAddress **f_networkAddresses(ExpHandle *eh, data1_node *n, 
+static Z_NetworkAddress **f_networkAddresses(ExpHandle *eh, data1_node *n,
 					     int *num)
 {
     Z_NetworkAddress **res = NULL;
     data1_node *c;
     int i = 0;
-    
+
     *num = 0;
     for (c = n->child; c; c = c->next)
     {
@@ -526,7 +526,7 @@ static Z_NetworkAddress **f_networkAddresses(ExpHandle *eh, data1_node *n,
 
     if (*num)
 	res = (Z_NetworkAddress **) odr_malloc (eh->o, sizeof(*res) * (*num));
-					       
+
     for (c = n->child; c; c = c->next)
     {
 	switch (is_numeric_tag (eh, c))
@@ -595,7 +595,7 @@ static Z_CategoryList *f_categoryList(ExpHandle *eh, data1_node *n)
 	    }
 	    if (res->num_categories)
 		res->categories =
-		    (Z_CategoryInfo **)odr_malloc (eh->o, res->num_categories 
+		    (Z_CategoryInfo **)odr_malloc (eh->o, res->num_categories
 						   * sizeof(*res->categories));
 	    for (n = c->child; n; n = n->next)
 	    {
@@ -640,7 +640,7 @@ static Z_TargetInfo *f_targetInfo(ExpHandle *eh, data1_node *n)
     res->num_languages = 0;
     res->languages = NULL;
     res->commonAccessInfo = 0;
-    
+
     for (c = n->child; c; c = c->next)
     {
 	int i = 0;
@@ -660,7 +660,7 @@ static Z_TargetInfo *f_targetInfo(ExpHandle *eh, data1_node *n)
 	case 111: res->welcomeMessage = f_humstring(eh, c); break;
 	case 112: res->contactInfo = f_contactInfo(eh, c); break;
 	case 113: res->description = f_humstring(eh, c); break;
-	case 114: 
+	case 114:
 	    res->num_nicknames = 0;
 	    for (n = c->child; n; n = n->next)
 	    {
@@ -670,7 +670,7 @@ static Z_TargetInfo *f_targetInfo(ExpHandle *eh, data1_node *n)
 	    }
 	    if (res->num_nicknames)
 		res->nicknames =
-		    (char **)odr_malloc (eh->o, res->num_nicknames 
+		    (char **)odr_malloc (eh->o, res->num_nicknames
 				* sizeof(*res->nicknames));
 	    for (n = c->child; n; n = n->next)
 	    {
@@ -701,7 +701,7 @@ static Z_TargetInfo *f_targetInfo(ExpHandle *eh, data1_node *n)
 		res->dbCombinations[i++] = f_databaseList (eh, n);
 	    }
 	    break;
-	case 119: 
+	case 119:
 	    res->addresses =
 		f_networkAddresses (eh, c, &res->num_addresses);
 	    break;
@@ -771,7 +771,7 @@ static Z_DatabaseInfo *f_databaseInfo(ExpHandle *eh, data1_node *n)
     res->supplierContactInfo = 0;
     res->submissionContactInfo = 0;
     res->accessInfo = 0;
-    
+
     for (c = n->child; c; c = c->next)
     {
 	int i = 0;
@@ -792,7 +792,7 @@ static Z_DatabaseInfo *f_databaseInfo(ExpHandle *eh, data1_node *n)
 	    }
 	    if (res->num_nicknames)
 		res->nicknames =
-		    (char **)odr_malloc (eh->o, res->num_nicknames 
+		    (char **)odr_malloc (eh->o, res->num_nicknames
 				* sizeof(*res->nicknames));
 	    for (n = c->child; n; n = n->next)
 	    {
@@ -816,7 +816,7 @@ static Z_DatabaseInfo *f_databaseInfo(ExpHandle *eh, data1_node *n)
 	    }
 	    if (res->num_keywords)
 		res->keywords =
-		    (Z_HumanString **)odr_malloc (eh->o, res->num_keywords 
+		    (Z_HumanString **)odr_malloc (eh->o, res->num_keywords
 				* sizeof(*res->keywords));
 	    for (n = c->child; n; n = n->next)
 	    {
@@ -889,7 +889,7 @@ Z_AttributeDescription *f_attributeDescription (
 	odr_malloc(eh->o, sizeof(*res));
     data1_node *c;
     int i = 0;
-	
+
     res->name = 0;
     res->description = 0;
     res->attributeValue = 0;
@@ -1142,7 +1142,7 @@ Z_AttributeSetDetails *f_attributeSetDetails (ExpHandle *eh, data1_node *n)
     Z_AttributeSetDetails *res = (Z_AttributeSetDetails *)
 	odr_malloc(eh->o, sizeof(*res));
     data1_node *c;
-    
+
     res->attributeSet = 0;
     res->num_attributesByType = 0;
     res->attributesByType = 0;
@@ -1374,7 +1374,7 @@ Z_ExplainRecord *data1_nodetoexplain (data1_handle dh, data1_node *n,
 	    res->which = Z_Explain_categoryList;
 	    if (!(res->u.categoryList = f_categoryList(&eh, n)))
 		return 0;
-	    return res;	    
+	    return res;
 	case 2:
 	    res->which = Z_Explain_targetInfo;
 	    if (!(res->u.targetInfo = f_targetInfo(&eh, n)))
@@ -1389,7 +1389,7 @@ Z_ExplainRecord *data1_nodetoexplain (data1_handle dh, data1_node *n,
 	    res->which = Z_Explain_attributeSetInfo;
 	    if (!(res->u.attributeSetInfo = f_attributeSetInfo(&eh, n)))
 		return 0;
-	    return res;	    
+	    return res;
 	case 10:
 	    res->which = Z_Explain_attributeDetails;
 	    if (!(res->u.attributeDetails = f_attributeDetails(&eh, n)))

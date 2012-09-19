@@ -17,7 +17,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-/* 
+/*
  * TODO:
  *   Reduction to lower categories in isamc_merge
  */
@@ -94,7 +94,7 @@ ISAMC isamc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
     {
         if (is->method->debug)
             yaz_log (YLOG_LOG, "isc:%6d %6d %6d %6d",
-                  filecat[i].bsize, filecat[i].ifill, 
+                  filecat[i].bsize, filecat[i].ifill,
                   filecat[i].mfill, filecat[i].mblocks);
         if (max_buf_size < filecat[i].mblocks * filecat[i].bsize)
             max_buf_size = filecat[i].mblocks * filecat[i].bsize;
@@ -107,7 +107,7 @@ ISAMC isamc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
         max_buf_size = (1+is->method->max_blocks_mem) * filecat[i].bsize;
     if (is->method->debug)
         yaz_log (YLOG_LOG, "isc: max_buf_size %d", max_buf_size);
-    
+
     assert (is->no_files > 0);
     is->files = (ISAMC_file) xmalloc (sizeof(*is->files)*is->no_files);
     if (writeflag)
@@ -346,7 +346,7 @@ static void release_block (ISAMC is, int cat, zint pos)
     {
 	memcpy (abuf + sizeof(int), &block, sizeof(zint));
 	is->files[cat].head.freelist = pos;
-	is->files[cat].head_is_dirty = 1; 
+	is->files[cat].head_is_dirty = 1;
     }
     else
     {
@@ -381,9 +381,9 @@ static zint alloc_block (ISAMC is, int cat)
 static void release_block (ISAMC is, int cat, zint pos)
 {
     char buf[sizeof(zint)];
-   
+
     (is->files[cat].no_released)++;
-    is->files[cat].head_is_dirty = 1; 
+    is->files[cat].head_is_dirty = 1;
     memcpy (buf, &is->files[cat].head.freelist, sizeof(zint));
     is->files[cat].head.freelist = pos;
     bf_write (is->files[cat].bf, pos, 0, sizeof(zint), buf);
@@ -433,7 +433,7 @@ void isamc_release_block (ISAMC is, int cat, zint pos)
 static void init_fc (ISAMC is, int cat)
 {
     int j = 100;
-        
+
     is->files[cat].fc_max = j;
     is->files[cat].fc_list = (zint *)
 	xmalloc (sizeof(*is->files[0].fc_list) * j);
@@ -467,9 +467,9 @@ ISAMC_PP isamc_pp_open (ISAMC is, ISAM_P ipos)
 {
     ISAMC_PP pp = (ISAMC_PP) xmalloc (sizeof(*pp));
     char *src;
-   
+
     pp->cat = (int) isamc_type(ipos);
-    pp->pos = isamc_block(ipos); 
+    pp->pos = isamc_block(ipos);
 
     src = pp->buf = (char *) xmalloc (is->method->filecat[pp->cat].bsize);
 
@@ -497,7 +497,7 @@ ISAMC_PP isamc_pp_open (ISAMC is, ISAM_P ipos)
 	    yaz_log(YLOG_FATAL|YLOG_LOG, "pp->pos = " ZINT_FORMAT, pp->pos);
 	    assert (pp->next != pp->pos);
 	}
-        pp->offset = src - pp->buf; 
+        pp->offset = src - pp->buf;
         assert (pp->offset == ISAMC_BLOCK_OFFSET_1);
         if (is->method->debug > 2)
             yaz_log (YLOG_LOG, "isc: read_block size=%d %d " ZINT_FORMAT " next="
@@ -572,14 +572,14 @@ int isamc_read_item (ISAMC_PP pp, char **dst)
         if (pp->deleteFlag)
             isamc_release_block (is, pp->cat, pp->pos);
         (*is->method->codec.decode)(pp->decodeClientData, dst, &src);
-        pp->offset = src - pp->buf; 
+        pp->offset = src - pp->buf;
         if (is->method->debug > 2)
             yaz_log (YLOG_LOG, "isc: read_block size=%d %d " ZINT_FORMAT " next="
 		  ZINT_FORMAT, pp->size, pp->cat, pp->pos, pp->next);
         return 2;
     }
     (*is->method->codec.decode)(pp->decodeClientData, dst, &src);
-    pp->offset = src - pp->buf; 
+    pp->offset = src - pp->buf;
     return 1;
 }
 

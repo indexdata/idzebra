@@ -55,7 +55,7 @@ int attr_find_ex(AttrType *src, const Odr_oid **attribute_set_oid,
         element = src->attributeList[src->major];
         if (src->type == *element->attributeType)
         {
-            switch (element->which) 
+            switch (element->which)
             {
             case Z_AttributeValue_numeric:
                 ++(src->major);
@@ -68,20 +68,20 @@ int attr_find_ex(AttrType *src, const Odr_oid **attribute_set_oid,
                     break;
                 if (element->attributeSet && attribute_set_oid)
                     *attribute_set_oid = element->attributeSet;
-                if (element->value.complex->list[src->minor]->which ==  
+                if (element->value.complex->list[src->minor]->which ==
                     Z_StringOrNumeric_numeric)
                 {
                     ++(src->minor);
                     return
                         *element->value.complex->list[src->minor-1]->u.numeric;
                 }
-                else if (element->value.complex->list[src->minor]->which ==  
+                else if (element->value.complex->list[src->minor]->which ==
                          Z_StringOrNumeric_string)
                 {
                     if (!string_value)
                         break;
                     ++(src->minor);
-                    *string_value = 
+                    *string_value =
                         element->value.complex->list[src->minor-1]->u.string;
                     return -2;
                 }

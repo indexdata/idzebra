@@ -41,11 +41,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 int log_level = YLOG_LOG;
 
-/* 
+/*
  * tl_start_up : do common start things, and a zebra_start
  *    - build the name of logfile from argv[0], and open it
  *      if no argv passed, do not open a log
- *    - read zebra.cfg from env var srcdir if it exists; otherwise current dir 
+ *    - read zebra.cfg from env var srcdir if it exists; otherwise current dir
  *      default to zebra.cfg, if no name is given
  */
 ZebraService tl_start_up(char *cfgname, int argc, char **argv)
@@ -110,7 +110,7 @@ int tl_init_data(ZebraHandle zh, const char **recs)
 
     yaz_log(log_level, "going to call init");
     res = zebra_init(zh);
-    if (res == ZEBRA_FAIL) 
+    if (res == ZEBRA_FAIL)
     {
 	yaz_log(log_level, "init_data: zebra_init failed with %d", res);
         printf("init_data failed with %d\n", res);
@@ -192,16 +192,16 @@ int tl_query_x(ZebraHandle zh, const char *query, zint exphits, int experror)
 	if (rc == ZEBRA_FAIL) {
 	    int code = zebra_errCode(zh);
 	    yaz_log(log_level, "search returned %d. Code %d", rc, code);
-	    
-	    printf("Error: search returned %d. Code %d\n%s\n", rc, 
+
+	    printf("Error: search returned %d. Code %d\n%s\n", rc,
 		   code, query);
 	    return 0;
 	}
 	if (exphits != -1 && hits != exphits)
 	{
-	    yaz_log(log_level, "search returned " ZINT_FORMAT 
+	    yaz_log(log_level, "search returned " ZINT_FORMAT
 		   " hits instead of " ZINT_FORMAT, hits, exphits);
-	    printf("Error: search returned " ZINT_FORMAT 
+	    printf("Error: search returned " ZINT_FORMAT
 		   " hits instead of " ZINT_FORMAT "\n%s\n",
 		   hits, exphits, query);
 	    return 0;
@@ -230,7 +230,7 @@ int tl_scan(ZebraHandle zh, const char *query,
     yaz_log(log_level, "======================================");
     yaz_log(log_level, "scan: pos=%d num=%d %s", pos, num, query);
 
-    res = zebra_scan_PQF(zh, odr, query, &pos, &num, &entries, &partial, 
+    res = zebra_scan_PQF(zh, odr, query, &pos, &num, &entries, &partial,
 			 0 /* setname */);
 
     if (partial == -123)
@@ -299,11 +299,11 @@ int tl_scan(ZebraHandle zh, const char *query,
     return ret;
 }
 
-/** 
- * makes a query, checks number of hits, and for the first hit, that 
+/**
+ * makes a query, checks number of hits, and for the first hit, that
  * it contains the given string, and that it gets the right score
  */
-int tl_ranking_query(ZebraHandle zh, char *query, 
+int tl_ranking_query(ZebraHandle zh, char *query,
 		     int exphits, char *firstrec, int firstscore)
 {
     ZebraRetrievalRecord retrievalRecord[10];
@@ -312,14 +312,14 @@ int tl_ranking_query(ZebraHandle zh, char *query,
     int rc;
     int i;
     int ret = 1;
-        
+
     if (!tl_query(zh, query, exphits))
 	return 0;
 
     for (i = 0; i<10; i++)
         retrievalRecord[i].position = i+1;
 
-    odr_output = odr_createmem(ODR_ENCODE);    
+    odr_output = odr_createmem(ODR_ENCODE);
     rc = zebra_records_retrieve(zh, odr_output, setname, 0,
                                 yaz_oid_recsyn_xml, exphits, retrievalRecord);
     if (rc != ZEBRA_OK)
@@ -348,16 +348,16 @@ int tl_meta_query(ZebraHandle zh, char *query, int exphits,
     const char *setname= "rsetname";
     zint *positions = 0;
     int i, ret = 1;
-        
+
     if (!tl_query(zh, query, exphits))
 	return 0;
-    
+
     positions = (zint *) xmalloc(1 + (exphits * sizeof(zint)));
     for (i = 0; i<exphits; i++)
         positions[i] = i+1;
 
     meta = zebra_meta_records_create(zh, setname,  exphits, positions);
-    
+
     if (!meta)
     {
         printf("Error: retrieve returned error\n%s\n", query);
@@ -403,7 +403,7 @@ int tl_sort(ZebraHandle zh, const char *query, zint hits, zint *exp)
 	if (min_val_exp == 0 || exp[i] < min_val_exp)
 	    min_val_exp = exp[i];
     }
-	    
+
     /* compare sequences using base offset */
     for (i = 0; i<hits; i++)
 	if ((recs[i].sysno-min_val_recs) != (exp[i]-min_val_exp))
@@ -459,10 +459,10 @@ ZEBRA_RES tl_fetch(ZebraHandle zh, int position, const char *element_set,
     ZEBRA_RES res;
 
     retrievalRecord[0].position = position;
-    
+
     yaz_set_esn(&comp, element_set, odr->mem);
 
-    res = zebra_records_retrieve(zh, odr, "rsetname", comp, format, 1, 
+    res = zebra_records_retrieve(zh, odr, "rsetname", comp, format, 1,
                                  retrievalRecord);
     if (res != ZEBRA_OK)
     {

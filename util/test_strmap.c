@@ -38,10 +38,10 @@ static void test1(void)
         size_t data_len;
         zebra_strmap_t sm = zebra_strmap_create();
         YAZ_CHECK(!zebra_strmap_lookup(sm, "a", 0, 0));
-        
+
         zebra_strmap_add(sm, "a", &v, sizeof v);
         data_buf = zebra_strmap_lookup(sm, "a", 0, &data_len);
-        YAZ_CHECK(data_buf && data_len == sizeof v 
+        YAZ_CHECK(data_buf && data_len == sizeof v
                   && v == *((int*) data_buf));
 
         zebra_strmap_remove(sm, "a");

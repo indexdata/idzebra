@@ -51,7 +51,7 @@ const char *recs[] = {
         "    but all have the foo bar \n"
         "  </abstract>\n"
         "</record>\n",
-    
+
         0 };
 
 

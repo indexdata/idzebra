@@ -140,7 +140,7 @@ void dir_sort(struct dir_entry *e)
     size_t nmemb = 0;
     while (e[nmemb].name)
         nmemb++;
-    qsort(e, nmemb, sizeof(*e), dir_cmp); 
+    qsort(e, nmemb, sizeof(*e), dir_cmp);
 }
 
 void dir_free(struct dir_entry **e_p)

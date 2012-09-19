@@ -71,7 +71,7 @@ int main (int argc, char **argv)
     int no_of_new = 0, no_of_same = 0, no_of_change = 0;
     int no_of_hits = 0, no_of_misses = 0, no_not_found = 0, no_of_deleted = 0;
     int max_pos;
-    
+
     prog = argv[0];
     if (argc < 2)
     {
@@ -193,7 +193,7 @@ int main (int argc, char **argv)
             yaz_log (YLOG_FATAL|YLOG_ERRNO, "cannot open %s", inputfile);
             exit (1);
         }
-        
+
         while (fgets (ipf_buf, 1023, ipf))
         {
             char *ipf_ptr = ipf_buf;
@@ -285,7 +285,7 @@ int main (int argc, char **argv)
     }
     if (rw)
     {
-        yaz_log (YLOG_LOG, "Iterations.... %d", no_of_iterations);            
+        yaz_log (YLOG_LOG, "Iterations.... %d", no_of_iterations);
         if (do_delete)
         {
             yaz_log (YLOG_LOG, "No of deleted. %d", no_of_deleted);
@@ -306,7 +306,7 @@ int main (int argc, char **argv)
     if (scan_the_thing)
     {
 	char term_dict[1024];
-        
+
 	int before = 1000000;
 	int after = 1000000;
 	yaz_log (YLOG_LOG, "dict_scan");

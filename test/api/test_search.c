@@ -77,7 +77,7 @@ const char *myrec[] = {
         "</gils>"
         ,
 	0} ;
-	
+
 static void tst(int argc, char **argv)
 {
     ZebraService zs = tl_start_up(0, argc, argv);
@@ -94,7 +94,7 @@ static void tst(int argc, char **argv)
                                   "term 3 3: my\n"
                                   "term 3 3: title\n"
                                   "term 2 2: x\n"), ZEBRA_OK);
-    
+
     YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::title:s",
                                   yaz_oid_recsyn_sutrs,
                                   "facet s title\n"
@@ -112,7 +112,7 @@ static void tst(int argc, char **argv)
                                   "term 2 2: my\n"
                                   "term 2 2: title\n"
                                   "term 2 2: x\n"), ZEBRA_OK);
-                 
+
     /* trunc left */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=2 titl", 0));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=2 x", 2));
@@ -183,7 +183,7 @@ static void tst(int argc, char **argv)
     /* = */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=3 my", 3));
     YAZ_CHECK(
-        tl_query(zh, 
+        tl_query(zh,
                  "@attr 1=4 @attr 2=3 "
                  "1234567890" "1234567890""1234567890""1234567890""1234567890"
                  "1234567890" "1234567890""1234567890""1234567890""1234567890"
@@ -199,16 +199,16 @@ static void tst(int argc, char **argv)
                  "1234567890" "1234567890""1234567890""1234567890""1234567890"
                  "1234567890" "1"
                  , 1));
-    
+
     YAZ_CHECK(
-        tl_query_x(zh, 
+        tl_query_x(zh,
                    "@attr 1=4 @attr 2=3 "
                    "1234567890" "1234567890""1234567890""1234567890""1234567890"
                    "1234567890" "1234567890""1234567890""1234567890""1234567890"
                    "1234567890" "1234567890""1234567890""1234567890""1234567890"
                    "1234567890" "1234567890""1234567890""1234567890""1234567890"
                    "1234567890" "1234567890""1234567890""1234567890""1234567890"
-    
+
                    "1234567890" "1234567890""1234567890""1234567890""1234567890"
                    "1234567890" "1234567890""1234567890""1234567890""1234567890"
                    "1234567890" "1234567890""1234567890""1234567890""1234567890"
@@ -216,7 +216,7 @@ static void tst(int argc, char **argv)
                    "1234567890" "1234567890""1234567890""1234567890""1234567890"
                    "1234567890" "12"
                    , 0, 11));
-    
+
 
     /* string relations, >= */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=4 x", 2));
@@ -234,31 +234,31 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query_x(zh, "@attr 1=1 @attr 2=103 {x my}", 0, 114));
 
     /* and searches */
-    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 notfound @attr 1=4 x", 0)); 
-    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 x @attr 1=4 notfound", 0)); 
-    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 notfound @attr 1=4 notfound", 0)); 
-    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 x @attr 1=4 x", 2)); 
-    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 x @attr 1=4 my", 2)); 
-    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 my @attr 1=4 x", 2)); 
-    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 my @attr 1=4 my", 3)); 
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 notfound @attr 1=4 x", 0));
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 x @attr 1=4 notfound", 0));
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 notfound @attr 1=4 notfound", 0));
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 x @attr 1=4 x", 2));
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 x @attr 1=4 my", 2));
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 my @attr 1=4 x", 2));
+    YAZ_CHECK(tl_query(zh, "@and @attr 1=4 my @attr 1=4 my", 3));
 
     /* or searches */
-    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 notfound @attr 1=4 x", 2)); 
-    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 x @attr 1=4 notfound", 2)); 
-    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 notfound @attr 1=4 notfound", 0)); 
-    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 x @attr 1=4 x", 2)); 
-    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 x @attr 1=4 my", 3)); 
-    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 my @attr 1=4 x", 3)); 
-    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 my @attr 1=4 my", 3)); 
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 notfound @attr 1=4 x", 2));
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 x @attr 1=4 notfound", 2));
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 notfound @attr 1=4 notfound", 0));
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 x @attr 1=4 x", 2));
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 x @attr 1=4 my", 3));
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 my @attr 1=4 x", 3));
+    YAZ_CHECK(tl_query(zh, "@or @attr 1=4 my @attr 1=4 my", 3));
 
     /* not searches */
     /* bug 619 */
-    YAZ_CHECK(tl_query(zh, "@not @attr 1=4 notfound @attr 1=4 x", 0)); 
+    YAZ_CHECK(tl_query(zh, "@not @attr 1=4 notfound @attr 1=4 x", 0));
     YAZ_CHECK(tl_query(zh, "@not @attr 1=4 x @attr 1=4 x", 0));
     YAZ_CHECK(tl_query(zh, "@not @attr 1=4 my @attr 1=4 x", 1));
     YAZ_CHECK(tl_query(zh, "@not @attr 1=4 my @attr 1=4 notfound", 3));
     YAZ_CHECK(tl_query(zh, "@not @attr 1=4 notfound @attr 1=4 notfound", 0));
-    
+
     /* phrase searches */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 my", 3));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 {my x}", 1));
@@ -295,7 +295,7 @@ static void tst(int argc, char **argv)
 
     /* exl=1 distance=2 order=0 relation=3 (=), known, unit=word */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @prox 1 2 1 3 k 2 my x", 1));
-    
+
     /* exl=0 distance=2 order=1 relation=2 (<=), known, unit=word */
     YAZ_CHECK(tl_query(zh, "@attr 1=1016 @prox 0 2 1 2 k 2 a y", 1));
 
@@ -374,7 +374,7 @@ static void tst(int argc, char **argv)
     /* position , or-list */
     YAZ_CHECK(tl_query(zh, "@attr 4=105 @attr 3=1 {title my}", 3));
     YAZ_CHECK(tl_query(zh, "@attr 4=105 @attr 3=1 {title x}", 0));
-    
+
     /* position, and-list */
     YAZ_CHECK(tl_query(zh, "@attr 4=6 @attr 3=1 {title my}", 0));
     YAZ_CHECK(tl_query(zh, "@attr 4=6 @attr 3=1 {title x}", 0));
@@ -429,7 +429,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=30 @attr 4=5 @attr 2=4 {2107-09-19 00:00:00}", 1));
     /* > */
     YAZ_CHECK(tl_query(zh, "@attr 1=30 @attr 4=5 @attr 2=5 {2107-09-19 00:00:00}", 0));
-    
+
 
     YAZ_CHECK(tl_close_down(zh, zs));
 }

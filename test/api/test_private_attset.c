@@ -44,18 +44,18 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=extra_title my", 1));
 
     // numeric attributes with Bib-1 should produce an error
-    YAZ_CHECK(tl_query_x(zh, 
+    YAZ_CHECK(tl_query_x(zh,
                          "@attr 1=4 my", 0, 121));
-    YAZ_CHECK(tl_query_x(zh, 
+    YAZ_CHECK(tl_query_x(zh,
                          "@attr 1=7 my", 0, 121));
     // private OID with incorrect use attribute
-    YAZ_CHECK(tl_query_x(zh, 
+    YAZ_CHECK(tl_query_x(zh,
                          "@attr 1.2.840.10003.3.1000.1000.1 1=4 my", 0, 114));
     // private OID with OK use attribute
-    YAZ_CHECK(tl_query(zh, 
+    YAZ_CHECK(tl_query(zh,
                        "@attr 1.2.840.10003.3.1000.1000.1 1=7 my", 1));
 
-    YAZ_CHECK(tl_query(zh, 
+    YAZ_CHECK(tl_query(zh,
                        "@attr 1.2.840.10003.3.1000.1000.1 1=8 my", 1));
 
     YAZ_CHECK(tl_close_down(zh, zs));

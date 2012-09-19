@@ -66,10 +66,10 @@ char data1_ScanNextToken(char* pBuffer,
     return(**pPosInBuffer);
 }
 
-/* 
+/*
  * Attempt to find a string value given the specified tagpath
- * 
- * Need to make this safe by passing in a buffer..... 
+ *
+ * Need to make this safe by passing in a buffer.....
  *
  */
 char *data1_getNodeValue(data1_node* node, char* pTagPath)
@@ -109,7 +109,7 @@ char *data1_getNodeValue(data1_node* node, char* pTagPath)
 /* Max length of a tag */
 #define MAX_TAG_SIZE 50
 
-/* 
+/*
  * data1_LookupNode : Try and find a node as specified by a tagpath
  */
 data1_node *data1_LookupNode(data1_node* node, char* pTagPath)
@@ -193,11 +193,11 @@ data1_node *data1_LookupNode(data1_node* node, char* pTagPath)
             /* See if we can find the . at the end of this clause */
             sepchr = data1_ScanNextToken(pTagPath, &pCurrCharInPath, "."," ", Buffer);
         }
-        
+
     }
 
     yaz_log(YLOG_DEBUG,"search node for child like [%d,%d,%s,%d]",iTagType,iTagValue,StringTagVal,iOccurences);
-    
+
 
     /* OK.. We have extracted tagtype, Value and Occurence, see if we can find a node */
     /* Under the current parent matching that description                             */
@@ -248,7 +248,7 @@ data1_node *data1_LookupNode(data1_node* node, char* pTagPath)
 /**
    \brief Count the number of occurences of the last instance on a tagpath.
    \param node : The root of the tree we wish to look for occurences in
-   \param pTagPath : The tagpath we want to count the occurences of... 
+   \param pTagPath : The tagpath we want to count the occurences of...
 */
 int data1_CountOccurences(data1_node* node, char* pTagPath)
 {

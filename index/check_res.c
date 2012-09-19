@@ -31,7 +31,7 @@ int zebra_check_res(Res res)
 {
     int errors = 0;
     Res v = res_open(0, 0);
-    
+
     res_add(v, "attset", "");
     res_add(v, "chdir", "");
     res_add(v, "dbaccess", "");
@@ -74,9 +74,9 @@ int zebra_check_res(Res res)
     res_add(v, "openRW", "p");
     res_add(v, "facetNumRecs", "");
     res_add(v, "facetMaxChunks", "");
-    
+
     errors = res_check(res, v);
- 
+
     res_close(v);
     return errors;
 }

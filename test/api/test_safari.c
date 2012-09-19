@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 #include "testlib.h"
 
-const char *myrec[] = 
+const char *myrec[] =
 {
     "1234\n"  /* ID first record */
     /* chunk owner seq idx term */
@@ -83,7 +83,7 @@ static void tst(int argc, char **argv)
     zint ids[3];
     zint limits[3];
     ZebraService zs = tl_start_up("test_safari.cfg", argc, argv);
-    
+
     ZebraHandle zh = zebra_open(zs, 0);
 
     YAZ_CHECK(tl_init_data(zh, myrec));
@@ -115,7 +115,7 @@ static void tst(int argc, char **argv)
                                   myrec[2]), ZEBRA_OK);
     YAZ_CHECK_EQ(tl_fetch_compare(zh, 3, "R", yaz_oid_recsyn_sutrs,
                                   myrec[4]), ZEBRA_OK);
-    YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::any:0", 
+    YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::any:0",
                                   yaz_oid_recsyn_xml,
                                   "<record xmlns=\"http://www.indexdata.com/zebra/\">\n"
                                   "  <facet type=\"0\" index=\"any\">\n"
@@ -126,7 +126,7 @@ static void tst(int argc, char **argv)
                                   "    <term coccur=\"1\" occur=\"1\">old</term>\n"
                                   "  </facet>\n"
                                   "</record>\n"), ZEBRA_OK);
-    YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::any:0:2", 
+    YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::any:0:2",
                                   yaz_oid_recsyn_xml,
                                   "<record xmlns=\"http://www.indexdata.com/zebra/\">\n"
                                "  <facet type=\"0\" index=\"any\">\n"
@@ -136,7 +136,7 @@ static void tst(int argc, char **argv)
                                   "</record>\n"), ZEBRA_OK);
 
 
-    YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::ti:s", 
+    YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::ti:s",
                                   yaz_oid_recsyn_xml,
                                   "<record xmlns=\"http://www.indexdata.com/zebra/\">\n"
                                   "  <facet type=\"s\" index=\"ti\">\n"
@@ -182,7 +182,7 @@ static void tst(int argc, char **argv)
 
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and a b", 1));
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and a c", 1));
-    
+
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and c d", 1));
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and b f", 1));
     YAZ_CHECK(tl_query(zh, "@attr 4=3 @attr 1=title @and f g", 0));

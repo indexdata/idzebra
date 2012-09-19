@@ -132,7 +132,7 @@ int key_qsort_compare (const void *p1, const void *p2)
     size_t l;
     char *cp1 = *(char **) p1;
     char *cp2 = *(char **) p2;
- 
+
     if ((r = strcmp (cp1, cp2)))
         return r;
     l = strlen(cp1)+1;
@@ -216,7 +216,7 @@ void iscz1_encode (void *vp, char **dst, const char **src)
 	 3, 2, 9, 12
 	 3, 2, 10, 2
 	 4, 1
-	 
+
 	 if diff is 0, then there is more ...
 	 if diff is non-zero, then _may_ be more
     */

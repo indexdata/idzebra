@@ -177,7 +177,7 @@ BFile bf_xopen(BFiles bfs, const char *name, int block_size, int wrflag,
 	bf->alloc_buf_size = HEADER_SIZE;
     else
 	bf->alloc_buf_size = bf->block_size;
-	
+
     hbuf = bf->alloc_buf = xmalloc(bf->alloc_buf_size);
 
     /* fill-in default values */
@@ -243,7 +243,7 @@ int bf_xclose(BFile bf, int version, const char *more_info)
 	zint pos = 0;
 	assert(bf->alloc_buf);
 	assert(bf->magic);
-	sprintf(bf->alloc_buf, "%s %d " ZINT_FORMAT " " ZINT_FORMAT " ", 
+	sprintf(bf->alloc_buf, "%s %d " ZINT_FORMAT " " ZINT_FORMAT " ",
 		bf->magic, version, bf->last_block, bf->free_list);
 	if (more_info)
 	    strcat(bf->alloc_buf, more_info);
@@ -337,7 +337,7 @@ int bf_read2(BFile bf, zint no, int offset, int nbytes, void *buf)
 	if ((ret = cf_read(bf->cf, no, offset, nbytes, buf)) == 0)
 	    ret = mf_read(bf->mf, no, offset, nbytes, buf);
     }
-    else 
+    else
 	ret = mf_read(bf->mf, no, offset, nbytes, buf);
     zebra_lock_rdwr_runlock(&bf->rdwr_lock);
     return ret;

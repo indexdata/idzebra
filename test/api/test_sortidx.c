@@ -95,16 +95,16 @@ static void tst2(zebra_sort_index_t si)
         WRBUF w2 = wrbuf_alloc();
         zebra_sort_sysno(si, sysno);
         YAZ_CHECK_EQ(zebra_sort_read(si, 0, w2), 0);
-        
+
         for (i = 0; i < 600; i++) /* 600 * 6 < max size =4K */
             wrbuf_write(w1, "12345", 6);
-        
+
         zebra_sort_add(si, input_section_id, w1);
-        
+
         zebra_sort_sysno(si, sysno);
-        
+
         YAZ_CHECK_EQ(zebra_sort_read(si, &output_section_id, w2), 1);
-        
+
         YAZ_CHECK_EQ(wrbuf_len(w1), wrbuf_len(w2));
         YAZ_CHECK(!memcmp(wrbuf_buf(w1), wrbuf_buf(w2), wrbuf_len(w2)));
         YAZ_CHECK_EQ(input_section_id, output_section_id);

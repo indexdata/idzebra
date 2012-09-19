@@ -45,7 +45,7 @@ static void r_pos(RSFD rfd, double *current, double  *total);
 static void r_flush(RSFD rfd, int mk);
 static void r_reread(RSFD rfd);
 
-static const struct rset_control control = 
+static const struct rset_control control =
 {
     "temp",
     r_delete,
@@ -53,7 +53,7 @@ static const struct rset_control control =
     r_open,
     r_close,
     0, /* no forward */
-    r_pos, 
+    r_pos,
     r_read,
     r_write,
 };
@@ -106,7 +106,7 @@ RSET rset_create_temp(NMEM nmem, struct rset_key_control *kcontrol,
         info->temp_path = NULL;
     else
         info->temp_path = nmem_strdup(rnew->nmem, temp_path);
-    rnew->priv = info; 
+    rnew->priv = info;
     return rnew;
 } /* rstemp_create */
 
@@ -146,7 +146,7 @@ static RSFD r_open(RSET ct, int flag)
         prfd = (struct rfd_private *) nmem_malloc(ct->nmem, sizeof(*prfd));
         rfd->priv = (void *)prfd;
         prfd->buf = nmem_malloc(ct->nmem,ct->keycontrol->key_size);
-    } 
+    }
     else
         prfd= rfd->priv;
     r_flush(rfd, 0);
@@ -203,7 +203,7 @@ static void r_flush(RSFD rfd, int mk)
     {
         size_t count;
         int r;
-        
+
         if (lseek(info->fd, info->pos_buf, SEEK_SET) == -1)
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: lseek (1) %s", info->fname);
@@ -246,7 +246,7 @@ static void r_close(RSFD rfd)
  */
 static void r_reread(RSFD rfd)
 {
-    struct rfd_private *mrfd = (struct rfd_private*) rfd->priv; 
+    struct rfd_private *mrfd = (struct rfd_private*) rfd->priv;
     struct rset_private *info = (struct rset_private *)rfd->rset->priv;
 
     if (info->fname)
@@ -283,7 +283,7 @@ static void r_reread(RSFD rfd)
 
 static int r_read(RSFD rfd, void *buf, TERMID *term)
 {
-    struct rfd_private *mrfd = (struct rfd_private*) rfd->priv;  
+    struct rfd_private *mrfd = (struct rfd_private*) rfd->priv;
     struct rset_private *info = (struct rset_private *)rfd->rset->priv;
 
     size_t nc = mrfd->pos_cur + rfd->rset->keycontrol->key_size;
@@ -299,7 +299,7 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
     memcpy(buf, info->buf_mem + (mrfd->pos_cur - info->pos_buf),
             rfd->rset->keycontrol->key_size);
     if (term)
-        *term = rfd->rset->term; 
+        *term = rfd->rset->term;
         /* FIXME - should we store and return terms ?? */
     mrfd->pos_cur = nc;
     mrfd->cur++;
@@ -308,7 +308,7 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
 
 static int r_write(RSFD rfd, const void *buf)
 {
-    struct rfd_private *mrfd = (struct rfd_private*) rfd->priv;  
+    struct rfd_private *mrfd = (struct rfd_private*) rfd->priv;
     struct rset_private *info = (struct rset_private *)rfd->rset->priv;
 
     size_t nc = mrfd->pos_cur + rfd->rset->keycontrol->key_size;
@@ -332,9 +332,9 @@ static int r_write(RSFD rfd, const void *buf)
 
 static void r_pos(RSFD rfd, double  *current, double  *total)
 {
-    struct rfd_private *mrfd = (struct rfd_private*) rfd->priv;  
+    struct rfd_private *mrfd = (struct rfd_private*) rfd->priv;
     struct rset_private *info = (struct rset_private *)rfd->rset->priv;
-    
+
     *current = (double) mrfd->cur;
     *total = (double) info->hits;
 }

@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 /*
- * This module reads "loose" SGML and converts it to data1 tree 
+ * This module reads "loose" SGML and converts it to data1 tree
  */
 
 #if HAVE_CONFIG_H
@@ -44,7 +44,7 @@ data1_node *data1_get_root_tag (data1_handle dh, data1_node *n)
     }
     return n;
 }
-        
+
 /*
  * get the tag which is the immediate parent of this node (this may mean
  * traversing intermediate things like variants and stuff.
@@ -153,7 +153,7 @@ data1_node *data1_insert_node (data1_handle dh, NMEM m, int type,
 {
     data1_node *r = (data1_node *)nmem_malloc(m, sizeof(*r));
     r->next = r->child = r->last_child = 0;
-    
+
     if (!parent)
         r->root = r;
     else
@@ -178,7 +178,7 @@ data1_node *data1_mk_root (data1_handle dh, NMEM nmem, const char *name)
     if (!absyn)
     {
         yaz_log(YLOG_WARN, "Unable to acquire abstract syntax " "for '%s'",
-                name); 
+                name);
         /* It's now OK for a record not to have an absyn */
     }
     res = data1_mk_node2 (dh, nmem, DATA1N_root, 0);
@@ -214,7 +214,7 @@ void data1_add_attrs(data1_handle dh, NMEM nmem, const char **attr,
     }
     *p = 0;
 }
-		     
+
 data1_node *data1_mk_preprocess (data1_handle dh, NMEM nmem,
                                  const char *target,
                                  const char **attr, data1_node *at)
@@ -230,7 +230,7 @@ data1_node *data1_mk_preprocess_n (data1_handle dh, NMEM nmem,
     data1_node *res = data1_mk_node2 (dh, nmem, DATA1N_preprocess, at);
     res->u.preprocess.target = data1_insert_string_n (dh, res, nmem,
                                                       target, len);
-    
+
     data1_add_attrs(dh, nmem, attr, &res->u.preprocess.attributes);
     return res;
 }
@@ -250,21 +250,21 @@ data1_node *data1_insert_preprocess_n (data1_handle dh, NMEM nmem,
     data1_node *res = data1_insert_node (dh, nmem, DATA1N_preprocess, at);
     res->u.preprocess.target = data1_insert_string_n (dh, res, nmem,
                                                       target, len);
-    
+
     data1_add_attrs(dh, nmem, attr, &res->u.preprocess.attributes);
     return res;
 }
 
-data1_node *data1_mk_tag_n (data1_handle dh, NMEM nmem, 
+data1_node *data1_mk_tag_n (data1_handle dh, NMEM nmem,
                             const char *tag, size_t len, const char **attr,
                             data1_node *at)
 {
     data1_node *partag = get_parent_tag(dh, at);
     data1_node *res = data1_mk_node2 (dh, nmem, DATA1N_tag, at);
     data1_element *e = 0;
-    
+
     res->u.tag.tag = data1_insert_string_n (dh, res, nmem, tag, len);
-    
+
     if (!partag)  /* top tag? */
         e  = data1_getelementbytagname (dh, at->root->u.root.absyn,
                                         0 /* index as local */,
@@ -292,7 +292,7 @@ void data1_tag_add_attr (data1_handle dh, NMEM nmem,
 }
 
 data1_node *data1_mk_tag (data1_handle dh, NMEM nmem,
-                          const char *tag, const char **attr, data1_node *at) 
+                          const char *tag, const char **attr, data1_node *at)
 {
     return data1_mk_tag_n (dh, nmem, tag, strlen(tag), attr, at);
 }
@@ -316,7 +316,7 @@ data1_node *data1_search_tag (data1_handle dh, data1_node *n,
     return 0;
 }
 
-data1_node *data1_mk_tag_uni (data1_handle dh, NMEM nmem, 
+data1_node *data1_mk_tag_uni (data1_handle dh, NMEM nmem,
                               const char *tag, data1_node *at)
 {
     data1_node *node = data1_search_tag (dh, at->child, tag);
@@ -333,7 +333,7 @@ data1_node *data1_mk_text_n (data1_handle dh, NMEM mem,
     data1_node *res = data1_mk_node2 (dh, mem, DATA1N_data, parent);
     res->u.data.what = DATA1I_text;
     res->u.data.len = len;
-    
+
     res->u.data.data = data1_insert_string_n (dh, res, mem, buf, len);
     return res;
 }
@@ -359,7 +359,7 @@ data1_node *data1_mk_comment_n (data1_handle dh, NMEM mem,
     data1_node *res = data1_mk_node2 (dh, mem, DATA1N_comment, parent);
     res->u.data.what = DATA1I_text;
     res->u.data.len = len;
-    
+
     res->u.data.data = data1_insert_string_n (dh, res, mem, buf, len);
     return res;
 }
@@ -403,7 +403,7 @@ static data1_node *data1_add_insert_taggeddata(data1_handle dh,
 
     if (!partag)
         e = data1_getelementbytagname (dh, root->u.root.absyn, 0, tagname);
-    else 
+    else
     {
 	e = partag->u.tag.element;
         if (e)
@@ -459,7 +459,7 @@ data1_node *data1_mk_tag_data_zint (data1_handle dh, data1_node *at,
                                    NMEM nmem)
 {
     data1_node *node_data;
-    
+
     node_data = data1_mk_tag_data (dh, at, tag, nmem);
     if (!node_data)
 	return 0;
@@ -484,11 +484,11 @@ data1_node *data1_mk_tag_data_oid (data1_handle dh, data1_node *at,
     data1_node *node_data;
     char str[128], *p = str;
     Odr_oid *ii;
-    
+
     node_data = data1_mk_tag_data (dh, at, tag, nmem);
     if (!node_data)
 	return 0;
-    
+
     for (ii = oid; *ii >= 0; ii++)
     {
 	if (ii != oid)
@@ -508,7 +508,7 @@ data1_node *data1_mk_tag_data_text (data1_handle dh, data1_node *at,
                                     NMEM nmem)
 {
     data1_node *node_data;
-    
+
     node_data = data1_mk_tag_data (dh, at, tag, nmem);
     if (!node_data)
 	return 0;
@@ -551,14 +551,14 @@ static int ampr (int (*get_byte)(void *fh), void *fh, int *amp)
     {
         char ent[20];
         int i = 0;
-       
+
         while (1)
         {
             c = (*get_byte)(fh);
             if (c == ';')
             {
                 ent[i] = 0;
-                
+
                 c = ' ';
                 if (!strcmp (ent, "quot"))
                     c = '"';
@@ -602,7 +602,7 @@ data1_xattr *data1_read_xattr (data1_handle dh, NMEM m,
 	pp = &p->next;
 	p->value = 0;
         p->what = DATA1I_xmltext;
-	
+
 	wrbuf_rewind(wrbuf);
 	while (c && c != '=' && c != '>' && c != '/' && !d1_isspace(c))
 	{
@@ -615,7 +615,7 @@ data1_xattr *data1_read_xattr (data1_handle dh, NMEM m,
 	    c = ampr (get_byte, fh, amp);
 	    if (*amp == 0 && c == '"')
 	    {
-		c = ampr (get_byte, fh, amp);	
+		c = ampr (get_byte, fh, amp);
 		wrbuf_rewind(wrbuf);
 		while (*amp || (c && c != '"'))
 		{
@@ -627,7 +627,7 @@ data1_xattr *data1_read_xattr (data1_handle dh, NMEM m,
 	    }
 	    else if (*amp == 0 && c == '\'')
 	    {
-		c = ampr (get_byte, fh, amp);	
+		c = ampr (get_byte, fh, amp);
 		wrbuf_rewind(wrbuf);
 		while (*amp || (c && c != '\''))
 		{
@@ -706,7 +706,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 			    break;
 			}
 		    }
-		    else 
+		    else
 		    {
 			if (amp == 0 && c == quote_mode)
 			    quote_mode = 0;
@@ -717,19 +717,19 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 	    else if (amp == 0 && c == '!')
 	    {
                 int c0, amp0;
-              
+
                 wrbuf_rewind(wrbuf);
-                
+
                 c0 = ampr (get_byte, fh, &amp0);
                 if (amp0 == 0 && c0 == '\0')
                     break;
                 c = ampr (get_byte, fh, &amp);
-                
+
                 if (amp0 == 0 && c0 == '-' && amp == 0 && c == '-')
                 {
                     /* COMMENT: <!-- ... --> */
                     int no_dash = 0;
-                    
+
                     c = ampr (get_byte, fh, &amp);
                     while (amp || c)
                     {
@@ -738,7 +738,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
                         else if (amp == 0 && c == '>' && no_dash >= 2)
                         {
                             if (level > 0)
-                                d1_stack[level] = 
+                                d1_stack[level] =
                                     data1_mk_comment_n (
                                         dh, m,
                                         wrbuf_buf(wrbuf), wrbuf_len(wrbuf)-2,
@@ -755,7 +755,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
                 }
                 else
                 {   /* DIRECTIVE: <! .. > */
-	
+
 		    int blevel = 0;
                     while (amp || c)
                     {
@@ -795,7 +795,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 		c = ampr (get_byte, fh, &amp);
 
 	    /* End tag? */
-	    if (end_tag)       
+	    if (end_tag)
 	    {
 		if (*tag == '\0')
 		    --level;        /* </> */
@@ -832,10 +832,10 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
                         return d1_stack[0];
                 }
 		continue;
-	    }	
-	    else if (!strcmp(tag, "var") 
+	    }
+	    else if (!strcmp(tag, "var")
 		     && xattr && xattr->next && xattr->next->next
-		     && xattr->value == 0 
+		     && xattr->value == 0
 		     && xattr->next->value == 0
 		     && xattr->next->next->value == 0)
 	    {
@@ -844,7 +844,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 		const char *type = xattr->next->name;
 		const char *value = xattr->next->name;
 		data1_vartype *tp;
-		
+
 		yaz_log(YLOG_LOG, "Variant class=%s type=%s value=%s",
 			tclass, type, value);
 		if (!(tp =
@@ -853,7 +853,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 					   tclass, type)))
 		    continue;
 		/*
-		 * If we're the first variant in this group, create a parent 
+		 * If we're the first variant in this group, create a parent
 		 * variant, and insert it before the current variant.
 		 */
 		if (parent->which != DATA1N_variant)
@@ -879,9 +879,9 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 			data1_insert_string (dh, res, m, value);
 		}
 	    }
-	    else 
+	    else
             {
-                
+
                 /* tag .. acquire our element in the abstract syntax */
                 if (level == 0)
                 {
@@ -909,7 +909,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 	else /* != '<'... this is a body of text */
 	{
 	    int len;
-	    
+
 	    if (level == 0)
 	    {
 		c = ampr (get_byte, fh, &amp);
@@ -919,7 +919,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 	    res->u.data.what = DATA1I_xmltext;
 	    res->u.data.formatted_text = 0;
 	    d1_stack[level] = res;
-	    
+
 	    wrbuf_rewind(wrbuf);
 
 	    while (amp || (c && c != '<'))
@@ -934,7 +934,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 		res->u.data.data = (char*) nmem_malloc (m, len);
 	    else
 		res->u.data.data = res->lbuf;
-	
+
             if (len)
                 memcpy (res->u.data.data, wrbuf_buf(wrbuf), len);
             else
@@ -974,10 +974,10 @@ data1_node *data1_read_record(data1_handle dh,
     char **buf = data1_get_read_buf (dh, &size);
     const char *bp;
     int rd = 0, res;
-    
+
     if (!*buf)
 	*buf = (char *)xmalloc(*size = 4096);
-    
+
     for (;;)
     {
 	if (rd + 2048 >= *size && !(*buf =(char *)xrealloc(*buf, *size *= 2)))
@@ -1004,7 +1004,7 @@ data1_node *data1_read_sgml (data1_handle dh, NMEM m, const char *buf)
 }
 
 
-static int conv_item(NMEM m, yaz_iconv_t t, 
+static int conv_item(NMEM m, yaz_iconv_t t,
                      WRBUF wrbuf, char *inbuf, size_t inlen)
 {
     wrbuf_rewind(wrbuf);
@@ -1035,7 +1035,7 @@ static void data1_iconv_s (data1_handle dh, NMEM m, data1_node *n,
                 == 0)
             {
                 n->u.tag.tag =
-                    data1_insert_string_n (dh, n, m, 
+                    data1_insert_string_n (dh, n, m,
                                            wrbuf->buf, wrbuf->pos);
             }
             if (n->u.tag.attributes)
@@ -1086,7 +1086,7 @@ const char *data1_get_encoding (data1_handle dh, data1_node *n)
 }
 
 int data1_iconv (data1_handle dh, NMEM m, data1_node *n,
-                 const char *tocode, 
+                 const char *tocode,
                  const char *fromcode)
 {
     if (yaz_matchstr (tocode, fromcode))
@@ -1111,24 +1111,24 @@ void data1_chop_text(data1_handle dh, NMEM m, data1_node *n)
     {
         if (n->which == DATA1N_data)
         {
-            
+
             int sz = n->u.data.len;
             const char *ndata = n->u.data.data;
             int off = 0;
-            
+
             for (off = 0; off < sz; off++)
                 if (!d1_isspace(ndata[off]))
                     break;
             sz = sz - off;
             ndata += off;
-            
+
             while (sz && d1_isspace(ndata[sz - 1]))
                 sz--;
 
             n->u.data.data = nmem_malloc(m, sz);
             n->u.data.len = sz;
             memcpy(n->u.data.data, ndata, sz);
-		
+
         }
         data1_chop_text(dh, m, n->child);
     }
@@ -1138,7 +1138,7 @@ void data1_concat_text(data1_handle dh, NMEM m, data1_node *n)
 {
     for (; n; n = n->next)
     {
-        if (n->which == DATA1N_data && n->next && 
+        if (n->which == DATA1N_data && n->next &&
             n->next->which == DATA1N_data)
         {
             int sz = 0;
@@ -1158,7 +1158,7 @@ void data1_concat_text(data1_handle dh, NMEM m, data1_node *n)
             n->next = np;
 	    if (!np && n->parent)
 		n->parent->last_child = n;
-		
+
         }
         data1_concat_text(dh, m, n->child);
     }

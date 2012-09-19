@@ -135,7 +135,7 @@ static void *filter_init(Res res, RecType recType)
     tinfo->schemas = 0;
 
 #if YAZ_HAVE_EXSLT
-    exsltRegisterAll(); 
+    exsltRegisterAll();
 #endif
 
 #if ENABLE_INPUT_CALLBACK
@@ -151,7 +151,7 @@ static void *filter_init(Res res, RecType recType)
 static int attr_content(struct _xmlAttr *attr, const char *name,
 			const char **dst_content)
 {
-    if (!XML_STRCMP(attr->name, name) && attr->children 
+    if (!XML_STRCMP(attr->name, name) && attr->children
         && attr->children->type == XML_TEXT_NODE)
     {
 	*dst_content = (const char *)(attr->children->content);
@@ -174,7 +174,7 @@ static void destroy_schemas(struct filter_info *tinfo)
     tinfo->schemas = 0;
     xfree(tinfo->fname);
     if (tinfo->doc)
-	xmlFreeDoc(tinfo->doc);    
+	xmlFreeDoc(tinfo->doc);
     tinfo->doc = 0;
 }
 
@@ -183,33 +183,33 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
     char tmp_full_name[1024];
     xmlNodePtr ptr;
     tinfo->fname = xstrdup(fname);
-    
-    if (yaz_filepath_resolve(tinfo->fname, tinfo->profile_path, 
+
+    if (yaz_filepath_resolve(tinfo->fname, tinfo->profile_path,
                              NULL, tmp_full_name))
         tinfo->full_name = xstrdup(tmp_full_name);
     else
         tinfo->full_name = xstrdup(tinfo->fname);
-    
+
     yaz_log(YLOG_LOG, "alvis filter: loading config file %s", tinfo->full_name);
-    
+
     tinfo->doc = xmlParseFile(tinfo->full_name);
-    
+
     if (!tinfo->doc)
     {
-        yaz_log(YLOG_WARN, "alvis filter: could not parse config file %s", 
+        yaz_log(YLOG_WARN, "alvis filter: could not parse config file %s",
                 tinfo->full_name);
-        
+
 	return ZEBRA_FAIL;
     }
-    
+
     ptr = xmlDocGetRootElement(tinfo->doc);
-    if (!ptr || ptr->type != XML_ELEMENT_NODE 
+    if (!ptr || ptr->type != XML_ELEMENT_NODE
         || XML_STRCMP(ptr->name, "schemaInfo"))
     {
-        yaz_log(YLOG_WARN, 
-                "alvis filter:  config file %s :" 
-                " expected root element <schemaInfo>", 
-                tinfo->full_name);  
+        yaz_log(YLOG_WARN,
+                "alvis filter:  config file %s :"
+                " expected root element <schemaInfo>",
+                tinfo->full_name);
         return ZEBRA_FAIL;
     }
 
@@ -218,7 +218,7 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 	if (ptr->type != XML_ELEMENT_NODE)
 	    continue;
 	if (!XML_STRCMP(ptr->name, "schema"))
-	{  
+	{
 	    struct _xmlAttr *attr;
 	    struct filter_schema *schema = xmalloc(sizeof(*schema));
 	    schema->name = 0;
@@ -235,7 +235,7 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 		attr_content(attr, "stylesheet", &schema->stylesheet);
 		attr_content(attr, "default", &schema->default_schema);
 	    }
-            /*yaz_log(YLOG_LOG, "XSLT add %s %s %s", 
+            /*yaz_log(YLOG_LOG, "XSLT add %s %s %s",
               schema->name, schema->identifier, schema->stylesheet); */
 
             /* find requested schema */
@@ -243,20 +243,20 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 	    if (schema->stylesheet)
             {
                 char tmp_xslt_full_name[1024];
-                if (!yaz_filepath_resolve(schema->stylesheet, tinfo->profile_path, 
-                                          NULL, tmp_xslt_full_name)) 
+                if (!yaz_filepath_resolve(schema->stylesheet, tinfo->profile_path,
+                                          NULL, tmp_xslt_full_name))
                 {
-                    yaz_log(YLOG_WARN, 
+                    yaz_log(YLOG_WARN,
                             "alvis filter: stylesheet %s not found in path %s",
                             schema->stylesheet, tinfo->profile_path);
                     return ZEBRA_FAIL;
                 }
-                schema->stylesheet_xsp 
+                schema->stylesheet_xsp
                     = xsltParseStylesheetFile((const xmlChar*) tmp_xslt_full_name);
                 if (!schema->stylesheet_xsp)
                 {
-                    yaz_log(YLOG_WARN, 
-                            "alvis filter: could not parse xslt stylesheet %s", 
+                    yaz_log(YLOG_WARN,
+                            "alvis filter: could not parse xslt stylesheet %s",
                             tmp_xslt_full_name);
                     return ZEBRA_FAIL;
                 }
@@ -269,7 +269,7 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 	    {
                 const char *split_level_str = 0;
 		attr_content(attr, "level", &split_level_str);
-                tinfo->split_level = 
+                tinfo->split_level =
                     split_level_str ? atoi(split_level_str) : 0;
 	    }
 	}
@@ -288,16 +288,16 @@ static struct filter_schema *lookup_schema(struct filter_info *tinfo,
     struct filter_schema *schema;
 
     for (schema = tinfo->schemas; schema; schema = schema->next)
-    { 
+    {
         /* find requested schema */
-	if (est) 
-	{    
+	if (est)
+	{
 	    if (schema->identifier && !strcmp(schema->identifier, est))
                 return schema;
-            
+
 	    if (schema->name && !strcmp(schema->name, est))
 		return schema;
-	} 
+	}
         /* or return default schema if defined */
         else if (schema->default_schema)
 	    return schema;
@@ -306,7 +306,7 @@ static struct filter_schema *lookup_schema(struct filter_info *tinfo,
     /* return first schema if no default schema defined */
     if (tinfo->schemas)
         return tinfo->schemas;
-    
+
     return 0;
 }
 
@@ -321,7 +321,7 @@ static ZEBRA_RES filter_config(void *clientData, Res res, const char *args)
 
     if (tinfo->fname && !strcmp(args, tinfo->fname))
 	return ZEBRA_OK;
-    
+
     tinfo->profile_path = res_get(res, "profilePath");
     yaz_log(YLOG_LOG, "alvis filter: profilePath %s", tinfo->profile_path);
 
@@ -432,10 +432,10 @@ static void index_record(struct filter_info *tinfo,struct recExtractCtrl *ctrl,
     else if (!strcmp("delete", type_str))
          yaz_log(YLOG_WARN, "alvis filter delete: to be implemented");
     else
-         yaz_log(YLOG_WARN, "alvis filter: unknown record type '%s'", 
+         yaz_log(YLOG_WARN, "alvis filter: unknown record type '%s'",
                  type_str);
 }
-    
+
 static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
 		       xmlDocPtr doc)
 {
@@ -454,7 +454,7 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
     if (schema && schema->stylesheet_xsp)
     {
 	xmlNodePtr root_ptr;
-	xmlDocPtr resDoc = 
+	xmlDocPtr resDoc =
 	    xsltApplyStylesheet(schema->stylesheet_xsp,
 				doc, params);
 	if (p->flagShowRecords)
@@ -480,7 +480,7 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
     if (p->setStoreData)
         (*p->setStoreData)(p, buf_out, len_out);
     xmlFree(buf_out);
-    
+
     xmlFreeDoc(doc);
     return RECCTRL_EXTRACT_OK;
 }
@@ -495,7 +495,7 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
 	    xmlFreeTextReader(tinfo->reader);
 	tinfo->reader = xmlReaderForIO(ioread_ex, ioclose_ex,
 				       p /* I/O handler */,
-				       0 /* URL */, 
+				       0 /* URL */,
 				       0 /* encoding */,
 				       XML_PARSE_XINCLUDE
                                        | XML_PARSE_NOENT
@@ -516,9 +516,9 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
             {
                 xmlNodePtr ptr2 = xmlCopyNode(ptr, 1);
                 xmlDocPtr doc = xmlNewDoc((const xmlChar*) "1.0");
-                
+
                 xmlDocSetRootElement(doc, ptr2);
-                
+
                 return extract_doc(tinfo, p, doc);
             }
             else
@@ -552,7 +552,7 @@ static int extract_full(struct filter_info *tinfo, struct recExtractCtrl *p)
             if (!root)
                 return RECCTRL_EXTRACT_ERROR_GENERIC;
                 } */
-       
+
        return extract_doc(tinfo, p, doc);
     }
     else
@@ -598,7 +598,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	{
 	    esn = p->comp->u.simple->u.generic;
 	}
-	else if (p->comp->which == Z_RecordComp_complex 
+	else if (p->comp->which == Z_RecordComp_complex
 		 && p->comp->u.complex->generic->elementSpec
 		 && p->comp->u.complex->generic->elementSpec->which ==
 		 Z_ElementSpec_elementSetName)
@@ -657,7 +657,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     {
 	p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
     }
-    else if (!p->input_format 
+    else if (!p->input_format
              || !oid_oidcmp(p->input_format, yaz_oid_recsyn_xml))
     {
 	xmlChar *buf_out;
@@ -665,9 +665,9 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 
         if (schema->stylesheet_xsp)
             xsltSaveResultToString(&buf_out, &len_out, resDoc,
-                                   schema->stylesheet_xsp);	
+                                   schema->stylesheet_xsp);
         else
-	    xmlDocDumpMemory(resDoc, &buf_out, &len_out);            
+	    xmlDocDumpMemory(resDoc, &buf_out, &len_out);
 
 	p->output_format = yaz_oid_recsyn_xml;
 	p->rec_len = len_out;
@@ -684,13 +684,13 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
             xsltSaveResultToString(&buf_out, &len_out, resDoc,
                                    schema->stylesheet_xsp);
         else
-	    xmlDocDumpMemory(resDoc, &buf_out, &len_out);            
+	    xmlDocDumpMemory(resDoc, &buf_out, &len_out);
 
 	p->output_format = yaz_oid_recsyn_sutrs;
 	p->rec_len = len_out;
 	p->rec_buf = odr_malloc(p->odr, p->rec_len);
 	memcpy(p->rec_buf, buf_out, p->rec_len);
-	
+
 	xmlFree(buf_out);
     }
     else

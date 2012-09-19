@@ -40,9 +40,9 @@ typedef enum {
     zinfo_index_category_alwaysmatches,
     zinfo_index_category_anchor
 } zinfo_index_category_t;
-    
+
 typedef ZEBRA_RES ZebraExplainUpdateFunc(void *handle,
-                                         Record drec, 
+                                         Record drec,
                                          data1_node *n);
 
 typedef struct zebraExplainInfo *ZebraExplainInfo;
@@ -60,19 +60,19 @@ int zebraExplain_newDatabase(ZebraExplainInfo zei, const char *database,
 int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
 			     int set, int use);
 
-/** \brief lookup ordinal from string index + index type 
+/** \brief lookup ordinal from string index + index type
     \param zei explain info
     \param cat category
     \param index_type index type
     \param str index string
     \returns  -1 no such index+type exist; ordinal otherwise
 */
-    
-int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, 
+
+int zebraExplain_lookup_attr_str(ZebraExplainInfo zei,
                                  zinfo_index_category_t cat,
                                  const char *index_type,
 				 const char *str);
-int zebraExplain_add_attr_str(ZebraExplainInfo zei, 
+int zebraExplain_add_attr_str(ZebraExplainInfo zei,
                               zinfo_index_category_t cat,
                               const char *index_type,
 			      const char *str);

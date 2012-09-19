@@ -41,7 +41,7 @@ static int r_write(RSFD rfd, const void *buf);
 static void r_pos(RSFD rfd, double *current, double *total);
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
 
-static const struct rset_control control = 
+static const struct rset_control control =
 {
     "prox",
     r_delete,
@@ -67,7 +67,7 @@ struct rset_prox_rfd {
     char *more;  /* more in each lookahead? */
     TERMID *terms; /* lookahead terms */
     zint hits;
-};    
+};
 
 
 RSET rset_create_prox(NMEM nmem, struct rset_key_control *kcontrol,
@@ -113,16 +113,16 @@ static RSFD r_open(RSET ct, int flag)
         p->more = nmem_malloc(ct->nmem,sizeof(*p->more) * ct->no_children);
         p->buf = nmem_malloc(ct->nmem,sizeof(*p->buf) * ct->no_children);
         p->terms = nmem_malloc(ct->nmem,sizeof(*p->terms) * ct->no_children);
-        for (i = 0; i < ct->no_children; i++) 
+        for (i = 0; i < ct->no_children; i++)
         {
             p->buf[i] = nmem_malloc(ct->nmem,ct->keycontrol->key_size);
             p->terms[i] = 0;
         }
         p->rfd = nmem_malloc(ct->nmem,sizeof(*p->rfd) * ct->no_children);
     }
-    yaz_log(YLOG_DEBUG,"rsprox (%s) open [%p] n=%d", 
+    yaz_log(YLOG_DEBUG,"rsprox (%s) open [%p] n=%d",
             ct->control->desc, rfd, ct->no_children);
-    
+
     for (i = 0; i < ct->no_children; i++)
     {
         p->rfd[i] = rset_open(ct->children[i], RSETF_READ);
@@ -136,7 +136,7 @@ static void r_close(RSFD rfd)
 {
     RSET ct = rfd->rset;
     struct rset_prox_rfd *p = (struct rset_prox_rfd *)(rfd->priv);
-    
+
     int i;
     for (i = 0; i < ct->no_children; i++)
         rset_close(p->rfd[i]);
@@ -155,17 +155,17 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
     {
         /* it is enough to forward first one. Other will follow. */
         if (p->more[0] &&   /* was: cmp >=2 */
-            ((kctrl->cmp)(untilbuf, p->buf[0]) >= rfd->rset->scope) ) 
-            p->more[0] = rset_forward(p->rfd[0], p->buf[0], 
+            ((kctrl->cmp)(untilbuf, p->buf[0]) >= rfd->rset->scope) )
+            p->more[0] = rset_forward(p->rfd[0], p->buf[0],
                                       &p->terms[0], untilbuf);
     }
     if (info->ordered && info->relation <= 3 && info->exclusion == 0)
     {
-        while (p->more[0]) 
+        while (p->more[0])
         {
             for (i = 1; i < ct->no_children; i++)
             {
-                if (!p->more[i]) 
+                if (!p->more[i])
                 {
                     p->more[0] = 0; /* saves us a goto out of while loop. */
                     break;
@@ -189,7 +189,7 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
                         continue;
                     else if (info->relation == 1 && diff < info->distance)
                         continue;
-                    
+
                     p->more[i-1] = rset_read(p->rfd[i-1], p->buf[i-1],
                                              &p->terms[i-1]);
                     break;
@@ -215,20 +215,20 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
     }
     else if (ct->no_children == 2)
     {
-        while (p->more[0] && p->more[1]) 
+        while (p->more[0] && p->more[1])
         {
             int cmp = (*kctrl->cmp)(p->buf[0], p->buf[1]);
             if ( cmp <= - rfd->rset->scope) /* cmp<-1*/
-                p->more[0] = rset_forward(p->rfd[0], p->buf[0], 
+                p->more[0] = rset_forward(p->rfd[0], p->buf[0],
                                           &p->terms[0],p->buf[1]);
             else if ( cmp >= rfd->rset->scope ) /* cmp>1 */
-                p->more[1] = rset_forward(p->rfd[1], p->buf[1], 
+                p->more[1] = rset_forward(p->rfd[1], p->buf[1],
                                           &p->terms[1],p->buf[0]);
             else
             {
                 zint seqno[500]; /* FIXME - why 500 ?? */
                 int n = 0;
-                
+
                 seqno[n++] = (*kctrl->getseq)(p->buf[0]);
                 while ((p->more[0] = rset_read(p->rfd[0],
                                                p->buf[0], &p->terms[0])))
@@ -317,7 +317,7 @@ static void r_pos(RSFD rfd, double *current, double *total)
     struct rset_prox_rfd *p = (struct rset_prox_rfd *)(rfd->priv);
     int i;
     double ratio = 0.0;
-    
+
     for (i = 0; i < ct->no_children; i++)
     {
         double cur, tot;
@@ -334,7 +334,7 @@ static void r_pos(RSFD rfd, double *current, double *total)
         *total = *current/ratio;
     else
         *total = 0.0;
-    
+
     yaz_log(YLOG_DEBUG, "prox_pos: [%d] %0.1f/%0.1f= %0.4f ",
             i, *current, *total, ratio);
 }

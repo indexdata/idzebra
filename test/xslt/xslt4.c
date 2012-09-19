@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 #include <yaz/test.h>
 #include "testlib.h"
-	
+
 static void tst(int argc, char **argv)
 {
     char path[256];
@@ -37,7 +37,7 @@ static void tst(int argc, char **argv)
 
     zebra_init(zh);
 
-    sprintf(profile_path, "%s:%s/../../tab", 
+    sprintf(profile_path, "%s:%s/../../tab",
             tl_get_srcdir(), tl_get_srcdir());
     zebra_set_resource(zh, "profilePath", profile_path);
 

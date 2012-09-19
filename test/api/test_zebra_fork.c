@@ -61,11 +61,11 @@ static void search_process(ZebraService zs, int iter)
     for (i = 0; i<iter; i++)
     {
 	ZebraHandle zh = zebra_open(zs, 0);
-	zint hits;	    
+	zint hits;
 	ZEBRA_RES res = zebra_search_PQF(zh, "@attr 1=4 some", "default",
 					 &hits);
 	YAZ_CHECK(res == ZEBRA_OK);
-	
+
 	YAZ_CHECK(hits >= hits_max);
 	if (hits < hits_max)
 	    printf("i=%d hits=%lld hits_max=%lld\n", i, hits, hits_max);
@@ -82,7 +82,7 @@ static pid_t fork_service(ZebraService zs, int iter,
     YAZ_CHECK(pid != -1);
     if (pid)
 	return pid;
-    
+
     (*f)(zs, iter);
     YAZ_CHECK_TERM;
 }
@@ -91,7 +91,7 @@ static void tst(int argc, char **argv)
 {
     ZebraService zs;
     ZebraHandle zh;
-    
+
     mkdir("register", 0775);
     mkdir("shadow", 0775);
 

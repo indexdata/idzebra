@@ -29,7 +29,7 @@ const char *myrec[] = {
         "  <title>My title</title>\n"
         "</gils>\n",
         0};
-	
+
 #define NUMBER_TO_FETCH_MAX 1000
 
 static void tst(int argc, char **argv)
@@ -65,12 +65,12 @@ static void tst(int argc, char **argv)
         ZebraRetrievalRecord retrievalRecord[NUMBER_TO_FETCH_MAX];
         char setname[20];
         int j;
-        ODR odr_input = odr_createmem(ODR_DECODE);    
-        ODR odr_output = odr_createmem(ODR_DECODE);    
+        ODR odr_input = odr_createmem(ODR_DECODE);
+        ODR odr_output = odr_createmem(ODR_DECODE);
         YAZ_PQF_Parser parser = yaz_pqf_create();
         Z_RPNQuery *query = yaz_pqf_parse(parser, odr_input, "@attr 1=4 my");
         zint hits;
-        
+
         sprintf(setname, "s%d", i+1);
         ret = zebra_search_RPN(zh, odr_input, query, setname, &hits);
 	if (ret != ZEBRA_OK)
@@ -81,7 +81,7 @@ static void tst(int argc, char **argv)
 	}
 	if (hits != number_to_be_inserted)
 	{
-	    yaz_log(YLOG_WARN, "Unexpected hit count " ZINT_FORMAT 
+	    yaz_log(YLOG_WARN, "Unexpected hit count " ZINT_FORMAT
 		    "(should be %d)", hits, number_to_be_inserted);
 	    exit(1);
 	}
@@ -105,7 +105,7 @@ static void tst(int argc, char **argv)
 		    code);
 	    exit(1);
 	}
-	
+
 	for (j = 0; j < number_to_fetch; j++)
 	{
 	    if (!retrievalRecord[j].buf)

@@ -107,7 +107,7 @@ static int traverse_triples(data1_node *n, int level, Z_ElementMetaData *m,
     ODR o)
 {
     data1_node *c;
-    
+
     for (c = n->child; c; c = c->next)
 	if (c->which == DATA1N_data && level)
 	{
@@ -235,7 +235,7 @@ static int is_empty_data (data1_node *n)
 			    	|| n->u.data.what == DATA1I_xmltext))
     {
         int i = n->u.data.len;
-        
+
         while (i > 0 && d1_isspace(n->u.data.data[i-1]))
             i--;
         if (i == 0)
@@ -306,9 +306,9 @@ static Z_TaggedElement *nodetotaggedelement(data1_handle dh, data1_node *n,
     {
 	char *tagstr;
 
-	if (n->which == DATA1N_tag)      
+	if (n->which == DATA1N_tag)
 	    tagstr = n->u.tag.tag;       /* tag at node */
-	else if (tag)                    
+	else if (tag)
 	    tagstr = tag->value.string;  /* no take from well-known */
 	else
             return 0;

@@ -122,13 +122,13 @@ static struct xpath_predicate *get_xpath_boolean(char **pr, NMEM mem,
                                                  char **look, int *literal)
 {
     struct xpath_predicate *left = 0;
-    
+
     left = get_xpath_relation(pr, mem, look, literal);
     if (!left)
         return 0;
-    
+
     while (*look && !*literal &&
-           (!strcmp(*look, "and") || !strcmp(*look, "or") || 
+           (!strcmp(*look, "and") || !strcmp(*look, "or") ||
             !strcmp(*look, "not")))
     {
         struct xpath_predicate *res, *right;
@@ -164,13 +164,13 @@ int zebra_parse_xpath_str(const char *xpath_string,
 {
     const char *cp;
     char *a;
-    
+
     int no = 0;
-    
+
     if (!xpath_string || *xpath_string != '/')
         return -1;
     cp = xpath_string;
-    
+
     while (*cp && no < max)
     {
         int i = 0;
@@ -218,7 +218,7 @@ void dump_xp_predicate (struct xpath_predicate *p)
     if (p) {
         if (p->which == XPATH_PREDICATE_RELATION &&
             p->u.relation.name[0]) {
-            fprintf (stderr, "%s,%s,%s", 
+            fprintf (stderr, "%s,%s,%s",
                      p->u.relation.name,
                      p->u.relation.op,
                      p->u.relation.value);

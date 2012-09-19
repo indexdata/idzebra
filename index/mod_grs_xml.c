@@ -102,7 +102,7 @@ static void cb_decl (void *user, const char *version, const char *encoding,
     attr_list[5] = standalone  ? "yes" : "no";
 
     attr_list[6] = 0;
-    
+
     data1_mk_preprocess (ui->dh, ui->nmem, "xml", attr_list,
                              ui->d1_stack[ui->level-1]);
 #if 0
@@ -111,7 +111,7 @@ static void cb_decl (void *user, const char *version, const char *encoding,
              encoding ? encoding : "null");
 #endif
 }
-    
+
 static void cb_processing (void *user, const char *target,
                            const char *data)
 {
@@ -120,7 +120,7 @@ static void cb_processing (void *user, const char *target,
         data1_mk_preprocess (ui->dh, ui->nmem, target, 0,
                              ui->d1_stack[ui->level-1]);
     data1_mk_text_nf (ui->dh, ui->nmem, data, strlen(data), res);
-    
+
     yaz_log (ui->loglevel, "decl processing target=%s data=%s",
              target ? target : "null",
              data ? data : "null");
@@ -161,7 +161,7 @@ static void cb_entity_decl (void *userData, const char *entityName,
              " publicId=%s notationName=%s",
              entityName, is_parameter_entity, value_length, value,
              base, systemId, publicId, notationName);
-    
+
 }
 
 static int cb_external_entity(XML_Parser pparser,
@@ -261,7 +261,7 @@ static int cb_encoding_handler (void *userData, const char *name,
     iconv_t t = iconv_open ("UNICODE", name);
     if (t == (iconv_t) (-1))
         return 0;
-   
+
     info->data = 0;  /* signal that multibyte is not in use */
     yaz_log (ui->loglevel, "Encoding handler of %s", name);
     for (i = 0; i<256; i++)
@@ -290,7 +290,7 @@ static int cb_encoding_handler (void *userData, const char *name,
                 int len = 2;
                 int j = 0;
                 info->map[i] = -1;
-                
+
                 while (len <= 4)
                 {
                     char sbuf[80];
@@ -413,9 +413,9 @@ data1_node *zebra_read_xml(data1_handle dh,
     uinfo.nmem = m;
     uinfo.d1_stack[0] = data1_mk_node2 (dh, m, DATA1N_root, 0);
     uinfo.d1_stack[1] = 0; /* indicate no children (see end of routine) */
-    
+
     parser = XML_ParserCreate (0 /* encoding */);
-    
+
     XML_SetElementHandler (parser, cb_start, cb_end);
     XML_SetCharacterDataHandler (parser, cb_chardata);
     XML_SetXmlDeclHandler (parser, cb_decl);
@@ -475,7 +475,7 @@ data1_node *zebra_read_xml(data1_handle dh,
         attr_list[3] = "UTF-8"; /* encoding */
 
         attr_list[4] = 0;
-    
+
         data1_insert_preprocess (uinfo.dh, uinfo.nmem, "xml", attr_list,
 				 uinfo.d1_stack[0]);
     }
@@ -538,7 +538,7 @@ idzebra_filter
     &filter_type,
     0,
 };
-    
+
 #endif
 
 /*

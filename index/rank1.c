@@ -68,12 +68,12 @@ static int log2_int(zint g)
 }
 
 /*
- * create: Creates/Initialises this rank handler. This routine is 
+ * create: Creates/Initialises this rank handler. This routine is
  *  called exactly once. The routine returns the class_handle.
  */
 static void *create(ZebraHandle zh)
 {
-    struct rank_class_info *ci = 
+    struct rank_class_info *ci =
         (struct rank_class_info *) xmalloc(sizeof(*ci));
 
     if (!log_initialized)
@@ -104,11 +104,11 @@ static void destroy(struct zebra_register *reg, void *class_handle)
  *  each result set. The returned handle is a "set handle" and
  *  will be used in each of the handlers below.
  */
-static void *begin(struct zebra_register *reg, 
+static void *begin(struct zebra_register *reg,
                    void *class_handle, RSET rset, NMEM nmem,
                    TERMID *terms, int numterms)
 {
-    struct rank_set_info *si = 
+    struct rank_set_info *si =
         (struct rank_set_info *) nmem_malloc(nmem,sizeof(*si));
     int i;
 
@@ -117,13 +117,13 @@ static void *begin(struct zebra_register *reg,
     si->no_rank_entries = 0;
     si->nmem=nmem;
     si->entries = (struct rank_term_info *)
-	nmem_malloc(si->nmem, sizeof(*si->entries)*numterms); 
+	nmem_malloc(si->nmem, sizeof(*si->entries)*numterms);
     for (i = 0; i < numterms; i++)
     {
 	zint g = rset_count(terms[i]->rset);
-        yaz_log(log_level, "i=%d flags=%s '%s'", i, 
+        yaz_log(log_level, "i=%d flags=%s '%s'", i,
                 terms[i]->flags, terms[i]->name );
-	if  (!strncmp(terms[i]->flags, "rank,", 5)) 
+	if  (!strncmp(terms[i]->flags, "rank,", 5))
 	{
             const char *cp = strstr(terms[i]->flags+4, ",w=");
 	    si->entries[i].rank_flag = 1;
@@ -140,7 +140,7 @@ static void *begin(struct zebra_register *reg,
 	si->entries[i].local_occur = 0;  /* FIXME */
 	si->entries[i].global_occur = g;
 	si->entries[i].global_inv = 32 - log2_int(g);
-	yaz_log(log_level, " global_inv = %d g = " ZINT_FORMAT, 
+	yaz_log(log_level, " global_inv = %d g = " ZINT_FORMAT,
                 (int) (32-log2_int(g)), g);
         si->entries[i].term = terms[i];
         si->entries[i].term_index=i;
@@ -179,12 +179,12 @@ static void add(void *set_handle, int seqno, TERMID term)
     assert(ti);
     si->last_pos = seqno;
     ti->local_occur++;
-    yaz_log(log_level, "rank-1 add seqno=%d term=%s count=%d", 
+    yaz_log(log_level, "rank-1 add seqno=%d term=%s count=%d",
             seqno, term->name,ti->local_occur);
 }
 
 /*
- * calc: Called for each document in a result. This handler should 
+ * calc: Called for each document in a result. This handler should
  *  produce a score based on previous call(s) to the add handler. The
  *  score should be between 0 and 1000. If score cannot be obtained
  *  -1 should be returned.
@@ -195,7 +195,7 @@ static int calc_1(void *set_handle, zint sysno, zint staticrank,
     int i, lo, divisor, score = 0;
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
 
-    if (!si->no_rank_entries) 
+    if (!si->no_rank_entries)
 	return -1;   /* ranking not enabled for any terms */
 
     for (i = 0; i < si->no_entries; i++)
@@ -252,7 +252,7 @@ static struct rank_control rank_1_control = {
     add,
 };
 struct rank_control *rank_1_class = &rank_1_control;
- 
+
 static struct rank_control rank_2_control = {
     "rank-2",
     create,
@@ -262,7 +262,7 @@ static struct rank_control rank_2_control = {
     calc_2,
     add,
 };
- 
+
 struct rank_control *rank_2_class = &rank_2_control;
 /*
  * Local variables:

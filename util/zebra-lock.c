@@ -46,7 +46,7 @@ int zebra_mutex_destroy (Zebra_mutex *p)
     if (p->state != 0)
     {
         fprintf (stderr, "zebra_mutex_destroy. state = %d\n", p->state);
-    } 
+    }
 #if YAZ_POSIX_THREADS
     pthread_mutex_destroy (&p->mutex);
 #endif
@@ -140,7 +140,7 @@ int zebra_lock_rdwr_runlock (Zebra_lock_rdwr *p)
     {
 	pthread_mutex_unlock (&p->mutex);
 	return -1;
-    } 
+    }
     else
     {
 	p->readers_reading--;

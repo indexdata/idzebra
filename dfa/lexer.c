@@ -115,7 +115,7 @@ int main (int argc, char **argv)
         if (**++argv != '-' && **argv)
         {
             ++no;
-            
+
             i = read_file (*argv, dfa);
             if (i)
                 return i;

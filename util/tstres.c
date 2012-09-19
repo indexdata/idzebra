@@ -64,7 +64,7 @@ static void tst_res_read_file(void)
         const char *v;
         char path[1024];
         int r;
-        
+
         yaz_snprintf(path, sizeof(path), "%s/tstres.cfg", get_srcdir());
         r = res_read_file(res, path);
         YAZ_CHECK_EQ(r, ZEBRA_OK);

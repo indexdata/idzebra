@@ -66,22 +66,22 @@ static void tst(int argc, char **argv)
 
     /* search for aaa  */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @term string laaas", 0));
-    
+
     /* search ABC in title:0 .  */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=3 @attr 1=4 ABC", 1));
-    
+
     /* search DEF in title:0 .  */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=3 @attr 1=4 DEF", 0));
-    
+
     /* search [ in title:0 .  */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=3 @attr 1=4 [", 1));
-    
+
     /* search \ in title:0 .  */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=3 @attr 1=4 \\\\\\\\", 1));
 
     /* search { in title:0 .  */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=3 @attr 1=4 \\{", 1));
-    
+
     YAZ_CHECK(tl_close_down(zh, zs));
 }
 

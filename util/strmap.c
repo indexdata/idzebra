@@ -32,7 +32,7 @@ struct strmap_entry {
     void *data_buf;
     struct strmap_entry *next;
 };
-    
+
 struct zebra_strmap {
     NMEM nmem_str;
     NMEM nmem_ent;
@@ -142,7 +142,7 @@ struct zebra_strmap_it_s {
     int hno;
     struct strmap_entry *ent;
     zebra_strmap_t st;
-    
+
 };
 
 zebra_strmap_it zebra_strmap_it_create(zebra_strmap_t st)
@@ -183,7 +183,7 @@ const char *zebra_strmap_it_next(zebra_strmap_it it, void **data_buf,
     }
     return 0;
 }
-		 
+
 /*
  * Local variables:
  * c-basic-offset: 4

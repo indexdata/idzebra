@@ -39,7 +39,7 @@ ISAMB isamb_open2(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 YAZ_EXPORT
 void isamb_close(ISAMB isamb);
 
-YAZ_EXPORT 
+YAZ_EXPORT
 void isamb_merge(ISAMB b, ISAM_P *pos, ISAMC_I *data);
 
 YAZ_EXPORT

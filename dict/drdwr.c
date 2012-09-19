@@ -59,7 +59,7 @@ static void release_block(Dict_BFile bf, struct Dict_file_block *p)
 {
     assert(p);
 
-    /* remove from lru queue */    
+    /* remove from lru queue */
     if (p->lru_prev)
         p->lru_prev->lru_next = p->lru_next;
     else
@@ -106,7 +106,7 @@ void dict_bf_flush_blocks(Dict_BFile bf, int no_to_flush)
                             effective_block, effective_offset,
                             p->nbytes);
 #endif
-			  
+
 		}
 		else
 		{
@@ -158,7 +158,7 @@ static struct Dict_file_block *alloc_block(Dict_BFile bf, int no)
     if (*pp)
         (*pp)->h_prev = &p->h_next;
     *pp = p;
-   
+
     return p;
 }
 
@@ -166,7 +166,7 @@ static void move_to_front(Dict_BFile bf, struct Dict_file_block *p)
 {
     /* Already at front? */
     if (!p->lru_next)
-        return ;   
+        return ;
 
     /* Remove */
     if (p->lru_prev)

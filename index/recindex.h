@@ -90,7 +90,7 @@ ZEBRA_RES rec_close (Records *p);
 /** \brief opens records system
     \param bfs block file storage
     \param rw read-write flag(0=read only, 1=write)
-    \param compression_method REC_COMPRESS_ type 
+    \param compression_method REC_COMPRESS_ type
 */
 Records rec_open(BFiles bfs, int rw, int compression_method);
 
@@ -115,10 +115,10 @@ zint rec_sysno_to_int(zint sysno);
 #define REC_COMPRESS_ZLIB   2
 
 
-enum { 
-    recInfo_fileType, 
-    recInfo_filename, 
-    recInfo_delKeys, 
+enum {
+    recInfo_fileType,
+    recInfo_filename,
+    recInfo_delKeys,
     recInfo_databaseName,
     recInfo_storeData,
     recInfo_attr,
@@ -141,7 +141,7 @@ void recindex_close(recindex_t p);
 int recindex_read_head(recindex_t p, void *buf);
 const char *recindex_get_fname(recindex_t p);
 ZEBRA_RES recindex_write_head(recindex_t p, const void *buf, size_t len);
-int recindex_read_indx(recindex_t p, zint sysno, void *buf, int itemsize, 
+int recindex_read_indx(recindex_t p, zint sysno, void *buf, int itemsize,
                        int ignoreError);
 void recindex_write_indx(recindex_t p, zint sysno, void *buf, int itemsize);
 

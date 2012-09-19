@@ -29,7 +29,7 @@ void index_more(ZebraHandle zh, const char *filter, const char *file)
     char path[256];
     char profile_path[256];
 
-    sprintf(profile_path, "%.80s:%.80s/../../tab", 
+    sprintf(profile_path, "%.80s:%.80s/../../tab",
             tl_get_srcdir(), tl_get_srcdir());
     zebra_set_resource(zh, "profilePath", profile_path);
 
@@ -61,14 +61,14 @@ ZebraHandle index_some(ZebraService zs,
 void tst(int argc, char **argv)
 {
     ZebraHandle zh;
-    
+
     ZebraService zs = tl_start_up(0, argc, argv);
 
     zh = index_some(zs, "dom.bad.xml", "marc-col.xml");
     zebra_close(zh);
 
-   
-    /* testing XMLREADER input with PI stylesheet */ 
+
+    /* testing XMLREADER input with PI stylesheet */
     zh = index_some(zs, "dom.dom-config-col.xml", "marc-col.xml");
     YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 3));
 
@@ -91,13 +91,13 @@ void tst(int argc, char **argv)
                  ZEBRA_OK);
 
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 1));
-    
+
     YAZ_CHECK(tl_query_x(zh, "@attr 1=titl computer", 0, 114));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=4 computer", 0, 121));
     zebra_close(zh);
 
 
-    /* testing XMLREADER input with ELEMENT stylesheet */ 
+    /* testing XMLREADER input with ELEMENT stylesheet */
     zh = index_some(zs, "dom.dom-config-one.xml", "marc-one.xml");
     YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 1));
@@ -105,7 +105,7 @@ void tst(int argc, char **argv)
     YAZ_CHECK(tl_query_x(zh, "@attr 1=4 computer", 0, 121));
     zebra_close(zh);
 
-    /* testing MARC input with ELEMENT stylesheet */ 
+    /* testing MARC input with ELEMENT stylesheet */
     zh = index_some(zs, "dom.dom-config-marc.xml", "marc-col.mrc");
     YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 3));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 1));
@@ -113,14 +113,14 @@ void tst(int argc, char **argv)
     YAZ_CHECK(tl_query_x(zh, "@attr 1=4 computer", 0, 121));
     zebra_close(zh);
 
-    /* testing XMLREADER input with ELEMENT stylesheet and skipped records */ 
+    /* testing XMLREADER input with ELEMENT stylesheet and skipped records */
     zh = index_some(zs, "dom.dom-config-skipped.xml", "marc-col.xml");
     YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 0));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224467", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 73090924", 0));
 
-    /* testing XMLREADER input with type attributes (insert,delete,..) */ 
+    /* testing XMLREADER input with type attributes (insert,delete,..) */
     zh = index_some(zs, "dom.dom-config-del.xml", "del-col.xml");
     YAZ_CHECK(tl_query(zh, "@attr 1=title a", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=title 1", 0));

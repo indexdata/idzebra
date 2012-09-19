@@ -184,7 +184,7 @@ static int go (int fd, struct DFA_state **dfaar)
                         break;
                     }
                     for (t=s->trans, i=s->tran_no; --i >= 0; t++)
-                        if ((unsigned) *p >= t->ch[0] 
+                        if ((unsigned) *p >= t->ch[0]
                            && (unsigned) *p <= t->ch[1])
                             break;
                     p++;

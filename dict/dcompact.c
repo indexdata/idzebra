@@ -34,7 +34,7 @@ static void dict_copy_page(Dict dict, char *to_p, char *from_p, int *map)
     int i, slen, no = 0;
     short *from_indxp, *to_indxp;
     char *from_info, *to_info;
-    
+
     from_indxp = (short*) ((char*) from_p+DICT_bsize(from_p));
     to_indxp = (short*) ((char*) to_p+DICT_bsize(to_p));
     to_info = (char*) to_p + DICT_infoffset;
@@ -70,7 +70,7 @@ static void dict_copy_page(Dict dict, char *to_p, char *from_p, int *map)
 	    from_info += sizeof(Dict_ptr);
 	    memcpy(&subchar, from_info, sizeof(subchar));
 	    from_info += sizeof(Dict_char);
-	    		    
+
             memcpy(to_info, &subptr, sizeof(Dict_ptr));
 	    to_info += sizeof(Dict_ptr);
 	    memcpy(to_info, &subchar, sizeof(Dict_char));
@@ -103,7 +103,7 @@ int dict_copy_compact(BFiles bfs, const char *from_name, const char *to_name)
 	return -1;
     map[0] = 0;
     map[1] = dict_from->head.page_size;
-    
+
     for (i = 1; i < (int) (dict_from->head.last); i++)
     {
 	void *buf;
