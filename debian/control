@@ -85,7 +85,7 @@ Description: utility programs including indexer and server
  boolean search expressions and relevance-ranked free-text queries.
 
 Package: libidzebra-2.0-dev
-Section: devel
+Section: libdevel
 Architecture: any
 Depends: libidzebra-2.0 (= ${Source-Version})
 Description: development files
