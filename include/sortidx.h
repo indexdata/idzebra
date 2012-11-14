@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define SORTIDX_H
 
 #include <yaz/yconfig.h>
-#include <idzebra/version.h>
 #include <idzebra/bfile.h>
 #include <yaz/wrbuf.h>
 

@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef ZEBRA_IT_KEY_H
 #define ZEBRA_IT_KEY_H
 
-#include <idzebra/version.h>
 #include <idzebra/util.h>
 
 YAZ_BEGIN_CDECL

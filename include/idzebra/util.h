@@ -23,8 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/yconfig.h>
 #include <yaz/log.h>
 
-#include <idzebra/version.h>
-
 /**
   expand GCC_ATTRIBUTE if GCC is in use. See :
   http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html
@@ -41,11 +39,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifndef ZEBRA_GCC_ATTR
 #define ZEBRA_GCC_ATTR(x)
-#endif
-
-/* check that we don't have all too old yaz */
-#ifndef YLOG_ERRNO
-#error Need a modern yaz with YLOG_ defines
 #endif
 
 YAZ_BEGIN_CDECL
