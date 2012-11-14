@@ -61,7 +61,7 @@ struct rset_key_control *zebra_key_control_create(ZebraHandle zh)
 
     kc->context = cp;
     kc->key_size = sizeof(struct it_key);
-    kc->cmp = key_compare_it;
+    kc->cmp = key_compare;
     kc->key_logdump_txt = key_logdump_txt;
     kc->getseq = key_get_seq;
 

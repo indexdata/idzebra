@@ -64,25 +64,6 @@ void key_logdump(int logmask, const void *p)
     key_logdump_txt(logmask,  p, "");
 }
 
-int key_compare_it (const void *p1, const void *p2)
-{
-    int i, l = ((struct it_key *) p1)->len;
-    if (((struct it_key *) p2)->len > l)
-	l = ((struct it_key *) p2)->len;
-    assert (l <= IT_KEY_LEVEL_MAX && l > 0);
-    for (i = 0; i < l; i++)
-    {
-	if (((struct it_key *) p1)->mem[i] != ((struct it_key *) p2)->mem[i])
-	{
-	    if (((struct it_key *) p1)->mem[i] > ((struct it_key *) p2)->mem[i])
-		return l-i;
-	    else
-		return i-l;
-	}
-    }
-    return 0;
-}
-
 char *key_print_it (const void *p, char *buf)
 {
     strcpy(buf, "");

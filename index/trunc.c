@@ -169,7 +169,7 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
 					   kctrl, scope, 0);
             rscur++;
         }
-        ti = heap_init (rscur, sizeof(struct it_key), key_compare_it);
+        ti = heap_init (rscur, sizeof(struct it_key), key_compare);
         for (i = rscur; --i >= 0; )
         {
             rsfd[i] = rset_open(rset[i], RSETF_READ);
@@ -219,7 +219,7 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
         ispt = (ISAMC_PP *) xmalloc(sizeof(*ispt) * (to-from));
 
         ti = heap_init(to-from, sizeof(struct it_key),
-		       key_compare_it);
+		       key_compare);
         for (i = to-from; --i >= 0; )
         {
             ispt[i] = isamc_pp_open(zi->reg->isamc, isam_p[from+i]);
@@ -274,7 +274,7 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
         ispt = (ISAMS_PP *) xmalloc(sizeof(*ispt) * (to-from));
 
         ti = heap_init(to-from, sizeof(struct it_key),
-		       key_compare_it);
+		       key_compare);
         for (i = to-from; --i >= 0; )
         {
             ispt[i] = isams_pp_open(zi->reg->isams, isam_p[from+i]);
@@ -317,7 +317,7 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
         ispt = (ISAMB_PP *) xmalloc(sizeof(*ispt) * (to-from));
 
         ti = heap_init(to-from, sizeof(struct it_key),
-		       key_compare_it);
+		       key_compare);
         for (i = to-from; --i >= 0; )
         {
 	    if (isam_p[from+i]) {

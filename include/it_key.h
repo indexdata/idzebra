@@ -43,7 +43,6 @@ int key_compare(const void *p1, const void *p2);
 void key_init(struct it_key *k);
 zint key_get_seq(const void *p);
 zint key_get_segment(const void *p);
-int key_compare_it(const void *p1, const void *p2);
 int key_qsort_compare(const void *p1, const void *p2);
 char *key_print_it(const void *p, char *buf);
 void key_logdump(int mask, const void *p);
