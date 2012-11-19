@@ -1,3 +1,9 @@
+idzebra (2.0.52-2indexdata) unstable; urgency=low
+
+  * Test snippets fix.
+
+ -- Adam Dickmeiss <adam@indexdata.dk>  Mon, 19 Nov 2012 19:56:58 +0100
+
 idzebra (2.0.52-1indexdata) unstable; urgency=low
 
   * Upstream.
