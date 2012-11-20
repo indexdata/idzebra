@@ -144,11 +144,71 @@ struct snip_rec_info {
     zebra_snippets *snippets;
 };
 
+static int parse_complete_field(RecWord *p, zebra_map_t zm,
+                                char *buf)
+{
+    const char *b = p->term_buf;
+    const char **map = 0;
+    int i = 0, remain = p->term_len;
+
+    if (remain > 0)
+	map = zebra_maps_input(zm, &b, remain, 1);
+    while (remain > 0 && i < IT_MAX_WORD)
+    {
+	while (map && *map && **map == *CHR_SPACE)
+	{
+	    remain = p->term_len - (b - p->term_buf);
+
+	    if (remain > 0)
+	    {
+		int first = i ? 0 : 1;  /* first position */
+		map = zebra_maps_input(zm, &b, remain, first);
+	    }
+	    else
+		map = 0;
+	}
+	if (!map)
+	    break;
+
+	if (i && i < IT_MAX_WORD)
+	    buf[i++] = *CHR_SPACE;
+	while (map && *map && **map != *CHR_SPACE)
+	{
+	    const char *cp = *map;
+
+	    if (**map == *CHR_CUT)
+	    {
+		i = 0;
+	    }
+	    else
+	    {
+		if (i >= IT_MAX_WORD)
+		    break;
+		while (i < IT_MAX_WORD && *cp)
+		    buf[i++] = *(cp++);
+	    }
+	    remain = p->term_len  - (b - p->term_buf);
+	    if (remain > 0)
+	    {
+		map = zebra_maps_input(zm, &b, remain, 0);
+	    }
+	    else
+		map = 0;
+	}
+    }
+    return i;
+}
 
 static void snippet_add_complete_field(RecWord *p, int ord,
                                        zebra_map_t zm)
 {
     struct snip_rec_info *h = p->extractCtrl->handle;
+    char buf[IT_MAX_WORD+1];
+    int i = parse_complete_field(p, zm, buf);
+
+    if (!i)
+        return;
+
     if (p->term_len && p->term_buf && zebra_maps_is_index(zm))
         zebra_snippets_appendn(h->snippets, p->seqno, 0, ord,
                                p->term_buf, p->term_len);
@@ -1733,57 +1793,8 @@ static void extract_add_incomplete_field(RecWord *p, zebra_map_t zm)
 
 static void extract_add_complete_field(RecWord *p, zebra_map_t zm)
 {
-    const char *b = p->term_buf;
     char buf[IT_MAX_WORD+1];
-    const char **map = 0;
-    int i = 0, remain = p->term_len;
-
-    if (remain > 0)
-	map = zebra_maps_input(zm, &b, remain, 1);
-
-    while (remain > 0 && i < IT_MAX_WORD)
-    {
-	while (map && *map && **map == *CHR_SPACE)
-	{
-	    remain = p->term_len - (b - p->term_buf);
-
-	    if (remain > 0)
-	    {
-		int first = i ? 0 : 1;  /* first position */
-		map = zebra_maps_input(zm, &b, remain, first);
-	    }
-	    else
-		map = 0;
-	}
-	if (!map)
-	    break;
-
-	if (i && i < IT_MAX_WORD)
-	    buf[i++] = *CHR_SPACE;
-	while (map && *map && **map != *CHR_SPACE)
-	{
-	    const char *cp = *map;
-
-	    if (**map == *CHR_CUT)
-	    {
-		i = 0;
-	    }
-	    else
-	    {
-		if (i >= IT_MAX_WORD)
-		    break;
-		while (i < IT_MAX_WORD && *cp)
-		    buf[i++] = *(cp++);
-	    }
-	    remain = p->term_len  - (b - p->term_buf);
-	    if (remain > 0)
-	    {
-		map = zebra_maps_input(zm, &b, remain, 0);
-	    }
-	    else
-		map = 0;
-	}
-    }
+    int i = parse_complete_field(p, zm, buf);
     if (!i)
 	return;
     extract_add_string(p, zm, buf, i);
