@@ -630,7 +630,8 @@ static void r_pos_x(RSFD rfd, double *current, double *total, int and_op)
         }
         else
         {
-            sum_cur += cur;
+            if (cur > 0)
+                sum_cur += (cur - 1);
             sum_tot += tot;
         }
     }
