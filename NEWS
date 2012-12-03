@@ -1,3 +1,15 @@
+--- 2.0.53 2012/12/03
+
+Improve hit estimate for or-searches (typically truncation)
+
+Fix snippets for non-ICU / seqno not updated.
+
+Replace key_compare_it with key_compare. This is because key_compare_it
+throws exception on some CPUs with alignment constraints.
+
+ICU: support @attr 5=2, @attr 5=3 in searches. (left truncation and
+left+right truncation).
+
 --- 2.0.52 2012/05/31
 
 Fix problem in dictionary due to increase max size of term.
