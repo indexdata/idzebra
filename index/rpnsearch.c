@@ -204,7 +204,7 @@ static void esc_str(char *out_buf, size_t out_size,
     }
 }
 
-#define REGEX_CHARS " ^[]()|.*+?!\"$"
+#define REGEX_CHARS " ^[]()|.*+?!\"$\\"
 
 static void add_non_space(const char *start, const char *end,
                           WRBUF term_dict,

@@ -77,7 +77,13 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=3 @attr 1=4 [", 1));
 
     /* search \ in title:0 .  */
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=3 @attr 1=4 \\\\\\\\", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=3 @attr 1=4 \\\\", 1));
+
+    /* search \ in title:0 .  Process # in term */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=3 @attr 1=4 @attr 5=101 \\\\", 1));
+
+    /* search \ in title:0 .  RegExpr-1 */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=3 @attr 1=4 @attr 5=102 \\\\\\\\", 1));
 
     /* search { in title:0 .  */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 4=3 @attr 1=4 \\{", 1));
