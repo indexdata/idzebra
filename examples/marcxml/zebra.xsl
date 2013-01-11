@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!-- 
-   Copyright (C) 1995-2006
+<!--
+   Copyright (C) 1995-2013
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -23,7 +22,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 -->
 
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:z="http://indexdata.com/zebra-2.0" 
+                xmlns:z="http://indexdata.com/zebra-2.0"
                 version="1.0">
 
   <xsl:param name="id" select="''"/>

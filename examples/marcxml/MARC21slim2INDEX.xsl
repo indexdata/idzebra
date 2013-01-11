@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
-   Copyright (C) 1995-2006
+<!--
+   Copyright (C) 1995-2013
    Index Data ApS
 
 This file is part of the Zebra server.
@@ -21,10 +21,10 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 -->
 
-<xsl:stylesheet 
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
-    xmlns:z="http://indexdata.com/zebra-2.0" 
-    xmlns:marc="http://www.loc.gov/MARC21/slim" 
+<xsl:stylesheet
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:z="http://indexdata.com/zebra-2.0"
+    xmlns:marc="http://www.loc.gov/MARC21/slim"
     version="1.0">
 
   <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
@@ -45,7 +45,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
   <!-- match on marcxml record -->
-  <xsl:template match="marc:record">                
+  <xsl:template match="marc:record">
     <xsl:variable name="leader" select="marc:leader"/>
     <xsl:variable name="leader5" select="substring($leader,6,1)"/>
     <xsl:variable name="type">
@@ -56,9 +56,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
     </xsl:variable>
     <xsl:variable name="leader6" select="substring($leader,7,1)"/>
     <xsl:variable name="leader7" select="substring($leader,8,1)"/>
-    <xsl:variable name="controlField001" 
+    <xsl:variable name="controlField001"
                   select="normalize-space(marc:controlfield[@tag='001'])"/>
-    <xsl:variable name="controlField008" 
+    <xsl:variable name="controlField008"
                   select="normalize-space(marc:controlfield[@tag='008'])"/>
 
      <xsl:variable name="typeOf008">
@@ -67,7 +67,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
            <xsl:choose>
              <xsl:when test="$leader7='a' or $leader7='c' or $leader7='d'
                              or $leader7='m'">BK</xsl:when>
-             <xsl:when test="$leader7='b' or $leader7='i' 
+             <xsl:when test="$leader7='b' or $leader7='i'
                              or $leader7='s'">SE</xsl:when>
            </xsl:choose>
          </xsl:when>
@@ -75,9 +75,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
          <xsl:when test="$leader6='p'">MM</xsl:when>
          <xsl:when test="$leader6='m'">CF</xsl:when>
          <xsl:when test="$leader6='e' or $leader6='f'">MP</xsl:when>
-         <xsl:when test="$leader6='g' or $leader6='k' or $leader6='o' 
+         <xsl:when test="$leader6='g' or $leader6='k' or $leader6='o'
                          or $leader6='r'">VM</xsl:when>
-         <xsl:when test="$leader6='c' or $leader6='d' or $leader6='i' 
+         <xsl:when test="$leader6='c' or $leader6='d' or $leader6='i'
                          or $leader6='j'">MU</xsl:when>
        </xsl:choose>
      </xsl:variable>
@@ -154,7 +154,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
        <!-- att 54              Code-language -->
        <!-- att 55              Code-geographic -->
        <!-- att 56              Code-institution -->
-       <!-- att 57              Name-and-title -->      
+       <!-- att 57              Name-and-title -->
        <!-- att 58              Name-geographic -->
        <!-- att 59              Place-publication -->
        <!-- att 60              CODEN -->
@@ -222,7 +222,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
        </z:index>
      </xsl:for-each>
    </xsl:template>
-   
+
    <!--
        Any                  1016  The record is selected if there
                                   exists a Use attribute that the
@@ -320,13 +320,13 @@ title                      or a conference or meeting      111/2XX, subfields
     <xsl:if test="marc:datafield[@tag='100']
                   and marc:datafield[@tag='245']">
       <z:index name="Author-title:p">
-        <xsl:value-of 
+        <xsl:value-of
             select="marc:datafield[@tag='100']/marc:subfield[@code='a']"/>
         <xsl:text> </xsl:text>
-        <xsl:value-of 
+        <xsl:value-of
             select="marc:datafield[@tag='100']/marc:subfield[@code='d']"/>
         <xsl:text> </xsl:text>
-        <xsl:value-of 
+        <xsl:value-of
             select="marc:datafield[@tag='245']/marc:subfield[@code='a']"/>
       </z:index>
     </xsl:if>
