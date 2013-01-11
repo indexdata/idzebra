@@ -47,6 +47,13 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   <!-- match on marcxml record -->
   <xsl:template match="marc:record">                
     <xsl:variable name="leader" select="marc:leader"/>
+    <xsl:variable name="leader5" select="substring($leader,6,1)"/>
+    <xsl:variable name="type">
+      <xsl:choose>
+         <xsl:when test="$leader5='d'">delete</xsl:when>
+         <xsl:otherwise>update</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:variable name="leader6" select="substring($leader,7,1)"/>
     <xsl:variable name="leader7" select="substring($leader,8,1)"/>
     <xsl:variable name="controlField001" 
@@ -75,7 +82,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
        </xsl:choose>
      </xsl:variable>
 
-     <z:record z:id="{$controlField001}" type="update">
+     <z:record z:id="{$controlField001}" type="{$type}">
 
 
        <!-- <xsl:attribute name="id"></xsl:attribute> -->
