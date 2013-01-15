@@ -5,6 +5,7 @@ TESTS = $(check_PROGRAMS)
 EXTRA_DIST= \
      dom-config-col.xml \
      dom-config-marc.xml \
+     dom-config-utf8.xml \
      dom-config-one.xml \
      dom-config-skipped.xml \
      dom-index-element.xsl \
@@ -24,6 +25,7 @@ EXTRA_DIST= \
      index.xsl \
      marc-col.mrc \
      marc-col.xml \
+     bad-utf8.mrc \
      marc-missing-ns.xml \
      marc-one.xml \
      marcschema-col.xml \

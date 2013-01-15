@@ -1,0 +1,13 @@
+<dom>
+  <extract name="index">
+      <xslt stylesheet="dom-index-element.xsl"/>
+  </extract>
+  <retrieve name="F">
+    <xslt stylesheet="id.xsl"/>
+  </retrieve>
+  <input syntax="xml">
+    <marc inputcharset="utf-8"/>
+  </input>
+</dom>
+
+   

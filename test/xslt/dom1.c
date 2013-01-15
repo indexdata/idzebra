@@ -145,6 +145,9 @@ void tst(int argc, char **argv)
 
     zebra_close(zh);
 
+    /* testing indexing of bad UTF-8 encoded MARC record */
+    zh = index_some(zs, "dom.dom-config-utf8.xml", "bad-utf8.mrc");
+    zebra_close(zh);
 
     YAZ_CHECK(tl_close_down(0, zs));
 }
