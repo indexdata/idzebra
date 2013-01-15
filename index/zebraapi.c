@@ -215,6 +215,8 @@ ZebraService zebra_start_res(const char *configName, Res def_res, Res over_res)
     if (configName)
         yaz_log(YLOG_LOG, "config %s", configName);
 
+    yaz_log_xml_errors(0, YLOG_LOG);
+
     if ((res = res_open(def_res, over_res)))
     {
 	const char *passwd_plain = 0;
