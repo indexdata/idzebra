@@ -946,6 +946,8 @@ static void set_record_info(struct filter_info *tinfo,
             action = action_replace;
         else if (!strcmp(type_p, "update"))
             action = action_update;
+        else if (!strcmp(type_p, "adelete"))
+            action = action_a_delete;
         else
             dom_log(YLOG_WARN, tinfo, node, "bad @type value: %s", type_p);
         extctr->action = action;
