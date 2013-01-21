@@ -1363,7 +1363,7 @@ static int extract_iso2709(struct filter_info *tinfo,
         dom_log(YLOG_WARN, tinfo, 0,
                 "MARC: Skipping bad byte %d (0x%02X)",
                 *buf & 0xff, *buf & 0xff);
-        for (i = 0; i<4; i++)
+        for (i = 0; i < 4; i++)
             buf[i] = buf[i+1];
 
         if (p->stream->readf(p->stream, buf+4, 1) != 1)

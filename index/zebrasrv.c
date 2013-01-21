@@ -212,7 +212,7 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
     sr->num = no_terms;
     sr->elements = odr_malloc(r->stream, sr->num *
                                sizeof(*sr->elements));
-    for (i = 0; i<no_terms; i++)
+    for (i = 0; i < no_terms; i++)
     {
 	Z_SearchInfoReport_s *se;
         Z_Term *term;

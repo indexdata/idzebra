@@ -37,7 +37,7 @@ struct marc_info {
     char type[256];
 };
 
-static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
+static data1_node *grs_read_iso2709(struct grs_read_info *p, int marc_xml)
 {
     struct marc_info *mi = (struct marc_info*) p->clientData;
     char buf[100000];
@@ -66,23 +66,23 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 
 	yaz_log(YLOG_WARN, "MARC: Skipping bad byte %d (0x%02X)",
 		*buf & 0xff, *buf & 0xff);
-	for (i = 0; i<4; i++)
+	for (i = 0; i < 4; i++)
 	    buf[i] = buf[i+1];
 
 	if (p->stream->readf(p->stream, buf+4, 1) != 1)
 	    return NULL;
     }
-    record_length = atoi_n (buf, 5);
+    record_length = atoi_n(buf, 5);
     if (record_length < 25)
     {
-        yaz_log (YLOG_WARN, "MARC record length < 25, is %d", record_length);
+        yaz_log(YLOG_WARN, "MARC record length < 25, is %d", record_length);
         return NULL;
     }
 
     read_bytes = p->stream->readf(p->stream, buf+5, record_length-5);
     if (read_bytes < record_length-5)
     {
-        yaz_log (YLOG_WARN, "Couldn't read whole MARC record");
+        yaz_log(YLOG_WARN, "Couldn't read whole MARC record");
         return NULL;
     }
     /* skip until we meet a record separator */
@@ -108,10 +108,10 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     }
 
     absynName = mi->type;
-    res_root = data1_mk_root (p->dh, p->mem, absynName);
+    res_root = data1_mk_root(p->dh, p->mem, absynName);
     if (!res_root)
     {
-        yaz_log (YLOG_WARN, "cannot read MARC without an abstract syntax");
+        yaz_log(YLOG_WARN, "cannot read MARC without an abstract syntax");
         return 0;
     }
     if (marc_xml)
@@ -119,13 +119,13 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 	data1_node *lead;
 	const char *attr[] = { "xmlns", "http://www.loc.gov/MARC21/slim", 0};
 
-	res_top = data1_mk_tag (p->dh, p->mem, "record", attr, res_root);
+	res_top = data1_mk_tag(p->dh, p->mem, "record", attr, res_root);
 
 	lead = data1_mk_tag(p->dh, p->mem, "leader", 0, res_top);
 	data1_mk_text_n(p->dh, p->mem, buf, 24, lead);
     }
     else
-	res_top = data1_mk_tag (p->dh, p->mem, absynName, 0, res_root);
+	res_top = data1_mk_tag(p->dh, p->mem, absynName, 0, res_root);
 
     if ((marctab = data1_absyn_getmarctab(p->dh, res_root)))
     {
@@ -139,16 +139,16 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     if (marctab && marctab->force_indicator_length >= 0)
 	indicator_length = marctab->force_indicator_length;
     else
-	indicator_length = atoi_n (buf+10, 1);
+	indicator_length = atoi_n(buf+10, 1);
     if (marctab && marctab->force_identifier_length >= 0)
 	identifier_length = marctab->force_identifier_length;
     else
-	identifier_length = atoi_n (buf+11, 1);
-    base_address = atoi_n (buf+12, 5);
+	identifier_length = atoi_n(buf+11, 1);
+    base_address = atoi_n(buf+12, 5);
 
-    length_data_entry = atoi_n (buf+20, 1);
-    length_starting = atoi_n (buf+21, 1);
-    length_implementation = atoi_n (buf+22, 1);
+    length_data_entry = atoi_n(buf+20, 1);
+    length_starting = atoi_n(buf+21, 1);
+    length_implementation = atoi_n(buf+22, 1);
 
     for (entry_p = 24; buf[entry_p] != ISO2709_FS; )
     {
@@ -186,21 +186,21 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
         data1_node *res;
         data1_node *parent = res_top;
 
-        memcpy (tag, buf+entry_p, 3);
+        memcpy(tag, buf+entry_p, 3);
         entry_p += 3;
         tag[3] = '\0';
 
 	if (marc_xml)
 	    res = parent;
 	else
-	    res = data1_mk_tag_n (p->dh, p->mem, tag, 3, 0 /* attr */, parent);
+	    res = data1_mk_tag_n(p->dh, p->mem, tag, 3, 0 /* attr */, parent);
 
 #if MARC_DEBUG
-        fprintf (outf, "%s ", tag);
+        fprintf(outf, "%s ", tag);
 #endif
-        data_length = atoi_n (buf+entry_p, length_data_entry);
+        data_length = atoi_n(buf+entry_p, length_data_entry);
         entry_p += length_data_entry;
-        data_offset = atoi_n (buf+entry_p, length_starting);
+        data_offset = atoi_n(buf+entry_p, length_starting);
         entry_p += length_starting;
         i = data_offset + base_address;
         end_offset = i+data_length-1;
@@ -211,7 +211,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 	    break;
 	}
 
-        if (memcmp (tag, "00", 2) && indicator_length)
+        if (memcmp(tag, "00", 2) && indicator_length)
         {
             /* generate indicator node */
 	    if (marc_xml)
@@ -225,7 +225,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 
 		res = data1_mk_tag(p->dh, p->mem, "datafield", attr, res);
 
-		for (j = 0; j<indicator_length; j++)
+		for (j = 0; j < indicator_length; j++)
 		{
 		    char str1[18], str2[2];
 		    sprintf (str1, "ind%d", j+1);
@@ -235,7 +235,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 		    attr[0] = str1;
 		    attr[1] = str2;
 
-		    data1_tag_add_attr (p->dh, p->mem, res, attr);
+		    data1_tag_add_attr(p->dh, p->mem, res, attr);
 		}
 	    }
 	    else
@@ -243,11 +243,11 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 #if MARC_DEBUG
 		int j;
 #endif
-		res = data1_mk_tag_n (p->dh, p->mem,
-				      buf+i, indicator_length, 0 /* attr */, res);
+		res = data1_mk_tag_n(p->dh, p->mem, buf+i,
+                                     indicator_length, 0 /* attr */, res);
 #if MARC_DEBUG
-		for (j = 0; j<indicator_length; j++)
-		    fprintf (outf, "%c", buf[j+i]);
+		for (j = 0; j < indicator_length; j++)
+		    fprintf(outf, "%c", buf[j+i]);
 #endif
 	    }
 	    i += indicator_length;
@@ -272,14 +272,14 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
         {
 	    if (memcmp (tag, "00", 2) && identifier_length)
             {
+                int j;
 		data1_node *res;
 		if (marc_xml)
 		{
-		    int j;
 		    const char *attr[3];
 		    char code[10];
 
-		    for (j = 1; j<identifier_length && j < 9; j++)
+		    for (j = 1; j < identifier_length && j < 9; j++)
 			code[j-1] = buf[i+j];
 		    code[j-1] = 0;
 		    attr[0] = "code";
@@ -290,15 +290,15 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 		}
 		else
 		{
-		    res = data1_mk_tag_n (p->dh, p->mem,
-					   buf+i+1, identifier_length-1,
-					   0 /* attr */, parent);
+		    res = data1_mk_tag_n(p->dh, p->mem,
+                                         buf+i+1, identifier_length-1,
+                                         0 /* attr */, parent);
 		}
 #if MARC_DEBUG
                 fprintf (outf, " $");
-                for (j = 1; j<identifier_length; j++)
-                    fprintf (outf, "%c", buf[j+i]);
-                fprintf (outf, " ");
+                for (j = 1; j < identifier_length; j++)
+                    fprintf(outf, "%c", buf[j+i]);
+                fprintf(outf, " ");
 #endif
                 i += identifier_length;
                 i0 = i;
@@ -306,31 +306,31 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 		     buf[i] != ISO2709_FS && i < end_offset)
             	{
 #if MARC_DEBUG
-            	    fprintf (outf, "%c", buf[i]);
+            	    fprintf(outf, "%c", buf[i]);
 #endif
 		    i++;
             	}
-            	data1_mk_text_n (p->dh, p->mem, buf + i0, i - i0, res);
+            	data1_mk_text_n(p->dh, p->mem, buf + i0, i - i0, res);
 		i0 = i;
             }
             else
             {
 #if MARC_DEBUG
-                fprintf (outf, "%c", buf[i]);
+                fprintf(outf, "%c", buf[i]);
 #endif
                 i++;
             }
         }
         if (i > i0)
 	{
-            data1_mk_text_n (p->dh, p->mem, buf + i0, i - i0, parent);
+            data1_mk_text_n(p->dh, p->mem, buf + i0, i - i0, parent);
 	}
 #if MARC_DEBUG
         fprintf (outf, "\n");
         if (i < end_offset)
-            fprintf (outf, "-- separator but not at end of field\n");
+            fprintf(outf, "-- separator but not at end of field\n");
         if (buf[i] != ISO2709_RS && buf[i] != ISO2709_FS)
-            fprintf (outf, "-- no separator at end of field\n");
+            fprintf(outf, "-- no separator at end of field\n");
 #endif
     }
     return res_root;
@@ -351,7 +351,7 @@ static char *get_data(data1_node *n, int *len)
             int i;
             *len = n->u.data.len;
 
-            for (i = 0; i<*len; i++)
+            for (i = 0; i < *len; i++)
                 if (!d1_isspace(n->u.data.data[i]))
                     break;
             while (*len && d1_isspace(n->u.data.data[*len - 1]))
@@ -376,7 +376,7 @@ static data1_node *lookup_subfield(data1_node *node, const char *name)
 {
     data1_node *p;
 
-    for (p=node; p; p=p->next)
+    for (p = node; p; p = p->next)
     {
 	if (!yaz_matchstr(p->u.tag.tag, name))
 	    return p;
@@ -389,7 +389,7 @@ static inline_subfield *lookup_inline_subfield(inline_subfield *pisf,
 {
     inline_subfield *p;
 
-    for (p=pisf; p; p=p->next)
+    for (p = pisf; p; p = p->next)
     {
 	if (!yaz_matchstr(p->name, name))
 	    return p;
@@ -544,7 +544,7 @@ static void cat_inline_field(mc_field *pf, WRBUF buf, data1_node *subfield)
 	inline_destroy_field(pif);
     }
 #if MARCOMP_DEBUG
-    yaz_log(YLOG_LOG, "cat_inline_field(): got buffer {%s}", buf);
+    yaz_log(YLOG_LOG, "cat_inline_field(): got buffer {%s}", wrbuf_cstr(buf));
 #endif
 }
 
@@ -665,7 +665,7 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
 	    wrbuf_puts(buf, "");
 	}
 #if MARCOMP_DEBUG
-        yaz_log(YLOG_LOG, "cat_field(): got buffer {%s}", buf);
+        yaz_log(YLOG_LOG, "cat_field(): got buffer {%s}", wrbuf_cstr(buf));
 #endif
 	return field->next;
     }
@@ -696,7 +696,7 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
     cat_subfield(pf->list, buf, subfield);
 
 #if MARCOMP_DEBUG
-    yaz_log(YLOG_LOG, "cat_field(): got buffer {%s}", buf);
+    yaz_log(YLOG_LOG, "cat_field(): got buffer {%s}", wrbuf_cstr(buf));
 #endif
 
     return field->next;
@@ -758,7 +758,7 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
     {
 	field=top->child;
 
-	while(field)
+	while (field)
 	{
 	    if (!yaz_matchstr(field->u.tag.tag, pf->name))
 	    {
