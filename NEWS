@@ -1,3 +1,5 @@
+--- 2.0.54 2013/01/21
+
 For mod_dom filter, allow type="adelete", which will not treat a failed
 delete as an error (such as a record ID that do not exist already).
 
