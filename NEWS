@@ -1,3 +1,11 @@
+For mod_dom filter, allow type="adelete", which will not treat a failed
+delete as an error (such as a record ID that do not exist already).
+
+Log XML2/XSLT errors to yaz_log instead of stdout/stderr.
+
+Relay \-character in non-regexp searches. Was treated as backslash
+sequence before.
+
 --- 2.0.53 2012/12/03
 
 Improve hit estimate for or-searches (typically truncation)
