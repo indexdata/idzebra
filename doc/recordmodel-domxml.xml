@@ -401,7 +401,8 @@
               <listitem>
                <para>
                 The record is deleted. If the record does not already exist,
-                it is skipped (i.e. nothing is deleted).
+                a warning issued and rest of records are skipped in
+                from the input stream.
                </para>
               </listitem>
              </varlistentry>
@@ -414,6 +415,20 @@
                 be effectively changed by "outside" the scope of the DOM
                 filter by zebraidx commands or extended services updates.
                </para>
+              </listitem>
+             </varlistentry>
+             <varlistentry>
+              <term><literal>adelete</literal></term>
+              <listitem>
+               <para>
+                The record is deleted. If the record does not already exist,
+                it is skipped (i.e. nothing is deleted).
+               </para>
+               <note>
+                <para>
+                 Requires version 2.0.54 or later.
+                </para>
+               </note>
               </listitem>
              </varlistentry>
             </variablelist>
