@@ -234,6 +234,20 @@ static void add_non_space(const char *start, const char *end,
 }
 
 
+/* ICU sort keys seem to be of the form
+   basechars \x01 accents \x01 length
+   For now we'll just right truncate from basechars . This
+   may give false hits due to accents not being used.
+*/
+static size_t icu_basechars(const char *buf, size_t i)
+{
+    while (i > 0 && buf[--i] != '\x01') /* skip length */
+        ;
+    while (i > 0 && buf[--i] != '\x01') /* skip accents */
+        ;
+    return i; /* only basechars left */
+}
+
 static int term_102_icu(zebra_map_t zm,
                         const char **src, WRBUF term_dict, int space_split,
                         WRBUF display_term)
@@ -264,12 +278,8 @@ static int term_102_icu(zebra_map_t zm,
                 if (zebra_map_tokenize_next(zm, &res_buf, &res_len,
                                             &display_buf, &display_len))
                 {
-                    size_t i = res_len;
-                    while (i > 0 && res_buf[--i] != '\x01')
-                        ;
-                    while (i > 0 && res_buf[--i] != '\x01')
-                        ;
-                    res_len = i; /* reduce res_len */
+                    size_t i;
+                    res_len = icu_basechars(res_buf, res_len);
                     for (i = 0; i < res_len; i++)
                     {
                         if (strchr(REGEX_CHARS "\\", res_buf[i]))
@@ -339,21 +349,7 @@ static int term_100_icu(zebra_map_t zm,
     wrbuf_write(display_term, display_buf, display_len);
     if (mode)
     {
-        /* ICU sort keys seem to be of the form
-           basechars \x01 accents \x01 length
-           For now we'll just right truncate from basechars . This
-           may give false hits due to accents not being used.
-        */
-        i = res_len;
-        while (i > 0 && res_buf[--i] != '\x01')
-            ;
-        while (i > 0 && res_buf[--i] != '\x01')
-            ;
-        if (i == 0)
-        {  /* did not find base chars at all. Throw error */
-            return -1;
-        }
-        res_len = i; /* reduce res_len */
+        res_len = icu_basechars(res_buf, res_len);
     }
     if (mode & 2)
         wrbuf_puts(term_dict, ".*");
