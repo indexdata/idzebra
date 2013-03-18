@@ -1,0 +1,15 @@
+# Defaults for zebrasrv initscript
+# sourced by /etc/init.d/zebrasrv
+#
+# This is a POSIX shell fragment
+
+# Full path to zebra server
+#DAEMON=/usr/sbin/zebrasrv-2.0
+
+# Options that are passed to the Daemon.
+#DAEMON_OPTS="-l /var/log/zebrasrv -u nobody tcp:@6:2100"
+# Note that options -D, -c , -p are set automatically. Should NOT be set
+
+# zebra.cfg (will be supplied with option -c)
+#CONFIG="/etc/idzebra/zebra.cfg"
+

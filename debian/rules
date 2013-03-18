@@ -79,11 +79,11 @@ binary-arch: build install
 	dh_install --sourcedir=debian/tmp
 #	dh_installmenu
 #	dh_installdebconf	
-#	dh_installlogrotate
+	dh_installlogrotate --name=zebrasrv
 #	dh_installemacsen
 #	dh_installpam
 #	dh_installmime
-#	dh_installinit
+	dh_installinit --name=zebrasrv
 #	dh_installcron
 #	dh_installinfo
 	dh_installman

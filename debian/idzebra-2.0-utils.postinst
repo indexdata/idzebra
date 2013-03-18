@@ -14,3 +14,13 @@ update-alternatives --quiet --install /usr/bin/zebrasrv zebrasrv \
        --slave /usr/share/man/man8/zebrasrv.8.gz zebrasrv.8.gz \
        /usr/share/man/man8/zebrasrv-2.0.8.gz
 
+if [ -x "/etc/init.d/zebrasrv" ]; then
+        update-rc.d zebrasrv defaults >/dev/null
+        if [ -x "`which invoke-rc.d 2>/dev/null`" ]; then
+                invoke-rc.d zebrasrv start || exit $?
+        else
+                /etc/init.d/zebrasrv start || exit $?
+        fi
+fi
+
+

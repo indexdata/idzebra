@@ -1,0 +1,13 @@
+/var/log/zebrasrv.log {
+	weekly
+	missingok
+	rotate 4
+	compress
+	delaycompress
+	notifempty
+	postrotate
+		if [ -f /var/run/zebrasrv.pid ]; then
+			/etc/init.d/zebrasrv force-reload > /dev/null
+		fi
+	endscript
+}
