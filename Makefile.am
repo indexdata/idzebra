@@ -23,6 +23,8 @@ dist-hook:
 			cp $$i $(distdir)/win; \
 		fi; \
 	done
+	mkdir $(distdir)/rpm
+	-cp $(srcdir)/rpm/* $(distdir)/rpm
 
 dox:
 	doxygen

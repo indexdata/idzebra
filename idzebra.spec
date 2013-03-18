@@ -2,7 +2,7 @@
 Name: idzebra
 %define namev idzebra-2.0
 Version: %{idmetaversion}
-Release: 1indexdata
+Release: 2indexdata
 License: GPL
 Vendor: Index Data ApS <info@indexdata.dk>
 Source: idzebra-%{version}.tar.gz
@@ -36,8 +36,6 @@ Group: Libraries
 Requires: libyaz4 bzip2-libs
 %description -n lib%{namev}
 Libraries for the Zebra search engine.
-%post -p /sbin/ldconfig 
-%postun -p /sbin/ldconfig 
 
 %package -n lib%{namev}-modules
 Summary: Zebra modules
@@ -73,6 +71,11 @@ rm ${RPM_BUILD_ROOT}/%{_mandir}/man1/zebraidx.*
 rm ${RPM_BUILD_ROOT}/%{_bindir}/zebrasrv
 rm ${RPM_BUILD_ROOT}/%{_mandir}/man8/zebrasrv.*
 rm ${RPM_BUILD_ROOT}/%{_mandir}/man1/idzebra-config.*
+mkdir -p ${RPM_BUILD_ROOT}/etc/idzebra
+mkdir -p ${RPM_BUILD_ROOT}/etc/rc.d/init.d
+install -m755 rpm/zebrasrv.init ${RPM_BUILD_ROOT}/etc/rc.d/init.d/zebrasrv
+mkdir -p ${RPM_BUILD_ROOT}/etc/logrotate.d
+install -m644 rpm/zebrasrv.logrotate ${RPM_BUILD_ROOT}/etc/logrotate.d/zebrasrv
 
 %clean
 rm -fr ${RPM_BUILD_ROOT}
@@ -89,6 +92,9 @@ rm -fr ${RPM_BUILD_ROOT}
 %{_mandir}/*/zebrasrv-*
 %{_mandir}/*/idzebra-abs2dom*
 /usr/share/idzebra-2.0-examples
+%dir %{_sysconfdir}/idzebra
+%config %{_sysconfdir}/rc.d/init.d/zebrasrv
+%config(noreplace) /etc/logrotate.d/zebrasrv
 
 %files -n lib%{namev}
 %{_libdir}/*.so.*
@@ -103,4 +109,21 @@ rm -fr ${RPM_BUILD_ROOT}
 %{_libdir}/*.a
 %{_mandir}/*/idzebra-config-*
 /usr/share/aclocal/*.m4
+
+%post -n lib%{namev}
+/sbin/ldconfig 
+%postun -n lib%{namev}
+/sbin/ldconfig 
+%post -n %{namev}
+if [ $1 = 1 ]; then
+	/sbin/chkconfig --add zebrasrv
+	/sbin/service zebrasrv start > /dev/null 2>&1
+else
+	/sbin/service zebrasrv restart > /dev/null 2>&1
+fi
+%preun -n %{namev}
+if [ $1 = 0 ]; then
+	/sbin/service zebrasrv stop > /dev/null 2>&1
+	/sbin/chkconfig --del zebrasrv
+fi
 

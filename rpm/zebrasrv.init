@@ -1,0 +1,82 @@
+#!/bin/bash
+#
+# zebrasrv      Startup script for zebrasrv
+#
+# chkconfig: 2345 85 15
+# description: Index Data Zebra server
+# processname: zebrasrv-2.0
+# config: /etc/idzebra/zebra.cfg
+# config: /etc/sysconfig/zebrasrv
+# pidfile: /var/run/zebrasrv.pid
+
+. /etc/rc.d/init.d/functions
+
+OPTIONS="-l /var/log/zebrasrv.log -u nobody tcp:@6:2100 tcp:@:2100"
+
+if [ -f /etc/sysconfig/zebrasrv ]; then
+        . /etc/sysconfig/zebrasrv
+fi
+CONFIG=${CONFIG-/etc/idzebra/zebra.cfg}
+DAEMON=${DAEMON-/usr/bin/zebrasrv-2.0}
+prog=zebrasrv
+pidfile=${PIDFILE-/var/run/zebrasrv.pid}
+lockfile=${LOCKFILE-/var/lock/subsys/zebrasrv}
+RETVAL=0
+
+if [ ! -f $CONFIG ]; then
+	echo "$prog: No $CONFIG"
+	exit 0
+fi
+
+start() {
+        echo -n $"Starting $prog: "
+        daemon --pidfile=${pidfile} $DAEMON $OPTIONS -D -c $CONFIG -p ${pidfile}
+        RETVAL=$?
+        echo
+        [ $RETVAL = 0 ] && touch ${lockfile}
+        return $RETVAL
+}
+
+stop() {
+	echo -n $"Stopping $prog: "
+	killproc -p ${pidfile} -d 10 $DAEMON
+	RETVAL=$?
+	echo
+	[ $RETVAL = 0 ] && rm -f ${lockfile} ${pidfile}
+}
+reload() {
+    stop
+    start
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  status)
+        status -p ${pidfile} $DAEMON
+	RETVAL=$?
+	;;
+  restart)
+	stop
+	start
+	;;
+  condrestart)
+	if [ -f ${pidfile} ] ; then
+		stop
+		start
+	fi
+	;;
+  reload)
+        reload
+	;;
+  *)
+	echo $"Usage: $prog {start|stop|restart|help}"
+	exit 1
+esac
+
+exit $RETVAL
