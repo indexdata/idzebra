@@ -8,7 +8,7 @@ Vendor: Index Data ApS <info@indexdata.dk>
 Source: idzebra-%{version}.tar.gz
 BuildRoot: %{_tmppath}/idzebra-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
-URL: http://www.indexdata.dk/zebra/
+URL: http://www.indexdata.com/zebra
 BuildRequires: libyaz4-devel >= 4.2.0
 BuildRequires: expat-devel, bzip2-devel, tcl, zlib-devel
 Summary: High-performance, structured text indexing and retrival engine.
