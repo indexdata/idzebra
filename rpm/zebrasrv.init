@@ -11,7 +11,7 @@
 
 . /etc/rc.d/init.d/functions
 
-OPTIONS="-l /var/log/zebrasrv.log -u nobody tcp:@6:2100 tcp:@:2100"
+OPTIONS="-l /var/log/zebrasrv.log -u nobody tcp:@6:2100"
 
 if [ -f /etc/sysconfig/zebrasrv ]; then
         . /etc/sysconfig/zebrasrv
