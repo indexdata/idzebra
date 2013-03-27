@@ -24,7 +24,8 @@ XMLFILES =  \
    idzebra.xml \
    zebrasrv-options.xml \
    zebrasrv-synopsis.xml \
-   zebrasrv-virtual.xml 
+   zebrasrv-virtual.xml \
+   local.ent
 
 #examples.xml 
 #quickstart.xml
@@ -42,9 +43,11 @@ MANFILES=zebraidx$(PACKAGE_SUFFIX).1 \
 doc_DATA = $(HTMLFILES) $(PNGFILES)
 man_MANS = $(MANFILES)
 
+$(MANFILES): local.ent
+
 EXTRA_DIST = $(XMLFILES) $(XMLMAN) \
 	$(doc_DATA) zebra.eps $(man_MANS) \
-	marc_indexing.xml entities.ent local.ent.in domfilter.svg
+	marc_indexing.xml entities.ent domfilter.svg
 
 zebraidx$(PACKAGE_SUFFIX).1: zebraidx.xml
 	$(MAN_COMPILE) $(srcdir)/zebraidx.xml

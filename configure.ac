@@ -311,7 +311,7 @@ AC_OUTPUT([
   include/Makefile include/idzebra/Makefile
   tab/Makefile
   doc/Makefile
-  doc/local.ent
+  doc/local0.ent
   doc/common/Makefile
   doc/common/print.dsl
   test/Makefile test/gils/Makefile test/usmarc/Makefile test/api/Makefile
@@ -334,7 +334,11 @@ AC_OUTPUT([
   Doxyfile
   win/version.nsi
   include/idzebra/version.h
-],[sed s%echo_source=yes%echo_source=no%g < idzebra-config-2.0 > util/idzebra-config-2.0 && chmod +x idzebra-config-2.0 util/idzebra-config-2.0])
+],[
+	sed s%echo_source=yes%echo_source=no%g < idzebra-config-2.0 > util/idzebra-config-2.0 && chmod +x idzebra-config-2.0 util/idzebra-config-2.0
+	diff doc/local.ent doc/local0.ent >/dev/null 2>/dev/null \
+		|| cp doc/local0.ent doc/local.ent
+])
 
 echo \
 "------------------------------------------------------------------------
