@@ -114,13 +114,13 @@
  
  <refsect1><title>FILES</title>
   <para>
-   <filename>&prefix;/bin/idzebra-config-2.0</filename>
+   <filename>/usr/bin/idzebra-config-2.0</filename>
   </para>
   <para>
-   <filename>&prefix;/lib/libidzebra*2.0.a</filename>
+   <filename>/usr/lib/libidzebra*2.0.a</filename>
   </para>
   <para>
-   <filename>&prefix;/include/idzebra-2.0/idzebra/*.h</filename>
+   <filename>/usr/include/idzebra-2.0/idzebra/*.h</filename>
   </para>
  </refsect1>
 
