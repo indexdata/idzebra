@@ -28,6 +28,18 @@ Description: virtual package with most components
  formats (eg. email, XML, MARC) and allows access to them through exact
  boolean search expressions and relevance-ranked free-text queries.
 
+Package: idzebra-2.0-dbg
+Section: debug
+Architecture: any
+Depends: libidzebra-2.0 (= ${binary:Version}), ${misc:Depends}
+Description: debugging symbols for the search engine
+ This package contains debugging symbols for the search engine.
+ .
+ IDZebra is a high-performance, general-purpose structured text indexing
+ and retrieval engine. It reads structured records in a variety of input
+ formats (eg. email, XML, MARC) and allows access to them through exact
+ boolean search expressions and relevance-ranked free-text queries.
+
 Package: libidzebra-2.0-modules
 Section: libs
 Architecture: any
