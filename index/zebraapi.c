@@ -2267,7 +2267,7 @@ static ZEBRA_RES zebra_record_check(ZebraHandle zh, Record rec,
             }
             memcpy(ord_buf + ord_len, str, slen);
             ord_buf[ord_len + slen] = '\0';
-            if (ord_len + slen >= IT_MAX_WORD)
+            if (slen > IT_MAX_WORD || ord_len > 4)
             {
                 res = ZEBRA_FAIL;
                 (*no_long_dict_entries)++;
