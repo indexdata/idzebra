@@ -1336,7 +1336,6 @@ void zebra_it_key_str_dump(ZebraHandle zh, struct it_key *key,
                            const char *str, size_t slen, NMEM nmem, int level)
 {
     char keystr[200]; /* room for zints to print */
-    char *dst_term = 0;
     int ord = CAST_ZINT_TO_INT(key->mem[0]);
     const char *index_type;
     int i;
@@ -1345,8 +1344,6 @@ void zebra_it_key_str_dump(ZebraHandle zh, struct it_key *key,
     zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type,
                             0/* db */, &string_index);
     assert(index_type);
-    zebra_term_untrans_iconv(zh, nmem, index_type,
-                             &dst_term, str);
     *keystr = '\0';
     for (i = 0; i < key->len; i++)
     {
@@ -1375,11 +1372,23 @@ void zebra_it_key_str_dump(ZebraHandle zh, struct it_key *key,
         }
         yaz_log(level, "%s%s %s %s", keystr, index_type,
                 string_index, dst_buf);
-
     }
     else
-        yaz_log(level, "%s%s %s \"%s\"", keystr, index_type,
-                string_index, dst_term);
+    {
+        char *dst_term = 0;
+        zebra_term_untrans_iconv(zh, nmem, index_type, &dst_term, str);
+        if (dst_term)
+            yaz_log(level, "%s%s %s \"%s\"", keystr, index_type,
+                    string_index, dst_term);
+        else
+        {
+            WRBUF w = wrbuf_alloc();
+            wrbuf_write_escaped(w, str, strlen(str));
+            yaz_log(level, "%s%s %s %s", keystr, index_type,
+                    string_index, wrbuf_cstr(w));
+            wrbuf_destroy(w);
+        }
+    }
 }
 
 void extract_rec_keys_log(ZebraHandle zh, int is_insert,
