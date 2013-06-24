@@ -1,3 +1,18 @@
+--- 2.0.55 2013/06/24
+
+Addx + document zebraidx command "check", which checks consistency of
+register.
+
+Debian : idzebra-2.0-utils includes init.d script. Includes logrotate as
+well. The zebrasrv init script listens on port 2100. At this time,
+zebra.cfg, is not part of the package. Administrator must install or
+modify $CONFIG to point to a working zebra.cfg.
+
+RPM: idzebra-2.0 includes init.d script. Also includes logrotate. The
+zebrasrv init script listens on port 2100 (IPv4 + IPv6). At this time,
+zebra.cfg, is not part of the package. Administrator must install or
+modify $CONFIG to point to a working zebra.cfg.
+
 --- 2.0.54 2013/01/21
 
 For mod_dom filter, allow type="adelete", which will not treat a failed
