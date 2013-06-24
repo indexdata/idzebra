@@ -2413,7 +2413,6 @@ ZEBRA_RES zebra_register_check(ZebraHandle zh, const char *spec)
 {
     ZEBRA_RES res = ZEBRA_FAIL;
     unsigned flags = 0;
-    int message_limit = 10;
 
     if (!spec || *spec == '\0'
         || !strcmp(spec, "dict") || !strcmp(spec, "default"))
@@ -2425,13 +2424,13 @@ ZEBRA_RES zebra_register_check(ZebraHandle zh, const char *spec)
     else
         return ZEBRA_FAIL;
 
-    yaz_log(YLOG_LOG, "zebra_register_check begin flags=%u message_limit=%d",
-            flags, message_limit);
+    yaz_log(YLOG_LOG, "zebra_register_check begin flags=%u", flags);
     if (zebra_begin_read(zh) == ZEBRA_OK)
     {
         zint no_records_total = 0;
         zint no_records_fail = 0;
         zint total_keys = 0;
+        int message_limit = zh->m_file_verbose_limit;
 
         if (zh->reg)
         {
