@@ -2422,7 +2422,10 @@ ZEBRA_RES zebra_register_check(ZebraHandle zh, const char *spec)
     else if (!strcmp(spec, "quick"))
         flags = 0;
     else
+    {
+        yaz_log(YLOG_WARN, "Unknown check spec: %s", spec);
         return ZEBRA_FAIL;
+    }
 
     yaz_log(YLOG_LOG, "zebra_register_check begin flags=%u", flags);
     if (zebra_begin_read(zh) == ZEBRA_OK)
