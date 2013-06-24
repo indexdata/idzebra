@@ -29,17 +29,17 @@
  <refsynopsisdiv>
   <cmdsynopsis>
    <command>zebraidx</command>
-   <arg choice="opt"><option>-t <replaceable>type</replaceable></option></arg>
    <arg choice="opt"><option>-c <replaceable>config</replaceable></option></arg>
-   <arg choice="opt"><option>-g <replaceable>group</replaceable></option></arg>
    <arg choice="opt"><option>-d <replaceable>database</replaceable></option></arg>
+   <arg choice="opt"><option>-f <replaceable>number</replaceable></option></arg>
+   <arg choice="opt"><option>-g <replaceable>group</replaceable></option></arg>
+   <arg choice="opt"><option>-l <replaceable>file</replaceable></option></arg>
+   <arg choice="opt"><option>-L</option></arg>
    <arg choice="opt"><option>-m <replaceable>mbytes</replaceable></option></arg>
    <arg choice="opt"><option>-n</option></arg>
    <arg choice="opt"><option>-s</option></arg>
    <arg choice="opt"><option>-v <replaceable>level</replaceable></option></arg>
-   <arg choice="opt"><option>-l <replaceable>file</replaceable></option></arg>
-   <arg choice="opt"><option>-L</option></arg>
-   <arg choice="opt"><option>-f <replaceable>number</replaceable></option></arg>
+   <arg choice="opt"><option>-t <replaceable>type</replaceable></option></arg>
    <arg choice="opt"><option>-v</option></arg>
    <arg choice="req"><replaceable>command</replaceable></arg>
    <arg choice="opt" rep="repeat"><replaceable>file</replaceable></arg>
@@ -103,6 +103,14 @@
     </listitem>
    </varlistentry>
    <varlistentry>
+    <term>check <replaceable>options</replaceable></term>
+    <listitem><para>
+      Runs consistency check of register. May take a long time.
+      Options may be one of <literal>quick</literal>,
+      <literal>default</literal> or <literal>full</literal>.
+     </para></listitem>
+   </varlistentry>
+   <varlistentry>
     <term>clean</term>
     <listitem><para>
       Clean shadow files and "forget" changes.
@@ -133,26 +141,32 @@
   <variablelist>
 
    <varlistentry>
-    <term>-t <replaceable>type</replaceable></term>
-    <listitem>
-     <para>
-      Update all files as <replaceable>type</replaceable>. Currently, the
-      types supported are <literal>text</literal>, <literal>alvis</literal>
-      and <literal>grs</literal><replaceable>.subtype</replaceable>.
-      Generally, it is probably advisable to specify the record types
-      in the <literal>zebra.cfg</literal> file (see
-      <link linkend="record-types">Record Types</link> in the &zebra; manual),
-      to avoid confusion at subsequent updates.
-     </para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
     <term>-c <replaceable>config-file</replaceable></term>
     <listitem>
      <para>
       Read the configuration file
       <replaceable>config-file</replaceable> instead of
       <literal>zebra.cfg</literal>.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>-d <replaceable>database</replaceable></term>
+    <listitem>
+     <para>
+      The records located should be associated with the database name
+      <replaceable>database</replaceable> for access through the
+      &acro.z3950; server.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>-f <replaceable>number</replaceable></term>
+    <listitem>
+     <para>
+      Specify how many per-record log lines, zebraidx, should produce during
+      indexing and during register check (check command). If this option
+      is not given, a value of 1000 is used.
      </para>
     </listitem>
    </varlistentry>
@@ -168,32 +182,11 @@
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term>-d <replaceable>database</replaceable></term>
-    <listitem>
-     <para>
-      The records located should be associated with the database name
-      <replaceable>database</replaceable> for access through the &acro.z3950; server.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
     <term>-l <replaceable>file</replaceable></term>
     <listitem>
      <para>
       Write log messages to <replaceable>file</replaceable> instead
       of <literal>stderr</literal>.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>-m <replaceable>mbytes</replaceable></term>
-    <listitem>
-     <para>
-      Use <replaceable>mbytes</replaceable> of memory before flushing
-      keys to background storage. This setting affects performance when
-      updating large databases.
      </para>
     </listitem>
    </varlistentry>
@@ -203,6 +196,16 @@
      <para>
       Makes zebraidx skip symbolic links. By default, zebraidx follows
       them.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>-m <replaceable>mbytes</replaceable></term>
+    <listitem>
+     <para>
+      Use <replaceable>mbytes</replaceable> of memory before flushing
+      keys to background storage. This setting affects performance when
+      updating large databases.
      </para>
     </listitem>
    </varlistentry>
@@ -227,6 +230,21 @@
      </para>
     </listitem>
    </varlistentry>
+   <varlistentry>
+    <term>-t <replaceable>type</replaceable></term>
+    <listitem>
+     <para>
+      Update all files as <replaceable>type</replaceable>. Currently, the
+      types supported are <literal>text</literal>, <literal>alvis</literal>
+      and <literal>grs</literal><replaceable>.subtype</replaceable>.
+      Generally, it is probably advisable to specify the record types
+      in the <literal>zebra.cfg</literal> file (see
+      <link linkend="record-types">Record Types</link> in the &zebra; manual),
+      to avoid confusion at subsequent updates.
+     </para>
+    </listitem>
+   </varlistentry>
+
    <varlistentry>
     <term>-V</term>
     <listitem>
