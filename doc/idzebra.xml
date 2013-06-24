@@ -53,7 +53,7 @@
    </simpara>
   </abstract>
  </bookinfo>
- 
+
   &chap-introduction;
   &chap-installation;
   <!-- &chap-quickstart; -->
@@ -66,7 +66,7 @@
   &chap-recordmodel-alvisxslt;
   &chap-recordmodel-grs;
   &chap-field-structure;
- 
+
  <reference id="reference">
   <title>Reference</title>
    <partintro id="reference-introduction">
@@ -77,11 +77,11 @@
    </partintro>
   &manref;
  </reference>
- 
+
  &app-license;
  &gpl2;
  &app-indexdata;
- 
+
 </book>
 <!-- Keep this comment at the end of the file
 Local variables:

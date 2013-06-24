@@ -1,239 +1,239 @@
-<chapter id="examples">
- <title>Example Configurations</title>
+ <chapter id="examples">
+  <title>Example Configurations</title>
 
- <sect1 id="examples-overview">
-  <title>Overview</title>
+  <sect1 id="examples-overview">
+   <title>Overview</title>
 
-  <para>
-   <command>zebraidx</command> and 
-   <command>zebrasrv</command> are both
-   driven by a master configuration file, which may refer to other
-   subsidiary configuration files.  By default, they try to use
-   <filename>zebra.cfg</filename> in the working directory as the
-   master file; but this can be changed using the <literal>-c</literal>
-   option to specify an alternative master configuration file.
-  </para>
-  <para>
-   The master configuration file tells &zebra;:
-   <itemizedlist>
+   <para>
+    <command>zebraidx</command> and
+    <command>zebrasrv</command> are both
+    driven by a master configuration file, which may refer to other
+    subsidiary configuration files.  By default, they try to use
+    <filename>zebra.cfg</filename> in the working directory as the
+    master file; but this can be changed using the <literal>-c</literal>
+    option to specify an alternative master configuration file.
+   </para>
+   <para>
+    The master configuration file tells &zebra;:
+    <itemizedlist>
 
-    <listitem>
-     <para>
-      Where to find subsidiary configuration files, including both
-      those that are named explicitly and a few ``magic'' files such
-      as <literal>default.idx</literal>,
-      which specifies the default indexing rules.
-     </para>
-    </listitem>
+     <listitem>
+      <para>
+       Where to find subsidiary configuration files, including both
+       those that are named explicitly and a few ``magic'' files such
+       as <literal>default.idx</literal>,
+       which specifies the default indexing rules.
+      </para>
+     </listitem>
 
-    <listitem>
-     <para>
-      What record schemas to support.  (Subsidiary files specify how
-      to index the contents of records in those schemas, and what
-      format to use when presenting records in those schemas to client
-      software.)
-     </para>
-    </listitem>
+     <listitem>
+      <para>
+       What record schemas to support.  (Subsidiary files specify how
+       to index the contents of records in those schemas, and what
+       format to use when presenting records in those schemas to client
+       software.)
+      </para>
+     </listitem>
 
-    <listitem>
-     <para>
-      What attribute sets to recognise in searches.  (Subsidiary files
-      specify how to interpret the attributes in terms
-      of the indexes that are created on the records.)
-     </para>
-    </listitem>
+     <listitem>
+      <para>
+       What attribute sets to recognise in searches.  (Subsidiary files
+       specify how to interpret the attributes in terms
+       of the indexes that are created on the records.)
+      </para>
+     </listitem>
 
-    <listitem>
-     <para>
-      Policy details such as what type of input format to expect when
-      adding new records, what low-level indexing algorithm to use,
-      how to identify potential duplicate records, etc.
-     </para>
-    </listitem>
+     <listitem>
+      <para>
+       Policy details such as what type of input format to expect when
+       adding new records, what low-level indexing algorithm to use,
+       how to identify potential duplicate records, etc.
+      </para>
+     </listitem>
 
-   </itemizedlist>
-  </para>
-  <para>
-   Now let's see what goes in the <literal>zebra.cfg</literal> file
-   for some example configurations.
-  </para>
- </sect1>
+    </itemizedlist>
+   </para>
+   <para>
+    Now let's see what goes in the <literal>zebra.cfg</literal> file
+    for some example configurations.
+   </para>
+  </sect1>
 
- <sect1 id="example1">
-  <title>Example 1: &acro.xml; Indexing And Searching</title>
+  <sect1 id="example1">
+   <title>Example 1: &acro.xml; Indexing And Searching</title>
 
-  <para>
-   This example shows how &zebra; can be used with absolutely minimal
-   configuration to index a body of
-   <ulink url="&url.xml;">&acro.xml;</ulink>
-   documents, and search them using
-   <ulink url="&url.xpath;">XPath</ulink>
-   expressions to specify access points.
-  </para>
-  <para>
-   Go to the <literal>examples/zthes</literal> subdirectory
-   of the distribution archive.
-   There you will find a <literal>Makefile</literal> that will
-   populate the <literal>records</literal> subdirectory with a file of
-   <ulink url="http://zthes.z3950.org/">Zthes</ulink>
-   records representing a taxonomic hierarchy of dinosaurs.  (The
-   records are generated from the family tree in the file
-   <literal>dino.tree</literal>.)
-   Type <literal>make records/dino.xml</literal>
-   to make the &acro.xml; data file.
-   (Or you could just type <literal>make dino</literal> to build the &acro.xml;
-   data file, create the database and populate it with the taxonomic
-   records all in one shot - but then you wouldn't learn anything,
-   would you?  :-)
-  </para>
-  <para>
-   Now we need to create a &zebra; database to hold and index the &acro.xml;
-   records.  We do this with the
-   &zebra; indexer, <command>zebraidx</command>, which is
-   driven by the <literal>zebra.cfg</literal> configuration file.
-   For our purposes, we don't need any
-   special behaviour - we can use the defaults - so we can start with a
-   minimal file that just tells <command>zebraidx</command> where to
-   find the default indexing rules, and how to parse the records:
-   <screen>
-    profilePath: .:../../tab
-    recordType: grs.sgml
-   </screen>
-  </para>
-  <para>
-   That's all you need for a minimal &zebra; configuration.  Now you can
-   roll the &acro.xml; records into the database and build the indexes:
-   <screen>
-    zebraidx update records
-   </screen>
-  </para>
-  <para>
-   Now start the server.  Like the indexer, its behaviour is
-   controlled by the
-   <literal>zebra.cfg</literal> file; and like the indexer, it works
-   just fine with this minimal configuration.
-   <screen>
-	zebrasrv
-   </screen>
-   By default, the server listens on IP port number 9999, although
-   this can easily be changed - see 
-   <xref linkend="zebrasrv"/>.
-  </para>
-  <para>
-   Now you can use the &acro.z3950; client program of your choice to execute
-   XPath-based boolean queries and fetch the &acro.xml; records that satisfy
-   them:
-   <screen>
-    $ yaz-client @:9999
-    Connecting...Ok.
-    Z&gt; find @attr 1=/Zthes/termName Sauroposeidon
-    Number of hits: 1
-    Z&gt; format xml
-    Z&gt; show 1
-    &lt;Zthes&gt;
+   <para>
+    This example shows how &zebra; can be used with absolutely minimal
+    configuration to index a body of
+    <ulink url="&url.xml;">&acro.xml;</ulink>
+    documents, and search them using
+    <ulink url="&url.xpath;">XPath</ulink>
+    expressions to specify access points.
+   </para>
+   <para>
+    Go to the <literal>examples/zthes</literal> subdirectory
+    of the distribution archive.
+    There you will find a <literal>Makefile</literal> that will
+    populate the <literal>records</literal> subdirectory with a file of
+    <ulink url="http://zthes.z3950.org/">Zthes</ulink>
+    records representing a taxonomic hierarchy of dinosaurs.  (The
+    records are generated from the family tree in the file
+    <literal>dino.tree</literal>.)
+    Type <literal>make records/dino.xml</literal>
+    to make the &acro.xml; data file.
+    (Or you could just type <literal>make dino</literal> to build the &acro.xml;
+    data file, create the database and populate it with the taxonomic
+    records all in one shot - but then you wouldn't learn anything,
+    would you?  :-)
+   </para>
+   <para>
+    Now we need to create a &zebra; database to hold and index the &acro.xml;
+    records.  We do this with the
+    &zebra; indexer, <command>zebraidx</command>, which is
+    driven by the <literal>zebra.cfg</literal> configuration file.
+    For our purposes, we don't need any
+    special behaviour - we can use the defaults - so we can start with a
+    minimal file that just tells <command>zebraidx</command> where to
+    find the default indexing rules, and how to parse the records:
+    <screen>
+     profilePath: .:../../tab
+     recordType: grs.sgml
+    </screen>
+   </para>
+   <para>
+    That's all you need for a minimal &zebra; configuration.  Now you can
+    roll the &acro.xml; records into the database and build the indexes:
+    <screen>
+     zebraidx update records
+    </screen>
+   </para>
+   <para>
+    Now start the server.  Like the indexer, its behaviour is
+    controlled by the
+    <literal>zebra.cfg</literal> file; and like the indexer, it works
+    just fine with this minimal configuration.
+    <screen>
+     zebrasrv
+    </screen>
+    By default, the server listens on IP port number 9999, although
+    this can easily be changed - see
+    <xref linkend="zebrasrv"/>.
+   </para>
+   <para>
+    Now you can use the &acro.z3950; client program of your choice to execute
+    XPath-based boolean queries and fetch the &acro.xml; records that satisfy
+    them:
+    <screen>
+     $ yaz-client @:9999
+     Connecting...Ok.
+     Z&gt; find @attr 1=/Zthes/termName Sauroposeidon
+     Number of hits: 1
+     Z&gt; format xml
+     Z&gt; show 1
+     &lt;Zthes&gt;
      &lt;termId&gt;22&lt;/termId&gt;
      &lt;termName&gt;Sauroposeidon&lt;/termName&gt;
      &lt;termType&gt;PT&lt;/termType&gt;
      &lt;termNote&gt;The tallest known dinosaur (18m)&lt;/termNote&gt;
      &lt;relation&gt;
-      &lt;relationType&gt;BT&lt;/relationType&gt;
-      &lt;termId&gt;21&lt;/termId&gt;
-      &lt;termName&gt;Brachiosauridae&lt;/termName&gt;
-      &lt;termType&gt;PT&lt;/termType&gt;
+     &lt;relationType&gt;BT&lt;/relationType&gt;
+     &lt;termId&gt;21&lt;/termId&gt;
+     &lt;termName&gt;Brachiosauridae&lt;/termName&gt;
+     &lt;termType&gt;PT&lt;/termType&gt;
      &lt;/relation&gt;
 
-      &lt;idzebra xmlns="http://www.indexdata.dk/zebra/"&gt;
-	&lt;size&gt;300&lt;/size&gt;
-	&lt;localnumber&gt;23&lt;/localnumber&gt;
-	&lt;filename&gt;records/dino.xml&lt;/filename&gt;
-      &lt;/idzebra&gt;
-    &lt;/Zthes&gt;
-   </screen>
-  </para>
-  <para>
-   Now wasn't that nice and easy?
-  </para>
- </sect1>
-
-
- <sect1 id="example2">
-  <title>Example 2: Supporting Interoperable Searches</title>
-
-  <para>
-   The problem with the previous example is that you need to know the
-   structure of the documents in order to find them.  For example,
-   when we wanted to find the record for the taxon
-   <foreignphrase role="taxon">Sauroposeidon</foreignphrase>,
-   we had to formulate a complex XPath 
-   <literal>/Zthes/termName</literal>
-   which embodies the knowledge that taxon names are specified in a
-   <literal>&lt;termName&gt;</literal> element inside the top-level
-   <literal>&lt;Zthes&gt;</literal> element.
-  </para>
-  <para>
-   This is bad not just because it requires a lot of typing, but more
-   significantly because it ties searching semantics to the physical
-   structure of the searched records.  You can't use the same search
-   specification to search two databases if their internal
-   representations are different.  Consider a different taxonomy
-   database in which the records have taxon names specified
-   inside a <literal>&lt;name&gt;</literal> element nested within a
-   <literal>&lt;identification&gt;</literal> element
-   inside a top-level <literal>&lt;taxon&gt;</literal> element: then
-   you'd need to search for them using
-   <literal>1=/taxon/identification/name</literal>
-  </para>
-  <para>
-   How, then, can we build broadcasting Information Retrieval
-   applications that look for records in many different databases?
-   The &acro.z3950; protocol offers a powerful and general solution to this:
-   abstract ``access points''.  In the &acro.z3950; model, an access point
-   is simply a point at which searches can be directed.  Nothing is
-   said about implementation: in a given database, an access point
-   might be implemented as an index, a path into physical records, an
-   algorithm for interrogating relational tables or whatever works.
-   The only important thing is that the semantics of an access
-   point is fixed and well defined.
-  </para>
-  <para>
-   For convenience, access points are gathered into <firstterm>attribute
-   sets</firstterm>.  For example, the &acro.bib1; attribute set is supposed to
-   contain bibliographic access points such as author, title, subject
-   and ISBN; the GEO attribute set contains access points pertaining
-   to geospatial information (bounding coordinates, stratum, latitude
-   resolution, etc.); the CIMI
-   attribute set contains access points to do with museum collections
-   (provenance, inscriptions, etc.)
-  </para>
-  <para>
-   In practice, the &acro.bib1; attribute set has tended to be a dumping
-   ground for all sorts of access points, so that, for example, it
-   includes some geospatial access points as well as strictly
-   bibliographic ones.  Nevertheless, this model
-   allows a layer of abstraction over the physical representation of
-   records in databases.
-  </para>
-  <para>
-   In the &acro.bib1; attribute set, a taxon name is probably best
-   interpreted as a title - that is, a phrase that identifies the item
-   in question.  &acro.bib1; represents title searches by
-   access point 4.  (See 
-   <ulink url="&url.z39.50.bib1.semantics;">The &acro.bib1; Attribute
-    Set Semantics</ulink>)
-   So we need to configure our dinosaur database so that searches for
-   &acro.bib1; access point 4 look in the 
-   <literal>&lt;termName&gt;</literal> element,
-   inside the top-level
-   <literal>&lt;Zthes&gt;</literal> element.
-  </para>
-  <para>
-   This is a two-step process.  First, we need to tell &zebra; that we
-   want to support the &acro.bib1; attribute set.  Then we need to tell it
-   which elements of its record pertain to access point 4.
+     &lt;idzebra xmlns="http://www.indexdata.dk/zebra/"&gt;
+     &lt;size&gt;300&lt;/size&gt;
+     &lt;localnumber&gt;23&lt;/localnumber&gt;
+     &lt;filename&gt;records/dino.xml&lt;/filename&gt;
+     &lt;/idzebra&gt;
+     &lt;/Zthes&gt;
+    </screen>
    </para>
    <para>
-   We need to create an <link linkend="abs-file">Abstract Syntax
-   file</link> named after the document element of the records we're
+    Now wasn't that nice and easy?
+   </para>
+  </sect1>
+
+
+  <sect1 id="example2">
+   <title>Example 2: Supporting Interoperable Searches</title>
+
+   <para>
+    The problem with the previous example is that you need to know the
+    structure of the documents in order to find them.  For example,
+    when we wanted to find the record for the taxon
+    <foreignphrase role="taxon">Sauroposeidon</foreignphrase>,
+    we had to formulate a complex XPath
+    <literal>/Zthes/termName</literal>
+    which embodies the knowledge that taxon names are specified in a
+    <literal>&lt;termName&gt;</literal> element inside the top-level
+    <literal>&lt;Zthes&gt;</literal> element.
+   </para>
+   <para>
+    This is bad not just because it requires a lot of typing, but more
+    significantly because it ties searching semantics to the physical
+    structure of the searched records.  You can't use the same search
+    specification to search two databases if their internal
+    representations are different.  Consider a different taxonomy
+    database in which the records have taxon names specified
+    inside a <literal>&lt;name&gt;</literal> element nested within a
+    <literal>&lt;identification&gt;</literal> element
+    inside a top-level <literal>&lt;taxon&gt;</literal> element: then
+    you'd need to search for them using
+    <literal>1=/taxon/identification/name</literal>
+   </para>
+   <para>
+    How, then, can we build broadcasting Information Retrieval
+    applications that look for records in many different databases?
+    The &acro.z3950; protocol offers a powerful and general solution to this:
+    abstract ``access points''.  In the &acro.z3950; model, an access point
+    is simply a point at which searches can be directed.  Nothing is
+    said about implementation: in a given database, an access point
+    might be implemented as an index, a path into physical records, an
+    algorithm for interrogating relational tables or whatever works.
+    The only important thing is that the semantics of an access
+    point is fixed and well defined.
+   </para>
+   <para>
+    For convenience, access points are gathered into <firstterm>attribute
+     sets</firstterm>.  For example, the &acro.bib1; attribute set is supposed to
+    contain bibliographic access points such as author, title, subject
+    and ISBN; the GEO attribute set contains access points pertaining
+    to geospatial information (bounding coordinates, stratum, latitude
+    resolution, etc.); the CIMI
+    attribute set contains access points to do with museum collections
+    (provenance, inscriptions, etc.)
+   </para>
+   <para>
+    In practice, the &acro.bib1; attribute set has tended to be a dumping
+    ground for all sorts of access points, so that, for example, it
+    includes some geospatial access points as well as strictly
+    bibliographic ones.  Nevertheless, this model
+    allows a layer of abstraction over the physical representation of
+    records in databases.
+   </para>
+   <para>
+    In the &acro.bib1; attribute set, a taxon name is probably best
+    interpreted as a title - that is, a phrase that identifies the item
+    in question.  &acro.bib1; represents title searches by
+    access point 4.  (See
+    <ulink url="&url.z39.50.bib1.semantics;">The &acro.bib1; Attribute
+     Set Semantics</ulink>)
+    So we need to configure our dinosaur database so that searches for
+    &acro.bib1; access point 4 look in the
+    <literal>&lt;termName&gt;</literal> element,
+    inside the top-level
+    <literal>&lt;Zthes&gt;</literal> element.
+   </para>
+   <para>
+    This is a two-step process.  First, we need to tell &zebra; that we
+    want to support the &acro.bib1; attribute set.  Then we need to tell it
+    which elements of its record pertain to access point 4.
+   </para>
+   <para>
+    We need to create an <link linkend="abs-file">Abstract Syntax
+     file</link> named after the document element of the records we're
     working with, plus a <literal>.abs</literal> suffix - in this case,
     <literal>Zthes.abs</literal> - as follows:
    </para>
@@ -244,23 +244,23 @@
      <area id="termId" coords="7"/>
      <area id="termName" coords="8"/>
     </areaspec>
-    <programlisting>
-attset zthes.att
-attset bib1.att
-xpath enable
-systag sysno none
+   <programlisting>
+    attset zthes.att
+    attset bib1.att
+    xpath enable
+    systag sysno none
 
-xelm /Zthes/termId              termId:w
-xelm /Zthes/termName            termName:w,title:w
-xelm /Zthes/termQualifier       termQualifier:w
-xelm /Zthes/termType            termType:w
-xelm /Zthes/termLanguage        termLanguage:w
-xelm /Zthes/termNote            termNote:w
-xelm /Zthes/termCreatedDate     termCreatedDate:w
-xelm /Zthes/termCreatedBy       termCreatedBy:w
-xelm /Zthes/termModifiedDate    termModifiedDate:w
-xelm /Zthes/termModifiedBy      termModifiedBy:w
-    </programlisting>
+    xelm /Zthes/termId              termId:w
+    xelm /Zthes/termName            termName:w,title:w
+    xelm /Zthes/termQualifier       termQualifier:w
+    xelm /Zthes/termType            termType:w
+    xelm /Zthes/termLanguage        termLanguage:w
+    xelm /Zthes/termNote            termNote:w
+    xelm /Zthes/termCreatedDate     termCreatedDate:w
+    xelm /Zthes/termCreatedBy       termCreatedBy:w
+    xelm /Zthes/termModifiedDate    termModifiedDate:w
+    xelm /Zthes/termModifiedBy      termModifiedBy:w
+   </programlisting>
    <calloutlist>
     <callout arearefs="attset.zthes">
      <para>
@@ -292,103 +292,103 @@ xelm /Zthes/termModifiedBy      termModifiedBy:w
     After re-indexing, we can search the database using &acro.bib1;
     attribute, title, as follows:
     <screen>
-Z> form xml
-Z> f @attr 1=4 Eoraptor
-Sent searchRequest.
-Received SearchResponse.
-Search was a success.
-Number of hits: 1, setno 1
-SearchResult-1: Eoraptor(1)
-records returned: 0
-Elapsed: 0.106896
-Z> s
-Sent presentRequest (1+1).
-Records: 1
-[Default]Record type: &acro.xml;
-&lt;Zthes&gt;
- &lt;termId&gt;2&lt;/termId&gt;
- &lt;termName&gt;Eoraptor&lt;/termName&gt;
- &lt;termType&gt;PT&lt;/termType&gt;
- &lt;termNote&gt;The most basal known dinosaur&lt;/termNote&gt;
- ...
+     Z> form xml
+     Z> f @attr 1=4 Eoraptor
+     Sent searchRequest.
+     Received SearchResponse.
+     Search was a success.
+     Number of hits: 1, setno 1
+     SearchResult-1: Eoraptor(1)
+     records returned: 0
+     Elapsed: 0.106896
+     Z> s
+     Sent presentRequest (1+1).
+     Records: 1
+     [Default]Record type: &acro.xml;
+     &lt;Zthes&gt;
+     &lt;termId&gt;2&lt;/termId&gt;
+     &lt;termName&gt;Eoraptor&lt;/termName&gt;
+     &lt;termType&gt;PT&lt;/termType&gt;
+     &lt;termNote&gt;The most basal known dinosaur&lt;/termNote&gt;
+     ...
     </screen>
    </para>
- </sect1>
-</chapter>
+  </sect1>
+ </chapter>
 
 
-<!--
-	The simplest hello-world example could go like this:
-	
-	Index the document
-	
-	<book>
-	   <title>The art of motorcycle maintenance</title>
-	   <subject scheme="Dewey">zen</subject>
+ <!--
+ The simplest hello-world example could go like this:
+
+ Index the document
+
+ <book>
+ <title>The art of motorcycle maintenance</title>
+ <subject scheme="Dewey">zen</subject>
 	</book>
-	
-	And search it like
-	
-	f @attr 1=/book/title motorcycle
-	
-	f @attr 1=/book/subject[@scheme=Dewey] zen
-	
-	If you suddenly decide you want broader interop, you can add
-	an abs file (more or less like this):
-	
-	attset bib1.att
-	tagset tagsetg.tag
-	
-	elm (2,1)       title   title
-	elm (2,21)      subject  subject
--->
 
-<!--
-How to include images:
+ And search it like
 
-	<mediaobject>
-	  <imageobject>
-	    <imagedata fileref="system.eps" format="eps">
+ f @attr 1=/book/title motorcycle
+
+ f @attr 1=/book/subject[@scheme=Dewey] zen
+
+ If you suddenly decide you want broader interop, you can add
+ an abs file (more or less like this):
+
+ attset bib1.att
+ tagset tagsetg.tag
+
+ elm (2,1)       title   title
+ elm (2,21)      subject  subject
+ -->
+
+ <!--
+ How to include images:
+
+ <mediaobject>
+ <imageobject>
+ <imagedata fileref="system.eps" format="eps">
 	  </imageobject>
-	  <imageobject>
-	    <imagedata fileref="system.gif" format="gif">
+ <imageobject>
+ <imagedata fileref="system.gif" format="gif">
 	  </imageobject>
-	  <textobject>
-	    <phrase>The Multi-Lingual Search System Architecture</phrase>
+ <textobject>
+ <phrase>The Multi-Lingual Search System Architecture</phrase>
 	  </textobject>
-	  <caption>
-	    <para>
-	      <emphasis role="strong">
-		The Multi-Lingual Search System Architecture.
+ <caption>
+ <para>
+ <emphasis role="strong">
+ The Multi-Lingual Search System Architecture.
 	      </emphasis>
-	      <para>
-		Network connections across local area networks are
-		represented by straight lines, and those over the
-		internet by jagged lines.
+ <para>
+ Network connections across local area networks are
+ represented by straight lines, and those over the
+ internet by jagged lines.
 	  </caption>
 	</mediaobject>
 
-Where the three <*object> thingies inside the top-level <mediaobject>
-are decreasingly preferred version to include depending on what the
-rendering engine can handle.  I generated the EPS version of the image
-by exporting a line-drawing done in TGIF, then converted that to the
-GIF using a shell-script called "epstogif" which used an appallingly
-baroque sequence of conversions, which I would prefer not to pollute
-the &zebra; build environment with:
+ Where the three <*object> thingies inside the top-level <mediaobject>
+ are decreasingly preferred version to include depending on what the
+ rendering engine can handle.  I generated the EPS version of the image
+ by exporting a line-drawing done in TGIF, then converted that to the
+ GIF using a shell-script called "epstogif" which used an appallingly
+ baroque sequence of conversions, which I would prefer not to pollute
+ the &zebra; build environment with:
 
-	#!/bin/sh
+ #!/bin/sh
 
-	# Yes, what follows is stupidly convoluted, but I can't find a
-	# more straightforward path from the EPS generated by tgif's
-	# "Print" command into a browser-friendly format.
+ # Yes, what follows is stupidly convoluted, but I can't find a
+ # more straightforward path from the EPS generated by tgif's
+ # "Print" command into a browser-friendly format.
 
-	file=`echo "$1" | sed 's/\.eps//'`
-	ps2pdf "$1" "$file".pdf
-	pdftopbm "$file".pdf "$file"
-	pnmscale 0.50 < "$file"-000001.pbm | pnmcrop | ppmtogif
-	rm -f "$file".pdf "$file"-000001.pbm
+ file=`echo "$1" | sed 's/\.eps//'`
+ ps2pdf "$1" "$file".pdf
+ pdftopbm "$file".pdf "$file"
+ pnmscale 0.50 < "$file"-000001.pbm | pnmcrop | ppmtogif
+ rm -f "$file".pdf "$file"-000001.pbm
 
--->
+ -->
 
  <!-- Keep this comment at the end of the file
  Local variables:
@@ -399,7 +399,7 @@ the &zebra; build environment with:
  sgml-always-quote-attributes:t
  sgml-indent-step:1
  sgml-indent-data:t
- sgml-parent-document: "zebra.xml"
+ sgml-parent-document: "idzebra.xml"
  sgml-local-catalogs: nil
  sgml-namecase-general:t
  End:

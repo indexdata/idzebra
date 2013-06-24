@@ -1,13 +1,13 @@
  <chapter id="grs">
   <title>&acro.grs1; Record Model and Filter Modules</title>
 
-     <note>
-      <para>
-        The functionality of this record model has been improved and
-        replaced by the DOM &acro.xml; record model. See 
-        <xref linkend="record-model-domxml"/>.
-      </para>
-     </note>
+  <note>
+   <para>
+    The functionality of this record model has been improved and
+    replaced by the DOM &acro.xml; record model. See
+    <xref linkend="record-model-domxml"/>.
+   </para>
+  </note>
 
   <para>
    The record model described in this chapter applies to the fundamental,
@@ -32,7 +32,7 @@
        <para>
         This is the canonical input format
         described <xref linkend="grs-canonical-format"/>. It is using
-        simple &acro.sgml;-like syntax. 
+        simple &acro.sgml;-like syntax.
        </para>
       </listitem>
      </varlistentry>
@@ -41,7 +41,7 @@
       <listitem>
        <para>
         This allows &zebra; to read
-        records in the ISO2709 (&acro.marc;) encoding standard. 
+        records in the ISO2709 (&acro.marc;) encoding standard.
         Last parameter <replaceable>type</replaceable> names the
         <literal>.abs</literal> file (see below)
         which describes the specific &acro.marc; structure of the input record as
@@ -55,8 +55,8 @@
 	use <literal>grs.marcxml</literal> filter instead (see below).
        </para>
        <para>
-         The loadable <literal>grs.marc</literal> filter module
-         is packaged in the GNU/Debian package
+	The loadable <literal>grs.marc</literal> filter module
+	is packaged in the GNU/Debian package
         <literal>libidzebra2.0-mod-grs-marc</literal>
        </para>
       </listitem>
@@ -74,7 +74,7 @@
        <para>
 	The internal representation for <literal>grs.marcxml</literal>
 	is the same as for <ulink url="&url.marcxml;">&acro.marcxml;</ulink>.
-	It slightly more complicated to work with than 
+	It slightly more complicated to work with than
 	<literal>grs.marc</literal> but &acro.xml; conformant.
        </para>
        <para>
@@ -90,7 +90,7 @@
        <para>
         This filter reads &acro.xml; records and uses
 	<ulink url="http://expat.sourceforge.net/">Expat</ulink> to
-        parse them and convert them into ID&zebra;'s internal 
+        parse them and convert them into ID&zebra;'s internal
         <literal>grs</literal> record model.
         Only one record per file is supported, due to the fact &acro.xml; does
 	not allow two documents to "follow" each other (there is no way
@@ -101,7 +101,7 @@
 	The loadable <literal>grs.xml</literal> filter module
 	is packaged in the GNU/Debian package
         <literal>libidzebra2.0-mod-grs-xml</literal>
-        </para>
+       </para>
       </listitem>
      </varlistentry>
      <varlistentry>
@@ -122,7 +122,7 @@
       <term><literal>grs.tcl.</literal><replaceable>filter</replaceable></term>
       <listitem>
        <para>
-        Similar to grs.regx but using Tcl for rules, described in 
+        Similar to grs.regx but using Tcl for rules, described in
         <xref linkend="grs-regx-tcl"/>.
        </para>
        <para>
@@ -164,16 +164,16 @@
 
      <screen>
       &#60;Distributor&#62;
-        &#60;Name&#62; USGS/WRD &#60;/Name&#62;
-        &#60;Organization&#62; USGS/WRD &#60;/Organization&#62;
-        &#60;Street-Address&#62;
-          U.S. GEOLOGICAL SURVEY, 505 MARQUETTE, NW
-        &#60;/Street-Address&#62;
-        &#60;City&#62; ALBUQUERQUE &#60;/City&#62;
-        &#60;State&#62; NM &#60;/State&#62;
-        &#60;Zip-Code&#62; 87102 &#60;/Zip-Code&#62;
-        &#60;Country&#62; USA &#60;/Country&#62;
-        &#60;Telephone&#62; (505) 766-5560 &#60;/Telephone&#62;
+      &#60;Name&#62; USGS/WRD &#60;/Name&#62;
+      &#60;Organization&#62; USGS/WRD &#60;/Organization&#62;
+      &#60;Street-Address&#62;
+      U.S. GEOLOGICAL SURVEY, 505 MARQUETTE, NW
+      &#60;/Street-Address&#62;
+      &#60;City&#62; ALBUQUERQUE &#60;/City&#62;
+      &#60;State&#62; NM &#60;/State&#62;
+      &#60;Zip-Code&#62; 87102 &#60;/Zip-Code&#62;
+      &#60;Country&#62; USA &#60;/Country&#62;
+      &#60;Telephone&#62; (505) 766-5560 &#60;/Telephone&#62;
       &#60;/Distributor&#62;
      </screen>
 
@@ -181,12 +181,12 @@
 
     <!-- There is no indentation in the example above!  -H
     -note-
-     -para-
-      The indentation used above is used to illustrate how &zebra;
-      interprets the mark-up. The indentation, in itself, has no
-      significance to the parser for the canonical input format, which
-      discards superfluous whitespace.
-     -/para-
+    -para-
+    The indentation used above is used to illustrate how &zebra;
+    interprets the mark-up. The indentation, in itself, has no
+    significance to the parser for the canonical input format, which
+    discards superfluous whitespace.
+    -/para-
     -/note-
     -->
 
@@ -230,7 +230,7 @@
 
       <screen>
        &#60;gils&#62;
-          &#60;title&#62;Zen and the Art of Motorcycle Maintenance&#60;/title&#62;
+       &#60;title&#62;Zen and the Art of Motorcycle Maintenance&#60;/title&#62;
        &#60;/gils&#62;
       </screen>
 
@@ -359,7 +359,7 @@
      type <literal>regx</literal>, argument
      <emphasis>filter-filename</emphasis>).
     </para>
-    
+
     <para>
      Generally, an input filter consists of a sequence of rules, where each
      rule consists of a sequence of expressions, followed by an action. The
@@ -367,7 +367,7 @@
      and the actions normally contribute to the generation of an internal
      representation of the record.
     </para>
-    
+
     <para>
      An expression can be either of the following:
     </para>
@@ -415,7 +415,7 @@
         <para>
 	 Matches regular expression pattern <replaceable>reg</replaceable>
 	 from the input record. The operators supported are the same
-	 as for regular expression queries. Refer to 
+	 as for regular expression queries. Refer to
 	 <xref linkend="querymodel-regular"/>.
         </para>
        </listitem>
@@ -467,7 +467,7 @@
          data element. The <replaceable>type</replaceable> is one of
          the following:
          <variablelist>
-          
+
           <varlistentry>
            <term>record</term>
            <listitem>
@@ -568,10 +568,10 @@
       /^Subject:/ BODY /$/ { data -element title $1 }
       /^Date:/ BODY /$/    { data -element lastModified $1 }
       /\n\n/ BODY END      {
-         begin element bodyOfDisplay
-         begin variant body iana "text/plain"
-         data -text $1
-         end record
+      begin element bodyOfDisplay
+      begin variant body iana "text/plain"
+      data -text $1
+      end record
       }
      </screen>
 
@@ -604,9 +604,9 @@
    <para>
 
     <screen>
-     ROOT 
-        TITLE     "Zen and the Art of Motorcycle Maintenance"
-        AUTHOR    "Robert Pirsig"
+     ROOT
+     TITLE     "Zen and the Art of Motorcycle Maintenance"
+     AUTHOR    "Robert Pirsig"
     </screen>
 
    </para>
@@ -619,11 +619,11 @@
    <para>
 
     <screen>
-     ROOT  
-        TITLE  "Zen and the Art of Motorcycle Maintenance"
-        AUTHOR
-           FIRST-NAME "Robert"
-           SURNAME    "Pirsig"
+     ROOT
+     TITLE  "Zen and the Art of Motorcycle Maintenance"
+     AUTHOR
+     FIRST-NAME "Robert"
+     SURNAME    "Pirsig"
     </screen>
 
    </para>
@@ -687,38 +687,38 @@
      Which of the two elements are transmitted to the client by the server
      depends on the specifications provided by the client, if any.
     </para>
-    
+
     <para>
      In practice, each variant node is associated with a triple of class,
      type, value, corresponding to the variant mechanism of &acro.z3950;.
     </para>
-    
+
    </section>
-   
+
    <section id="grs-data-elements">
     <title>Data Elements</title>
-    
+
     <para>
      Data nodes have no children (they are always leaf nodes in the record
      tree).
     </para>
-    
+
     <!--
     FIXME! Documentation needs extension here about types of nodes - numerical,
     textual, etc., plus the various types of inclusion notes.
    </para>
     -->
-    
+
    </section>
-   
+
   </section>
-  
+
   <section id="grs-conf">
    <title>&acro.grs1; Record Model Configuration</title>
-   
+
    <para>
     The following sections describe the configuration files that govern
-    the internal management of <literal>grs</literal> records. 
+    the internal management of <literal>grs</literal> records.
     The system searches for the files
     in the directories specified by the <emphasis>profilePath</emphasis>
     setting in the <literal>zebra.cfg</literal> file.
@@ -735,7 +735,7 @@
     </para>
 
     <!--
-     FIXME - Need a diagram here, or a simple explanation how it all hangs together -H
+    FIXME - Need a diagram here, or a simple explanation how it all hangs together -H
     -->
 
     <para>
@@ -766,7 +766,7 @@
         known.
        </para>
       </listitem>
-      
+
       <listitem>
        <para>
         The variant set which is used in the profile. This provides a
@@ -800,7 +800,7 @@
        </para>
       </listitem>
 
-      <listitem>      
+      <listitem>
        <para>
         A list of element descriptions (this is the actual ARS of the
         schema, in &acro.z3950; terms), which lists the ways in which the various
@@ -847,19 +847,19 @@
      file. Some settings are optional (o), while others again are
      mandatory (m).
     </para>
-    
+
    </section>
-   
+
    <section id="abs-file">
     <title>The Abstract Syntax (.abs) Files</title>
-    
+
     <para>
      The name of this file type is slightly misleading in &acro.z3950; terms,
      since, apart from the actual abstract syntax of the profile, it also
      includes most of the other definitions that go into a database
      profile.
     </para>
-    
+
     <para>
      When a record in the canonical, &acro.sgml;-like format is read from a file
      or from the database, the first tag of the file should reference the
@@ -867,7 +867,7 @@
      record is, say, <literal>&lt;gils&gt;</literal>, the system will look
      for the profile definition in the file <literal>gils.abs</literal>.
      Profile definitions are cached, so they only have to be read once
-     during the lifespan of the current process. 
+     during the lifespan of the current process.
     </para>
 
     <para>
@@ -876,14 +876,14 @@
      introduces the profile, and should always be called first thing when
      introducing a new record.
     </para>
-    
+
     <para>
      The file may contain the following directives:
     </para>
-    
+
     <para>
      <variablelist>
-      
+
       <varlistentry>
        <term>name <replaceable>symbolic-name</replaceable></term>
        <listitem>
@@ -1003,7 +1003,7 @@
         </para>
        </listitem>
       </varlistentry>
-      
+
       <varlistentry>
        <term>xelm <replaceable>xpath attributes</replaceable></term>
        <listitem>
@@ -1049,7 +1049,7 @@
          file via a header this directive is ignored.
          If neither this directive is given, nor an encoding is set
          within external records, ISO-8859-1 encoding is assumed.
-         </para>
+	</para>
        </listitem>
       </varlistentry>
       <varlistentry>
@@ -1058,60 +1058,60 @@
         <para>
          If this directive is followed by <literal>enable</literal>,
          then extra indexing is performed to allow for XPath-like queries.
-         If this directive is not specified - equivalent to 
+         If this directive is not specified - equivalent to
          <literal>disable</literal> - no extra XPath-indexing is performed.
         </para>
        </listitem>
       </varlistentry>
 
-      <!-- Adam's version 
+      <!-- Adam's version
       <varlistentry>
-       <term>systag <replaceable>systemtag</replaceable> <replaceable>element</replaceable></term>
-       <listitem>
-        <para>
-         This directive maps system information to an element during
-         retrieval. This information is dynamically created. The
-         following system tags are defined
-         <variablelist>
-          <varlistentry>
-           <term>size</term>
-           <listitem>
-            <para>
-             Size of record in bytes. By default this
-             is mapped to element <literal>size</literal>.
-            </para>
-           </listitem>
-          </varlistentry>
+      <term>systag <replaceable>systemtag</replaceable> <replaceable>element</replaceable></term>
+      <listitem>
+      <para>
+      This directive maps system information to an element during
+      retrieval. This information is dynamically created. The
+      following system tags are defined
+      <variablelist>
+      <varlistentry>
+      <term>size</term>
+      <listitem>
+      <para>
+      Size of record in bytes. By default this
+      is mapped to element <literal>size</literal>.
+     </para>
+     </listitem>
+     </varlistentry>
 
-          <varlistentry>
-           <term>rank</term>
-           <listitem>
-            <para>
-             Score/rank of record. By default this
-             is mapped to element <literal>rank</literal>.
-             If no score was calculated for the record (non-ranked
-             searched) search this directive is ignored.
-            </para>
-           </listitem>
-          </varlistentry>
-          
-          <varlistentry>
-           <term>sysno</term>
-           <listitem> 
-            <para>
-             &zebra;'s system number (record ID) for the
-             record. By default this is mapped to element
-             <literal>localControlNumber</literal>.
-            </para>
-           </listitem>
-          </varlistentry>
-         </variablelist>
-         If you do not want a particular system tag to be applied,
-         then set the resulting element to something undefined in the
-         abs file (such as <literal>none</literal>).
-        </para>
-       </listitem>
-      </varlistentry>
+      <varlistentry>
+      <term>rank</term>
+      <listitem>
+      <para>
+      Score/rank of record. By default this
+      is mapped to element <literal>rank</literal>.
+      If no score was calculated for the record (non-ranked
+      searched) search this directive is ignored.
+     </para>
+     </listitem>
+     </varlistentry>
+
+      <varlistentry>
+      <term>sysno</term>
+      <listitem>
+      <para>
+      &zebra;'s system number (record ID) for the
+      record. By default this is mapped to element
+      <literal>localControlNumber</literal>.
+     </para>
+     </listitem>
+     </varlistentry>
+     </variablelist>
+      If you do not want a particular system tag to be applied,
+      then set the resulting element to something undefined in the
+      abs file (such as <literal>none</literal>).
+     </para>
+     </listitem>
+     </varlistentry>
       -->
 
       <!-- Mike's version -->
@@ -1124,7 +1124,7 @@
        <listitem>
 	<para>
 	 Specifies what information, if any, &zebra; should
-	 automatically include in retrieval records for the 
+	 automatically include in retrieval records for the
 	 ``system fields'' that it supports.
 	 <replaceable>systemTag</replaceable> may
 	 be any of the following:
@@ -1132,24 +1132,24 @@
 	  <varlistentry>
 	   <term><literal>rank</literal></term>
 	   <listitem><para>
-	    An integer indicating the relevance-ranking score
-	    assigned to the record.
-	   </para></listitem>
+	     An integer indicating the relevance-ranking score
+	     assigned to the record.
+	    </para></listitem>
 	  </varlistentry>
 	  <varlistentry>
 	   <term><literal>sysno</literal></term>
 	   <listitem><para>
-	    An automatically generated identifier for the record,
-	    unique within this database.  It is represented by the
-	    <literal>&lt;localControlNumber&gt;</literal> element in
-	    &acro.xml; and the <literal>(1,14)</literal> tag in &acro.grs1;.
-	   </para></listitem>
+	     An automatically generated identifier for the record,
+	     unique within this database.  It is represented by the
+	     <literal>&lt;localControlNumber&gt;</literal> element in
+	     &acro.xml; and the <literal>(1,14)</literal> tag in &acro.grs1;.
+	    </para></listitem>
 	  </varlistentry>
 	  <varlistentry>
 	   <term><literal>size</literal></term>
 	   <listitem><para>
-	    The size, in bytes, of the retrieved record.
-	   </para></listitem>
+	     The size, in bytes, of the retrieved record.
+	    </para></listitem>
 	  </varlistentry>
 	 </variablelist>
 	</para>
@@ -1162,7 +1162,7 @@
       </varlistentry>
      </variablelist>
     </para>
-    
+
     <note>
      <para>
       The mechanism for controlling indexing is not adequate for
@@ -1170,7 +1170,7 @@
       configuration table eventually.
      </para>
     </note>
-    
+
     <para>
      The following is an excerpt from the abstract syntax file for the GILS
      profile.
@@ -1202,7 +1202,7 @@
       elm (4,1)                controlIdentifier      Identifier-standard
       elm (2,6)                abstract               Abstract
       elm (4,51)               purpose                     !
-      elm (4,52)               originator                  - 
+      elm (4,52)               originator                  -
       elm (4,53)               accessConstraints           !
       elm (4,54)               useConstraints              !
       elm (4,70)               availability                -
@@ -1222,10 +1222,10 @@
 
     <para>
      This file type describes the <replaceable>Use</replaceable> elements of
-     an attribute set. 
-     It contains the following directives. 
+     an attribute set.
+     It contains the following directives.
     </para>
-    
+
     <para>
      <variablelist>
       <varlistentry>
@@ -1273,7 +1273,7 @@
          attribute value is stored in the index (unless a
          <replaceable>local-value</replaceable> is
          given, in which case this is stored). The name is used to refer to the
-         attribute from the <replaceable>abstract syntax</replaceable>. 
+         attribute from the <replaceable>abstract syntax</replaceable>.
         </para>
        </listitem></varlistentry>
      </variablelist>
@@ -1563,7 +1563,7 @@
       otherwise is noted.
      </para>
     </note>
-    
+
     <para>
      The directives available in the element set file are as follows:
     </para>
@@ -1701,10 +1701,10 @@
     </para>
 
     <!--
-     <emphasis>NOTE: FIXME! The schema-mapping functions are so far limited to a
-      straightforward mapping of elements. This should be extended with
-      mechanisms for conversions of the element contents, and conditional
-      mappings of elements based on the record contents.</emphasis>
+    <emphasis>NOTE: FIXME! The schema-mapping functions are so far limited to a
+    straightforward mapping of elements. This should be extended with
+    mechanisms for conversions of the element contents, and conditional
+    mappings of elements based on the record contents.</emphasis>
     -->
 
     <para>
@@ -1756,9 +1756,9 @@
     </para>
 
     <!--
-     NOTE: FIXME! This will be described better. We're in the process of
-      re-evaluating and most likely changing the way that &acro.marc; records are
-      handled by the system.</emphasis>
+    NOTE: FIXME! This will be described better. We're in the process of
+    re-evaluating and most likely changing the way that &acro.marc; records are
+    handled by the system.</emphasis>
     -->
 
    </section>
@@ -1836,7 +1836,7 @@
       </para>
      </listitem>
 
-     <!-- FIXME - Is this used anywhere ? -H -->  
+     <!-- FIXME - Is this used anywhere ? -H -->
      <listitem>
       <para>
        SOIF. Support for this syntax is experimental, and is currently
@@ -1846,48 +1846,48 @@
        level.
       </para>
      </listitem>
-   
+
     </itemizedlist>
    </para>
   </section>
-  
+
   <section id="grs-extended-marc-indexing">
    <title>Extended indexing of &acro.marc; records</title>
-   
+
    <para>Extended indexing of &acro.marc; records will help you if you need index a
     combination of subfields, or index only a part of the whole field,
     or use during indexing process embedded fields of &acro.marc; record.
    </para>
-   
+
    <para>Extended indexing of &acro.marc; records additionally allows:
     <itemizedlist>
-     
+
      <listitem>
       <para>to index data in LEADER of &acro.marc; record</para>
      </listitem>
-     
+
      <listitem>
       <para>to index data in control fields (with fixed length)</para>
      </listitem>
-     
+
      <listitem>
       <para>to use during indexing the values of indicators</para>
      </listitem>
-     
+
      <listitem>
       <para>to index linked fields for UNI&acro.marc; based formats</para>
      </listitem>
-     
+
     </itemizedlist>
    </para>
-   
+
    <note><para>In compare with simple indexing process the extended indexing
      may increase (about 2-3 times) the time of indexing process for &acro.marc;
      records.</para></note>
-   
+
    <section id="formula">
     <title>The index-formula</title>
-    
+
     <para>At the beginning, we have to define the term
      <emphasis>index-formula</emphasis> for &acro.marc; records. This term helps
      to understand the notation of extended indexing of &acro.marc; records by &zebra;.
@@ -1895,84 +1895,84 @@
      <ulink url="http://www.rba.ru/rusmarc/soft/Z39-50.htm">"The table
       of conformity for &acro.z3950; use attributes and R&acro.usmarc; fields"</ulink>.
      The document is available only in Russian language.</para>
-    
+
     <para>
      The <emphasis>index-formula</emphasis> is the combination of
      subfields presented in such way:
     </para>
-    
+
     <screen>
      71-00$a, $g, $h ($c){.$b ($c)} , (1)
     </screen>
-    
+
     <para>
      We know that &zebra; supports a &acro.bib1; attribute - right truncation.
-     In this case, the <emphasis>index-formula</emphasis> (1) consists from 
+     In this case, the <emphasis>index-formula</emphasis> (1) consists from
      forms, defined in the same way as (1)</para>
-    
+
     <screen>
      71-00$a, $g, $h
      71-00$a, $g
      71-00$a
     </screen>
-    
+
     <note>
      <para>The original &acro.marc; record may be without some elements, which included in <emphasis>index-formula</emphasis>.
      </para>
     </note>
-    
+
     <para>This notation includes such operands as:
      <variablelist>
-      
+
       <varlistentry>
        <term>#</term>
        <listitem><para>It means whitespace character.</para></listitem>
       </varlistentry>
-      
+
       <varlistentry>
        <term>-</term>
        <listitem><para>The position may contain any value, defined by
 	 &acro.marc; format.
 	 For example, <emphasis>index-formula</emphasis></para>
-	
+
 	<screen>
 	 70-#1$a, $g , (2)
 	</screen>
-	
-	<para>includes</para> 
-	
+
+	<para>includes</para>
+
 	<screen>
 	 700#1$a, $g
 	 701#1$a, $g
 	 702#1$a, $g
 	</screen>
-	
+
        </listitem>
       </varlistentry>
-      
+
       <varlistentry>
        <term>{...}</term>
        <listitem>
 	<para>The repeatable elements are defined in figure-brackets {}.
 	 For example,
 	 <emphasis>index-formula</emphasis></para>
-	
+
 	<screen>
 	 71-00$a, $g, $h ($c){.$b ($c)} , (3)
 	</screen>
-	
+
 	<para>includes</para>
-	
+
 	<screen>
 	 71-00$a, $g, $h ($c). $b ($c)
 	 71-00$a, $g, $h ($c). $b ($c). $b ($c)
 	 71-00$a, $g, $h ($c). $b ($c). $b ($c). $b ($c)
 	</screen>
-	
+
        </listitem>
       </varlistentry>
      </variablelist>
-     
+
      <note>
       <para>
        All another operands are the same as accepted in &acro.marc; world.
@@ -1980,11 +1980,11 @@
      </note>
     </para>
    </section>
-   
+
    <section id="notation">
     <title>Notation of <emphasis>index-formula</emphasis> for &zebra;</title>
-    
-    
+
+
     <para>Extended indexing overloads <literal>path</literal> of
      <literal>elm</literal> definition in abstract syntax file of &zebra;
      (<literal>.abs</literal> file). It means that names beginning with
@@ -1992,40 +1992,40 @@
      <emphasis>index-formula</emphasis>. The database index is created and
      linked with <emphasis>access point</emphasis> (&acro.bib1; use attribute)
      according to this formula.</para>
-    
+
     <para>For example, <emphasis>index-formula</emphasis></para>
-    
+
     <screen>
      71-00$a, $g, $h ($c){.$b ($c)} , (4)
     </screen>
-    
+
     <para>in <literal>.abs</literal> file looks like:</para>
-    
+
     <screen>
      mc-71.00_$a,_$g,_$h_(_$c_){.$b_(_$c_)}
     </screen>
-    
-    
+
+
     <para>The notation of <emphasis>index-formula</emphasis> uses the operands:
      <variablelist>
-      
+
       <varlistentry>
        <term>_</term>
        <listitem><para>It means whitespace character.</para></listitem>
       </varlistentry>
-      
+
       <varlistentry>
        <term>.</term>
        <listitem><para>The position may contain any value, defined by
 	 &acro.marc; format. For example,
 	 <emphasis>index-formula</emphasis></para>
-	
+
 	<screen>
 	 70-#1$a, $g , (5)
 	</screen>
-	
+
 	<para>matches <literal>mc-70._1_$a,_$g_</literal> and includes</para>
-	
+
 	<screen>
 	 700_1_$a,_$g_
 	 701_1_$a,_$g_
@@ -2033,21 +2033,21 @@
 	</screen>
        </listitem>
       </varlistentry>
-      
+
       <varlistentry>
        <term>{...}</term>
        <listitem><para>The repeatable elements are defined in
 	 figure-brackets {}. For example,
 	 <emphasis>index-formula</emphasis></para>
-	
+
 	<screen>
 	 71#00$a, $g, $h ($c) {.$b ($c)} , (6)
 	</screen>
-	
-	<para>matches 
+
+	<para>matches
 	 <literal>mc-71.00_$a,_$g,_$h_(_$c_){.$b_(_$c_)}</literal> and
 	 includes</para>
-	
+
 	<screen>
 	 71.00_$a,_$g,_$h_(_$c_).$b_(_$c_)
 	 71.00_$a,_$g,_$h_(_$c_).$b_(_$c_).$b_(_$c_)
@@ -2055,120 +2055,120 @@
 	</screen>
        </listitem>
       </varlistentry>
-      
+
       <varlistentry>
        <term>&#60;...&#62;</term>
        <listitem><para>Embedded <emphasis>index-formula</emphasis> (for
 	 linked fields) is between &#60;&#62;. For example,
 	 <emphasis>index-formula</emphasis>
 	</para>
-	
+
 	<screen>
 	 4--#-$170-#1$a, $g ($c) , (7)
 	</screen>
-	
+
 	<para>matches
 	 <literal>mc-4.._._$1&#60;70._1_$a,_$g_(_$c_)&#62;_</literal> and
 	 includes</para>
-	
+
 	<screen>
 	 463_._$1&#60;70._1_$a,_$g_(_$c_)&#62;_
 	</screen>
-	
+
        </listitem>
       </varlistentry>
      </variablelist>
     </para>
-    
+
     <note>
      <para>All another operands are the same as accepted in &acro.marc; world.</para>
     </note>
-    
+
     <section id="grs-examples">
      <title>Examples</title>
-     
+
      <para>
       <orderedlist>
-       
+
        <listitem>
-	
+
 	<para>indexing LEADER</para>
-	
+
 	<para>You need to use keyword "ldr" to index leader. For example,
 	 indexing data from 6th and 7th position of LEADER</para>
-	
+
 	<screen>
 	 elm mc-ldr[6] Record-type !
 	 elm mc-ldr[7] Bib-level   !
 	</screen>
-	
+
        </listitem>
-       
+
        <listitem>
-	
+
 	<para>indexing data from control fields</para>
-	
+
 	<para>indexing date (the time added to database)</para>
-	
+
 	<screen>
-	 elm mc-008[0-5] Date/time-added-to-db !	
+	 elm mc-008[0-5] Date/time-added-to-db !
 	</screen>
-	
+
 	<para>or for R&acro.usmarc; (this data included in 100th field)</para>
-	
+
 	<screen>
 	 elm mc-100___$a[0-7]_ Date/time-added-to-db !
 	</screen>
-	
+
        </listitem>
-       
+
        <listitem>
-	
+
 	<para>using indicators while indexing</para>
 
 	<para>For R&acro.usmarc; <emphasis>index-formula</emphasis>
 	 <literal>70-#1$a, $g</literal> matches</para>
-	
+
 	<screen>
 	 elm 70._1_$a,_$g_ Author !:w,!:p
 	</screen>
-	
-	<para>When &zebra; finds a field according to 
+
+	<para>When &zebra; finds a field according to
 	 <literal>"70."</literal> pattern it checks the indicators. In this
 	 case the value of first indicator doesn't mater, but the value of
-	 second one must be whitespace, in another case a field is not 
+	 second one must be whitespace, in another case a field is not
 	 indexed.</para>
        </listitem>
-       
+
        <listitem>
-	
+
 	<para>indexing embedded (linked) fields for UNI&acro.marc; based
 	 formats</para>
-	
-	<para>For R&acro.usmarc; <emphasis>index-formula</emphasis> 
+
+	<para>For R&acro.usmarc; <emphasis>index-formula</emphasis>
 	 <literal>4--#-$170-#1$a, $g ($c)</literal> matches</para>
-	
+
 	<screen><![CDATA[
 	 elm mc-4.._._$1<70._1_$a,_$g_(_$c_)>_ Author !:w,!:p
 	 ]]></screen>
-	
+
 	<para>Data are extracted from record if the field matches to
 	 <literal>"4.._."</literal> pattern and data in linked field
 	 match to embedded
 	 <emphasis>index-formula</emphasis>
 	 <literal>70._1_$a,_$g_(_$c_)</literal>.</para>
-	
+
        </listitem>
-       
+
       </orderedlist>
      </para>
-     
-     
+
+
     </section>
    </section>
 
   </section>
-  
+
  </chapter>
  <!-- Keep this comment at the end of the file
  Local variables:
@@ -2179,7 +2179,7 @@
  sgml-always-quote-attributes:t
  sgml-indent-step:1
  sgml-indent-data:t
- sgml-parent-document: "zebra.xml"
+ sgml-parent-document: "idzebra.xml"
  sgml-local-catalogs: nil
  sgml-namecase-general:t
  End:

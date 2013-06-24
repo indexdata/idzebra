@@ -1,7 +1,7 @@
  <chapter id="tutorial">
   <title>Tutorial</title>
 
-  
+
   <sect1 id="tutorial-oai">
    <title>A first &acro.oai; indexing example</title>
 
@@ -15,12 +15,12 @@
     Go to the <literal>examples/oai-pmh</literal> subdirectory of the
     distribution archive, or make a deep copy of the Debian installation
     directory
-    <literal>/usr/share/idzebra-2.0.-examples/oai-pmh</literal>. 
+    <literal>/usr/share/idzebra-2.0.-examples/oai-pmh</literal>.
     An XML file containing multiple &acro.oai;
     records is located in the  sub
-    directory <literal>examples/oai-pmh/data</literal>. 
+    directory <literal>examples/oai-pmh/data</literal>.
    </para>
-   <para> 
+   <para>
     Additional OAI test records can be downloaded by running a shell
     script (you may want to abort the script when you have waited
     longer than your coffee brews ..).
@@ -30,7 +30,7 @@
      cd ../
     </screen>
    </para>
-   <para> 
+   <para>
     To index these &acro.oai; records, type:
     <screen>
      zebraidx-2.0 -c conf/zebra.cfg init
@@ -40,24 +40,24 @@
     In case you have not installed zebra yet but have compiled the
     binaries from this tarball, use the following command form:
     <screen>
-     ../../index/zebraidx -c conf/zebra.cfg this and that 
+     ../../index/zebraidx -c conf/zebra.cfg this and that
     </screen>
     On some systems the &zebra; binaries are installed under the
     generic names, you need to use  the following command form:
     <screen>
-     zebraidx -c conf/zebra.cfg this and that 
+     zebraidx -c conf/zebra.cfg this and that
     </screen>
    </para>
-   
+
    <para>
     In this command, the word <literal>update</literal> is followed
     by the name of a directory: <literal>zebraidx</literal> updates all
-    files in the hierarchy rooted at <literal>data</literal>. 
-    The command option 
+    files in the hierarchy rooted at <literal>data</literal>.
+    The command option
     <literal>-c conf/zebra.cfg</literal> points to the proper
     configuration file.
    </para>
-   
+
    <para>
     You might ask yourself how &acro.xml; content is indexed using &acro.xslt;
     stylesheets: to satisfy your curiosity, you might want to run the
@@ -86,17 +86,17 @@
     return records in the &acro.xml; format only. The indexing machine
     did the splitting into individual records just behind the scenes.
    </para>
-   
+
 
   </sect1>
 
   <sect1 id="tutorial-oai-sru-pqf">
    <title>Searching the &acro.oai; database by web service</title>
-   
+
    <para>
     &zebra; has a build-in web service, which is close to the
     &acro.sru; standard web service. We use it to access our new
-    database using any   &acro.xml; enabled web browser. 
+    database using any   &acro.xml; enabled web browser.
     This service is using the  &acro.pqf; query language.
     In a later
     section we show how to run a fully compliant  &acro.sru; server,
@@ -138,7 +138,7 @@
 
    <!--
    relation tests:
-   
+
    <ulink url="">
 
    http://localhost:9999/?version=1.1&amp;operation=searchRetrieve
@@ -153,23 +153,23 @@
     &zebra; uses &acro.xslt; stylesheets for both &acro.xml;record
     indexing and
     display retrieval. In this example installation, they are two
-    retrieval schema's defined in 
-    <literal>conf/dom-conf.xml</literal>: 
-    the <literal>dc</literal> schema implemented in 
+    retrieval schema's defined in
+    <literal>conf/dom-conf.xml</literal>:
+    the <literal>dc</literal> schema implemented in
     <literal>conf/oai2dc.xsl</literal>, and
-    the <literal>zebra</literal> schema implemented in 
-    <literal>conf/oai2zebra.xsl</literal>. 
+    the <literal>zebra</literal> schema implemented in
+    <literal>conf/oai2zebra.xsl</literal>.
     The URLs for accessing both are the same, except for the different
     value of the <literal>recordSchema</literal> parameter:
     <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
      http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
-    </ulink>    
+    </ulink>
     and
     <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra">
      http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra
-    </ulink>    
+    </ulink>
     For the curious, one can see that the &acro.xslt; transformations
-    really do the magic.  
+    really do the magic.
     <screen>
      xsltproc conf/oai2dc.xsl data/debug-record.xml
      xsltproc conf/oai2zebra.xsl data/debug-record.xml
@@ -196,7 +196,7 @@
     original stored &acro.oai; &acro.xml; record.
     <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::data">
      http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::data
-    </ulink>    
+    </ulink>
    </para>
 
   </sect1>
@@ -210,7 +210,7 @@
     stylesheet reveals the following word type indexes (i.e. those
     with suffix <literal>:w</literal>):
     <screen>
-     any:w 
+     any:w
      title:w
      author:w
      subject:w
@@ -236,8 +236,8 @@
     Similar we can direct searches to the other indexes defined. Or we
     can create boolean combinations of searches on different
     indexes. In this case we search for <literal>the</literal> in
-    <literal>title</literal> and for <literal>fish</literal> in 
-    <literal>description</literal> using the query 
+    <literal>title</literal> and for <literal>fish</literal> in
+    <literal>description</literal> using the query
     <literal>@and @attr 1=title the @attr 1=description fish</literal>.
     <ulink
      url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@and
@@ -264,21 +264,21 @@
     <literal>zebra::index::fieldname</literal>. In this example you
     can see that the <literal>title</literal> index has both word
     (type <literal>:w</literal>) and phrase (type
-    <literal>:p</literal>) 
-    indexed fields, 
+    <literal>:p</literal>)
+    indexed fields,
     <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::index::title">
      http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::index::title
-    </ulink>    
+    </ulink>
    </para>
 
    <para>
     But where in the indexes did the term match for the query occur?
     Easily answered with the special  &zebra; schema
     <literal>zebra::snippet</literal>. The matching terms are
-    encapsulated by <literal>&lt;s&gt;</literal> tags. 
+    encapsulated by <literal>&lt;s&gt;</literal> tags.
     <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::snippet">
      http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::snippet
-    </ulink>    
+    </ulink>
    </para>
 
    <para>
@@ -289,7 +289,7 @@
     <literal>title:w</literal> index.
     <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::title:w">
      http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::title:w
-    </ulink>    
+    </ulink>
    </para>
 
    <para>
@@ -298,7 +298,7 @@
     <literal>:p</literal>.
     <ulink url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::publisher:p,title:p">
      http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::facet::publisher:p,title:p
-    </ulink>    
+    </ulink>
    </para>
 
   </sect1>
@@ -326,7 +326,7 @@
    </para>
 
    <para>
-    We are all set to start the &acro.sru;/acro.z3950; server including 
+    We are all set to start the &acro.sru;/acro.z3950; server including
     &acro.pqf; and &acro.cql; query configuration. It uses the &yaz; frontend
     server configuration - just type
     <screen>
@@ -337,7 +337,7 @@
    <para>
     First, we'd like to be sure that we can see the  &acro.explain;
     &acro.xml; response correctly. You might use either of these equivalent
-    requests: 
+    requests:
     <ulink
      url="http://localhost:9999">http://localhost:9999
     </ulink>
@@ -349,7 +349,7 @@
    </para>
 
    <para>
-    Now we can issue true &acro.sru; requests. For example, 
+    Now we can issue true &acro.sru; requests. For example,
     <literal>dc.title=the
      and dc.description=fish</literal> results in the following page
     <ulink
@@ -362,24 +362,24 @@
    </para>
 
    <para>
-    Scan of indexes is a part of the  &acro.sru; server business. For example, 
+    Scan of indexes is a part of the  &acro.sru; server business. For example,
     scanning the <literal>dc.title</literal> index gives us an idea
     what search terms are found there
     <ulink
      url="http://localhost:9999/?version=1.1&amp;operation=scan&amp;scanClause=dc.title=fish">
      http://localhost:9999/?version=1.1&amp;operation=scan&amp;scanClause=dc.title=fish
     </ulink>,
-    whereas 
+    whereas
     <ulink
      url="http://localhost:9999/?version=1.1&amp;operation=scan&amp;scanClause=dc.identifier=fish">
-     http://localhost:9999/?version=1.1&amp;operation=scan&amp;scanClause=dc.identifier=fish 
+     http://localhost:9999/?version=1.1&amp;operation=scan&amp;scanClause=dc.identifier=fish
     </ulink>
     accesses the indexed identifiers.
    </para>
 
    <para>
     In addition, all &zebra; internal special element sets or record
-    schema's of the form   
+    schema's of the form
     <literal>zebra::</literal> just work right out of the box
     <ulink
      url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=dc.title=the
@@ -397,21 +397,21 @@
 
   <sect1 id="tutorial-oai-z3950">
    <title>Searching the &acro.oai; database by &acro.z3950; protocol</title>
-   
+
    <para>
     In this section we repeat the searches and presents we have done so
     far using the binary &acro.z3950; protocol, you can use any
-    &acro.z3950; client. 
+    &acro.z3950; client.
     For instance, you can use the demo command-line client that comes
-    with &yaz;. 
+    with &yaz;.
    </para>
    <para>
-    Connecting to the server is done by the command 
+    Connecting to the server is done by the command
     <screen>
      yaz-client localhost:9999
     </screen>
    </para>
-   
+
    <para>
     When the client has connected, you can type:
     <screen>
@@ -422,42 +422,42 @@
      Z> show 1+1
     </screen>
    </para>
-   
+
    <para>
     &acro.z3950; presents using presentation stylesheets:
     <screen>
      Z> elements dc
      Z> show 2+1
-     
+
      Z> elements zebra
      Z> show 3+1
     </screen>
    </para>
 
    <para>
-    &acro.z3950; buildin Zebra presents (in this configuration only if 
+    &acro.z3950; buildin Zebra presents (in this configuration only if
     started without yaz-frontendserver):
-    
+
     <screen>
      Z> elements zebra::meta
      Z> show 4+1
-     
+
      Z> elements zebra::meta::sysno
      Z> show 5+1
-     
+
      Z> format sutrs
      Z> show 5+1
      Z> format xml
-     
+
      Z> elements zebra::index
      Z> show 6+1
-     
+
      Z> elements zebra::snippet
      Z> show 7+1
-     
+
      Z> elements zebra::facet::any:w
      Z> show 1+1
-     
+
      Z> elements zebra::facet::publisher:p,title:p
      Z> show 1+1
     </screen>
@@ -477,15 +477,15 @@
 
      Z> find @attr 1=oai_setspec @attr 4=3 7374617475733D756E707562
      Z> show 1+1
-     
+
      Z> find @attr 1=title communication
      Z> show 1+1
-     
-     Z> find @attr 1=identifier @attr 4=3  
+
+     Z> find @attr 1=identifier @attr 4=3
      http://resolver.caltech.edu/CaltechCSTR:1986.5228-tr-86
      Z> show 1+1
     </screen>
-    etc, etc. 
+    etc, etc.
    </para>
 
    <para>
@@ -510,7 +510,7 @@
      Z> querytype cql
      Z> elements dc
      Z>
-     Z> find harry 
+     Z> find harry
      Z>
      Z> find dc.creator = the
      Z> find dc.creator = the
@@ -520,15 +520,15 @@
      Z> find dc.title &gt; some
      Z>
      Z> find dc.identifier="http://resolver.caltech.edu/CaltechCSTR:1978.2276-tr-78"
-     Z> find dc.relation = something 
+     Z> find dc.relation = something
     </screen>
    </para>
 
    <!--
-   etc, etc. Notice that  all indexes defined by 'type="0"' in the 
-   indexing style  sheet must be searched using the 'eq' 
-   relation.    
-   
+   etc, etc. Notice that  all indexes defined by 'type="0"' in the
+   indexing style  sheet must be searched using the 'eq'
+   relation.
+
    Z> find title <> and
 
    fails as well.  ???
@@ -536,34 +536,34 @@
 
    <tip>
     <para>
-     &acro.z3950; scan using server side CQL conversion - 
-     unfortunately, this will _never_ work as it is not supported by the 
+     &acro.z3950; scan using server side CQL conversion -
+     unfortunately, this will _never_ work as it is not supported by the
      &acro.z3950; standard.
-     If you want to use scan using server side CQL conversion, you need to  
+     If you want to use scan using server side CQL conversion, you need to
      make an SRW connection using  yaz-client, or a
      SRU connection using REST Web Services - any browser will do.
     </para>
    </tip>
 
    <tip>
-    <para>    
-     All indexes defined by 'type="0"' in the 
-     indexing style  sheet must be searched using the '@attr 4=3' 
-     structure attribute instruction.   
+    <para>
+     All indexes defined by 'type="0"' in the
+     indexing style  sheet must be searched using the '@attr 4=3'
+     structure attribute instruction.
     </para>
    </tip>
 
    <para>
     Notice that searching and scan on indexes
-    <literal>contributor</literal>,  <literal>language</literal>, 
-    <literal>rights</literal>, and <literal>source</literal> 
-    might fail, simply because none of the records in the small example set 
+    <literal>contributor</literal>,  <literal>language</literal>,
+    <literal>rights</literal>, and <literal>source</literal>
+    might fail, simply because none of the records in the small example set
     have these fields set, and consequently, these indexes might not
-    been created. 
+    been created.
    </para>
-   
+
   </sect1>
-  
+
  </chapter>
 
 
@@ -576,7 +576,7 @@
  sgml-always-quote-attributes:t
  sgml-indent-step:1
  sgml-indent-data:t
- sgml-parent-document: "zebra.xml"
+ sgml-parent-document: "idzebra.xml"
  sgml-local-catalogs: nil
  sgml-namecase-general:t
  End:

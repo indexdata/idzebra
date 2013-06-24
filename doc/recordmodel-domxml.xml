@@ -1,6 +1,6 @@
-<chapter id="record-model-domxml">
+ <chapter id="record-model-domxml">
   <title>&acro.dom; &acro.xml; Record Model and Filter Module</title>
-  
+
   <para>
    The record model described in this chapter applies to the fundamental,
    structured &acro.xml;
@@ -10,174 +10,174 @@
    releases of the &zebra; Information Server.
   </para>
 
-  
-  
+
+
   <section id="record-model-domxml-filter">
    <title>&acro.dom; Record Filter Architecture</title>
 
-     <para>
-      The &acro.dom; &acro.xml; filter uses a standard &acro.dom; &acro.xml; structure as
-      internal data model, and can therefore parse, index, and display 
-      any &acro.xml; document type. It is well suited to work on 
-      standardized &acro.xml;-based formats such as Dublin Core, MODS, METS,
-      MARCXML, OAI-PMH, RSS, and performs equally  well on any other
-      non-standard &acro.xml; format. 
-    </para>
-    <para>
-      A parser for binary &acro.marc; records based on the ISO2709 library
-      standard is provided, it transforms these to the internal
-      &acro.marcxml; &acro.dom; representation. Other binary document parsers
-      are planned to follow.  
-    </para>
+   <para>
+    The &acro.dom; &acro.xml; filter uses a standard &acro.dom; &acro.xml; structure as
+    internal data model, and can therefore parse, index, and display
+    any &acro.xml; document type. It is well suited to work on
+    standardized &acro.xml;-based formats such as Dublin Core, MODS, METS,
+    MARCXML, OAI-PMH, RSS, and performs equally  well on any other
+    non-standard &acro.xml; format.
+   </para>
+   <para>
+    A parser for binary &acro.marc; records based on the ISO2709 library
+    standard is provided, it transforms these to the internal
+    &acro.marcxml; &acro.dom; representation. Other binary document parsers
+    are planned to follow.
+   </para>
 
-    <para>
-      The &acro.dom; filter architecture consists of four
-      different pipelines, each being a chain of arbitrarily many successive
-      &acro.xslt; transformations of the internal &acro.dom; &acro.xml;
-      representations of documents.
-    </para>
+   <para>
+    The &acro.dom; filter architecture consists of four
+    different pipelines, each being a chain of arbitrarily many successive
+    &acro.xslt; transformations of the internal &acro.dom; &acro.xml;
+    representations of documents.
+   </para>
 
-    <figure id="record-model-domxml-architecture-fig">
-      <title>&acro.dom; &acro.xml; filter architecture</title>
-      <mediaobject>
-       <imageobject>
-         <imagedata fileref="domfilter.pdf" format="PDF" scale="50"/>
-        </imageobject>
-        <imageobject>
-          <imagedata fileref="domfilter.png" format="PNG"/>
-        </imageobject>
-        <textobject>
-        <!-- Fall back if none of the images can be used -->
-        <phrase>
-          [Here there should be a diagram showing the &acro.dom; &acro.xml;
-           filter architecture, but is seems that your
-           tool chain has not been able to include the diagram in this
-           document.]
-         </phrase>
-        </textobject>
-      </mediaobject>
-     </figure>
-
-
-    <table id="record-model-domxml-architecture-table" frame="top">
-      <title>&acro.dom; &acro.xml; filter pipelines overview</title>
-      <tgroup cols="5">
-       <thead>
-        <row>
-         <entry>Name</entry>
-         <entry>When</entry>
-         <entry>Description</entry>
-         <entry>Input</entry>
-         <entry>Output</entry>
-        </row>
-       </thead>
-       
-       <tbody>
-        <row>
-         <entry><literal>input</literal></entry>
-         <entry>first</entry>
-         <entry>input parsing and initial
-          transformations to common &acro.xml; format</entry>
-         <entry>Input raw &acro.xml; record buffers, &acro.xml;  streams and 
-                binary &acro.marc; buffers</entry>
-         <entry>Common &acro.xml; &acro.dom;</entry>
-        </row>
-        <row>
-         <entry><literal>extract</literal></entry>
-         <entry>second</entry>
-         <entry>indexing term extraction
-          transformations</entry>
-         <entry>Common &acro.xml; &acro.dom;</entry>
-         <entry>Indexing &acro.xml; &acro.dom;</entry>
-        </row>
-        <row>
-         <entry><literal>store</literal></entry>
-         <entry>second</entry>
-         <entry> transformations before internal document
-          storage</entry>
-         <entry>Common &acro.xml; &acro.dom;</entry>
-         <entry>Storage &acro.xml; &acro.dom;</entry>
-        </row>
-        <row>
-         <entry><literal>retrieve</literal></entry>
-         <entry>third</entry>
-         <entry>multiple document retrieve transformations from
-          storage to different output
-          formats are possible</entry>
-         <entry>Storage &acro.xml; &acro.dom;</entry>
-         <entry>Output &acro.xml; syntax in requested formats</entry>
-        </row>
-       </tbody>
-      </tgroup>
-     </table>
-
-    <para>
-      The &acro.dom; &acro.xml; filter pipelines use &acro.xslt; (and if  supported on
-      your platform, even &acro.exslt;), it brings thus full &acro.xpath;
-      support to the indexing, storage and display rules of not only
-      &acro.xml; documents, but also binary &acro.marc; records.
-    </para>
-   </section>
+   <figure id="record-model-domxml-architecture-fig">
+    <title>&acro.dom; &acro.xml; filter architecture</title>
+    <mediaobject>
+     <imageobject>
+      <imagedata fileref="domfilter.pdf" format="PDF" scale="50"/>
+     </imageobject>
+     <imageobject>
+      <imagedata fileref="domfilter.png" format="PNG"/>
+     </imageobject>
+     <textobject>
+      <!-- Fall back if none of the images can be used -->
+      <phrase>
+       [Here there should be a diagram showing the &acro.dom; &acro.xml;
+       filter architecture, but is seems that your
+       tool chain has not been able to include the diagram in this
+       document.]
+      </phrase>
+     </textobject>
+    </mediaobject>
+   </figure>
 
 
-   <section id="record-model-domxml-pipeline">
-    <title>&acro.dom; &acro.xml; filter pipeline configuration</title>   
+   <table id="record-model-domxml-architecture-table" frame="top">
+    <title>&acro.dom; &acro.xml; filter pipelines overview</title>
+    <tgroup cols="5">
+     <thead>
+      <row>
+       <entry>Name</entry>
+       <entry>When</entry>
+       <entry>Description</entry>
+       <entry>Input</entry>
+       <entry>Output</entry>
+      </row>
+     </thead>
+
+     <tbody>
+      <row>
+       <entry><literal>input</literal></entry>
+       <entry>first</entry>
+       <entry>input parsing and initial
+	transformations to common &acro.xml; format</entry>
+       <entry>Input raw &acro.xml; record buffers, &acro.xml;  streams and
+	binary &acro.marc; buffers</entry>
+       <entry>Common &acro.xml; &acro.dom;</entry>
+      </row>
+      <row>
+       <entry><literal>extract</literal></entry>
+       <entry>second</entry>
+       <entry>indexing term extraction
+	transformations</entry>
+       <entry>Common &acro.xml; &acro.dom;</entry>
+       <entry>Indexing &acro.xml; &acro.dom;</entry>
+      </row>
+      <row>
+       <entry><literal>store</literal></entry>
+       <entry>second</entry>
+       <entry> transformations before internal document
+	storage</entry>
+       <entry>Common &acro.xml; &acro.dom;</entry>
+       <entry>Storage &acro.xml; &acro.dom;</entry>
+      </row>
+      <row>
+       <entry><literal>retrieve</literal></entry>
+       <entry>third</entry>
+       <entry>multiple document retrieve transformations from
+	storage to different output
+	formats are possible</entry>
+       <entry>Storage &acro.xml; &acro.dom;</entry>
+       <entry>Output &acro.xml; syntax in requested formats</entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+
+   <para>
+    The &acro.dom; &acro.xml; filter pipelines use &acro.xslt; (and if  supported on
+    your platform, even &acro.exslt;), it brings thus full &acro.xpath;
+    support to the indexing, storage and display rules of not only
+    &acro.xml; documents, but also binary &acro.marc; records.
+   </para>
+  </section>
+
+
+  <section id="record-model-domxml-pipeline">
+   <title>&acro.dom; &acro.xml; filter pipeline configuration</title>
 
    <para>
     The experimental, loadable  &acro.dom; &acro.xml;/&acro.xslt; filter module
-   <literal>mod-dom.so</literal> 
+    <literal>mod-dom.so</literal>
     is invoked by the <filename>zebra.cfg</filename> configuration statement
     <screen>
      recordtype.xml: dom.db/filter_dom_conf.xml
     </screen>
-    In this example the &acro.dom; &acro.xml; filter is configured to work 
-    on all data files with suffix 
+    In this example the &acro.dom; &acro.xml; filter is configured to work
+    on all data files with suffix
     <filename>*.xml</filename>, where the configuration file is found in the
     path <filename>db/filter_dom_conf.xml</filename>.
    </para>
 
    <para>The &acro.dom; &acro.xslt; filter configuration file must be
     valid &acro.xml;. It might look like this:
-    <screen> 
-    <![CDATA[
-    <?xml version="1.0" encoding="UTF8"?>
-    <dom xmlns="http://indexdata.com/zebra-2.0">
-      <input>
-        <xmlreader level="1"/>
-        <!-- <marc inputcharset="marc-8"/> -->
-      </input>
-      <extract>
-         <xslt stylesheet="common2index.xsl"/>
-      </extract>
-      <store>
-         <xslt stylesheet="common2store.xsl"/>
-      </store>
-      <retrieve name="dc">
-        <xslt stylesheet="store2dc.xsl"/>
-      </retrieve>
-      <retrieve name="mods">
-        <xslt stylesheet="store2mods.xsl"/>
-      </retrieve>
+    <screen>
+     <![CDATA[
+     <?xml version="1.0" encoding="UTF8"?>
+     <dom xmlns="http://indexdata.com/zebra-2.0">
+     <input>
+     <xmlreader level="1"/>
+     <!-- <marc inputcharset="marc-8"/> -->
+    </input>
+     <extract>
+     <xslt stylesheet="common2index.xsl"/>
+    </extract>
+     <store>
+     <xslt stylesheet="common2store.xsl"/>
+    </store>
+     <retrieve name="dc">
+     <xslt stylesheet="store2dc.xsl"/>
+    </retrieve>
+     <retrieve name="mods">
+     <xslt stylesheet="store2mods.xsl"/>
+    </retrieve>
     </dom>
-    ]]>
+     ]]>
     </screen>
    </para>
    <para>
-     The root &acro.xml; element <literal>&lt;dom&gt;</literal> and all other &acro.dom;
-     &acro.xml; filter elements are residing in the namespace 
-     <literal>xmlns="http://indexdata.com/zebra-2.0"</literal>.
+    The root &acro.xml; element <literal>&lt;dom&gt;</literal> and all other &acro.dom;
+    &acro.xml; filter elements are residing in the namespace
+    <literal>xmlns="http://indexdata.com/zebra-2.0"</literal>.
    </para>
    <para>
     All pipeline definition elements - i.e. the
-     <literal>&lt;input&gt;</literal>,
-     <literal>&lt;extract&gt;</literal>,
-     <literal>&lt;store&gt;</literal>, and 
-     <literal>&lt;retrieve&gt;</literal> elements - are optional.
-     Missing pipeline definitions are just interpreted
-     do-nothing identity pipelines.
+    <literal>&lt;input&gt;</literal>,
+    <literal>&lt;extract&gt;</literal>,
+    <literal>&lt;store&gt;</literal>, and
+    <literal>&lt;retrieve&gt;</literal> elements - are optional.
+    Missing pipeline definitions are just interpreted
+    do-nothing identity pipelines.
    </para>
    <para>
-    All pipeline definition elements may contain zero or more 
+    All pipeline definition elements may contain zero or more
     <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
     &acro.xslt; transformation instructions, which are performed
     sequentially from top to bottom.
@@ -188,80 +188,80 @@
 
 
    <section id="record-model-domxml-pipeline-input">
-    <title>Input pipeline</title>   
-   <para>
-    The <literal>&lt;input&gt;</literal> pipeline definition element
-    may contain either one &acro.xml; Reader definition
-    <literal><![CDATA[<xmlreader level="1"/>]]></literal>, used to split
-    an &acro.xml; collection input stream into individual &acro.xml; &acro.dom;
-    documents at the prescribed element level, 
-    or one &acro.marc; binary
-    parsing instruction
-    <literal><![CDATA[<marc inputcharset="marc-8"/>]]></literal>, which defines
-    a conversion to &acro.marcxml; format &acro.dom; trees. The allowed values
-    of the <literal>inputcharset</literal> attribute depend on your
-    local <productname>iconv</productname> set-up.
-   </para>
-   <para>
-    Both input parsers deliver individual &acro.dom; &acro.xml; documents to the
-    following chain of zero or more  
-    <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
-    &acro.xslt; transformations. At the end of this pipeline, the documents
-    are in the common format, used to feed both the 
-     <literal>&lt;extract&gt;</literal> and 
+    <title>Input pipeline</title>
+    <para>
+     The <literal>&lt;input&gt;</literal> pipeline definition element
+     may contain either one &acro.xml; Reader definition
+     <literal><![CDATA[<xmlreader level="1"/>]]></literal>, used to split
+     an &acro.xml; collection input stream into individual &acro.xml; &acro.dom;
+     documents at the prescribed element level,
+     or one &acro.marc; binary
+     parsing instruction
+     <literal><![CDATA[<marc inputcharset="marc-8"/>]]></literal>, which defines
+     a conversion to &acro.marcxml; format &acro.dom; trees. The allowed values
+     of the <literal>inputcharset</literal> attribute depend on your
+     local <productname>iconv</productname> set-up.
+    </para>
+    <para>
+     Both input parsers deliver individual &acro.dom; &acro.xml; documents to the
+     following chain of zero or more
+     <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
+     &acro.xslt; transformations. At the end of this pipeline, the documents
+     are in the common format, used to feed both the
+     <literal>&lt;extract&gt;</literal> and
      <literal>&lt;store&gt;</literal> pipelines.
-   </para>
+    </para>
    </section>
 
    <section id="record-model-domxml-pipeline-extract">
-    <title>Extract pipeline</title>   
-     <para>
-       The <literal>&lt;extract&gt;</literal> pipeline takes documents
-       from any common &acro.dom; &acro.xml; format to the &zebra; specific
-        indexing &acro.dom; &acro.xml; format.
-       It may consist of zero ore more 
-       <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
-       &acro.xslt; transformations, and the outcome is handled to the
-       &zebra; core to drive the process of building the inverted
-       indexes. See
-       <xref linkend="record-model-domxml-canonical-index"/> for
-       details.
-     </para>
+    <title>Extract pipeline</title>
+    <para>
+     The <literal>&lt;extract&gt;</literal> pipeline takes documents
+     from any common &acro.dom; &acro.xml; format to the &zebra; specific
+     indexing &acro.dom; &acro.xml; format.
+     It may consist of zero ore more
+     <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
+     &acro.xslt; transformations, and the outcome is handled to the
+     &zebra; core to drive the process of building the inverted
+     indexes. See
+     <xref linkend="record-model-domxml-canonical-index"/> for
+     details.
+    </para>
    </section>
 
    <section id="record-model-domxml-pipeline-store">
-    <title>Store pipeline</title>   
-       The <literal>&lt;store&gt;</literal> pipeline takes documents
-       from any common &acro.dom;  &acro.xml; format to the &zebra; specific
-        storage &acro.dom;  &acro.xml; format.
-       It may consist of zero ore more 
-       <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
-       &acro.xslt; transformations, and the outcome is handled to the
-       &zebra; core for deposition into the internal storage system.
-    </section>
+    <title>Store pipeline</title>
+    The <literal>&lt;store&gt;</literal> pipeline takes documents
+    from any common &acro.dom;  &acro.xml; format to the &zebra; specific
+    storage &acro.dom;  &acro.xml; format.
+    It may consist of zero ore more
+    <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
+    &acro.xslt; transformations, and the outcome is handled to the
+    &zebra; core for deposition into the internal storage system.
+   </section>
 
    <section id="record-model-domxml-pipeline-retrieve">
-    <title>Retrieve pipeline</title>   
+    <title>Retrieve pipeline</title>
     <para>
-      Finally, there may be one or more 
-      <literal>&lt;retrieve&gt;</literal> pipeline definitions, each
-      of them again consisting of zero or more
-      <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
-       &acro.xslt; transformations. These are used for document
-      presentation after search, and take the internal storage &acro.dom;
-      &acro.xml; to the requested output formats during record present
-      requests.  
+     Finally, there may be one or more
+     <literal>&lt;retrieve&gt;</literal> pipeline definitions, each
+     of them again consisting of zero or more
+     <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
+     &acro.xslt; transformations. These are used for document
+     presentation after search, and take the internal storage &acro.dom;
+     &acro.xml; to the requested output formats during record present
+     requests.
     </para>
     <para>
-     The  possible multiple 
+     The  possible multiple
      <literal>&lt;retrieve&gt;</literal> pipeline definitions
      are distinguished by their unique <literal>name</literal>
-     attributes, these are the literal <literal>schema</literal> or 
-     <literal>element set</literal> names used in 
-      <ulink url="http://www.loc.gov/standards/sru/srw/">&acro.srw;</ulink>,
-      <ulink url="&url.sru;">&acro.sru;</ulink> and
-      &acro.z3950; protocol queries.
-   </para>
+     attributes, these are the literal <literal>schema</literal> or
+     <literal>element set</literal> names used in
+     <ulink url="http://www.loc.gov/standards/sru/srw/">&acro.srw;</ulink>,
+     <ulink url="&url.sru;">&acro.sru;</ulink> and
+     &acro.z3950; protocol queries.
+    </para>
    </section>
 
 
@@ -277,303 +277,303 @@
      namespace <literal>xmlns:z="http://indexdata.com/zebra-2.0"</literal>.
     </para>
 
-   <section id="record-model-domxml-canonical-index-pi">
-    <title>Processing-instruction governed indexing format</title>
- 
-      <para>The output of the processing instruction driven 
+    <section id="record-model-domxml-canonical-index-pi">
+     <title>Processing-instruction governed indexing format</title>
+
+     <para>The output of the processing instruction driven
       indexing &acro.xslt; stylesheets must contain
-      processing instructions named 
-       <literal>zebra-2.0</literal>. 
+      processing instructions named
+      <literal>zebra-2.0</literal>.
       The output of the &acro.xslt; indexing transformation is then
       parsed using &acro.dom; methods, and the contained instructions are
       performed on the <emphasis>elements and their
-      subtrees directly following the processing instructions</emphasis>.
-      </para>
-      <para>
-     For example, the output of the command
-     <screen>  
+       subtrees directly following the processing instructions</emphasis>.
+     </para>
+     <para>
+      For example, the output of the command
+      <screen>
        xsltproc dom-index-pi.xsl marc-one.xml
-     </screen> 
-     might look like this:
-     <screen>
-      <![CDATA[
-      <?xml version="1.0" encoding="UTF-8"?>
-      <?zebra-2.0 record id=11224466 rank=42?>
-      <record>
-        <?zebra-2.0 index control:0?>
-        <control>11224466</control>
-        <?zebra-2.0 index any:w title:w title:p title:s?>
-        <title>How to program a computer</title>
+      </screen>
+      might look like this:
+      <screen>
+       <![CDATA[
+       <?xml version="1.0" encoding="UTF-8"?>
+       <?zebra-2.0 record id=11224466 rank=42?>
+       <record>
+       <?zebra-2.0 index control:0?>
+       <control>11224466</control>
+       <?zebra-2.0 index any:w title:w title:p title:s?>
+       <title>How to program a computer</title>
       </record>
-      ]]>
-     </screen>
-    </para>
-   </section>
+       ]]>
+      </screen>
+     </para>
+    </section>
 
-   <section id="record-model-domxml-canonical-index-element">
-    <title>Magic element governed indexing format</title>
-   
-    <para>The output of the indexing &acro.xslt; stylesheets must contain
-    certain elements in the magic 
-     <literal>xmlns:z="http://indexdata.com/zebra-2.0"</literal>
-    namespace. The output of the &acro.xslt; indexing transformation is then
-    parsed using &acro.dom; methods, and the contained instructions are
-    performed on the <emphasis>magic elements and their
-    subtrees</emphasis>.
-    </para>
-    <para>
-    For example, the output of the command
-     <screen>   
-      xsltproc dom-index-element.xsl marc-one.xml 
-     </screen> 
-     might look like this:
-     <screen>
-      <![CDATA[
-      <?xml version="1.0" encoding="UTF-8"?>
-      <z:record xmlns:z="http://indexdata.com/zebra-2.0" 
-                z:id="11224466" z:rank="42">
-          <z:index name="control:0">11224466</z:index>
-          <z:index name="any:w title:w title:p title:s">
-                    How to program a computer</z:index>
+    <section id="record-model-domxml-canonical-index-element">
+     <title>Magic element governed indexing format</title>
+
+     <para>The output of the indexing &acro.xslt; stylesheets must contain
+      certain elements in the magic
+      <literal>xmlns:z="http://indexdata.com/zebra-2.0"</literal>
+      namespace. The output of the &acro.xslt; indexing transformation is then
+      parsed using &acro.dom; methods, and the contained instructions are
+      performed on the <emphasis>magic elements and their
+       subtrees</emphasis>.
+     </para>
+     <para>
+      For example, the output of the command
+      <screen>
+       xsltproc dom-index-element.xsl marc-one.xml
+      </screen>
+      might look like this:
+      <screen>
+       <![CDATA[
+       <?xml version="1.0" encoding="UTF-8"?>
+       <z:record xmlns:z="http://indexdata.com/zebra-2.0"
+       z:id="11224466" z:rank="42">
+       <z:index name="control:0">11224466</z:index>
+       <z:index name="any:w title:w title:p title:s">
+       How to program a computer</z:index>
       </z:record>
-      ]]>
-     </screen>
-    </para>
-   </section>
+       ]]>
+      </screen>
+     </para>
+    </section>
 
 
-   <section id="record-model-domxml-canonical-index-semantics">
-    <title>Semantics of the indexing formats</title>
+    <section id="record-model-domxml-canonical-index-semantics">
+     <title>Semantics of the indexing formats</title>
 
-    <para>
-     Both indexing formats are defined with equal semantics and
-     behavior in mind: 
-     <itemizedlist>
+     <para>
+      Both indexing formats are defined with equal semantics and
+      behavior in mind:
+      <itemizedlist>
        <listitem>
-         <para>&zebra; specific instructions are either
+	<para>&zebra; specific instructions are either
          processing instructions named
          <literal>zebra-2.0</literal> or
          elements contained in the namespace
          <literal>xmlns:z="http://indexdata.com/zebra-2.0"</literal>.
-         </para>
+	</para>
        </listitem>
        <listitem>
-         <para>There must be exactly one <literal>record</literal>
-           instruction, which sets the scope for the following,
-           possibly nested <literal>index</literal> instructions. 
-         </para>
+	<para>There must be exactly one <literal>record</literal>
+	 instruction, which sets the scope for the following,
+	 possibly nested <literal>index</literal> instructions.
+	</para>
        </listitem>
        <listitem>
-         <para>
-            The unique <literal>record</literal> instruction
-	    may have additional attributes <literal>id</literal>,
-            <literal>rank</literal> and <literal>type</literal>.
-            Attribute <literal>id</literal> is the value of the opaque ID
-            and may be any string not containing the whitespace character 
-            <literal>' '</literal>.
-            The <literal>rank</literal> attribute value must be a
-            non-negative integer. See 
-            <xref linkend="administration-ranking"/> .
-            The <literal>type</literal> attribute specifies how the record
-            is to be treated. The following values may be given for 
-            <literal>type</literal>:
-            <variablelist>
-             <varlistentry>
-              <term><literal>insert</literal></term>
-              <listitem>
-               <para>
-                The record is inserted. If the record already exists, it is
-                skipped (i.e. not replaced).
-               </para>
-              </listitem>
-             </varlistentry>
-             <varlistentry>
-              <term><literal>replace</literal></term>
-              <listitem>
-               <para>
-                The record is replaced. If the record does not already exist,
-                it is skipped (i.e. not inserted).
-               </para>
-              </listitem>
-             </varlistentry>
-             <varlistentry>
-              <term><literal>delete</literal></term>
-              <listitem>
-               <para>
-                The record is deleted. If the record does not already exist,
-                a warning issued and rest of records are skipped in
-                from the input stream.
-               </para>
-              </listitem>
-             </varlistentry>
-             <varlistentry>
-              <term><literal>update</literal></term>
-              <listitem>
-               <para>
-                The record is inserted or replaced depending on whether the
-                record exists or not. This is the default behavior but may
-                be effectively changed by "outside" the scope of the DOM
-                filter by zebraidx commands or extended services updates.
-               </para>
-              </listitem>
-             </varlistentry>
-             <varlistentry>
-              <term><literal>adelete</literal></term>
-              <listitem>
-               <para>
-                The record is deleted. If the record does not already exist,
-                it is skipped (i.e. nothing is deleted).
-               </para>
-               <note>
-                <para>
-                 Requires version 2.0.54 or later.
-                </para>
-               </note>
-              </listitem>
-             </varlistentry>
-            </variablelist>
-          Note that the value of <literal>type</literal> is only used to
-          determine the action if and only if the Zebra indexer is running
-          in "update" mode (i.e zebraidx update) or if the specialUpdate
-          action of the
-          <link linkend="administration-extended-services-z3950">Extended
+	<para>
+	 The unique <literal>record</literal> instruction
+	 may have additional attributes <literal>id</literal>,
+	 <literal>rank</literal> and <literal>type</literal>.
+	 Attribute <literal>id</literal> is the value of the opaque ID
+	 and may be any string not containing the whitespace character
+	 <literal>' '</literal>.
+	 The <literal>rank</literal> attribute value must be a
+	 non-negative integer. See
+	 <xref linkend="administration-ranking"/> .
+	 The <literal>type</literal> attribute specifies how the record
+	 is to be treated. The following values may be given for
+	 <literal>type</literal>:
+	 <variablelist>
+	  <varlistentry>
+	   <term><literal>insert</literal></term>
+	   <listitem>
+	    <para>
+	     The record is inserted. If the record already exists, it is
+	     skipped (i.e. not replaced).
+	    </para>
+	   </listitem>
+	  </varlistentry>
+	  <varlistentry>
+	   <term><literal>replace</literal></term>
+	   <listitem>
+	    <para>
+	     The record is replaced. If the record does not already exist,
+	     it is skipped (i.e. not inserted).
+	    </para>
+	   </listitem>
+	  </varlistentry>
+	  <varlistentry>
+	   <term><literal>delete</literal></term>
+	   <listitem>
+	    <para>
+	     The record is deleted. If the record does not already exist,
+	     a warning issued and rest of records are skipped in
+	     from the input stream.
+	    </para>
+	   </listitem>
+	  </varlistentry>
+	  <varlistentry>
+	   <term><literal>update</literal></term>
+	   <listitem>
+	    <para>
+	     The record is inserted or replaced depending on whether the
+	     record exists or not. This is the default behavior but may
+	     be effectively changed by "outside" the scope of the DOM
+	     filter by zebraidx commands or extended services updates.
+	    </para>
+	   </listitem>
+	  </varlistentry>
+	  <varlistentry>
+	   <term><literal>adelete</literal></term>
+	   <listitem>
+	    <para>
+	     The record is deleted. If the record does not already exist,
+	     it is skipped (i.e. nothing is deleted).
+	    </para>
+	    <note>
+	     <para>
+	      Requires version 2.0.54 or later.
+	     </para>
+	    </note>
+	   </listitem>
+	  </varlistentry>
+	 </variablelist>
+	 Note that the value of <literal>type</literal> is only used to
+	 determine the action if and only if the Zebra indexer is running
+	 in "update" mode (i.e zebraidx update) or if the specialUpdate
+	 action of the
+	 <link linkend="administration-extended-services-z3950">Extended
           Service Update</link> is used.
-          For this reason a specialUpdate may end up deleting records!
-         </para>
+	 For this reason a specialUpdate may end up deleting records!
+	</para>
        </listitem>
        <listitem>
-         <para> Multiple and possible nested <literal>index</literal>
-         instructions must contain at least one 
+	<para> Multiple and possible nested <literal>index</literal>
+         instructions must contain at least one
          <literal>indexname:indextype</literal>
-         pair, and may contain multiple such pairs separated by the 
+         pair, and may contain multiple such pairs separated by the
          whitespace character  <literal>' '</literal>. In each index
-         pair, the name and the type of the index is separated by a 
+         pair, the name and the type of the index is separated by a
          colon character <literal>':'</literal>.
-         </para>  
+	</para>
        </listitem>
        <listitem>
-         <para>
+	<para>
          Any index name consisting of ASCII letters, and following the
-         standard &zebra; rules will do, see 
+         standard &zebra; rules will do, see
          <xref linkend="querymodel-pqf-apt-mapping-accesspoint"/>.
-         </para>  
+	</para>
        </listitem>
        <listitem>
-         <para> 
+	<para>
          Index types are restricted to the values defined in
          the standard configuration
          file <filename>default.idx</filename>, see
-         <xref linkend="querymodel-bib1"/> and 
+         <xref linkend="querymodel-bib1"/> and
          <xref linkend="fields-and-charsets"/> for details.
-         </para>
+	</para>
        </listitem>
        <listitem>
-         <para> 
+	<para>
          &acro.dom; input documents which are not resulting in both one
-         unique valid 
-         <literal>record</literal> instruction and one or more valid 
+         unique valid
+         <literal>record</literal> instruction and one or more valid
          <literal>index</literal> instructions can not be searched and
          found. Therefore,
          invalid document processing is aborted, and any content of
-         the <literal>&lt;extract&gt;</literal> and 
+         the <literal>&lt;extract&gt;</literal> and
          <literal>&lt;store&gt;</literal> pipelines is discarded.
-          A warning is issued in the logs. 
-         </para>
+	 A warning is issued in the logs.
+	</para>
        </listitem>
       </itemizedlist>
-    </para>
-    
-    <para>The examples work as follows: 
-     From the original &acro.xml; file 
-     <literal>marc-one.xml</literal> (or from the &acro.xml; record &acro.dom; of the
-     same form coming from an <literal>&lt;input&gt;</literal>
-     pipeline),
-     the indexing
-     pipeline <literal>&lt;extract&gt;</literal>
-     produces an indexing &acro.xml; record, which is defined by
-     the <literal>record</literal> instruction
-     &zebra; uses the content of 
-     <literal>z:id="11224466"</literal> 
-     or
-     <literal>id=11224466</literal> 
-     as internal
-     record ID, and - in case static ranking is set - the content of 
-     <literal>rank=42</literal>
-     or
-     <literal>z:rank="42"</literal>
-     as static rank.
-    </para>
-    
+     </para>
 
-    <para>In these examples, the following literal indexes are constructed:
-     <screen>
+     <para>The examples work as follows:
+      From the original &acro.xml; file
+      <literal>marc-one.xml</literal> (or from the &acro.xml; record &acro.dom; of the
+      same form coming from an <literal>&lt;input&gt;</literal>
+      pipeline),
+      the indexing
+      pipeline <literal>&lt;extract&gt;</literal>
+      produces an indexing &acro.xml; record, which is defined by
+      the <literal>record</literal> instruction
+      &zebra; uses the content of
+      <literal>z:id="11224466"</literal>
+      or
+      <literal>id=11224466</literal>
+      as internal
+      record ID, and - in case static ranking is set - the content of
+      <literal>rank=42</literal>
+      or
+      <literal>z:rank="42"</literal>
+      as static rank.
+     </para>
+
+
+     <para>In these examples, the following literal indexes are constructed:
+      <screen>
        any:w
        control:0
        title:w
        title:p
        title:s
-     </screen>
-     where the indexing type is defined after the 
-     literal <literal>':'</literal> character.  
-     Any value from the standard configuration
-     file <filename>default.idx</filename> will do.
-     Finally, any 
-     <literal>text()</literal> node content recursively contained
-     inside the <literal>&lt;z:index&gt;</literal> element, or any
-     element following a <literal>index</literal> processing instruction,
-     will be filtered through the
-     appropriate char map for character normalization, and will be
-     inserted in the named indexes.
-    </para>
-    <para>
-     Finally, this example configuration can be queried using &acro.pqf;
-     queries, either transported by &acro.z3950;, (here using a yaz-client) 
-     <screen>
-      <![CDATA[
-      Z> open localhost:9999
-      Z> elem dc
-      Z> form xml
-      Z>
-      Z> find @attr 1=control @attr 4=3 11224466
-      Z> scan @attr 1=control @attr 4=3 ""
-      Z>
-      Z> find @attr 1=title program
-      Z> scan @attr 1=title ""
-      Z>
-      Z> find @attr 1=title @attr 4=2 "How to program a computer"
-      Z> scan @attr 1=title @attr 4=2 ""
-      ]]>
-     </screen>
-     or the proprietary
-     extensions <literal>x-pquery</literal> and
-     <literal>x-pScanClause</literal> to
-     &acro.sru;, and &acro.srw;
-     <screen>
-      <![CDATA[
-      http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=@attr 1=title program
-      http://localhost:9999/?version=1.1&operation=scan&x-pScanClause=@attr 1=title ""
-      ]]>
-     </screen>
-     See <xref linkend="zebrasrv-sru"/> for more information on &acro.sru;/&acro.srw;
-     configuration, and <xref linkend="gfs-config"/> or the &yaz;
-     <ulink url="&url.yaz.cql;">&acro.cql; section</ulink>
-     for the details or the &yaz; frontend server.
-    </para>
-    <para>
-     Notice that there are no <filename>*.abs</filename>,
-     <filename>*.est</filename>, <filename>*.map</filename>, or other &acro.grs1;
-     filter configuration files involves in this process, and that the
-     literal index names are used during search and retrieval.
-    </para>
-    <para>
-     In case that we want to support the usual
-     <literal>bib-1</literal> &acro.z3950; numeric access points, it is a
-     good idea to choose string index names defined in the default
-     configuration file <filename>tab/bib1.att</filename>, see   
-     <xref linkend="attset-files"/>
-    </para>
-    
-   </section>
+      </screen>
+      where the indexing type is defined after the
+      literal <literal>':'</literal> character.
+      Any value from the standard configuration
+      file <filename>default.idx</filename> will do.
+      Finally, any
+      <literal>text()</literal> node content recursively contained
+      inside the <literal>&lt;z:index&gt;</literal> element, or any
+      element following a <literal>index</literal> processing instruction,
+      will be filtered through the
+      appropriate char map for character normalization, and will be
+      inserted in the named indexes.
+     </para>
+     <para>
+      Finally, this example configuration can be queried using &acro.pqf;
+      queries, either transported by &acro.z3950;, (here using a yaz-client)
+      <screen>
+       <![CDATA[
+       Z> open localhost:9999
+       Z> elem dc
+       Z> form xml
+       Z>
+       Z> find @attr 1=control @attr 4=3 11224466
+       Z> scan @attr 1=control @attr 4=3 ""
+       Z>
+       Z> find @attr 1=title program
+       Z> scan @attr 1=title ""
+       Z>
+       Z> find @attr 1=title @attr 4=2 "How to program a computer"
+       Z> scan @attr 1=title @attr 4=2 ""
+       ]]>
+      </screen>
+      or the proprietary
+      extensions <literal>x-pquery</literal> and
+      <literal>x-pScanClause</literal> to
+      &acro.sru;, and &acro.srw;
+      <screen>
+       <![CDATA[
+       http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=@attr 1=title program
+       http://localhost:9999/?version=1.1&operation=scan&x-pScanClause=@attr 1=title ""
+       ]]>
+      </screen>
+      See <xref linkend="zebrasrv-sru"/> for more information on &acro.sru;/&acro.srw;
+      configuration, and <xref linkend="gfs-config"/> or the &yaz;
+      <ulink url="&url.yaz.cql;">&acro.cql; section</ulink>
+      for the details or the &yaz; frontend server.
+     </para>
+     <para>
+      Notice that there are no <filename>*.abs</filename>,
+      <filename>*.est</filename>, <filename>*.map</filename>, or other &acro.grs1;
+      filter configuration files involves in this process, and that the
+      literal index names are used during search and retrieval.
+     </para>
+     <para>
+      In case that we want to support the usual
+      <literal>bib-1</literal> &acro.z3950; numeric access points, it is a
+      good idea to choose string index names defined in the default
+      configuration file <filename>tab/bib1.att</filename>, see
+      <xref linkend="attset-files"/>
+     </para>
+
+    </section>
 
    </section>
   </section>
@@ -583,14 +583,14 @@
    <title>&acro.dom; Record Model Configuration</title>
 
 
-  <section id="record-model-domxml-index">
-   <title>&acro.dom; Indexing Configuration</title>
+   <section id="record-model-domxml-index">
+    <title>&acro.dom; Indexing Configuration</title>
     <para>
      As mentioned above, there can be only one indexing pipeline,
      and configuration of the indexing process is a synonym
      of writing an &acro.xslt; stylesheet which produces &acro.xml; output containing the
-     magic processing instructions or elements discussed in  
-     <xref linkend="record-model-domxml-canonical-index"/>. 
+     magic processing instructions or elements discussed in
+     <xref linkend="record-model-domxml-canonical-index"/>.
      Obviously, there are million of different ways to accomplish this
      task, and some comments and code snippets are in order to
      enlighten the wary.
@@ -601,11 +601,11 @@
      means that the output &acro.xml; structure is taken as starting point of
      the internal structure of the &acro.xslt; stylesheet, and portions of
      the input &acro.xml; are <emphasis>pulled</emphasis> out and inserted
-     into the right spots of the output &acro.xml; structure. 
+     into the right spots of the output &acro.xml; structure.
      On the other
      side, <emphasis>push</emphasis> &acro.xslt; stylesheets are recursively
      calling their template definitions, a process which is commanded
-     by the input &acro.xml; structure, and is triggered to produce 
+     by the input &acro.xml; structure, and is triggered to produce
      some output &acro.xml;
      whenever some special conditions in the input stylesheets are
      met. The <emphasis>pull</emphasis> type is well-suited for input
@@ -614,187 +614,187 @@
      <emphasis>push</emphasis> type might be the only possible way to
      sort out deeply recursive input &acro.xml; formats.
     </para>
-    <para> 
+    <para>
      A <emphasis>pull</emphasis> stylesheet example used to index
      &acro.oai; harvested records could use some of the following template
      definitions:
      <screen>
       <![CDATA[
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-       xmlns:z="http://indexdata.com/zebra-2.0"
-       xmlns:oai="http://www.openarchives.org/&acro.oai;/2.0/" 
-       xmlns:oai_dc="http://www.openarchives.org/&acro.oai;/2.0/oai_dc/" 
-       xmlns:dc="http://purl.org/dc/elements/1.1/"
-       version="1.0">
+      xmlns:z="http://indexdata.com/zebra-2.0"
+      xmlns:oai="http://www.openarchives.org/&acro.oai;/2.0/"
+      xmlns:oai_dc="http://www.openarchives.org/&acro.oai;/2.0/oai_dc/"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      version="1.0">
 
-       <!-- Example pull and magic element style Zebra indexing --> 
-       <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
+      <!-- Example pull and magic element style Zebra indexing -->
+      <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
 
-        <!-- disable all default text node output -->
-        <xsl:template match="text()"/>
+      <!-- disable all default text node output -->
+      <xsl:template match="text()"/>
 
-        <!-- disable all default recursive element node transversal -->
-        <xsl:template match="node()"/>
+      <!-- disable all default recursive element node transversal -->
+      <xsl:template match="node()"/>
 
-         <!-- match only on oai xml record root -->
-         <xsl:template match="/">    
-          <z:record z:id="{normalize-space(oai:record/oai:header/oai:identifier)}">
-           <!-- you may use z:rank="{some XSLT; function here}" -->
+      <!-- match only on oai xml record root -->
+      <xsl:template match="/">
+      <z:record z:id="{normalize-space(oai:record/oai:header/oai:identifier)}">
+      <!-- you may use z:rank="{some XSLT; function here}" -->
 
-           <!-- explicetly calling defined templates -->
-           <xsl:apply-templates/>
-          </z:record>
-         </xsl:template>
+      <!-- explicetly calling defined templates -->
+      <xsl:apply-templates/>
+     </z:record>
+     </xsl:template>
 
-         <!-- OAI indexing templates -->
-         <xsl:template match="oai:record/oai:header/oai:identifier">
-          <z:index name="oai_identifier:0">
-           <xsl:value-of select="."/>
-          </z:index>    
-         </xsl:template>
+      <!-- OAI indexing templates -->
+      <xsl:template match="oai:record/oai:header/oai:identifier">
+      <z:index name="oai_identifier:0">
+      <xsl:value-of select="."/>
+     </z:index>
+     </xsl:template>
 
-         <!-- etc, etc -->
+      <!-- etc, etc -->
 
-         <!-- DC specific indexing templates -->
-         <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:title">
-          <z:index name="dc_any:w dc_title:w dc_title:p dc_title:s ">
-           <xsl:value-of select="."/>
-          </z:index>
-         </xsl:template>
+      <!-- DC specific indexing templates -->
+      <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:title">
+      <z:index name="dc_any:w dc_title:w dc_title:p dc_title:s ">
+      <xsl:value-of select="."/>
+     </z:index>
+     </xsl:template>
 
-         <!-- etc, etc -->
- 
-      </xsl:stylesheet>
+      <!-- etc, etc -->
+
+     </xsl:stylesheet>
       ]]>
      </screen>
     </para>
-  </section>
+   </section>
 
 
-  <section id="record-model-domxml-index-marc">
-   <title>&acro.dom; Indexing &acro.marcxml;</title>
+   <section id="record-model-domxml-index-marc">
+    <title>&acro.dom; Indexing &acro.marcxml;</title>
     <para>
-      The &acro.dom; filter allows indexing of both binary &acro.marc; records
-      and &acro.marcxml; records, depending on its configuration.
-      A typical &acro.marcxml; record might look like this:
-      <screen>  
+     The &acro.dom; filter allows indexing of both binary &acro.marc; records
+     and &acro.marcxml; records, depending on its configuration.
+     A typical &acro.marcxml; record might look like this:
+     <screen>
       <![CDATA[
       <record xmlns="http://www.loc.gov/MARC21/slim">
-       <rank>42</rank>
-       <leader>00366nam  22001698a 4500</leader>
-       <controlfield tag="001">   11224466   </controlfield>
-       <controlfield tag="003">DLC  </controlfield>
-       <controlfield tag="005">00000000000000.0  </controlfield>
-       <controlfield tag="008">910710c19910701nju           00010 eng    </controlfield>
-       <datafield tag="010" ind1=" " ind2=" ">
-         <subfield code="a">   11224466 </subfield>
-       </datafield>
-       <datafield tag="040" ind1=" " ind2=" ">
-         <subfield code="a">DLC</subfield>
-         <subfield code="c">DLC</subfield>
-       </datafield>
-       <datafield tag="050" ind1="0" ind2="0">
-         <subfield code="a">123-xyz</subfield>
-       </datafield>
-       <datafield tag="100" ind1="1" ind2="0">
-         <subfield code="a">Jack Collins</subfield>
-       </datafield>
-       <datafield tag="245" ind1="1" ind2="0">
-         <subfield code="a">How to program a computer</subfield>
-       </datafield>
-       <datafield tag="260" ind1="1" ind2=" ">
-         <subfield code="a">Penguin</subfield>
-       </datafield>
-       <datafield tag="263" ind1=" " ind2=" ">
-         <subfield code="a">8710</subfield>
-       </datafield>
-       <datafield tag="300" ind1=" " ind2=" ">
-         <subfield code="a">p. cm.</subfield>
-       </datafield>
-      </record>
+      <rank>42</rank>
+      <leader>00366nam  22001698a 4500</leader>
+      <controlfield tag="001">   11224466   </controlfield>
+      <controlfield tag="003">DLC  </controlfield>
+      <controlfield tag="005">00000000000000.0  </controlfield>
+      <controlfield tag="008">910710c19910701nju           00010 eng    </controlfield>
+      <datafield tag="010" ind1=" " ind2=" ">
+      <subfield code="a">   11224466 </subfield>
+     </datafield>
+      <datafield tag="040" ind1=" " ind2=" ">
+      <subfield code="a">DLC</subfield>
+      <subfield code="c">DLC</subfield>
+     </datafield>
+      <datafield tag="050" ind1="0" ind2="0">
+      <subfield code="a">123-xyz</subfield>
+     </datafield>
+      <datafield tag="100" ind1="1" ind2="0">
+      <subfield code="a">Jack Collins</subfield>
+     </datafield>
+      <datafield tag="245" ind1="1" ind2="0">
+      <subfield code="a">How to program a computer</subfield>
+     </datafield>
+      <datafield tag="260" ind1="1" ind2=" ">
+      <subfield code="a">Penguin</subfield>
+     </datafield>
+      <datafield tag="263" ind1=" " ind2=" ">
+      <subfield code="a">8710</subfield>
+     </datafield>
+      <datafield tag="300" ind1=" " ind2=" ">
+      <subfield code="a">p. cm.</subfield>
+     </datafield>
+     </record>
       ]]>
-      </screen>
+     </screen>
     </para>
 
     <para>
-      It is easily possible to make string manipulation in the &acro.dom;
-      filter. For example, if you want to drop some leading articles
-      in the indexing of sort fields, you might want to pick out the 
-      &acro.marcxml; indicator attributes to chop of leading substrings. If
-      the above &acro.xml; example would have an indicator
-      <literal>ind2="8"</literal> in the title field 
-      <literal>245</literal>, i.e.
-      <screen>  
+     It is easily possible to make string manipulation in the &acro.dom;
+     filter. For example, if you want to drop some leading articles
+     in the indexing of sort fields, you might want to pick out the
+     &acro.marcxml; indicator attributes to chop of leading substrings. If
+     the above &acro.xml; example would have an indicator
+     <literal>ind2="8"</literal> in the title field
+     <literal>245</literal>, i.e.
+     <screen>
       <![CDATA[
-       <datafield tag="245" ind1="1" ind2="8">
-         <subfield code="a">How to program a computer</subfield>
-       </datafield>
+      <datafield tag="245" ind1="1" ind2="8">
+      <subfield code="a">How to program a computer</subfield>
+     </datafield>
       ]]>
-      </screen>
-      one could write a template taking into account this information
-      to chop the first <literal>8</literal> characters from the
-      sorting index <literal>title:s</literal> like this:
-      <screen>  
+     </screen>
+     one could write a template taking into account this information
+     to chop the first <literal>8</literal> characters from the
+     sorting index <literal>title:s</literal> like this:
+     <screen>
       <![CDATA[
       <xsl:template match="m:datafield[@tag='245']">
-        <xsl:variable name="chop">
-          <xsl:choose>
-            <xsl:when test="not(number(@ind2))">0</xsl:when>
-            <xsl:otherwise><xsl:value-of select="number(@ind2)"/></xsl:otherwise>
-          </xsl:choose>
-        </xsl:variable>  
+      <xsl:variable name="chop">
+      <xsl:choose>
+      <xsl:when test="not(number(@ind2))">0</xsl:when>
+      <xsl:otherwise><xsl:value-of select="number(@ind2)"/></xsl:otherwise>
+     </xsl:choose>
+     </xsl:variable>
 
-        <z:index name="title:w title:p any:w">
-           <xsl:value-of select="m:subfield[@code='a']"/>
-        </z:index>
+      <z:index name="title:w title:p any:w">
+      <xsl:value-of select="m:subfield[@code='a']"/>
+     </z:index>
 
-        <z:index name="title:s">
-          <xsl:value-of select="substring(m:subfield[@code='a'], $chop)"/>
-        </z:index>
+      <z:index name="title:s">
+      <xsl:value-of select="substring(m:subfield[@code='a'], $chop)"/>
+     </z:index>
 
-      </xsl:template> 
+     </xsl:template>
       ]]>
-      </screen>
-      The output of the above &acro.marcxml; and &acro.xslt; excerpt would then be:
-      <screen>  
+     </screen>
+     The output of the above &acro.marcxml; and &acro.xslt; excerpt would then be:
+     <screen>
       <![CDATA[
-        <z:index name="title:w title:p any:w">How to program a computer</z:index>
-        <z:index name="title:s">program a computer</z:index>
+      <z:index name="title:w title:p any:w">How to program a computer</z:index>
+      <z:index name="title:s">program a computer</z:index>
       ]]>
-      </screen>
-      and the record would be sorted in the title index under 'P', not 'H'.
+     </screen>
+     and the record would be sorted in the title index under 'P', not 'H'.
     </para>
-  </section>
+   </section>
 
 
-  <section id="record-model-domxml-index-wizzard">
-   <title>&acro.dom; Indexing Wizardry</title>
+   <section id="record-model-domxml-index-wizzard">
+    <title>&acro.dom; Indexing Wizardry</title>
     <para>
      The names and types of the indexes can be defined in the
      indexing &acro.xslt; stylesheet <emphasis>dynamically according to
-     content in the original &acro.xml; records</emphasis>, which has
+      content in the original &acro.xml; records</emphasis>, which has
      opportunities for great power and wizardry as well as grande
-     disaster.  
+     disaster.
     </para>
     <para>
      The following excerpt of a <emphasis>push</emphasis> stylesheet
-     <emphasis>might</emphasis> 
+     <emphasis>might</emphasis>
      be a good idea according to your strict control of the &acro.xml;
      input format (due to rigorous checking against well-defined and
      tight RelaxNG or &acro.xml; Schema's, for example):
      <screen>
       <![CDATA[
-      <xsl:template name="element-name-indexes">     
-       <z:index name="{name()}:w">
-        <xsl:value-of select="'1'"/>
-       </z:index>
-      </xsl:template>
+      <xsl:template name="element-name-indexes">
+      <z:index name="{name()}:w">
+      <xsl:value-of select="'1'"/>
+     </z:index>
+     </xsl:template>
       ]]>
      </screen>
-     This template creates indexes which have the name of the working 
+     This template creates indexes which have the name of the working
      node of any input  &acro.xml; file, and assigns a '1' to the index.
-     The example query 
-     <literal>find @attr 1=xyz 1</literal> 
+     The example query
+     <literal>find @attr 1=xyz 1</literal>
      finds all files which contain at least one
      <literal>xyz</literal> &acro.xml; element. In case you can not control
      which element names the input files contain, you might ask for
@@ -802,25 +802,25 @@
     </para>
     <para>
      One variation over the theme <emphasis>dynamically created
-     indexes</emphasis> will definitely be unwise:
+      indexes</emphasis> will definitely be unwise:
      <screen>
-      <![CDATA[  
+      <![CDATA[
       <!-- match on oai xml record root -->
-      <xsl:template match="/">    
-       <z:record>
-      
-        <!-- create dynamic index name from input content --> 
-        <xsl:variable name="dynamic_content">
-         <xsl:value-of select="oai:record/oai:header/oai:identifier"/>
-        </xsl:variable>
-        
-        <!-- create zillions of indexes with unknown names -->
-        <z:index name="{$dynamic_content}:w">
-         <xsl:value-of select="oai:record/oai:metadata/oai_dc:dc"/>
-        </z:index>          
-       </z:record>
-       
-      </xsl:template>
+      <xsl:template match="/">
+      <z:record>
+
+      <!-- create dynamic index name from input content -->
+      <xsl:variable name="dynamic_content">
+      <xsl:value-of select="oai:record/oai:header/oai:identifier"/>
+     </xsl:variable>
+
+      <!-- create zillions of indexes with unknown names -->
+      <z:index name="{$dynamic_content}:w">
+      <xsl:value-of select="oai:record/oai:metadata/oai_dc:dc"/>
+     </z:index>
+     </z:record>
+
+     </xsl:template>
       ]]>
      </screen>
      Don't be tempted to play too smart tricks with the power of
@@ -828,104 +828,104 @@
      indexes with unpredictable names, resulting in severe &zebra;
      index pollution..
     </para>
-  </section>
+   </section>
 
-  <section id="record-model-domxml-debug">
-   <title>Debuggig &acro.dom; Filter Configurations</title>
-   <para>
-    It can be very hard to debug a &acro.dom; filter setup due to the many
-    successive &acro.marc; syntax translations, &acro.xml; stream splitting and 
-    &acro.xslt; transformations involved. As an aid, you have always the
-    power of the <literal>-s</literal> command line switch to the 
-    <literal>zebraidz</literal> indexing command at your hand: 
-    <screen>
-     zebraidx -s -c zebra.cfg update some_record_stream.xml
-    </screen>
-    This command line simulates indexing and dumps a lot of debug
-    information in the logs, telling exactly which transformations
-    have been applied, how the documents look like after each
-    transformation, and which record ids and terms are send to the indexer.
-   </para>
-  </section>
-
-  <!--
-  <section id="record-model-domxml-elementset">
-   <title>&acro.dom; Exchange Formats</title>
-   <para>
-     An exchange format can be anything which can be the outcome of an
-     &acro.xslt; transformation, as far as the stylesheet is registered in
-     the main &acro.dom; &acro.xslt; filter configuration file, see
-     <xref linkend="record-model-domxml-filter"/>.
-     In principle anything that can be expressed in  &acro.xml;, HTML, and
-     TEXT can be the output of a <literal>schema</literal> or 
-    <literal>element set</literal> directive during search, as long as
-     the information comes from the 
-     <emphasis>original input record &acro.xml; &acro.dom; tree</emphasis>
-     (and not the transformed and <emphasis>indexed</emphasis> &acro.xml;!!).
-    </para>
+   <section id="record-model-domxml-debug">
+    <title>Debuggig &acro.dom; Filter Configurations</title>
     <para>
-     In addition, internal administrative information from the &zebra;
-     indexer can be accessed during record retrieval. The following
-     example is a summary of the possibilities:
+     It can be very hard to debug a &acro.dom; filter setup due to the many
+     successive &acro.marc; syntax translations, &acro.xml; stream splitting and
+     &acro.xslt; transformations involved. As an aid, you have always the
+     power of the <literal>-s</literal> command line switch to the
+     <literal>zebraidz</literal> indexing command at your hand:
      <screen>
-      <![CDATA[  
-      <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-       xmlns:z="http://indexdata.com/zebra-2.0"
-       version="1.0">
-
-       <!- - register internal zebra parameters - ->       
-       <xsl:param name="id" select="''"/>
-       <xsl:param name="filename" select="''"/>
-       <xsl:param name="score" select="''"/>
-       <xsl:param name="schema" select="''"/>
-           
-       <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
-
-       <!- - use then for display of internal information - ->
-       <xsl:template match="/">
-         <z:zebra>
-           <id><xsl:value-of select="$id"/></id>
-           <filename><xsl:value-of select="$filename"/></filename>
-           <score><xsl:value-of select="$score"/></score>
-           <schema><xsl:value-of select="$schema"/></schema>
-         </z:zebra>
-       </xsl:template>
-
-      </xsl:stylesheet>
-      ]]>
+      zebraidx -s -c zebra.cfg update some_record_stream.xml
      </screen>
-    </para>
-
-  </section>
-  -->
-
-  <!--
-  <section id="record-model-domxml-example">
-   <title>&acro.dom; Filter &acro.oai; Indexing Example</title>
-   <para>
-     The source code tarball contains a working &acro.dom; filter example in
-     the directory <filename>examples/dom-oai/</filename>, which
-     should get you started.  
-    </para>
-    <para>
-     More example data can be harvested from any &acro.oai; compliant server,
-     see details at the  &acro.oai; 
-     <ulink url="http://www.openarchives.org/">
-      http://www.openarchives.org/</ulink> web site, and the community
-      links at 
-     <ulink url="http://www.openarchives.org/community/index.html">
-      http://www.openarchives.org/community/index.html</ulink>.
-     There is a  tutorial
-     found at
-     <ulink url="http://www.oaforum.org/tutorial/">
-      http://www.oaforum.org/tutorial/</ulink>.
+     This command line simulates indexing and dumps a lot of debug
+     information in the logs, telling exactly which transformations
+     have been applied, how the documents look like after each
+     transformation, and which record ids and terms are send to the indexer.
     </para>
    </section>
+
+   <!--
+   <section id="record-model-domxml-elementset">
+   <title>&acro.dom; Exchange Formats</title>
+   <para>
+   An exchange format can be anything which can be the outcome of an
+   &acro.xslt; transformation, as far as the stylesheet is registered in
+   the main &acro.dom; &acro.xslt; filter configuration file, see
+   <xref linkend="record-model-domxml-filter"/>.
+   In principle anything that can be expressed in  &acro.xml;, HTML, and
+   TEXT can be the output of a <literal>schema</literal> or
+   <literal>element set</literal> directive during search, as long as
+   the information comes from the
+   <emphasis>original input record &acro.xml; &acro.dom; tree</emphasis>
+   (and not the transformed and <emphasis>indexed</emphasis> &acro.xml;!!).
+  </para>
+   <para>
+   In addition, internal administrative information from the &zebra;
+   indexer can be accessed during record retrieval. The following
+   example is a summary of the possibilities:
+   <screen>
+   <![CDATA[
+   <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:z="http://indexdata.com/zebra-2.0"
+   version="1.0">
+
+   <!- - register internal zebra parameters - ->
+   <xsl:param name="id" select="''"/>
+   <xsl:param name="filename" select="''"/>
+   <xsl:param name="score" select="''"/>
+   <xsl:param name="schema" select="''"/>
+
+   <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
+
+   <!- - use then for display of internal information - ->
+   <xsl:template match="/">
+   <z:zebra>
+   <id><xsl:value-of select="$id"/></id>
+   <filename><xsl:value-of select="$filename"/></filename>
+   <score><xsl:value-of select="$score"/></score>
+   <schema><xsl:value-of select="$schema"/></schema>
+  </z:zebra>
+  </xsl:template>
+
+  </xsl:stylesheet>
+   ]]>
+  </screen>
+  </para>
+
+  </section>
+   -->
+
+   <!--
+   <section id="record-model-domxml-example">
+   <title>&acro.dom; Filter &acro.oai; Indexing Example</title>
+   <para>
+   The source code tarball contains a working &acro.dom; filter example in
+   the directory <filename>examples/dom-oai/</filename>, which
+   should get you started.
+  </para>
+   <para>
+   More example data can be harvested from any &acro.oai; compliant server,
+   see details at the  &acro.oai;
+   <ulink url="http://www.openarchives.org/">
+   http://www.openarchives.org/</ulink> web site, and the community
+   links at
+   <ulink url="http://www.openarchives.org/community/index.html">
+   http://www.openarchives.org/community/index.html</ulink>.
+   There is a  tutorial
+   found at
+   <ulink url="http://www.oaforum.org/tutorial/">
+   http://www.oaforum.org/tutorial/</ulink>.
+  </para>
+  </section>
    -->
 
   </section>
 
-  
+
  </chapter>
 
 
@@ -939,7 +939,7 @@
  sgml-always-quote-attributes:t
  sgml-indent-step:1
  sgml-indent-data:t
- sgml-parent-document: "zebra.xml"
+ sgml-parent-document: "idzebra.xml"
  sgml-local-catalogs: nil
  sgml-namecase-general:t
  End:

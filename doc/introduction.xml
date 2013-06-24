@@ -1,447 +1,423 @@
-<chapter id="introduction">
+ <chapter id="introduction">
  <title>Introduction</title>
- 
- <section id="overview">
-  <title>Overview</title>
-  
-      <para>
-        &zebra; is a free, fast, friendly information management system. It can
-        index records in &acro.xml;/&acro.sgml;, &acro.marc;, e-mail archives and many other
-        formats, and quickly find them using a combination of boolean
-        searching and relevance ranking. Search-and-retrieve applications can
-        be written using &acro.api;s in a wide variety of languages, communicating
-        with the &zebra; server using industry-standard information-retrieval
-        protocols or web services. 
-      </para>
-      <para>
-        &zebra; is licensed Open Source, and can be
-        deployed by anyone for any purpose without license fees. The C source
-        code is open to anybody to read and change under the GPL license.  
-      </para>
-      <para>
-        &zebra; is a networked component which acts as a 
-        reliable &acro.z3950; server 
-        for both record/document search, presentation, insert, update and 
-        delete operations. In addition, it understands the &acro.sru; family of 
-        webservices, which exist in &acro.rest; &acro.get;/&acro.post; and truly
-        &acro.soap; flavors. 
-      </para>
-      <para>
-        &zebra; is available as MS Windows 2003 Server (32 bit) self-extracting
-        package as well as GNU/Debian Linux (32 bit and 64 bit) precompiled
-        packages. It has been deployed successfully on other Unix systems,
-        including Sun Sparc, HP Unix, and many variants of Linux and BSD
-        based systems.  
-      </para>
-      <para>
-        <ulink url="http://www.indexdata.com/zebra/">http://www.indexdata.com/zebra/</ulink>
-        <ulink url="http://ftp.indexdata.dk/pub/zebra/win32/">http://ftp.indexdata.dk/pub/zebra/win32/</ulink>
-        <ulink url="http://ftp.indexdata.dk/pub/zebra/debian/">http://ftp.indexdata.dk/pub/zebra/debian/</ulink>
-      </para>
 
-  <para>
-   <ulink url="http://indexdata.dk/zebra/">&zebra;</ulink>
-   is a high-performance, general-purpose structured text
-   indexing and retrieval engine. It reads records in a
-   variety of input formats (e.g. email, &acro.xml;, &acro.marc;) and provides access
-   to them through a powerful combination of boolean search
-   expressions and relevance-ranked free-text queries.
-  </para>
+  <section id="overview">
+   <title>Overview</title>
+   <para>
+    &zebra; is a free, fast, friendly information management system. It can
+    index records in &acro.xml;/&acro.sgml;, &acro.marc;, e-mail archives and many other
+    formats, and quickly find them using a combination of boolean
+    searching and relevance ranking. Search-and-retrieve applications can
+    be written using &acro.api;s in a wide variety of languages, communicating
+    with the &zebra; server using industry-standard information-retrieval
+    protocols or web services.
+   </para>
+   <para>
+    &zebra; is licensed Open Source, and can be
+    deployed by anyone for any purpose without license fees. The C source
+    code is open to anybody to read and change under the GPL license.
+   </para>
+   <para>
+    &zebra; is a networked component which acts as a
+    reliable &acro.z3950; server
+    for both record/document search, presentation, insert, update and
+    delete operations. In addition, it understands the &acro.sru; family of
+    webservices, which exist in &acro.rest; &acro.get;/&acro.post; and truly
+    &acro.soap; flavors.
+   </para>
+   <para>
+    &zebra; is available as MS Windows 2003 Server (32 bit) self-extracting
+    package as well as GNU/Debian Linux (32 bit and 64 bit) precompiled
+    packages. It has been deployed successfully on other Unix systems,
+    including Sun Sparc, HP Unix, and many variants of Linux and BSD
+    based systems.
+   </para>
+   <para>
+    <ulink url="http://www.indexdata.com/zebra/">http://www.indexdata.com/zebra/</ulink>
+    <ulink url="http://ftp.indexdata.dk/pub/zebra/win32/">http://ftp.indexdata.dk/pub/zebra/win32/</ulink>
+    <ulink url="http://ftp.indexdata.dk/pub/zebra/debian/">http://ftp.indexdata.dk/pub/zebra/debian/</ulink>
+   </para>
 
-  <para>
-   &zebra; supports large databases (tens of millions of records,
-   tens of gigabytes of data). It allows safe, incremental
-   database updates on live systems. Because &zebra; supports
-   the industry-standard information retrieval protocol, &acro.z3950;,
-   you can search &zebra; databases using an enormous variety of
-   programs and toolkits, both commercial and free, which understand
-   this protocol.  Application libraries are available to allow
-   bespoke clients to be written in Perl, C, C++, Java, Tcl, Visual
-   Basic, Python, &acro.php; and more - see the
-   <ulink url="&url.zoom;">&acro.zoom; web site</ulink>
-   for more information on some of these client toolkits.
-  </para>
+   <para>
+    <ulink url="http://indexdata.dk/zebra/">&zebra;</ulink>
+    is a high-performance, general-purpose structured text
+    indexing and retrieval engine. It reads records in a
+    variety of input formats (e.g. email, &acro.xml;, &acro.marc;) and provides access
+    to them through a powerful combination of boolean search
+    expressions and relevance-ranked free-text queries.
+   </para>
 
-  <para>
-   This document is an introduction to the &zebra; system. It explains
-   how to compile the software, how to prepare your first database,
-   and how to configure the server to give you the
-   functionality that you need.
-  </para>
- </section>
- 
- <section id="features">
-  <title>&zebra; Features Overview</title>
-  
+   <para>
+    &zebra; supports large databases (tens of millions of records,
+    tens of gigabytes of data). It allows safe, incremental
+    database updates on live systems. Because &zebra; supports
+    the industry-standard information retrieval protocol, &acro.z3950;,
+    you can search &zebra; databases using an enormous variety of
+    programs and toolkits, both commercial and free, which understand
+    this protocol.  Application libraries are available to allow
+    bespoke clients to be written in Perl, C, C++, Java, Tcl, Visual
+    Basic, Python, &acro.php; and more - see the
+    <ulink url="&url.zoom;">&acro.zoom; web site</ulink>
+    for more information on some of these client toolkits.
+   </para>
 
-      <!--
-      <row>
-       <entry></entry>
-       <entry></entry>
-       <entry></entry>
-       <entry><xref linkend=""/></entry>
-      </row>
-      <row>
-       <entry></entry>
-       <entry></entry>
-       <entry></entry>
-       <entry><xref linkend=""/></entry>
-      </row>
-      <row>
-       <entry></entry>
-       <entry></entry>
-       <entry></entry>
-       <entry><xref linkend=""/></entry>
-      </row>
-      -->
+   <para>
+    This document is an introduction to the &zebra; system. It explains
+    how to compile the software, how to prepare your first database,
+    and how to configure the server to give you the
+    functionality that you need.
+   </para>
+  </section>
 
+  <section id="features">
+   <title>&zebra; Features Overview</title>
 
    <section id="features-document">
     <title>&zebra; Document Model</title>
 
-   <table id="table-features-document" frame="top">
-    <title>&zebra; document model</title>
-    <tgroup cols="4">
-     <colspec colwidth="1*" colname="feature"/>
-     <colspec colwidth="1*" colname="availability"/>
-     <colspec colwidth="3*" colname="notes"/>
-     <colspec colwidth="2*" colname="references"/>
-     <thead>
-      <row>
-       <entry>Feature</entry>
-       <entry>Availability</entry>
-       <entry>Notes</entry>
-       <entry>Reference</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>Complex semi-structured Documents</entry>
-       <entry>&acro.xml; and &acro.grs1; Documents</entry>
-       <entry>Both &acro.xml; and &acro.grs1; documents exhibit a &acro.dom; like internal
-       representation allowing for complex indexing and display rules</entry>
-       <entry><xref linkend="record-model-alvisxslt"/> and 
-       <xref linkend="grs"/></entry>
-      </row>
-      <row>
-       <entry>Input document formats</entry>
-       <entry>&acro.xml;, &acro.sgml;, Text, ISO2709 (&acro.marc;)</entry>
-       <entry>
-        A system of input filters driven by
-        regular expressions allows most ASCII-based
-        data formats to be easily processed.
-        &acro.sgml;, &acro.xml;, ISO2709 (&acro.marc;), and raw text are also
-        supported.</entry>
-       <entry><xref linkend="componentmodules"/></entry>
-      </row>
-      <row>
-       <entry>Document storage</entry>
-       <entry>Index-only, Key storage, Document storage</entry>
-       <entry>Data can be, and usually is, imported
-        into &zebra;'s own storage, but &zebra; can also refer to
-        external files, building and maintaining indexes of "live"
-	collections.</entry>
-       <entry></entry>
-      </row>
+    <table id="table-features-document" frame="top">
+     <title>&zebra; document model</title>
+     <tgroup cols="4">
+      <colspec colwidth="1*" colname="feature"/>
+      <colspec colwidth="1*" colname="availability"/>
+      <colspec colwidth="3*" colname="notes"/>
+      <colspec colwidth="2*" colname="references"/>
+      <thead>
+       <row>
+	<entry>Feature</entry>
+	<entry>Availability</entry>
+	<entry>Notes</entry>
+	<entry>Reference</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+	<entry>Complex semi-structured Documents</entry>
+	<entry>&acro.xml; and &acro.grs1; Documents</entry>
+	<entry>Both &acro.xml; and &acro.grs1; documents exhibit a &acro.dom; like internal
+	 representation allowing for complex indexing and display rules</entry>
+	<entry><xref linkend="record-model-alvisxslt"/> and
+	 <xref linkend="grs"/></entry>
+       </row>
+       <row>
+	<entry>Input document formats</entry>
+	<entry>&acro.xml;, &acro.sgml;, Text, ISO2709 (&acro.marc;)</entry>
+	<entry>
+	 A system of input filters driven by
+	 regular expressions allows most ASCII-based
+	 data formats to be easily processed.
+	 &acro.sgml;, &acro.xml;, ISO2709 (&acro.marc;), and raw text are also
+	 supported.</entry>
+	<entry><xref linkend="componentmodules"/></entry>
+       </row>
+       <row>
+	<entry>Document storage</entry>
+	<entry>Index-only, Key storage, Document storage</entry>
+	<entry>Data can be, and usually is, imported
+	 into &zebra;'s own storage, but &zebra; can also refer to
+	 external files, building and maintaining indexes of "live"
+	 collections.</entry>
+	<entry></entry>
+       </row>
 
-     </tbody>
-    </tgroup>
-   </table>
+      </tbody>
+     </tgroup>
+    </table>
    </section>
 
    <section id="features-search">
     <title>&zebra; Search Features</title>
 
-   <table id="table-features-search" frame="top">
+    <table id="table-features-search" frame="top">
     <title>&zebra; search functionality</title>
-    <tgroup cols="4">
-     <colspec colwidth="1*" colname="feature"/>
-     <colspec colwidth="1*" colname="availability"/>
-     <colspec colwidth="3*" colname="notes"/>
-     <colspec colwidth="2*" colname="references"/>
-     <thead>
-      <row>
-       <entry>Feature</entry>
-       <entry>Availability</entry>
-       <entry>Notes</entry>
-       <entry>Reference</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>Query languages</entry>
-       <entry>&acro.cql; and &acro.rpn;/&acro.pqf;</entry>
-       <entry>The type-1 Reverse Polish Notation (&acro.rpn;)
-       and its textual representation Prefix Query Format (&acro.pqf;) are
-       supported. The Common Query Language (&acro.cql;) can be configured as
-       a mapping from &acro.cql; to &acro.rpn;/&acro.pqf;</entry>
-       <entry><xref linkend="querymodel-query-languages-pqf"/> and 
-       <xref linkend="querymodel-cql-to-pqf"/></entry>
-      </row>
-      <row>
-       <entry>Complex boolean query tree</entry>
-       <entry>&acro.cql; and &acro.rpn;/&acro.pqf;</entry>
-       <entry>Both &acro.cql; and &acro.rpn;/&acro.pqf; allow atomic query parts (&acro.apt;) to
-       be combined into complex boolean query trees</entry>
-       <entry><xref linkend="querymodel-rpn-tree"/></entry>
-      </row>
-      <row>
-       <entry>Field search</entry>
-       <entry>user defined</entry>
-       <entry>Atomic query parts (&acro.apt;) are either general, or
-       directed at user-specified document fields
-      </entry>
-       <entry><xref linkend="querymodel-atomic-queries"/>, 
-              <xref linkend="querymodel-use-string"/>, 
-              <xref linkend="querymodel-bib1-use"/>, and 
-              <xref linkend="querymodel-idxpath-use"/></entry>
-      </row>
-      <row>
-       <entry>Data normalization</entry>
-       <entry>user defined</entry>
-       <entry>Data normalization, text tokenization and character
-       mappings can be applied during indexing and searching</entry>
-       <entry><xref linkend="fields-and-charsets"/></entry>
-      </row>
-      <row>
-       <entry>Predefined field types</entry>
-       <entry>user defined</entry>
-       <entry>Data fields can be indexed as phrase, as into word
-       tokenized text, as numeric values, URLs, dates, and raw binary
-       data.</entry> 
-       <entry><xref linkend="character-map-files"/> and
-              <xref linkend="querymodel-pqf-apt-mapping-structuretype"/>
-       </entry>
-      </row>
-      <row>
-       <entry>Regular expression matching</entry>
-       <entry>available</entry>
-       <entry>Full regular expression matching and "approximate
-        matching" (e.g. spelling mistake corrections) are handled.</entry>
-       <entry><xref linkend="querymodel-regular"/></entry>
-      </row>
-      <row>
-       <entry>Term truncation</entry>
-       <entry>left, right, left-and-right</entry>
-       <entry>The truncation attribute specifies whether variations of
-       one or more characters are allowed between search term and hit
-       terms, or not. Using non-default truncation attributes will
-       broaden the document hit set of a search query.</entry> 
-       <entry><xref linkend="querymodel-bib1-truncation"/></entry>
-      </row>
-      <row>
-       <entry>Fuzzy searches</entry>
-       <entry>Spelling correction</entry>
-       <entry>In addition, fuzzy searches are implemented, where one 
-          spelling mistake in search terms is matched</entry>
-       <entry><xref linkend="querymodel-bib1-truncation"/></entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </table>
+     <tgroup cols="4">
+      <colspec colwidth="1*" colname="feature"/>
+      <colspec colwidth="1*" colname="availability"/>
+      <colspec colwidth="3*" colname="notes"/>
+      <colspec colwidth="2*" colname="references"/>
+      <thead>
+       <row>
+	<entry>Feature</entry>
+	<entry>Availability</entry>
+	<entry>Notes</entry>
+	<entry>Reference</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+	<entry>Query languages</entry>
+	<entry>&acro.cql; and &acro.rpn;/&acro.pqf;</entry>
+	<entry>The type-1 Reverse Polish Notation (&acro.rpn;)
+	 and its textual representation Prefix Query Format (&acro.pqf;) are
+	 supported. The Common Query Language (&acro.cql;) can be configured as
+	 a mapping from &acro.cql; to &acro.rpn;/&acro.pqf;</entry>
+	<entry><xref linkend="querymodel-query-languages-pqf"/> and
+	 <xref linkend="querymodel-cql-to-pqf"/></entry>
+       </row>
+       <row>
+	<entry>Complex boolean query tree</entry>
+	<entry>&acro.cql; and &acro.rpn;/&acro.pqf;</entry>
+	<entry>Both &acro.cql; and &acro.rpn;/&acro.pqf; allow atomic query parts (&acro.apt;) to
+	 be combined into complex boolean query trees</entry>
+	<entry><xref linkend="querymodel-rpn-tree"/></entry>
+       </row>
+       <row>
+	<entry>Field search</entry>
+	<entry>user defined</entry>
+	<entry>Atomic query parts (&acro.apt;) are either general, or
+	 directed at user-specified document fields
+	</entry>
+	<entry><xref linkend="querymodel-atomic-queries"/>,
+	 <xref linkend="querymodel-use-string"/>,
+	 <xref linkend="querymodel-bib1-use"/>, and
+	 <xref linkend="querymodel-idxpath-use"/></entry>
+       </row>
+       <row>
+	<entry>Data normalization</entry>
+	<entry>user defined</entry>
+	<entry>Data normalization, text tokenization and character
+	 mappings can be applied during indexing and searching</entry>
+	<entry><xref linkend="fields-and-charsets"/></entry>
+       </row>
+       <row>
+	<entry>Predefined field types</entry>
+	<entry>user defined</entry>
+	<entry>Data fields can be indexed as phrase, as into word
+	 tokenized text, as numeric values, URLs, dates, and raw binary
+	 data.</entry>
+	<entry><xref linkend="character-map-files"/> and
+	 <xref linkend="querymodel-pqf-apt-mapping-structuretype"/>
+	</entry>
+       </row>
+       <row>
+	<entry>Regular expression matching</entry>
+	<entry>available</entry>
+	<entry>Full regular expression matching and "approximate
+	 matching" (e.g. spelling mistake corrections) are handled.</entry>
+	<entry><xref linkend="querymodel-regular"/></entry>
+       </row>
+       <row>
+	<entry>Term truncation</entry>
+	<entry>left, right, left-and-right</entry>
+	<entry>The truncation attribute specifies whether variations of
+	 one or more characters are allowed between search term and hit
+	 terms, or not. Using non-default truncation attributes will
+	 broaden the document hit set of a search query.</entry>
+	<entry><xref linkend="querymodel-bib1-truncation"/></entry>
+       </row>
+       <row>
+	<entry>Fuzzy searches</entry>
+	<entry>Spelling correction</entry>
+	<entry>In addition, fuzzy searches are implemented, where one
+	 spelling mistake in search terms is matched</entry>
+	<entry><xref linkend="querymodel-bib1-truncation"/></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
    </section>
 
    <section id="features-scan">
     <title>&zebra; Index Scanning</title>
 
-   <table id="table-features-scan" frame="top">
-    <title>&zebra; index scanning</title>
-    <tgroup cols="4">
-     <colspec colwidth="1*" colname="feature"/>
-     <colspec colwidth="1*" colname="availability"/>
-     <colspec colwidth="3*" colname="notes"/>
-     <colspec colwidth="2*" colname="references"/>
-     <thead>
-      <row>
-       <entry>Feature</entry>
-       <entry>Availability</entry>
-       <entry>Notes</entry>
-       <entry>Reference</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>Scan</entry>
-       <entry>term suggestions</entry>
-       <entry><literal>Scan</literal> on a given named index returns all the 
-          indexed terms in lexicographical order near the given start
-       term. This can be used to create drop-down menus and search 
-       suggestions.</entry>
-       <entry><xref linkend="querymodel-operation-type-scan"/> and 
-       <xref linkend="querymodel-atomic-queries"/>
-       </entry>
-      </row>
-      <row>
-       <entry>Facetted browsing</entry>
+    <table id="table-features-scan" frame="top">
+     <title>&zebra; index scanning</title>
+     <tgroup cols="4">
+      <colspec colwidth="1*" colname="feature"/>
+      <colspec colwidth="1*" colname="availability"/>
+      <colspec colwidth="3*" colname="notes"/>
+      <colspec colwidth="2*" colname="references"/>
+      <thead>
+       <row>
+	<entry>Feature</entry>
+	<entry>Availability</entry>
+	<entry>Notes</entry>
+	<entry>Reference</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+	<entry>Scan</entry>
+	<entry>term suggestions</entry>
+	<entry><literal>Scan</literal> on a given named index returns all the
+	 indexed terms in lexicographical order near the given start
+	 term. This can be used to create drop-down menus and search
+	 suggestions.</entry>
+	<entry><xref linkend="querymodel-operation-type-scan"/> and
+	 <xref linkend="querymodel-atomic-queries"/>
+	</entry>
+       </row>
+       <row>
+	<entry>Facetted browsing</entry>
 	<entry>available</entry>
 	<entry>Zebra 2.1 and allows retrieval of facets for
 	 a result set.
-	</entry> 
-       <entry><xref linkend="querymodel-zebra-attr-scan"/></entry>
-      </row>
-      <row>
-       <entry>Drill-down or refine-search</entry>
-       <entry>partially</entry>
-       <entry>scanning in result sets can be used to implement
-       drill-down in search clients</entry>
-       <entry><xref linkend="querymodel-zebra-attr-scan"/></entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </table>
+	</entry>
+	<entry><xref linkend="querymodel-zebra-attr-scan"/></entry>
+       </row>
+       <row>
+	<entry>Drill-down or refine-search</entry>
+	<entry>partially</entry>
+	<entry>scanning in result sets can be used to implement
+	 drill-down in search clients</entry>
+	<entry><xref linkend="querymodel-zebra-attr-scan"/></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
    </section>
 
    <section id="features-presentation">
     <title>&zebra; Document Presentation</title>
 
-   <table id="table-features-presentation" frame="top">
-    <title>&zebra; document presentation</title>
-    <tgroup cols="4">
-     <colspec colwidth="1*" colname="feature"/>
-     <colspec colwidth="1*" colname="availability"/>
-     <colspec colwidth="3*" colname="notes"/>
-     <colspec colwidth="2*" colname="references"/>
-     <thead>
-      <row>
-       <entry>Feature</entry>
-       <entry>Availability</entry>
-       <entry>Notes</entry>
-       <entry>Reference</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>Hit count</entry>
-       <entry>yes</entry>
-       <entry>Search results include at any time the total hit count of a given
-          query, either exact computed, or approximative, in case that the
-          hit count exceeds a possible pre-defined hit set truncation
-       level.</entry>
-       <entry>
-       <xref linkend="querymodel-zebra-local-attr-limit"/> and
-       <xref linkend="zebra-cfg"/>
-       </entry>
-      </row>
-      <row>
-       <entry>Paged result sets</entry>
-       <entry>yes</entry>
-       <entry>Paging of search requests and present/display request
-       can return any successive number of records from any start
-       position in the hit set, i.e. it is trivial to provide search
-       results in successive pages of any size.</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>&acro.xml; document transformations</entry>
-       <entry>&acro.xslt; based</entry>
-       <entry> Record presentation can be performed in many
-       pre-defined &acro.xml; data 
-          formats, where the original &acro.xml; records are on-the-fly transformed
-          through any preconfigured &acro.xslt; transformation. It is therefore
-          trivial to present records in short/full &acro.xml; views, transforming to
-          RSS, Dublin Core, or other &acro.xml; based data formats, or transform
-          records to XHTML snippets ready for inserting in XHTML pages.</entry>
-       <entry> 
-       <xref linkend="record-model-alvisxslt-elementset"/></entry>
-      </row>
-      <row>
-       <entry>Binary record transformations</entry>
-       <entry>&acro.marc;, &acro.usmarc;, &acro.marc21; and &acro.marcxml;</entry>
-       <entry>post-filter record transformations</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>Record Syntaxes</entry>
-       <entry></entry>
-       <entry> Multiple record syntaxes
-      for data retrieval: &acro.grs1;, &acro.sutrs;,
-      &acro.xml;, ISO2709 (&acro.marc;), etc. Records can be mapped between
-       record syntaxes and schemas on the fly.</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>&zebra; internal metadata</entry>
-       <entry>yes</entry>
-       <entry> &zebra; internal document metadata can be fetched in
-       &acro.sutrs; and &acro.xml; record syntaxes. Those are useful in client
-       applications.</entry>
-       <entry><xref linkend="special-retrieval"/></entry>
-      </row>
-      <row>
-       <entry>&zebra; internal raw record data</entry>
-       <entry>yes</entry>
-       <entry> &zebra; internal raw, binary record data can be fetched in
-       &acro.sutrs; and &acro.xml; record syntaxes, leveraging %zebra; to a
-       binary storage system</entry>
-       <entry><xref linkend="special-retrieval"/></entry>
-      </row>
-      <row>
-       <entry>&zebra; internal record field data</entry>
-       <entry>yes</entry>
-       <entry> &zebra; internal record field data can be fetched in
-       &acro.sutrs; and &acro.xml; record syntaxes. This makes very fast minimal
-       record data displays possible.</entry>
-       <entry><xref linkend="special-retrieval"/></entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </table>
+    <table id="table-features-presentation" frame="top">
+     <title>&zebra; document presentation</title>
+     <tgroup cols="4">
+      <colspec colwidth="1*" colname="feature"/>
+      <colspec colwidth="1*" colname="availability"/>
+      <colspec colwidth="3*" colname="notes"/>
+      <colspec colwidth="2*" colname="references"/>
+      <thead>
+       <row>
+	<entry>Feature</entry>
+	<entry>Availability</entry>
+	<entry>Notes</entry>
+	<entry>Reference</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+	<entry>Hit count</entry>
+	<entry>yes</entry>
+	<entry>Search results include at any time the total hit count of a given
+	 query, either exact computed, or approximative, in case that the
+	 hit count exceeds a possible pre-defined hit set truncation
+	 level.</entry>
+	<entry>
+	 <xref linkend="querymodel-zebra-local-attr-limit"/> and
+	 <xref linkend="zebra-cfg"/>
+	</entry>
+       </row>
+       <row>
+	<entry>Paged result sets</entry>
+	<entry>yes</entry>
+	<entry>Paging of search requests and present/display request
+	 can return any successive number of records from any start
+	 position in the hit set, i.e. it is trivial to provide search
+	 results in successive pages of any size.</entry>
+	<entry></entry>
+       </row>
+       <row>
+	<entry>&acro.xml; document transformations</entry>
+	<entry>&acro.xslt; based</entry>
+	<entry> Record presentation can be performed in many
+	 pre-defined &acro.xml; data
+	 formats, where the original &acro.xml; records are on-the-fly transformed
+	 through any preconfigured &acro.xslt; transformation. It is therefore
+	 trivial to present records in short/full &acro.xml; views, transforming to
+	 RSS, Dublin Core, or other &acro.xml; based data formats, or transform
+	 records to XHTML snippets ready for inserting in XHTML pages.</entry>
+	<entry>
+	 <xref linkend="record-model-alvisxslt-elementset"/></entry>
+       </row>
+       <row>
+	<entry>Binary record transformations</entry>
+	<entry>&acro.marc;, &acro.usmarc;, &acro.marc21; and &acro.marcxml;</entry>
+	<entry>post-filter record transformations</entry>
+	<entry></entry>
+       </row>
+       <row>
+	<entry>Record Syntaxes</entry>
+	<entry></entry>
+	<entry> Multiple record syntaxes
+	 for data retrieval: &acro.grs1;, &acro.sutrs;,
+	 &acro.xml;, ISO2709 (&acro.marc;), etc. Records can be mapped between
+	 record syntaxes and schemas on the fly.</entry>
+	<entry></entry>
+       </row>
+       <row>
+	<entry>&zebra; internal metadata</entry>
+	<entry>yes</entry>
+	<entry> &zebra; internal document metadata can be fetched in
+	 &acro.sutrs; and &acro.xml; record syntaxes. Those are useful in client
+	 applications.</entry>
+	<entry><xref linkend="special-retrieval"/></entry>
+       </row>
+       <row>
+	<entry>&zebra; internal raw record data</entry>
+	<entry>yes</entry>
+	<entry> &zebra; internal raw, binary record data can be fetched in
+	 &acro.sutrs; and &acro.xml; record syntaxes, leveraging %zebra; to a
+	 binary storage system</entry>
+	<entry><xref linkend="special-retrieval"/></entry>
+       </row>
+       <row>
+	<entry>&zebra; internal record field data</entry>
+	<entry>yes</entry>
+	<entry> &zebra; internal record field data can be fetched in
+	 &acro.sutrs; and &acro.xml; record syntaxes. This makes very fast minimal
+	 record data displays possible.</entry>
+	<entry><xref linkend="special-retrieval"/></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
    </section>
 
    <section id="features-sort-rank">
     <title>&zebra; Sorting and Ranking</title>
 
-   <table id="table-features-sort-rank" frame="top">
-    <title>&zebra; sorting and ranking</title>
-    <tgroup cols="4">
-     <colspec colwidth="1*" colname="feature"/>
-     <colspec colwidth="1*" colname="availability"/>
-     <colspec colwidth="3*" colname="notes"/>
-     <colspec colwidth="2*" colname="references"/>
-     <thead>
-      <row>
-       <entry>Feature</entry>
-       <entry>Availability</entry>
-       <entry>Notes</entry>
-       <entry>Reference</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>Sort</entry>
-       <entry>numeric, lexicographic</entry>
-       <entry>Sorting on the basis of alpha-numeric and numeric data
-       is supported. Alphanumeric sorts can be configured for
-       different data encodings and locales for European languages.</entry>
-       <entry><xref linkend="administration-ranking-sorting"/> and
-       <xref linkend="querymodel-zebra-attr-sorting"/></entry>
-      </row>
-      <row>
-       <entry>Combined sorting</entry>
-       <entry>yes</entry>
-       <entry>Sorting on the basis of combined sorts ­ e.g. combinations of 
-          ascending/descending sorts of lexicographical/numeric/date field data
-          is supported</entry>
-       <entry><xref linkend="administration-ranking-sorting"/></entry>
-      </row>
-      <row>
-       <entry>Relevance ranking</entry>
-       <entry>TF-IDF like</entry>
-       <entry>Relevance-ranking of free-text queries is supported
-       using a TF-IDF like algorithm.</entry>
-       <entry><xref linkend="administration-ranking-dynamic"/></entry>
-      </row>
-      <row>
-       <entry>Static pre-ranking</entry>
-       <entry>yes</entry>
-       <entry>Enables pre-index time ranking of documents where hit
-       lists are ordered first by ascending static rank, then by
-       ascending document ID.</entry> 
-       <entry><xref linkend="administration-ranking-static"/></entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </table>
+    <table id="table-features-sort-rank" frame="top">
+     <title>&zebra; sorting and ranking</title>
+     <tgroup cols="4">
+      <colspec colwidth="1*" colname="feature"/>
+      <colspec colwidth="1*" colname="availability"/>
+      <colspec colwidth="3*" colname="notes"/>
+      <colspec colwidth="2*" colname="references"/>
+      <thead>
+       <row>
+	<entry>Feature</entry>
+	<entry>Availability</entry>
+	<entry>Notes</entry>
+	<entry>Reference</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+	<entry>Sort</entry>
+	<entry>numeric, lexicographic</entry>
+	<entry>Sorting on the basis of alpha-numeric and numeric data
+	 is supported. Alphanumeric sorts can be configured for
+	 different data encodings and locales for European languages.</entry>
+	<entry><xref linkend="administration-ranking-sorting"/> and
+	 <xref linkend="querymodel-zebra-attr-sorting"/></entry>
+       </row>
+       <row>
+	<entry>Combined sorting</entry>
+	<entry>yes</entry>
+	<entry>Sorting on the basis of combined sorts ­ e.g. combinations of
+	 ascending/descending sorts of lexicographical/numeric/date field data
+	 is supported</entry>
+	<entry><xref linkend="administration-ranking-sorting"/></entry>
+       </row>
+       <row>
+	<entry>Relevance ranking</entry>
+	<entry>TF-IDF like</entry>
+	<entry>Relevance-ranking of free-text queries is supported
+	 using a TF-IDF like algorithm.</entry>
+	<entry><xref linkend="administration-ranking-dynamic"/></entry>
+       </row>
+       <row>
+	<entry>Static pre-ranking</entry>
+	<entry>yes</entry>
+	<entry>Enables pre-index time ranking of documents where hit
+	 lists are ordered first by ascending static rank, then by
+	 ascending document ID.</entry>
+	<entry><xref linkend="administration-ranking-static"/></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
    </section>
 
 
@@ -449,264 +425,264 @@
     <title>&zebra; Live Updates</title>
 
 
-   <table id="table-features-updates" frame="top">
-    <title>&zebra; live updates</title>
-    <tgroup cols="4">
-     <colspec colwidth="1*" colname="feature"/>
-     <colspec colwidth="1*" colname="availability"/>
-     <colspec colwidth="3*" colname="notes"/>
-     <colspec colwidth="2*" colname="references"/>
-     <thead>
-      <row>
-       <entry>Feature</entry>
-       <entry>Availability</entry>
-       <entry>Notes</entry>
-       <entry>Reference</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>Incremental and batch updates</entry>
-       <entry></entry>
-       <entry>It is possible to schedule record inserts/updates/deletes in any
-        quantity, from single individual handled records to batch updates
-        in strikes of any size, as well as total re-indexing of all records
-        from file system. </entry>
-       <entry><xref linkend="zebraidx"/></entry>
-      </row>
-      <row>
-       <entry>Remote updates</entry>
-       <entry>&acro.z3950; extended services</entry>
-       <entry>Updates can be performed from remote locations using the
-       &acro.z3950; extended services. Access to extended services can be
-       login-password protected.</entry>
-       <entry><xref linkend="administration-extended-services"/> and 
-              <xref linkend="zebra-cfg"/></entry>
-      </row>
-      <row>
-       <entry>Live updates</entry>
-       <entry>transaction based</entry>
-       <entry> Data updates are transaction based and can be performed
-       on running  &zebra; systems.  Full searchability is preserved
-       during life data update due to use  of shadow disk areas for
-       update operations. Multiple update transactions at the same
-       time are lined up, to be performed one after each other. Data
-       integrity is preserved.</entry> 
-       <entry><xref linkend="shadow-registers"/></entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </table>
+    <table id="table-features-updates" frame="top">
+     <title>&zebra; live updates</title>
+     <tgroup cols="4">
+      <colspec colwidth="1*" colname="feature"/>
+      <colspec colwidth="1*" colname="availability"/>
+      <colspec colwidth="3*" colname="notes"/>
+      <colspec colwidth="2*" colname="references"/>
+      <thead>
+       <row>
+	<entry>Feature</entry>
+	<entry>Availability</entry>
+	<entry>Notes</entry>
+	<entry>Reference</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+	<entry>Incremental and batch updates</entry>
+	<entry></entry>
+	<entry>It is possible to schedule record inserts/updates/deletes in any
+	 quantity, from single individual handled records to batch updates
+	 in strikes of any size, as well as total re-indexing of all records
+	 from file system. </entry>
+	<entry><xref linkend="zebraidx"/></entry>
+       </row>
+       <row>
+	<entry>Remote updates</entry>
+	<entry>&acro.z3950; extended services</entry>
+	<entry>Updates can be performed from remote locations using the
+	 &acro.z3950; extended services. Access to extended services can be
+	 login-password protected.</entry>
+	<entry><xref linkend="administration-extended-services"/> and
+	 <xref linkend="zebra-cfg"/></entry>
+       </row>
+       <row>
+	<entry>Live updates</entry>
+	<entry>transaction based</entry>
+	<entry> Data updates are transaction based and can be performed
+	 on running  &zebra; systems.  Full searchability is preserved
+	 during life data update due to use  of shadow disk areas for
+	 update operations. Multiple update transactions at the same
+	 time are lined up, to be performed one after each other. Data
+	 integrity is preserved.</entry>
+	<entry><xref linkend="shadow-registers"/></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
    </section>
 
- <section id="features-protocol">
-  <title>&zebra; Networked Protocols</title>
+   <section id="features-protocol">
+    <title>&zebra; Networked Protocols</title>
 
-   <table id="table-features-protocol" frame="top">
-    <title>&zebra; networked protocols</title>
-    <tgroup cols="4">
-     <colspec colwidth="1*" colname="feature"/>
-     <colspec colwidth="1*" colname="availability"/>
-     <colspec colwidth="3*" colname="notes"/>
-     <colspec colwidth="2*" colname="references"/>
-     <thead>
-      <row>
-       <entry>Feature</entry>
-       <entry>Availability</entry>
-       <entry>Notes</entry>
-       <entry>Reference</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>Fundamental operations</entry>
-       <entry>&acro.z3950;/&acro.sru; <literal>explain</literal>, 
-           <literal>search</literal>, <literal>scan</literal>, and 
-           <literal>update</literal></entry>
-       <entry></entry>
-       <entry><xref linkend="querymodel-operation-types"/></entry>
-      </row>
-      <row>
-       <entry>&acro.z3950; protocol support</entry>
-       <entry>yes</entry>
-       <entry> Protocol facilities supported are: 
-       <literal>init</literal>, <literal>search</literal>, 
-       <literal>present</literal> (retrieval),
-       Segmentation (support for very large records), 
-       <literal>delete</literal>, <literal>scan</literal>
-       (index browsing), <literal>sort</literal>, 
-       <literal>close</literal> and support for the <literal>update</literal>
-       Extended Service to add or replace an existing &acro.xml;
-       record. Piggy-backed presents are honored in the search
-       request. Named result sets are supported.</entry>
-       <entry><xref linkend="protocol-support"/></entry>
-      </row>
-      <row>
-       <entry>Web Service support</entry>
-       <entry>&acro.sru;</entry>
-       <entry> The protocol operations <literal>explain</literal>, 
-       <literal>searchRetrieve</literal> and <literal>scan</literal>
-       are supported. <ulink url="&url.cql;">&acro.cql;</ulink> to internal
-       query model &acro.rpn;
-       conversion is supported. Extended RPN queries
-       for search/retrieve and scan are supported.</entry>
-       <entry><xref linkend="zebrasrv-sru-support"/></entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </table>
+    <table id="table-features-protocol" frame="top">
+     <title>&zebra; networked protocols</title>
+     <tgroup cols="4">
+      <colspec colwidth="1*" colname="feature"/>
+      <colspec colwidth="1*" colname="availability"/>
+      <colspec colwidth="3*" colname="notes"/>
+      <colspec colwidth="2*" colname="references"/>
+      <thead>
+       <row>
+	<entry>Feature</entry>
+	<entry>Availability</entry>
+	<entry>Notes</entry>
+	<entry>Reference</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+	<entry>Fundamental operations</entry>
+	<entry>&acro.z3950;/&acro.sru; <literal>explain</literal>,
+	 <literal>search</literal>, <literal>scan</literal>, and
+	 <literal>update</literal></entry>
+	<entry></entry>
+	<entry><xref linkend="querymodel-operation-types"/></entry>
+       </row>
+       <row>
+	<entry>&acro.z3950; protocol support</entry>
+	<entry>yes</entry>
+	<entry> Protocol facilities supported are:
+	 <literal>init</literal>, <literal>search</literal>,
+	 <literal>present</literal> (retrieval),
+	 Segmentation (support for very large records),
+	 <literal>delete</literal>, <literal>scan</literal>
+	 (index browsing), <literal>sort</literal>,
+	 <literal>close</literal> and support for the <literal>update</literal>
+	 Extended Service to add or replace an existing &acro.xml;
+	 record. Piggy-backed presents are honored in the search
+	 request. Named result sets are supported.</entry>
+	<entry><xref linkend="protocol-support"/></entry>
+       </row>
+       <row>
+	<entry>Web Service support</entry>
+	<entry>&acro.sru;</entry>
+	<entry> The protocol operations <literal>explain</literal>,
+	 <literal>searchRetrieve</literal> and <literal>scan</literal>
+	 are supported. <ulink url="&url.cql;">&acro.cql;</ulink> to internal
+	 query model &acro.rpn;
+	 conversion is supported. Extended RPN queries
+	 for search/retrieve and scan are supported.</entry>
+	<entry><xref linkend="zebrasrv-sru-support"/></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
    </section>
 
    <section id="features-scalability">
     <title>&zebra; Data Size and Scalability</title>
 
-   <table id="table-features-scalability" frame="top">
-    <title>&zebra; data size and scalability</title>
-    <tgroup cols="4">
-     <colspec colwidth="1*" colname="feature"/>
-     <colspec colwidth="1*" colname="availability"/>
-     <colspec colwidth="3*" colname="notes"/>
-     <colspec colwidth="2*" colname="references"/>
-     <thead>
-      <row>
-       <entry>Feature</entry>
-       <entry>Availability</entry>
-       <entry>Notes</entry>
-       <entry>Reference</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>No of records</entry>
-       <entry>40-60 million</entry>
-       <entry></entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>Data size</entry>
-       <entry>100 GB of record data</entry>
-       <entry>&zebra; based applications have successfully indexed up
-       to 100 GB of record data</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>Scale out</entry>
-       <entry>multiple discs</entry>
-       <entry></entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>Performance</entry>
-       <entry><literal>O(n * log N)</literal></entry>
-       <entry> &zebra; query speed and performance is affected roughly by 
-          <literal>O(log N)</literal>,
-          where <literal>N</literal> is the total database size, and by 
-          <literal>O(n)</literal>, where <literal>n</literal> is the
-          specific query hit set size.</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>Average search times</entry>
-       <entry></entry>
-       <entry> Even on very large size databases hit rates of 20 queries per
-          seconds with average query answering time of 1 second are possible,
-          provided that the boolean queries are constructed sufficiently
-          precise to result in hit sets of the order of 1000 to 5.000
-          documents.</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>Large databases</entry>
-       <entry>64 bit file pointers</entry>
-       <entry>64 file pointers assure that register files can extend
-       the 2 GB limit. Logical files can be
-        automatically partitioned over multiple disks, thus allowing for
-       large databases.</entry>
-       <entry></entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </table>
+    <table id="table-features-scalability" frame="top">
+     <title>&zebra; data size and scalability</title>
+     <tgroup cols="4">
+      <colspec colwidth="1*" colname="feature"/>
+      <colspec colwidth="1*" colname="availability"/>
+      <colspec colwidth="3*" colname="notes"/>
+      <colspec colwidth="2*" colname="references"/>
+      <thead>
+       <row>
+	<entry>Feature</entry>
+	<entry>Availability</entry>
+	<entry>Notes</entry>
+	<entry>Reference</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+	<entry>No of records</entry>
+	<entry>40-60 million</entry>
+	<entry></entry>
+	<entry></entry>
+       </row>
+       <row>
+	<entry>Data size</entry>
+	<entry>100 GB of record data</entry>
+	<entry>&zebra; based applications have successfully indexed up
+	 to 100 GB of record data</entry>
+	<entry></entry>
+       </row>
+       <row>
+	<entry>Scale out</entry>
+	<entry>multiple discs</entry>
+	<entry></entry>
+	<entry></entry>
+       </row>
+       <row>
+	<entry>Performance</entry>
+	<entry><literal>O(n * log N)</literal></entry>
+	<entry> &zebra; query speed and performance is affected roughly by
+	 <literal>O(log N)</literal>,
+	 where <literal>N</literal> is the total database size, and by
+	 <literal>O(n)</literal>, where <literal>n</literal> is the
+	 specific query hit set size.</entry>
+	<entry></entry>
+       </row>
+       <row>
+	<entry>Average search times</entry>
+	<entry></entry>
+	<entry> Even on very large size databases hit rates of 20 queries per
+	 seconds with average query answering time of 1 second are possible,
+	 provided that the boolean queries are constructed sufficiently
+	 precise to result in hit sets of the order of 1000 to 5.000
+	 documents.</entry>
+	<entry></entry>
+       </row>
+       <row>
+	<entry>Large databases</entry>
+	<entry>64 bit file pointers</entry>
+	<entry>64 file pointers assure that register files can extend
+	 the 2 GB limit. Logical files can be
+	 automatically partitioned over multiple disks, thus allowing for
+	 large databases.</entry>
+	<entry></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
    </section>
 
    <section id="features-platforms">
     <title>&zebra; Supported Platforms</title>
 
-   <table id="table-features-platforms" frame="top">
-    <title>&zebra; supported platforms</title>
-    <tgroup cols="4">
-     <colspec colwidth="1*" colname="feature"/>
-     <colspec colwidth="1*" colname="availability"/>
-     <colspec colwidth="3*" colname="notes"/>
-     <colspec colwidth="2*" colname="references"/>
-     <thead>
-      <row>
-       <entry>Feature</entry>
-       <entry>Availability</entry>
-       <entry>Notes</entry>
-       <entry>Reference</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>Linux</entry>
-       <entry></entry>
-       <entry>GNU Linux (32 and 64bit), journaling Reiser or (better)
-       JFS file system 
-        on disks. NFS file systems are not supported.
-       GNU/Debian Linux packages are available</entry> 
-       <entry><xref linkend="installation-debian"/></entry>
-      </row>
-      <row>
-       <entry>Unix</entry>
-       <entry>tar-ball</entry>
-       <entry>&zebra; is written in portable C, so it runs on most
-       Unix-like systems.
-       Usual tar-ball install possible on many major Unix systems</entry>
-       <entry><xref linkend="installation-unix"/></entry>
-      </row>
-      <row>
-       <entry>Windows</entry>
-       <entry>NT/2000/2003/XP</entry>
-       <entry>&zebra; runs as well on Windows (NT/2000/2003/XP).
-        Windows installer packages available</entry>
-       <entry><xref linkend="installation-win32"/></entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </table>
+    <table id="table-features-platforms" frame="top">
+     <title>&zebra; supported platforms</title>
+     <tgroup cols="4">
+      <colspec colwidth="1*" colname="feature"/>
+      <colspec colwidth="1*" colname="availability"/>
+      <colspec colwidth="3*" colname="notes"/>
+      <colspec colwidth="2*" colname="references"/>
+      <thead>
+       <row>
+	<entry>Feature</entry>
+	<entry>Availability</entry>
+	<entry>Notes</entry>
+	<entry>Reference</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+	<entry>Linux</entry>
+	<entry></entry>
+	<entry>GNU Linux (32 and 64bit), journaling Reiser or (better)
+	 JFS file system
+	 on disks. NFS file systems are not supported.
+	 GNU/Debian Linux packages are available</entry>
+	<entry><xref linkend="installation-debian"/></entry>
+       </row>
+       <row>
+	<entry>Unix</entry>
+	<entry>tar-ball</entry>
+	<entry>&zebra; is written in portable C, so it runs on most
+	 Unix-like systems.
+	 Usual tar-ball install possible on many major Unix systems</entry>
+	<entry><xref linkend="installation-unix"/></entry>
+       </row>
+       <row>
+	<entry>Windows</entry>
+	<entry>NT/2000/2003/XP</entry>
+	<entry>&zebra; runs as well on Windows (NT/2000/2003/XP).
+	 Windows installer packages available</entry>
+	<entry><xref linkend="installation-win32"/></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
    </section>
 
-  
- </section>
- 
+
+  </section>
+
   <section id="introduction-apps">
-  <title>References and &zebra; based Applications</title>
-  <para>
-   &zebra; has been deployed in numerous applications, in both the
-   academic and commercial worlds, in application domains as diverse
-   as bibliographic catalogues, Geo-spatial information, structured
-   vocabulary browsing, government information locators, civic
-   information systems, environmental observations, museum information
-   and web indexes.
-  </para>
-  <para>
-   Notable applications include the following:
-  </para>
-
-
-  <section id="koha-ils">
-   <title>Koha free open-source ILS</title>
+   <title>References and &zebra; based Applications</title>
    <para>
+    &zebra; has been deployed in numerous applications, in both the
+    academic and commercial worlds, in application domains as diverse
+    as bibliographic catalogues, Geo-spatial information, structured
+    vocabulary browsing, government information locators, civic
+    information systems, environmental observations, museum information
+    and web indexes.
+   </para>
+   <para>
+    Notable applications include the following:
+   </para>
+
+
+   <section id="koha-ils">
+    <title>Koha free open-source ILS</title>
+    <para>
      <ulink url="http://www.koha.org/">Koha</ulink> is a full-featured
-     open-source ILS, initially developed  in 
+     open-source ILS, initially developed  in
      New Zealand by Katipo Communications Ltd, and first deployed in
      January of 2000 for Horowhenua Library Trust. It is currently
      maintained by a team of software providers and library technology
-     staff from around the globe. 
+     staff from around the globe.
     </para>
     <para>
-     <ulink url="http://liblime.com/">LibLime</ulink>, 
+     <ulink url="http://liblime.com/">LibLime</ulink>,
      a company that is marketing and supporting Koha, adds in
      the new release of Koha 3.0 the &zebra;
      database server to drive its bibliographic database.
@@ -717,7 +693,7 @@
      in the Koha 2.x series. After extensive evaluations of the best
      of the Open Source textual database engines - including MySQL
      full-text searching, PostgreSQL, Lucene and Plucene - the team
-     selected &zebra;. 
+     selected &zebra;.
     </para>
     <para>
      "&zebra; completely eliminates scalability limitations, because it
@@ -725,7 +701,7 @@
      Ferraro, LibLime's Technology President and Koha's Project
      Release Manager. "Our performance tests showed search results in
      under a second for databases with over 5 million records on a
-     modest i386 900Mhz test server." 
+     modest i386 900Mhz test server."
     </para>
     <para>
      "&zebra; also includes support for true boolean search expressions
@@ -734,37 +710,37 @@
      database updates, which allow on-the-fly record
      management. Finally, since &zebra; has at its heart the &acro.z3950;
      protocol, it greatly improves Koha's support for that critical
-     library standard." 
+     library standard."
     </para>
-    <para> 
+    <para>
      Although the bibliographic database will be moved to &zebra;, Koha
      3.0 will continue to use a relational SQL-based database design
      for the 'factual' database. "Relational database managers have
      their strengths, in spite of their inability to handle large
      numbers of bibliographic records efficiently," summed up Ferraro,
      "We're taking the best from both worlds in our redesigned Koha
-     3.0. 
-     </para>
-     <para>
+     3.0.
+    </para>
+    <para>
      See also LibLime's newsletter article
-      <ulink url="http://www.liblime.com/newsletter/2006/01/features/koha-earns-its-stripes/">
-     Koha Earns its Stripes</ulink>.
-     </para>
+     <ulink url="http://www.liblime.com/newsletter/2006/01/features/koha-earns-its-stripes/">
+      Koha Earns its Stripes</ulink>.
+    </para>
    </section>
 
 
-  <section id="kete-dom">
-   <title>Kete Open Source Digital Library and Archiving software</title>
-   <para>
+   <section id="kete-dom">
+    <title>Kete Open Source Digital Library and Archiving software</title>
+    <para>
      <ulink url="http://kete.net.nz/">Kete</ulink> is a digital object
-     management repository, initially developed  in 
+     management repository, initially developed  in
      New Zealand. Initial development has
      been a partnership between the Horowhenua Library Trust and
      Katipo Communications Ltd. funded as part of the Community
      Partnership Fund in 2006.
      Kete is purpose built
      software to enable communities to build their own digital
-     libraries, archives and repositories.  
+     libraries, archives and repositories.
     </para>
     <para>
      It is based on Ruby-on-Rails and MySQL, and integrates  the &zebra; server
@@ -773,20 +749,20 @@
      application.
      See
      how Kete <ulink
-     url="http://kete.net.nz/documentation/topics/show/139-managing-zebra">manages
-     Zebra.</ulink>
-     </para>
-     <para>
+      url="http://kete.net.nz/documentation/topics/show/139-managing-zebra">manages
+      Zebra.</ulink>
+    </para>
+    <para>
      Why does Kete wants to use Zebra?? Speed, Scalability and easy
- integration with Koha. Read their
- <ulink
-     url="http://kete.net.nz/blog/topics/show/44-who-what-why-when-answering-some-of-the-niggly-development-questions">detailed
- reasoning here.</ulink>
+     integration with Koha. Read their
+     <ulink
+      url="http://kete.net.nz/blog/topics/show/44-who-what-why-when-answering-some-of-the-niggly-development-questions">detailed
+      reasoning here.</ulink>
     </para>
    </section>
 
-  <section id="reindex-ils">
-   <title>ReIndex.Net web based ILS</title>
+   <section id="reindex-ils">
+    <title>ReIndex.Net web based ILS</title>
     <para>
      <ulink url="http://www.reindex.net/index.php?lang=en">Reindex.net</ulink>
      is a netbased library service offering all
@@ -794,16 +770,16 @@
      services. Reindex.net is a comprehensive and powerful WEB system
      based on standards such as &acro.xml; and &acro.z3950;.
      updates. Reindex supports &acro.marc21;, dan&acro.marc; eller Dublin Core with
-     UTF8-encoding.  
+     UTF8-encoding.
     </para>
     <para>
      Reindex.net runs on GNU/Debian Linux with &zebra; and Simpleserver
-     from Index 
+     from Index
      Data for bibliographic data. The relational database system
      Sybase 9 &acro.xml; is used for
-     administrative data. 
+     administrative data.
      Internally &acro.marcxml; is used for bibliographical records. Update
-     utilizes &acro.z3950; extended services. 
+     utilizes &acro.z3950; extended services.
     </para>
    </section>
 
@@ -811,115 +787,114 @@
     <title>DADS - the DTV Article Database
      Service</title>
     <para>
-    DADS is a huge database of more than ten million records, totalling
-    over ten gigabytes of data.  The records are metadata about academic
-    journal articles, primarily scientific; about 10% of these
-    metadata records link to the full text of the articles they
-    describe, a body of about a terabyte of information (although the
-    full text is not indexed.)
-   </para>
-   <para>
-    It allows students and researchers at DTU (Danmarks Tekniske
-    Universitet, the Technical College of Denmark) to find and order
-    articles from multiple databases in a single query.  The database
-    contains literature on all engineering subjects.  It's available
-    on-line through a web gateway, though currently only to registered
-    users.
-   </para>
-   <para>
-    More information can be found at
-    <ulink url="http://www.dtic.dtu.dk/"/> and
-    <ulink url="http://dads.dtv.dk"/>
-   </para>
+     DADS is a huge database of more than ten million records, totalling
+     over ten gigabytes of data.  The records are metadata about academic
+     journal articles, primarily scientific; about 10% of these
+     metadata records link to the full text of the articles they
+     describe, a body of about a terabyte of information (although the
+     full text is not indexed.)
+    </para>
+    <para>
+     It allows students and researchers at DTU (Danmarks Tekniske
+     Universitet, the Technical College of Denmark) to find and order
+     articles from multiple databases in a single query.  The database
+     contains literature on all engineering subjects.  It's available
+     on-line through a web gateway, though currently only to registered
+     users.
+    </para>
+    <para>
+     More information can be found at
+     <ulink url="http://www.dtic.dtu.dk/"/> and
+      <ulink url="http://dads.dtv.dk"/>
+    </para>
+   </section>
+
+   <section id="uls">
+    <title>ULS (Union List of Serials)</title>
+    <para>
+     The M25 Systems Team
+     has created a union catalogue for the periodicals of the
+     twenty-one constituent libraries of the University of London and
+     the University of Westminster
+     (<ulink url="http://www.m25lib.ac.uk/ULS/"/>).
+      They have achieved this using an
+      unusual architecture, which they describe as a
+      ``non-distributed virtual union catalogue''.
+    </para>
+    <para>
+     The member libraries send in data files representing their
+     periodicals, including both brief bibliographic data and summary
+     holdings.  Then 21 individual &acro.z3950; targets are created, each
+     using &zebra;, and all mounted on the single hardware server.
+     The live service provides a web gateway allowing &acro.z3950; searching
+     of all of the targets or a selection of them.  &zebra;'s small
+     footprint allows a relatively modest system to comfortably host
+     the 21 servers.
+    </para>
+    <para>
+     More information can be found at
+     <ulink url="http://www.m25lib.ac.uk/ULS/"/>
+    </para>
+   </section>
+
+   <section id="various-web-indexes">
+    <title>Various web indexes</title>
+    <para>
+     &zebra; has been used by a variety of institutions to construct
+     indexes of large web sites, typically in the region of tens of
+     millions of pages.  In this role, it functions somewhat similarly
+     to the engine of Google or AltaVista, but for a selected intranet
+     or a subset of the whole Web.
+    </para>
+    <para>
+     For example, Liverpool University's web-search facility (see on
+     the home page at
+     <ulink url="http://www.liv.ac.uk/"/>
+      and many sub-pages) works by relevance-searching a &zebra; database
+      which is populated by the Harvest-NG web-crawling software.
+    </para>
+    <para>
+     For more information on Liverpool university's intranet search
+     architecture, contact John Gilbertson
+     <email>jgilbert@liverpool.ac.uk</email>
+    </para>
+    <para>
+     Kang-Jin Lee
+     has recently modified the Harvest web indexer to use &zebra; as
+     its native repository engine.  His comments on the switch over
+     from the old engine are revealing:
+     <blockquote>
+      <para>
+       The first results after some testing with &zebra; are very
+       promising.  The tests were done with around 220,000 SOIF files,
+       which occupies 1.6GB of disk space.
+      </para>
+      <para>
+       Building the index from scratch takes around one hour with &zebra;
+       where [old-engine] needs around five hours.  While [old-engine]
+       blocks search requests when updating its index, &zebra; can still
+       answer search requests.
+       [...]
+       &zebra; supports incremental indexing which will speed up indexing
+       even further.
+      </para>
+      <para>
+       While the search time of [old-engine] varies from some seconds
+       to some minutes depending how expensive the query is, &zebra;
+       usually takes around one to three seconds, even for expensive
+       queries.
+       [...]
+       &zebra; can search more than 100 times faster than [old-engine]
+       and can process multiple search requests simultaneously
+      </para>
+      <para>
+       I am very happy to see such nice software available under GPL.
+      </para>
+     </blockquote>
+    </para>
+   </section>
   </section>
 
-  <section id="uls">
-   <title>ULS (Union List of Serials)</title>
-   <para>
-    The M25 Systems Team
-    has created a union catalogue for the periodicals of the
-    twenty-one constituent libraries of the University of London and
-    the University of Westminster
-    (<ulink url="http://www.m25lib.ac.uk/ULS/"/>).
-    They have achieved this using an
-    unusual architecture, which they describe as a
-    ``non-distributed virtual union catalogue''.
-   </para>
-   <para>
-    The member libraries send in data files representing their
-    periodicals, including both brief bibliographic data and summary
-    holdings.  Then 21 individual &acro.z3950; targets are created, each
-    using &zebra;, and all mounted on the single hardware server.
-    The live service provides a web gateway allowing &acro.z3950; searching
-    of all of the targets or a selection of them.  &zebra;'s small
-    footprint allows a relatively modest system to comfortably host
-    the 21 servers.
-   </para>
-   <para>
-    More information can be found at
-    <ulink url="http://www.m25lib.ac.uk/ULS/"/>
-   </para>
-  </section>
-
-  <section id="various-web-indexes">
-   <title>Various web indexes</title>
-   <para>
-    &zebra; has been used by a variety of institutions to construct
-    indexes of large web sites, typically in the region of tens of
-    millions of pages.  In this role, it functions somewhat similarly
-    to the engine of Google or AltaVista, but for a selected intranet
-    or a subset of the whole Web.
-   </para>
-   <para>
-    For example, Liverpool University's web-search facility (see on
-    the home page at
-    <ulink url="http://www.liv.ac.uk/"/>
-    and many sub-pages) works by relevance-searching a &zebra; database
-    which is populated by the Harvest-NG web-crawling software.
-   </para>
-   <para>
-    For more information on Liverpool university's intranet search
-    architecture, contact John Gilbertson
-    <email>jgilbert@liverpool.ac.uk</email>
-   </para>
-   <para>
-    Kang-Jin Lee
-    has recently modified the Harvest web indexer to use &zebra; as
-    its native repository engine.  His comments on the switch over
-    from the old engine are revealing:
-    <blockquote>
-     <para>
-      The first results after some testing with &zebra; are very
-      promising.  The tests were done with around 220,000 SOIF files,
-      which occupies 1.6GB of disk space.
-     </para>
-     <para>
-      Building the index from scratch takes around one hour with &zebra;
-      where [old-engine] needs around five hours.  While [old-engine]
-      blocks search requests when updating its index, &zebra; can still
-      answer search requests.
-      [...]
-      &zebra; supports incremental indexing which will speed up indexing
-      even further.
-     </para>
-     <para>
-      While the search time of [old-engine] varies from some seconds
-      to some minutes depending how expensive the query is, &zebra;
-      usually takes around one to three seconds, even for expensive
-      queries.
-      [...]
-      &zebra; can search more than 100 times faster than [old-engine]
-      and can process multiple search requests simultaneously
-     </para>
-     <para>
-      I am very happy to see such nice software available under GPL.
-     </para>
-    </blockquote>
-   </para>
-  </section>
- </section>
-  
-  
   <section id="introduction-support">
    <title>Support</title>
    <para>
@@ -941,8 +916,8 @@
      releases, bug fixes, etc.) and general discussion.  You are welcome
      to seek support there.  Join by filling the form on the list home page.
    </para>
-  </section>  
-</chapter>
+  </section>
+ </chapter>
  <!-- Keep this comment at the end of the file
  Local variables:
  mode: sgml
@@ -952,7 +927,7 @@
  sgml-always-quote-attributes:t
  sgml-indent-step:1
  sgml-indent-data:t
- sgml-parent-document: "zebra.xml"
+ sgml-parent-document: "idzebra.xml"
  sgml-local-catalogs: nil
  sgml-namecase-general:t
  End:
