@@ -57,7 +57,6 @@ int main(int argc, char **argv)
     int cmd = 0;
     char *arg;
     char *configName = 0;
-    int nsections = 0;
     int enable_commit = 1;
     char *database = 0;
     Res res = res_open(0, 0);
@@ -110,7 +109,7 @@ int main(int argc, char **argv)
     {
         if (ret == 0)
         {
-            if(cmd == 0) /* command */
+            if (cmd == 0) /* command */
             {
                 if (!zs)
                 {
@@ -181,20 +180,9 @@ int main(int argc, char **argv)
                 {
                     show_filters(zs);
                 }
-		else if (!strncmp(arg, "check", 5))
+		else if (!strcmp(arg, "check"))
 		{
-                    const char *spec = 0;
-                    if (arg[5] == ':')
-                        spec = arg + 6;
-                    else if (arg[5] != '\0')
-                    {
-                        yaz_log(YLOG_FATAL, "missing colon after check");
-                        exit(1);
-                    }
-                    if (zebra_register_check(zh, spec) != ZEBRA_OK)
-                    {
-                        yaz_log(YLOG_WARN, "zebra_register_check failed");
-                    }
+                    cmd = 'K';
  		}
                 else
                 {
@@ -207,12 +195,15 @@ int main(int argc, char **argv)
 		ZEBRA_RES res = ZEBRA_OK;
 		if (!trans_started)
 		{
-		    trans_started=1;
+		    trans_started = 1;
                     if (zebra_begin_trans(zh, 1) != ZEBRA_OK)
                         exit(1);
 		}
                 switch (cmd)
                 {
+                case 'K':
+                    res = zebra_register_check(zh, arg);
+                    break;
                 case 'u':
                     res = zebra_repository_index(zh, arg, action_update);
                     break;
@@ -224,7 +215,6 @@ int main(int argc, char **argv)
                     break;
                 case 's':
                     res = zebra_repository_show(zh, arg);
-                    nsections = 0;
                     break;
 		case 'C':
 		    res = zebra_create_database(zh, arg);
@@ -232,8 +222,6 @@ int main(int argc, char **argv)
 		case 'D':
 		    res = zebra_drop_database(zh, arg);
 		    break;
-                default:
-                    nsections = 0;
                 }
 		if (res != ZEBRA_OK)
 		{
@@ -296,16 +284,20 @@ int main(int argc, char **argv)
             yaz_log(YLOG_WARN, "unknown option '-%s'", arg);
     } /* while arg */
 
+    ret = 0;
     if (trans_started)
         if (zebra_end_trans(zh) != ZEBRA_OK)
+        {
             yaz_log(YLOG_WARN, "zebra_end_trans failed");
+            ret = 1;
+        }
 
     zebra_close(zh);
     zebra_stop(zs);
 
     res_close(res);
     res_close(default_res);
-    exit(0);
+    exit(ret);
     return 0;
 }
 
