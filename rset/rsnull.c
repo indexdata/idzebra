@@ -30,7 +30,6 @@ static void r_close(RSFD rfd);
 static void r_delete(RSET ct);
 static void r_pos(RSFD rfd, double *current, double *total);
 static int r_read(RSFD rfd, void *buf, TERMID *term);
-static int r_write(RSFD rfd, const void *buf);
 
 static const struct rset_control control =
 {
@@ -42,7 +41,7 @@ static const struct rset_control control =
     0, /* no forward */
     r_pos,
     r_read,
-    r_write,
+    rset_no_write,
 };
 
 RSET rset_create_null(NMEM nmem, struct rset_key_control *kcontrol,
@@ -90,11 +89,6 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
     return 0;
 }
 
-static int r_write(RSFD rfd, const void *buf)
-{
-    yaz_log(YLOG_FATAL, "NULL set type is read-only");
-    return -1;
-}
 /*
  * Local variables:
  * c-basic-offset: 4

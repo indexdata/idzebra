@@ -46,7 +46,6 @@ static void r_delete(RSET ct);
 static int r_forward(RSFD rfd, void *buf,
                     TERMID *term, const void *untilbuf);
 static int r_read(RSFD rfd, void *buf, TERMID *term );
-static int r_write(RSFD rfd, const void *buf);
 static void r_pos(RSFD rfd, double *current, double *total);
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
 
@@ -60,7 +59,7 @@ static const struct rset_control control =
     r_forward,
     r_pos,
     r_read,
-    r_write,
+    rset_no_write,
 };
 
 #define STARTTAG 0
@@ -301,14 +300,6 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
     return 0;
 
 }  /* r_read */
-
-
-static int r_write(RSFD rfd, const void *buf)
-{
-    yaz_log(YLOG_FATAL, "between set type is read-only");
-    return -1;
-}
-
 
 static void r_pos(RSFD rfd, double *current, double *total)
 {

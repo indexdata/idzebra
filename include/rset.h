@@ -260,6 +260,8 @@ void rset_visit(RSET rset, int level);
 
 void rset_set_hits_limit(RSET rs, zint l);
 
+int rset_no_write(RSFD rfd, const void *buf);
+
 YAZ_END_CDECL
 
 #endif

@@ -33,7 +33,6 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf);
 static void r_pos(RSFD rfd, double *current, double *total);
 static int r_read(RSFD rfd, void *buf, TERMID *term);
 static int r_read_filter(RSFD rfd, void *buf, TERMID *term);
-static int r_write(RSFD rfd, const void *buf);
 
 static const struct rset_control control =
 {
@@ -45,7 +44,7 @@ static const struct rset_control control =
     r_forward,
     r_pos,
     r_read,
-    r_write,
+    rset_no_write,
 };
 
 static const struct rset_control control_filter =
@@ -58,7 +57,7 @@ static const struct rset_control control_filter =
     r_forward,
     r_pos,
     r_read_filter,
-    r_write,
+    rset_no_write,
 };
 
 struct rfd_private {
@@ -181,11 +180,6 @@ static int r_read_filter(RSFD rfd, void *buf, TERMID *term)
     return rc;
 }
 
-static int r_write(RSFD rfd, const void *buf)
-{
-    yaz_log(YLOG_FATAL, "ISAMB set type is read-only");
-    return -1;
-}
 /*
  * Local variables:
  * c-basic-offset: 4

@@ -38,7 +38,6 @@ static void r_delete(RSET ct);
 static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf);
 static void r_pos(RSFD rfd, double *current, double *total);
 static int r_read_not(RSFD rfd, void *buf, TERMID *term);
-static int r_write(RSFD rfd, const void *buf);
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
 
 static const struct rset_control control_not =
@@ -51,7 +50,7 @@ static const struct rset_control control_not =
     r_forward,
     r_pos,
     r_read_not,
-    r_write,
+    rset_no_write,
 };
 
 struct rset_private {
@@ -223,13 +222,6 @@ static int r_read_not(RSFD rfd, void *buf, TERMID *term)
         }
     }
     return 0;
-}
-
-
-static int r_write(RSFD rfd, const void *buf)
-{
-    yaz_log(YLOG_FATAL, "bool set type is read-only");
-    return -1;
 }
 
 static void r_pos(RSFD rfd, double *current, double *total)

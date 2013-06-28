@@ -50,7 +50,6 @@ static void r_close(RSFD rfd);
 static void r_delete(RSET ct);
 static int r_read_and(RSFD rfd, void *buf, TERMID *term);
 static int r_read_or(RSFD rfd, void *buf, TERMID *term);
-static int r_write(RSFD rfd, const void *buf);
 static int r_forward_and(RSFD rfd, void *buf, TERMID *term,
                      const void *untilbuf);
 static int r_forward_or(RSFD rfd, void *buf, TERMID *term,
@@ -69,7 +68,7 @@ static const struct rset_control control_or =
     r_forward_or,
     r_pos_or,
     r_read_or,
-    r_write,
+    rset_no_write,
 };
 
 static const struct rset_control control_and =
@@ -82,7 +81,7 @@ static const struct rset_control control_and =
     r_forward_and,
     r_pos_and,
     r_read_and,
-    r_write,
+    rset_no_write,
 };
 
 /* The heap structure:
@@ -648,12 +647,6 @@ static void r_pos_and(RSFD rfd, double *current, double *total)
 static void r_pos_or(RSFD rfd, double *current, double *total)
 {
     r_pos_x(rfd, current, total, 0);
-}
-
-static int r_write(RSFD rfd, const void *buf)
-{
-    yaz_log(YLOG_FATAL, "multior set type is read-only");
-    return -1;
 }
 
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)

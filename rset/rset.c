@@ -430,6 +430,12 @@ void rset_visit(RSET rset, int level)
 	rset_visit(rset->children[i], level+1);
 }
 
+int rset_no_write(RSFD rfd, const void *buf)
+{
+    yaz_log(YLOG_FATAL, "%s set type is read-only", rfd->rset->control->desc);
+    return -1;
+}
+
 /*
  * Local variables:
  * c-basic-offset: 4

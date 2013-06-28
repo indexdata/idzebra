@@ -29,7 +29,6 @@ static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static int r_read (RSFD rfd, void *buf, TERMID *term);
-static int r_write (RSFD rfd, const void *buf);
 static void r_pos (RSFD rfd, double *current, double *total);
 
 static const struct rset_control control =
@@ -42,7 +41,7 @@ static const struct rset_control control =
     0, /* no forward */
     r_pos,
     r_read,
-    r_write,
+    rset_no_write,
 };
 
 struct rfd_private {
@@ -111,12 +110,6 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
     if (rc && term)
         *term = rfd->rset->term;
     return rc;
-}
-
-static int r_write (RSFD rfd, const void *buf)
-{
-    yaz_log (YLOG_FATAL, "ISAMS set type is read-only");
-    return -1;
 }
 
 static void r_pos (RSFD rfd, double *current, double *total)
