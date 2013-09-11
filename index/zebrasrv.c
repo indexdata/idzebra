@@ -246,10 +246,11 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
             break;
         case Z_Term_general:
             term->which = Z_Term_general;
-            term->u.general = odr_malloc(r->stream, sizeof(*term->u.general));
-            term->u.general->size = term->u.general->len = len;
-            term->u.general->buf = odr_malloc(r->stream, len);
-            memcpy(term->u.general->buf, outbuf, len);
+            term->u.general = odr_create_Odr_oct(r->stream,
+#if YAZ_VERSIONL < 0x50000
+                                                 (unsigned char *)
+#endif
+                                                 outbuf, len);
             break;
         default:
             term->which = Z_Term_general;
