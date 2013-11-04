@@ -1,3 +1,7 @@
+--- 2.0.56 2013/11/04
+
+Updates for YAZ 5. Zebra compiles fine with YAZ 4 still.
+
 --- 2.0.55 2013/06/24
 
 Addx + document zebraidx command "check", which checks consistency of
