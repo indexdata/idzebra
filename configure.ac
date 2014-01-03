@@ -1,5 +1,5 @@
 dnl This file is part of the Zebra server.
-dnl   Copyright (C) 2004-2013 Index Data
+dnl Copyright (C) Index Data. See LICENSE.zebra for details.
 dnl
 AC_PREREQ(2.60)
 AC_INIT([idzebra],

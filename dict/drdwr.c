@@ -1,5 +1,5 @@
 /* This file is part of the Zebra server.
-   Copyright (C) 2004-2013 Index Data
+   Copyright (C) Index Data
 
    Zebra is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
