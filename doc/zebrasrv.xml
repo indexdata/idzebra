@@ -310,9 +310,7 @@
   <refsect2 id="zebrasrvr-search-and-retrieval">
    <title>&acro.sru; Search and Retrieval</title>
    <para>
-    Zebra supports the
-    <ulink url="&url.sru.searchretrieve;">&acro.sru; searchRetrieve</ulink>
-    operation.
+    Zebra supports the searchRetrieve operation.
    </para>
    <para>
     One of the great strengths of &acro.sru; is that it mandates a standard
@@ -336,8 +334,7 @@
   <refsect2 id="zebrasrv-sru-scan">
    <title>&acro.sru; Scan</title>
    <para>
-    Zebra supports <ulink url="&url.sru.scan;">&acro.sru; scan</ulink>
-    operation.
+    Zebra supports scan operation.
     Scanning using &acro.cql; syntax is the default, where the
     standard <literal>scanClause</literal> parameter is used.
    </para>
@@ -353,7 +350,7 @@
   <refsect2 id="zebrasrv-sru-explain">
    <title>&acro.sru; Explain</title>
    <para>
-    Zebra supports <ulink url="&url.sru.explain;">&acro.sru; explain</ulink>.
+    Zebra supports explain.
    </para>
    <para>
     The ZeeRex record explaining a database may be requested either
