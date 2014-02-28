@@ -52,19 +52,19 @@ YAZDIR=$(ROOTDIR)\..\yaz  # or \program files\yaz
 
 YAZBINDIR=$(YAZDIR)\bin
 !if $(DEBUG)
-YAZLIB="$(YAZDIR)\lib\yaz4d.lib"
+YAZLIB="$(YAZDIR)\lib\yaz5d.lib"
 !if $(HAVE_ICU)
-YAZLIB=$(YAZLIB) "$(YAZDIR)\lib\yaz_icu4d.lib"
+YAZLIB=$(YAZLIB) "$(YAZDIR)\lib\yaz_icu5d.lib"
 !endif
-YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz4d.dll"
-YAZ_DLL_TARGET="$(BINDIR)\yaz4d.dll"
+YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz5d.dll"
+YAZ_DLL_TARGET="$(BINDIR)\yaz5d.dll"
 !else
-YAZLIB="$(YAZDIR)\lib\yaz4.lib"
+YAZLIB="$(YAZDIR)\lib\yaz5.lib"
 !if $(HAVE_ICU)
-YAZLIB=$(YAZLIB) "$(YAZDIR)\lib\yaz_icu4.lib"
+YAZLIB=$(YAZLIB) "$(YAZDIR)\lib\yaz_icu5.lib"
 !endif
-YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz4.dll"
-YAZ_DLL_TARGET="$(BINDIR)\yaz4.dll"
+YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz5.dll"
+YAZ_DLL_TARGET="$(BINDIR)\yaz5.dll"
 !endif
 
 # BZIP2 settings. Uncomment and specify if you wish to use LIBBZIP2.
