@@ -1,8 +1,8 @@
 #!/bin/sh
 version=@VERSION@
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+libdir="@libdir@"
 echo_cflags=no
 echo_libs=no
 echo_help=no
@@ -10,8 +10,8 @@ echo_tab=no
 echo_source=yes
 echo_lalibs=no
 echo_modules=no
-idzebra_src_root=@IDZEBRA_SRC_ROOT@
-idzebra_build_root=@IDZEBRA_BUILD_ROOT@
+idzebra_src_root="@IDZEBRA_SRC_ROOT@"
+idzebra_build_root="@IDZEBRA_BUILD_ROOT@"
 package_suffix=@PACKAGE_SUFFIX@
 
 extralibs="@YAZLIB@ @TCL_LIB@ @EXPAT_LIBS@ @LIBS@ "
