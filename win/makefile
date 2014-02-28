@@ -8,7 +8,8 @@ DEBUG=0   # 0 for release, 1 for debug
 USE_MANIFEST = 1
 
 # TCL is optional - ONLY needed for source straight from Git
-TCL="C:\Tcl\bin\tclsh85.exe"
+TCL=tclsh
+#TCL="C:\Tcl\bin\tclsh85.exe"
 HAVE_TCL=1
 
 # EXPAT is optional. It's required for grs.xml-filters.
