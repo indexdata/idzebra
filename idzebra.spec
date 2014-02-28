@@ -9,7 +9,7 @@ Source: idzebra-%{version}.tar.gz
 BuildRoot: %{_tmppath}/idzebra-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
 URL: http://www.indexdata.com/zebra
-BuildRequires: libyaz4-devel >= 4.2.0
+BuildRequires: libyaz5-devel >= 5.0.0
 BuildRequires: expat-devel, bzip2-devel, tcl, zlib-devel
 Summary: High-performance, structured text indexing and retrival engine.
 Group: Applications/Databases
@@ -33,7 +33,7 @@ boolean search expressions and relevance-ranked free-text queries.
 %package -n lib%{namev}
 Summary: Zebra libraries
 Group: Libraries
-Requires: libyaz4 bzip2-libs
+Requires: libyaz5 bzip2-libs
 %description -n lib%{namev}
 Libraries for the Zebra search engine.
 
@@ -47,7 +47,7 @@ Modules for the Zebra search engine.
 %package -n lib%{namev}-devel
 Summary: Zebra development libraries
 Group: Development/Libraries
-Requires: lib%{namev} = %{version} libyaz4-devel bzip2-devel 
+Requires: lib%{namev} = %{version} libyaz5-devel bzip2-devel 
 %description -n lib%{namev}-devel
 Development libraries for the Zebra search engine.
 

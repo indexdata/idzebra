@@ -3,7 +3,7 @@ Priority: optional
 Maintainer: Adam Dickmeiss <adam@indexdata.dk>
 Standards-Version: 3.6.0
 Build-Depends: debhelper (>= 4.0.0),
- libyaz4-dev (>= 4.2.0),
+ libyaz5-dev (>= 5.0.0),
  libexpat1-dev,
  tcl8.5-dev,
  libbz2-dev,
@@ -99,7 +99,7 @@ Description: utility programs including indexer and server
 Package: libidzebra-2.0-dev
 Section: libdevel
 Architecture: any
-Depends: libidzebra-2.0 (= ${Source-Version})
+Depends: libidzebra-2.0 (= ${Source-Version}), libyaz5-dev
 Description: development files
  This package contains development files for IDZebra, such as libraries
  and header files.
