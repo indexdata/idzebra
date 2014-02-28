@@ -224,26 +224,17 @@
 
   <section id="installation-debian"><title>GNU/Debian</title>
    <section id="installation-debian-linux"><title>GNU/Debian Linux on
-     i686 Platform</title>
+     amd64/i386 Platform</title>
     <para>
-     Index Data provides pre-compiled GNU/Debian i686 Linux packages
-     at our Debian package archive, both for
-     the Sarge and the Etch release.
+     Index Data provides pre-compiled GNU/Debian and Ubuntu packages
+     at our Debian package archive, both for recent releases.
     </para>
 
     <para>
-     To install these packages, you need to add two lines to your
-     <filename>/etc/apt/sources.list</filename> configuration file,
-     either the Sarge sources found at
-     <screen>
-      deb http://ftp.indexdata.dk/debian sarge main
-      deb-src http://ftp.indexdata.dk/debian sarge main
-     </screen>
-     or the Etch sources from
-     <screen>
-      deb http://ftp.indexdata.dk/debian etch main
-      deb-src http://ftp.indexdata.dk/debian etch main
-     </screen>
+     For Debian, refer to 
+     <ulink url="http://ftp.indexdata.dk/pub/zebra/debian/README"/>
+     for how to configure APT. For Ubuntu, refer to
+     <ulink url="http://ftp.indexdata.dk/pub/zebra/ubuntu/README"/>.
      After refreshing the package cache with the command
      <screen>
       apt-get update
@@ -258,23 +249,15 @@
    </section>
 
    <section id="installation-debia-nother">
-    <title>Ubuntu/Debian and GNU/Debian on other platforms</title>
+    <title>GNU/Debian and Ubuntu on other architectures</title>
     <para>
      These <ulink url="&url.idzebra;">&zebra;</ulink>
      packages are specifically compiled for
-     GNU/Debian Linux systems. Installation on other
+     GNU/Debian Linux systems and Ubuntu. Installation on other
      GNU/Debian systems is possible by
      re-compilation the Debian way: you need to add only the
      <literal>deb-src</literal> sources lines to the
      <filename>/etc/apt/sources.list</filename> configuration file,
-     that is either the Sarge sources
-     <screen>
-      deb-src http://ftp.indexdata.dk/debian sarge main
-     </screen>
-     or the Etch sources
-     <screen>
-      deb-src http://ftp.indexdata.dk/debian etch main
-     </screen>
      After refreshing the package cache with the command
      <screen>
       apt-get update
@@ -307,8 +290,7 @@
    <para>
     &zebra; is shipped with "makefiles" for the NMAKE tool that comes
     with <ulink url="&url.vstudio;">Microsoft Visual C++</ulink>.
-    Version 2003 and 2005 has been tested. We expect that zebra compiles
-    with version 6 as well.
+    Version 2003, 2005 and 2008 has been tested.
    </para>
    <para>
     Start a command prompt and switch the sub directory
@@ -333,7 +315,7 @@
       <term><literal>YAZDIR</literal></term>
       <listitem><para>
         Directory of &yaz; source. &zebra;'s makefile expects to find
-        <filename>yaz.lib</filename>, <filename>yaz.dll</filename>
+        YAZ<filename>.lib</filename>, YAZ<filename>.dll</filename>
         in <replaceable>yazdir</replaceable><literal>/lib</literal> and
         <replaceable>yazdir</replaceable><literal>/bin</literal> respectively.
        </para>
