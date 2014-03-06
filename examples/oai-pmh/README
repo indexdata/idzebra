@@ -1,27 +1,20 @@
 Example DOM XML filter configuration using XSLT stylesheets
 
-
 Get some more data to play with:
-   
    cd data
    fetch_OAI_data.sh
    (stop the script when you get tired waiting ..)
    cd ../
-   
 
 Checking manually the retrieval stylesheets:
-
    cat data/debug-record.xml
    xsltproc conf/oai2dc.xsl data/debug-record.xml
    xsltproc conf/oai2zebra.xsl data/debug-record.xml
 
-
 Checking manually the indexing stylesheet:
-
    xsltproc conf/oai2index.xsl data/debug-record.xml
 
 Indexing:
-
    zebraidx -c conf/zebra.cfg init
    zebraidx -c conf/zebra.cfg update data
    zebraidx -c conf/zebra.cfg commit
@@ -29,20 +22,14 @@ Indexing:
 (in case you have not installed zebra yet, use the following command:
     ../../index/zebraidx -c conf/zebra.cfg this and that .. )
 
-
 Starting the SRU/SRW/Z39.50 server in PQF mode only:
-
    zebrasrv -c conf/zebra.cfg 
 
 Or, alternatively, starting the SRU/SRW/Z39.50 server including 
 PQF and CQL query configuration:
-
    zebrasrv -f yazserver.xml
 
-
-
 Z39.50 search:
-
    yaz-client localhost:9999
    Z> format xml
    Z> querytype prefix
@@ -50,15 +37,12 @@ Z39.50 search:
    Z> find the
    Z> show 1+1
 
-
 Z39.50 presents using presentation stylesheets:
-
    Z> elements dc
    Z> show 2+1
 
    Z> elements zebra
    Z> show 3+1
-
 
 Z39.50 buildin Zebra presents (in this configuration only if 
   started without yaz-frontendserver):
@@ -85,9 +69,13 @@ Z39.50 buildin Zebra presents (in this configuration only if
    Z>  elements zebra::facet::any:w,dc_title:w
    Z> show 9+1
    
-
-
 Z39.50 searches targeted at specific indexes
+
+   Z> find @attr 1=title communication
+   Z> show 1+1
+   
+   Z> find @attr 1=author alain
+   Z> show 1+1
 
    Z> elements zebra
    Z> find @attr 1=oai_identifier @attr 4=3 oai:caltechcstr.library.caltech.edu:4
@@ -99,10 +87,7 @@ Z39.50 searches targeted at specific indexes
    Z> find @attr 1=oai_setspec @attr 4=3 7374617475733D756E707562
    Z> show 1+1
    
-   Z> find @attr 1=dc_title communication
-   Z> show 1+1
-
-   Z> find @attr 1=dc_identifier @attr 4=3  
+   Z> find @attr 1=identifier @attr 4=3  
                  http://resolver.caltech.edu/CaltechCSTR:1986.5228-tr-86
    Z> show 1+1
 
@@ -113,14 +98,26 @@ Z39.50 searches targeted at specific indexes
    structure attribute instruction.   
 
    Notice also that searching and scan on indexes
-   'dc_contributor',  'dc_language', 'dc_rights', and 'dc_source' 
+   'contributor',  'language', 'rights', and 'source' 
    fails, simply because none of the records in this example set 
    have these fields set, and consequently, these indexes are 
    _not_ created. 
 
+Z39.50 searches using Bib-1
 
-XXXXXXXX
+- only if bib1.att is referred to from zebra.cfg
 
+   Z> find @attr 1=4 communication
+   Z> show 1+1
+   
+   Z> find @attr 1=1003 alain
+   Z> show 1+1
+
+   Z> find @attr 1=21 all
+   Z> show 1+1
+   
+   Z> find @attr 1=1018 data
+   Z> show 1+1
 
 Z39.50 scan:
 
