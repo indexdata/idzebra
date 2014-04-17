@@ -1,3 +1,10 @@
+--- 2.0.58 2014/03/06
+
+Update OAI example README and allow Bib-1 attribute searches.
+
+Fix ICU indexing test. The code was not really broken, but the test
+program was.
+
 --- 2.0.57 2014/02/28
 
 Deb/RPM/Win Zebra packages uses libyaz5 (rather than libyaz4). This adds

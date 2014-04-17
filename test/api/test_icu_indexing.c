@@ -139,7 +139,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 5=102 " "..rme", 1));
 
     /* Abstract searches . Chinese mostly */
-    YAZ_CHECK(tl_query(zh, "@attr 1=abstract בן", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract בן-שלום", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract צביה", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract הגדול", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract בסיפור", 1));
@@ -153,7 +153,10 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 5=1 בס", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 5=1 ב", 1));
 
-    YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 5=102 בן", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 5=1 בן-שלום", 1));
+    /* below: should be 1, but the dash (-) is probably a problem */
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 5=102 בן-שלום", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=abstract @attr 5=102 צביה", 1));
 
     /* phrase search */
     YAZ_CHECK(tl_query(zh, "@attr 1=title {my computer}", 2));
