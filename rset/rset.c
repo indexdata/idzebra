@@ -343,13 +343,11 @@ TERMID rset_term_create(const char *name, int length, const char *flags,
 			zint hits_limit, const char *ref_id)
 
 {
-    TERMID t;
-    yaz_log (log_level, "term_create '%s' %d f=%s type=%d nmem=%p",
-            name, length, flags, type, nmem);
-    t= (TERMID) nmem_malloc(nmem, sizeof(*t));
+    TERMID t = (TERMID) nmem_malloc(nmem, sizeof(*t));
+
     if (!name)
-        t->name = NULL;
-    else if (length == -1)
+        name = "";
+    if (length == -1)
         t->name = nmem_strdup(nmem, name);
     else
 	t->name = nmem_strdupn(nmem, name, length);
