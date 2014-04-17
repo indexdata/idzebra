@@ -1,3 +1,8 @@
+--- 2.0.59 2014/04/17
+
+Fix 0 ptr reference (crash) during search that occurred due to slightly
+different behavior of YAZ 5.0.22 / YAZ 5.0.23.
+
 --- 2.0.58 2014/03/06
 
 Update OAI example README and allow Bib-1 attribute searches.

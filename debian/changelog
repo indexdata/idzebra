@@ -1,3 +1,9 @@
+idzebra (2.0.59-1.indexdata) unstable; urgency=medium
+
+  * Upstream.
+
+ -- Adam Dickmeiss <adam@indexdata.dk>  Thu, 17 Apr 2014 20:48:31 +0200
+
 idzebra (2.0.58-1.indexdata) unstable; urgency=low
 
   * Upstream.
