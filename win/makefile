@@ -5,7 +5,7 @@
 ###########################################################
 
 DEBUG=0   # 0 for release, 1 for debug
-USE_MANIFEST = 1
+USE_MANIFEST = 0
 
 # TCL is optional - ONLY needed for source straight from Git
 TCL=tclsh
@@ -14,34 +14,29 @@ HAVE_TCL=1
 
 # EXPAT is optional. It's required for grs.xml-filters.
 HAVE_EXPAT=1
-EXPAT_DIR=c:\Program files\Expat 2.0.1
+EXPAT_DIR=c:\Program files (x86)\Expat 2.0.1
 
 # iconv is optional
-HAVE_ICONV=1
+HAVE_ICONV=0
 ICONV_DIR=c:\iconv-1.9.2.win32
 
 # libxslt. For mod_dom and mod_alvis
 HAVE_LIBXSLT=1
-LIBXSLT_DIR=c:\libxslt-1.1.26.win32
+LIBXSLT_DIR=c:\libxslt-1.1.28.win32
 
 # libxml2. Used by libxslt
 HAVE_LIBXML2=1
-LIBXML2_DIR=c:\libxml2-2.7.6.win32
-
-# zlib compression.  Used by libxml2
-ZLIB_DIR = c:\zlib-1.2.3.win32
-
-# get WIN32 binaries libxml2 & iconv & zlib from here:
-#  http://www.zlatkovic.com/libxml.en.html
+LIBXML2_DIR=c:\libxml2-2.9.2.win32
 
 # ICU support
-# get icu libraries from http://www.icu-project.org
 HAVE_ICU=1
 ICU_DIR=c:\icu
-
+ICU_LIB=$(ICU_DIR)\lib
+ICU_BIN=$(ICU_DIR)\bin
+ICU_INCLUDE=$(ICU_DIR)\include
 
 default: all
-all: dirs generate expat iconv libxml2 libxslt icu yaz dll zserver zebraidx tstflock
+all: dirs generate expat iconv yaz dll zserver zebraidx tstflock
 
 # Directories
 # The current directory is supposed to be something like
@@ -171,52 +166,27 @@ iconv:
 
 !if $(HAVE_LIBXML2)
 LIBXML2_LIB="$(LIBXML2_DIR)\lib\libxml2.lib"
-LIBXML2_DEF=/DYAZ_HAVE_XML2=1 /D HAVE_XML2=1 /I"$(LIBXML2_DIR)\include"
-libxml2: $(BINDIR)\libxml2.dll $(BINDIR)\zlib1.dll
-
-$(BINDIR)\libxml2.dll:
-  copy "$(LIBXML2_DIR)\bin\libxml2.dll" $(BINDIR)
-
-$(BINDIR)\zlib1.dll:
-  copy "$(ZLIB_DIR)\bin\zlib1.dll" $(BINDIR)
-
+LIBXML2_DEF=/DYAZ_HAVE_XML2=1 /D HAVE_XML2=1 /I"$(LIBXML2_DIR)\include\libxml2"
 !else
 LIBXML2_LIB=
 LIBXML2_DEF=/D HAVE_XML2=0
-libxml2: 
-
 !endif
 
 !if $(HAVE_LIBXSLT)
 LIBXSLT_LIB="$(LIBXSLT_DIR)\lib\libxslt.lib"
 LIBXSLT_DEF=/D HAVE_XSLT=1 /I"$(LIBXSLT_DIR)\include"
-libxslt: $(BINDIR)\libxslt.dll 
-
-$(BINDIR)\libxslt.dll:
-  copy "$(LIBXSLT_DIR)\bin\libxslt.dll" $(BINDIR)
-
 !else
 LIBXSLT_LIB=
 LIBXSLT_DEF=/D HAVE_XSLT=0
-libxslt: 
 
 !endif
 
 !if $(HAVE_ICU)
-ICU_DEF= /DYAZ_HAVE_ICU=1  /I"$(ICU_DIR)\include"
-ICU_LIB= $(ICU_DIR)\lib\icudt.lib $(ICU_DIR)\lib\icuin.lib $(ICU_DIR)\lib\icuuc.lib
-icu: $(BINDIR)\icudt42.dll $(BINDIR)\icuin42.dll $(BINDIR)\icuuc42.dll
-
-$(BINDIR)\icudt42.dll:
-	  copy "$(ICU_DIR)\bin\icudt42.dll" $(BINDIR)
-$(BINDIR)\icuin42.dll:
-	  copy "$(ICU_DIR)\bin\icuin42.dll" $(BINDIR)
-$(BINDIR)\icuuc42.dll:
-	  copy "$(ICU_DIR)\bin\icuuc42.dll" $(BINDIR)
+ICU_DEF= /DYAZ_HAVE_ICU=1 /I"$(ICU_INCLUDE)"
+ICU_LIBS= $(ICU_LIB)\icudt.lib $(ICU_LIB)\icuin.lib $(ICU_LIB)\icuuc.lib
 !else
 ICU_DEF=  /DYAZ_HAVE_ICU=0
-ICU_LIB=
-icu:
+ICU_LIBS=
 !endif
 
 !if $(HAVE_LIBXSLT)
@@ -305,7 +275,7 @@ MT=echo
 # wsock32.lib  advapi32.lib \
 
 LINK_LIBS= kernel32.lib advapi32.lib \
-	   $(ICONV_LIB) $(EXPAT_LIB) $(LIBXML2_LIB) $(LIBXSLT_LIB) $(ICU_LIB)
+	   $(ICONV_LIB) $(EXPAT_LIB) $(LIBXML2_LIB) $(LIBXSLT_LIB) $(ICU_LIBS)
 
 COMMON_LNK_OPTIONS= /nologo /machine:i386 /incremental:no
 
