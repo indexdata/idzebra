@@ -94,8 +94,6 @@ Section "Zebra Runtime"
 !endif
 	File ..\bin\*.exe
 	File ..\bin\idzebra.dll
-	File ..\bin\iconv.dll
-	File ..\bin\zlib1.dll
 	File ..\bin\libxml2.dll
 	File ..\bin\libxslt.dll
 	File ..\bin\yaz*.dll

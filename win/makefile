@@ -101,7 +101,7 @@ TMP=$(TMPDIR)
 TEMP=$(TMPDIR)
 
 # NSIS
-NSIS="c:\program files\nsis\makensis.exe"
+NSIS="c:\program files (x86)\nsis\makensis.exe"
 
 dist:
 	nmake DEBUG=1 clean
