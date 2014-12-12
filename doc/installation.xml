@@ -10,13 +10,9 @@
    The software is regularly tested on
    <ulink url="&url.debian;">Debian GNU/Linux</ulink>,
    <ulink url="&url.redhat;">Red Hat Linux</ulink>,
-   <ulink url="&url.gentoo;">Gentoo Linux</ulink>,
-   <ulink url="&url.suse;">SuSE Linux</ulink>,
    <ulink url="&url.freebsd;">FreeBSD (i386)</ulink>,
    <ulink url="&url.macosx;">MAC OSX</ulink>,
-   <ulink url="&url.solaris;">SunOS 5.9
-    (sparc)</ulink>,
-   <ulink url="&url.windows2000;">Windows 2000</ulink>.
+   Windows 7.
   </para>
 
   <para>
@@ -279,7 +275,7 @@
    </section>
   </section>
 
-  <section id="installation-win32"><title>WIN32</title>
+  <section id="installation-win32"><title>Windows</title>
    <para>The easiest way to install &zebra; on Windows is by downloading
     an installer from
     <ulink url="&url.idzebra.download.win32;">here</ulink>.
@@ -290,7 +286,7 @@
    <para>
     &zebra; is shipped with "makefiles" for the NMAKE tool that comes
     with <ulink url="&url.vstudio;">Microsoft Visual C++</ulink>.
-    Version 2003, 2005 and 2008 has been tested.
+    Version 2013 has been tested.
    </para>
    <para>
     Start a command prompt and switch the sub directory
@@ -333,19 +329,6 @@
 	Windows version of Expat can be downloaded from
 	<ulink url="&url.expat;">SourceForge</ulink>.
        </para></listitem>
-     </varlistentry>
-
-     <varlistentry>
-      <term><literal>HAVE_ICONV</literal>,
-       <literal>ICONV_DIR</literal></term>
-      <listitem><para>
-        If <literal>HAVE_ICONV</literal> is set to 1, &zebra; is compiled
-        with iconv support. In this configuration, set
-        <literal>ICONV_DIR</literal> to the iconv source directory.
-        Iconv binaries can be downloaded from
-        <ulink url="&url.libxml2.download.win32;">this site</ulink>.
-       </para>
-      </listitem>
      </varlistentry>
 
      <varlistentry>
