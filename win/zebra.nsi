@@ -114,7 +114,7 @@ SectionEnd
 Section "Zebra Documentation"
 	SectionIn 1 2
 	SetOutPath $INSTDIR\doc
-	File /r ..\doc\*.html
+	File /nonfatal /r ..\doc\*.html
 	File /r ..\doc\*.png
 	File /r ..\doc\*.xml
 	File /r ..\doc\*.xsl
