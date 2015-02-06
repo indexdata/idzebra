@@ -160,7 +160,9 @@ static void tst(int argc, char **argv)
 
     /* phrase search */
     YAZ_CHECK(tl_query(zh, "@attr 1=title {my computer}", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title {my-computer}", 2));
     YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=1 {my computer}", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=1 {my-computer}", 2));
     YAZ_CHECK(tl_query(zh, "@attr 1=title {computer x}", 1));
 
     /* complete-subfield search */

@@ -311,40 +311,23 @@ static int term_102_icu(zebra_map_t zm,
 }
 
 static int term_100_icu(zebra_map_t zm,
-                        const char **src, WRBUF term_dict, int space_split,
+                        const char **src, WRBUF term_dict,
                         WRBUF display_term,
-                        int mode)
+                        int mode,
+                        size_t token_number)
 {
     size_t i;
     const char *res_buf = 0;
     size_t res_len = 0;
     const char *display_buf;
     size_t display_len;
-    const char *s0 = *src, *s1;
 
-    while (*s0 == ' ')
-        s0++;
-
-    if (*s0 == '\0')
-        return 0;
-
-    if (space_split)
+    zebra_map_tokenize_start(zm, *src, strlen(*src));
+    for (i = 0; i <= token_number; i++)
     {
-        s1 = s0;
-        while (*s1 && *s1 != ' ')
-            s1++;
-    }
-    else
-        s1 = s0 + strlen(s0);
-
-    *src = s1;
-
-    zebra_map_tokenize_start(zm, s0, s1 - s0);
-
-    if (!zebra_map_tokenize_next(zm, &res_buf, &res_len,
-                                 &display_buf, &display_len))
-    {
-        return 0;
+        if (!zebra_map_tokenize_next(zm, &res_buf, &res_len,
+                                     &display_buf, &display_len))
+            return 0;
     }
     wrbuf_write(display_term, display_buf, display_len);
     if (mode)
@@ -971,7 +954,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			     WRBUF display_term,
                              const char *xpath_use,
 			     struct ord_list **ol,
-                             zebra_map_t zm);
+                             zebra_map_t zm, size_t token_number);
 
 ZEBRA_RES zebra_term_limits_APT(ZebraHandle zh,
                                 Z_AttributesPlusTerm *zapt,
@@ -1018,7 +1001,8 @@ static ZEBRA_RES search_term(ZebraHandle zh,
                              NMEM rset_nmem,
                              RSET *rset,
                              struct rset_key_control *kc,
-                             zebra_map_t zm)
+                             zebra_map_t zm,
+                             size_t token_number)
 {
     ZEBRA_RES res;
     struct ord_list *ol;
@@ -1033,7 +1017,7 @@ static ZEBRA_RES search_term(ZebraHandle zh,
     res = string_term(zh, zapt, term_sub, term_dict,
                       attributeSet, stream, grep_info,
 		      index_type, complete_flag,
-		      display_term, xpath_use, &ol, zm);
+		      display_term, xpath_use, &ol, zm, token_number);
     wrbuf_destroy(term_dict);
     if (res == ZEBRA_OK && *term_sub)
     {
@@ -1061,7 +1045,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			     WRBUF display_term,
                              const char *xpath_use,
 			     struct ord_list **ol,
-                             zebra_map_t zm)
+                             zebra_map_t zm, size_t token_number)
 {
     int r;
     AttrType truncation;
@@ -1125,7 +1109,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             {
             case -1:         /* not specified */
             case 100:        /* do not truncate */
-                if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 0))
+                if (!term_100_icu(zm, &termp, term_dict, display_term, 0, token_number))
                 {
                     *term_sub = 0;
                     return ZEBRA_OK;
@@ -1139,21 +1123,21 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                 }
                 break;
             case 1:          /* right truncation */
-                if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 1))
+                if (!term_100_icu(zm, &termp, term_dict, display_term, 1, token_number))
                 {
                     *term_sub = 0;
                     return ZEBRA_OK;
                 }
                 break;
             case 2:
-                if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 2))
+                if (!term_100_icu(zm, &termp, term_dict, display_term, 2, token_number))
                 {
                     *term_sub = 0;
                     return ZEBRA_OK;
                 }
                 break;
             case 3:
-                if (!term_100_icu(zm, &termp, term_dict, space_split, display_term, 3))
+                if (!term_100_icu(zm, &termp, term_dict, display_term, 3, token_number))
                 {
                     *term_sub = 0;
                     return ZEBRA_OK;
@@ -1424,7 +1408,8 @@ static ZEBRA_RES search_terms_chrmap(ZebraHandle zh,
                           rank_type,
                           xpath_use, rset_nmem,
                           &(*result_sets)[*num_result_sets],
-                          kc, zm);
+                          kc, zm,
+                          *num_result_sets);
 	if (res != ZEBRA_OK)
 	{
 	    int i;
