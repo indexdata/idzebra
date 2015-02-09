@@ -15,7 +15,7 @@
     Go to the <literal>examples/oai-pmh</literal> subdirectory of the
     distribution archive, or make a deep copy of the Debian installation
     directory
-    <literal>/usr/share/idzebra-2.0.-examples/oai-pmh</literal>.
+    <literal>/usr/share/idzebra-2.0-examples/oai-pmh</literal>.
     An XML file containing multiple &acro.oai;
     records is located in the  sub
     directory <literal>examples/oai-pmh/data</literal>.
