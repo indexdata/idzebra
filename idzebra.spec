@@ -1,4 +1,4 @@
-%define idmetaversion %(. ./IDMETA; echo $VERSION|tr -d '\n')
+%define idmetaversion %(. ./IDMETA; echo $VERSION)
 Name: idzebra
 %define namev idzebra-2.0
 Version: %{idmetaversion}
