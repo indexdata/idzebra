@@ -15,7 +15,7 @@ Section: text
 Architecture: any
 Depends: idzebra-2.0-common,
  libidzebra-2.0-dev,
- idzebra-2.0-utils (= ${Source-Version}),
+ idzebra-2.0-utils (= ${source:Version}),
  libidzebra-2.0-modules,
  idzebra-2.0-doc
 Description: virtual package with most components
@@ -84,7 +84,7 @@ Package: idzebra-2.0-utils
 Section: text
 Architecture: any
 Conflicts: idzebra (<= 1.3.36-2)
-Depends: ${shlibs:Depends}, libidzebra-2.0 (= ${Source-Version})
+Depends: ${shlibs:Depends}, libidzebra-2.0 (= ${source:Version})
 Recommends: idzebra-2.0-common
 Suggests: libidzebra-2.0-modules
 Description: utility programs including indexer and server
@@ -99,7 +99,7 @@ Description: utility programs including indexer and server
 Package: libidzebra-2.0-dev
 Section: libdevel
 Architecture: any
-Depends: libidzebra-2.0 (= ${Source-Version}), libyaz5-dev
+Depends: libidzebra-2.0 (= ${source:Version}), libyaz5-dev
 Description: development files
  This package contains development files for IDZebra, such as libraries
  and header files.
