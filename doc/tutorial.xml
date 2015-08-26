@@ -326,7 +326,7 @@
    </para>
 
    <para>
-    We are all set to start the &acro.sru;/acro.z3950; server including
+    We are all set to start the &acro.sru;/&acro.z3950; server including
     &acro.pqf; and &acro.cql; query configuration. It uses the &yaz; frontend
     server configuration - just type
     <screen>
