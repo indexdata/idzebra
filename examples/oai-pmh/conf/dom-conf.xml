@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- this file configures the Zebra DOM XML filter -->
-<!-- see: http://www.indexdata.com/zebra/doc/record-model-dom.html -->
+<!-- see: http://www.indexdata.com/zebra/doc/record-model-domxml.html -->
 
 <dom>
 
