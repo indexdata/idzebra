@@ -66,7 +66,7 @@ Z39.50 buildin Zebra presents (in this configuration only if
    Z> elements zebra::facet::any:w
    Z> show 8+1
 
-   Z>  elements zebra::facet::any:w,dc_title:w
+   Z>  elements zebra::facet::any:w,title:w
    Z> show 9+1
    
 Z39.50 searches targeted at specific indexes
@@ -128,8 +128,8 @@ Z39.50 scan:
    Z> scan @attr 1=oai_datestamp @attr 4=3 1
    Z> scan @attr 1=oai_setspec @attr 4=3 2000
    Z>
-   Z> scan @attr 1=dc_title communication
-   Z> scan @attr 1=dc_identifier @attr 4=3 a
+   Z> scan @attr 1=title communication
+   Z> scan @attr 1=identifier @attr 4=3 a
 
    etc, etc,
 
@@ -254,9 +254,9 @@ http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=fish&startR
 
 http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=fish&startRecord=1&maximumRecords=1&recordSchema=zebra::meta
 
-http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=fish&startRecord=1&maximumRecords=1&recordSchema=zebra::index::dc_description
+http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=fish&startRecord=1&maximumRecords=1&recordSchema=zebra::index::description
 
 http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=fish&startRecord=1&maximumRecords=1&recordSchema=zebra::snippet
 
-http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=fish&startRecord=1&maximumRecords=1&recordSchema=zebra::facet::dc_description:w
+http://localhost:9999/?version=1.1&operation=searchRetrieve&x-pquery=fish&startRecord=1&maximumRecords=1&recordSchema=zebra::facet::description:w
 
