@@ -225,10 +225,8 @@
     correct &acro.pqf; query. For example, to search in titles only,
     we use
     <ulink
-     url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@attr
-     1=title the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
-     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@attr
-     1=title the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
+     url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@attr 1=title the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@attr 1=title the&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
     </ulink>
    </para>
 
@@ -240,13 +238,8 @@
     <literal>description</literal> using the query
     <literal>@and @attr 1=title the @attr 1=description fish</literal>.
     <ulink
-     url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@and
-     @attr 1=title the
-     @attr 1=description
-     fish&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
-     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@and
-     @attr 1=title the
-     @attr 1=description fish&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
+     url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@and @attr 1=title the @attr 1=description fish&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;x-pquery=@and @attr 1=title the @attr 1=description fish&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
     </ulink>
    </para>
 
@@ -354,11 +347,8 @@
     <literal>dc.title=the
      and dc.description=fish</literal> results in the following page
     <ulink
-     url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=dc.title=the
-     and dc.description=fish
-     &amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
-     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=dc.title=the
-     and dc.description=fish &amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
+     url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=dc.title=the and dc.description=fish&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=dc.title=the and dc.description=fish &amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=dc
     </ulink>
    </para>
 
@@ -383,11 +373,8 @@
     schema's of the form
     <literal>zebra::</literal> just work right out of the box
     <ulink
-     url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=dc.title=the
-     and dc.description=fish
-     &amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::snippet">
-     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=dc.title=the
-     and dc.description=fish &amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::snippet
+     url="http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=dc.title=the and dc.description=fish&amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::snippet">
+     http://localhost:9999/?version=1.1&amp;operation=searchRetrieve&amp;query=dc.title=the and dc.description=fish &amp;startRecord=1&amp;maximumRecords=1&amp;recordSchema=zebra::snippet
     </ulink>
    </para>
 
