@@ -2,7 +2,7 @@
 # to default.idx .
 
 # Traditional word index
-# Used if completenss is 'incomplete field' (@attr 6=1) and
+# Used if completeness is 'incomplete field' (@attr 6=1) and
 # structure is word/phrase/word-list/free-form-text/document-text
 index w
 completeness 0
