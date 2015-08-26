@@ -309,7 +309,7 @@
 
    <para>
     The &acro.sru; specification mandates that the &acro.cql; query
-    language is supported and properly configure. Also, the server
+    language is supported and properly configured. Also, the server
     needs to be able to emit a proper  &acro.explain; &acro.xml;
     record, which is used to determine the capabilities of the
     specific server instance.
