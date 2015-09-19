@@ -15,6 +15,7 @@ Checking manually the indexing stylesheet:
    xsltproc conf/oai2index.xsl data/debug-record.xml
 
 Indexing:
+   mkdir tmp
    zebraidx -c conf/zebra.cfg init
    zebraidx -c conf/zebra.cfg update data
    zebraidx -c conf/zebra.cfg commit
@@ -27,7 +28,7 @@ Starting the SRU/SRW/Z39.50 server in PQF mode only:
 
 Or, alternatively, starting the SRU/SRW/Z39.50 server including 
 PQF and CQL query configuration:
-   zebrasrv -f yazserver.xml
+   zebrasrv -f conf/yazserver.xml
 
 Z39.50 search:
    yaz-client localhost:9999
