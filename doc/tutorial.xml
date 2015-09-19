@@ -213,7 +213,7 @@
      any:w
      title:w
      author:w
-     subject:w
+     subject-heading:w
      description:w
      contributor:w
      publisher:w
