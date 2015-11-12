@@ -1,8 +1,8 @@
 This package was debianized by Adam Dickmeiss <adam@indexdata.dk>.
 
-It was downloaded from http://ftp.indexdata.dk/pub/zebra/
+It was downloaded from http://ftp.indexdata.com/pub/zebra
 
-idzebra is Copyright (C) 1995-2008 Index Data ApS
+idzebra is Copyright (C) 1995-2015 Index Data ApS
 
 idzebra is primarily written by Adam Dickmeiss, Heikki Levanto
 and Sebastian Hammer.

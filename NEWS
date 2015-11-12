@@ -1,3 +1,18 @@
+--- 2.0.61 2015/09/15
+
+Upgrade to debhelper version 7
+Not upgrading to version 9 now. It would move libraries and modules
+to /usr/lib/{arch}.
+
+Many documentation fixes. Thanks to David Crossley.
+
+Build: Remove Debian squeeze. Add CentOS 7. Remove Ubuntu Saucy.
+Add Ubuntu Vivid.
+
+Fix modulePath for examples ZEB-665
+
+Fix typo in path to oai-pmh example
+
 --- 2.0.60 2015/02/06
 
 Fix ICU phrase searches for terms split by ICU ZEB-664
