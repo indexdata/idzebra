@@ -14,7 +14,7 @@ HAVE_TCL=1
 
 # EXPAT is optional. It's required for grs.xml-filters.
 HAVE_EXPAT=1
-EXPAT_DIR=c:\Program files (x86)\Expat 2.0.1
+EXPAT_DIR=c:\Program files (x86)\Expat 2.1.0
 
 # iconv is optional
 HAVE_ICONV=0
