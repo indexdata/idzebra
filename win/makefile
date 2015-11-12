@@ -31,8 +31,6 @@ LIBXML2_DIR=c:\libxml2-2.9.2.win32
 # ICU support
 HAVE_ICU=1
 ICU_DIR=c:\icu
-ICU_LIB=$(ICU_DIR)\lib
-ICU_BIN=$(ICU_DIR)\bin
 ICU_INCLUDE=$(ICU_DIR)\include
 
 default: all
@@ -183,10 +181,8 @@ LIBXSLT_DEF=/D HAVE_XSLT=0
 
 !if $(HAVE_ICU)
 ICU_DEF= /DYAZ_HAVE_ICU=1 /I"$(ICU_INCLUDE)"
-ICU_LIBS= $(ICU_LIB)\icudt.lib $(ICU_LIB)\icuin.lib $(ICU_LIB)\icuuc.lib
 !else
-ICU_DEF=  /DYAZ_HAVE_ICU=0
-ICU_LIBS=
+ICU_DEF= /DYAZ_HAVE_ICU=0
 !endif
 
 !if $(HAVE_LIBXSLT)
@@ -275,7 +271,7 @@ MT=echo
 # wsock32.lib  advapi32.lib \
 
 LINK_LIBS= kernel32.lib advapi32.lib \
-	   $(ICONV_LIB) $(EXPAT_LIB) $(LIBXML2_LIB) $(LIBXSLT_LIB) $(ICU_LIBS)
+	   $(ICONV_LIB) $(EXPAT_LIB) $(LIBXML2_LIB) $(LIBXSLT_LIB)
 
 COMMON_LNK_OPTIONS= /nologo /machine:i386 /incremental:no
 
