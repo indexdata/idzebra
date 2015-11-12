@@ -1800,6 +1800,7 @@ static int numeric_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         gen_regular_rel(term_dict, term_value+1, 0);
         break;
     case -1:
+    case 102:
     case 3:
         yaz_log(log_level_rpn, "Relation =");
         if (!term_100(zm, term_sub, term_num, 1, display_term))

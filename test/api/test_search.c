@@ -418,6 +418,9 @@ static void tst(int argc, char **argv)
     /* N=41 and N=49 get only rec2 */
     YAZ_CHECK(tl_query(zh, "@attr 2=3 @attr gils 1=2040 @attr 4=109 \"41 49\" ", 1));
 
+    /* N=41 and N=49, but relevance */
+    YAZ_CHECK(tl_query(zh, "@attr 2=102 @attr gils 1=2040 @attr 4=109 \"41 49\" ", 1));
+
 
     /* = */
     YAZ_CHECK(tl_query(zh, "@attr 1=30 @attr 4=5 @attr 2=3 {2107-09-19 00:00:00}", 1));
