@@ -105,10 +105,10 @@ dist:
 	nmake DEBUG=1 clean
 	nmake DEBUG=0 clean
 	nmake DEBUG=0
-	$(NSIS) zebra.nsi
+	nmake nsis
 
 nsis:
-	$(NSIS) zebra.nsi
+	$(NSIS) /DVSARCH=x86 /DVSVER=14 zebra.nsi
 
 # Targets - what to make
 

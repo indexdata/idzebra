@@ -1,28 +1,42 @@
+!include EnvVarUpdate.nsh
 !include version.nsi
-
-; Microsoft runtime CRT
-; Uncomment exactly ONE of the sections below
-; 1: MSVC 6
-; !define VS_RUNTIME_DLL ""
-; !define VS_RUNTIME_MANIFEST ""
-
-; 2: VS 2003
-; !define VS_RUNTIME_DLL "c:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\Bin\msvcr71.dll"
-; !define VS_RUNTIME_MANIFEST ""
-
-; 3: VS 2005
-; !define VS_RUNTIME_DLL      "c:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\msvcr80.dll"
-; !define VS_RUNTIME_MANIFEST "c:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\Microsoft.VC80.CRT.manifest"
-
-; 4: VS 2008
-; !define VS_RUNTIME_DLL      "c:\Program Files\Microsoft Visual Studio 9.0\VC\redist\x86\Microsoft.VC90.CRT\msvc*90.dll"
-; !define VS_RUNTIME_MANIFEST "c:\Program Files\Microsoft Visual Studio 9.0\VC\redist\x86\Microsoft.VC90.CRT\Microsoft.VC90.CRT.manifest"
-
-; 5: VS 2013
-!define VS_RUNTIME_DLL      "c:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\redist\x86\Microsoft.VC120.CRT\msvc*.dll"
-!define VS_RUNTIME_MANIFEST  ""
-
 !include "MUI.nsh"
+
+!define VS_REDIST_FULL "c:\Program Files (x86)\Microsoft Visual Studio ${VSVER}.0\VC\redist\1033\${VS_REDIST_EXE}"
+
+; For example can be found with regedit:
+;  Microsoft Visual C++ 2013 x86 Minimum Runtime
+!if "${VSARCH}" = "x64"
+; 64-bit
+!if "${VSVER}" = "12"
+!define VS_REDIST_KEY "SOFTWARE\Classes\Installer\Products\6E8D947A316B3EB3F8F540C548BE2AB9"
+!endif
+!if "${VSVER}" = "14"
+; Microsoft Visual C++ 2015 x64 Minimum Runtime - 14.0.23026
+!define VS_REDIST_KEY "SOFTWARE\Classes\Installer\Products\51E9E3D0A7EDB003691F4BFA219B4688"
+!endif
+
+InstallDir "$PROGRAMFILES64\Zebra"
+!else
+; 32-bit
+!if "${VSVER}" = "12"
+!define VS_REDIST_KEY "SOFTWARE\Classes\Installer\Products\21EE4A31AE32173319EEFE3BD6FDFFE3"
+!endif
+!if "${VSVER}" = "14"
+; Microsoft Visual C++ 2015 x86 Minimum Runtime - 14.0.23026
+!define VS_REDIST_KEY "SOFTWARE\Classes\Installer\Products\55E3652ACEB38283D8765E8E9B8E6B57"
+!endif
+
+InstallDir "$PROGRAMFILES\Zebra"
+!endif
+
+!if "${VSVER}" = "14"
+!define VS_REDIST_EXE vc_redist.${VSARCH}.exe
+!else
+!define VS_REDIST_EXE vcredist_${VSARCH}.exe
+!endif
+
+RequestExecutionLevel admin
 
 SetCompressor bzip2
 
@@ -37,7 +51,6 @@ ComponentText "This will install Zebra on your computer:"
 InstType "Full (w/ Source)"
 InstType "Lite (w/o Source)"
 
-InstallDir "$PROGRAMFILES\Zebra"
 InstallDirRegKey HKLM "SOFTWARE\Index Data\Zebra" ""
 
 ;--------------------------------
@@ -47,7 +60,7 @@ InstallDirRegKey HKLM "SOFTWARE\Index Data\Zebra" ""
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_INSTFILES
-  
+
   !insertmacro MUI_UNPAGE_CONFIRM
   !insertmacro MUI_UNPAGE_INSTFILES
 ; Page components
@@ -59,7 +72,7 @@ InstallDirRegKey HKLM "SOFTWARE\Index Data\Zebra" ""
 
 ;--------------------------------
 ;Languages
- 
+
 !insertmacro MUI_LANGUAGE "English"
 
 ;--------------------------------
@@ -88,9 +101,13 @@ SectionEnd ; end of default section
 Section "Zebra Runtime"
 	SectionIn 1 2
 	SetOutPath $INSTDIR\bin
-	File "${VS_RUNTIME_DLL}"
-!if "${VS_RUNTIME_MANIFEST}" != ""
-	File "${VS_RUNTIME_MANIFEST}"
+!if "${VS_REDIST_FULL}" != ""
+	File "${VS_REDIST_FULL}"
+	ReadRegDword $1 HKLM "${VS_REDIST_KEY}" "Version"
+	${If} $1 == ""
+	  ExecWait '"$INSTDIR\bin\${VS_REDIST_EXE}" /passive /nostart'
+	${endif}
+	Delete "$INSTDIR\bin\${VS_REDIST_EXE}"
 !endif
 	File ..\bin\*.exe
 	File ..\bin\idzebra.dll
@@ -171,6 +188,11 @@ Section "Zebra Source"
 	File *.txt
 SectionEnd
 
+Section "Zebra Path"
+	SectionIn 1 2
+	${EnvVarUpdate} $0 "PATH" "A" "HKLM" "$INSTDIR\bin"
+SectionEnd
+
 ; begin uninstall settings/section
 UninstallText "This will uninstall Zebra ${VERSION} from your system"
 
@@ -182,7 +204,8 @@ Section Uninstall
 	ExecWait '"$INSTDIR\bin\zebrasrv" -remove'
 	RMDir /r "$SMPROGRAMS\Index Data\Zebra"
 	RMDir /r $INSTDIR
-        IfFileExists $INSTDIR 0 Removed 
+	${un.EnvVarUpdate} $0 "PATH" "R" "HKLM" "$INSTDIR\bin"
+        IfFileExists $INSTDIR 0 Removed
 		MessageBox MB_OK|MB_ICONEXCLAMATION \
                  "Note: $INSTDIR could not be removed."
 Removed:
