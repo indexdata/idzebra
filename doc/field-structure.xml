@@ -436,20 +436,21 @@
       <term>equivalent <replaceable>value-set</replaceable></term>
       <listitem>
        <para>
-	This directive introduces equivalence classes of characters
-	and/or strings for sorting purposes only. It resembles the map
-	directive, but does not affect search and retrieval indexing,
-	but only sorting order under present requests. 
+	This directive introduces equivalence classes of strings for
+	searching purposes only. It's a one-to-many
+	conversion that takes place only during search before the map
+	directive kicks in.
        </para>
        <para>
-        For example, <literal>scan.chr</literal> contains the following
-        equivalent sorting instructions, which can be uncommented:
+	 For example given:
         <screen><![CDATA[
-         # equivalent æä(ae)
-         # equivalent øö(oe)
-         # equivalent å(aa)
-         # equivalent uü
+         equivalent æä(ae)
         ]]></screen>
+       </para>
+       <para>
+	 a search for the <literal>äsel</literal> will be be match any of
+	 <literal>æsel</literal>, <literal>äsel</literal> and
+	 <literal>aesel</literal>.
        </para>
       </listitem></varlistentry>
     </variablelist>

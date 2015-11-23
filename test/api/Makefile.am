@@ -18,7 +18,7 @@ EXTRA_DIST=zebra.cfg test_trunc.cfg test_private_attset.cfg \
 	test_icu_indexing.cfg test_icu_indexing.idx \
 	test_sort1.cfg test_sort1.idx test_sort1.chr sort1.abs \
 	test_sort2.cfg test_sort2.idx test_sort2.chr sort2.abs \
-	test_safari.cfg test_sort3.cfg 
+	test_safari.cfg test_sort3.cfg string.chr
 
 noinst_LIBRARIES = libtestlib.a
 

@@ -76,6 +76,12 @@ const char *myrec[] = {
         "</title>"
         "</gils>"
         ,
+        "<gils>\n"
+        "<title>"
+        "\xe5" " og vandl" "\xf8" "b"
+        "</title>"
+        "</gils>"
+        ,
 	0} ;
 
 static void tst(int argc, char **argv)
@@ -144,7 +150,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=103 titl", 3));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=103 titlx", 3));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=103 titlxx", 0));
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=103 x", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=103 x", 3));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=103 le", 0));
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=103 .*le", 3));
 
@@ -219,18 +225,18 @@ static void tst(int argc, char **argv)
 
 
     /* string relations, >= */
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=4 x", 2));
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=4 tu", 2));
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=4 title", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=4 x", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=4 tu", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=4 title", 4));
 
     /* string relations, > */
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 x", 0));
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 tu", 2));
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 title", 2));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 x", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 tu", 3));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=5 title", 3));
 
     /* always-matches relation */
-    YAZ_CHECK(tl_query(zh, "@attr 1=_ALLRECORDS @attr 2=103 {ym}", 6));
-    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=103 {x my}", 5));
+    YAZ_CHECK(tl_query(zh, "@attr 1=_ALLRECORDS @attr 2=103 {ym}", 7));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=103 {x my}", 6));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=1 @attr 2=103 {x my}", 0, 114));
 
     /* and searches */
@@ -433,6 +439,14 @@ static void tst(int argc, char **argv)
     /* > */
     YAZ_CHECK(tl_query(zh, "@attr 1=30 @attr 4=5 @attr 2=5 {2107-09-19 00:00:00}", 0));
 
+
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 {\xe5" " og vandl" "\xf8" "b}", 1));
+
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 {\xc5" " OG VANDL" "\xd8" "B}", 1));
+
+    /* try equivalent directive */
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 {aa" " OG VANDL" "\xd8" "B}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 {AA" " OG VANDL" "\xd8" "B}", 0));
 
     YAZ_CHECK(tl_close_down(zh, zs));
 }
