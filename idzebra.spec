@@ -81,7 +81,7 @@ rm -fr ${RPM_BUILD_ROOT}
 
 %files -n %{namev}
 %defattr(-,root,root)
-%doc README LICENSE.zebra NEWS
+%doc README.md LICENSE.zebra NEWS
 %config /usr/share/idzebra-2.0/tab
 %{_bindir}/zebrasrv-*
 %{_bindir}/zebraidx-*

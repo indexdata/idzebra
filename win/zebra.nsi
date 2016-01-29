@@ -93,7 +93,7 @@ Section "" ; (default section)
 		"$INSTDIR\uninst.exe"
 	SetOutPath $INSTDIR
 	File ..\LICENSE.zebra
-	File ..\README
+	File ..\README.md
 	SetOutPath $INSTDIR
 	File /r ..\tab
 SectionEnd ; end of default section
