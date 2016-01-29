@@ -11,7 +11,8 @@ boolean search expressions and relevance-ranked free-text queries.
 
 You'll find documentation in subdirectory 'doc' in various
 formats (HTML, Docbook XML). You can also browse the
-documentation from the zebra home page.
+[documentation](http://www.indexdata.com/zebra/doc) from the Zebra
+home page.
 
 ## Installation
 
@@ -38,6 +39,7 @@ To get more information or assistance, send mail to info@indexdata.dk
 
 We maintain a mailing-list for the purpose of announcing new versions of
 the software, bug-reports, discussion etc. You can sign up at the URL
-[Zebra Mailing list](http://lists.indexdata.dk/cgi-bin/mailman/listinfo/zebralist)
+[Zebra Mailing
+list](http://lists.indexdata.dk/cgi-bin/mailman/listinfo/zebralist)
 
 
