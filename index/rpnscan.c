@@ -214,6 +214,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
     }
     if (rset)
     {
+        RSET rset_snippet = rset; /* use only this for showing scan term */
         zint count;
         /* merge with limit_set if given */
         if (limit_set)
@@ -235,7 +236,7 @@ static int scan_save_set(ZebraHandle zh, ODR stream, NMEM nmem,
             glist[pos].term = 0;
             glist[pos].display_term = 0;
 
-            get_first_snippet_from_rset(zh, rset, hit_snippets, &sysno);
+            get_first_snippet_from_rset(zh, rset_snippet, hit_snippets, &sysno);
             if (sysno)
             {
                 zebra_snippets *rec_snippets = zebra_snippets_create();
