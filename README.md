@@ -5,7 +5,7 @@
 Zebra is a high-performance, general-purpose structured text indexing
 and retrieval engine. It reads structured records in a variety of input
 formats (eg. email, XML, MARC) and allows access to them through exact
-boolean search expressions and relevance-ranked free-text queries. 
+boolean search expressions and relevance-ranked free-text queries.
 
 ## Documentation
 
@@ -17,7 +17,7 @@ home page.
 ## Installation
 
 Install YAZ. Optional external packages: Tcl, iconv, EXPAT, libxml2
-and libxslt1. 
+and libxslt1.
 
 ## Quick compile and install:
 ```
@@ -41,5 +41,3 @@ We maintain a mailing-list for the purpose of announcing new versions of
 the software, bug-reports, discussion etc. You can sign up at the URL
 [Zebra Mailing
 list](http://lists.indexdata.dk/cgi-bin/mailman/listinfo/zebralist)
-
-
