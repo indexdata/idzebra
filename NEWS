@@ -1,3 +1,16 @@
+--- 2.0.62 2016/01/30
+
+Zebra SCM moved to GitHub https://github.com/indexdata/idzebra
+
+Make packages for Ubuntu 15.10/Wily Werewolf.
+
+Fix incorrect scan terms with result set limit. Closes #1
+
+Fix documentation of of chr's equivalent directive ZEB-672
+And add a few tests for the behavior.
+
+Allow @attr 2=102 for numeric index
+
 --- 2.0.61 2015/09/15
 
 Upgrade to debhelper version 7
