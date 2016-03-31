@@ -20,6 +20,7 @@ matrix:
       env:
        - MY_OS=macos
        - INKSCAPE=true
+       - SKIP_CHECK=true
 
 addons:
  apt:
@@ -53,5 +54,5 @@ before_script:
 script:
  - ./configure
  - make INKSCAPE=${INKSCAPE}
- - make INKSCAPE=${INKSCAPE} check
+ - if [[ "$SKIP_CHECK" != "true" ]]; make INKSCAPE=${INKSCAPE} check; fi
 
