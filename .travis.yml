@@ -5,7 +5,7 @@ matrix:
   include:
     - os: linux
       dist: trusty
-      compiler: clang
+      compiler: gcc
       env:
        - MY_OS=trusty
        - INKSCAPE=inkscape
