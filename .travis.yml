@@ -53,7 +53,7 @@ before_script:
  - ./buildconf.sh
 
 script:
- - ./configure
+ - ./configure --disable-mod-grs-regx
  - make INKSCAPE=${INKSCAPE}
  - if [[ "$SKIP_CHECK" != "true" ]]; then make INKSCAPE=${INKSCAPE} check; fi
 
