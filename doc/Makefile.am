@@ -1,5 +1,7 @@
 SUBDIRS = common
 
+INKSCAPE=inkscape
+
 docdir=$(datadir)/doc/$(PACKAGE)$(PACKAGE_SUFFIX)
 
 XMLMAN = zebraidx.xml zebrasrv.xml idzebra-config.xml idzebra-abs2dom.xml
@@ -112,10 +114,10 @@ uninstall-hook:
 	rm -r $(DESTDIR)$(docdir)
 
 domfilter.png: domfilter.svg
-	unset DISPLAY; inkscape --export-png=$@ --export-width=600 $?
+	unset DISPLAY; ${INKSCAPE} --export-png=$@ --export-width=600 $?
 
 domfilter.eps: domfilter.svg
-	unset DISPLAY; inkscape --export-eps=$@ $?
+	unset DISPLAY; ${INKSCAPE} --export-eps=$@ $?
 
 doc-clean:
 	rm -f manref.xml *.html *.pdf *.[0-9] domfilter.png domfilter.eps
