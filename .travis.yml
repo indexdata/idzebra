@@ -55,6 +55,6 @@ before_script:
 
 script:
  - ./configure ${CONFIGURE_OPT}
- - make INKSCAPE=${INKSCAPE}
+ - make INKSCAPE=${INKSCAPE} -j3
  - if [[ "$SKIP_CHECK" != "true" ]]; then make INKSCAPE=${INKSCAPE} check; fi
 
