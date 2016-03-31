@@ -10,6 +10,7 @@ matrix:
        - MY_OS=trusty
        - INKSCAPE=inkscape
        - SKIP_CHECK=true
+       - CONFIGURE_OPT=--disable-mod-grs-regx
     - os: linux
       dist: precise
       compiler: gcc
@@ -53,7 +54,7 @@ before_script:
  - ./buildconf.sh
 
 script:
- - ./configure --disable-mod-grs-regx
+ - ./configure ${CONFIGURE_OPT}
  - make INKSCAPE=${INKSCAPE}
  - if [[ "$SKIP_CHECK" != "true" ]]; then make INKSCAPE=${INKSCAPE} check; fi
 
