@@ -1,0 +1,60 @@
+language: c
+sudo: required
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      compiler: clang
+      env:
+       - MY_OS=trusty
+       - INKSCAPE=inkscape
+       - SKIP_CHECK=true
+       - CONFIGURE_OPT=--disable-mod-grs-regx
+    - os: linux
+      dist: precise
+      compiler: gcc
+      env:
+       - MY_OS=precise
+       - INKSCAPE=inkscape
+    - os: osx
+      osx_image: xcode7.2
+      env:
+       - MY_OS=macos
+       - INKSCAPE=true
+       - SKIP_CHECK=true
+
+addons:
+ apt:
+  packages:
+   - autoconf
+   - autotools-dev
+   - automake
+   - docbook
+   - docbook-xml
+   - docbook-xsl
+   - libexpat1-dev
+   - libgnutls-dev
+   - libreadline-dev
+   - libtool
+   - libxslt1-dev
+   - make
+   - pkg-config
+   - tcl8.5
+   - xsltproc
+   - inkscape
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install pkg-config yaz; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./test/travis/travis-init.sh; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -yq libyaz5-dev; fi
+
+before_script:
+ - ./buildconf.sh
+
+script:
+ - ./configure ${CONFIGURE_OPT}
+ - make INKSCAPE=${INKSCAPE}
+ - if [[ "$SKIP_CHECK" != "true" ]]; then make INKSCAPE=${INKSCAPE} check; fi
+
