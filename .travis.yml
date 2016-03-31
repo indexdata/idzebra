@@ -3,12 +3,13 @@ sudo: required
 
 matrix:
   include:
-#    - os: linux
-#      dist: trusty
-#      compiler: clang
-#      env:
-#       - MY_OS=trusty
-#       - INKSCAPE=inkscape
+    - os: linux
+      dist: trusty
+      compiler: clang
+      env:
+       - MY_OS=trusty
+       - INKSCAPE=inkscape
+       - SKIP_CHECK=true
     - os: linux
       dist: precise
       compiler: gcc
