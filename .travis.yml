@@ -8,15 +8,18 @@ matrix:
       compiler: clang
       env:
        - MY_OS=trusty
+       - INKSCAPE=inkscape
     - os: linux
       dist: precise
       compiler: gcc
       env:
        - MY_OS=precise
+       - INKSCAPE=true
     - os: osx
       osx_image: xcode7.2
       env:
        - MY_OS=macos
+       - INKSCAPE=true
 
 addons:
  apt:
@@ -48,5 +51,7 @@ before_script:
  - ./buildconf.sh
 
 script:
- - ./configure && make && make check
+ - ./configure
+ - make INKSCAPE=${INKSCAPE}
+ - make INKSCAPE=${INKSCAPE} check
 
