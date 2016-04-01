@@ -18,7 +18,6 @@ matrix:
        - MY_OS=precise
        - INKSCAPE=inkscape
     - os: osx
-      osx_image: xcode7.2
       env:
        - MY_OS=macos
        - INKSCAPE=true
