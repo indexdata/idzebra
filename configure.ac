@@ -246,7 +246,7 @@ oldCPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS $YAZINC"
 AC_PREPROC_IFELSE(
    [AC_LANG_PROGRAM([[
-#if YAZ_HAVE_XML2
+#if YAZ_HAVE_XSLT
 #include <libxml/xmlversion.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -254,7 +254,7 @@ AC_PREPROC_IFELSE(
 #include <libxslt/transform.h>
 #include <libxslt/xsltutils.h>
 #else
-#error Libxml2 not available
+#error Libxslt not available
 #endif
 ]],[[
 #if LIBXML_VERSION < 20615
