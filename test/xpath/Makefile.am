@@ -1,3 +1,4 @@
+AUTOMAKE_OPTIONS = serial-tests
 
 check_PROGRAMS = xpath1 xpath2 xpath3 xpath4 xpath5 xpath6
 

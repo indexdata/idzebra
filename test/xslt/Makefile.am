@@ -1,3 +1,4 @@
+AUTOMAKE_OPTIONS = serial-tests
 
 check_PROGRAMS = xslt1 xslt2 xslt3 xslt4 xslt5 dom1
 TESTS = $(check_PROGRAMS)

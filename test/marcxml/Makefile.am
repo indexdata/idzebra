@@ -1,3 +1,4 @@
+AUTOMAKE_OPTIONS = serial-tests
 
 check_PROGRAMS = t1 t2
 

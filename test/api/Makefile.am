@@ -1,4 +1,6 @@
 
+AUTOMAKE_OPTIONS = serial-tests
+
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c 
 

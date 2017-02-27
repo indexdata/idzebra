@@ -1,3 +1,4 @@
+AUTOMAKE_OPTIONS = serial-tests
 
 check_PROGRAMS = text grs.xml grs.xml.idzebra grs.marc
 
