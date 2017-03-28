@@ -515,7 +515,9 @@ static ZEBRA_RES rec_flush_shared(Records p, short ref_count, zint *sysnos,
     ZEBRA_RES ret = ZEBRA_OK;
     if (ref_count)
     {
+#if HAVE_BZIB_H
         int i;
+#endif
 	unsigned int csize = 0;  /* indicate compression "not performed yet" */
 	char compression_method = p->compression_method;
 	switch (compression_method)

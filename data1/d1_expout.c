@@ -443,7 +443,7 @@ static Z_DatabaseList *f_databaseList(ExpHandle *eh, data1_node *n)
 
     for (c = n->child; c; c = c->next)
     {
-	if (!is_numeric_tag (eh, c) != 102)
+	if (is_numeric_tag (eh, c) != 102)
 	    continue;
 	++i;
     }
@@ -457,7 +457,7 @@ static Z_DatabaseList *f_databaseList(ExpHandle *eh, data1_node *n)
     i = 0;
     for (c = n->child; c; c = c->next)
     {
-	if (!is_numeric_tag (eh, c) != 102)
+	if (is_numeric_tag (eh, c) != 102)
 	    continue;
 	res->databases[i++] = f_string (eh, c);
     }
@@ -686,7 +686,7 @@ static Z_TargetInfo *f_targetInfo(ExpHandle *eh, data1_node *n)
 	    res->num_dbCombinations = 0;
 	    for (n = c->child; n; n = n->next)
 	    {
-		if (!is_numeric_tag(eh, n) != 605)
+		if (is_numeric_tag(eh, n) != 605)
 		    continue;
 		(res->num_dbCombinations)++;
 	    }
@@ -696,7 +696,7 @@ static Z_TargetInfo *f_targetInfo(ExpHandle *eh, data1_node *n)
 				* sizeof(*res->dbCombinations));
 	    for (n = c->child; n; n = n->next)
 	    {
-		if (!is_numeric_tag(eh, n) != 605)
+		if (is_numeric_tag(eh, n) != 605)
 		    continue;
 		res->dbCombinations[i++] = f_databaseList (eh, n);
 	    }
@@ -709,7 +709,7 @@ static Z_TargetInfo *f_targetInfo(ExpHandle *eh, data1_node *n)
 	    res->num_languages = 0;
 	    for (n = c->child; n; n = n->next)
 	    {
-		if (!is_numeric_tag(eh, n) != 126)
+		if (is_numeric_tag(eh, n) != 126)
 		    continue;
 		(res->num_languages)++;
 	    }
@@ -719,7 +719,7 @@ static Z_TargetInfo *f_targetInfo(ExpHandle *eh, data1_node *n)
 				sizeof(*res->languages));
 	    for (n = c->child; n; n = n->next)
 	    {
-		if (!is_numeric_tag(eh, n) != 126)
+		if (is_numeric_tag(eh, n) != 126)
 		    continue;
 		res->languages[i++] = f_string (eh, n);
 	    }
@@ -810,7 +810,7 @@ static Z_DatabaseInfo *f_databaseInfo(ExpHandle *eh, data1_node *n)
 	    res->num_keywords = 0;
 	    for (n = c->child; n; n = n->next)
 	    {
-		if (!is_numeric_tag(eh, n) != 1000)
+		if (is_numeric_tag(eh, n) != 1000)
 		    continue;
 		(res->num_keywords)++;
 	    }
@@ -820,7 +820,7 @@ static Z_DatabaseInfo *f_databaseInfo(ExpHandle *eh, data1_node *n)
 				* sizeof(*res->keywords));
 	    for (n = c->child; n; n = n->next)
 	    {
-		if (!is_numeric_tag(eh, n) != 1000)
+		if (is_numeric_tag(eh, n) != 1000)
 		    continue;
 		res->keywords[i++] = f_humstring (eh, n);
 	    }
