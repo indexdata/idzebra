@@ -62,15 +62,11 @@ static const struct rset_control control =
     rset_no_write,
 };
 
-#define STARTTAG 0
-#define HIT 1
-#define STOPTAG 2
-#define ATTRTAG 3
-
 struct rset_between_info {
     TERMID startterm; /* pseudo terms for detecting which one we read from */
     TERMID stopterm;
     TERMID attrterm;
+    TERMID hit2_term;
 };
 
 struct rset_between_rfd {
@@ -82,6 +78,8 @@ struct rset_between_rfd {
     int attrbufok; /* we have seen the first attr tag, can compare */
     int depth; /* number of start-tags without end-tags */
     int attrdepth; /* on what depth the attr matched */
+    int match_1;
+    int match_2;
     zint hits;
 };
 
@@ -102,42 +100,45 @@ static void checkterm(RSET rs, char *tag, NMEM nmem)
 
 
 RSET rset_create_between(NMEM nmem, struct rset_key_control *kcontrol,
-                         int scope,
-                         RSET rset_l, RSET rset_m, RSET rset_r, RSET rset_attr)
+                         int scope, RSET rset_l, RSET rset_m1, RSET rset_m2,
+                         RSET rset_r, RSET rset_attr)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, 0, 0, 0);
     struct rset_between_info *info=
         (struct rset_between_info *) nmem_malloc(rnew->nmem,sizeof(*info));
-    RSET rsetarray[4];
-    int n = 4;
+    RSET rsetarray[5];
+    int n = 0;
 
     if (!log_level_initialized)
     {
         log_level = yaz_log_module_level("rsbetween");
         log_level_initialized = 1;
     }
-    rsetarray[STARTTAG] = rset_l;
-    rsetarray[HIT] = rset_m;
-    rsetarray[STOPTAG] = rset_r;
-    rsetarray[ATTRTAG] = rset_attr;
+    rsetarray[n++] = rset_l;
+    checkterm(rset_l, "(start)", nmem);
+    info->startterm = rset_l->term;
 
-    /* make sure we have decent terms for all rsets. Create dummies if needed*/
-    checkterm(rsetarray[STARTTAG], "(start)", nmem);
-    checkterm(rsetarray[STOPTAG], "(start)", nmem);
-    info->startterm = rsetarray[STARTTAG]->term;
-    info->stopterm = rsetarray[STOPTAG]->term;
+    rsetarray[n++] = rset_r;
+    checkterm(rset_r, "(end)", nmem);
+    info->stopterm = rset_r->term;
+
+    rsetarray[n++] = rset_m1;
+    if (rset_m2)
+    {
+        rsetarray[n++] = rset_m2;
+        info->hit2_term = rset_m2->term;
+    }
+    else
+        info->hit2_term = NULL;
 
     if (rset_attr)
     {
-        checkterm(rsetarray[ATTRTAG], "(start)", nmem);
-        info->attrterm = rsetarray[ATTRTAG]->term;
-        n = 4;
+        rsetarray[n++] = rset_attr;
+        checkterm(rset_attr, "(attr)", nmem);
+        info->attrterm = rset_attr->term;
     }
     else
-    {
         info->attrterm = NULL;
-        n = 3;
-    }
     rnew->no_children = 1;
     rnew->children = nmem_malloc(rnew->nmem, sizeof(RSET *));
     rnew->children[0] = rset_create_and(nmem, kcontrol,
@@ -255,6 +256,7 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
             yaz_log(log_level, "new record");
             p->depth = 0;
             p->attrdepth = 0;
+            p->match_1 = p->match_2 = 0;
             memcpy(p->recbuf, buf, kctrl->key_size);
         }
 
@@ -273,6 +275,8 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
             if (p->depth == p->attrdepth)
                 p->attrdepth = 0; /* ending the tag with attr match */
             p->depth--;
+            if (p->depth == 0)
+                p->match_1 = p->match_2 = 0;
             yaz_log(log_level,"read end tag. d=%d ad=%d", p->depth,
 		    p->attrdepth);
         }
@@ -287,10 +291,19 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
         { /* mut be a real hit */
             if (p->depth && p->attrdepth)
             {
-                p->hits++;
-                yaz_log(log_level,"got a hit h="ZINT_FORMAT" d=%d ad=%d",
-                        p->hits, p->depth, p->attrdepth);
-                return 1; /* we have everything in place already! */
+                if (!info->hit2_term)
+                    p->match_1 = p->match_2 = 1;
+                else if (*term == info->hit2_term)
+                    p->match_2 = 1;
+                else
+                    p->match_1 = 1;
+                if (p->match_1 && p->match_2)
+                {
+                    p->hits++;
+                    yaz_log(log_level,"got a hit h="ZINT_FORMAT" d=%d ad=%d",
+                            p->hits, p->depth, p->attrdepth);
+                    return 1; /* we have everything in place already! */
+                }
             } else
                 yaz_log(log_level, "Ignoring hit. h="ZINT_FORMAT" d=%d ad=%d",
                         p->hits, p->depth, p->attrdepth);

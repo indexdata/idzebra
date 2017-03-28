@@ -963,6 +963,11 @@ static void set_record_info(struct filter_info *tinfo,
 }
 
 
+static void process_xml_element_node(struct filter_info *tinfo,
+                                     struct recExtractCtrl *extctr,
+                                     RecWord* recword,
+                                     xmlNodePtr node);
+
 /* DOM filter style indexing */
 static void process_xml_element_zebra_node(struct filter_info *tinfo,
                                            struct recExtractCtrl *extctr,
@@ -989,6 +994,39 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
                             "bad attribute @%s, expected @name",
                             attr->name);
                 }
+            }
+        }
+        else if (0 == XML_STRCMP(node->name, "section"))
+        {
+            if (node->children)
+            {
+                recword->term_buf = "begin";
+                recword->term_len = 5;
+                recword->index_name = "group";
+                recword->index_type = "0";
+
+                if (extctr->flagShowRecords)
+                    dom_log(YLOG_LOG, tinfo, 0,
+                            "INDEX '%s:%s' '%s'",
+                            (const char *) recword->index_name,
+                            (const char *) recword->index_type,
+                            (const char *) recword->term_buf);
+                (extctr->tokenAdd)(recword);
+
+                for (node = node->children; node; node = node->next)
+                    process_xml_element_node(tinfo, extctr, recword,
+                                             node);
+                recword->term_buf = "end";
+                recword->term_len = 3;
+                recword->index_name = "group";
+                recword->index_type = "0";
+                if (extctr->flagShowRecords)
+                    dom_log(YLOG_LOG, tinfo, 0,
+                            "INDEX '%s:%s' '%s'",
+                            (const char *) recword->index_name,
+                            (const char *) recword->index_type,
+                            (const char *) recword->term_buf);
+                (extctr->tokenAdd)(recword);
             }
         }
         else if (0 == XML_STRCMP(node->name, "record"))
