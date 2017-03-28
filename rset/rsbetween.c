@@ -66,7 +66,7 @@ struct rset_between_info {
     TERMID startterm; /* pseudo terms for detecting which one we read from */
     TERMID stopterm;
     TERMID attrterm;
-    TERMID hit2_term;
+    TERMID *hit2_terms;
 };
 
 struct rset_between_rfd {
@@ -126,10 +126,19 @@ RSET rset_create_between(NMEM nmem, struct rset_key_control *kcontrol,
     if (rset_m2)
     {
         rsetarray[n++] = rset_m2;
-        info->hit2_term = rset_m2->term;
+        /* hard to work do determine whether we get results from
+           rset_m2 or rset_m1 */
+        info->hit2_terms = (TERMID*)
+            nmem_malloc(nmem, (2 + rset_m2->no_children) * sizeof(TERMID));
+        int i;
+        for (i = 0; i < rset_m2->no_children; i++) /* sub terms */
+            info->hit2_terms[i] = rset_m2->children[i]->term;
+        if (rset_m2->term) /* immediate term */
+            info->hit2_terms[i++] = rset_m2->term;
+        info->hit2_terms[i] = 0;
     }
     else
-        info->hit2_term = NULL;
+        info->hit2_terms = NULL;
 
     if (rset_attr)
     {
@@ -291,12 +300,19 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
         { /* mut be a real hit */
             if (p->depth && p->attrdepth)
             {
-                if (!info->hit2_term)
+                if (!info->hit2_terms)
                     p->match_1 = p->match_2 = 1;
-                else if (*term == info->hit2_term)
-                    p->match_2 = 1;
                 else
-                    p->match_1 = 1;
+                {
+                    int i;
+                    for (i = 0; info->hit2_terms[i]; i++)
+                        if (info->hit2_terms[i] == *term)
+                            break;
+                    if (info->hit2_terms[i])
+                        p->match_2 = 1;
+                    else
+                        p->match_1 = 1;
+                }
                 if (p->match_1 && p->match_2)
                 {
                     p->hits++;
