@@ -145,6 +145,29 @@ void tst(int argc, char **argv)
 
     zebra_close(zh);
 
+    zh = index_some(zs, "dom.biblio-config.xml", "biblio-record.xml");
+    YAZ_CHECK(tl_query(zh, "@attr 1=Author leary", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=Author valen", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=Author {valen line}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=Author {valen, line}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=Relator-term medarb", 1));
+    YAZ_CHECK(tl_query(zh, "@and "
+                       "@attr 1=Author valen "
+                       "@attr 1=Relator-term medarb", 1));
+    YAZ_CHECK(tl_query(zh, "@and "
+                       "@attr 1=Author {leary ian} "
+                       "@attr 1=Relator-term medarb", 1));
+    YAZ_CHECK(tl_query(zh, "@prox 0 0 0 0 k 8 "
+                       "@attr 1=Author leary "
+                       "@attr 1=Relator-term medarb", 1));
+    YAZ_CHECK(tl_query(zh, "@prox 0 0 0 0 k 8 "
+                       "@attr 1=Author valen "
+                       "@attr 1=Relator-term medarb", 0));
+    YAZ_CHECK(tl_query(zh, "@prox 0 0 0 0 k 8 "
+                       "@attr 1=Author {leary ian} "
+                       "@attr 1=Relator-term medarb", 1));
+    zebra_close(zh);
+
     /* testing indexing of bad UTF-8 encoded MARC record */
     zh = index_some(zs, "dom.dom-config-utf8.xml", "bad-utf8.mrc");
     zebra_close(zh);
