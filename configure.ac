@@ -20,6 +20,7 @@ dnl ------ Substitutions
 AC_SUBST([TCL_INCLUDE])
 AC_SUBST([TCL_LIB])
 AC_SUBST([ZEBRA_CFLAGS])
+AC_SUBST([AR_FLAGS],[cr])
 dnl
 dnl ------ Checking programs
 AC_PROG_CC
