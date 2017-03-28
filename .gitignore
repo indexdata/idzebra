@@ -13,6 +13,7 @@ Doxyfile
 dox
 ChangeLog
 *~
+*.trs
 win/version.nsi
 build-stamp
 config.guess
