@@ -230,14 +230,16 @@
    </section>
 
    <section id="record-model-domxml-pipeline-store">
-    <title>Store pipeline</title>
-    The <literal>&lt;store&gt;</literal> pipeline takes documents
-    from any common &acro.dom;  &acro.xml; format to the &zebra; specific
-    storage &acro.dom;  &acro.xml; format.
-    It may consist of zero ore more
-    <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
-    &acro.xslt; transformations, and the outcome is handled to the
-    &zebra; core for deposition into the internal storage system.
+     <title>Store pipeline</title>
+     <para>
+     The <literal>&lt;store&gt;</literal> pipeline takes documents
+     from any common &acro.dom;  &acro.xml; format to the &zebra; specific
+     storage &acro.dom;  &acro.xml; format.
+     It may consist of zero ore more
+     <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
+     &acro.xslt; transformations, and the outcome is handled to the
+     &zebra; core for deposition into the internal storage system.
+    </para>
    </section>
 
    <section id="record-model-domxml-pipeline-retrieve">
