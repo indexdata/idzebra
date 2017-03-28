@@ -11,12 +11,6 @@ matrix:
        - INKSCAPE=inkscape
        - SKIP_CHECK=true
        - CONFIGURE_OPT=--disable-mod-grs-regx
-    - os: linux
-      dist: precise
-      compiler: gcc
-      env:
-       - MY_OS=precise
-       - INKSCAPE=inkscape
     - os: osx
       env:
        - MY_OS=macos
