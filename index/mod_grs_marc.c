@@ -49,7 +49,6 @@ static data1_node *grs_read_iso2709(struct grs_read_info *p, int marc_xml)
     int end_of_directory;
     int length_data_entry;
     int length_starting;
-    int length_implementation;
     int read_bytes;
 #if MARC_DEBUG
     FILE *outf = stdout;
@@ -148,7 +147,6 @@ static data1_node *grs_read_iso2709(struct grs_read_info *p, int marc_xml)
 
     length_data_entry = atoi_n(buf+20, 1);
     length_starting = atoi_n(buf+21, 1);
-    length_implementation = atoi_n(buf+22, 1);
 
     for (entry_p = 24; buf[entry_p] != ISO2709_FS; )
     {

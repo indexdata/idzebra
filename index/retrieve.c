@@ -741,15 +741,14 @@ static int perform_facet_index(ZebraHandle zh,
 
     for (rec_i = 0; rec_i < num_recs; rec_i++)
     {
-        int ret;
         int j;
         zint sysnos[MAX_SYSNOS_PER_RECORD];
         int no_sysnos = MAX_SYSNOS_PER_RECORD;
         if (!poset[rec_i].sysno)
             continue;
-        ret = zebra_result_recid_to_sysno(zh, fi->setname,
-                                          poset[rec_i].sysno,
-                                          sysnos, &no_sysnos);
+        zebra_result_recid_to_sysno(zh, fi->setname,
+                                    poset[rec_i].sysno,
+                                    sysnos, &no_sysnos);
         assert(no_sysnos > 0);
         yaz_log(YLOG_DEBUG, "Analyzing rec=%d ISAM sysno=" ZINT_FORMAT " chunks=%d",
                 rec_i, poset[rec_i].sysno, no_sysnos);
