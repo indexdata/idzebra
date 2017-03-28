@@ -362,7 +362,8 @@
        <listitem>
 	<para>There must be exactly one <literal>record</literal>
 	 instruction, which sets the scope for the following,
-	 possibly nested <literal>index</literal> instructions.
+	 possibly nested <literal>index</literal> and
+	 <literal>section</literal> instructions.
 	</para>
        </listitem>
        <listitem>
@@ -480,6 +481,23 @@
          the <literal>&lt;extract&gt;</literal> and
          <literal>&lt;store&gt;</literal> pipelines is discarded.
 	 A warning is issued in the logs.
+	</para>
+       </listitem>
+       <listitem>
+	<para>
+	 The <literal>section</literal> can be used to group
+	 indexing material for proximity search. It can be used to
+	 search for material that should all occur within the same
+	 section. It takes an optional <literal>unit</literal> attribute
+	 which can be one of known Z39.50 proximity units:
+	 <literal>sentence</literal> (3),
+	 <literal>paragraph</literal> (4),
+         <literal>section</literal> (5),
+         <literal>chapter</literal> (6),
+         <literal>"document</literal> (7),
+         <literal>element</literal> (8),
+	 <literal>subelement</literal> (9),
+         <literal>elementType</literal> (10).
 	</para>
        </listitem>
       </itemizedlist>
