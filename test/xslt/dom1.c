@@ -166,6 +166,9 @@ void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@prox 0 0 0 0 k 8 "
                        "@attr 1=Author {leary ian} "
                        "@attr 1=Relator-term medarb", 1));
+    YAZ_CHECK(tl_query(zh, "@prox 0 0 0 0 k 6 "
+                       "@attr 1=Author {leary ian} "
+                       "@attr 1=Relator-term medarb", 0));
     zebra_close(zh);
 
     /* testing indexing of bad UTF-8 encoded MARC record */

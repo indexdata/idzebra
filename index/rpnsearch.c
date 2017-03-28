@@ -1467,12 +1467,13 @@ static ZEBRA_RES search_terms_list(ZebraHandle zh,
 }
 
 static RSET search_group(ZebraHandle zh,
+                         const char *unit,
                          const char *term,
                          NMEM rset_nmem,
                          struct rset_key_control *kc)
 {
     zinfo_index_category_t cat = zinfo_index_category_index;
-    int ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat, "0", "group");
+    int ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat, "0", unit);
     if (ord == -1)
         return 0;
     char ord_buf[32];
@@ -2696,11 +2697,26 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
                                             *zop->u.prox->relationType,
                                             *zop->u.prox->distance );
                 }
-                else if (*zop->u.prox->u.known == Z_ProxUnit_element &&
-                    *num_result_sets == 2)
+                else if (*zop->u.prox->u.known >= 3 &&
+                         *zop->u.prox->u.known <= 10 &&
+                         *num_result_sets == 2)
                 {
-                    RSET begin_set = search_group(zh, "begin", rset_nmem, kc);
-                    RSET end_set = search_group(zh, "end", rset_nmem, kc);
+                    /* Z39.50 known proximity units */
+                    static const char *units[] = {
+                        "sentence",   /* (3) */
+                        "paragraph",  /* (4) */
+                        "section",    /* (5) */
+                        "chapter",    /* (6) */
+                        "document",   /* (7) */
+                        "element",    /* (8) */
+                        "subelement", /* (9) */
+                        "elementType" /* (10) */
+                    };
+                    const char *unit = units[*zop->u.prox->u.known - 3];
+                    RSET begin_set = search_group(zh, unit, "begin",
+                                                  rset_nmem, kc);
+                    RSET end_set = search_group(zh, unit, "end",
+                                                rset_nmem, kc);
                     if (begin_set && end_set)
                     {
                         rset = rset_create_between(
@@ -2708,6 +2724,14 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
                             begin_set,
                             (*result_sets[0]), (*result_sets)[1], end_set,
                             0 /* rset_attr */);
+                    }
+                    else
+                    {
+                        if (begin_set)
+                            rset_delete(begin_set);
+                        if (end_set)
+                            rset_delete(end_set);
+                        rset = rset_create_null(rset_nmem, kc, 0);
                     }
 		}
                 else

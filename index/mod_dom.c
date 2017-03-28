@@ -998,11 +998,25 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
         }
         else if (0 == XML_STRCMP(node->name, "section"))
         {
+            const char *unit_p = "element";
+
+            struct _xmlAttr *attr;
+            for (attr = node->properties; attr; attr = attr->next)
+            {
+                if (attr_content(attr, "unit", &unit_p))
+                    ;
+                else
+                {
+                    dom_log(YLOG_WARN, tinfo, node,
+                            "bad attribute @%s, expected @unit",
+                            attr->name);
+                }
+            }
             if (node->children)
             {
                 recword->term_buf = "begin";
                 recword->term_len = 5;
-                recword->index_name = "group";
+                recword->index_name = unit_p;
                 recword->index_type = "0";
 
                 if (extctr->flagShowRecords)
@@ -1018,7 +1032,7 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
                                              node);
                 recword->term_buf = "end";
                 recword->term_len = 3;
-                recword->index_name = "group";
+                recword->index_name = unit_p;
                 recword->index_type = "0";
                 if (extctr->flagShowRecords)
                     dom_log(YLOG_LOG, tinfo, 0,
