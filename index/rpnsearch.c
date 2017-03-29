@@ -2735,7 +2735,11 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
                             rset_delete(begin_set);
                         if (end_set)
                             rset_delete(end_set);
-                        rset = rset_create_null(rset_nmem, kc, 0);
+                        zebra_setError_zint(zh,
+                                            YAZ_BIB1_UNSUPP_PROX_UNIT_CODE,
+                                            *zop->u.prox->u.known);
+                        return ZEBRA_FAIL;
+
                     }
 		}
                 else

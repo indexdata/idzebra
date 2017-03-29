@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <config.h>
 #endif
 #include <yaz/test.h>
+#include <yaz/diagbib1.h>
 #include "testlib.h"
 
 
@@ -169,9 +170,10 @@ void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@prox 0 0 0 0 k 8 "
                        "@attr 1=Relator-term medarb "
                        "@attr 1=Author {leary ian}", 1));
-    YAZ_CHECK(tl_query(zh, "@prox 0 0 0 0 k 6 "
-                       "@attr 1=Author {leary ian} "
-                       "@attr 1=Relator-term medarb", 0));
+    YAZ_CHECK(tl_query_x(zh, "@prox 0 0 0 0 k 6 "
+                         "@attr 1=Author {leary ian} "
+                         "@attr 1=Relator-term medarb", 0,
+                         YAZ_BIB1_UNSUPP_PROX_UNIT_CODE));
     zebra_close(zh);
 
     /* testing indexing of bad UTF-8 encoded MARC record */
