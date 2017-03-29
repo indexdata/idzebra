@@ -996,7 +996,7 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
                 }
             }
         }
-        else if (0 == XML_STRCMP(node->name, "section"))
+        else if (0 == XML_STRCMP(node->name, "group"))
         {
             const char *unit_p = "element";
 
@@ -1015,7 +1015,7 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
             if (node->children)
             {
                 WRBUF w = wrbuf_alloc();
-                wrbuf_puts(w, ZEBRA_SECTION_INDEX_NAME);
+                wrbuf_puts(w, ZEBRA_GROUP_INDEX_NAME);
                 wrbuf_puts(w, unit_p);
                 recword->term_buf = "begin";
                 recword->term_len = 5;

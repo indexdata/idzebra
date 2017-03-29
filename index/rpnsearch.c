@@ -1474,7 +1474,7 @@ static RSET search_group(ZebraHandle zh,
 {
     zinfo_index_category_t cat = zinfo_index_category_index;
     WRBUF w = wrbuf_alloc();
-    wrbuf_puts(w, ZEBRA_SECTION_INDEX_NAME);
+    wrbuf_puts(w, ZEBRA_GROUP_INDEX_NAME);
     wrbuf_puts(w, unit);
     int ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat, "0",
                                            wrbuf_cstr(w));

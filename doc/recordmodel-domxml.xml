@@ -363,7 +363,7 @@
 	<para>There must be exactly one <literal>record</literal>
 	 instruction, which sets the scope for the following,
 	 possibly nested <literal>index</literal> and
-	 <literal>section</literal> instructions.
+	 <literal>group</literal> instructions.
 	</para>
        </listitem>
        <listitem>
@@ -485,20 +485,32 @@
        </listitem>
        <listitem>
 	<para>
-	 The <literal>section</literal> can be used to group
+	 The <literal>group</literal> can be used to group
 	 indexing material for proximity search. It can be used to
 	 search for material that should all occur within the same
-	 section. It takes an optional <literal>unit</literal> attribute
+	 group. It takes an optional <literal>unit</literal> attribute
 	 which can be one of known Z39.50 proximity units:
 	 <literal>sentence</literal> (3),
 	 <literal>paragraph</literal> (4),
          <literal>section</literal> (5),
          <literal>chapter</literal> (6),
-         <literal>"document</literal> (7),
+         <literal>document</literal> (7),
          <literal>element</literal> (8),
 	 <literal>subelement</literal> (9),
          <literal>elementType</literal> (10).
+         If omitted, unit <literal>element</literal> is used.
 	</para>
+        <para>
+         For example, in order to search withing same group of unit type
+         <literal>chapter</literal>, the
+         corresponding Z39.50 proximity search would be:
+         <literal>@prox 0 0 0 0 k 6 leftop rightop</literal>
+        </para>
+	<note>
+	 <para>
+	  The group facility requires Zebra 2.0.63 or later
+	 </para>
+	</note>
        </listitem>
       </itemizedlist>
      </para>

@@ -539,7 +539,7 @@ definition file (probably something like {biblio,authority}-koha-indexdefs.xml) 
     </xslo:for-each>
   </xslo:template>
   <xslo:template mode="index_subfields" match="marc:datafield[@tag='700']">
-    <z:section>
+    <z:group>
     <xslo:for-each select="marc:subfield">
       <xslo:if test="contains('9', @code)">
         <z:index name="Cross-Reference:w Koha-Auth-Number:w">
@@ -596,7 +596,7 @@ definition file (probably something like {biblio,authority}-koha-indexdefs.xml) 
         </z:index>
       </xslo:if>
     </xslo:for-each>
-    </z:section>
+    </z:group>
   </xslo:template>
   <xslo:template mode="index_subfields" match="marc:datafield[@tag='710']">
     <xslo:for-each select="marc:subfield">
