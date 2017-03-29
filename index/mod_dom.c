@@ -1014,9 +1014,12 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
             }
             if (node->children)
             {
+                WRBUF w = wrbuf_alloc();
+                wrbuf_puts(w, ZEBRA_SECTION_INDEX_NAME);
+                wrbuf_puts(w, unit_p);
                 recword->term_buf = "begin";
                 recword->term_len = 5;
-                recword->index_name = unit_p;
+                recword->index_name = wrbuf_cstr(w);
                 recword->index_type = "0";
 
                 if (extctr->flagShowRecords)
@@ -1032,7 +1035,7 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
                                              node);
                 recword->term_buf = "end";
                 recword->term_len = 3;
-                recword->index_name = unit_p;
+                recword->index_name = wrbuf_cstr(w);
                 recword->index_type = "0";
                 if (extctr->flagShowRecords)
                     dom_log(YLOG_LOG, tinfo, 0,
@@ -1041,6 +1044,7 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
                             (const char *) recword->index_type,
                             (const char *) recword->term_buf);
                 (extctr->tokenAdd)(recword);
+                wrbuf_destroy(w);
             }
         }
         else if (0 == XML_STRCMP(node->name, "record"))

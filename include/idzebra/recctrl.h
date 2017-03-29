@@ -44,6 +44,8 @@ YAZ_BEGIN_CDECL
 /* 1015 */
 #define ZEBRA_XPATH_ATTR_CDATA      "_XPATH_ATTR_CDATA"
 
+#define ZEBRA_SECTION_INDEX_NAME    "_SECTION_"
+
 /** Indexing token */
 typedef struct {
     /** index type, e.g. "w", "p", .. */

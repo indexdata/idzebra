@@ -1473,7 +1473,12 @@ static RSET search_group(ZebraHandle zh,
                          struct rset_key_control *kc)
 {
     zinfo_index_category_t cat = zinfo_index_category_index;
-    int ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat, "0", unit);
+    WRBUF w = wrbuf_alloc();
+    wrbuf_puts(w, ZEBRA_SECTION_INDEX_NAME);
+    wrbuf_puts(w, unit);
+    int ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat, "0",
+                                           wrbuf_cstr(w));
+    wrbuf_destroy(w);
     if (ord == -1)
         return 0;
     char ord_buf[32];
@@ -1487,7 +1492,6 @@ static RSET search_group(ZebraHandle zh,
     ISAM_P isam_p;
     assert(*val == sizeof(ISAM_P));
     memcpy(&isam_p, val+1, sizeof(isam_p));
-
     return zebra_create_rset_isam(zh, rset_nmem, kc, kc->scope,
                                   isam_p, 0);
 }
