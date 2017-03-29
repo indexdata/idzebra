@@ -115,11 +115,11 @@ RSET rset_create_between(NMEM nmem, struct rset_key_control *kcontrol,
         log_level_initialized = 1;
     }
     rsetarray[n++] = rset_l;
-    checkterm(rset_l, "(start)", nmem);
+    checkterm(rset_l, "", nmem);
     info->startterm = rset_l->term;
 
     rsetarray[n++] = rset_r;
-    checkterm(rset_r, "(end)", nmem);
+    checkterm(rset_r, "", nmem);
     info->stopterm = rset_r->term;
 
     rsetarray[n++] = rset_m1;
