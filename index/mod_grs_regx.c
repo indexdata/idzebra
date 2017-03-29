@@ -1301,8 +1301,13 @@ static void execTcl (struct lexSpec *spec, struct regxCode *code)
     {
     	const char *err = Tcl_GetVar(spec->tcl_interp, "errorInfo", 0);
 	yaz_log(YLOG_FATAL, "Tcl error, line=%d, \"%s\"\n%s",
-	    spec->tcl_interp->errorLine,
-	    spec->tcl_interp->result,
+#if TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION <= 5
+                spec->tcl_interp->errorLine,
+                spec->tcl_interp->result,
+#else
+                Tcl_GetErrorLine(spec->tcl_interp),
+                Tcl_GetStringResult(spec->tcl_interp),
+#endif
 	    err ? err : "[NO ERRORINFO]");
     }
 }
