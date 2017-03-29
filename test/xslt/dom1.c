@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <config.h>
 #endif
 #include <yaz/test.h>
+#include <yaz/diagbib1.h>
 #include "testlib.h"
 
 
@@ -143,6 +144,36 @@ void tst(int argc, char **argv)
                      "</record>"),
                  ZEBRA_OK);
 
+    zebra_close(zh);
+
+    zh = index_some(zs, "dom.biblio-config.xml", "biblio-record.xml");
+    YAZ_CHECK(tl_query(zh, "@attr 1=Author leary", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=Author valen", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=Author {valen line}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=Author {valen, line}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=Relator-term medarb", 1));
+    YAZ_CHECK(tl_query(zh, "@and "
+                       "@attr 1=Author valen "
+                       "@attr 1=Relator-term medarb", 1));
+    YAZ_CHECK(tl_query(zh, "@and "
+                       "@attr 1=Author {leary ian} "
+                       "@attr 1=Relator-term medarb", 1));
+    YAZ_CHECK(tl_query(zh, "@prox 0 0 0 0 k 8 "
+                       "@attr 1=Author leary "
+                       "@attr 1=Relator-term medarb", 1));
+    YAZ_CHECK(tl_query(zh, "@prox 0 0 0 0 k 8 "
+                       "@attr 1=Author valen "
+                       "@attr 1=Relator-term medarb", 0));
+    YAZ_CHECK(tl_query(zh, "@prox 0 0 0 0 k 8 "
+                       "@attr 1=Author {leary ian} "
+                       "@attr 1=Relator-term medarb", 1));
+    YAZ_CHECK(tl_query(zh, "@prox 0 0 0 0 k 8 "
+                       "@attr 1=Relator-term medarb "
+                       "@attr 1=Author {leary ian}", 1));
+    YAZ_CHECK(tl_query_x(zh, "@prox 0 0 0 0 k 6 "
+                         "@attr 1=Author {leary ian} "
+                         "@attr 1=Relator-term medarb", 0,
+                         YAZ_BIB1_UNSUPP_PROX_UNIT_CODE));
     zebra_close(zh);
 
     /* testing indexing of bad UTF-8 encoded MARC record */

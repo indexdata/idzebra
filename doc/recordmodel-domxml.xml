@@ -230,14 +230,16 @@
    </section>
 
    <section id="record-model-domxml-pipeline-store">
-    <title>Store pipeline</title>
-    The <literal>&lt;store&gt;</literal> pipeline takes documents
-    from any common &acro.dom;  &acro.xml; format to the &zebra; specific
-    storage &acro.dom;  &acro.xml; format.
-    It may consist of zero ore more
-    <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
-    &acro.xslt; transformations, and the outcome is handled to the
-    &zebra; core for deposition into the internal storage system.
+     <title>Store pipeline</title>
+     <para>
+     The <literal>&lt;store&gt;</literal> pipeline takes documents
+     from any common &acro.dom;  &acro.xml; format to the &zebra; specific
+     storage &acro.dom;  &acro.xml; format.
+     It may consist of zero ore more
+     <literal><![CDATA[<xslt stylesheet="path/file.xsl"/>]]></literal>
+     &acro.xslt; transformations, and the outcome is handled to the
+     &zebra; core for deposition into the internal storage system.
+    </para>
    </section>
 
    <section id="record-model-domxml-pipeline-retrieve">
@@ -360,7 +362,8 @@
        <listitem>
 	<para>There must be exactly one <literal>record</literal>
 	 instruction, which sets the scope for the following,
-	 possibly nested <literal>index</literal> instructions.
+	 possibly nested <literal>index</literal> and
+	 <literal>group</literal> instructions.
 	</para>
        </listitem>
        <listitem>
@@ -479,6 +482,35 @@
          <literal>&lt;store&gt;</literal> pipelines is discarded.
 	 A warning is issued in the logs.
 	</para>
+       </listitem>
+       <listitem>
+	<para>
+	 The <literal>group</literal> can be used to group
+	 indexing material for proximity search. It can be used to
+	 search for material that should all occur within the same
+	 group. It takes an optional <literal>unit</literal> attribute
+	 which can be one of known Z39.50 proximity units:
+	 <literal>sentence</literal> (3),
+	 <literal>paragraph</literal> (4),
+         <literal>section</literal> (5),
+         <literal>chapter</literal> (6),
+         <literal>document</literal> (7),
+         <literal>element</literal> (8),
+	 <literal>subelement</literal> (9),
+         <literal>elementType</literal> (10).
+         If omitted, unit <literal>element</literal> is used.
+	</para>
+        <para>
+         For example, in order to search withing same group of unit type
+         <literal>chapter</literal>, the
+         corresponding Z39.50 proximity search would be:
+         <literal>@prox 0 0 0 0 k 6 leftop rightop</literal>
+        </para>
+	<note>
+	 <para>
+	  The group facility requires Zebra 2.0.63 or later
+	 </para>
+	</note>
        </listitem>
       </itemizedlist>
      </para>

@@ -4,6 +4,9 @@ check_PROGRAMS = xslt1 xslt2 xslt3 xslt4 xslt5 dom1
 TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST= \
+     biblio-config.xml \
+     biblio-indexdefs.xsl \
+     biblio-record.xml \
      dom-config-col.xml \
      dom-config-marc.xml \
      dom-config-utf8.xml \

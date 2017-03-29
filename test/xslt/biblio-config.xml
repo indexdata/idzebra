@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dom>
+  <extract name="index">
+    <xslt stylesheet="biblio-indexdefs.xsl"/>
+  </extract>
+  <retrieve name="marc">
+    <xslt stylesheet="id.xsl" />
+  </retrieve>
+</dom>

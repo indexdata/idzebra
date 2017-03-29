@@ -963,6 +963,11 @@ static void set_record_info(struct filter_info *tinfo,
 }
 
 
+static void process_xml_element_node(struct filter_info *tinfo,
+                                     struct recExtractCtrl *extctr,
+                                     RecWord* recword,
+                                     xmlNodePtr node);
+
 /* DOM filter style indexing */
 static void process_xml_element_zebra_node(struct filter_info *tinfo,
                                            struct recExtractCtrl *extctr,
@@ -989,6 +994,57 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
                             "bad attribute @%s, expected @name",
                             attr->name);
                 }
+            }
+        }
+        else if (0 == XML_STRCMP(node->name, "group"))
+        {
+            const char *unit_p = "element";
+
+            struct _xmlAttr *attr;
+            for (attr = node->properties; attr; attr = attr->next)
+            {
+                if (attr_content(attr, "unit", &unit_p))
+                    ;
+                else
+                {
+                    dom_log(YLOG_WARN, tinfo, node,
+                            "bad attribute @%s, expected @unit",
+                            attr->name);
+                }
+            }
+            if (node->children)
+            {
+                WRBUF w = wrbuf_alloc();
+                wrbuf_puts(w, ZEBRA_GROUP_INDEX_NAME);
+                wrbuf_puts(w, unit_p);
+                recword->term_buf = "begin";
+                recword->term_len = 5;
+                recword->index_name = wrbuf_cstr(w);
+                recword->index_type = "0";
+
+                if (extctr->flagShowRecords)
+                    dom_log(YLOG_LOG, tinfo, 0,
+                            "INDEX '%s:%s' '%s'",
+                            (const char *) recword->index_name,
+                            (const char *) recword->index_type,
+                            (const char *) recword->term_buf);
+                (extctr->tokenAdd)(recword);
+
+                for (node = node->children; node; node = node->next)
+                    process_xml_element_node(tinfo, extctr, recword,
+                                             node);
+                recword->term_buf = "end";
+                recword->term_len = 3;
+                recword->index_name = wrbuf_cstr(w);
+                recword->index_type = "0";
+                if (extctr->flagShowRecords)
+                    dom_log(YLOG_LOG, tinfo, 0,
+                            "INDEX '%s:%s' '%s'",
+                            (const char *) recword->index_name,
+                            (const char *) recword->index_type,
+                            (const char *) recword->term_buf);
+                (extctr->tokenAdd)(recword);
+                wrbuf_destroy(w);
             }
         }
         else if (0 == XML_STRCMP(node->name, "record"))

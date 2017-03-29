@@ -1466,6 +1466,35 @@ static ZEBRA_RES search_terms_list(ZebraHandle zh,
                                kc, zm);
 }
 
+static RSET search_group(ZebraHandle zh,
+                         const char *unit,
+                         const char *term,
+                         NMEM rset_nmem,
+                         struct rset_key_control *kc)
+{
+    zinfo_index_category_t cat = zinfo_index_category_index;
+    WRBUF w = wrbuf_alloc();
+    wrbuf_puts(w, ZEBRA_GROUP_INDEX_NAME);
+    wrbuf_puts(w, unit);
+    int ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat, "0",
+                                           wrbuf_cstr(w));
+    wrbuf_destroy(w);
+    if (ord == -1)
+        return 0;
+    char ord_buf[32];
+    int ord_len = key_SU_encode(ord, ord_buf);
+    char term_dict[100];
+    memcpy(term_dict, ord_buf, ord_len);
+    strcpy(term_dict + ord_len, term);
+    char *val = dict_lookup(zh->reg->dict, term_dict);
+    if (!val)
+        return 0;
+    ISAM_P isam_p;
+    assert(*val == sizeof(ISAM_P));
+    memcpy(&isam_p, val+1, sizeof(isam_p));
+    return zebra_create_rset_isam(zh, rset_nmem, kc, kc->scope,
+                                  isam_p, 0);
+}
 
 /** \brief limit a search by position - returns result set
  */
@@ -2294,7 +2323,7 @@ ZEBRA_RES rpn_search_xpath(ZebraHandle zh,
                                                rset_nmem, kc);
 
                     rset = rset_create_between(rset_nmem, kc, kc->scope,
-                                               rset_start_tag, rset,
+                                               rset_start_tag, rset, NULL,
                                                rset_end_tag, rset_attr);
                 }
             }
@@ -2661,14 +2690,7 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
 				   0);
 		    return ZEBRA_FAIL;
 		}
-		if (*zop->u.prox->u.known != Z_ProxUnit_word)
-		{
-		    zebra_setError_zint(zh,
-					YAZ_BIB1_UNSUPP_PROX_UNIT_CODE,
-					*zop->u.prox->u.known);
-		    return ZEBRA_FAIL;
-		}
-		else
+		if (*zop->u.prox->u.known == Z_ProxUnit_word)
 		{
 		    rset = rset_create_prox(rset_nmem, kc,
                                             kc->scope,
@@ -2678,6 +2700,54 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
                                              0 : *zop->u.prox->exclusion),
                                             *zop->u.prox->relationType,
                                             *zop->u.prox->distance );
+                }
+                else if (*zop->u.prox->u.known >= 3 &&
+                         *zop->u.prox->u.known <= 10 &&
+                         *num_result_sets == 2)
+                {
+                    /* Z39.50 known proximity units */
+                    static const char *units[] = {
+                        "sentence",   /* (3) */
+                        "paragraph",  /* (4) */
+                        "section",    /* (5) */
+                        "chapter",    /* (6) */
+                        "document",   /* (7) */
+                        "element",    /* (8) */
+                        "subelement", /* (9) */
+                        "elementType" /* (10) */
+                    };
+                    const char *unit = units[*zop->u.prox->u.known - 3];
+                    RSET begin_set = search_group(zh, unit, "begin",
+                                                  rset_nmem, kc);
+                    RSET end_set = search_group(zh, unit, "end",
+                                                rset_nmem, kc);
+                    if (begin_set && end_set)
+                    {
+                        rset = rset_create_between(
+                            rset_nmem, kc, kc->scope,
+                            begin_set,
+                            (*result_sets[0]), (*result_sets)[1], end_set,
+                            0 /* rset_attr */);
+                    }
+                    else
+                    {
+                        if (begin_set)
+                            rset_delete(begin_set);
+                        if (end_set)
+                            rset_delete(end_set);
+                        zebra_setError_zint(zh,
+                                            YAZ_BIB1_UNSUPP_PROX_UNIT_CODE,
+                                            *zop->u.prox->u.known);
+                        return ZEBRA_FAIL;
+
+                    }
+		}
+                else
+		{
+		    zebra_setError_zint(zh,
+					YAZ_BIB1_UNSUPP_PROX_UNIT_CODE,
+					*zop->u.prox->u.known);
+		    return ZEBRA_FAIL;
 		}
 		break;
 	    default:

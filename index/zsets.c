@@ -1241,7 +1241,7 @@ static int trav_rset_for_termids(RSET rset, TERMID *termid_array,
 				    (termid_array ? termid_array + no : 0),
 				    (hits_array ? hits_array + no : 0),
 				    (approx_array ? approx_array + no : 0));
-    if (rset->term)
+    if (rset->term && rset->term->name[0])
     {
 	if (termid_array)
 	    termid_array[no] = rset->term;

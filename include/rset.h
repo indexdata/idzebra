@@ -234,8 +234,8 @@ RSET rset_create_not(NMEM nmem, struct rset_key_control *kcontrol,
                      int scope, RSET rset_l, RSET rset_r);
 
 RSET rset_create_between(NMEM nmem, struct rset_key_control *kcontrol,
-                         int scope, RSET rset_l, RSET rset_m, RSET rset_r,
-                         RSET rset_attr);
+                         int scope, RSET rset_l, RSET rset_m1, RSET rset_m2,
+                         RSET rset_r, RSET rset_attr);
 
 RSET rset_create_or(NMEM nmem, struct rset_key_control *kcontrol,
                           int scope, TERMID termid, int no_rsets, RSET* rsets);

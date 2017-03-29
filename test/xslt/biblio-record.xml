@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd"
+    xmlns="http://www.loc.gov/MARC21/slim">
+
+  <leader>00645nam a2200217 a 4500</leader>
+  <controlfield tag="001">114734321</controlfield>
+  <controlfield tag="008">                       r           nob  </controlfield>
+  <datafield tag="015" ind1=" " ind2=" ">
+    <subfield code="a">nf1135249</subfield>
+  </datafield>
+  <datafield tag="020" ind1=" " ind2=" ">
+    <subfield code="a">9788231603382</subfield>
+    <subfield code="b">ib.</subfield>
+    <subfield code="c">Nkr 99.00</subfield>
+  </datafield>
+  <datafield tag="080" ind1="c" ind2=" ">
+    <subfield code="a">641.5</subfield>
+  </datafield>
+  <datafield tag="082" ind1="g" ind2=" ">
+    <subfield code="2">DDK-5</subfield>
+  </datafield>
+  <datafield tag="100" ind1=" " ind2=" ">
+    <subfield code="a">Barber, Kimiko</subfield>
+  </datafield>
+  <datafield tag="245" ind1=" " ind2=" ">
+    <subfield code="a">Sushi</subfield>
+    <subfield code="b">smak og teknikk</subfield>
+    <subfield code="c">Kimiko Barber og Hiroki Takemura ; fotografier ved Ian O'Leary ; [oversatt av Line Valen]</subfield>
+  </datafield>
+  <datafield tag="260" ind1=" " ind2=" ">
+    <subfield code="a">[Oslo]</subfield>
+    <subfield code="b">Spektrum</subfield>
+    <subfield code="c">2011</subfield>
+  </datafield>
+  <datafield tag="300" ind1=" " ind2=" ">
+    <subfield code="a">256 s.</subfield>
+    <subfield code="c">ill.</subfield>
+  </datafield>
+  <datafield tag="500" ind1=" " ind2=" ">
+    <subfield code="a">1. norske utg. Oslo : Damm, 2003</subfield>
+  </datafield>
+  <datafield tag="700" ind1=" " ind2=" ">
+    <subfield code="a">Takemura, Hiroki</subfield>
+  </datafield>
+  <datafield tag="700" ind1=" " ind2=" ">
+    <subfield code="a">O'Leary, Ian</subfield>
+    <subfield code="e">medarb.</subfield>
+  </datafield>
+  <datafield tag="700" ind1=" " ind2=" ">
+    <subfield code="a">Valen, Line</subfield>
+    <subfield code="d">1958-</subfield>
+  </datafield>
+  <datafield tag="942" ind1=" " ind2=" ">
+    <subfield code="c">BK</subfield>
+  </datafield>
+  <datafield tag="999" ind1=" " ind2=" ">
+    <subfield code="c">178</subfield>
+    <subfield code="d">176</subfield>
+  </datafield>
+  <datafield tag="952" ind1=" " ind2=" ">
+    <subfield code="0">0</subfield>
+    <subfield code="1">0</subfield>
+    <subfield code="2">ddc</subfield>
+    <subfield code="4">0</subfield>
+    <subfield code="7">0</subfield>
+    <subfield code="9">254</subfield>
+    <subfield code="a">BIB</subfield>
+    <subfield code="b">BIB</subfield>
+    <subfield code="c">GEN</subfield>
+    <subfield code="d">2012-07-10</subfield>
+    <subfield code="l">1</subfield>
+    <subfield code="m">2</subfield>
+    <subfield code="p">129</subfield>
+    <subfield code="r">2012-09-15</subfield>
+    <subfield code="s">2012-07-10</subfield>
+    <subfield code="w">2012-07-10</subfield>
+    <subfield code="y">BK</subfield>
+  </datafield>
+</record>
