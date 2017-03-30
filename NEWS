@@ -1,3 +1,14 @@
+Fix 'make -j no check' by serializing some tests that weren't
+supposed to be run in parallel.
+
+Add support for user-defined groups in mod-dom filter. A group can
+be generated with <group>-indexing element with property unit.  Unit
+is one of the known Z39.50 proximity units and defaults to "element"
+if omitted. This can be searched with @prox 0 0 0 0 k 8 which boils
+down to "same known unit=element".
+
+Fix compilation with Tcl 8.6 and later. Closes #4
+
 --- 2.0.62 2016/01/30
 
 Zebra SCM moved to GitHub https://github.com/indexdata/idzebra
