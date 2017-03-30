@@ -1,4 +1,4 @@
-# Zebra server, Copyright (C) 1994-2016 Index Data
+# Zebra server, Copyright (C) 1994-2017 Index Data
 
 ## Introduction
 
