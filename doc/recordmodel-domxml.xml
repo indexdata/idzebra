@@ -508,7 +508,7 @@
         </para>
 	<note>
 	 <para>
-	  The group facility requires Zebra 2.0.63 or later
+	  The group facility requires Zebra 2.1.0 or later
 	 </para>
 	</note>
        </listitem>

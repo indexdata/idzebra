@@ -1,3 +1,5 @@
+--- 2.1.0 2017/04/03
+
 Fix 'make -j no check' by serializing some tests that weren't
 supposed to be run in parallel.
 
