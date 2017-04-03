@@ -39,7 +39,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <idzebra/util.h>
 #include <rset.h>
 
-
 static RSFD r_open(RSET ct, int flag);
 static void r_close(RSFD rfd);
 static void r_delete(RSET ct);
@@ -104,7 +103,7 @@ RSET rset_create_between(NMEM nmem, struct rset_key_control *kcontrol,
                          RSET rset_r, RSET rset_attr)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, 0, 0, 0);
-    struct rset_between_info *info=
+    struct rset_between_info *info =
         (struct rset_between_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     RSET rsetarray[5];
     int n = 0;
@@ -174,9 +173,9 @@ static RSFD r_open(RSET ct, int flag)
     }
     rfd = rfd_create_base(ct);
     if (rfd->priv)
-        p=(struct rset_between_rfd *)rfd->priv;
+        p = (struct rset_between_rfd *) rfd->priv;
     else {
-        p = (struct rset_between_rfd *) nmem_malloc(ct->nmem, (sizeof(*p)));
+        p = (struct rset_between_rfd *) nmem_malloc(ct->nmem, sizeof(*p));
         rfd->priv = p;
         p->recbuf = nmem_malloc(ct->nmem, ct->keycontrol->key_size);
         p->startbuf = nmem_malloc(ct->nmem, ct->keycontrol->key_size);
@@ -194,15 +193,15 @@ static RSFD r_open(RSET ct, int flag)
 
 static void r_close(RSFD rfd)
 {
-    struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
-    yaz_log(log_level,"close rfd=%p", rfd);
+    struct rset_between_rfd *p = (struct rset_between_rfd *) rfd->priv;
+    yaz_log(log_level, "close rfd=%p", rfd);
     rset_close(p->andrfd);
 }
 
 static int r_forward(RSFD rfd, void *buf,
                      TERMID *term, const void *untilbuf)
 {
-    struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
+    struct rset_between_rfd *p = (struct rset_between_rfd *) rfd->priv;
     int rc;
     yaz_log(log_level, "forwarding ");
     rc = rset_forward(p->andrfd,buf,term,untilbuf);
@@ -211,7 +210,7 @@ static int r_forward(RSFD rfd, void *buf,
 
 static void checkattr(RSFD rfd)
 {
-    struct rset_between_info *info =(struct rset_between_info *)
+    struct rset_between_info *info = (struct rset_between_info *)
 	rfd->rset->priv;
     struct rset_between_rfd *p = (struct rset_between_rfd *)rfd->priv;
     const struct rset_key_control *kctrl = rfd->rset->keycontrol;
@@ -220,16 +219,17 @@ static void checkattr(RSFD rfd)
         return; /* already found one */
     if (!info->attrterm)
     {
-        p->attrdepth=-1; /* matches always */
+        p->attrdepth = -1; /* matches always */
         return;
     }
     if ( p->startbufok && p->attrbufok )
     { /* have buffers to compare */
-        cmp=(kctrl->cmp)(p->startbuf,p->attrbuf);
-        if (0==cmp) /* and the keys match */
+        cmp = (kctrl->cmp)(p->startbuf, p->attrbuf);
+        if (0 == cmp) /* and the keys match */
         {
             p->attrdepth = p->depth;
-            yaz_log(log_level, "found attribute match at depth %d",p->attrdepth);
+            yaz_log(log_level, "found attribute match at depth %d",
+                    p->attrdepth);
         }
     }
 }
@@ -247,9 +247,9 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
         term = &dummyterm;
     while (rset_read(p->andrfd, buf, term))
     {
-        yaz_log(log_level,"read loop term=%p d=%d ad=%d",
+        yaz_log(log_level, "read loop term=%p d=%d ad=%d",
                 *term, p->depth, p->attrdepth);
-        if (p->hits<0)
+        if (p->hits < 0)
         {/* first time? */
             memcpy(p->recbuf, buf, kctrl->key_size);
             p->hits = 0;
@@ -260,7 +260,7 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
             yaz_log(log_level, "cmp=%d", cmp);
         }
 
-        if (cmp>=rfd->rset->scope)
+        if (cmp >= rfd->rset->scope)
         {
             yaz_log(log_level, "new record");
             p->depth = 0;
@@ -271,7 +271,7 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
 
         if (*term)
             yaz_log(log_level, "  term: '%s'", (*term)->name);
-        if (*term==info->startterm)
+        if (*term == info->startterm)
         {
             p->depth++;
             yaz_log(log_level, "read start tag. d=%d", p->depth);
@@ -279,19 +279,19 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
             p->startbufok = 1;
             checkattr(rfd); /* in case we already saw the attr here */
         }
-        else if (*term==info->stopterm)
+        else if (*term == info->stopterm)
         {
             if (p->depth == p->attrdepth)
                 p->attrdepth = 0; /* ending the tag with attr match */
             p->depth--;
             if (p->depth == 0)
                 p->match_1 = p->match_2 = 0;
-            yaz_log(log_level,"read end tag. d=%d ad=%d", p->depth,
+            yaz_log(log_level, "read end tag. d=%d ad=%d", p->depth,
 		    p->attrdepth);
         }
-        else if (*term==info->attrterm)
+        else if (*term == info->attrterm)
         {
-            yaz_log(log_level,"read attr");
+            yaz_log(log_level, "read attr");
             memcpy(p->attrbuf, buf, kctrl->key_size);
             p->attrbufok = 1;
             checkattr(rfd); /* in case the start tag came first */
@@ -316,7 +316,7 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
                 if (p->match_1 && p->match_2)
                 {
                     p->hits++;
-                    yaz_log(log_level,"got a hit h="ZINT_FORMAT" d=%d ad=%d",
+                    yaz_log(log_level, "got a hit h="ZINT_FORMAT" d=%d ad=%d",
                             p->hits, p->depth, p->attrdepth);
                     return 1; /* we have everything in place already! */
                 }
@@ -325,14 +325,12 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
                         p->hits, p->depth, p->attrdepth);
         }
     } /* while read */
-
     return 0;
-
 }  /* r_read */
 
 static void r_pos(RSFD rfd, double *current, double *total)
 {
-    struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
+    struct rset_between_rfd *p = (struct rset_between_rfd *) rfd->priv;
     rset_pos(p->andrfd, current, total);
     yaz_log(log_level, "pos: %0.1f/%0.1f ", *current, *total);
 }
