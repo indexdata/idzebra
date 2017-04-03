@@ -30,7 +30,7 @@ LIBXML2_DIR=c:\libxml2-2.9.2.win32
 
 # ICU support
 HAVE_ICU=1
-ICU_DIR=c:\icu
+ICU_DIR=c:\icu-56.1-vs2015
 ICU_INCLUDE=$(ICU_DIR)\include
 
 default: all
