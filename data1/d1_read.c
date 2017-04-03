@@ -1074,7 +1074,7 @@ const char *data1_get_encoding (data1_handle dh, data1_node *n)
     {
         data1_xattr *xp = n->child->u.preprocess.attributes;
         for (; xp; xp = xp->next)
-            if (!strcmp (xp->name, "encoding") == 0)
+            if (strcmp (xp->name, "encoding") == 0)
                 return xp->value;
     }
     /* no encoding in header, so see if "encoding" was specified for abs */
