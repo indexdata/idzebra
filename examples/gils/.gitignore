@@ -1,7 +1,0 @@
-*.mf
-*.LCK
-*.in
-log
-zebrasrv.pid
-Makefile
-*~

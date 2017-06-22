@@ -1,15 +1,5 @@
-.deps
-.libs
-Makefile
-Makefile.in
-*.lo
-*.o
-*.la
 tstbfile1
 tstbfile2
 tstmfile1
 register
 shadow
-*.mf
-*.log
-*~

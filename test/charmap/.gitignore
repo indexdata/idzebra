@@ -1,16 +1,5 @@
-Makefile
-Makefile.in
-*.mf
-*.log
 log
-*.LCK
 shadow
 reg
 socket
-zebrasrv.pid
-.libs
-.deps
 charmap[0-9]
-*.lo
-*.o
-*~

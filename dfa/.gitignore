@@ -1,13 +1,4 @@
-.deps
-.libs
-Makefile
-Makefile.in
 agrep
 grepper
 lexer
-*.lo
-*.o
-*.la
-*.log
 test_dfa
-*~

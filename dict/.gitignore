@@ -1,12 +1,3 @@
-.deps
-.libs
-Makefile
-Makefile.in
 dictext
 dicttest
 scantest
-*.lo
-*.o
-*.la
-*.mf
-*~

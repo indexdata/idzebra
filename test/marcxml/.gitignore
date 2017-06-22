@@ -1,16 +1,6 @@
-Makefile
-Makefile.in
-*.mf
-*.log
 log
-*.LCK
 shadow
 reg
 socket
 t1
 t2
-.libs
-.deps
-*.lo
-*.o
-*~

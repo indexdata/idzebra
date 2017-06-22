@@ -3,7 +3,6 @@ Makefile.in
 aclocal.m4
 config
 config.cache
-config.log
 config.status
 configure
 libtool
@@ -20,3 +19,14 @@ config.guess
 config.sub
 build
 deb-src
+*.log
+*.mf
+*.LCK
+*.lo
+*.la
+*.a
+*.o
+log
+.deps
+.libs
+zebrasrv.pid

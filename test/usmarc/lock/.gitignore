@@ -1,8 +1,0 @@
-Makefile
-Makefile.in
-*.mf
-*.LCK
-lock
-tmp
-zebrasrv.pid
-*~

@@ -1,10 +1,2 @@
-Makefile
-Makefile.in
-*.mf
-*.log
-log
-*.LCK
 shadow
 reg
-zebrasrv.pid
-*~

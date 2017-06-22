@@ -1,14 +1,6 @@
-.deps
-.libs
-Makefile
-Makefile.in
 apitest
 atmp
 kdump
 zebraidx
 zebrasrv
 zebrash
-*.lo
-*.o
-*.la
-*~

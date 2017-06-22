@@ -1,14 +1,3 @@
-Makefile
-Makefile.in
-*.mf
-*.log
-*.tmp
 *.tmp.[0-9]
-*.LCK
 socket
 xpath[0-9]
-.libs
-.deps
-*.o
-*.lo
-*~

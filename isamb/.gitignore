@@ -1,14 +1,5 @@
-.deps
-.libs
-Makefile
-Makefile.in
-*.mf
 tstisamb
 benchisamb
 benchindex1
-*.lo
-*.o
-*.la
 *.dat
 *.eps
-*~
