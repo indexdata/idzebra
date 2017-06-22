@@ -18,3 +18,5 @@ win/version.nsi
 build-stamp
 config.guess
 config.sub
+build
+deb-src
