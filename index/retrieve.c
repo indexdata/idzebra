@@ -660,8 +660,6 @@ static void term_collect_freq(ZebraHandle zh,
                 col[i].set_occur = freq_term(zh, ord, col[i].term, rset,
                                              &col[i].first_sysno,
                                              &col[i].first_seqno);
-                yaz_log(YLOG_LOG, "scale < 0 first_sysno=" ZINT_FORMAT,
-                        col[i].first_sysno);
             }
             else
                 col[i].set_occur = scale_factor * col[i].oc;
