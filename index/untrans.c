@@ -61,23 +61,16 @@ int zebra_term_untrans(ZebraHandle zh, const char *index_type,
     return 0;
 }
 
-int zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream,
-                             const char *index_type,
-                             char **dst, const char *src)
+void zebra_term_untrans_iconv2(ZebraHandle zh, NMEM stream,
+                               char **dst, const char *src)
 {
-    char term_src[IT_MAX_WORD];
     char term_dst[IT_MAX_WORD];
-    int r;
-
-    r = zebra_term_untrans (zh, index_type, term_src, src);
-    if (r)
-        return r;
 
     if (zh->iconv_from_utf8 != 0)
     {
         int len;
-        char *inbuf = term_src;
-        size_t inleft = strlen(term_src);
+        char *inbuf = (char *) src;
+        size_t inleft = strlen(src);
         char *outbuf = term_dst;
         size_t outleft = sizeof(term_dst)-1;
         size_t ret;
@@ -97,8 +90,20 @@ int zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream,
         (*dst)[len] = '\0';
     }
     else
-        *dst = nmem_strdup(stream, term_src);
-    return 0;
+        *dst = nmem_strdup(stream, src);
+}
+
+int zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream,
+                             const char *index_type,
+                             char **dst, const char *src)
+{
+    int r;
+    char term_src[IT_MAX_WORD];
+
+    r = zebra_term_untrans(zh, index_type, term_src, src);
+    if (r == 0)
+        zebra_term_untrans_iconv2(zh, stream, dst, term_src);
+    return r;
 }
 
 

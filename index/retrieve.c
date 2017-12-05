@@ -571,9 +571,12 @@ struct term_collect {
     const char *term;
     int oc;
     zint set_occur;
+    zint first_sysno;
+    zint first_seqno;
 };
 
-static zint freq_term(ZebraHandle zh, int ord, const char *term, RSET rset_set)
+static zint freq_term(ZebraHandle zh, int ord, const char *term, RSET rset_set,
+                      zint *first_sysno, zint *first_seq)
 {
     struct rset_key_control *kc = zebra_key_control_create(zh);
     char ord_buf[IT_MAX_WORD];
@@ -590,14 +593,35 @@ static zint freq_term(ZebraHandle zh, int ord, const char *term, RSET rset_set)
         ISAM_P isam_p;
         RSET rsets[2], rset;
         memcpy(&isam_p, info+1, sizeof(ISAM_P));
+        TERMID termid_key = rset_term_create("", -1,
+                                             0 /* flags */,
+                                             Z_Term_general /* type */,
+                                             nmem,
+                                             0, /* ord_list */
+                                             0, /* reg_type */
+                                             10000, /* hits_limit */
+                                             0 /* ref_id */);
 
-        rsets[0] = zebra_create_rset_isam(zh, nmem, kc, kc->scope, isam_p, 0);
+        rsets[0] = zebra_create_rset_isam(zh, nmem, kc, kc->scope, isam_p,
+                                          termid_key);
         rsets[1] = rset_dup(rset_set);
 
         rset = rset_create_and(nmem, kc, kc->scope, 2, rsets);
 
         zebra_count_set(zh, rset, &hits, zh->approx_limit);
-
+        RSFD rfd = rset_open(rset, RSETF_READ);
+        TERMID termid;
+        struct it_key key;
+        while (rset_read(rfd, &key, &termid))
+        {
+            if (termid == termid_key)
+            {
+                *first_sysno = key.mem[0];
+                *first_seq = key.mem[key.len - 1];
+                break;
+            }
+        }
+        rset_close(rfd);
         rset_delete(rsets[0]);
         rset_delete(rset);
     }
@@ -633,7 +657,11 @@ static void term_collect_freq(ZebraHandle zh,
         {
             if (scale_factor < 0.0)
             {
-                col[i].set_occur = freq_term(zh, ord, col[i].term, rset);
+                col[i].set_occur = freq_term(zh, ord, col[i].term, rset,
+                                             &col[i].first_sysno,
+                                             &col[i].first_seqno);
+                yaz_log(YLOG_LOG, "scale < 0 first_sysno=" ZINT_FORMAT,
+                        col[i].first_sysno);
             }
             else
                 col[i].set_occur = scale_factor * col[i].oc;
@@ -658,6 +686,7 @@ static struct term_collect *term_collect_create(zebra_strmap_t sm,
         col[i].term = 0;
         col[i].oc = 0;
         col[i].set_occur = 0;
+        col[i].first_sysno = col[i].first_seqno = 0;
     }
     /* iterate over terms and collect the most frequent ones */
     it = zebra_strmap_it_create(sm);
@@ -855,8 +884,44 @@ static int perform_facet(ZebraHandle zh,
         {
             if (col[j].term)
             {
-                char dst_buf[IT_MAX_WORD];
-                zebra_term_untrans(zh, spec->index_type, dst_buf, col[j].term);
+                WRBUF w_buf = wrbuf_alloc();
+                yaz_log(YLOG_LOG, "facet %s %s",
+                             spec->index_type, spec->index_name);
+                if (col[j].first_sysno)
+                {
+                    zebra_snippets *rec_snippets = zebra_snippets_create();
+                    int code = zebra_get_rec_snippets(
+                        zh, col[j].first_sysno, rec_snippets);
+                    yaz_log(YLOG_LOG, "sysno/seqno "
+                            ZINT_FORMAT "/" ZINT_FORMAT,
+                            col[j].first_sysno, col[j].first_seqno);
+                    if (code == 0)
+                    {
+                        zebra_snippets_log(rec_snippets, YLOG_LOG, 1);
+                        const zebra_snippet_word *sn =
+                            zebra_snippets_constlist(rec_snippets);
+                        int first = 1; /* ignore leading whitespace */
+                        for (; sn; sn = sn->next)
+                        {
+                            if (sn->ord == ord_array[i] &&
+                                sn->seqno == col[j].first_seqno)
+                            {
+                                if (!sn->ws || !first)
+                                {
+                                    first = 0;
+                                    wrbuf_puts(w_buf, sn->term);
+                                }
+                            }
+                        }
+                    }
+                    zebra_snippets_destroy(rec_snippets);
+                }
+                char *dst_buf = 0;
+                if (wrbuf_len(w_buf))
+                    zebra_term_untrans_iconv2(zh, nmem, &dst_buf, wrbuf_cstr(w_buf));
+                else
+                    zebra_term_untrans_iconv(zh, nmem, spec->index_type, &dst_buf,
+                                                 col[j].term);
                 if (use_xml)
                 {
                     wrbuf_printf(wr, "    <term coccur=\"%d\"", col[j].oc);
@@ -875,6 +940,7 @@ static int perform_facet(ZebraHandle zh,
                                      col[j].set_occur);
                     wrbuf_printf(wr, ": %s\n", dst_buf);
                 }
+                wrbuf_destroy(w_buf);
             }
         }
         if (use_xml)
