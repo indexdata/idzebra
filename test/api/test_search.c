@@ -78,7 +78,7 @@ const char *myrec[] = {
         ,
         "<gils>\n"
         "<title>"
-        "\xe5" " og vandl" "\xf8" "b"
+        "\xe5" " og Vandl" "\xf8" "b"
         "</title>"
         "</gils>"
         ,
@@ -97,7 +97,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::title:w",
                                   yaz_oid_recsyn_sutrs,
                                   "facet w title\n"
-                                  "term 3 3: my\n"
+                                  "term 3 3: My\n"
                                   "term 3 3: title\n"
                                   "term 2 2: x\n"), ZEBRA_OK);
 
@@ -115,9 +115,37 @@ static void tst(int argc, char **argv)
     YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::title:w",
                                   yaz_oid_recsyn_sutrs,
                                   "facet w title\n"
-                                  "term 2 2: my\n"
+                                  "term 2 2: My\n"
                                   "term 2 2: title\n"
                                   "term 2 2: x\n"), ZEBRA_OK);
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 " "\xe5", 1));
+    YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::title:w",
+                                  yaz_oid_recsyn_sutrs,
+                                  "facet w title\n"
+                                  "term 1 1: og\n"
+                                  "term 1 1: Vandl" "\xf8" "b\n"
+                                  "term 1 1: " "\xe5" "\n"), ZEBRA_OK);
+
+    YAZ_CHECK(tl_query(zh, "@attr 1=4 " "\xe5", 1));
+    YAZ_CHECK_EQ(tl_fetch_compare(zh, 1, "zebra::facet::title:p",
+                                  yaz_oid_recsyn_sutrs,
+                                  "facet p title\n"
+                                  "term 1 1: " "\xe5"
+                                  " og Vandl" "\xf8" "b\n"), ZEBRA_OK);
+    {   /* word scan */
+        const char *ent[] = { "title",
+                              "vandl" "\xf8" "b",
+                              "x",
+                              "\xe5",
+                              0 };
+        YAZ_CHECK(tl_scan(zh, "@attr 1=4 title", 1, 10, 1, 4, 1, ent));
+    }
+    {   /* phrase scan */
+        const char *ent[] = {"test",
+                             "\xe5" " og vandl" "\xf8" "b",
+                             0 };
+        YAZ_CHECK(tl_scan(zh, "@attr 6=2 @attr 1=4 t", 1, 10, 1, 2, 1, ent));
+    }
 
     /* trunc left */
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 5=2 titl", 0));

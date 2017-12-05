@@ -366,6 +366,9 @@ int zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream,
                              const char *index_type,
                              char **dst, const char *src);
 
+void zebra_term_untrans_iconv2(ZebraHandle zh, NMEM stream,
+                               char **dst, const char *src);
+
 ZEBRA_RES zebra_get_hit_vector(ZebraHandle zh, const char *setname, zint sysno);
 
 int zebra_term_untrans(ZebraHandle zh, const char *index_type,
