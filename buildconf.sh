@@ -34,7 +34,7 @@ Or just build the Debian packages without configuring
   dpkg-buildpackage -rfakeroot
 
 When building from Git, you need these Debian packages:
-  autoconf automake libtool gcc tcl8.4
+  autoconf automake libtool gcc tcl8.5
   xsltproc docbook docbook-xml docbook-xsl inkscape
   libxslt1-dev libgnutls-dev libreadline5-dev libexpat1-dev
   pkg-config libexpat1-dev
