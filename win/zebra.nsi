@@ -2,13 +2,13 @@
 !include version.nsi
 !include "MUI.nsh"
 
+Name "Zebra"
 !include "..\m4\common.nsi"
 
 RequestExecutionLevel admin
 
 SetCompressor bzip2
 
-Name "Zebra"
 Caption "Index Data Zebra ${VERSION} Setup"
 OutFile "idzebra_${VERSION}.exe"
 
