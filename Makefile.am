@@ -12,7 +12,8 @@ aclocal_DATA = m4/idzebra-2.0.m4
 SPEC_FILE=idzebra.spec
 
 EXTRA_DIST= README.md NEWS IDMETA $(SPEC_FILE) m4/id-config.sh \
- idzebra-config-2.0.in m4/idzebra-2.0.m4 m4/yaz.m4 buildconf.sh Doxyfile.in
+ idzebra-config-2.0.in m4/idzebra-2.0.m4 m4/yaz.m4 buildconf.sh Doxyfile.in \
+ m4/common.nsi m4/mk_version.tcl
 
 dist-hook:
 	if test -x /usr/bin/git -a -d .git; then git log >ChangeLog ; cp ChangeLog $(distdir); fi

@@ -2,39 +2,7 @@
 !include version.nsi
 !include "MUI.nsh"
 
-!define VS_REDIST_FULL "c:\Program Files (x86)\Microsoft Visual Studio ${VSVER}.0\VC\redist\1033\${VS_REDIST_EXE}"
-
-; For example can be found with regedit:
-;  Microsoft Visual C++ 2013 x86 Minimum Runtime
-!if "${VSARCH}" = "x64"
-; 64-bit
-!if "${VSVER}" = "12"
-!define VS_REDIST_KEY "SOFTWARE\Classes\Installer\Products\6E8D947A316B3EB3F8F540C548BE2AB9"
-!endif
-!if "${VSVER}" = "14"
-; Microsoft Visual C++ 2015 x64 Minimum Runtime - 14.0.23026
-!define VS_REDIST_KEY "SOFTWARE\Classes\Installer\Products\51E9E3D0A7EDB003691F4BFA219B4688"
-!endif
-
-InstallDir "$PROGRAMFILES64\Zebra"
-!else
-; 32-bit
-!if "${VSVER}" = "12"
-!define VS_REDIST_KEY "SOFTWARE\Classes\Installer\Products\21EE4A31AE32173319EEFE3BD6FDFFE3"
-!endif
-!if "${VSVER}" = "14"
-; Microsoft Visual C++ 2015 x86 Minimum Runtime - 14.0.23026
-!define VS_REDIST_KEY "SOFTWARE\Classes\Installer\Products\55E3652ACEB38283D8765E8E9B8E6B57"
-!endif
-
-InstallDir "$PROGRAMFILES\Zebra"
-!endif
-
-!if "${VSVER}" = "14"
-!define VS_REDIST_EXE vc_redist.${VSARCH}.exe
-!else
-!define VS_REDIST_EXE vcredist_${VSARCH}.exe
-!endif
+!include "..\m4\common.nsi"
 
 RequestExecutionLevel admin
 
@@ -155,7 +123,6 @@ Section "Zebra Source"
 	File ..\IDMETA
 	SetOutPath $INSTDIR\util
 	File ..\util\*.c
-	File ..\util\*.tcl
 	SetOutPath $INSTDIR\dfa
 	File ..\dfa\*.c
 	File ..\dfa\*.h
@@ -186,6 +153,10 @@ Section "Zebra Source"
 	File makefile
 	File *.nsi
 	File *.txt
+	SetOutPath $INSTDIR\m4
+	File ..\m4\*.m4
+	File ..\m4\*.tcl
+	File ..\m4\*.nsi
 SectionEnd
 
 Section "Zebra Path"

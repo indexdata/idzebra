@@ -91,6 +91,7 @@ ISAMBDIR=$(SRCDIR)\ISAMB
 RSETDIR=$(SRCDIR)\RSET
 UTILDIR=$(SRCDIR)\UTIL
 DATA1DIR=$(SRCDIR)\DATA1
+M4DIR=$(SRCDIR)\m4
 
 # Force temp files in a local temp, easier to clean
 # when nmake crashes and leaves a lot of rubbish behind
@@ -101,14 +102,17 @@ TEMP=$(TMPDIR)
 # NSIS
 NSIS="c:\program files (x86)\nsis\makensis.exe"
 
-dist:
+dist: version.nsi
 	nmake DEBUG=1 clean
 	nmake DEBUG=0 clean
 	nmake DEBUG=0
 	nmake nsis
 
 nsis:
-	$(NSIS) /DVSARCH=x86 /DVSVER=14 zebra.nsi
+	$(NSIS) /DVSARCH=x86 zebra.nsi
+
+version.nsi: $(ROOTDIR)/IDMETA
+	$(TCL) $(M4DIR)/mk_version.tcl $(ROOTDIR)/IDMETA version.nsi
 
 # Targets - what to make
 
@@ -312,7 +316,7 @@ LINK_PROGRAM= $(LINK) \
 generate: $(INCLDIR)\idzebra\version.h
 
 $(INCLDIR)\idzebra\version.h: $(ROOTDIR)/IDMETA 
-	@cd $(ROOTDIR)\util
+	@cd $(M4DIR)
 	$(TCL) mk_version.tcl $(ROOTDIR)/IDMETA $(INCLDIR)\idzebra\version.h
 
 # Source and object modules
