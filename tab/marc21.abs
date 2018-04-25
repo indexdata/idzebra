@@ -20,6 +20,7 @@ xpath disable
 
 all any
 
+melm 008		Date-of-publication:w:range(data,7,4),Date-publication:w:range(data,15,3),Code-language:w:range(data,35,3)
 melm 100		author,author:p
 melm 110		author
 melm 111		author

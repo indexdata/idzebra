@@ -10,6 +10,7 @@ esetname F @
 
 all any
 
+elm 008			other		Date:w:range(data,7,10)
 # All 245 subfields mapped to title (word) and 
 # 245 subfield a mapped to tile (phrase).
 elm 245			title		-
