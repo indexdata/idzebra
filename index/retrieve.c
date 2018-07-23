@@ -895,7 +895,9 @@ static int perform_facet(ZebraHandle zh,
                             col[j].first_sysno, col[j].first_seqno);
                     if (code == 0)
                     {
+#if 0
                         zebra_snippets_log(rec_snippets, YLOG_LOG, 1);
+#endif
                         const zebra_snippet_word *sn =
                             zebra_snippets_constlist(rec_snippets);
                         int first = 1; /* ignore leading whitespace */
