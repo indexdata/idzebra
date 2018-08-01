@@ -38,6 +38,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <zebra-lock.h>
 #include <idzebra/util.h>
 #include <yaz/yaz-util.h>
+#include <yaz/snprintf.h>
 #include "mfile.h"
 
 static int scan_areadef(MFile_area ma, const char *ad, const char *base)
@@ -268,7 +269,8 @@ MFile_area mf_init(const char *name, const char *spec, const char *base,
 	    part_f->number = number;
 	    part_f->dir = dirp;
 	    part_f->fd = -1;
-	    sprintf(tmpnam, "%s/%s", dirp->name, dent->d_name);
+	    yaz_snprintf(tmpnam, FILENAME_MAX,
+                         "%s/%s", dirp->name, dent->d_name);
 	    part_f->path = xstrdup(tmpnam);
 	    /* get size */
 	    if ((fd = open(part_f->path, O_BINARY|O_RDONLY)) < 0)
@@ -390,7 +392,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 	    return 0;
 	}
 	mnew->files[0].dir = dp;
-    	sprintf(tmp, "%s/%s-%d.mf", dp->name, mnew->name, 0);
+        yaz_snprintf(tmp, FILENAME_MAX, "%s/%s-%d.mf", dp->name, mnew->name, 0);
     	mnew->files[0].path = xstrdup(tmp);
     	mnew->ma = ma;
 	mnew->next = ma->mfiles;
@@ -563,7 +565,8 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 	    mf->files[mf->cur_file].blocks = 0;
 	    mf->files[mf->cur_file].bytes = 0;
 	    mf->files[mf->cur_file].fd = -1;
-	    sprintf(tmp, "%s/%s-" ZINT_FORMAT ".mf", dp->name, mf->name,
+	    yaz_snprintf(tmp, FILENAME_MAX,
+                         "%s/%s-" ZINT_FORMAT ".mf", dp->name, mf->name,
 		mf->files[mf->cur_file].number);
 	    mf->files[mf->cur_file].path = xstrdup(tmp);
 	    mf->no_files++;
