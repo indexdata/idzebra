@@ -51,6 +51,9 @@ struct special_fetch_s {
     NMEM nmem;
 };
 
+static int log_level_mod = 0;
+static int log_level_set = 0;
+
 static int zebra_create_record_stream(ZebraHandle zh,
                                       Record *rec,
                                       struct ZebraRecStream *stream)
@@ -491,7 +494,14 @@ int zebra_get_rec_snippets(ZebraHandle zh, zint sysno,
                            zebra_snippets *snippets)
 {
     int return_code = 0;
-    Record rec = rec_get(zh->reg->records, sysno);
+    Record rec;
+
+    if (!log_level_set)
+    {
+        log_level_mod = yaz_log_module_level("retrieve");
+        log_level_set = 1;
+    }
+    rec = rec_get(zh->reg->records, sysno);
     if (!rec)
     {
         yaz_log(YLOG_WARN, "rec_get fail on sysno=" ZINT_FORMAT, sysno);
@@ -540,23 +550,25 @@ static int snippet_fetch(
 
         zebra_snippets_hit_vector(zh, fi->setname, fi->sysno, hit_snippet);
 
-#if 0
-        /* for debugging purposes */
-        yaz_log(YLOG_LOG, "---------------------------");
-        yaz_log(YLOG_LOG, "REC SNIPPET:");
-        zebra_snippets_log(rec_snippets, YLOG_LOG, 1);
-        yaz_log(YLOG_LOG, "---------------------------");
-        yaz_log(YLOG_LOG, "HIT SNIPPET:");
-        zebra_snippets_log(hit_snippet, YLOG_LOG, 1);
-#endif
+        if (log_level_mod)
+        {
+            /* for debugging purposes */
+            yaz_log(log_level_mod, "---------------------------");
+            yaz_log(log_level_mod, "REC SNIPPET:");
+            zebra_snippets_log(rec_snippets, log_level_mod, 1);
+            yaz_log(log_level_mod, "---------------------------");
+            yaz_log(log_level_mod, "HIT SNIPPET:");
+            zebra_snippets_log(hit_snippet, log_level_mod, 1);
+        }
 
         zebra_snippets_ring(rec_snippets, hit_snippet, 5, 5);
 
-#if 0
-        yaz_log(YLOG_LOG, "---------------------------");
-        yaz_log(YLOG_LOG, "RING SNIPPET:");
-        zebra_snippets_log(rec_snippets, YLOG_LOG, 1);
-#endif
+        if (log_level_mod)
+        {
+            yaz_log(log_level_mod, "---------------------------");
+            yaz_log(log_level_mod, "RING SNIPPET:");
+            zebra_snippets_log(rec_snippets, log_level_mod, 1);
+        }
         snippet_xml_record(zh, wrbuf, rec_snippets);
 
         *output_format = yaz_oid_recsyn_xml;
@@ -883,21 +895,21 @@ static int perform_facet(ZebraHandle zh,
             if (col[j].term)
             {
                 WRBUF w_buf = wrbuf_alloc();
-                yaz_log(YLOG_LOG, "facet %s %s",
+                yaz_log(log_level_mod, "facet %s %s",
                              spec->index_type, spec->index_name);
                 if (col[j].first_sysno)
                 {
                     zebra_snippets *rec_snippets = zebra_snippets_create();
                     int code = zebra_get_rec_snippets(
                         zh, col[j].first_sysno, rec_snippets);
-                    yaz_log(YLOG_LOG, "sysno/seqno "
+                    yaz_log(log_level_mod, "sysno/seqno "
                             ZINT_FORMAT "/" ZINT_FORMAT,
                             col[j].first_sysno, col[j].first_seqno);
                     if (code == 0)
                     {
-#if 0
-                        zebra_snippets_log(rec_snippets, YLOG_LOG, 1);
-#endif
+                        if (log_level_mod)
+                            zebra_snippets_log(rec_snippets,
+                                               log_level_mod, 1);
                         const zebra_snippet_word *sn =
                             zebra_snippets_constlist(rec_snippets);
                         int first = 1; /* ignore leading whitespace */
@@ -1230,6 +1242,12 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
     ZEBRA_RES res;
     struct special_fetch_s fetch_info;
 
+    if (!log_level_set)
+    {
+        log_level_mod = yaz_log_module_level("retrieve");
+        yaz_log(YLOG_LOG, "log_level_mod = %d", log_level_mod);
+        log_level_set = 1;
+    }
     res = zebra_result_recid_to_sysno(zh, setname, sysno, sysnos, &no_sysnos);
     if (res != ZEBRA_OK)
         return ZEBRA_FAIL;
