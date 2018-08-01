@@ -1245,7 +1245,6 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
     if (!log_level_set)
     {
         log_level_mod = yaz_log_module_level("retrieve");
-        yaz_log(YLOG_LOG, "log_level_mod = %d", log_level_mod);
         log_level_set = 1;
     }
     res = zebra_result_recid_to_sysno(zh, setname, sysno, sysnos, &no_sysnos);
