@@ -9,6 +9,6 @@ tab=@datarootdir@/idzebra@PACKAGE_SUFFIX@/tab
 Name: Zebra
 Version: @VERSION@
 Description: Indexing and retrieval engine for structured text. 
-Libs: -L${libdir} -lidzebra-2.0 @YAZLIB@ @TCL_LIB@ @EXPAT_LIBS@
+Libs: -L${libdir} -lidzebra-2.0 @YAZLIB@ @TCL_LIBS@ @EXPAT_LIBS@
 Libs.private: @LIBS@
 Cflags: -I${includedir} -I${includedir}/idzebra@PACKAGE_SUFFIX@ @ZEBRA_CFLAGS@
