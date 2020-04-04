@@ -332,6 +332,7 @@ AC_OUTPUT([
   examples/oai-pmh/Makefile
   examples/zthes/Makefile
   idzebra-config-2.0
+  zebra.pc
   Doxyfile
   win/version.nsi
   include/idzebra/version.h

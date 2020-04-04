@@ -9,6 +9,9 @@ SUBDIRS=util bfile dfa dict isams isamb isamc rset data1 \
 aclocaldir=$(datadir)/aclocal
 aclocal_DATA = m4/idzebra-2.0.m4
 
+pkgconfigdir = ${libdir}/pkgconfig
+pkgconfig_DATA = zebra.pc
+
 SPEC_FILE=idzebra.spec
 
 EXTRA_DIST= README.md NEWS IDMETA $(SPEC_FILE) m4/id-config.sh \
