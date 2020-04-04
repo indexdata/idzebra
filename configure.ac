@@ -102,26 +102,12 @@ AC_CHECK_LIB([m], [sqrt])
 dnl ------ -ldl
 AC_CHECK_LIB([dl], [dlopen])
 dnl
-dnl ------ EXPAT
-expat=yes
-AC_SUBST([EXPAT_LIBS])
-AC_ARG_WITH(expat,   [  --with-expat[=DIR]        EXPAT library in DIR],[expat=$withval])
-if test "$expat" != "no"; then
-    xLIBS="$LIBS";
-    xCFLAGS="$CFLAGS";
-    if test "$expat" != "yes"; then
-	EXPAT_CFLAGS="-I$expat/include"
-	EXPAT_LIBS="-L$expat/lib"
-	CFLAGS="$EXPAT_CFLAGS $CFLAGS"
-	LIBS="$EXPAT_LIBS $LIBS"
-    fi
-    AC_CHECK_LIB(expat,XML_ParserCreate,[EXPAT_LIBS="$EXPAT_LIBS -lexpat"])
-    if test "$ac_cv_lib_expat_XML_ParserCreate" = "yes"; then
-		AC_CHECK_HEADERS(expat.h)
-    fi
-    LIBS="$xLIBS"
-    CFLAGS="$xCFLAGS"
+
+PKG_CHECK_MODULES([EXPAT], [expat], [have_expat="yes"], [have_expat="no"])
+if test "$have_expat" = "yes"; then
+    AC_CHECK_HEADERS(expat.h)
 fi
+
 dnl
 dnl ------- 64 bit files
 AC_SYS_LARGEFILE
