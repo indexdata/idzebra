@@ -22,7 +22,7 @@ tabdatadir = $(datadir)/$(PACKAGE)$(PACKAGE_SUFFIX)/tab
 # The shared modules 
 mod_grs_regx_la_SOURCES = mod_grs_regx.c
 mod_grs_regx_la_LDFLAGS = -rpath $(modlibdir) -module -avoid-version
-mod_grs_regx_la_LADD = $(TCL_LIB)
+mod_grs_regx_la_LADD = $(TCL_LIBS)
 mod_grs_regx_la_LIBADD = $(zebralib) $(mod_grs_regx_la_LADD)
 
 mod_grs_xml_la_SOURCES = mod_grs_xml.c
@@ -109,7 +109,7 @@ kdump_SOURCES = kdump.c
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) \
   -DDEFAULT_PROFILE_PATH=\"$(tabdatadir)\" \
   -DDEFAULT_MODULE_PATH=\"$(modlibdir)\" \
-  $(TCL_INCLUDE)
+  $(TCL_CFLAGS)
 
 LDADD = $(zebralib) $(YAZLALIB) 
 

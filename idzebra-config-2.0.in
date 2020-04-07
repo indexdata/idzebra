@@ -14,8 +14,8 @@ idzebra_src_root="@IDZEBRA_SRC_ROOT@"
 idzebra_build_root="@IDZEBRA_BUILD_ROOT@"
 package_suffix=@PACKAGE_SUFFIX@
 
-extralibs="@YAZLIB@ @TCL_LIB@ @EXPAT_LIBS@ @LIBS@ "
-extralalibs="@YAZLALIB@ @TCL_LIB@ @EXPAT_LIBS@ @LIBS@"
+extralibs="@YAZLIB@ @TCL_LIBS@ @EXPAT_LIBS@ @LIBS@ "
+extralalibs="@YAZLALIB@ @TCL_LIBS@ @EXPAT_LIBS@ @LIBS@"
 
 usage()
 {

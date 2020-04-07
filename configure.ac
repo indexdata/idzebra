@@ -17,8 +17,6 @@ AC_SUBST([ZEBRALIBS_VERSION_INFO])
 main_zebralib=index/libidzebra${PACKAGE_SUFFIX}.la
 AC_SUBST(main_zebralib)
 dnl ------ Substitutions
-AC_SUBST([TCL_INCLUDE])
-AC_SUBST([TCL_LIB])
 AC_SUBST([ZEBRA_CFLAGS])
 AC_SUBST([AR_FLAGS],[cr])
 dnl
@@ -26,6 +24,7 @@ dnl ------ Checking programs
 AC_PROG_CC
 AC_PROG_CPP
 AM_PROG_LIBTOOL
+PKG_PROG_PKG_CONFIG
 dnl
 dnl ------ headers
 AC_CHECK_HEADERS([sys/resource.h sys/time.h sys/wait.h sys/utsname.h unistd.h])
@@ -41,65 +40,9 @@ if test "$YAZVERSION" = "NONE"; then
     AC_MSG_ERROR([YAZ development libraries required])
 fi
 YAZ_DOC
-dnl ------ Look for Tcl
-dnl See if user has specified location of tclConfig.sh; otherwise
-dnl see if tclConfig.sh exists in same prefix lcoation as tclsh; otherwise
-dnl disable Tcl.
-TCL_LIB=""
-TCL_INCLUDE=""
-tclconfig=NONE
-AC_ARG_WITH(tclconfig, [  --with-tclconfig=DIR    tclConfig.sh in DIR], [tclconfig=$withval])
-if test "x$tclconfig" = xNONE; then
-    saveprefix=${prefix}
-    AC_PREFIX_PROGRAM(tclsh)
-    tclconfig=${prefix}/lib
-    prefix=${saveprefix}
-    if test ! -r ${tclconfig}/tclConfig.sh; then
-	# Not found, try search for Tcl on Debian systems.
-	for d in /usr/lib/tcl*; do
-	    if test -f $d/tclConfig.sh; then
-		tclconfig=$d
-	    fi
-	done
-    fi
-fi
-AC_MSG_CHECKING(for Tcl)
-if test -r ${tclconfig}/tclConfig.sh; then
-    . ${tclconfig}/tclConfig.sh
-    if test -r ${tclconfig}/../generic/tcl.h; then
-	TCL_INCLUDE=-I${tclconfig}/../generic
-	TCL_LIB="$TCL_BUILD_LIB_SPEC $TCL_LIBS"
-    elif test -d ${TCL_PREFIX}/include/tcl${TCL_VERSION}; then
-	TCL_INCLUDE=-I${TCL_PREFIX}/include/tcl${TCL_VERSION}
-	TCL_LIB="$TCL_LIB_SPEC $TCL_LIBS"
-    else
-	TCL_INCLUDE=-I${TCL_PREFIX}/include
-	TCL_LIB="$TCL_LIB_SPEC $TCL_LIBS"
-    fi
-    TCL_LIB=`echo $TCL_LIB|sed 's%-L/usr/lib%%g'`
-    SHLIB_CFLAGS=$TCL_SHLIB_CFLAGS
-    SHLIB_LD=$TCL_SHLIB_LD
-    SHLIB_SUFFIX=$TCL_SHLIB_SUFFIX
-    SHLIB_VERSION=$TCL_SHLIB_VERSION
-    AC_MSG_RESULT($TCL_VERSION)
 
-    old_CPPFLAGS=$CPPFLAGS
-    CPPFLAGS="${TCL_INCLUDE} $CPPFLAGS"
-    AC_CHECK_HEADERS(tcl.h)
-    CPPFLAGS=${old_CPPFLAGS}
+PKG_CHECK_MODULES([TCL], [tcl], [], [AC_DEFINE([HAVE_TCL_H], [0], [Define to 1 if we have TCL])])
 
-    # The Mac OSX -framework causes problems with Libtool
-    # and dependancy libs.. so apply Tcl libs everywhere bug #461
-    case $host in
-	*-*-darwin*)
-	    LIBS="$LIBS $TCL_LIB";
-	    ;;
-    esac
-    
-else
-    AC_MSG_RESULT(Not found)
-    AC_DEFINE(HAVE_TCL_H,0)
-fi
 dnl
 dnl ------ various functions
 AC_CHECK_FUNCS(mkstemp atoll)
@@ -159,26 +102,12 @@ AC_CHECK_LIB([m], [sqrt])
 dnl ------ -ldl
 AC_CHECK_LIB([dl], [dlopen])
 dnl
-dnl ------ EXPAT
-expat=yes
-AC_SUBST([EXPAT_LIBS])
-AC_ARG_WITH(expat,   [  --with-expat[=DIR]        EXPAT library in DIR],[expat=$withval])
-if test "$expat" != "no"; then
-    xLIBS="$LIBS";
-    xCFLAGS="$CFLAGS";
-    if test "$expat" != "yes"; then
-	EXPAT_CFLAGS="-I$expat/include"
-	EXPAT_LIBS="-L$expat/lib"
-	CFLAGS="$EXPAT_CFLAGS $CFLAGS"
-	LIBS="$EXPAT_LIBS $LIBS"
-    fi
-    AC_CHECK_LIB(expat,XML_ParserCreate,[EXPAT_LIBS="$EXPAT_LIBS -lexpat"])
-    if test "$ac_cv_lib_expat_XML_ParserCreate" = "yes"; then
-		AC_CHECK_HEADERS(expat.h)
-    fi
-    LIBS="$xLIBS"
-    CFLAGS="$xCFLAGS"
+
+PKG_CHECK_MODULES([EXPAT], [expat], [have_expat="yes"], [have_expat="no"])
+if test "$have_expat" = "yes"; then
+    AC_CHECK_HEADERS(expat.h)
 fi
+
 dnl
 dnl ------- 64 bit files
 AC_SYS_LARGEFILE
@@ -332,6 +261,7 @@ AC_OUTPUT([
   examples/oai-pmh/Makefile
   examples/zthes/Makefile
   idzebra-config-2.0
+  zebra.pc
   Doxyfile
   win/version.nsi
   include/idzebra/version.h
