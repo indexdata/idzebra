@@ -36,7 +36,7 @@ fi
 dnl
 dnl ------ YAZ
 YAZ_INIT([server icu],[3.0.47])
-if test "$YAZVERSION" = "NONE"; then
+if test "$YAZ_VERSION" = "NONE"; then
     AC_MSG_ERROR([YAZ development libraries required])
 fi
 YAZ_DOC
@@ -173,7 +173,7 @@ fi
 AC_DEFINE([IDZEBRA_STATIC_GRS_XML],[0],[Whether module grs.xml is static])
 ZEBRA_MODULE(grs-xml,[$def], [  --enable-mod-grs-xml    XML filter (Expat based)])
 oldCPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $YAZINC"
+CPPFLAGS="$CPPFLAGS $YAZ_CFLAGS"
 AC_PREPROC_IFELSE(
    [AC_LANG_PROGRAM([[
 #if YAZ_HAVE_XSLT
@@ -288,10 +288,10 @@ echo \
   Automake:                   ${AUTOMAKE}
   Archiver:                   ${AR}
   Ranlib:                     ${RANLIB}
-  YAZ Version:                ${YAZVERSION}
-  YAZ Include:                ${YAZINC}
-  YAZ La Lib:                 ${YAZLALIB}
-  YAZ Lib:                    ${YAZLIB}
+  YAZ Version:                ${YAZ_VERSION}
+  YAZ Include:                ${YAZ_CFLAGS}
+  YAZ La Lib:                 ${YAZ_LIBS}
+  YAZ Lib:                    ${YAZ_LIBS}
   Bugreport:                  ${PACKAGE_BUGREPORT}
 
 ------------------------------------------------------------------------"

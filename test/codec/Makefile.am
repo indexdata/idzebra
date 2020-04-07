@@ -5,6 +5,6 @@ TESTS = $(check_PROGRAMS)
 
 tstcodec_SOURCES = tstcodec.c
 
-AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
+AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZ_CFLAGS)
 
-LDADD = ../../$(main_zebralib) $(YAZLALIB)
+LDADD = ../../$(main_zebralib) $(YAZ_LIBS)

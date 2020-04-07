@@ -9,11 +9,11 @@ tstmfile1_SOURCES = tstmfile1.c
 tstbfile1_SOURCES = tstbfile1.c
 tstbfile2_SOURCES = tstbfile2.c
 
-AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
+AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZ_CFLAGS)
 
 libidzebra_bfile_la_SOURCES = bfile.c mfile.c cfile.c commit.c cfile.h mfile.h
 
-LDADD = libidzebra-bfile.la ../util/libidzebra-util.la $(YAZLALIB)
+LDADD = libidzebra-bfile.la ../util/libidzebra-util.la $(YAZ_LIBS)
 
 clean-local:
 	-rm -fr *.log *.mf shadow

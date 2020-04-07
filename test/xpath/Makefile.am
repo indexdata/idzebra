@@ -13,9 +13,9 @@ xpath4_SOURCES = xpath4.c
 xpath5_SOURCES = xpath5.c
 xpath6_SOURCES = xpath6.c
 
-AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
+AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZ_CFLAGS)
 
-LDADD = ../api/libtestlib.a ../../$(main_zebralib) $(YAZLALIB)
+LDADD = ../api/libtestlib.a ../../$(main_zebralib) $(YAZ_LIBS)
 
 clean-local:
 	-rm -rf *.LCK 

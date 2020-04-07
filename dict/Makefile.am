@@ -5,13 +5,13 @@ check_PROGRAMS = scantest
 
 TESTS = $(check_PROGRAMS)
 
-AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC)
+AM_CPPFLAGS = -I$(srcdir)/../include $(YAZ_CFLAGS)
 
 LDADD = libidzebra-dict.la \
  ../bfile/libidzebra-bfile.la \
  ../dfa/libidzebra-dfa.la \
  ../util/libidzebra-util.la \
-  $(YAZLALIB)
+  $(YAZ_LIBS)
 
 libidzebra_dict_la_SOURCES = dopen.c dclose.c drdwr.c open.c close.c \
  insert.c lookup.c lookupec.c lookgrep.c delete.c scan.c dcompact.c \

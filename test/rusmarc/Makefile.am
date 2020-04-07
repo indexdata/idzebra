@@ -13,9 +13,9 @@ dist-hook:
 
 t1_SOURCES = t1.c
 
-AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
+AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZ_CFLAGS)
 
-LDADD = ../api/libtestlib.a ../../$(main_zebralib) $(YAZLALIB)
+LDADD = ../api/libtestlib.a ../../$(main_zebralib) $(YAZ_LIBS)
 
 clean-local:
 	-rm -rf *.LCK 

@@ -47,11 +47,11 @@ test_sort2_SOURCES = test_sort2.c
 test_sort3_SOURCES = test_sort3.c
 test_sortidx_SOURCES = test_sortidx.c
 
-AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
+AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZ_CFLAGS)
 
 zebralibs = ../../$(main_zebralib)
 
-LDADD = libtestlib.a $(zebralibs) $(YAZLALIB)
+LDADD = libtestlib.a $(zebralibs) $(YAZ_LIBS)
 
 clean-local:
 	-rm -rf *.LCK 

@@ -48,11 +48,11 @@ xslt4_SOURCES = xslt4.c
 xslt5_SOURCES = xslt5.c
 dom1_SOURCES = dom1.c
 
-AM_CPPFLAGS = -I$(srcdir)/../api -I$(top_srcdir)/include $(YAZINC)
+AM_CPPFLAGS = -I$(srcdir)/../api -I$(top_srcdir)/include $(YAZ_CFLAGS)
 
 zebralibs = ../../index/libidzebra-2.0.la 
 
-LDADD = ../api/libtestlib.a $(zebralibs) $(YAZLALIB)
+LDADD = ../api/libtestlib.a $(zebralibs) $(YAZ_LIBS)
 
 clean-local:
 	-rm -rf *.LCK 

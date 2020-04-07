@@ -14,8 +14,8 @@ idzebra_src_root="@IDZEBRA_SRC_ROOT@"
 idzebra_build_root="@IDZEBRA_BUILD_ROOT@"
 package_suffix=@PACKAGE_SUFFIX@
 
-extralibs="@YAZLIB@ @TCL_LIBS@ @EXPAT_LIBS@ @LIBS@ "
-extralalibs="@YAZLALIB@ @TCL_LIBS@ @EXPAT_LIBS@ @LIBS@"
+extralibs="@YAZ_LIBS@ @TCL_LIBS@ @EXPAT_LIBS@ @LIBS@ "
+extralalibs="@YAZ_LIBS@ @TCL_LIBS@ @EXPAT_LIBS@ @LIBS@"
 
 usage()
 {
@@ -84,7 +84,7 @@ while test $# -gt 0; do
     shift
 done
 
-IDZEBRAINC="@ZEBRA_CFLAGS@ @YAZINC@"
+IDZEBRAINC="@ZEBRA_CFLAGS@ @YAZ_CFLAGS@"
 
 if test "$echo_source" = "yes"; then
     IDZEBRALIB="-L${idzebra_build_root}/index/.libs -lidzebra${package_suffix}"

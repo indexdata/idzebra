@@ -8,8 +8,8 @@ TESTS = $(check_PROGRAMS)
 
 test_dfa_SOURCES = test_dfa.c
 
-AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC)
-LDADD = libidzebra-dfa.la ../util/libidzebra-util.la $(YAZLALIB)
+AM_CPPFLAGS = -I$(srcdir)/../include $(YAZ_CFLAGS)
+LDADD = libidzebra-dfa.la ../util/libidzebra-util.la $(YAZ_LIBS)
 
 agrep_SOURCES = agrep.c
 

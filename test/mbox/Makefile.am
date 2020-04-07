@@ -7,9 +7,9 @@ EXTRA_DIST= zebra.cfg email2.flt $(mailboxfiles)
 
 mbox1_SOURCES = mbox1.c
 
-AM_CPPFLAGS = -I$(srcdir)/../api -I$(top_srcdir)/include $(YAZINC)
+AM_CPPFLAGS = -I$(srcdir)/../api -I$(top_srcdir)/include $(YAZ_CFLAGS)
 
-LDADD = ../api/libtestlib.a ../../$(main_zebralib) $(YAZLALIB)
+LDADD = ../api/libtestlib.a ../../$(main_zebralib) $(YAZ_LIBS)
 
 clean-local:
 	-rm -rf *.LCK 

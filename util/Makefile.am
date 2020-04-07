@@ -11,8 +11,8 @@ EXTRA_DIST = tstcharmap.chr emptycharmap.chr tstpass.txt tstres.cfg idzebra-abs2
 
 DISTCLEANFILES = idzebra-config-2.0
 
-AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\"
-LDADD = libidzebra-util.la $(YAZLALIB)
+AM_CPPFLAGS = -I$(srcdir)/../include $(YAZ_CFLAGS) -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\"
+LDADD = libidzebra-util.la $(YAZ_LIBS)
 
 libidzebra_util_la_SOURCES = version.c zint.c res.c charmap.c zebramap.c \
  passwddb.c zebra-lock.c dirent.c xpath.c atoi_zn.c snippet.c flock.c \
