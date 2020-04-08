@@ -10,8 +10,6 @@ echo_tab=no
 echo_source=yes
 echo_lalibs=no
 echo_modules=no
-idzebra_src_root="@IDZEBRA_SRC_ROOT@"
-idzebra_build_root="@IDZEBRA_BUILD_ROOT@"
 package_suffix=@PACKAGE_SUFFIX@
 
 extralibs="@YAZLIB@ @TCL_LIBS@ @EXPAT_LIBS@ @LIBS@ "
@@ -87,13 +85,15 @@ done
 IDZEBRAINC="@ZEBRA_CFLAGS@ @YAZINC@"
 
 if test "$echo_source" = "yes"; then
-    IDZEBRALIB="-L${idzebra_build_root}/index/.libs -lidzebra${package_suffix}"
-    IDZEBRALALIB="${idzebra_build_root}/index/libidzebra${package_suffix}.la"
+    src_root="@IDZEBRA_SRC_ROOT@"
+    build_root="@IDZEBRA_BUILD_ROOT@"
+    IDZEBRALIB="-L${build_root}/index/.libs -lidzebra${package_suffix}"
+    IDZEBRALALIB="${build_root}/index/libidzebra${package_suffix}.la"
     IDZEBRALIB="$IDZEBRALIB $extralibs"
     IDZEBRALALIB="$IDZEBRALALIB $extralalibs"
     IDZEBRAINC="$IDZEBRAINC -I${idzebra_src_root}/include"
-    IDZEBRATAB="${idzebra_src_root}/tab"
-    IDZEBRAMOD="${idzebra_src_root}/recctrl"
+    IDZEBRATAB="${src_root}/tab"
+    IDZEBRAMOD="${src_root}/recctrl"
 else
     IDZEBRALIB="-lidzebra${package_suffix}"
     if test "$libdir" != "/usr/lib"; then

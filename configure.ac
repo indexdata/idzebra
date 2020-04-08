@@ -269,7 +269,9 @@ AC_OUTPUT([
   win/version.nsi
   include/idzebra/version.h
 ],[
-	sed s%echo_source=yes%echo_source=no%g < idzebra-config-2.0 > util/idzebra-config-2.0 && chmod +x idzebra-config-2.0 util/idzebra-config-2.0
+	sed -e 's%echo_source=yes%echo_source=no%g; s%src_root=.*$%%g; s%build_root=.*%%g' \
+		< idzebra-config-2.0 > util/idzebra-config-2.0 \
+		&& chmod +x idzebra-config-2.0 util/idzebra-config-2.0
 	diff doc/local.ent doc/local0.ent >/dev/null 2>/dev/null \
 		|| cp doc/local0.ent doc/local.ent
 ])
