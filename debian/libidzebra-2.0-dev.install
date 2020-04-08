@@ -1,5 +1,6 @@
 usr/bin/idzebra-config-2.0
-usr/lib/libidzebra-*.so
-usr/lib/libidzebra-*.a
+usr/lib/*/libidzebra-*.so
+usr/lib/*/libidzebra-*.a
 usr/share/aclocal
 usr/include/idzebra-2.0
+usr/lib/*/pkgconfig/*.pc
