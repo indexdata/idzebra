@@ -111,7 +111,8 @@ rm -fr ${RPM_BUILD_ROOT}
 %{_libdir}/*.so
 %{_libdir}/*.a
 %{_mandir}/*/idzebra-config-*
-/usr/share/aclocal/*.m4
+%{_datadir}/aclocal/*.m4
+%{_libdir}/pkgconfig/*.pc
 
 %post -n lib%{namev}
 /sbin/ldconfig 

@@ -104,6 +104,9 @@ AC_CHECK_LIB([dl], [dlopen])
 dnl
 
 PKG_CHECK_MODULES([EXPAT], [expat], [have_expat="yes"], [have_expat="no"])
+if test "$have_expat" = "no"; then
+    AC_CHECK_LIB(expat,XML_ParserCreate,[EXPAT_LIBS="-lexpat"; have_expat=yes])
+fi
 if test "$have_expat" = "yes"; then
     AC_CHECK_HEADERS(expat.h)
 fi
