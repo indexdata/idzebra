@@ -179,6 +179,7 @@ BFile bf_xopen(BFiles bfs, const char *name, int block_size, int wrflag,
 	bf->alloc_buf_size = bf->block_size;
 
     hbuf = bf->alloc_buf = xmalloc(bf->alloc_buf_size);
+    memset(hbuf, 0, bf->alloc_buf_size);
 
     /* fill-in default values */
     bf->free_list = 0;
@@ -217,7 +218,7 @@ BFile bf_xopen(BFiles bfs, const char *name, int block_size, int wrflag,
     }
     if (sscanf(hbuf, "%39s %d " ZINT_FORMAT " " ZINT_FORMAT "%n",
 	       read_magic, read_version, &bf->last_block,
-	       &bf->free_list, &l) < 4 && l)  /* if %n is counted, it's 5 */
+	       &bf->free_list, &l) < 4 || l == 0) /* if %n is counted, it's 5 */
     {
 	yaz_log(YLOG_WARN, "bad header for %s (1)", magic);
 	bf_close(bf);
