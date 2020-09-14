@@ -46,8 +46,7 @@ void tst1(BFiles bfs)
     if (!bf)
         return;
 
-    YAZ_CHECK(more_info != 0);
-    YAZ_CHECK(strcmp(more_info, "more info") == 0);
+    YAZ_CHECK(more_info != 0 && strcmp(more_info, "more info") == 0);
     bf_xclose(bf, version, 0 /* no more info */);
 }
 
