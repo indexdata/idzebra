@@ -1,3 +1,14 @@
+--- 2.2.0 2020/09/14
+
+For configure, --with-yaz=pkg makes it use yaz.pc rather than
+yaz-config.
+
+New generated pkg-config file zebra.pc.
+
+For configure, use pkg-config to find Expat library.
+
+For configure, uaz-pkg-config to find Tcl library.
+
 --- 2.1.4 2018/08/01
 
 Avoid useless debug info for facet handling ZEB-682
