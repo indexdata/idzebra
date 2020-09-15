@@ -6,7 +6,7 @@ export DH_VERBOSE=1
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
-		--with-yaz=/usr/bin
+		--with-yaz=pkg
 
 override_dh_auto_test:
 	true

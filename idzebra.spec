@@ -9,8 +9,8 @@ Source: idzebra-%{version}.tar.gz
 BuildRoot: %{_tmppath}/idzebra-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
 URL: http://www.indexdata.com/zebra
-BuildRequires: libyaz5-devel >= 5.0.0
-BuildRequires: expat-devel, bzip2-devel, tcl, zlib-devel
+BuildRequires: libyaz5-devel >= 5.29.0
+BuildRequires: expat-devel, bzip2-devel, tcl, zlib-devel, pkgconfig
 Summary: High-performance, structured text indexing and retrival engine.
 Group: Applications/Databases
 %description
@@ -58,7 +58,7 @@ Development libraries for the Zebra search engine.
 
 CFLAGS="$RPM_OPT_FLAGS" \
  ./configure --prefix=/usr --libdir=%{_libdir} --mandir=%{_mandir}\
-	--enable-shared --with-yaz=/usr/bin
+	--enable-shared --with-yaz=pkg
 %if %{?make_build:1}%{!?make_build:0}
 %make_build
 %else
