@@ -15,5 +15,7 @@ clean-local:
 	-rm -rf *.LCK 
 	-rm -rf *.log 
 	-rm -rf *.mf 
+	-rm -rf out
+	-rm -rf socket
 	-rm -rf reg/*.mf 
 
