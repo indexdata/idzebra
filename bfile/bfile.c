@@ -43,14 +43,7 @@ struct BFile_struct
     MFile mf;
     Zebra_lock_rdwr rdwr_lock;
     struct CFile_struct *cf;
-    char *alloc_buf;
     int block_size;
-    int alloc_buf_size;
-    zint last_block;
-    zint free_list;
-    zint root_block;
-    char *magic;
-    int header_dirty;
 };
 
 struct BFiles_struct {
@@ -90,10 +83,7 @@ void bfs_destroy(BFiles bfs)
 
 static FILE *open_cache(BFiles bfs, const char *flags)
 {
-    FILE *file;
-
-    file = fopen(bfs->cache_fname, flags);
-    return file;
+    return fopen(bfs->cache_fname, flags);
 }
 
 static void unlink_cache(BFiles bfs)
@@ -142,8 +132,6 @@ int bf_close2(BFile bf)
         if (mf_close(bf->mf))
             ret = -1;
     }
-    xfree(bf->alloc_buf);
-    xfree(bf->magic);
     xfree(bf);
     return ret;
 }
@@ -159,114 +147,11 @@ void bf_close(BFile bf)
 
 #define HEADER_SIZE 256
 
-BFile bf_xopen(BFiles bfs, const char *name, int block_size, int wrflag,
-	       const char *magic, int *read_version,
-	       const char **more_info)
-{
-    char read_magic[40];
-    int l = 0;
-    int i = 0;
-    char *hbuf;
-    zint pos = 0;
-    BFile bf = bf_open(bfs, name, block_size, wrflag);
-
-    if (!bf)
-	return 0;
-     /* HEADER_SIZE is considered enough for our header */
-    if (bf->block_size < HEADER_SIZE)
-	bf->alloc_buf_size = HEADER_SIZE;
-    else
-	bf->alloc_buf_size = bf->block_size;
-
-    hbuf = bf->alloc_buf = xmalloc(bf->alloc_buf_size);
-    memset(hbuf, 0, bf->alloc_buf_size);
-
-    /* fill-in default values */
-    bf->free_list = 0;
-    bf->root_block = bf->last_block = HEADER_SIZE / bf->block_size + 1;
-    bf->magic = xstrdup(magic);
-
-    if (!bf_read(bf, pos, 0, 0, hbuf + pos * bf->block_size))
-    {
-	if (wrflag)
-	    bf->header_dirty = 1;
-	return bf;
-    }
-    while(hbuf[pos * bf->block_size + i] != '\0')
-    {
-	if (i == bf->block_size)
-	{   /* end of block at pos reached .. */
-	    if (bf->alloc_buf_size  < (pos+1) * bf->block_size)
-	    {
-		/* not room for all in alloc_buf_size */
-		yaz_log(YLOG_WARN, "bad header for %s (3)", magic);
-		bf_close(bf);
-		return 0;
-	    }
-	    /* read next block in header */
-	    pos++;
-	    if (!bf_read(bf, pos, 0, 0, hbuf + pos * bf->block_size))
-	    {
-		yaz_log(YLOG_WARN, "missing header block %s (4)", magic);
-		bf_close(bf);
-		return 0;
-	    }
-	    i = 0; /* pos within block is reset */
-	}
-	else
-	    i++;
-    }
-    if (sscanf(hbuf, "%39s %d " ZINT_FORMAT " " ZINT_FORMAT "%n",
-	       read_magic, read_version, &bf->last_block,
-	       &bf->free_list, &l) < 4 || l == 0) /* if %n is counted, it's 5 */
-    {
-	yaz_log(YLOG_WARN, "bad header for %s (1)", magic);
-	bf_close(bf);
-	return 0;
-    }
-    if (strcmp(read_magic, magic))
-    {
-	yaz_log(YLOG_WARN, "bad header for %s (2)", magic);
-	bf_close(bf);
-	return 0;
-    }
-    if (hbuf[l] == ' ')
-	l++;
-    if (more_info)
-	*more_info = hbuf + l;
-    return bf;
-}
-
-int bf_xclose(BFile bf, int version, const char *more_info)
-{
-    if (bf->header_dirty)
-    {
-	zint pos = 0;
-	assert(bf->alloc_buf);
-	assert(bf->magic);
-	sprintf(bf->alloc_buf, "%s %d " ZINT_FORMAT " " ZINT_FORMAT " ",
-		bf->magic, version, bf->last_block, bf->free_list);
-	if (more_info)
-	    strcat(bf->alloc_buf, more_info);
-	while (1)
-	{
-	    bf_write(bf, pos, 0, 0, bf->alloc_buf + pos * bf->block_size);
-	    pos++;
-	    if (pos * bf->block_size > strlen(bf->alloc_buf))
-		break;
-	}
-    }
-    return bf_close2(bf);
-}
-
 BFile bf_open(BFiles bfs, const char *name, int block_size, int wflag)
 {
     BFile bf = (BFile) xmalloc(sizeof(*bf));
 
-    bf->alloc_buf = 0;
-    bf->magic = 0;
     bf->block_size = block_size;
-    bf->header_dirty = 0;
     bf->cf = 0;
     bf->mf = 0;
     zebra_lock_rdwr_init(&bf->rdwr_lock);
@@ -448,51 +333,6 @@ void bf_commitClean(BFiles bfs, const char *spec)
     unlink_cache(bfs);
     if (mustDisable)
         bf_cache(bfs, 0);
-}
-
-int bf_alloc(BFile bf, int no, zint *blocks)
-{
-    int i;
-    assert(bf->alloc_buf);
-    bf->header_dirty = 1;
-    for (i = 0; i < no; i++)
-    {
-	if (!bf->free_list)
-	    blocks[i] = bf->last_block++;
-	else
-	{
-	    char buf[16];
-	    const char *cp = buf;
-	    memset(buf, '\0', sizeof(buf));
-
-	    blocks[i] = bf->free_list;
-	    if (bf_read(bf, bf->free_list, 0, sizeof(buf), buf) != 1)
-	    {
-		yaz_log(YLOG_WARN, "Bad freelist entry " ZINT_FORMAT,
-			bf->free_list);
-                return -1;
-	    }
-	    zebra_zint_decode(&cp, &bf->free_list);
-	}
-    }
-    return 0;
-}
-
-int bf_free(BFile bf, int no, const zint *blocks)
-{
-    int i;
-    assert(bf->alloc_buf);
-    bf->header_dirty = 1;
-    for (i = 0; i < no; i++)
-    {
-	char buf[16];
-	char *cp = buf;
-	memset(buf, '\0', sizeof(buf));
-	zebra_zint_encode(&cp, bf->free_list);
-	bf->free_list = blocks[i];
-	bf_write(bf, bf->free_list, 0, sizeof(buf), buf);
-    }
-    return 0;
 }
 
 int bfs_register_directory_stat(BFiles bfs, int no, const char **directory,

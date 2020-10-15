@@ -1,12 +1,11 @@
 
 noinst_LTLIBRARIES = libidzebra-bfile.la
 
-check_PROGRAMS = tstmfile1 tstbfile1 tstbfile2
+check_PROGRAMS = tstmfile1 tstbfile2
 
 TESTS = $(check_PROGRAMS)
 
 tstmfile1_SOURCES = tstmfile1.c
-tstbfile1_SOURCES = tstbfile1.c
 tstbfile2_SOURCES = tstbfile2.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)

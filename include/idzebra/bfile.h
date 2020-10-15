@@ -71,16 +71,6 @@ void bf_close(BFile bf);
 YAZ_EXPORT
 int bf_close2(BFile bf);
 
-/** \brief closes an extended Block file handle..
-    \param bf extended block file opened with bf_xopen
-    \param version version to be put in a file
-    \param more_info more information to be stored in file (header)
-    \retval 0 success
-    \retval -1 failure (can never happen as the code is now)
-*/
-YAZ_EXPORT
-int bf_xclose(BFile bf, int version, const char *more_info);
-
 /** \brief opens and returns a Block file handle
     \param bfs block files
     \param name filename
@@ -92,19 +82,6 @@ int bf_xclose(BFile bf, int version, const char *more_info);
 YAZ_EXPORT
 BFile bf_open(BFiles bfs, const char *name, int block_size, int wflag);
 
-/** \brief opens and returns an extended Block file handle
-    \param bfs block files
-    \param name filename
-    \param block_size block size in bytes
-    \param wflag 1=opened for read&write, 0=read only
-    \param magic magic string to be used for file
-    \param read_version holds after completion of bf_xopen the version
-    \param more_info holds more_info as read from file (header)
-*/
-YAZ_EXPORT
-BFile bf_xopen(BFiles bfs, const char *name, int block_size, int wflag,
-	       const char *magic, int *read_version,
-	       const char **more_info);
 
 /** \brief read from block file (may call exit)
     \param bf block file handle
@@ -199,23 +176,6 @@ void bf_commitClean (BFiles bfs, const char *spec);
 */
 YAZ_EXPORT
 void bf_reset (BFiles bfs);
-
-/** \brief Allocates one or more blocks in an extended block file
-    \param bf extended block file
-    \param no number of blocks to allocate
-    \param blocks output array of size no with block offsets
-*/
-YAZ_EXPORT
-int bf_alloc(BFile bf, int no, zint *blocks);
-
-/** \brief Releases one or more blocks in an extended block file
-    \param bf extended block file
-    \param no numer of blocks to release
-    \param blocks input array with block offsets (IDs) to release
-*/
-YAZ_EXPORT
-int bf_free(BFile bf, int no, const zint *blocks);
-
 
 /* \brief gets statistics about directory in register area
    \param bfs block files
