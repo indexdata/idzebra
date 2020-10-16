@@ -4,8 +4,8 @@
 # Define the basic value-set. *Beware* of changing this without re-indexing
 # your databases.
 
-lowercase {0-9}{a-y}üzæäøöå
-uppercase {0-9}{A-Y}ÜZÆÄØÖÅ
+lowercase {0-9}{a-y}Ã¼zÃ¦Ã¤Ã¸Ã¶Ã¥
+uppercase {0-9}{A-Y}ÃœZÃ†Ã„Ã˜Ã–Ã…
 
 # Breaking characters
 
@@ -13,28 +13,28 @@ space {\001-\040}!"#$%&'\()*+,-./:;<=>?@\[\\]^_`\{|}~
 
 # Characters to be considered equivalent for searching purposes.
 
-# equivalent æä(ae)
-# equivalent øö(oe)
-# equivalent å(aa)
-# equivalent uü
+# equivalent Ã¦Ã¤(ae)
+# equivalent Ã¸Ã¶(oe)
+# equivalent Ã¥(aa)
+# equivalent uÃ¼
 
 # Supplemental mappings
 
-#map (&auml;)       ä
-#map (&aelig;)      æ
-#map (&oslash;)     ø
-#map (&aring;)      å
-#map (&ouml;)       ö
-#map (&Auml;)       Ä
-#map (&Aelig;)      Æ
-#map (&Oslash;)     Ø
-#map (&Aring;)      Å
-#map (&Ouml;)       Ö
+#map (&auml;)       Ã¤
+#map (&aelig;)      Ã¦
+#map (&oslash;)     Ã¸
+#map (&aring;)      Ã¥
+#map (&ouml;)       Ã¶
+#map (&Auml;)       Ã„
+#map (&Aelig;)      Ã†
+#map (&Oslash;)     Ã˜
+#map (&Aring;)      Ã…
+#map (&Ouml;)       Ã–
 
-#map éÉ		e
-#map á		a
-#map ó		o
-#map í		i
+#map Ã©Ã‰		e
+#map Ã¡		a
+#map Ã³		o
+#map Ã­		i
 
 #map (Aa)	(AA)
 
