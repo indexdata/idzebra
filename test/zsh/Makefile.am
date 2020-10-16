@@ -14,6 +14,7 @@ clean-local:
 	-rm -rf *.LCK 
 	-rm -rf *.log 
 	-rm -rf *.mf 
+	-rm -rf test*.zsh.out
 	-rm -rf reg/*.LCK 
 	-rm -rf reg/*.log 
 	-rm -rf reg/*.mf 
