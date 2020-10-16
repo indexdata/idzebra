@@ -1,5 +1,6 @@
 # Danish/Swedish character map.
-#
+
+encoding utf-8
 
 # Define the basic value-set. *Beware* of changing this without re-indexing
 # your databases.
