@@ -14,7 +14,7 @@ New generated pkg-config file zebra.pc.
 
 For configure, use pkg-config to find Expat library.
 
-For configure, uaz-pkg-config to find Tcl library.
+For configure, use pkg-config to find Tcl library.
 
 --- 2.1.4 2018/08/01
 
