@@ -1,4 +1,5 @@
-# Danish/Swedish character map.
+# Generic character map.
+#
 
 encoding utf-8
 
@@ -21,24 +22,22 @@ space {\001-\040}!"#$%&'\()*+,-./:;<=>?@\[\\]^_`\{|}~
 
 # Supplemental mappings
 
-map (&auml;)       ä
-map (&aelig;)      æ
-map (&oslash;)     ø
-map (&aring;)      å
-map (&ouml;)       ö
-map (&Auml;)       Ä
-map (&Aelig;)      Æ
-map (&Oslash;)     Ø
-map (&Aring;)      Å
-map (&Ouml;)       Ö
+#map (&auml;)       ä
+#map (&aelig;)      æ
+#map (&oslash;)     ø
+#map (&aring;)      å
+#map (&ouml;)       ö
+#map (&Auml;)       Ä
+#map (&Aelig;)      Æ
+#map (&Oslash;)     Ø
+#map (&Aring;)      Å
+#map (&Ouml;)       Ö
 
-map éÉ		e
-map á		a
-map ó		o
-map í		i
+#map éÉ		e
+#map á		a
+#map ó		o
+#map í		i
 
-map (Aa)	(AA)
+#map (Aa)	(AA)
 
-map (aa)        a
-
-#qmap (ies)      (ie)
+#map (aa)        a

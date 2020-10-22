@@ -1,10 +1,11 @@
 # URX character map
-#
+
+encoding utf-8
 
 # Basic character(s)
 
-lowercase {0-9}{a-y}üzæäøöå/.~:-,#!?=<;\{|}+
-uppercase {0-9}{A-Y}ÜZÆÄØÖÅ/.~:-,#!?=>;\{|}+
+lowercase {0-9}{a-y}Ã¼zÃ¦Ã¤Ã¸Ã¶Ã¥/.~:-,#!?=<;\{|}+
+uppercase {0-9}{A-Y}ÃœZÃ†Ã„Ã˜Ã–Ã…/.~:-,#!?=>;\{|}+
 
 # Breaking characters
 
