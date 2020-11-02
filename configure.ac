@@ -121,7 +121,7 @@ else
     ZINT_VALUE=0
 fi 
 ZEBRA_CFLAGS="-DZEBRA_ZINT=${ZINT_VALUE}"
-AC_DEFINE_UNQUOTED([ZEBRA_ZINT],${ZINT_VALUE},[Whehter zint is long long])
+AC_DEFINE_UNQUOTED([ZEBRA_ZINT],${ZINT_VALUE},[Whether zint is long long])
 dnl ------ Modules
 AC_SUBST([SHARED_MODULE_LA])
 SHARED_MODULE_LA=""
