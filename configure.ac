@@ -11,8 +11,8 @@ AC_CONFIG_AUX_DIR([config])
 AM_INIT_AUTOMAKE([1.9])
 PACKAGE_SUFFIX="-2.0"
 AC_SUBST(PACKAGE_SUFFIX)
-dnl http://www.gnu.org/software/libtool/manual.html#Versioning
-ZEBRALIBS_VERSION_INFO=0:1:0
+dnl https://www.gnu.org/software/libtool/manual/libtool.html#Libtool-versioning
+ZEBRALIBS_VERSION_INFO=0:2:0
 AC_SUBST([ZEBRALIBS_VERSION_INFO])
 main_zebralib=index/libidzebra${PACKAGE_SUFFIX}.la
 AC_SUBST(main_zebralib)
