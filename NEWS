@@ -1,7 +1,16 @@
+--- 2.2.2 2020/11/05
+
+Add bf_xopen, bf_xclose, bf_alloc, bf_free symbols to keep it
+ABI compatible. Closes #22.
+
+Bump zebra libraries from 0:1:0 to 0:2:0 (revision + 1).
+
+A few typos fixed.
+
 --- 2.2.1 2020/10/22
 
-Remove bf_xopen, bf_xclose, bf_alloc, bf_free and tests for them. These utilities
-are not used anywhere in Zebra. Closes #12.
+Remove bf_xopen, bf_xclose, bf_alloc, bf_free and tests for them.
+These utilities are not used anywhere in Zebra. Closes #12.
 
 Convert some Zebra configuration files in ISO-8859-1 to UTF-8.
 
