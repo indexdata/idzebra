@@ -1,8 +1,16 @@
-!include EnvVarUpdate.nsh
+; This file is part of the Zebra server.
+
+; Using https://nsis.sourceforge.io/EnVar_plug-in
+; for path manipulation
+
+Unicode True
+
 !include version.nsi
+
 !include "MUI.nsh"
 
 Name "Zebra"
+
 !include "..\m4\common.nsi"
 
 RequestExecutionLevel admin
@@ -161,7 +169,9 @@ SectionEnd
 
 Section "Zebra Path"
 	SectionIn 1 2
-	${EnvVarUpdate} $0 "PATH" "A" "HKLM" "$INSTDIR\bin"
+	EnVar::SetHKLM
+	EnVar::AddValue "PATH" "$INSTDIR\bin"
+	Pop $0
 SectionEnd
 
 ; begin uninstall settings/section
@@ -175,7 +185,9 @@ Section Uninstall
 	ExecWait '"$INSTDIR\bin\zebrasrv" -remove'
 	RMDir /r "$SMPROGRAMS\Index Data\Zebra"
 	RMDir /r $INSTDIR
-	${un.EnvVarUpdate} $0 "PATH" "R" "HKLM" "$INSTDIR\bin"
+	EnVar::SetHKLM
+	EnVar::DeleteValue "PATH" "$INSTDIR\bin"
+	Pop $0
         IfFileExists $INSTDIR 0 Removed
 		MessageBox MB_OK|MB_ICONEXCLAMATION \
                  "Note: $INSTDIR could not be removed."
