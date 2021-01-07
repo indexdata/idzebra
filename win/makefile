@@ -5,6 +5,7 @@
 ###########################################################
 
 DEBUG=0   # 0 for release, 1 for debug
+BARCH = 32
 USE_MANIFEST = 0
 
 # TCL is optional - ONLY needed for source straight from Git
@@ -12,26 +13,27 @@ TCL=tclsh
 #TCL="C:\Tcl\bin\tclsh85.exe"
 HAVE_TCL=1
 
-# EXPAT is optional. It's required for grs.xml-filters.
-HAVE_EXPAT=1
-EXPAT_DIR=c:\Program files (x86)\Expat 2.2.3
-
 # iconv is optional
 HAVE_ICONV=0
 ICONV_DIR=c:\iconv-1.9.2.win32
 
-# libxslt. For mod_dom and mod_alvis
-HAVE_LIBXSLT=1
-LIBXSLT_DIR=c:\libxslt-1.1.28.win32
-
-# libxml2. Used by libxslt
-HAVE_LIBXML2=1
-LIBXML2_DIR=c:\libxml2-2.9.2.win32
+# EXPAT is optional. It's required for grs.xml-filters.
+HAVE_EXPAT=1
+EXPAT_DIR=c:\Program files (x86)\Expat 2.2.10
 
 # ICU support
 HAVE_ICU=1
-ICU_DIR=c:\icu-56.1-vs2015
-ICU_INCLUDE=$(ICU_DIR)\include
+ICU_VER=68
+ICU_BASE=c:\icu4c-$(ICU_VER)_2-Win$(BARCH)-MSVC2019
+ICU_INCLUDE=$(ICU_BASE)\include
+
+# libxslt. For mod_dom and mod_alvis
+HAVE_LIBXSLT=1
+LIBXSLT_DIR=c:\libxslt-1.1.28.win$(BARCH)
+
+# libxml2. Used by libxslt
+HAVE_LIBXML2=1
+LIBXML2_DIR=c:\libxml2-2.9.2.win$(BARCH)
 
 default: all
 all: dirs generate expat iconv yaz dll zserver zebraidx tstflock
@@ -108,7 +110,7 @@ dist: version.nsi
 	nmake DEBUG=0
 	nmake nsis
 
-nsis:
+nsis: version.nsi
 	$(NSIS) /DVSARCH=x86 zebra.nsi
 
 version.nsi: $(ROOTDIR)/IDMETA
