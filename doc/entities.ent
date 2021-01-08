@@ -19,4 +19,4 @@
 <!ENTITY zebrasrv-options SYSTEM "zebrasrv-options.xml">
 <!ENTITY zebrasrv-virtual SYSTEM "zebrasrv-virtual.xml">
 <!ENTITY gfs-synopsis-app "zebrasrv">
-<!ENTITY copyright-year "1994-2020">
+<!ENTITY copyright-year "1994-2021">
