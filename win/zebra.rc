@@ -18,12 +18,12 @@ VS_VERSION_INFO VERSIONINFO
  {
         BLOCK "000004b0"
         BEGIN
-            VALUE "Comments", "http://www.indexdata.com/zebra/\0"
+            VALUE "Comments", "https://www.indexdata.com/zebra/\0"
             VALUE "CompanyName", "Index Data\0"
             VALUE "FileDescription", "idzebra DLL\0"
             VALUE "FileVersion", ZEBRAVER "\0"
             VALUE "InternalName", "idzebra\0"
-            VALUE "LegalCopyright", "Copyright © 1994-2015 Index Data\0"
+            VALUE "LegalCopyright", "Copyright © 1994-2021 Index Data\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "zebra.rc\0"
             VALUE "PrivateBuild", "\0"
