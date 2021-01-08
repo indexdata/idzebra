@@ -13,7 +13,7 @@ icuchain words-icu.xml
 # debug 1
 
 # Phrase index
-# Used if completeness is 'complete {sub}field' (@attr 6=2, @attr 6=1)
+# Used if completeness is 'complete {sub}field' (@attr 6=2, @attr 6=3)
 # and structure is word/phrase/word-list/free-form-text/document-text
 index p
 completeness 1
