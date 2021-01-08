@@ -196,7 +196,43 @@ static void tst(int argc, char **argv)
 #endif
 }
 
-TL_MAIN
+static void tst2(int argc, char **argv)
+{
+#if YAZ_HAVE_ICU
+    const char *myrec2[] = {
+        "<gils>\n<title>one two three four\n</gils>\n",
+        "<gils>\n<title>Jensen, S. E.\n</gils>\n",
+	0} ;
+
+    ZebraService zs = tl_start_up("test_icu_indexing.cfg", argc, argv);
+    ZebraHandle zh = zebra_open(zs, 0);
+
+    tl_check_filter(zs, "grs.xml");
+
+    YAZ_CHECK(tl_init_data(zh, myrec2));
+
+    YAZ_CHECK(tl_query(zh, "@attr 1=title {one two three four}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title {one three four}", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title {jensen s e}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title {jensen s}", 1));
+
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {jensen s e}", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {jensen s }", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {jensen s}", 0));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 e", 1));
+
+    YAZ_CHECK(tl_close_down(zh, zs));
+#endif
+}
+
+int main(int argc, char **argv)
+{                                                                       \
+    YAZ_CHECK_INIT(argc, argv);
+    YAZ_CHECK_LOG();
+    tst(argc, argv);
+    tst2(argc, argv);
+    YAZ_CHECK_TERM;
+}
 
 /*
  * Local variables:
