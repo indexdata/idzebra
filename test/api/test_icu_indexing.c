@@ -216,10 +216,10 @@ static void tst2(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=title {jensen s e}", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=title {jensen s}", 1));
 
-    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {jensen s e}", 0));
-    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {jensen s }", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {jensen s e}", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {jensen s }", 0));
     YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 {jensen s}", 0));
-    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 e", 1));
+    YAZ_CHECK(tl_query(zh, "@attr 1=title @attr 6=2 e", 0));
 
     YAZ_CHECK(tl_close_down(zh, zs));
 #endif
