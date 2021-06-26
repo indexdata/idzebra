@@ -4,12 +4,24 @@
     <xsd:documentation>
 			MARCXML: The MARC 21 XML Schema
 			Prepared by Corey Keith
+			
+				May 21, 2002 - Version 1.0  - Initial Release
 
-                    August 4, 2003 - Version 1.1 - Removed import of xml namespace and the use of xml:space="preserve" attributes on the leader and controlfields. 
+**********************************************
+Changes.
+
+August 4, 2003 - Version 1.1 - 
+Removed import of xml namespace and the use of xml:space="preserve" attributes on the leader and controlfields. 
                     Whitespace preservation in these subfields is accomplished by the use of xsd:whiteSpace value="preserve"
 
-			May 21, 2002 - Version 1.0  - Initial Release
-
+May 21, 2009  - Version 1.2 - 
+in subfieldcodeDataType  the pattern 
+                          "[\da-z!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?{}_^`~\[\]\\]{1}"
+	changed to:	
+                         "[\dA-Za-z!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?{}_^`~\[\]\\]{1}"
+    i.e "A-Z" added after "[\d" before "a-z"  to allow upper case.  This change is for consistency with the documentation.
+	
+************************************************************
 			This schema supports XML markup of MARC21 records as specified in the MARC documentation (see www.loc.gov).  It allows tags with
 			alphabetics and subfield codes that are symbols, neither of which are as yet used in  the MARC 21 communications formats, but are 
 			allowed by MARC 21 for local data.  The schema accommodates all types of MARC 21 records: bibliographic, holdings, bibliographic 
@@ -128,7 +140,8 @@
   <xsd:simpleType name="subfieldcodeDataType" id="code.st">
     <xsd:restriction base="xsd:string">
       <xsd:whiteSpace value="preserve"/>
-      <xsd:pattern value="[\da-z!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?{}_^`~\[\]\\]{1}"/>
+      <xsd:pattern value="[\dA-Za-z!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?{}_^`~\[\]\\]{1}"/>
+      <!-- "A-Z" added after "\d" May 21, 2009 -->
     </xsd:restriction>
   </xsd:simpleType>
   <xsd:simpleType name="idDataType" id="id.st">
