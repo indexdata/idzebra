@@ -16,7 +16,7 @@
     <xslt  stylesheet="MARC21slim2MADS.xsl"/>
   </retrieve>
   <retrieve name="mods">
-    <xslt stylesheet="MARC21slim2MODS3-1.xsl"/>
+    <xslt stylesheet="MARC21slim2MODS3-7.xsl"/>
   </retrieve>
   <retrieve name="zebra">
     <xslt stylesheet="zebra.xsl"/>
