@@ -91,7 +91,7 @@ if test "$echo_source" = "yes"; then
     IDZEBRALALIB="${build_root}/index/libidzebra${package_suffix}.la"
     IDZEBRALIB="$IDZEBRALIB $extralibs"
     IDZEBRALALIB="$IDZEBRALALIB $extralalibs"
-    IDZEBRAINC="$IDZEBRAINC -I${idzebra_src_root}/include"
+    IDZEBRAINC="$IDZEBRAINC -I${src_root}/include"
     IDZEBRATAB="${src_root}/tab"
     IDZEBRAMOD="${src_root}/recctrl"
 else
