@@ -353,10 +353,10 @@ int bfs_shadow_directory_stat(BFiles bfs, int no, const char **directory,
 }
 
 /* unimplemented functions not in use, but kept to ensure ABI */
-void bf_xclose() {}
-void bf_xopen() {}
-void bf_alloc() {}
-void bf_free() {}
+void bf_xclose(void) {}
+void bf_xopen(void) {}
+void bf_alloc(void) {}
+void bf_free(void) {}
 
 
 /*
