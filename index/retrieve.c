@@ -245,11 +245,15 @@ static int sort_fetch(
     }
 }
 
-static void special_index_xml_record(ZebraHandle zh, WRBUF wrbuf, zebra_snippets *doc, zint sysno,
-                                     struct index_spec *spec_list, const char *elemsetname, int use_xml){
+static void special_index_xml_record(ZebraHandle zh, WRBUF wrbuf,
+                                     zebra_snippets *doc, zint sysno,
+                                     struct index_spec *spec_list,
+                                     const char *elemsetname, int use_xml)
+{
     const zebra_snippet_word *doc_w;
     if (use_xml)
-        wrbuf_printf(wrbuf, "%s sysno=\"" ZINT_FORMAT "\" set=\"zebra::index%s\">\n",
+        wrbuf_printf(wrbuf, "%s sysno=\"" ZINT_FORMAT
+                     "\" set=\"zebra::index%s\">\n",
                      ZEBRA_XML_HEADER_STR, sysno, elemsetname);
     for (doc_w = zebra_snippets_constlist(doc); doc_w; doc_w = doc_w->next)
     {
@@ -279,18 +283,20 @@ static void special_index_xml_record(ZebraHandle zh, WRBUF wrbuf, zebra_snippets
             {
                 wrbuf_printf(wrbuf, "  <index name=\"%s\"",  string_index);
                 wrbuf_printf(wrbuf, " type=\"%s\"", index_type);
-                wrbuf_printf(wrbuf, ">");
+                wrbuf_printf(wrbuf, " seq=\"" ZINT_FORMAT "\">",
+                             doc_w->seqno);
                 wrbuf_xmlputs(wrbuf, doc_w->term);
                 wrbuf_printf(wrbuf, "</index>\n");
             }
             else
             {
-                wrbuf_printf(wrbuf, "%s %s %s\n", string_index, index_type, doc_w->term);
+                wrbuf_printf(wrbuf, "%s %s %s\n", string_index,
+                             index_type, doc_w->term);
             }
         }
     }
     if (use_xml)
-        wrbuf_printf(wrbuf, "</record>");
+        wrbuf_printf(wrbuf, "</record>\n");
 }
 
 
