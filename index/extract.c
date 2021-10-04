@@ -624,7 +624,7 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
     int i, fd;
     char gprefix[128];
     char ext[128];
-    char ext_res[128];
+    char ext_res[266];
     const char *original_record_type = 0;
     RecType recType;
     void *recTypeClientData;

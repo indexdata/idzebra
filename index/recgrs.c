@@ -640,7 +640,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                 int i = 0;
                 for (xp = n->u.tag.attributes; xp; xp = xp->next) {
                     char comb[512];
-                    char attr_tag_path_full[1024];
+                    char attr_tag_path_full[1026];
 
                     /* this could be cached as well */
                     sprintf(attr_tag_path_full, "@%s/%s",
@@ -683,7 +683,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                 i = 0;
                 for (xp = n->u.tag.attributes; xp; xp = xp->next) {
                     data1_termlist *tl;
-                    char attr_tag_path_full[1024];
+                    char attr_tag_path_full[1026];
                     int xpdone = 0;
 
                     sprintf(attr_tag_path_full, "@%s/%s",
