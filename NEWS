@@ -1,3 +1,18 @@
+--- 2.2.3 2021/10/04
+
+Fix #26: Index contents not shown when using "zebra::index" elements
+in ICU mode.
+
+Update XSL in example/marcxml. Thx to Jaider A. F.
+
+zebra.pc fixes. Add Requires directive (so we don't have to
+guess YAZ flags here). Simplify value for Libs, but add
+all libs in Libs.private. Cflags: No need for I${includedir}
+
+Fix #26: Do not tokenize in ICU phrase rule.
+
+Windows: update for VS 2019, ICU 68.
+
 --- 2.2.2 2020/11/05
 
 Add bf_xopen, bf_xclose, bf_alloc, bf_free symbols to keep it
