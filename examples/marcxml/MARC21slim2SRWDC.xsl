@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:marc="http://www.loc.gov/MARC21/slim" xmlns:srw_dc="info:srw/schema/1/dc-schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://purl.org/dc/elements/1.1/" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" exclude-result-prefixes="marc">
-	<xsl:import href="MARC21slimUtils.xsl"/>
+	<xsl:import href="http://www.loc.gov/standards/marcxml/xslt/MARC21slimUtils.xsl"/>
 	<xsl:output method="xml" indent="yes" encoding="UTF-8"/>
 	<!-- modification log 
-	NT 01/04:  added collection level element
-	and removed attributes
-
+	ntra 01/22/2008:   Suppressed duplicate 520,521.  fixed 752 subfield list, suppressed 856q, added 662.  
+     JR 08/21/2007:   Fixed a couple of Dublin Core Links
+	ntra 12/11/2006:  Fixed 500 fields.
+	JR 05/05/06:  Updated the schemaLocation
+	RG 10/07/05: Corrected subject subfields; 10/12/05: added if statement for <language>
+	JR 09/05:  Added additional <subject> subfields and 651 for <coverage>
 	JR 06/04:  Added ISBN identifier
-
-   JR 09/05:  Added additional <subject> subfields and 651 for <coverage>
-   RG 10/07/05: Corrected subject subfields; 10/12/05: added if statement for <language>
-   JR 05/05/06:  Updated the schemaLocation
+	NT 01/04:  added collection level element
+			and removed attributes   	
+   	
 -->
 	<xsl:template match="/">
 		<xsl:if test="marc:collection">
-			<srw_dc:dcCollection xmlns:srw_dc="info:srw/schema/1/dc-schema" xsi:schemaLocation="info:srw/schema/1/dc-schema http://www.loc.gov/standards/sru/dc-schema.xsd">
+			<srw_dc:dcCollection xmlns:srw_dc="info:srw/schema/1/dc-schema" xsi:schemaLocation="info:srw/schema/1/dc-schema http://www.loc.gov/standards/sru/resources/dc-schema.xsd ">
 				<xsl:for-each select="marc:collection">
 					<xsl:for-each select="marc:record">
 						<srw_dc:dc>
@@ -25,7 +27,7 @@
 			</srw_dc:dcCollection>
 		</xsl:if>
 		<xsl:if test="marc:record">
-			<srw_dc:dc xmlns:srw_dc="info:srw/schema/1/dc-schema" xsi:schemaLocation="info:srw/schema/1/dc-schema http://www.loc.gov/standards/sru/dc-schema.xsd">
+			<srw_dc:dc xmlns:srw_dc="info:srw/schema/1/dc-schema" xsi:schemaLocation="info:srw/schema/1/dc-schema http://www.loc.gov/standards/sru/resources/dc-schema.xsd">
 				<xsl:apply-templates select="marc:record"/>
 			</srw_dc:dc>
 		</xsl:if>
@@ -92,23 +94,23 @@
 				<xsl:value-of select="substring($controlField008,36,3)"/>
 			</language>
 		</xsl:if>		
-		<xsl:for-each select="marc:datafield[@tag=856]/marc:subfield[@code='q']">
+		<!--<xsl:for-each select="marc:datafield[@tag=856]/marc:subfield[@code='q']">
 			<format>
 				<xsl:value-of select="."/>
 			</format>
-		</xsl:for-each>
+		</xsl:for-each>-->
 		<xsl:for-each select="marc:datafield[@tag=520]">
 			<description>
 				<!-- nt fix 01/04 -->
 				<xsl:value-of select="normalize-space(marc:subfield[@code='a'])"/>
 			</description>
 		</xsl:for-each>
-		<xsl:for-each select="marc:datafield[@tag=521]">
+		<!--<xsl:for-each select="marc:datafield[@tag=521]">
 			<description>
 				<xsl:value-of select="marc:subfield[@code='a']"/>
 			</description>
-		</xsl:for-each>
-		<xsl:for-each select="marc:datafield[500&lt;@tag][@tag&lt;=599][not(@tag=506 or @tag=530 or @tag=540 or @tag=546)]">
+		</xsl:for-each>-->
+		<xsl:for-each select="marc:datafield[500 &lt;= number(@tag) and number(@tag) &lt;= 599][not(@tag=506 or @tag=530 or @tag=540 or @tag=546 or @tag=520)]">
 			<description>
 				<xsl:value-of select="marc:subfield[@code='a']"/>
 			</description>
@@ -208,10 +210,17 @@
 				</xsl:if>
 			</coverage>
 		</xsl:for-each>
+		<xsl:for-each select="marc:datafield[@tag=662]">
+			<coverage>
+				<xsl:call-template name="subfieldSelect">
+					<xsl:with-param name="codes">abcdefgh</xsl:with-param>
+				</xsl:call-template>
+			</coverage>
+		</xsl:for-each>
 		<xsl:for-each select="marc:datafield[@tag=752]">
 			<coverage>
 				<xsl:call-template name="subfieldSelect">
-					<xsl:with-param name="codes">abcd</xsl:with-param>
+					<xsl:with-param name="codes">adcdfgh</xsl:with-param>
 				</xsl:call-template>
 			</coverage>
 		</xsl:for-each>
@@ -254,7 +263,11 @@
 		</xsl:for-each>
 	</xsl:template>
 </xsl:stylesheet>
-<!-- Stylus Studio meta-information - (c)1998-2003 Copyright Sonic Software Corporation. All rights reserved.
+<!-- Stylus Studio meta-information - (c) 2004-2005. Progress Software Corporation. All rights reserved.
+<metaInformation>
+<scenarios ><scenario default="yes" name="Scenario1" userelativepaths="yes" externalpreview="yes" url="..\..\..\..\..\..\..\..\..\..\javadev4\testsets\diacriticu8.xml" htmlbaseurl="" outputurl="" processortype="internal" useresolver="yes" profilemode="0" profiledepth="" profilelength="" urlprofilexml="" commandline="" additionalpath="" additionalclasspath="" postprocessortype="none" postprocesscommandline="" postprocessadditionalpath="" postprocessgeneratedext="" validateoutput="no" validator="internal" customvalidator=""/></scenarios><MapperMetaTag><MapperInfo srcSchemaPathIsRelative="yes" srcSchemaInterpretAsXML="no" destSchemaPath="" destSchemaRoot="" destSchemaPathIsRelative="yes" destSchemaInterpretAsXML="no"/><MapperBlockPosition></MapperBlockPosition><TemplateContext></TemplateContext><MapperFilter side="source"></MapperFilter></MapperMetaTag>
+</metaInformation>
+--><!-- Stylus Studio meta-information - (c)1998-2002 eXcelon Corp.
 <metaInformation>
 <scenarios/><MapperInfo srcSchemaPath="" srcSchemaRoot="" srcSchemaPathIsRelative="yes" srcSchemaInterpretAsXML="no" destSchemaPath="" destSchemaRoot="" destSchemaPathIsRelative="yes" destSchemaInterpretAsXML="no"/>
 </metaInformation>
