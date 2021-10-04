@@ -245,6 +245,61 @@ static int sort_fetch(
     }
 }
 
+static void special_index_xml_record(ZebraHandle zh, WRBUF wrbuf,
+                                     zebra_snippets *doc, zint sysno,
+                                     struct index_spec *spec_list,
+                                     const char *elemsetname, int use_xml)
+{
+    const zebra_snippet_word *doc_w;
+    if (use_xml)
+        wrbuf_printf(wrbuf, "%s sysno=\"" ZINT_FORMAT
+                     "\" set=\"zebra::index%s\">\n",
+                     ZEBRA_XML_HEADER_STR, sysno, elemsetname);
+    for (doc_w = zebra_snippets_constlist(doc); doc_w; doc_w = doc_w->next)
+    {
+        const char *index_type;
+        const char *db = 0;
+        const char *string_index = 0;
+
+        zebraExplain_lookup_ord(zh->reg->zei, doc_w->ord,
+                                &index_type, &db, &string_index);
+        int match = 1;
+        if (spec_list)
+        {
+            match = 0;
+            struct index_spec *spec;
+            for (spec = spec_list; spec; spec = spec->next)
+            {
+                if ((!spec->index_type ||
+                     !yaz_matchstr(spec->index_type, index_type))
+                    &&
+                    !yaz_matchstr(spec->index_name, string_index))
+                    match = 1;
+            }
+        }
+        if (match)
+        {
+            if (use_xml)
+            {
+                wrbuf_printf(wrbuf, "  <index name=\"%s\"",  string_index);
+                wrbuf_printf(wrbuf, " type=\"%s\"", index_type);
+                wrbuf_printf(wrbuf, " seq=\"" ZINT_FORMAT "\">",
+                             doc_w->seqno);
+                wrbuf_xmlputs(wrbuf, doc_w->term);
+                wrbuf_printf(wrbuf, "</index>\n");
+            }
+            else
+            {
+                wrbuf_printf(wrbuf, "%s %s %s\n", string_index,
+                             index_type, doc_w->term);
+            }
+        }
+    }
+    if (use_xml)
+        wrbuf_printf(wrbuf, "</record>\n");
+}
+
+
 static int special_index_fetch(
     struct special_fetch_s *fi, const char *elemsetname,
     const Odr_oid *input_format,
@@ -252,8 +307,6 @@ static int special_index_fetch(
     WRBUF result, WRBUF addinfo,
     Record rec)
 {
-    zebra_rec_keys_t keys;
-    int ret_code = 0;
     ZebraHandle zh = fi->zh;
     struct index_spec *spec, *spec_list;
     int error;
@@ -285,96 +338,16 @@ static int special_index_fetch(
                                          spec->index_name) == -1)
             return YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
     }
-
-    keys = zebra_rec_keys_open();
-    zebra_rec_keys_set_buf(keys, rec->info[recInfo_delKeys],
-                           rec->size[recInfo_delKeys], 0);
-
-    if (!zebra_rec_keys_rewind(keys))
+    zebra_snippets *rec_snippets = zebra_snippets_create();
+    int return_code = zebra_get_rec_snippets(zh, fi->sysno, rec_snippets);
+    if (return_code == 0)
     {
-        ret_code = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+        special_index_xml_record(zh, result, rec_snippets, fi->sysno, spec_list,
+                                 elemsetname, !oid_oidcmp(input_format, yaz_oid_recsyn_xml));
+        *output_format = input_format;
     }
-    else
-    {
-        size_t slen;
-        const char *str;
-        struct it_key key_in;
-        WRBUF wrbuf = result;
-
-        if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
-        {
-            *output_format = input_format;
-            wrbuf_printf(wrbuf, ZEBRA_XML_HEADER_STR
-                         " sysno=\"" ZINT_FORMAT "\""
-                         " set=\"zebra::index%s\">\n",
-                         fi->sysno, elemsetname);
-        }
-        else if (!oid_oidcmp(input_format, yaz_oid_recsyn_sutrs))
-            *output_format = input_format;
-
-        while (zebra_rec_keys_read(keys, &str, &slen, &key_in))
-        {
-            int i;
-            int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
-            const char *index_type;
-            const char *db = 0;
-            const char *string_index = 0;
-            char dst_buf[IT_MAX_WORD];
-            int match = 0;
-
-            zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db,
-                                    &string_index);
-            if (!spec_list)
-                match = 1; /* match all if no specs were given */
-            else
-            {
-                for (spec = spec_list; spec; spec = spec->next)
-                {
-                    if ((!spec->index_type ||
-                         !yaz_matchstr(spec->index_type, index_type))
-                        &&
-                        !yaz_matchstr(spec->index_name, string_index))
-                        match = 1;
-                }
-            }
-            if (match)
-            {
-                if (zebra_term_untrans(zh, index_type, dst_buf, str))
-                    *dst_buf = '\0'; /* untrans failed */
-
-                if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
-                {
-                    wrbuf_printf(wrbuf, "  <index name=\"%s\"",
-                                 string_index);
-
-                    wrbuf_printf(wrbuf, " type=\"%s\"", index_type);
-
-                    wrbuf_printf(wrbuf, " seq=\"" ZINT_FORMAT "\">",
-                                 key_in.mem[key_in.len -1]);
-                    wrbuf_xmlputs(wrbuf, dst_buf);
-                    wrbuf_printf(wrbuf, "</index>\n");
-                }
-                else
-                {
-                    wrbuf_printf(wrbuf, "%s ", string_index);
-
-                    wrbuf_printf(wrbuf, "%s", index_type);
-
-                    for (i = 1; i < key_in.len; i++)
-                        wrbuf_printf(wrbuf, " " ZINT_FORMAT,
-                                     key_in.mem[i]);
-
-                    wrbuf_printf(wrbuf, " %s", dst_buf);
-
-                    wrbuf_printf(wrbuf, "\n");
-                }
-            }
-        }
-        if (!oid_oidcmp(input_format, yaz_oid_recsyn_xml))
-            wrbuf_printf(wrbuf, "</record>\n");
-    }
-    zebra_rec_keys_close(keys);
-    return ret_code;
+    zebra_snippets_destroy(rec_snippets);
+    return return_code;
 }
 
 
@@ -463,7 +436,6 @@ static void snippet_xml_record(ZebraHandle zh, WRBUF wrbuf, zebra_snippets *doc)
 
             if (mark_state == 0)
             {
-
                 wrbuf_printf(wrbuf, "  <snippet name=\"%s\"",  string_index);
                 wrbuf_printf(wrbuf, " type=\"%s\"", index_type);
                 snippet_check_fields(zh, wrbuf, doc, doc_w, index_type);

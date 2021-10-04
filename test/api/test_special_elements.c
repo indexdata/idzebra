@@ -42,7 +42,7 @@ static void tst(int argc, char **argv)
 
     const char * zebra_xml_index_title_p
         = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\" set=\"zebra::index::title:p\">\n"
-"  <index name=\"title\" type=\"p\" seq=\"4\">my title</index>\n"
+"  <index name=\"title\" type=\"p\" seq=\"4\">My title</index>\n"
 "</record>\n";
 
     const char * zebra_xml_index_title_s
