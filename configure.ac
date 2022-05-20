@@ -4,7 +4,7 @@ dnl
 AC_PREREQ(2.60)
 AC_INIT([idzebra],
 m4_esyscmd([. ./IDMETA; echo $VERSION|tr -d '\n']),
-[zebra-help@indexdata.dk])
+[info@indexdata.com])
 AC_CONFIG_HEADERS([include/config.h])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR([config])
