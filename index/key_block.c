@@ -187,7 +187,7 @@ static void *thread_func(void *vp)
 }
 #endif
 
-zebra_key_block_t key_block_create(int mem, const char *key_tmp_dir,
+zebra_key_block_t key_block_create(size_t mem, const char *key_tmp_dir,
                                    int use_threads)
 {
     zebra_key_block_t p = xmalloc(sizeof(*p));

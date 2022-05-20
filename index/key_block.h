@@ -26,7 +26,7 @@ YAZ_BEGIN_CDECL
 
 typedef struct zebra_key_block *zebra_key_block_t;
 
-zebra_key_block_t key_block_create(int mem, const char *key_tmp_dir,
+zebra_key_block_t key_block_create(size_t mem, const char *key_tmp_dir,
                                    int use_threads);
 void key_block_destroy(zebra_key_block_t *pp);
 void key_block_flush(zebra_key_block_t p, int is_final);
