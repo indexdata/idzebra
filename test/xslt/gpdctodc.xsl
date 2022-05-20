@@ -9,6 +9,9 @@
 
   <xsl:output method="xml" indent="yes"/>
 
+  <!-- Ignore other elements by mapping into empty DOM XML trees -->
+  <xsl:template match="/*"/>
+
   <!-- Record element -->
   <xsl:template match="/pgterms:etext">
     <srw_dc:dc
@@ -28,9 +31,6 @@
 
     </srw_dc:dc>
   </xsl:template>
-
-  <!-- Ignore other elements by mapping into empty DOM XML trees -->
-  <xsl:template match="/*"/>
 
   <!-- Any DC element (except special cases below -->
   <xsl:template match="/pgterms:etext/*[namespace-uri() = 'http://purl.org/dc/elements/1.1/']">
