@@ -1,3 +1,11 @@
+--- 2.2.4 2022/05/30
+
+Upgrade configure.ac to version 2.69
+
+Make memMax a size_t type ZEB-694 #34
+
+Fix sample XSLT for Libxslt 1.1.35 ZEB-693
+
 --- 2.2.3 2021/10/04
 
 Fix #26: Index contents not shown when using "zebra::index" elements
