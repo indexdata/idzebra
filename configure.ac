@@ -1,10 +1,8 @@
 dnl This file is part of the Zebra server.
 dnl Copyright (C) Index Data. See LICENSE.zebra for details.
 dnl
-AC_PREREQ(2.60)
-AC_INIT([idzebra],
-m4_esyscmd([. ./IDMETA; echo $VERSION|tr -d '\n']),
-[info@indexdata.com])
+AC_PREREQ([2.69])
+AC_INIT([idzebra],[m4_esyscmd([. ./IDMETA; printf $VERSION])],[info@indexdata.com])
 AC_CONFIG_HEADERS([include/config.h])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR([config])
@@ -23,7 +21,7 @@ dnl
 dnl ------ Checking programs
 AC_PROG_CC
 AC_PROG_CPP
-AM_PROG_LIBTOOL
+LT_INIT
 PKG_PROG_PKG_CONFIG
 dnl
 dnl ------ headers
@@ -45,10 +43,10 @@ PKG_CHECK_MODULES([TCL], [tcl], [], [AC_DEFINE([HAVE_TCL_H], [0], [Define to 1 i
 
 dnl
 dnl ------ various functions
-AC_CHECK_FUNCS(mkstemp atoll)
-dnl
+AC_CHECK_FUNCS([mkstemp atoll])
+dnkl
 dnl ------ iconv
-AC_ARG_WITH(iconv, [  --with-iconv[=DIR]        iconv library in DIR])
+AC_ARG_WITH([iconv], [  --with-iconv[=DIR]        iconv library in DIR])
 if test "$with_iconv" != "no"; then
     AC_MSG_CHECKING(for iconv)
     oldLIBS="$LIBS"
@@ -57,20 +55,17 @@ if test "$with_iconv" != "no"; then
 	LIBS="$LIBS -L${with_iconv}/lib"
 	CPPFLAGS="${CPPFLAGS} -I${with_iconv}/include"
     fi
-    AC_TRY_LINK([
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 		#include <iconv.h>
-	    ],[
+	    ]], [[
 	    iconv_t t = iconv_open("", "");
-	    ],[
+	    ]])],[
 	    AC_DEFINE([HAVE_ICONV_H],[1],[Whether iconv.h is defined])
 	    AC_MSG_RESULT(yes)
 	    ],[
 	    LIBS="$LIBS -liconv"
-	    AC_TRY_LINK([
-			#include <iconv.h>
-		    ],[
-		    iconv_t t = iconv_open("", "");
-		    ],[
+	    AC_LINK_IFELSE([AC_LANG_PROGRAM(
+			    [[ #include <iconv.h> ]],[[ iconv_t t = iconv_open("", "");]])],[
 		    AC_DEFINE([HAVE_ICONV_H],[1])
 		    AC_MSG_RESULT(yes)
 		    ],[
@@ -82,13 +77,13 @@ if test "$with_iconv" != "no"; then
 fi
 dnl
 dnl ------- BZIP2
-AC_CHECK_LIB(bz2,bzCompressInit)
+AC_CHECK_LIB([bz2],[bzCompressInit])
 if test "$ac_cv_lib_bz2_bzCompressInit" = "yes"; then
-    AC_CHECK_HEADERS(bzlib.h)
+    AC_CHECK_HEADERS([bzlib.h])
 else
-    AC_CHECK_LIB(bz2,BZ2_bzCompressInit)
+    AC_CHECK_LIB([bz2],[BZ2_bzCompressInit])
     if test "$ac_cv_lib_bz2_BZ2_bzCompressInit" = "yes"; then
-	AC_CHECK_HEADERS(bzlib.h)
+	AC_CHECK_HEADERS([bzlib.h])
     fi
 fi
 dnl
@@ -105,10 +100,10 @@ dnl
 
 PKG_CHECK_MODULES([EXPAT], [expat], [have_expat="yes"], [have_expat="no"])
 if test "$have_expat" = "no"; then
-    AC_CHECK_LIB(expat,XML_ParserCreate,[EXPAT_LIBS="-lexpat"; have_expat=yes])
+    AC_CHECK_LIB([expat],[XML_ParserCreate],[EXPAT_LIBS="-lexpat"; have_expat=yes])
 fi
 if test "$have_expat" = "yes"; then
-    AC_CHECK_HEADERS(expat.h)
+    AC_CHECK_HEADERS([expat.h])
 fi
 
 dnl
@@ -204,11 +199,6 @@ ZEBRA_MODULE(alvis,[$def], [  --enable-mod-alvis      ALVIS filter (Requires lib
 AC_DEFINE([IDZEBRA_STATIC_SAFARI],[0],[Whether module safari is static])
 ZEBRA_MODULE(safari,shared,[  --enable-mod-safari     Safari filter (DBC)])
 
-dnl ------ ANSI C Header files
-AC_STDC_HEADERS
-if test "$ac_cv_header_stdc" = "no"; then
-    AC_MSG_WARN([Your system does not seem to support ANSI C])
-fi
 AC_SUBST([IDZEBRA_SRC_ROOT])
 AC_SUBST([IDZEBRA_BUILD_ROOT])
 IDZEBRA_SRC_ROOT=`cd ${srcdir}; pwd`
@@ -229,7 +219,7 @@ AC_SUBST([VERSION_SHA1])
 dnl
 dnl ------ Create Makefiles
 dnl
-AC_OUTPUT([
+AC_CONFIG_FILES([
   Makefile
   util/Makefile
   bfile/Makefile
@@ -268,13 +258,15 @@ AC_OUTPUT([
   Doxyfile
   win/version.nsi
   include/idzebra/version.h
-],[
+])
+AC_CONFIG_COMMANDS([default],[
 	sed -e 's%echo_source=yes%echo_source=no%g; s%src_root=.*$%%g; s%build_root=.*%%g' \
 		< idzebra-config-2.0 > util/idzebra-config-2.0 \
 		&& chmod +x idzebra-config-2.0 util/idzebra-config-2.0
 	diff doc/local.ent doc/local0.ent >/dev/null 2>/dev/null \
 		|| cp doc/local0.ent doc/local.ent
-])
+],[])
+AC_OUTPUT
 
 echo \
 "------------------------------------------------------------------------
