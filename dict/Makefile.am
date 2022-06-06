@@ -19,6 +19,8 @@ libidzebra_dict_la_SOURCES = dopen.c dclose.c drdwr.c open.c close.c \
 
 dicttest_SOURCES = dicttest.c
 
+inserttest_SOURCES = inserttest.c
+
 dictext_SOURCES = dictext.c
 
 scantest_SOURCES = scantest.c
