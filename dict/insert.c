@@ -33,7 +33,7 @@ static int dict_ins(Dict dict, const Dict_char *str,
                     Dict_ptr back_ptr, int userlen, void *userinfo);
 static void clean_page(Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
                        Dict_ptr subptr, char *userinfo);
-static void checkPage(Dict dict, void *p, const char *msg);
+static void checkPage(Dict dict, void *p);
 
 static Dict_ptr new_page(Dict dict, Dict_ptr back_ptr, void **pp)
 {
@@ -70,9 +70,11 @@ static int split_page(Dict dict, Dict_ptr ptr, void *p)
     short *indxp, *best_indxp = NULL;
     Dict_char best_char = 0;
     Dict_char prev_char = 0;
-    int best_no = -1, no_current = 1;
+    int best_no = 0, no_current = 0;
+    int current_size = 0;
+    int best_size = 0;
 
-    checkPage(dict, p, "split_page 1");
+    checkPage(dict, p);
     dict->no_split++;
     /* determine splitting char... */
     indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
@@ -80,32 +82,24 @@ static int split_page(Dict dict, Dict_ptr ptr, void *p)
     {
         if (*indxp > 0) /* tail string here! */
         {
-            Dict_char dc;
-
-            memcpy(&dc, (char*) p + *indxp, sizeof(dc));
-            if (best_no < 0)
-            {   /* first entry met */
-                best_char = prev_char = dc;
-                best_no = 1;
-                best_indxp = indxp;
-            }
-            else if (prev_char == dc)
-            {   /* same char prefix. update */
-                if (++no_current > best_no)
-                {   /* best entry so far */
-                    best_no = no_current;
-                    best_char = dc;
-                    best_indxp = indxp;
-                }
-            }
-            else
-            {   /* new char prefix. restore */
+            const Dict_char *term = (Dict_char*) p + *indxp;
+            Dict_char dc = *term;
+            if (dc != prev_char) {
+                current_size = 0;
+                no_current = 0;
                 prev_char = dc;
-                no_current = 1;
+            }
+            no_current++;
+            current_size += 2 + dict_strlen(term);
+            if (current_size > best_size) {
+                best_size = current_size;
+                best_char = dc;
+                best_indxp = indxp;
+                best_no = no_current;
             }
         }
     }
-    assert(best_no >= 0); /* we didn't find any tail string entry at all! */
+    assert(best_no > 0); /* we didn't find any tail string entry at all! */
 
     j = best_indxp - (short*) p;
     i = DICT_nodir(p);
@@ -133,7 +127,6 @@ static int split_page(Dict dict, Dict_ptr ptr, void *p)
             assert(!info_here);
             info_here = info+slen*sizeof(Dict_char);
             info_char = *info_here;
-            assert(info_char < 8);
         }
         else
         {
@@ -146,7 +139,7 @@ static int split_page(Dict dict, Dict_ptr ptr, void *p)
     }
     assert(info_here == NULL || info_char == *info_here);
     /* now clean the page ... */
-    checkPage(dict, p, "split_page 2");
+    checkPage(dict, p);
     clean_page(dict, ptr, p, &best_char, subptr, info_here);
     return 0;
 }
@@ -159,7 +152,7 @@ static void clean_page(Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
     short *indxp1, *indxp2;
     char *info1, *info2;
 
-    checkPage(dict, p, "clean_page 1");
+    checkPage(dict, p);
     DICT_bsize(np) = dict->head.page_size;
     indxp1 = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     indxp2 = (short*) ((char*) np+DICT_bsize(np));
@@ -232,21 +225,21 @@ static void clean_page(Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
     DICT_size(p) = info2 - np;
     DICT_type(p) = 0;
     DICT_nodir(p) = no;
-    checkPage(dict, p, "clean_page 2");
+    checkPage(dict, p);
     xfree(np);
     dict_bf_touch(dict->dbf, ptr);
 }
 
-static void checkPage(Dict dict, void *p, const char *msg)
+static void checkPage(Dict dict, void *p)
 {
     int check = DICT_size(p) <= (int)(DICT_bsize(p) - (DICT_nodir(p))*sizeof(short));
     if (!check) {
-        yaz_log(YLOG_LOG, "checkPage failed msg=%s", msg);
+        yaz_log(YLOG_LOG, "checkPage failed");
         yaz_log(YLOG_LOG, "DICT_size(p)=%ld", (long) DICT_size(p));
         yaz_log(YLOG_LOG, "DICT_bsize(p)=%ld", (long) DICT_bsize(p));
         yaz_log(YLOG_LOG, "DICT_nodir(p)=%ld", (long) DICT_nodir(p));
     }
-    //assert(check);
+    assert(check);
 }
 
 /* return 0 if new */
