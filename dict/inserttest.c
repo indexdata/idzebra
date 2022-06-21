@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 {
     BFiles bfs = 0;
     Dict dict = 0;
-    long no = 100000000L;
+    long no = 5000000L;
 
     YAZ_CHECK_INIT(argc, argv);
 
@@ -45,31 +45,48 @@ int main(int argc, char **argv)
         YAZ_CHECK(dict);
     }
 
-    srandom(9);
     if (dict)
     {
-        long i;
-        for (i = 0; i < no; i++)
+        int pass;
+        for (pass = 0; pass < 2; pass++)
         {
-            char lex[100];
-            char userinfo[100];
-            int userlen = 4;
-            int sz = 1 + (random() % 150);
-            int j;
-            for (j = 0; j < sz; j++)
+            long i;
+            srandom(9);
+            for (i = 0; i < no; i++)
             {
-                lex[j] = 1 + (random() & 127L);
-            }
-            lex[j] = 0;
-            for (j = 0; j < userlen; j++)
-            {
-                userinfo[j] = sz;
-            }
-            dict_insert(dict, lex, userlen, userinfo);
-            if ((i % 1000000L) == 0L)
-            {
-                printf("[%ld]", i);
-                fflush(stdout);
+                char lex[100];
+                char userinfo[100];
+                int userlen = 4;
+                int sz = 1 + (random() % 150);
+                int j;
+                for (j = 0; j < sz; j++)
+                {
+                    lex[j] = 1 + (random() & 127L);
+                }
+                lex[j] = 0;
+                for (j = 0; j < userlen; j++)
+                {
+                    userinfo[j] = sz;
+                }
+                if (pass == 0)
+                {
+                    dict_insert(dict, lex, userlen, userinfo);
+                    if ((i % 1000000L) == 0L)
+                    {
+                        printf("[%ld]", i);
+                        fflush(stdout);
+                    }
+                }
+                else
+                {
+                    char *info = dict_lookup(dict, lex);
+                    YAZ_CHECK(info);
+                    if (!info) {
+                        break;
+                    }
+                    YAZ_CHECK_EQ(userlen, info[0]);
+                    YAZ_CHECK(memcmp(userinfo, info + 1, userlen) == 0);
+                }
             }
         }
         dict_close(dict);
