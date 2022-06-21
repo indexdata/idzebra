@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     BFiles bfs = 0;
     Dict dict = 0;
     long no = 100000000L;
-    
+
     YAZ_CHECK_INIT(argc, argv);
 
     bfs = bfs_create(".:40G", 0);
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     if (bfs)
     {
         bf_reset(bfs);
-        dict = dict_open(bfs, "dict", 40, 1, 0, 4096);
+        dict = dict_open(bfs, "dict", 50, 1, 0, 4096);
         YAZ_CHECK(dict);
     }
 
@@ -53,12 +53,12 @@ int main(int argc, char **argv)
         {
             char lex[100];
             char userinfo[100];
-            int userlen = 4 + (random() & 3);
-            int sz = 1 + (random() & 511L);
+            int userlen = 4;
+            int sz = 1 + (random() % 150);
             int j;
             for (j = 0; j < sz; j++)
             {
-                lex[j] = 1 + (random() & 63L);
+                lex[j] = 1 + (random() & 127L);
             }
             lex[j] = 0;
             for (j = 0; j < userlen; j++)

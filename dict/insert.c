@@ -29,13 +29,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "dict-p.h"
 
-#define CHECK 0
-
 static int dict_ins(Dict dict, const Dict_char *str,
                     Dict_ptr back_ptr, int userlen, void *userinfo);
 static void clean_page(Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
                        Dict_ptr subptr, char *userinfo);
-
+static void checkPage(Dict dict, void *p, const char *msg);
 
 static Dict_ptr new_page(Dict dict, Dict_ptr back_ptr, void **pp)
 {
@@ -44,11 +42,11 @@ static Dict_ptr new_page(Dict dict, Dict_ptr back_ptr, void **pp)
     if (!dict->head.freelist)
     {
         dict_bf_newp(dict->dbf, dict->head.last, &p, dict->head.page_size);
-	(dict->head.last)++;
+        (dict->head.last)++;
     }
     else
     {
-	ptr = dict->head.freelist;
+        ptr = dict->head.freelist;
         dict_bf_readp(dict->dbf, ptr, &p);
         dict->head.freelist = DICT_backptr(p);
     }
@@ -74,6 +72,7 @@ static int split_page(Dict dict, Dict_ptr ptr, void *p)
     Dict_char prev_char = 0;
     int best_no = -1, no_current = 1;
 
+    checkPage(dict, p, "split_page 1");
     dict->no_split++;
     /* determine splitting char... */
     indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
@@ -109,10 +108,13 @@ static int split_page(Dict dict, Dict_ptr ptr, void *p)
     assert(best_no >= 0); /* we didn't find any tail string entry at all! */
 
     j = best_indxp - (short*) p;
+    i = DICT_nodir(p);
     subptr = new_page(dict, ptr, &subp);
+    assert(i == DICT_nodir(p));
     /* scan entries to see if there is a string with */
     /* length 1. info_here indicates if such entry exist */
     info_here = NULL;
+    char info_char = 0;
     for (i=0; i<best_no; i++, j++)
     {
         char *info, *info1;
@@ -130,6 +132,8 @@ static int split_page(Dict dict, Dict_ptr ptr, void *p)
         {
             assert(!info_here);
             info_here = info+slen*sizeof(Dict_char);
+            info_char = *info_here;
+            assert(info_char < 8);
         }
         else
         {
@@ -137,9 +141,12 @@ static int split_page(Dict dict, Dict_ptr ptr, void *p)
             dict_ins(dict, (Dict_char*) (info+sizeof(Dict_char)),
                      subptr, *info1, info1+1);
             dict_bf_readp(dict->dbf, ptr, &p);
+            assert(info_here == NULL);
         }
     }
+    assert(info_here == NULL || info_char == *info_here);
     /* now clean the page ... */
+    checkPage(dict, p, "split_page 2");
     clean_page(dict, ptr, p, &best_char, subptr, info_here);
     return 0;
 }
@@ -152,6 +159,7 @@ static void clean_page(Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
     short *indxp1, *indxp2;
     char *info1, *info2;
 
+    checkPage(dict, p, "clean_page 1");
     DICT_bsize(np) = dict->head.page_size;
     indxp1 = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     indxp2 = (short*) ((char*) np+DICT_bsize(np));
@@ -166,29 +174,29 @@ static void clean_page(Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
 
             info1 = (char*) p + *indxp1;
             if (out && memcmp(out, info1, sizeof(Dict_char)) == 0)
-	    {
-		if (subptr == 0)
-	            continue;
-		*--indxp2 = -(info2 - np);
-		memcpy(info2, &subptr, sizeof(Dict_ptr));
-		info2 += sizeof(Dict_ptr);
-		memcpy(info2, out, sizeof(Dict_char));
-		info2 += sizeof(Dict_char);
-		if (userinfo)
-		{
+            {
+                if (subptr == 0)
+                    continue;
+                *--indxp2 = -(info2 - np);
+                memcpy(info2, &subptr, sizeof(Dict_ptr));
+                info2 += sizeof(Dict_ptr);
+                memcpy(info2, out, sizeof(Dict_char));
+                info2 += sizeof(Dict_char);
+                if (userinfo)
+                {
                     memcpy(info2, userinfo, *userinfo+1);
-		    info2 += *userinfo + 1;
-		}
-		else
-		    *info2++ = 0;
+                    info2 += *userinfo + 1;
+                }
+                else
+                    *info2++ = 0;
                 subptr = 0;
-	        ++no;
+                ++no;
                 continue;
-	    }
+            }
             *--indxp2 = info2 - np;
             slen = (dict_strlen((Dict_char*) info1)+1)*sizeof(Dict_char);
             memcpy(info2, info1, slen);
-	    info1 += slen;
+            info1 += slen;
             info2 += slen;
         }
         else
@@ -202,7 +210,7 @@ static void clean_page(Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
             *--indxp2 = -(info2 - np);
             info1 = (char*) p - *indxp1;
             memcpy(info2, info1, sizeof(Dict_ptr)+sizeof(Dict_char));
-	    info1 += sizeof(Dict_ptr)+sizeof(Dict_char);
+            info1 += sizeof(Dict_ptr)+sizeof(Dict_char);
             info2 += sizeof(Dict_ptr)+sizeof(Dict_char);
         }
         slen = *info1+1;
@@ -224,11 +232,22 @@ static void clean_page(Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
     DICT_size(p) = info2 - np;
     DICT_type(p) = 0;
     DICT_nodir(p) = no;
+    checkPage(dict, p, "clean_page 2");
     xfree(np);
     dict_bf_touch(dict->dbf, ptr);
 }
 
-
+static void checkPage(Dict dict, void *p, const char *msg)
+{
+    int check = DICT_size(p) <= (int)(DICT_bsize(p) - (DICT_nodir(p))*sizeof(short));
+    if (!check) {
+        yaz_log(YLOG_LOG, "checkPage failed msg=%s", msg);
+        yaz_log(YLOG_LOG, "DICT_size(p)=%ld", (long) DICT_size(p));
+        yaz_log(YLOG_LOG, "DICT_bsize(p)=%ld", (long) DICT_bsize(p));
+        yaz_log(YLOG_LOG, "DICT_nodir(p)=%ld", (long) DICT_nodir(p));
+    }
+    //assert(check);
+}
 
 /* return 0 if new */
 /* return 1 if before but change of info */
@@ -266,19 +285,19 @@ static int dict_ins(Dict dict, const Dict_char *str,
                 /* consider change of userinfo length... */
                 if (*info == userlen)
                 {
-		    /* change of userinfo ? */
+                    /* change of userinfo ? */
                     if (memcmp(info+1, userinfo, userlen))
                     {
                         dict_bf_touch(dict->dbf, ptr);
                         memcpy(info+1, userinfo, userlen);
                         return 1;
                     }
-		    /* same userinfo */
+                    /* same userinfo */
                     return 2;
                 }
                 else if (*info > userlen)
                 {
-		    /* room for new userinfo */
+                    /* room for new userinfo */
                     DICT_type(p) = 1;
                     *info = userlen;
                     dict_bf_touch(dict->dbf, ptr);
@@ -305,7 +324,7 @@ static int dict_ins(Dict dict, const Dict_char *str,
                 memcpy(&subptr, info, sizeof(Dict_ptr));
                 if (*++str == DICT_EOS)
                 {
-		    /* finish of string. Store userinfo here... */
+                    /* finish of string. Store userinfo here... */
 
                     int xlen = info[sizeof(Dict_ptr)+sizeof(Dict_char)];
                     if (xlen == userlen)
@@ -329,12 +348,12 @@ static int dict_ins(Dict dict, const Dict_char *str,
                         dict_bf_touch(dict->dbf, ptr);
                         return 1;
                     }
-		    /* xlen < userlen, expanding needed ... */
+                    /* xlen < userlen, expanding needed ... */
                     if (DICT_size(p)+sizeof(Dict_char)+sizeof(Dict_ptr)+
                         userlen >=
                         DICT_bsize(p) - (1+DICT_nodir(p))*sizeof(short))
                     {
-			/* not enough room - split needed ... */
+                        /* not enough room - split needed ... */
                         if (DICT_type(p) == 1)
                         {
                             clean_page(dict, ptr, p, NULL, 0, NULL);
@@ -406,17 +425,6 @@ static int dict_ins(Dict dict, const Dict_char *str,
                           - DICT_nodir(p)*sizeof(short));
         for (; indxp1 != indxp; indxp1++)
             indxp1[0] = indxp1[1];
-#if CHECK
-        indxp1 = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));
-        for (i = DICT_nodir (p); --i >= 0; --indxp1)
-        {
-            if (*indxp1 < 0)
-            {
-                info = (char*)p - *indxp1;
-                assert (info[sizeof(Dict_ptr)] > ' ');
-            }
-        }
-#endif
     }
     else
         DICT_type(p) = 1;
@@ -442,11 +450,12 @@ int dict_insert(Dict dict, const char *str, int userlen, void *userinfo)
     dict->no_insert++;
     if (!dict->head.root)
     {
-	void *p;
+        void *p;
         dict->head.root = new_page(dict, 0, &p);
-	if (!dict->head.root)
-	    return -1;
+        if (!dict->head.root)
+            return -1;
     }
+    assert(strlen(str) > 0);
     return dict_ins(dict, (const Dict_char *) str, dict->head.root,
                     userlen, userinfo);
 }
