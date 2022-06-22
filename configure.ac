@@ -44,7 +44,6 @@ PKG_CHECK_MODULES([TCL], [tcl], [], [AC_DEFINE([HAVE_TCL_H], [0], [Define to 1 i
 dnl
 dnl ------ various functions
 AC_CHECK_FUNCS([mkstemp atoll])
-dnkl
 dnl ------ iconv
 AC_ARG_WITH([iconv], [  --with-iconv[=DIR]        iconv library in DIR])
 if test "$with_iconv" != "no"; then
