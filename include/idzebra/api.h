@@ -94,7 +94,7 @@ ZebraService zebra_start(const char *configName
 */
 YAZ_EXPORT
 ZebraService zebra_start_res(const char *configName,
-			     Res def_res, Res over_res
+                             Res def_res, Res over_res
     ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 /** \brief stops a Zebra service.
@@ -112,7 +112,7 @@ ZEBRA_RES zebra_stop(ZebraService zs);
 */
 YAZ_EXPORT
 void zebra_filter_info(ZebraService zs, void *cd,
-		       void (*cb)(void *cd, const char *name));
+                       void (*cb)(void *cd, const char *name));
 
 
 /** \brief Creates a Zebra session handle within service.
@@ -184,7 +184,7 @@ ZEBRA_RES zebra_set_approx_limit(ZebraHandle zh, zint approx_limit);
 */
 YAZ_EXPORT
 ZEBRA_RES zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
-		           const char *setname, zint *hits);
+                           const char *setname, zint *hits);
 
 /** \brief Search using RPN Query structure (from ASN.1)
     \param zh session handle
@@ -211,7 +211,7 @@ ZEBRA_RES zebra_search_RPN_x(ZebraHandle zh, ODR o, Z_RPNQuery *query,
 */
 YAZ_EXPORT
 ZEBRA_RES zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
-			      const char *setname, zint *hits);
+                              const char *setname, zint *hits);
 
 /** \brief Retrieve records from result set (after search)
     \param zh session handle
@@ -224,11 +224,11 @@ ZEBRA_RES zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
 */
 YAZ_EXPORT
 ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
-				 const char *setname,
-				 Z_RecordComposition *comp,
-				 const Odr_oid *input_format,
-				 int num_recs,
-				 ZebraRetrievalRecord *recs);
+                                 const char *setname,
+                                 Z_RecordComposition *comp,
+                                 const Odr_oid *input_format,
+                                 int num_recs,
+                                 ZebraRetrievalRecord *recs);
 /** \brief Deletes one or more resultsets
     \param zh session handle
     \param function Z_DeleteResultSetRequest_{list,all}
@@ -238,8 +238,8 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 */
 YAZ_EXPORT
 int zebra_deleteResultSet(ZebraHandle zh, int function,
-			  int num_setnames, char **setnames,
-			  int *statuses);
+                          int num_setnames, char **setnames,
+                          int *statuses);
 
 
 /** \brief returns number of term info terms assocaited with result set
@@ -253,7 +253,7 @@ int zebra_deleteResultSet(ZebraHandle zh, int function,
 */
 YAZ_EXPORT
 ZEBRA_RES zebra_result_set_term_no(ZebraHandle zh, const char *setname,
-				   int *num_terms);
+                                   int *num_terms);
 
 /** \brief returns information about a term assocated with a result set
     \param zh session handle
@@ -275,9 +275,9 @@ ZEBRA_RES zebra_result_set_term_no(ZebraHandle zh, const char *setname,
 */
 YAZ_EXPORT
 ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
-				     int no, zint *count, int *approx,
-				     char *termbuf, size_t *termlen,
-				     const char **term_ref_id);
+                                     int no, zint *count, int *approx,
+                                     char *termbuf, size_t *termlen,
+                                     const char **term_ref_id);
 
 
 /** \brief performs Scan (Z39.50 style)
@@ -292,12 +292,12 @@ ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
     \param setname limit scan by this set (NULL means no limit)
 */
 YAZ_EXPORT ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream,
-				Z_AttributesPlusTerm *zapt,
-				const Odr_oid *attributeset,
-				int *position, int *num_entries,
-				ZebraScanEntry **entries,
-				int *is_partial,
-				const char *setname);
+                                Z_AttributesPlusTerm *zapt,
+                                const Odr_oid *attributeset,
+                                int *position, int *num_entries,
+                                ZebraScanEntry **entries,
+                                int *is_partial,
+                                const char *setname);
 
 /** \brief performs Scan (taking PQF string)
     \param zh session handle
@@ -311,9 +311,9 @@ YAZ_EXPORT ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream,
 */
 YAZ_EXPORT
 ZEBRA_RES zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
-			 int *position, int *num_entries,
-			 ZebraScanEntry **entries,
-			 int *is_partial, const char *setname);
+                         int *position, int *num_entries,
+                         ZebraScanEntry **entries,
+                         int *is_partial, const char *setname);
 
 /** \brief authenticate user. Returns 0 if OK, != 0 on failure
     \param zh session handle
@@ -334,7 +334,7 @@ ZEBRA_RES zebra_auth(ZebraHandle zh, const char *user, const char *pass);
 YAZ_EXPORT
 int zebra_string_norm(ZebraHandle zh, const char *index_type,
                       const char *input_str,
-		      int input_len, char *output_str, int output_len);
+                      int input_len, char *output_str, int output_len);
 
 /** \brief Creates a database
     \param zh session handle
@@ -361,11 +361,11 @@ ZEBRA_RES zebra_shutdown(ZebraService zs);
 
 YAZ_EXPORT
 ZEBRA_RES zebra_admin_import_begin(ZebraHandle zh, const char *database,
-				   const char *record_type);
+                                   const char *record_type);
 
 YAZ_EXPORT
 ZEBRA_RES zebra_admin_import_segment(ZebraHandle zh,
-				     Z_Segment *segment);
+                                     Z_Segment *segment);
 
 YAZ_EXPORT
 ZEBRA_RES zebra_admin_import_end(ZebraHandle zh);
@@ -380,7 +380,7 @@ ZEBRA_RES zebra_end_trans(ZebraHandle zh
 
 YAZ_EXPORT
 ZEBRA_RES zebra_end_transaction(ZebraHandle zh,
-				ZebraTransactionStatus *stat);
+                                ZebraTransactionStatus *stat);
 
 YAZ_EXPORT
 ZEBRA_RES zebra_commit(ZebraHandle zh);
@@ -438,16 +438,16 @@ ZEBRA_RES zebra_update_record(ZebraHandle zh,
 
 YAZ_EXPORT
 ZEBRA_RES zebra_sort(ZebraHandle zh, ODR stream,
-		     int num_input_setnames,
-		     const char **input_setnames,
-		     const char *output_setname,
-		     Z_SortKeySpecList *sort_sequence,
-		     int *sort_status
+                     int num_input_setnames,
+                     const char **input_setnames,
+                     const char *output_setname,
+                     Z_SortKeySpecList *sort_sequence,
+                     int *sort_status
     ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 YAZ_EXPORT
 ZEBRA_RES zebra_select_databases(ZebraHandle zh, int num_bases,
-				 const char **basenames
+                                 const char **basenames
     ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 YAZ_EXPORT
@@ -471,7 +471,7 @@ YAZ_EXPORT
 void zebra_set_resource(ZebraHandle zh, const char *name, const char *value);
 YAZ_EXPORT
 const char *zebra_get_resource(ZebraHandle zh,
-			       const char *name, const char *defaultvalue);
+                               const char *name, const char *defaultvalue);
 
 
 YAZ_EXPORT
@@ -486,18 +486,18 @@ typedef struct {
 
 YAZ_EXPORT
 ZebraMetaRecord *zebra_meta_records_create(ZebraHandle zh,
-					   const char *name,
-					   int num, zint *positions);
+                                           const char *name,
+                                           int num, zint *positions);
 
 
 YAZ_EXPORT
 ZebraMetaRecord *zebra_meta_records_create_range(ZebraHandle zh,
-						 const char *name,
-						 zint start, int num);
+                                                 const char *name,
+                                                 zint start, int num);
 
 YAZ_EXPORT
 void zebra_meta_records_destroy(ZebraHandle zh, ZebraMetaRecord *records,
-				int num);
+                                int num);
 
 YAZ_EXPORT
 struct BFiles_struct *zebra_get_bfs(ZebraHandle zh);

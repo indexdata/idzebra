@@ -83,40 +83,40 @@ static void data1_init_node (data1_handle dh, data1_node *r, int type)
     switch(type)
     {
     case DATA1N_tag:
-	r->u.tag.tag = 0;
-	r->u.tag.element = 0;
-	r->u.tag.no_data_requested = 0;
-	r->u.tag.node_selected = 0;
-	r->u.tag.make_variantlist = 0;
-	r->u.tag.get_bytes = -1;
-	r->u.tag.attributes = 0;
-	break;
+        r->u.tag.tag = 0;
+        r->u.tag.element = 0;
+        r->u.tag.no_data_requested = 0;
+        r->u.tag.node_selected = 0;
+        r->u.tag.make_variantlist = 0;
+        r->u.tag.get_bytes = -1;
+        r->u.tag.attributes = 0;
+        break;
     case DATA1N_root:
-	r->u.root.type = 0;
-	r->u.root.absyn = 0;
-	break;
+        r->u.root.type = 0;
+        r->u.root.absyn = 0;
+        break;
     case DATA1N_data:
-	r->u.data.data = 0;
-	r->u.data.len = 0;
-	r->u.data.what = 0;
-	r->u.data.formatted_text = 0;
+        r->u.data.data = 0;
+        r->u.data.len = 0;
+        r->u.data.what = 0;
+        r->u.data.formatted_text = 0;
         break;
     case DATA1N_comment:
-	r->u.data.data = 0;
-	r->u.data.len = 0;
-	r->u.data.what = 0;
-	r->u.data.formatted_text = 1;
+        r->u.data.data = 0;
+        r->u.data.len = 0;
+        r->u.data.what = 0;
+        r->u.data.formatted_text = 1;
         break;
     case DATA1N_variant:
         r->u.variant.type = 0;
         r->u.variant.value = 0;
-	break;
+        break;
     case DATA1N_preprocess:
         r->u.preprocess.target = 0;
         r->u.preprocess.attributes = 0;
         break;
     default:
-	yaz_log (YLOG_WARN, "data_mk_node_type. bad type = %d\n", type);
+        yaz_log (YLOG_WARN, "data_mk_node_type. bad type = %d\n", type);
     }
 }
 
@@ -198,7 +198,7 @@ void data1_set_root(data1_handle dh, data1_node *res,
 }
 
 void data1_add_attrs(data1_handle dh, NMEM nmem, const char **attr,
-		     data1_xattr **p)
+                     data1_xattr **p)
 {
     while (*p)
         p = &(*p)->next;
@@ -240,7 +240,7 @@ data1_node *data1_insert_preprocess (data1_handle dh, NMEM nmem,
                                  const char **attr, data1_node *at)
 {
     return data1_insert_preprocess_n (dh, nmem, target, strlen(target),
-				      attr, at);
+                                      attr, at);
 }
 
 data1_node *data1_insert_preprocess_n (data1_handle dh, NMEM nmem,
@@ -308,11 +308,11 @@ data1_node *data1_search_tag (data1_handle dh, data1_node *n,
         tag++;
     }
     for (; n; n = n->next)
-	if (n->which == DATA1N_tag && n->u.tag.tag &&
-	    !yaz_matchstr (n->u.tag.tag, tag))
-	{
-	    return n;
-	}
+        if (n->which == DATA1N_tag && n->u.tag.tag &&
+            !yaz_matchstr (n->u.tag.tag, tag))
+        {
+            return n;
+        }
     return 0;
 }
 
@@ -321,7 +321,7 @@ data1_node *data1_mk_tag_uni (data1_handle dh, NMEM nmem,
 {
     data1_node *node = data1_search_tag (dh, at->child, tag);
     if (!node)
-	node = data1_mk_tag (dh, nmem, tag, 0 /* attr */, at);
+        node = data1_mk_tag (dh, nmem, tag, 0 /* attr */, at);
     else
         node->child = node->last_child = 0;
     return node;
@@ -393,7 +393,7 @@ static data1_node *data1_add_insert_taggeddata(data1_handle dh,
                                                data1_node *at,
                                                const char *tagname, NMEM m,
                                                int local_allowed,
-					       int insert_mode)
+                                               int insert_mode)
 {
     data1_node *root = at->root;
     data1_node *partag = get_parent_tag (dh, at);
@@ -405,7 +405,7 @@ static data1_node *data1_add_insert_taggeddata(data1_handle dh,
         e = data1_getelementbytagname (dh, root->u.root.absyn, 0, tagname);
     else
     {
-	e = partag->u.tag.element;
+        e = partag->u.tag.element;
         if (e)
             e = data1_getelementbytagname (dh, root->u.root.absyn, e, tagname);
     }
@@ -462,7 +462,7 @@ data1_node *data1_mk_tag_data_zint (data1_handle dh, data1_node *at,
 
     node_data = data1_mk_tag_data (dh, at, tag, nmem);
     if (!node_data)
-	return 0;
+        return 0;
     node_data->u.data.what = DATA1I_num;
     node_data->u.data.data = node_data->lbuf;
     sprintf (node_data->u.data.data, ZINT_FORMAT, num);
@@ -487,14 +487,14 @@ data1_node *data1_mk_tag_data_oid (data1_handle dh, data1_node *at,
 
     node_data = data1_mk_tag_data (dh, at, tag, nmem);
     if (!node_data)
-	return 0;
+        return 0;
 
     for (ii = oid; *ii >= 0; ii++)
     {
-	if (ii != oid)
-	    *p++ = '.';
-	sprintf (p, "%d", *ii);
-	p += strlen (p);
+        if (ii != oid)
+            *p++ = '.';
+        sprintf (p, "%d", *ii);
+        p += strlen (p);
     }
     node_data->u.data.what = DATA1I_oid;
     node_data->u.data.len = strlen (str);
@@ -511,7 +511,7 @@ data1_node *data1_mk_tag_data_text (data1_handle dh, data1_node *at,
 
     node_data = data1_mk_tag_data (dh, at, tag, nmem);
     if (!node_data)
-	return 0;
+        return 0;
     node_data->u.data.what = DATA1I_text;
     node_data->u.data.len = strlen (str);
     node_data->u.data.data = data1_insert_string (dh, node_data, nmem, str);
@@ -528,13 +528,13 @@ data1_node *data1_mk_tag_data_text_uni (data1_handle dh, data1_node *at,
         return data1_mk_tag_data_text (dh, at, tag, str, nmem);
     else
     {
-	data1_node *node_data = node->child;
-	node_data->u.data.what = DATA1I_text;
-	node_data->u.data.len = strlen (str);
-	node_data->u.data.data = data1_insert_string (dh, node_data,
-						      nmem, str);
+        data1_node *node_data = node->child;
+        node_data->u.data.what = DATA1I_text;
+        node_data->u.data.len = strlen (str);
+        node_data->u.data.data = data1_insert_string (dh, node_data,
+                                                      nmem, str);
         node_data->child = node_data->last_child = 0;
-	return node_data;
+        return node_data;
     }
 }
 
@@ -584,70 +584,70 @@ static int ampr (int (*get_byte)(void *fh), void *fh, int *amp)
 }
 
 data1_xattr *data1_read_xattr (data1_handle dh, NMEM m,
-			       int (*get_byte)(void *fh), void *fh,
-			       WRBUF wrbuf, int *ch, int *amp)
+                               int (*get_byte)(void *fh), void *fh,
+                               WRBUF wrbuf, int *ch, int *amp)
 {
     data1_xattr *p_first = 0;
     data1_xattr **pp = &p_first;
     int c = *ch;
     for (;;)
     {
-	data1_xattr *p;
-	while (*amp || (c && d1_isspace(c)))
-	    c = ampr (get_byte, fh, amp);
-	if (*amp == 0 && (c == 0 || c == '>' || c == '/'))
-	    break;
-	*pp = p = (data1_xattr *) nmem_malloc (m, sizeof(*p));
-	p->next = 0;
-	pp = &p->next;
-	p->value = 0;
+        data1_xattr *p;
+        while (*amp || (c && d1_isspace(c)))
+            c = ampr (get_byte, fh, amp);
+        if (*amp == 0 && (c == 0 || c == '>' || c == '/'))
+            break;
+        *pp = p = (data1_xattr *) nmem_malloc (m, sizeof(*p));
+        p->next = 0;
+        pp = &p->next;
+        p->value = 0;
         p->what = DATA1I_xmltext;
 
-	wrbuf_rewind(wrbuf);
-	while (c && c != '=' && c != '>' && c != '/' && !d1_isspace(c))
-	{
-	    wrbuf_putc (wrbuf, c);
-	    c = ampr (get_byte, fh, amp);
-	}
-	p->name = nmem_strdup (m, wrbuf_cstr(wrbuf));
-	if (c == '=')
-	{
-	    c = ampr (get_byte, fh, amp);
-	    if (*amp == 0 && c == '"')
-	    {
-		c = ampr (get_byte, fh, amp);
-		wrbuf_rewind(wrbuf);
-		while (*amp || (c && c != '"'))
-		{
-		    wrbuf_putc (wrbuf, c);
-		    c = ampr (get_byte, fh, amp);
-	        }
-	        if (c)
-		    c = ampr (get_byte, fh, amp);
-	    }
-	    else if (*amp == 0 && c == '\'')
-	    {
-		c = ampr (get_byte, fh, amp);
-		wrbuf_rewind(wrbuf);
-		while (*amp || (c && c != '\''))
-		{
-		    wrbuf_putc (wrbuf, c);
-		    c = ampr (get_byte, fh, amp);
-	        }
-	        if (c)
-		    c = ampr (get_byte, fh, amp);
-	    }
-	    else
-	    {
-	        wrbuf_rewind(wrbuf);
-	        while (*amp || (c && c != '>' && c != '/'))
-	        {
-		    wrbuf_putc (wrbuf, c);
-		    c = ampr (get_byte, fh, amp);
-	        }
+        wrbuf_rewind(wrbuf);
+        while (c && c != '=' && c != '>' && c != '/' && !d1_isspace(c))
+        {
+            wrbuf_putc (wrbuf, c);
+            c = ampr (get_byte, fh, amp);
+        }
+        p->name = nmem_strdup (m, wrbuf_cstr(wrbuf));
+        if (c == '=')
+        {
+            c = ampr (get_byte, fh, amp);
+            if (*amp == 0 && c == '"')
+            {
+                c = ampr (get_byte, fh, amp);
+                wrbuf_rewind(wrbuf);
+                while (*amp || (c && c != '"'))
+                {
+                    wrbuf_putc (wrbuf, c);
+                    c = ampr (get_byte, fh, amp);
+                }
+                if (c)
+                    c = ampr (get_byte, fh, amp);
             }
-	    p->value = nmem_strdup(m, wrbuf_cstr(wrbuf));
-	}
+            else if (*amp == 0 && c == '\'')
+            {
+                c = ampr (get_byte, fh, amp);
+                wrbuf_rewind(wrbuf);
+                while (*amp || (c && c != '\''))
+                {
+                    wrbuf_putc (wrbuf, c);
+                    c = ampr (get_byte, fh, amp);
+                }
+                if (c)
+                    c = ampr (get_byte, fh, amp);
+            }
+            else
+            {
+                wrbuf_rewind(wrbuf);
+                while (*amp || (c && c != '>' && c != '/'))
+                {
+                    wrbuf_putc (wrbuf, c);
+                    c = ampr (get_byte, fh, amp);
+                }
+            }
+            p->value = nmem_strdup(m, wrbuf_cstr(wrbuf));
+        }
     }
     *ch = c;
     return p_first;
@@ -658,7 +658,7 @@ data1_xattr *data1_read_xattr (data1_handle dh, NMEM m,
  * 'node' and its children.
  */
 data1_node *data1_read_nodex (data1_handle dh, NMEM m,
-			      int (*get_byte)(void *fh), void *fh, WRBUF wrbuf)
+                              int (*get_byte)(void *fh), void *fh, WRBUF wrbuf)
 {
     data1_node *d1_stack[256];
     data1_node *res;
@@ -670,52 +670,52 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
     c = ampr (get_byte, fh, &amp);
     while (c != '\0')
     {
-	data1_node *parent = level ? d1_stack[level-1] : 0;
+        data1_node *parent = level ? d1_stack[level-1] : 0;
 
-	if (amp == 0 && c == '<') /* beginning of tag */
-	{
-	    data1_xattr *xattr;
+        if (amp == 0 && c == '<') /* beginning of tag */
+        {
+            data1_xattr *xattr;
 
-	    char tag[256];
-	    int null_tag = 0;
-	    int end_tag = 0;
-	    size_t i = 0;
+            char tag[256];
+            int null_tag = 0;
+            int end_tag = 0;
+            size_t i = 0;
 
-	    c = ampr (get_byte, fh, &amp);
-	    if (amp == 0 && c == '/')
-	    {
-		end_tag = 1;
-		c = ampr (get_byte, fh, &amp);
-	    }
-	    else if (amp == 0 && c == '?')
-	    {
-		int quote_mode = 0;
-		while ((c = ampr(get_byte, fh, &amp)))
-		{
-		    if (amp)
-			continue;
-		    if (quote_mode == 0)
-		    {
-			if (c == '"')
-			    quote_mode = c;
-			else if (c == '\'')
-			    quote_mode = c;
-			else if (c == '>')
-			{
-			    c = ampr(get_byte, fh, &amp);
-			    break;
-			}
-		    }
-		    else
-		    {
-			if (amp == 0 && c == quote_mode)
-			    quote_mode = 0;
-		    }
-		}
-		continue;
-	    }
-	    else if (amp == 0 && c == '!')
-	    {
+            c = ampr (get_byte, fh, &amp);
+            if (amp == 0 && c == '/')
+            {
+                end_tag = 1;
+                c = ampr (get_byte, fh, &amp);
+            }
+            else if (amp == 0 && c == '?')
+            {
+                int quote_mode = 0;
+                while ((c = ampr(get_byte, fh, &amp)))
+                {
+                    if (amp)
+                        continue;
+                    if (quote_mode == 0)
+                    {
+                        if (c == '"')
+                            quote_mode = c;
+                        else if (c == '\'')
+                            quote_mode = c;
+                        else if (c == '>')
+                        {
+                            c = ampr(get_byte, fh, &amp);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (amp == 0 && c == quote_mode)
+                            quote_mode = 0;
+                    }
+                }
+                continue;
+            }
+            else if (amp == 0 && c == '!')
+            {
                 int c0, amp0;
 
                 wrbuf_rewind(wrbuf);
@@ -756,71 +756,71 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
                 else
                 {   /* DIRECTIVE: <! .. > */
 
-		    int blevel = 0;
+                    int blevel = 0;
                     while (amp || c)
                     {
                         if (amp == 0 && c == '>' && blevel == 0)
                         {
                             c = ampr (get_byte, fh, &amp);
-			    break;
+                            break;
                         }
-			if (amp == 0 && c == '[')
-			    blevel++;
-			if (amp == 0 && c == ']' && blevel > 0)
-			    blevel--;
+                        if (amp == 0 && c == '[')
+                            blevel++;
+                        if (amp == 0 && c == ']' && blevel > 0)
+                            blevel--;
                         c = ampr (get_byte, fh, &amp);
                     }
                     continue;
                 }
-	    }
-	    while (amp || (c && c != '>' && c != '/' && !d1_isspace(c)))
-	    {
-		if (i < (sizeof(tag)-1))
-		    tag[i++] = c;
-		c = ampr (get_byte, fh, &amp);
-	    }
-	    tag[i] = '\0';
-	    xattr = data1_read_xattr (dh, m, get_byte, fh, wrbuf, &c, &amp);
-	    if (amp == 0 && c == '/')
-	    {    /* <tag attrs/> or <tag/> */
-		null_tag = 1;
-		c = ampr (get_byte, fh, &amp);
-	    }
-	    if (amp || c != '>')
-	    {
-		yaz_log(YLOG_WARN, "d1: %d: Malformed tag", line);
-		return 0;
-	    }
-	    else
-		c = ampr (get_byte, fh, &amp);
+            }
+            while (amp || (c && c != '>' && c != '/' && !d1_isspace(c)))
+            {
+                if (i < (sizeof(tag)-1))
+                    tag[i++] = c;
+                c = ampr (get_byte, fh, &amp);
+            }
+            tag[i] = '\0';
+            xattr = data1_read_xattr (dh, m, get_byte, fh, wrbuf, &c, &amp);
+            if (amp == 0 && c == '/')
+            {    /* <tag attrs/> or <tag/> */
+                null_tag = 1;
+                c = ampr (get_byte, fh, &amp);
+            }
+            if (amp || c != '>')
+            {
+                yaz_log(YLOG_WARN, "d1: %d: Malformed tag", line);
+                return 0;
+            }
+            else
+                c = ampr (get_byte, fh, &amp);
 
-	    /* End tag? */
-	    if (end_tag)
-	    {
-		if (*tag == '\0')
-		    --level;        /* </> */
-		else
-		{                   /* </tag> */
-		    int i = level;
-		    while (i > 0)
-		    {
-			parent = d1_stack[--i];
-			if ((parent->which == DATA1N_root &&
-			     !strcmp(tag, parent->u.root.type)) ||
-			    (parent->which == DATA1N_tag &&
-			     !strcmp(tag, parent->u.tag.tag)))
-			{
-			    level = i;
-			    break;
-			}
-		    }
-		    if (i != level)
-		    {
-			yaz_log (YLOG_WARN, "%d: no begin tag for %s",
-				 line, tag);
-			break;
-		    }
-		}
+            /* End tag? */
+            if (end_tag)
+            {
+                if (*tag == '\0')
+                    --level;        /* </> */
+                else
+                {                   /* </tag> */
+                    int i = level;
+                    while (i > 0)
+                    {
+                        parent = d1_stack[--i];
+                        if ((parent->which == DATA1N_root &&
+                             !strcmp(tag, parent->u.root.type)) ||
+                            (parent->which == DATA1N_tag &&
+                             !strcmp(tag, parent->u.tag.tag)))
+                        {
+                            level = i;
+                            break;
+                        }
+                    }
+                    if (i != level)
+                    {
+                        yaz_log (YLOG_WARN, "%d: no begin tag for %s",
+                                 line, tag);
+                        break;
+                    }
+                }
                 if (data1_is_xmlmode(dh))
                 {
                     if (level <= 1)
@@ -831,55 +831,55 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
                     if (level <= 0)
                         return d1_stack[0];
                 }
-		continue;
-	    }
-	    else if (!strcmp(tag, "var")
-		     && xattr && xattr->next && xattr->next->next
-		     && xattr->value == 0
-		     && xattr->next->value == 0
-		     && xattr->next->next->value == 0)
-	    {
-		/* <var class type value> */
-		const char *tclass = xattr->name;
-		const char *type = xattr->next->name;
-		const char *value = xattr->next->name;
-		data1_vartype *tp;
+                continue;
+            }
+            else if (!strcmp(tag, "var")
+                     && xattr && xattr->next && xattr->next->next
+                     && xattr->value == 0
+                     && xattr->next->value == 0
+                     && xattr->next->next->value == 0)
+            {
+                /* <var class type value> */
+                const char *tclass = xattr->name;
+                const char *type = xattr->next->name;
+                const char *value = xattr->next->name;
+                data1_vartype *tp;
 
-		yaz_log(YLOG_LOG, "Variant class=%s type=%s value=%s",
-			tclass, type, value);
-		if (!(tp =
-		      data1_getvartypebyct(dh,
-					   parent->root->u.root.absyn->varset,
-					   tclass, type)))
-		    continue;
-		/*
-		 * If we're the first variant in this group, create a parent
-		 * variant, and insert it before the current variant.
-		 */
-		if (parent->which != DATA1N_variant)
-		{
-		    res = data1_mk_node2 (dh, m, DATA1N_variant, parent);
-		}
-		else
-		{
-		    /*
-		     * now determine if one of our ancestor triples is of
-		     * same type. If so, we break here.
-		     */
-		    int i;
-		    for (i = level-1; d1_stack[i]->which==DATA1N_variant; --i)
-			if (d1_stack[i]->u.variant.type == tp)
-			{
-			    level = i;
-			    break;
-			}
-		    res = data1_mk_node2 (dh, m, DATA1N_variant, parent);
-		    res->u.variant.type = tp;
-		    res->u.variant.value =
-			data1_insert_string (dh, res, m, value);
-		}
-	    }
-	    else
+                yaz_log(YLOG_LOG, "Variant class=%s type=%s value=%s",
+                        tclass, type, value);
+                if (!(tp =
+                      data1_getvartypebyct(dh,
+                                           parent->root->u.root.absyn->varset,
+                                           tclass, type)))
+                    continue;
+                /*
+                 * If we're the first variant in this group, create a parent
+                 * variant, and insert it before the current variant.
+                 */
+                if (parent->which != DATA1N_variant)
+                {
+                    res = data1_mk_node2 (dh, m, DATA1N_variant, parent);
+                }
+                else
+                {
+                    /*
+                     * now determine if one of our ancestor triples is of
+                     * same type. If so, we break here.
+                     */
+                    int i;
+                    for (i = level-1; d1_stack[i]->which==DATA1N_variant; --i)
+                        if (d1_stack[i]->u.variant.type == tp)
+                        {
+                            level = i;
+                            break;
+                        }
+                    res = data1_mk_node2 (dh, m, DATA1N_variant, parent);
+                    res->u.variant.type = tp;
+                    res->u.variant.value =
+                        data1_insert_string (dh, res, m, value);
+                }
+            }
+            else
             {
 
                 /* tag .. acquire our element in the abstract syntax */
@@ -901,46 +901,46 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
                     res->u.tag.attributes = xattr;
                 }
             }
-	    d1_stack[level] = res;
-	    d1_stack[level+1] = 0;
-	    if (level < 250 && !null_tag)
-		++level;
-	}
-	else /* != '<'... this is a body of text */
-	{
-	    int len;
+            d1_stack[level] = res;
+            d1_stack[level+1] = 0;
+            if (level < 250 && !null_tag)
+                ++level;
+        }
+        else /* != '<'... this is a body of text */
+        {
+            int len;
 
-	    if (level == 0)
-	    {
-		c = ampr (get_byte, fh, &amp);
-		continue;
-	    }
-	    res = data1_mk_node2 (dh, m, DATA1N_data, parent);
-	    res->u.data.what = DATA1I_xmltext;
-	    res->u.data.formatted_text = 0;
-	    d1_stack[level] = res;
+            if (level == 0)
+            {
+                c = ampr (get_byte, fh, &amp);
+                continue;
+            }
+            res = data1_mk_node2 (dh, m, DATA1N_data, parent);
+            res->u.data.what = DATA1I_xmltext;
+            res->u.data.formatted_text = 0;
+            d1_stack[level] = res;
 
-	    wrbuf_rewind(wrbuf);
+            wrbuf_rewind(wrbuf);
 
-	    while (amp || (c && c != '<'))
-	    {
-		wrbuf_putc (wrbuf, c);
-		c = ampr (get_byte, fh, &amp);
-	    }
-	    len = wrbuf_len(wrbuf);
+            while (amp || (c && c != '<'))
+            {
+                wrbuf_putc (wrbuf, c);
+                c = ampr (get_byte, fh, &amp);
+            }
+            len = wrbuf_len(wrbuf);
 
-	    /* use local buffer of nmem if too large */
-	    if (len >= DATA1_LOCALDATA)
-		res->u.data.data = (char*) nmem_malloc (m, len);
-	    else
-		res->u.data.data = res->lbuf;
+            /* use local buffer of nmem if too large */
+            if (len >= DATA1_LOCALDATA)
+                res->u.data.data = (char*) nmem_malloc (m, len);
+            else
+                res->u.data.data = res->lbuf;
 
             if (len)
                 memcpy (res->u.data.data, wrbuf_buf(wrbuf), len);
             else
                 res->u.data.data = 0;
             res->u.data.len = len;
-	}
+        }
     }
     return 0;
 }
@@ -949,7 +949,7 @@ int getc_mem (void *fh)
 {
     const char **p = (const char **) fh;
     if (**p)
-	return *(*p)++;
+        return *(*p)++;
     return 0;
 }
 
@@ -967,7 +967,7 @@ data1_node *data1_read_node (data1_handle dh, const char **buf, NMEM m)
  * Read a record in the native syntax.
  */
 data1_node *data1_read_record(data1_handle dh,
-			      int (*rf)(void *, char *, size_t), void *fh,
+                              int (*rf)(void *, char *, size_t), void *fh,
                               NMEM m)
 {
     int *size;
@@ -976,24 +976,24 @@ data1_node *data1_read_record(data1_handle dh,
     int rd = 0, res;
 
     if (!*buf)
-	*buf = (char *)xmalloc(*size = 4096);
+        *buf = (char *)xmalloc(*size = 4096);
 
     for (;;)
     {
-	if (rd + 2048 >= *size && !(*buf =(char *)xrealloc(*buf, *size *= 2)))
-	    abort();
-	if ((res = (*rf)(fh, *buf + rd, 2048)) <= 0)
-	{
-	    if (!res)
-	    {
-		bp = *buf;
-		(*buf)[rd] = '\0';
-		return data1_read_node(dh, &bp, m);
-	    }
-	    else
-		return 0;
-	}
-	rd += res;
+        if (rd + 2048 >= *size && !(*buf =(char *)xrealloc(*buf, *size *= 2)))
+            abort();
+        if ((res = (*rf)(fh, *buf + rd, 2048)) <= 0)
+        {
+            if (!res)
+            {
+                bp = *buf;
+                (*buf)[rd] = '\0';
+                return data1_read_node(dh, &bp, m);
+            }
+            else
+                return 0;
+        }
+        rd += res;
     }
 }
 
@@ -1094,10 +1094,10 @@ int data1_iconv (data1_handle dh, NMEM m, data1_node *n,
         WRBUF wrbuf = wrbuf_alloc();
         yaz_iconv_t t = yaz_iconv_open(tocode, fromcode);
         if (!t)
-	{
+        {
             wrbuf_destroy(wrbuf);
             return -1;
-	}
+        }
         data1_iconv_s(dh, m, n, t, wrbuf, tocode);
         yaz_iconv_close(t);
         wrbuf_destroy(wrbuf);
@@ -1156,8 +1156,8 @@ void data1_concat_text(data1_handle dh, NMEM m, data1_node *n)
             n->u.data.data = ndata;
             n->u.data.len = sz;
             n->next = np;
-	    if (!np && n->parent)
-		n->parent->last_child = n;
+            if (!np && n->parent)
+                n->parent->last_child = n;
 
         }
         data1_concat_text(dh, m, n->child);

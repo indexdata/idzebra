@@ -43,7 +43,7 @@ void attr_init_AttrList(AttrType *src, Z_AttributeList *list, int type)
 }
 
 int attr_find_ex(AttrType *src, const Odr_oid **attribute_set_oid,
-		 const char **string_value)
+                 const char **string_value)
 {
     int num_attributes;
 

@@ -32,13 +32,13 @@ zebra_rec_keys_t zebra_rec_keys_open(void);
 void zebra_rec_keys_close(zebra_rec_keys_t p);
 
 void zebra_rec_keys_write(zebra_rec_keys_t keys,
-			  const char *str, size_t slen,
-			  const struct it_key *key);
+                          const char *str, size_t slen,
+                          const struct it_key *key);
 void zebra_rec_keys_reset(zebra_rec_keys_t keys);
 
 int zebra_rec_keys_read(zebra_rec_keys_t keys,
-			const char **str, size_t *slen,
-			struct it_key *key);
+                        const char **str, size_t *slen,
+                        struct it_key *key);
 int zebra_rec_keys_rewind(zebra_rec_keys_t keys);
 
 int zebra_rec_keys_empty(zebra_rec_keys_t keys);
@@ -46,7 +46,7 @@ int zebra_rec_keys_empty(zebra_rec_keys_t keys);
 void zebra_rec_keys_get_buf(zebra_rec_keys_t p, char **buf, size_t *sz);
 
 void zebra_rec_keys_set_buf(zebra_rec_keys_t p, char *buf, size_t sz,
-			    int copy_buf);
+                            int copy_buf);
 
 zint zebra_rec_keys_get_custom_record_id(zebra_rec_keys_t keys);
 YAZ_END_CDECL

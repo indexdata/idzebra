@@ -37,12 +37,12 @@ static data1_att *getatt(data1_attset *p, int att)
 
     /* scan local set */
     for (a = p->atts; a; a = a->next)
-	if (a->value == att)
-	    return a;
+        if (a->value == att)
+            return a;
     /* scan included sets */
     for (c = p->children; c; c = c->next)
-	if ((a = getatt(c->child, att)))
-	    return a;
+        if ((a = getatt(c->child, att)))
+            return a;
     return 0;
 }
 
@@ -54,13 +54,13 @@ static int att_getentbyatt(ZebraHandle zi, const Odr_oid *set, int att,
 
     if (!(p = data1_attset_search_id (zi->reg->dh, set)))
     {
-	zebraExplain_loadAttsets (zi->reg->dh, zi->res);
-	p = data1_attset_search_id (zi->reg->dh, set);
+        zebraExplain_loadAttsets (zi->reg->dh, zi->res);
+        p = data1_attset_search_id (zi->reg->dh, set);
     }
     if (!p)   /* set undefined */
         return -2;
     if (!(r = getatt(p, att)))
-	return -1;
+        return -1;
     *name = r->name;
     return 0;
 }

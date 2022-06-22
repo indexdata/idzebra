@@ -29,10 +29,10 @@ YAZ_BEGIN_CDECL
 WRBUF zebra_mk_ord_str(int ord, const char *str);
 char *dict_lookup_ord(Dict d, int ord, const char *str);
 int dict_insert_ord(Dict dict, int ord, const char *p,
-		    int userlen, void *userinfo);
+                    int userlen, void *userinfo);
 int dict_delete_ord(Dict dict, int ord, const char *p);
 int dict_delete_subtree_ord(Dict d, int ord, void *client,
-			    int (*f)(const char *info, void *client));
+                            int (*f)(const char *info, void *client));
 
 YAZ_END_CDECL
 #endif

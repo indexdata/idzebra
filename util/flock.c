@@ -188,7 +188,7 @@ ZebraLockHandle zebra_lock_create(const char *dir, const char *name)
 void zebra_lock_destroy(ZebraLockHandle h)
 {
     if (!h)
-	return;
+        return;
     yaz_log(log_level, "zebra_lock_destroy fd=%d p=%p fname=%s",
             h->p->fd, h, h->p->fname);
     zebra_mutex_lock(&lock_list_mutex);

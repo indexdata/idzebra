@@ -72,9 +72,9 @@ struct rfd_private {
 };
 
 static RSET rsbool_create_base(const struct rset_control *ctrl,
-			       NMEM nmem,
-			       struct rset_key_control *kcontrol,
-			       int scope, RSET rset_l, RSET rset_r)
+                               NMEM nmem,
+                               struct rset_key_control *kcontrol,
+                               int scope, RSET rset_l, RSET rset_r)
 {
     RSET children[2], rnew;
     struct rset_private *info;
@@ -239,9 +239,9 @@ static void r_pos(RSFD rfd, double *current, double *total)
         *total = rtot;    /* probably -1 for not available */
     }
     if (rtot < 0)
-	rtot = rcur = 0; /* if only one useful, use it */
+        rtot = rcur = 0; /* if only one useful, use it */
     if (ltot < 0)
-	ltot = lcur = 0;
+        ltot = lcur = 0;
     if (rtot+ltot < 1)
     {   /* empty rset */
         *current = *total = 0;

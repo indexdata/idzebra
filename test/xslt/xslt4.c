@@ -57,11 +57,11 @@ static void tst(int argc, char **argv)
 
     if (1)
     {
-	zint ids[5];
-	ids[0] = 2;
-	ids[1] = 4;
-	ids[2] = 3;
-	YAZ_CHECK(tl_sort(zh, "@attr 1=title computer", 3, ids));
+        zint ids[5];
+        ids[0] = 2;
+        ids[1] = 4;
+        ids[2] = 3;
+        YAZ_CHECK(tl_sort(zh, "@attr 1=title computer", 3, ids));
     }
     YAZ_CHECK(tl_close_down(zh, zs));
 }

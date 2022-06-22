@@ -38,21 +38,21 @@ void key_logdump_txt(int logmask, const void *p, const char *txt)
 {
     struct it_key key;
     if (!txt)
-	txt = "(none)";
+        txt = "(none)";
     if (p)
     {
-	char formstr[128];
-	int i;
+        char formstr[128];
+        int i;
 
         memcpy (&key, p, sizeof(key));
-	assert(key.len > 0 && key.len <= IT_KEY_LEVEL_MAX);
-	*formstr = '\0';
-	for (i = 0; i<key.len; i++)
-	{
-	    if (i)
-		strcat(formstr, ".");
-	    sprintf(formstr + strlen(formstr), ZINT_FORMAT, key.mem[i]);
-	}
+        assert(key.len > 0 && key.len <= IT_KEY_LEVEL_MAX);
+        *formstr = '\0';
+        for (i = 0; i<key.len; i++)
+        {
+            if (i)
+                strcat(formstr, ".");
+            sprintf(formstr + strlen(formstr), ZINT_FORMAT, key.mem[i]);
+        }
         yaz_log(logmask, "%s %s", formstr, txt);
     }
     else
@@ -78,17 +78,17 @@ int key_compare (const void *p1, const void *p2)
     memcpy (&i2, p2, sizeof(i2));
     l = i1.len;
     if (i2.len > l)
-	l = i2.len;
+        l = i2.len;
     assert (l <= IT_KEY_LEVEL_MAX && l > 0);
     for (i = 0; i < l; i++)
     {
-	if (i1.mem[i] != i2.mem[i])
-	{
-	    if (i1.mem[i] > i2.mem[i])
-		return l-i;
-	    else
-		return i-l;
-	}
+        if (i1.mem[i] != i2.mem[i])
+        {
+            if (i1.mem[i] > i2.mem[i])
+                return l-i;
+            else
+                return i-l;
+        }
     }
     return 0;
 }
@@ -129,7 +129,7 @@ struct iscz1_code_info {
 void *iscz1_start (void)
 {
     struct iscz1_code_info *p = (struct iscz1_code_info *)
-	xmalloc (sizeof(*p));
+        xmalloc (sizeof(*p));
     iscz1_reset(p);
     return p;
 }
@@ -139,7 +139,7 @@ void key_init(struct it_key *key)
     int i;
     key->len = 0;
     for (i = 0; i < IT_KEY_LEVEL_MAX; i++)
-	key->mem[i] = 0;
+        key->mem[i] = 0;
 }
 
 void iscz1_reset (void *vp)
@@ -148,7 +148,7 @@ void iscz1_reset (void *vp)
     int i;
     p->key.len = 0;
     for (i = 0; i < IT_KEY_LEVEL_MAX; i++)
-	p->key.mem[i] = 0;
+        p->key.mem[i] = 0;
 }
 
 void iscz1_stop (void *p)
@@ -164,7 +164,7 @@ static CODEC_INLINE void iscz1_encode_int (zint d, char **dst)
     while (d > 127)
     {
         *bp++ = (unsigned) (128 | (d & 127));
-	d = d >> 7;
+        d = d >> 7;
     }
     *bp++ = (unsigned) d;
     *dst = (char *) bp;
@@ -180,7 +180,7 @@ static CODEC_INLINE zint iscz1_decode_int (unsigned char **src)
     while (((c = *(*src)++) & 128))
     {
         d += ((zint) (c&127) << r);
-	r += 7;
+        r += 7;
     }
     d += ((zint) c << r);
     return d;
@@ -194,12 +194,12 @@ void iscz1_encode (void *vp, char **dst, const char **src)
     int i;
 
     /*   1
-	 3, 2, 9, 12
-	 3, 2, 10, 2
-	 4, 1
+         3, 2, 9, 12
+         3, 2, 10, 2
+         4, 1
 
-	 if diff is 0, then there is more ...
-	 if diff is non-zero, then _may_ be more
+         if diff is 0, then there is more ...
+         if diff is non-zero, then _may_ be more
     */
     memcpy (&tkey, *src, sizeof(struct it_key));
 
@@ -208,28 +208,28 @@ void iscz1_encode (void *vp, char **dst, const char **src)
     assert(tkey.len > 0 && tkey.len <= IT_KEY_LEVEL_MAX);
     for (i = 0; i < tkey.len; i++)
     {
-	d = tkey.mem[i] - p->key.mem[i];
-	if (d || i == tkey.len-1)
-	{  /* all have been equal until now, now make delta .. */
-	    p->key.mem[i] = tkey.mem[i];
-	    if (d > 0)
-	    {
-		iscz1_encode_int (i + (tkey.len << 3) + 64, dst);
-		i++;
-		iscz1_encode_int (d, dst);
-	    }
-	    else
-	    {
-		iscz1_encode_int (i + (tkey.len << 3), dst);
-		}
-	    break;
-	}
+        d = tkey.mem[i] - p->key.mem[i];
+        if (d || i == tkey.len-1)
+        {  /* all have been equal until now, now make delta .. */
+            p->key.mem[i] = tkey.mem[i];
+            if (d > 0)
+            {
+                iscz1_encode_int (i + (tkey.len << 3) + 64, dst);
+                i++;
+                iscz1_encode_int (d, dst);
+            }
+            else
+            {
+                iscz1_encode_int (i + (tkey.len << 3), dst);
+                }
+            break;
+        }
     }
     /* rest uses absolute encoding ... */
     for (; i < tkey.len; i++)
     {
-	iscz1_encode_int (tkey.mem[i], dst);
-	p->key.mem[i] = tkey.mem[i];
+        iscz1_encode_int (tkey.mem[i], dst);
+        p->key.mem[i] = tkey.mem[i];
     }
     (*src) += sizeof(struct it_key);
 }
@@ -242,12 +242,12 @@ void iscz1_decode (void *vp, char **dst, const char **src)
     int leader = (int) iscz1_decode_int ((unsigned char **) src);
     i = leader & 7;
     if (leader & 64)
-	p->key.mem[i] += iscz1_decode_int ((unsigned char **) src);
+        p->key.mem[i] += iscz1_decode_int ((unsigned char **) src);
     else
-	p->key.mem[i] = iscz1_decode_int ((unsigned char **) src);
+        p->key.mem[i] = iscz1_decode_int ((unsigned char **) src);
     p->key.len = (leader >> 3) & 7;
     while (++i < p->key.len)
-	p->key.mem[i] = iscz1_decode_int ((unsigned char **) src);
+        p->key.mem[i] = iscz1_decode_int ((unsigned char **) src);
     memcpy (*dst, &p->key, sizeof(struct it_key));
     (*dst) += sizeof(struct it_key);
 }

@@ -46,7 +46,7 @@ void zebra_zint_decode(const char **src, zint *pos)
     while (((c = *(*bp)++) & 128))
     {
         d += ((zint) (c & 127) << r);
-	r += 7;
+        r += 7;
     }
     d += ((zint) c << r);
     *pos = d;

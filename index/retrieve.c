@@ -1015,12 +1015,12 @@ static int facet_fetch(
 
     pos_array = (zint *) nmem_malloc(fi->nmem, num_recs * sizeof(*pos_array));
     for (i = 0; i < num_recs; i++)
-	pos_array[i] = i+1;
+        pos_array[i] = i+1;
     poset = zebra_meta_records_create(zh, fi->setname, num_recs, pos_array);
     if (!poset)
     {
         wrbuf_puts(addinfo, fi->setname);
-	return YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST;
+        return YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST;
     }
     else
     {

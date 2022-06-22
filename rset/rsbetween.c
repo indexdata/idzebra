@@ -211,7 +211,7 @@ static int r_forward(RSFD rfd, void *buf,
 static void checkattr(RSFD rfd)
 {
     struct rset_between_info *info = (struct rset_between_info *)
-	rfd->rset->priv;
+        rfd->rset->priv;
     struct rset_between_rfd *p = (struct rset_between_rfd *)rfd->priv;
     const struct rset_key_control *kctrl = rfd->rset->keycontrol;
     int cmp;
@@ -237,7 +237,7 @@ static void checkattr(RSFD rfd)
 static int r_read(RSFD rfd, void *buf, TERMID *term)
 {
     struct rset_between_info *info =
-	(struct rset_between_info *)rfd->rset->priv;
+        (struct rset_between_info *)rfd->rset->priv;
     struct rset_between_rfd *p = (struct rset_between_rfd *)rfd->priv;
     const struct rset_key_control *kctrl = rfd->rset->keycontrol;
     int cmp;
@@ -287,7 +287,7 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
             if (p->depth == 0)
                 p->match_1 = p->match_2 = 0;
             yaz_log(log_level, "read end tag. d=%d ad=%d", p->depth,
-		    p->attrdepth);
+                    p->attrdepth);
         }
         else if (*term == info->attrterm)
         {

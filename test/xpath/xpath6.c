@@ -53,12 +53,12 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=/assembled/orgs/org 0", 1));
 
     YAZ_CHECK(tl_query(zh,
-	     "@and @attr 1=/assembled/orgs/org 0 @attr 5=1 @attr 6=3 @attr 4=1 "
-	     "@attr 1=/assembled/basic/names/CASno \"367-93-1\"", 1));
+             "@and @attr 1=/assembled/orgs/org 0 @attr 5=1 @attr 6=3 @attr 4=1 "
+             "@attr 1=/assembled/basic/names/CASno \"367-93-1\"", 1));
 
     YAZ_CHECK(tl_query(zh,
-	     "@and @attr 1=/assembled/orgs/org 1 @attr 5=1 @attr 6=3  @attr 4=1 "
-	     "@attr 1=/assembled/basic/names/CASno 367-93-1", 2));
+             "@and @attr 1=/assembled/orgs/org 1 @attr 5=1 @attr 6=3  @attr 4=1 "
+             "@attr 1=/assembled/basic/names/CASno 367-93-1", 2));
 
     /* bug #317 */
     YAZ_CHECK(tl_query(zh, "@attr 1=1010 46", 2));

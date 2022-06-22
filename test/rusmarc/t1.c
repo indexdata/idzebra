@@ -29,8 +29,8 @@ void check_koi8r(void)
     yaz_iconv_t cd = yaz_iconv_open("koi8-r", "utf-8");
     if (!cd)
     {
-	yaz_log(YLOG_WARN, "koi8-r to utf-8 unsupported");
-	exit(0);
+        yaz_log(YLOG_WARN, "koi8-r to utf-8 unsupported");
+        exit(0);
     }
     yaz_iconv_close(cd);
 }

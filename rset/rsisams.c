@@ -55,8 +55,8 @@ struct rset_private {
 
 
 RSET rsisams_create(NMEM nmem, struct rset_key_control *kcontrol,
-		    int scope,
-		    ISAMS is, ISAM_P pos, TERMID term)
+                    int scope,
+                    ISAMS is, ISAM_P pos, TERMID term)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term, 0, 0);
     struct rset_private *info;

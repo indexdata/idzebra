@@ -95,7 +95,7 @@ struct dirs_info *dirs_open(Dict dict, const char *rep, int rw)
     p->no_read = p->no_cur = 0;
     after = p->no_max = 100;
     p->entries = (struct dirs_entry *)
-	xmalloc(sizeof(*p->entries) * (p->no_max));
+        xmalloc(sizeof(*p->entries) * (p->no_max));
     yaz_log(YLOG_DEBUG, "dirs_open first scan");
     dict_scan(p->dict, p->nextpath, &before, &after, p, dirs_client_proc);
     return p;
@@ -145,12 +145,12 @@ struct dirs_entry *dirs_read(struct dirs_info *p)
     if (p->nextpath_deleted)
     {
         p->no_cur = 0;
-	after = p->no_max;
+        after = p->no_max;
     }
     else
     {
         p->no_cur = -1;
-	after = p->no_max + 1;
+        after = p->no_max + 1;
     }
     p->no_read = 1;
     p->nextpath_deleted = 0;
@@ -173,7 +173,7 @@ void dirs_mkdir(struct dirs_info *p, const char *src, time_t mtime)
     sprintf(path, "%s%s", p->prefix, src);
     yaz_log(YLOG_DEBUG, "dirs_mkdir %s", path);
     if (p->rw)
-	dict_insert(p->dict, path, sizeof(mtime), &mtime);
+        dict_insert(p->dict, path, sizeof(mtime), &mtime);
 }
 
 void dirs_rmdir(struct dirs_info *p, const char *src)
@@ -183,7 +183,7 @@ void dirs_rmdir(struct dirs_info *p, const char *src)
     sprintf(path, "%s%s", p->prefix, src);
     yaz_log(YLOG_DEBUG, "dirs_rmdir %s", path);
     if (p->rw)
-	dict_delete(p->dict, path);
+        dict_delete(p->dict, path);
 }
 
 void dirs_add(struct dirs_info *p, const char *src, zint sysno, time_t mtime)
@@ -196,7 +196,7 @@ void dirs_add(struct dirs_info *p, const char *src, zint sysno, time_t mtime)
     memcpy(info, &sysno, sizeof(sysno));
     memcpy(info+sizeof(sysno), &mtime, sizeof(mtime));
     if (p->rw)
-	dict_insert(p->dict, path, sizeof(sysno)+sizeof(mtime), info);
+        dict_insert(p->dict, path, sizeof(sysno)+sizeof(mtime), info);
 }
 
 void dirs_del(struct dirs_info *p, const char *src)
@@ -209,7 +209,7 @@ void dirs_del(struct dirs_info *p, const char *src)
     {
         if (!strcmp(path, p->nextpath))
              p->nextpath_deleted = 1;
-	dict_delete(p->dict, path);
+        dict_delete(p->dict, path);
     }
 }
 

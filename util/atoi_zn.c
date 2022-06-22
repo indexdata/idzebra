@@ -32,7 +32,7 @@ zint atoi_zn (const char *buf, zint len)
     {
         if (isdigit (*buf))
             val = val*10 + (*buf - '0');
-	buf++;
+        buf++;
     }
     return val;
 }

@@ -30,7 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /* convert APT search term to UTF8 */
 ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-			    char *termz)
+                            char *termz)
 {
     size_t sizez;
     Z_Term *term = zapt->term;
@@ -53,12 +53,12 @@ ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                 int iconv_error = yaz_iconv_error(zh->iconv_to_utf8);
 
                 ret = yaz_iconv(zh->iconv_to_utf8, 0, 0, 0, 0);
-		zebra_setError(
-		    zh,
+                zebra_setError(
+                    zh,
                     iconv_error == YAZ_ICONV_E2BIG ?
                     YAZ_BIB1_TOO_MANY_CHARS_IN_SEARCH_STATEMENT :
-		    YAZ_BIB1_QUERY_TERM_INCLUDES_CHARS_THAT_DO_NOT_TRANSLATE_INTO_,
-		    0);
+                    YAZ_BIB1_QUERY_TERM_INCLUDES_CHARS_THAT_DO_NOT_TRANSLATE_INTO_,
+                    0);
                 return ZEBRA_FAIL;
             }
             yaz_iconv(zh->iconv_to_utf8, 0, 0, &outbuf, &outleft);
@@ -81,8 +81,8 @@ ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         termz[sizez] = '\0';
         break;
     default:
-	zebra_setError(zh, YAZ_BIB1_UNSUPP_CODED_VALUE_FOR_TERM, 0);
-	return ZEBRA_FAIL;
+        zebra_setError(zh, YAZ_BIB1_UNSUPP_CODED_VALUE_FOR_TERM, 0);
+        return ZEBRA_FAIL;
     }
     return ZEBRA_OK;
 }

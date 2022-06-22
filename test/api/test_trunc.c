@@ -38,42 +38,42 @@ static void tst(int argc, char **argv)
 
     for (i = 0; i<10; i++)
     {
-	int l;
+        int l;
 
-	zh = zebra_open (zs, 0);
-	YAZ_CHECK(zh);
+        zh = zebra_open (zs, 0);
+        YAZ_CHECK(zh);
 
-	YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
+        YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
-	YAZ_CHECK(zebra_begin_trans (zh, 1) == ZEBRA_OK);
+        YAZ_CHECK(zebra_begin_trans (zh, 1) == ZEBRA_OK);
 
-	for (l = 0; l<100; l++)
-	{
-	    char rec_buf[5120];
-	    int j;
-	    *rec_buf = '\0';
-	    strcat(rec_buf, "<gils><title>");
-	    if (i == 0)
-	    {
-		sprintf(rec_buf + strlen(rec_buf), "aaa");
-	    }
-	    else
-	    {
-		j = (rand() & 15) + 1;
-		while (--j >= 0)
-		{
-		    int c = 65 + (rand() & 15);
-		    sprintf(rec_buf + strlen(rec_buf), "%c", c);
-		}
-	    }
-	    strcat(rec_buf, "</title><Control-Identifier>");
-	    j = rand() & 31;
-	    sprintf(rec_buf + strlen(rec_buf), "%d", j);
-	    strcat(rec_buf, "</Control-Identifier></gils>");
-	    zebra_add_record (zh, rec_buf, strlen(rec_buf));
-	}
-	YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
-	zebra_close(zh);
+        for (l = 0; l<100; l++)
+        {
+            char rec_buf[5120];
+            int j;
+            *rec_buf = '\0';
+            strcat(rec_buf, "<gils><title>");
+            if (i == 0)
+            {
+                sprintf(rec_buf + strlen(rec_buf), "aaa");
+            }
+            else
+            {
+                j = (rand() & 15) + 1;
+                while (--j >= 0)
+                {
+                    int c = 65 + (rand() & 15);
+                    sprintf(rec_buf + strlen(rec_buf), "%c", c);
+                }
+            }
+            strcat(rec_buf, "</title><Control-Identifier>");
+            j = rand() & 31;
+            sprintf(rec_buf + strlen(rec_buf), "%d", j);
+            strcat(rec_buf, "</Control-Identifier></gils>");
+            zebra_add_record (zh, rec_buf, strlen(rec_buf));
+        }
+        YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
+        zebra_close(zh);
     }
     zh = zebra_open(zs, 0);
     YAZ_CHECK(zh);

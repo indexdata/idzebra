@@ -194,7 +194,7 @@ void bf_reset (BFiles bfs);
 */
 YAZ_EXPORT
 int bfs_register_directory_stat(BFiles bfs, int no, const char **directory,
-				double *used_bytes, double *max_bytes);
+                                double *used_bytes, double *max_bytes);
 
 /* \brief gets statistics about directory in shadow area
    \param bfs block files
@@ -212,7 +212,7 @@ int bfs_register_directory_stat(BFiles bfs, int no, const char **directory,
 */
 YAZ_EXPORT
 int bfs_shadow_directory_stat(BFiles bfs, int no, const char **directory,
-			      double *used_bytes, double *max_bytes);
+                              double *used_bytes, double *max_bytes);
 
 YAZ_END_CDECL
 

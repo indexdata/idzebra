@@ -62,7 +62,7 @@ static int lexer_options (int argc, char **argv)
                 case 's':
                     dfa_verbose = 1;
                     continue;
-	        case 'c':
+                case 'c':
                     ccluse = 1;
                     continue;
                 case 'd':

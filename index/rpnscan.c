@@ -43,7 +43,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /* convert APT SCAN term to internal cmap */
 static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-				 char *termz, zebra_map_t zm)
+                                 char *termz, zebra_map_t zm)
 {
     char term_utf8[IT_MAX_WORD];
 
@@ -103,7 +103,7 @@ static void get_first_snippet_from_rset(ZebraHandle zh,
     size_t sysno_mem_index = 0;
 
     if (zh->m_staticrank)
-	sysno_mem_index = 1;
+        sysno_mem_index = 1;
 
     yaz_log(YLOG_DEBUG, "get_first_snippet_from_rset");
 
@@ -304,7 +304,7 @@ static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
     rpn_char_map_prepare(zh->reg, zm, &rcmi);
 
     for (i = 0; i < ord_no; i++)
-	ar[i].term = wrbuf_alloc();
+        ar[i].term = wrbuf_alloc();
 
     for (i = 0; i < ord_no; i++)
     {
@@ -378,7 +378,7 @@ static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
         else
             *num_entries = 0;
         *position -= dif;
-	*is_partial = 1;
+        *is_partial = 1;
     }
     for (i = 0; i < ord_no; i++)
     {
@@ -449,7 +449,7 @@ static ZEBRA_RES rpn_scan_norm(ZebraHandle zh, ODR stream, NMEM nmem,
     *list = glist;
 
     for (i = 0; i < ord_no; i++)
-	wrbuf_destroy(ar[i].term);
+        wrbuf_destroy(ar[i].term);
 
     return ZEBRA_OK;
 }
@@ -467,10 +467,10 @@ struct scan_info {
 };
 
 ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
-		   const Odr_oid *attributeset,
-		   int num_bases, char **basenames,
-		   int *position, int *num_entries, ZebraScanEntry **list,
-		   int *is_partial, const char *set_name)
+                   const Odr_oid *attributeset,
+                   int num_bases, char **basenames,
+                   int *position, int *num_entries, ZebraScanEntry **list,
+                   int *is_partial, const char *set_name)
 {
     int base_no;
     int ords[RPN_MAX_ORDS], ord_no = 0;
@@ -527,31 +527,31 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     }
 
     yaz_log(YLOG_DEBUG, "position = %d, num = %d",
-	    *position, *num_entries);
+            *position, *num_entries);
 
     if (zebra_maps_attr(zh->reg->zebra_maps, zapt, &index_type, &search_type,
-			rank_type, &complete_flag, &sort_flag))
+                        rank_type, &complete_flag, &sort_flag))
     {
         *num_entries = 0;
-	zebra_setError(zh, YAZ_BIB1_UNSUPP_ATTRIBUTE_TYPE, 0);
+        zebra_setError(zh, YAZ_BIB1_UNSUPP_ATTRIBUTE_TYPE, 0);
         return ZEBRA_FAIL;
     }
     if (num_bases > RPN_MAX_ORDS)
     {
-	zebra_setError(zh, YAZ_BIB1_TOO_MANY_DATABASES_SPECIFIED, 0);
+        zebra_setError(zh, YAZ_BIB1_TOO_MANY_DATABASES_SPECIFIED, 0);
         return ZEBRA_FAIL;
     }
     for (base_no = 0; base_no < num_bases; base_no++)
     {
-	int ord;
+        int ord;
 
-	if (zebraExplain_curDatabase(zh->reg->zei, basenames[base_no]))
-	{
-	    zebra_setError(zh, YAZ_BIB1_DATABASE_UNAVAILABLE,
-			   basenames[base_no]);
-	    *num_entries = 0;
-	    return ZEBRA_FAIL;
-	}
+        if (zebraExplain_curDatabase(zh->reg->zei, basenames[base_no]))
+        {
+            zebra_setError(zh, YAZ_BIB1_DATABASE_UNAVAILABLE,
+                           basenames[base_no]);
+            *num_entries = 0;
+            return ZEBRA_FAIL;
+        }
         if (zebra_apt_get_ord(zh, zapt, index_type, 0, attributeset, &ord)
             != ZEBRA_OK)
             continue;
@@ -564,7 +564,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     }
     if (*num_entries < 1)
     {
-	*num_entries = 0;
+        *num_entries = 0;
         return ZEBRA_OK;
     }
     nmem = nmem_create();

@@ -177,7 +177,7 @@ void mf_reset(MFile_area ma, int unlink_flag);
    as max_bytes = -1.
 */
 int mf_area_directory_stat(MFile_area ma, int no, const char **directory,
-			   double *bytes_used, double *bytes_max);
+                           double *bytes_used, double *bytes_max);
 
 YAZ_END_CDECL
 

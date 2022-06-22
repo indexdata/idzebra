@@ -107,10 +107,10 @@ int main (int argc, char **argv)
                 exit (1);
             }
         }
-	else if (ret == 'D')
-	{
-	    delete_term = arg;
-	}
+        else if (ret == 'D')
+        {
+            delete_term = arg;
+        }
         else if (ret == 'd')
             do_delete = 1;
         else if (ret == 'g')
@@ -139,8 +139,8 @@ int main (int argc, char **argv)
             rw = 1;
         else if (ret == 'i')
             inputfile = arg;
-	else if (ret == 'S')
-	    scan_the_thing = 1;
+        else if (ret == 'S')
+            scan_the_thing = 1;
         else if (ret == 's')
         {
             infosize = atoi(arg);
@@ -210,7 +210,7 @@ int main (int argc, char **argv)
                         ipf_ptr[i++] = '\0';
                     if (rw)
                     {
-			if (do_delete)
+                        if (do_delete)
                             switch (dict_delete (dict, ipf_ptr))
                             {
                             case 0:
@@ -259,10 +259,10 @@ int main (int argc, char **argv)
                             no_of_misses++;
                     }
                     ++no_of_iterations;
-		    if ((no_of_iterations % 10000) == 0)
-		    {
-			printf ("."); fflush(stdout);
-		    }
+                    if ((no_of_iterations % 10000) == 0)
+                    {
+                        printf ("."); fflush(stdout);
+                    }
                     ipf_ptr += (i-1);
                 }
             }
@@ -272,8 +272,8 @@ int main (int argc, char **argv)
     }
     if (rw && delete_term)
     {
-	yaz_log (YLOG_LOG, "dict_delete_subtree %s", delete_term);
-	dict_delete_subtree (dict, delete_term, 0, 0);
+        yaz_log (YLOG_LOG, "dict_delete_subtree %s", delete_term);
+        dict_delete_subtree (dict, delete_term, 0, 0);
     }
     if (grep_pattern)
     {
@@ -305,14 +305,14 @@ int main (int argc, char **argv)
     }
     if (scan_the_thing)
     {
-	char term_dict[1024];
+        char term_dict[1024];
 
-	int before = 1000000;
-	int after = 1000000;
-	yaz_log (YLOG_LOG, "dict_scan");
-	term_dict[0] = 1;
-	term_dict[1] = 0;
-	dict_scan (dict, term_dict, &before, &after, 0, scan_handler);
+        int before = 1000000;
+        int after = 1000000;
+        yaz_log (YLOG_LOG, "dict_scan");
+        term_dict[0] = 1;
+        term_dict[1] = 0;
+        dict_scan (dict, term_dict, &before, &after, 0, scan_handler);
     }
     dict_close (dict);
     bfs_destroy (bfs);

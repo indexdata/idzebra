@@ -49,18 +49,18 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(zebra_begin_trans(zh, 0) == ZEBRA_OK);
 
     YAZ_CHECK(zebra_search_RPN(zh, odr_input, query, setname1, &hits) ==
-	      ZEBRA_OK);
+              ZEBRA_OK);
 
     YAZ_CHECK(zebra_sort(zh, odr_output, 1, &setname1, setname2, spec,
-			 &status)
-	      == ZEBRA_OK);
+                         &status)
+              == ZEBRA_OK);
     YAZ_CHECK(zebra_sort(zh, odr_output, 1, &setname2, setname3, spec,
-			 &status) == ZEBRA_OK);
+                         &status) == ZEBRA_OK);
 
     spec = yaz_sort_spec(odr_output, "1=5 <!"); /* invalid sort spec */
 
     YAZ_CHECK(zebra_sort(zh, odr_output, 1, &setname1, setname2, spec,
-			 &status) == ZEBRA_FAIL);
+                         &status) == ZEBRA_FAIL);
 
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
 

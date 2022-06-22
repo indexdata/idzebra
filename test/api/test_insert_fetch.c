@@ -47,7 +47,7 @@ static void tst(int argc, char **argv)
 
     for (i = 0; i< number_to_be_inserted-1; i++)
     {  /* -1 since already inserted one in init_data */
-	zebra_add_record(zh, myrec[0], strlen(myrec[0]));
+        zebra_add_record(zh, myrec[0], strlen(myrec[0]));
     }
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
 
@@ -61,7 +61,7 @@ static void tst(int argc, char **argv)
 
     for (i = 0; i<2; i++)
     {
-	ZEBRA_RES ret;
+        ZEBRA_RES ret;
         ZebraRetrievalRecord retrievalRecord[NUMBER_TO_FETCH_MAX];
         char setname[20];
         int j;
@@ -73,18 +73,18 @@ static void tst(int argc, char **argv)
 
         sprintf(setname, "s%d", i+1);
         ret = zebra_search_RPN(zh, odr_input, query, setname, &hits);
-	if (ret != ZEBRA_OK)
-	{
-	    int code = zebra_errCode(zh);
-	    yaz_log(YLOG_WARN, "Unexpected error code=%d", code);
-	    exit(1);
-	}
-	if (hits != number_to_be_inserted)
-	{
-	    yaz_log(YLOG_WARN, "Unexpected hit count " ZINT_FORMAT
-		    "(should be %d)", hits, number_to_be_inserted);
-	    exit(1);
-	}
+        if (ret != ZEBRA_OK)
+        {
+            int code = zebra_errCode(zh);
+            yaz_log(YLOG_WARN, "Unexpected error code=%d", code);
+            exit(1);
+        }
+        if (hits != number_to_be_inserted)
+        {
+            yaz_log(YLOG_WARN, "Unexpected hit count " ZINT_FORMAT
+                    "(should be %d)", hits, number_to_be_inserted);
+            exit(1);
+        }
 
         yaz_pqf_destroy(parser);
 
@@ -92,33 +92,33 @@ static void tst(int argc, char **argv)
 
         YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
 
-	for (j = 0; j < number_to_fetch; j++)
-	    retrievalRecord[j].position = j+1;
+        for (j = 0; j < number_to_fetch; j++)
+            retrievalRecord[j].position = j+1;
 
         ret = zebra_records_retrieve(zh, odr_output, setname, 0,
-				     yaz_oid_recsyn_xml, number_to_fetch,
-				     retrievalRecord);
-	if (ret != ZEBRA_OK)
-	{
-	    int code = zebra_errCode(zh);
-	    yaz_log(YLOG_FATAL, "zebra_records_retrieve returned error %d",
-		    code);
-	    exit(1);
-	}
+                                     yaz_oid_recsyn_xml, number_to_fetch,
+                                     retrievalRecord);
+        if (ret != ZEBRA_OK)
+        {
+            int code = zebra_errCode(zh);
+            yaz_log(YLOG_FATAL, "zebra_records_retrieve returned error %d",
+                    code);
+            exit(1);
+        }
 
-	for (j = 0; j < number_to_fetch; j++)
-	{
-	    if (!retrievalRecord[j].buf)
-	    {
-		yaz_log(YLOG_FATAL, "No record buf at position %d", j);
-		exit(1);
-	    }
-	    if (!retrievalRecord[j].len)
-	    {
-		yaz_log(YLOG_FATAL, "No record len at position %d", j);
-		exit(1);
-	    }
-	}
+        for (j = 0; j < number_to_fetch; j++)
+        {
+            if (!retrievalRecord[j].buf)
+            {
+                yaz_log(YLOG_FATAL, "No record buf at position %d", j);
+                exit(1);
+            }
+            if (!retrievalRecord[j].len)
+            {
+                yaz_log(YLOG_FATAL, "No record len at position %d", j);
+                exit(1);
+            }
+        }
         odr_destroy(odr_output);
 
         YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);

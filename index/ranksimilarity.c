@@ -305,7 +305,7 @@ static void add (void *set_handle, int seqno, TERMID term)
  *  -1 should be returned.
  */
 static int calc (void *set_handle, zint sysno, zint staticrank,
-		 int *stop_flag)
+                 int *stop_flag)
 {
   int i, score = 0;
   struct ranksimilarity_set_info *si

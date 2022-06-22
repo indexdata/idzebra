@@ -59,9 +59,9 @@ static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             /* unsigned char        length of information */
             /* char *               information */
 
-	    info = (char*)p + indxp[-lo];
+            info = (char*)p + indxp[-lo];
             for (j = 0; info[j] != DICT_EOS; j++)
-		str[pos+j] = info[j];
+                str[pos+j] = info[j];
             str[pos+j] = DICT_EOS;
             if ((*userfunc)((char*) str, info+(j+1)*sizeof(Dict_char),
                             *count * dir, client))
@@ -74,7 +74,7 @@ static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
         else
         {
             Dict_char dc;
-	    Dict_ptr subptr;
+            Dict_ptr subptr;
 
             /* Dict_ptr             subptr */
             /* Dict_char            sub char */
@@ -84,8 +84,8 @@ static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             info = (char*)p - indxp[-lo];
             memcpy(&dc, info+sizeof(Dict_ptr), sizeof(Dict_char));
             str[pos] = dc;
-	    memcpy(&subptr, info, sizeof(Dict_ptr));
-	    if (dir>0 && info[sizeof(Dict_ptr)+sizeof(Dict_char)])
+            memcpy(&subptr, info, sizeof(Dict_ptr));
+            if (dir>0 && info[sizeof(Dict_ptr)+sizeof(Dict_char)])
             {
                 str[pos+1] = DICT_EOS;
                 if ((*userfunc)((char*) str,
@@ -99,12 +99,12 @@ static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             }
             if (*count>0 && subptr)
             {
-	        scan_direction(dict, subptr, pos+1, str, -1, count,
+                scan_direction(dict, subptr, pos+1, str, -1, count,
                                client, userfunc, dir);
                 dict_bf_readp(dict->dbf, ptr, &p);
                 indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
-	    }
-	    if (*count>0 && dir<0 && info[sizeof(Dict_ptr)+sizeof(Dict_char)])
+            }
+            if (*count>0 && dir<0 && info[sizeof(Dict_ptr)+sizeof(Dict_char)])
             {
                 str[pos+1] = DICT_EOS;
                 if ((*userfunc)((char*) str,
@@ -122,7 +122,7 @@ static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 }
 
 void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
-		 int *before, int *after, void *client,
+                 int *before, int *after, void *client,
                  int (*userfunc)(char *, const char *, int, void *))
 {
     int cmp = 0, mid, lo, hi;
@@ -144,9 +144,9 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             /* string (Dict_char *) DICT_EOS terminated */
             /* unsigned char        length of information */
             /* char *               information */
-	    info = (char*)p + indxp[-mid];
-	    cmp = dict_strcmp((Dict_char*) info, str + pos);
-	    if (!cmp)
+            info = (char*)p + indxp[-mid];
+            cmp = dict_strcmp((Dict_char*) info, str + pos);
+            if (!cmp)
             {
                 if (*after)
                 {
@@ -166,7 +166,7 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
         else
         {
             Dict_char dc;
-	    Dict_ptr subptr;
+            Dict_ptr subptr;
 
             /* Dict_ptr             subptr */
             /* Dict_char            sub char */
@@ -174,13 +174,13 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             /* char *               information */
             info = (char*)p - indxp[-mid];
             memcpy(&dc, info+sizeof(Dict_ptr), sizeof(Dict_char));
-	    cmp = dc - str[pos];
-	    if (!cmp)
+            cmp = dc - str[pos];
+            if (!cmp)
             {
-		memcpy(&subptr, info, sizeof(Dict_ptr));
+                memcpy(&subptr, info, sizeof(Dict_ptr));
                 if (str[pos+1] == DICT_EOS)
                 {
-		    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
+                    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
                     {
                         if (*after)
                         {
@@ -196,15 +196,15 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                         }
                     }
                     if (*after && subptr)
-		        scan_direction(dict, subptr, pos+1, str, -1,
+                        scan_direction(dict, subptr, pos+1, str, -1,
                                        after, client, userfunc, 1);
                 }
-		else
+                else
                 {
                     if (subptr)
                         dict_scan_r(dict, subptr, pos+1, str, before, after,
                                     client, userfunc);
-             	    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
+                    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
                     {
                         if (*before)
                         {
@@ -224,10 +224,10 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                 break;
             }
         }
-	if (cmp < 0)
-	    lo = mid+1;
-	else
-	    hi = mid-1;
+        if (cmp < 0)
+            lo = mid+1;
+        else
+            hi = mid-1;
     }
     if (lo>hi && cmp < 0)
         ++mid;
@@ -247,7 +247,7 @@ int dict_scan(Dict dict, char *str, int *before, int *after, void *client,
     yaz_log(YLOG_DEBUG, "dict_scan");
     for (i = 0; str[i]; i++)
     {
-	yaz_log(YLOG_DEBUG, "start_term pos %d %3d  %c", i, str[i],
+        yaz_log(YLOG_DEBUG, "start_term pos %d %3d  %c", i, str[i],
                 (str[i] > ' ' && str[i] < 127) ? str[i] : '?');
     }
     if (!dict->head.root)

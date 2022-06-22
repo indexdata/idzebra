@@ -42,17 +42,17 @@ int sgml_getc (void *clientData)
     int res;
 
     if (p->off < p->size)
-	return p->buf[(p->off)++];
+        return p->buf[(p->off)++];
     if (p->size < p->buf_size)
-	return 0;
+        return 0;
     p->moffset += p->off;
     p->off = 0;
     p->size = 0;
     res = p->stream->readf(p->stream, p->buf, p->buf_size);
     if (res > 0)
     {
-	p->size += res;
-	return p->buf[(p->off)++];
+        p->size += res;
+        return p->buf[(p->off)++];
     }
     return 0;
 }
@@ -69,14 +69,14 @@ static data1_node *grs_read_sgml (struct grs_read_info *p)
     sgi->size = 0;
     res = sgi->stream->readf(sgi->stream, sgi->buf, sgi->buf_size);
     if (res > 0)
-	sgi->size += res;
+        sgi->size += res;
     else
-	return 0;
+        return 0;
     node = data1_read_nodex(p->dh, p->mem, sgml_getc, sgi, sgi->wrbuf);
     if (node && p->stream->endf)
     {
         off_t end_offset = sgi->moffset + sgi->off;
-	p->stream->endf(sgi->stream, &end_offset);
+        p->stream->endf(sgi->stream, &end_offset);
     }
     return node;
 }

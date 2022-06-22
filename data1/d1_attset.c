@@ -72,7 +72,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
     char *argv[50], line[512];
 
     if (!(f = data1_path_fopen(dh, file, "r")))
-	return NULL;
+        return NULL;
     res = data1_empty_attset (dh);
 
     childp = &res->children;
@@ -80,106 +80,106 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 
     while ((argc = readconf_line(f, &lineno, line, 512, argv, 50)))
     {
-	char *cmd = argv[0];
-	if (!strcmp(cmd, "att"))
-	{
-	    int num;
-	    char *name;
+        char *cmd = argv[0];
+        if (!strcmp(cmd, "att"))
+        {
+            int num;
+            char *name;
             char *endptr;
-	    data1_att *t;
+            data1_att *t;
 
-	    if (argc < 3)
-	    {
-		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to att", file, lineno);
-		continue;
-	    }
+            if (argc < 3)
+            {
+                yaz_log(YLOG_WARN, "%s:%d: Bad # of args to att", file, lineno);
+                continue;
+            }
             if (argc > 3)
             {
-		yaz_log(YLOG_WARN, "%s:%d: Local attributes not supported",
+                yaz_log(YLOG_WARN, "%s:%d: Local attributes not supported",
                         file, lineno);
-	    }
+            }
             num = strtol(argv[1], &endptr, 10);
             if (*endptr != '\0')
             {
-		yaz_log(YLOG_WARN, "%s:%d: Bad attribute integer %s",
+                yaz_log(YLOG_WARN, "%s:%d: Bad attribute integer %s",
                         file, lineno, argv[1]);
-		continue;
+                continue;
             }
-	    name = argv[2];
+            name = argv[2];
 
-	    t = *attp = (data1_att *)nmem_malloc(mem, sizeof(*t));
-	    t->parent = res;
-	    t->name = nmem_strdup(mem, name);
-	    t->value = num;
-	    t->next = 0;
-	    attp = &t->next;
-	}
-	else if (!strcmp(cmd, "name"))
-	{
-	    if (argc != 2)
-	    {
-		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to name", file, lineno);
-		continue;
-	    }
-	}
-	else if (!strcmp(cmd, "reference"))
-	{
-	    char *name;
+            t = *attp = (data1_att *)nmem_malloc(mem, sizeof(*t));
+            t->parent = res;
+            t->name = nmem_strdup(mem, name);
+            t->value = num;
+            t->next = 0;
+            attp = &t->next;
+        }
+        else if (!strcmp(cmd, "name"))
+        {
+            if (argc != 2)
+            {
+                yaz_log(YLOG_WARN, "%s:%d: Bad # of args to name", file, lineno);
+                continue;
+            }
+        }
+        else if (!strcmp(cmd, "reference"))
+        {
+            char *name;
 
-	    if (argc != 2)
-	    {
-		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to reference",
-			file, lineno);
-		continue;
-	    }
-	    name = argv[1];
+            if (argc != 2)
+            {
+                yaz_log(YLOG_WARN, "%s:%d: Bad # of args to reference",
+                        file, lineno);
+                continue;
+            }
+            name = argv[1];
 
             res->oid  = yaz_string_to_oid_nmem(yaz_oid_std(),
                                                CLASS_ATTSET, name, mem);
-	    if (!res->oid)
-	    {
-		yaz_log(YLOG_WARN, "%s:%d: Unknown reference oid '%s'",
-			file, lineno, name);
-		fclose(f);
-		return 0;
-	    }
-	}
-	else if (!strcmp(cmd, "ordinal"))
-	{
-	    yaz_log (YLOG_WARN, "%s:%d: Directive ordinal ignored",
-		     file, lineno);
-	}
-	else if (!strcmp(cmd, "include"))
-	{
-	    char *name;
-	    data1_attset *attset;
+            if (!res->oid)
+            {
+                yaz_log(YLOG_WARN, "%s:%d: Unknown reference oid '%s'",
+                        file, lineno, name);
+                fclose(f);
+                return 0;
+            }
+        }
+        else if (!strcmp(cmd, "ordinal"))
+        {
+            yaz_log (YLOG_WARN, "%s:%d: Directive ordinal ignored",
+                     file, lineno);
+        }
+        else if (!strcmp(cmd, "include"))
+        {
+            char *name;
+            data1_attset *attset;
 
-	    if (argc != 2)
-	    {
-		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to include",
-			file, lineno);
-		continue;
-	    }
-	    name = argv[1];
+            if (argc != 2)
+            {
+                yaz_log(YLOG_WARN, "%s:%d: Bad # of args to include",
+                        file, lineno);
+                continue;
+            }
+            name = argv[1];
 
-	    if (!(attset = data1_get_attset (dh, name)))
-	    {
-		yaz_log(YLOG_WARN, "%s:%d: Include of attset %s failed",
-			file, lineno, name);
-		continue;
+            if (!(attset = data1_get_attset (dh, name)))
+            {
+                yaz_log(YLOG_WARN, "%s:%d: Include of attset %s failed",
+                        file, lineno, name);
+                continue;
 
-	    }
-	    *childp = (data1_attset_child *)
-		nmem_malloc (mem, sizeof(**childp));
-	    (*childp)->child = attset;
-	    (*childp)->next = 0;
-	    childp = &(*childp)->next;
-	}
-	else
-	{
-	    yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'",
-		    file, lineno, cmd);
-	}
+            }
+            *childp = (data1_attset_child *)
+                nmem_malloc (mem, sizeof(**childp));
+            (*childp)->child = attset;
+            (*childp)->next = 0;
+            childp = &(*childp)->next;
+        }
+        else
+        {
+            yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'",
+                    file, lineno, cmd);
+        }
     }
     fclose(f);
     return res;

@@ -76,26 +76,26 @@ static Z_Variant *make_variant(data1_node *n, int num, ODR o)
      */
     for (p = n, num--; p && num >= 0; p = p->parent, num--)
     {
-	Z_Triple *t;
+        Z_Triple *t;
 
-	assert(p->which == DATA1N_variant);
-	t = v->triples[num] = (Z_Triple *)odr_malloc(o, sizeof(*t));
-	t->variantSetId = 0;
+        assert(p->which == DATA1N_variant);
+        t = v->triples[num] = (Z_Triple *)odr_malloc(o, sizeof(*t));
+        t->variantSetId = 0;
         t->zclass = odr_intdup(o, p->u.variant.type->zclass->zclass);
-	t->type = odr_intdup(o, p->u.variant.type->type);
+        t->type = odr_intdup(o, p->u.variant.type->type);
 
-	switch (p->u.variant.type->datatype)
-	{
-	    case DATA1K_string:
-		t->which = Z_Triple_internationalString;
-		t->value.internationalString =
+        switch (p->u.variant.type->datatype)
+        {
+            case DATA1K_string:
+                t->which = Z_Triple_internationalString;
+                t->value.internationalString =
                     odr_strdup(o, p->u.variant.value);
-		break;
-	    default:
-		yaz_log(YLOG_WARN, "Unable to handle value for variant %s",
-			p->u.variant.type->name);
-		return 0;
-	}
+                break;
+            default:
+                yaz_log(YLOG_WARN, "Unable to handle value for variant %s",
+                        p->u.variant.type->name);
+                return 0;
+        }
     }
     return v;
 }
@@ -109,25 +109,25 @@ static int traverse_triples(data1_node *n, int level, Z_ElementMetaData *m,
     data1_node *c;
 
     for (c = n->child; c; c = c->next)
-	if (c->which == DATA1N_data && level)
-	{
-	    if (!m->supportedVariants)
-		m->supportedVariants = (Z_Variant **)odr_malloc(o, sizeof(Z_Variant*) *
-		    D1_VARIANTARRAY);
-	    else if (m->num_supportedVariants >= D1_VARIANTARRAY)
-	    {
-		yaz_log(YLOG_WARN, "Too many variants (D1_VARIANTARRAY==%d)",
-			D1_VARIANTARRAY);
-		return -1;
-	    }
+        if (c->which == DATA1N_data && level)
+        {
+            if (!m->supportedVariants)
+                m->supportedVariants = (Z_Variant **)odr_malloc(o, sizeof(Z_Variant*) *
+                    D1_VARIANTARRAY);
+            else if (m->num_supportedVariants >= D1_VARIANTARRAY)
+            {
+                yaz_log(YLOG_WARN, "Too many variants (D1_VARIANTARRAY==%d)",
+                        D1_VARIANTARRAY);
+                return -1;
+            }
 
-	    if (!(m->supportedVariants[m->num_supportedVariants++] =
-	    	make_variant(n, level, o)))
-		return -1;
-	}
-	else if (c->which == DATA1N_variant)
-	    if (traverse_triples(c, level+1, m, o) < 0)
-		return -1;
+            if (!(m->supportedVariants[m->num_supportedVariants++] =
+                make_variant(n, level, o)))
+                return -1;
+        }
+        else if (c->which == DATA1N_variant)
+            if (traverse_triples(c, level+1, m, o) < 0)
+                return -1;
     return 0;
 }
 
@@ -171,26 +171,26 @@ static char *get_data(data1_node *n, int *len)
 }
 
 static Z_ElementData *nodetoelementdata(data1_handle dh, data1_node *n,
-					int select, int leaf,
-					ODR o, int *len,
+                                        int select, int leaf,
+                                        ODR o, int *len,
                                         data1_tag *wellknown_tag)
 {
     Z_ElementData *res = (Z_ElementData *)odr_malloc(o, sizeof(*res));
 
     if (!n)
     {
-	res->which = Z_ElementData_elementNotThere;
-	res->u.elementNotThere = odr_nullval();
+        res->which = Z_ElementData_elementNotThere;
+        res->u.elementNotThere = odr_nullval();
     }
     else if (n->which == DATA1N_data && leaf)
     {
-	char str[64], *cp;
-	int toget = n->u.data.len;
+        char str[64], *cp;
+        int toget = n->u.data.len;
 
         cp = get_data (n, &toget);
 
-	switch (n->u.data.what)
-	{
+        switch (n->u.data.what)
+        {
         case DATA1I_num:
             res->which = Z_ElementData_numeric;
             res->u.numeric = odr_intdup(o, atoi_n(cp, toget));
@@ -217,14 +217,14 @@ static Z_ElementData *nodetoelementdata(data1_handle dh, data1_node *n,
         default:
             yaz_log(YLOG_WARN, "Can't handle datatype.");
             return 0;
-	}
+        }
     }
     else
     {
-	res->which = Z_ElementData_subtree;
-	if (!(res->u.subtree = data1_nodetogr_r (dh, n->parent, select, o, len,
+        res->which = Z_ElementData_subtree;
+        if (!(res->u.subtree = data1_nodetogr_r (dh, n->parent, select, o, len,
                                                  wellknown_tag )))
-	    return 0;
+            return 0;
     }
     return res;
 }
@@ -232,7 +232,7 @@ static Z_ElementData *nodetoelementdata(data1_handle dh, data1_node *n,
 static int is_empty_data (data1_node *n)
 {
     if (n && n->which == DATA1N_data && (n->u.data.what == DATA1I_text
-			    	|| n->u.data.what == DATA1I_xmltext))
+                                || n->u.data.what == DATA1I_xmltext))
     {
         int i = n->u.data.len;
 
@@ -246,8 +246,8 @@ static int is_empty_data (data1_node *n)
 
 
 static Z_TaggedElement *nodetotaggedelement(data1_handle dh, data1_node *n,
-					    int select, ODR o,
-					    int *len,
+                                            int select, ODR o,
+                                            int *len,
                                             data1_tag *wellknown_tag)
 {
     Z_TaggedElement *res = (Z_TaggedElement *)odr_malloc(o, sizeof(*res));
@@ -257,9 +257,9 @@ static Z_TaggedElement *nodetotaggedelement(data1_handle dh, data1_node *n,
 
     if (n->which == DATA1N_tag)
     {
-	if (n->u.tag.element)
-	    tag = n->u.tag.element->tag;
-	data = n->child;
+        if (n->u.tag.element)
+            tag = n->u.tag.element->tag;
+        data = n->child;
 
         /* skip empty data children */
         while (is_empty_data(data))
@@ -284,66 +284,66 @@ static Z_TaggedElement *nodetotaggedelement(data1_handle dh, data1_node *n,
         tag = wellknown_tag;
         if (!tag)
             return 0;
-	data = n;
-	leaf = 1;
+        data = n;
+        leaf = 1;
         if (is_empty_data(data))
             return 0;
     }
     else
     {
-	yaz_log(YLOG_WARN, "Bad data.");
-	return 0;
+        yaz_log(YLOG_WARN, "Bad data.");
+        return 0;
     }
 
     res->tagType = odr_intdup(o, (tag && tag->tagset) ? tag->tagset->type : 3);
     res->tagValue = (Z_StringOrNumeric *)odr_malloc(o, sizeof(Z_StringOrNumeric));
     if (tag && tag->which == DATA1T_numeric)
     {
-	res->tagValue->which = Z_StringOrNumeric_numeric;
-	res->tagValue->u.numeric = odr_intdup(o, tag->value.numeric);
+        res->tagValue->which = Z_StringOrNumeric_numeric;
+        res->tagValue->u.numeric = odr_intdup(o, tag->value.numeric);
     }
     else
     {
-	char *tagstr;
+        char *tagstr;
 
-	if (n->which == DATA1N_tag)
-	    tagstr = n->u.tag.tag;       /* tag at node */
-	else if (tag)
-	    tagstr = tag->value.string;  /* no take from well-known */
-	else
+        if (n->which == DATA1N_tag)
+            tagstr = n->u.tag.tag;       /* tag at node */
+        else if (tag)
+            tagstr = tag->value.string;  /* no take from well-known */
+        else
             return 0;
-	res->tagValue->which = Z_StringOrNumeric_string;
-	res->tagValue->u.string = odr_strdup(o, tagstr);
+        res->tagValue->which = Z_StringOrNumeric_string;
+        res->tagValue->u.string = odr_strdup(o, tagstr);
     }
     res->tagOccurrence = 0;
     res->appliedVariant = 0;
     res->metaData = 0;
     if (n->which == DATA1N_variant || (data && data->which ==
-	DATA1N_variant && data->next == NULL))
+        DATA1N_variant && data->next == NULL))
     {
-	int nvars = 0;
+        int nvars = 0;
 
-	res->metaData = get_ElementMetaData(o);
-	if (n->which == DATA1N_tag && n->u.tag.make_variantlist)
-	    if (traverse_triples(data, 0, res->metaData, o) < 0)
-		return 0;
-	while (data && data->which == DATA1N_variant)
-	{
-	    nvars++;
-	    data = data->child;
-	}
-	if (n->which != DATA1N_tag || !n->u.tag.no_data_requested)
-	    res->appliedVariant = make_variant(data->parent, nvars-1, o);
+        res->metaData = get_ElementMetaData(o);
+        if (n->which == DATA1N_tag && n->u.tag.make_variantlist)
+            if (traverse_triples(data, 0, res->metaData, o) < 0)
+                return 0;
+        while (data && data->which == DATA1N_variant)
+        {
+            nvars++;
+            data = data->child;
+        }
+        if (n->which != DATA1N_tag || !n->u.tag.no_data_requested)
+            res->appliedVariant = make_variant(data->parent, nvars-1, o);
     }
     if (n->which == DATA1N_tag && n->u.tag.no_data_requested)
     {
-	res->content = (Z_ElementData *)odr_malloc(o, sizeof(*res->content));
-	res->content->which = Z_ElementData_noDataRequested;
-	res->content->u.noDataRequested = odr_nullval();
+        res->content = (Z_ElementData *)odr_malloc(o, sizeof(*res->content));
+        res->content->which = Z_ElementData_noDataRequested;
+        res->content->u.noDataRequested = odr_nullval();
     }
     else if (!(res->content = nodetoelementdata (dh, data, select, leaf,
-						 o, len, wellknown_tag)))
-	return 0;
+                                                 o, len, wellknown_tag)))
+        return 0;
     *len += 10;
     return res;
 }
@@ -357,18 +357,18 @@ static Z_GenericRecord *data1_nodetogr_r(data1_handle dh, data1_node *n,
     int num_children = 0;
 
     for (c = n->child; c; c = c->next)
-	num_children++;
+        num_children++;
 
     res->elements = (Z_TaggedElement **)
         odr_malloc(o, sizeof(Z_TaggedElement *) * num_children);
     res->num_elements = 0;
     for (c = n->child; c; c = c->next)
     {
-	if (c->which == DATA1N_tag && select && !c->u.tag.node_selected)
-	    continue;
-	if ((res->elements[res->num_elements] =
+        if (c->which == DATA1N_tag && select && !c->u.tag.node_selected)
+            continue;
+        if ((res->elements[res->num_elements] =
              nodetotaggedelement (dh, c, select, o, len, wellknown_tag)))
-	    res->num_elements++;
+            res->num_elements++;
     }
     return res;
 }

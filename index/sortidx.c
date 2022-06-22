@@ -210,11 +210,11 @@ void zebra_sort_close(zebra_sort_index_t si)
     struct sortFile *sf = si->files;
     while (sf)
     {
-	struct sortFile *sf_next = sf->next;
+        struct sortFile *sf_next = sf->next;
         switch(si->type)
         {
         case ZEBRA_SORT_TYPE_FLAT:
-	    bf_close(sf->u.bf);
+            bf_close(sf->u.bf);
             break;
         case ZEBRA_SORT_TYPE_ISAMB:
         case ZEBRA_SORT_TYPE_MULTI:
@@ -224,8 +224,8 @@ void zebra_sort_close(zebra_sort_index_t si)
             isamb_close(sf->u.isamb);
             break;
         }
-	xfree(sf);
-	sf = sf_next;
+        xfree(sf);
+        sf = sf_next;
     }
     xfree(si->entry_buf);
     xfree(si);
@@ -246,13 +246,13 @@ int zebra_sort_type(zebra_sort_index_t si, int id)
     method.codec.stop = sort_term_code_stop;
 
     if (si->current_file && si->current_file->id == id)
-	return 0;
+        return 0;
     for (sf = si->files; sf; sf = sf->next)
-	if (sf->id == id)
-	{
-	    si->current_file = sf;
-	    return 0;
-	}
+        if (sf->id == id)
+        {
+            si->current_file = sf;
+            return 0;
+        }
     sf = (struct sortFile *) xmalloc(sizeof(*sf));
     sf->id = id;
 

@@ -37,9 +37,7 @@ int main(int argc, char **argv)
     YAZ_CHECK_INIT(argc, argv);
 
     if (argc > 1)
-    {
         no = atol(argv[1]);
-    }
     bfs = bfs_create(".:40G", 0);
     YAZ_CHECK(bfs);
     if (bfs)

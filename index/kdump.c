@@ -131,14 +131,14 @@ int main (int argc, char **argv)
         {
             yaz_log_init (yaz_log_mask_str(arg), prog, NULL);
         }
-	else if (ret == 'c')
-	{
-	    if (!(res = res_open (arg, 0, 0)))
+        else if (ret == 'c')
+        {
+            if (!(res = res_open (arg, 0, 0)))
             {
-		yaz_log(YLOG_FATAL, "Failed to open resource file %s", arg);
-	        exit (1);
-	    }
-	}
+                yaz_log(YLOG_FATAL, "Failed to open resource file %s", arg);
+                exit (1);
+            }
+        }
         else
         {
             yaz_log (YLOG_FATAL, "Unknown option '-%s'", arg);
@@ -163,28 +163,28 @@ int main (int argc, char **argv)
     {
         struct it_key k;
         int op;
-	char keybuf[IT_MAX_WORD+1];
-	char *to = keybuf;
-	const char *from = key_string;
+        char keybuf[IT_MAX_WORD+1];
+        char *to = keybuf;
+        const char *from = key_string;
         int usedb_type = from[0];
         int reg_type = from[1];
 
         op = key_info[0];
         memcpy (&k, 1+key_info, sizeof(k));
 
-	from += 2;
-	while (*from)
-	{
-	    const char *res = zebra_maps_output (zm, reg_type, &from);
-	    if (!res)
-		*to++ = *from++;
-	    else
-		while (*res)
-		    *to++ = *res++;
-	}
-	*to = '\0';
+        from += 2;
+        while (*from)
+        {
+            const char *res = zebra_maps_output (zm, reg_type, &from);
+            if (!res)
+                *to++ = *from++;
+            else
+                while (*res)
+                    *to++ = *res++;
+        }
+        *to = '\0';
         printf ("%c %3d %c %7d %5d %s\n", reg_type, usedb_type, op ? 'i':'d',
-		k.sysno, k.seqno, keybuf);
+                k.sysno, k.seqno, keybuf);
     }
     zebra_maps_close (zm);
     if (fclose (inf))

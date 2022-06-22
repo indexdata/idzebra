@@ -41,11 +41,11 @@ int key_SU_encode (int ch, char *out)
     }
     for (i = 0; ch; i++)
     {
-	if (ch >= 64)
-	    out[i] = 65 + (ch & 63);
-	else
-	    out[i] = 1 + ch;
-	ch = ch >> 6;
+        if (ch >= 64)
+            out[i] = 65 + (ch & 63);
+        else
+            out[i] = 1 + ch;
+        ch = ch >> 6;
     }
     return i;
     /* in   out
@@ -68,8 +68,8 @@ int key_SU_decode (int *ch, const unsigned char *out)
     *ch = 0;
     for (len = 1; *out >= 65; len++, out++)
     {
-	*ch += (*out - 65) * fact;
-	fact <<= 6;
+        *ch += (*out - 65) * fact;
+        fact <<= 6;
     }
     *ch += (*out - 1) * fact;
     return len;

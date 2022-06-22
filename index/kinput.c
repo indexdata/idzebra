@@ -94,22 +94,22 @@ void key_file_chunk_read(struct key_file *f)
     if (fd == -1)
     {
         yaz_log(YLOG_WARN|YLOG_ERRNO, "cannot open %s", fname);
-	return ;
+        return ;
     }
     if (!f->length)
     {
         if ((f->length = lseek(fd, 0L, SEEK_END)) == (off_t) -1)
         {
             yaz_log(YLOG_WARN|YLOG_ERRNO, "cannot seek %s", fname);
-	    close(fd);
-	    return ;
+            close(fd);
+            return ;
         }
     }
     if (lseek(fd, f->offset, SEEK_SET) == -1)
     {
         yaz_log(YLOG_WARN|YLOG_ERRNO, "cannot seek %s", fname);
-	close(fd);
-	return ;
+        close(fd);
+        return ;
     }
     while (f->chunk - nr > 0)
     {
@@ -121,8 +121,8 @@ void key_file_chunk_read(struct key_file *f)
     if (r == -1)
     {
         yaz_log(YLOG_WARN|YLOG_ERRNO, "read of %s", fname);
-	close(fd);
-	return;
+        close(fd);
+        return;
     }
     f->buf_size = nr;
     if (f->readHandler)
@@ -198,13 +198,13 @@ int key_file_read(struct key_file *f, char *key)
         }
         key[i++] = '\0';
         strcpy(f->prev_name, key);
-	iscz1_reset(f->decode_handle);
+        iscz1_reset(f->decode_handle);
     }
     c = key_file_getc(f); /* length +  insert/delete combined */
     key[i++] = c & 128;
     c = c & 127;
     for (j = 0; j < c; j++)
-	srcbuf[j] = key_file_getc(f);
+        srcbuf[j] = key_file_getc(f);
     dst = key + i;
     iscz1_decode(f->decode_handle, &dst, &src);
 
@@ -212,10 +212,10 @@ int key_file_read(struct key_file *f, char *key)
     /* debugging */
     if (1)
     {
-	struct it_key k;
-	memcpy(&k, key+i, sizeof(k));
-	if (!k.mem[1])
-	    yaz_log(YLOG_LOG, "00 KEY");
+        struct it_key k;
+        memcpy(&k, key+i, sizeof(k));
+        if (!k.mem[1])
+            yaz_log(YLOG_LOG, "00 KEY");
     }
 #endif
     return i + sizeof(struct it_key);
@@ -256,8 +256,8 @@ static struct heap_info *key_heap_malloc(void)
 }
 
 struct heap_info *key_heap_init_file(ZebraHandle zh,
-				     int nkeys,
-				     int (*cmp)(const void *p1, const void *p2))
+                                     int nkeys,
+                                     int (*cmp)(const void *p1, const void *p2))
 {
     struct heap_info *hi;
     int i;
@@ -412,23 +412,23 @@ int heap_cread_item2(void *vp, char **dst, int *insertMode)
 
     if (p->look_level)
     {
-	if (p->look_level > 0)
-	{
-	    *insertMode = 1;
-	    p->look_level--;
-	}
-	else
-	{
-	    *insertMode = 0;
-	    p->look_level++;
-	}
-	memcpy(*dst, p->key_1, p->sz_1);
+        if (p->look_level > 0)
+        {
+            *insertMode = 1;
+            p->look_level--;
+        }
+        else
+        {
+            *insertMode = 0;
+            p->look_level++;
+        }
+        memcpy(*dst, p->key_1, p->sz_1);
 #if PR_KEY_TOP
-	yaz_log(YLOG_LOG, "DUP level=%d", p->look_level);
-	pkey(*dst, *insertMode);
+        yaz_log(YLOG_LOG, "DUP level=%d", p->look_level);
+        pkey(*dst, *insertMode);
 #endif
-	(*dst) += p->sz_1;
-	return 1;
+        (*dst) += p->sz_1;
+        return 1;
     }
     if (p->ret == 0)    /* lookahead was 0?. Return that in read next round */
     {
@@ -489,12 +489,12 @@ int heap_cread_item2(void *vp, char **dst, int *insertMode)
     if (level > 0)
     {
         *insertMode = 1;
-	level--;
+        level--;
     }
     else
     {
         *insertMode = 0;
-	level++;
+        level++;
     }
     p->look_level = level;
     memcpy(*dst, p->key_1, p->sz_1);
@@ -555,12 +555,12 @@ int heap_inpc(struct heap_cread_info *hci, struct heap_info *hi)
         char *dict_info;
 
         strcpy(this_name, hci->cur_name);
-	assert(hci->cur_name[0]);
+        assert(hci->cur_name[0]);
         hi->no_diffs++;
         if ((dict_info = dict_lookup(hi->reg->dict, hci->cur_name)))
         {
             memcpy(&isamc_p, dict_info+1, sizeof(ISAM_P));
-	    isamc_p2 = isamc_p;
+            isamc_p2 = isamc_p;
             isamc_merge(hi->reg->isamc, &isamc_p2, isamc_i);
             if (!isamc_p2)
             {
@@ -578,12 +578,12 @@ int heap_inpc(struct heap_cread_info *hci, struct heap_info *hi)
         }
         else
         {
-	    isamc_p = 0;
-	    isamc_merge(hi->reg->isamc, &isamc_p, isamc_i);
+            isamc_p = 0;
+            isamc_merge(hi->reg->isamc, &isamc_p, isamc_i);
             hi->no_insertions++;
-	    if (isamc_p)
-		dict_insert(hi->reg->dict, this_name,
-			     sizeof(ISAM_P), &isamc_p);
+            if (isamc_p)
+                dict_insert(hi->reg->dict, this_name,
+                             sizeof(ISAM_P), &isamc_p);
         }
     }
     xfree(isamc_i);
@@ -604,17 +604,17 @@ int heap_inpb(struct heap_cread_info *hci, struct heap_info *hi)
         char *dict_info;
 
         strcpy(this_name, hci->cur_name);
-	assert(hci->cur_name[0]);
+        assert(hci->cur_name[0]);
         hi->no_diffs++;
 
 #if 0
-	assert(hi->zh);
+        assert(hi->zh);
         zebra_log_dict_entry(hi->zh, hci->cur_name);
 #endif
         if ((dict_info = dict_lookup(hi->reg->dict, hci->cur_name)))
         {
             memcpy(&isamc_p, dict_info+1, sizeof(ISAM_P));
-	    isamc_p2 = isamc_p;
+            isamc_p2 = isamc_p;
             isamb_merge(hi->reg->isamb, &isamc_p2, isamc_i);
             if (!isamc_p2)
             {
@@ -632,12 +632,12 @@ int heap_inpb(struct heap_cread_info *hci, struct heap_info *hi)
         }
         else
         {
-	    isamc_p = 0;
+            isamc_p = 0;
             isamb_merge(hi->reg->isamb, &isamc_p, isamc_i);
             hi->no_insertions++;
-	    if (isamc_p)
-		dict_insert(hi->reg->dict, this_name,
-			     sizeof(ISAM_P), &isamc_p);
+            if (isamc_p)
+                dict_insert(hi->reg->dict, this_name,
+                             sizeof(ISAM_P), &isamc_p);
         }
     }
     xfree(isamc_i);
@@ -658,7 +658,7 @@ int heap_inps(struct heap_cread_info *hci, struct heap_info *hi)
         char *dict_info;
 
         strcpy(this_name, hci->cur_name);
-	assert(hci->cur_name[0]);
+        assert(hci->cur_name[0]);
         hi->no_diffs++;
         if (!(dict_info = dict_lookup(hi->reg->dict, hci->cur_name)))
         {
@@ -666,11 +666,11 @@ int heap_inps(struct heap_cread_info *hci, struct heap_info *hi)
             hi->no_insertions++;
             dict_insert(hi->reg->dict, this_name, sizeof(ISAM_P), &isams_p);
         }
-	else
-	{
-	    yaz_log(YLOG_FATAL, "isams doesn't support this kind of update");
-	    break;
-	}
+        else
+        {
+            yaz_log(YLOG_FATAL, "isams doesn't support this kind of update");
+            break;
+        }
     }
     xfree(isams_i);
     return 0;
@@ -702,7 +702,7 @@ void progressFunc(struct key_file *keyp, void *info)
                  (100.0*p->totalOffset) / p->totalBytes, (long) remaining);
         else
             yaz_log(YLOG_LOG, "Merge %2.1f%% completed; %ld minutes remaining",
-	         (100.0*p->totalOffset) / p->totalBytes, (long) remaining/60);
+                 (100.0*p->totalOffset) / p->totalBytes, (long) remaining/60);
     }
     p->totalOffset += keyp->buf_size;
 }
@@ -762,24 +762,24 @@ void zebra_index_merge(ZebraHandle zh)
         struct heap_cread_info hci;
 
         hci.key = (char *) xmalloc(KEY_SIZE);
-	hci.key_1 = (char *) xmalloc(KEY_SIZE);
-	hci.key_2 = (char *) xmalloc(KEY_SIZE);
-	hci.ret = -1;
-	hci.first_in_list = 1;
-	hci.hi = hi;
-	hci.look_level = 0;
-	hci.more = heap_read_one(hi, hci.cur_name, hci.key);
+        hci.key_1 = (char *) xmalloc(KEY_SIZE);
+        hci.key_2 = (char *) xmalloc(KEY_SIZE);
+        hci.ret = -1;
+        hci.first_in_list = 1;
+        hci.hi = hi;
+        hci.look_level = 0;
+        hci.more = heap_read_one(hi, hci.cur_name, hci.key);
 
-	if (zh->reg->isams)
-	    heap_inps(&hci, hi);
-	if (zh->reg->isamc)
-	    heap_inpc(&hci, hi);
-	if (zh->reg->isamb)
-	    heap_inpb(&hci, hi);
+        if (zh->reg->isams)
+            heap_inps(&hci, hi);
+        if (zh->reg->isamc)
+            heap_inpc(&hci, hi);
+        if (zh->reg->isamb)
+            heap_inpb(&hci, hi);
 
-	xfree(hci.key);
-	xfree(hci.key_1);
-	xfree(hci.key_2);
+        xfree(hci.key);
+        xfree(hci.key_1);
+        xfree(hci.key_2);
     }
 
     for (i = 1; i<=nkeys; i++)

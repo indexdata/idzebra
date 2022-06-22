@@ -88,43 +88,43 @@ void dict_bf_flush_blocks(Dict_BFile bf, int no_to_flush)
         p = bf->lru_back;
         if (p->dirty)
         {
-	    if (!bf->compact_flag)
-		bf_write(bf->bf, p->no, 0, 0, p->data);
-	    else
-	    {
-		int effective_block = p->no / bf->block_size;
-		int effective_offset = p->no -
-		    effective_block * bf->block_size;
-		int remain = bf->block_size - effective_offset;
+            if (!bf->compact_flag)
+                bf_write(bf->bf, p->no, 0, 0, p->data);
+            else
+            {
+                int effective_block = p->no / bf->block_size;
+                int effective_offset = p->no -
+                    effective_block * bf->block_size;
+                int remain = bf->block_size - effective_offset;
 
-		if (remain >= p->nbytes)
-		{
-		    bf_write(bf->bf, effective_block, effective_offset,
+                if (remain >= p->nbytes)
+                {
+                    bf_write(bf->bf, effective_block, effective_offset,
                              p->nbytes, p->data);
 #if 0
-		    yaz_log(YLOG_LOG, "bf_write no=%d offset=%d size=%d",
+                    yaz_log(YLOG_LOG, "bf_write no=%d offset=%d size=%d",
                             effective_block, effective_offset,
                             p->nbytes);
 #endif
 
-		}
-		else
-		{
+                }
+                else
+                {
 #if 0
-		    yaz_log(YLOG_LOG, "bf_write1 no=%d offset=%d size=%d",
+                    yaz_log(YLOG_LOG, "bf_write1 no=%d offset=%d size=%d",
                             effective_block, effective_offset,
                             remain);
 #endif
-		    bf_write(bf->bf, effective_block, effective_offset,
+                    bf_write(bf->bf, effective_block, effective_offset,
                              remain, p->data);
 #if 0
-		    yaz_log(YLOG_LOG, "bf_write2 no=%d offset=%d size=%d",
+                    yaz_log(YLOG_LOG, "bf_write2 no=%d offset=%d size=%d",
                             effective_block+1, 0, p->nbytes - remain);
 #endif
-		    bf_write(bf->bf, effective_block+1, 0,
+                    bf_write(bf->bf, effective_block+1, 0,
                              p->nbytes - remain, (char*)p->data + remain);
-		}
-	    }
+                }
+            }
         }
         release_block(bf, p);
     }
@@ -200,18 +200,18 @@ int dict_bf_readp(Dict_BFile bf, int no, void **bufp)
     p = alloc_block(bf, no);
 
     if (!bf->compact_flag)
-	i = bf_read(bf->bf, no, 0, 0, p->data);
+        i = bf_read(bf->bf, no, 0, 0, p->data);
     else
     {
-	int effective_block = no / bf->block_size;
-	int effective_offset = no - effective_block * bf->block_size;
+        int effective_block = no / bf->block_size;
+        int effective_offset = no - effective_block * bf->block_size;
 
-	i = bf_read(bf->bf, effective_block, effective_offset,
+        i = bf_read(bf->bf, effective_block, effective_offset,
                     bf->block_size - effective_offset, p->data);
-	if (i > 0 && effective_offset > 0)
-	    i = bf_read(bf->bf, effective_block+1, 0, effective_offset,
-			(char*) p->data + bf->block_size - effective_offset);
-	i = 1;
+        if (i > 0 && effective_offset > 0)
+            i = bf_read(bf->bf, effective_block+1, 0, effective_offset,
+                        (char*) p->data + bf->block_size - effective_offset);
+        i = 1;
     }
     if (i > 0)
     {

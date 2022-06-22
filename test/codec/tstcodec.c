@@ -34,23 +34,23 @@ int tst_encode(int num)
     char *dst = dst_buf;
     if (!dst_buf)
     {
-	printf ("%s: out of memory (num=%d)\n", prog, num);
-	return 10;
+        printf ("%s: out of memory (num=%d)\n", prog, num);
+        return 10;
     }
 
     for (i = 0; i<num; i++)
     {
-	const char *src = (const char *) &key;
+        const char *src = (const char *) &key;
 
-	key.len = 2;
-	key.mem[0] = i << 8;
-	key.mem[1] = i & 255;
-	iscz1_encode (codec_handle, &dst, &src);
-	if (dst > dst_buf + num*10)
-	{
-	    printf ("%s: i=%d size overflow\n", prog, i);
-	    return 1;
-	}
+        key.len = 2;
+        key.mem[0] = i << 8;
+        key.mem[1] = i & 255;
+        iscz1_encode (codec_handle, &dst, &src);
+        if (dst > dst_buf + num*10)
+        {
+            printf ("%s: i=%d size overflow\n", prog, i);
+            return 1;
+        }
     }
     iscz1_stop(codec_handle);
 
@@ -58,50 +58,50 @@ int tst_encode(int num)
 
     if (1)
     {
-	const char *src = dst_buf;
-	for (i = 0; i<num; i++)
-	{
-	    char *dst = (char *) &key;
-	    const char *src0 = src;
-	    iscz1_decode(codec_handle, &dst, &src);
+        const char *src = dst_buf;
+        for (i = 0; i<num; i++)
+        {
+            char *dst = (char *) &key;
+            const char *src0 = src;
+            iscz1_decode(codec_handle, &dst, &src);
 
-	    if (key.len != 2)
-	    {
-		printf ("%s: i=%d key.len=%d expected 2\n", prog,
-			i, key.len);
-		while (src0 != src)
-		{
-		    printf (" %02X (%d decimal)", *src0, *src0);
-		    src0++;
-		}
-		printf ("\n");
-		return 2;
-	    }
-	    if (key.mem[0] != (i<<8))
-	    {
-		printf ("%s: i=%d mem[0]=" ZINT_FORMAT " expected "
-			"%d\n", prog, i, key.mem[0], i>>8);
-		while (src0 != src)
-		{
-		    printf (" %02X (%d decimal)", *src0, *src0);
-		    src0++;
-		}
-		printf ("\n");
-		return 3;
-	    }
-	    if (key.mem[1] != (i&255))
-	    {
-		printf ("%s: i=%d mem[0]=" ZINT_FORMAT " expected %d\n",
-			prog, i, key.mem[1], i&255);
-		while (src0 != src)
-		{
-		    printf (" %02X (%d decimal)", *src0, *src0);
-		    src0++;
-		}
-		printf ("\n");
-		return 4;
-	    }
-	}
+            if (key.len != 2)
+            {
+                printf ("%s: i=%d key.len=%d expected 2\n", prog,
+                        i, key.len);
+                while (src0 != src)
+                {
+                    printf (" %02X (%d decimal)", *src0, *src0);
+                    src0++;
+                }
+                printf ("\n");
+                return 2;
+            }
+            if (key.mem[0] != (i<<8))
+            {
+                printf ("%s: i=%d mem[0]=" ZINT_FORMAT " expected "
+                        "%d\n", prog, i, key.mem[0], i>>8);
+                while (src0 != src)
+                {
+                    printf (" %02X (%d decimal)", *src0, *src0);
+                    src0++;
+                }
+                printf ("\n");
+                return 3;
+            }
+            if (key.mem[1] != (i&255))
+            {
+                printf ("%s: i=%d mem[0]=" ZINT_FORMAT " expected %d\n",
+                        prog, i, key.mem[1], i&255);
+                while (src0 != src)
+                {
+                    printf (" %02X (%d decimal)", *src0, *src0);
+                    src0++;
+                }
+                printf ("\n");
+                return 4;
+            }
+        }
     }
 
     iscz1_stop(codec_handle);
@@ -164,44 +164,44 @@ int tstcodec2(int num)
     srand(12);
     for (i = 0; i<num; i++)
     {
-	struct it_key ar1, ar2;
-	int j;
-	ar1.len = 1;
+        struct it_key ar1, ar2;
+        int j;
+        ar1.len = 1;
 
-	for (j = 0; j<ar1.len; j++)
-	{
-	    int r = (rand() % max) - neg;
-	    ar1.mem[j] = r;
-	}
-	if (1)
-	{
-	    char dstbuf[100];
-	    const char *src = (const char *) &ar1;
-	    char *dst = dstbuf;
-	    iscz1_encode(encode_handle, &dst, &src);
+        for (j = 0; j<ar1.len; j++)
+        {
+            int r = (rand() % max) - neg;
+            ar1.mem[j] = r;
+        }
+        if (1)
+        {
+            char dstbuf[100];
+            const char *src = (const char *) &ar1;
+            char *dst = dstbuf;
+            iscz1_encode(encode_handle, &dst, &src);
 
-	    src = dstbuf;
-	    dst = (char *) &ar2;
-	    iscz1_decode(decode_handle, &dst, &src);
-	}
+            src = dstbuf;
+            dst = (char *) &ar2;
+            iscz1_decode(decode_handle, &dst, &src);
+        }
 
-	if (ar1.len != ar2.len)
-	{
-	    printf("tstcodec2: length does not match\n");
-	    errors++;
-	}
-	for (j = 0; j<ar1.len; j++)
-	{
-	    if (ar1.mem[j] != ar2.mem[j])
-	    {
-		printf("diff:\n");
-		for (j = 0; j<ar1.len; j++)
-		    printf(" %d " ZINT_FORMAT " " ZINT_FORMAT "\n",
-			   j, ar1.mem[j], ar2.mem[j]);
-		errors++;
-		break;
-	    }
-	}
+        if (ar1.len != ar2.len)
+        {
+            printf("tstcodec2: length does not match\n");
+            errors++;
+        }
+        for (j = 0; j<ar1.len; j++)
+        {
+            if (ar1.mem[j] != ar2.mem[j])
+            {
+                printf("diff:\n");
+                for (j = 0; j<ar1.len; j++)
+                    printf(" %d " ZINT_FORMAT " " ZINT_FORMAT "\n",
+                           j, ar1.mem[j], ar2.mem[j]);
+                errors++;
+                break;
+            }
+        }
     }
     iscz1_stop(encode_handle);
     iscz1_stop(decode_handle);
@@ -215,9 +215,9 @@ int main(int argc, char **argv)
     int ret;
     prog = *argv;
     if (argc > 1)
-	num = atoi(argv[1]);
+        num = atoi(argv[1]);
     if (num < 1 || num > 100000000)
-	num = 10000;
+        num = 10000;
     tstcodec1();
     ret = tstcodec2(500);
     ret = tst_encode(num);

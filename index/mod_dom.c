@@ -164,23 +164,23 @@ static void dom_log(int level, struct filter_info *tinfo, xmlNodePtr ptr,
 
 
 static void set_param_str(const char **params, const char *name,
-			  const char *value, NMEM nmem)
+                          const char *value, NMEM nmem)
 {
     char *quoted = nmem_malloc(nmem, 3 + strlen(value));
     sprintf(quoted, "'%s'", value);
     while (*params)
-	params++;
+        params++;
     params[0] = name;
     params[1] = quoted;
     params[2] = 0;
 }
 
 static void set_param_int(const char **params, const char *name,
-			  zint value, NMEM nmem)
+                          zint value, NMEM nmem)
 {
     char *quoted = nmem_malloc(nmem, 30); /* 25 digits enough for 2^64 */
     while (*params)
-	params++;
+        params++;
     sprintf(quoted, "'" ZINT_FORMAT "'", value);
     params[0] = name;
     params[1] = quoted;
@@ -210,7 +210,7 @@ static void *filter_init(Res res, RecType recType)
 }
 
 static int attr_content(struct _xmlAttr *attr, const char *name,
-			const char **dst_content)
+                        const char **dst_content)
 {
     if (!XML_STRCMP(attr->name, name) && attr->children
         && attr->children->type == XML_TEXT_NODE)
@@ -775,7 +775,7 @@ static ZEBRA_RES filter_config(void *clientData, Res res, const char *args)
     }
 
     if (tinfo->fname && !strcmp(args, tinfo->fname))
-	return ZEBRA_OK;
+        return ZEBRA_OK;
 
     tinfo->profile_path = res_get(res, "profilePath");
 
@@ -1296,7 +1296,7 @@ static int convert_extract_doc(struct filter_info *tinfo,
     /* finally, do the indexing */
     if (doc){
         extract_dom_doc_node(tinfo, p, doc);
-	xmlFreeDoc(doc);
+        xmlFreeDoc(doc);
     }
 
     /* there was nothing to index, so there is no inserted/updated record */
@@ -1325,7 +1325,7 @@ static int extract_xml_split(struct filter_info *tinfo,
                                                    | XML_PARSE_NONET);
     }
     if (!input->u.xmlreader.reader)
-	return RECCTRL_EXTRACT_ERROR_GENERIC;
+        return RECCTRL_EXTRACT_ERROR_GENERIC;
 
     ret = xmlTextReaderRead(input->u.xmlreader.reader);
     while (ret == 1)
@@ -1535,9 +1535,9 @@ static int filter_retrieve(void *clientData, struct recRetrieveCtrl *p)
     params[0] = 0;
     set_param_int(params, "id", p->localno, p->odr->mem);
     if (p->fname)
-	set_param_str(params, "filename", p->fname, p->odr->mem);
+        set_param_str(params, "filename", p->fname, p->odr->mem);
     if (p->staticrank >= 0)
-	set_param_int(params, "rank", p->staticrank, p->odr->mem);
+        set_param_int(params, "rank", p->staticrank, p->odr->mem);
 
     if (esn)
         set_param_str(params, "schema", esn, p->odr->mem);
@@ -1550,13 +1550,13 @@ static int filter_retrieve(void *clientData, struct recRetrieveCtrl *p)
             set_param_str(params, "schema", "", p->odr->mem);
 
     if (p->score >= 0)
-	set_param_int(params, "score", p->score, p->odr->mem);
+        set_param_int(params, "score", p->score, p->odr->mem);
     set_param_int(params, "size", p->recordSize, p->odr->mem);
 
     doc = xmlReadIO(ioread_ret, ioclose_ret, p /* I/O handler */,
-		    0 /* URL */,
-		    0 /* encoding */,
-		    XML_PARSE_XINCLUDE | XML_PARSE_NOENT | XML_PARSE_NONET);
+                    0 /* URL */,
+                    0 /* encoding */,
+                    XML_PARSE_XINCLUDE | XML_PARSE_NOENT | XML_PARSE_NONET);
     if (!doc)
     {
         p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;

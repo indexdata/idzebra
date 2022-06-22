@@ -84,31 +84,31 @@ static void *begin (struct zebra_register *reg,
     si->no_rank_entries = 0;
     for (i = 0; i < numterms; i++)
     {
-	struct ord_list *ol = terms[i]->ol;
+        struct ord_list *ol = terms[i]->ol;
 
         yaz_log(log_level, "i=%d flags=%s '%s'", i,
                 terms[i]->flags, terms[i]->name );
 
-	for (; ol; ol = ol->next)
-	{
-	    const char *index_type = 0;
-	    const char *db = 0;
-	    const char *string_index = 0;
-	    int set = -1;
-	    int use = -1;
+        for (; ol; ol = ol->next)
+        {
+            const char *index_type = 0;
+            const char *db = 0;
+            const char *string_index = 0;
+            int set = -1;
+            int use = -1;
 
-	    zebraExplain_lookup_ord(reg->zei,
-				    ol->ord, &index_type, &db, &string_index);
+            zebraExplain_lookup_ord(reg->zei,
+                                    ol->ord, &index_type, &db, &string_index);
 
-	    if (string_index)
-		yaz_log(log_level, " ord=%d index_type=%s db=%s str-index=%s",
+            if (string_index)
+                yaz_log(log_level, " ord=%d index_type=%s db=%s str-index=%s",
                         ol->ord, index_type, db, string_index);
-	    else
-		yaz_log(log_level, " ord=%d index_type=%s db=%s set=%d use=%d",
+            else
+                yaz_log(log_level, " ord=%d index_type=%s db=%s set=%d use=%d",
                         ol->ord, index_type, db, set, use);
-	}
-	if (!strncmp (terms[i]->flags, "rank,", 5))
-	    (si->no_rank_entries)++;
+        }
+        if (!strncmp (terms[i]->flags, "rank,", 5))
+            (si->no_rank_entries)++;
     }
     return si;
 }
@@ -139,12 +139,12 @@ static void add (void *set_handle, int seqno, TERMID term)
  *  -1 should be returned.
  */
 static int calc (void *set_handle, zint sysno, zint staticrank,
-		 int *stop_flag)
+                 int *stop_flag)
 {
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
 
     if (!si->no_rank_entries)
-	return -1;   /* ranking not enabled for any terms */
+        return -1;   /* ranking not enabled for any terms */
 
     /* if we set *stop_flag = 1, we stop processing (of result set list) */
     /* staticrank = 0 is highest, MAXINT lowest */

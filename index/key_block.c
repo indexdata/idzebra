@@ -137,14 +137,14 @@ static void encode_key_write(const char *k, struct encode_info *i, FILE *outf)
     /* debugging */
     if (1)
     {
-	struct it_key key2;
-	const char *src = bp0+1;
-	char *dst = (char*) &key2;
-	iscz1_decode(i->decode_handle, &dst, &src);
+        struct it_key key2;
+        const char *src = bp0+1;
+        char *dst = (char*) &key2;
+        iscz1_decode(i->decode_handle, &dst, &src);
 
-	key_logdump_txt(YLOG_LOG, &key2, *k ? "i" : "d");
+        key_logdump_txt(YLOG_LOG, &key2, *k ? "i" : "d");
 
-	assert(key2.mem[1]);
+        assert(key2.mem[1]);
     }
 #endif
 }

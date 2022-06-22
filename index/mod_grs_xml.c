@@ -209,9 +209,9 @@ static int cb_external_entity(XML_Parser pparser,
         }
         if (!XML_ParseBuffer (parser, r, done))
         {
-	    done = 1;
+            done = 1;
             report_xml_error(parser);
-	}
+        }
     }
     fclose (inf);
     XML_ParserFree (parser);
@@ -387,14 +387,14 @@ static void cb_ns_start(void *userData, const char *prefix, const char *uri)
 {
     struct user_info *ui = (struct user_info*) userData;
     if (prefix && uri)
-	yaz_log(ui->loglevel, "cb_ns_start %s %s", prefix, uri);
+        yaz_log(ui->loglevel, "cb_ns_start %s %s", prefix, uri);
 }
 
 static void cb_ns_end(void *userData, const char *prefix)
 {
     struct user_info *ui = (struct user_info*) userData;
     if (prefix)
-	yaz_log(ui->loglevel, "cb_ns_end %s", prefix);
+        yaz_log(ui->loglevel, "cb_ns_end %s", prefix);
 }
 
 data1_node *zebra_read_xml(data1_handle dh,
@@ -448,23 +448,23 @@ data1_node *zebra_read_xml(data1_handle dh,
         }
         else if (r == 0)
             done = 1;
-	else
-	    no_read += r;
+        else
+            no_read += r;
         if (no_read && !XML_ParseBuffer (parser, r, done))
         {
-	    done = 1;
+            done = 1;
             report_xml_error(parser);
-	}
+        }
     }
     XML_ParserFree (parser);
     if (no_read == 0)
-	return 0;
+        return 0;
     if (!uinfo.d1_stack[1] || !done)
         return 0;
     /* insert XML header if not present .. */
     first_node = uinfo.d1_stack[0]->child;
     if (first_node->which != DATA1N_preprocess ||
-	strcmp(first_node->u.preprocess.target, "xml"))
+        strcmp(first_node->u.preprocess.target, "xml"))
     {
         const char *attr_list[5];
 
@@ -477,7 +477,7 @@ data1_node *zebra_read_xml(data1_handle dh,
         attr_list[4] = 0;
 
         data1_insert_preprocess (uinfo.dh, uinfo.nmem, "xml", attr_list,
-				 uinfo.d1_stack[0]);
+                                 uinfo.d1_stack[0]);
     }
     return uinfo.d1_stack[0];
 }

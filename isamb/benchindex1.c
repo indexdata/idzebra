@@ -100,7 +100,7 @@ int code_read(void *vp, char **dst, int *insertMode)
     struct it_key key;
 
     if (b->current_entry >= b->no_entries)
-	return 0;
+        return 0;
 
     t = b->ar[b->current_entry];
     b->current_entry++;
@@ -593,8 +593,8 @@ int main(int argc, char **argv)
     bfs = bfs_create(0, 0);
     if (!bfs)
     {
-	yaz_log(YLOG_WARN, "bfs_create failed");
-	exit(1);
+        yaz_log(YLOG_WARN, "bfs_create failed");
+        exit(1);
     }
 
     if (reset)
@@ -606,8 +606,8 @@ int main(int argc, char **argv)
                                &method_postings, 0);
     if (!isb_postings)
     {
-	yaz_log(YLOG_WARN, "isamb_open failed");
-	exit(2);
+        yaz_log(YLOG_WARN, "isamb_open failed");
+        exit(2);
     }
     isamb_set_cache_size(isb_postings, isam_cache_size);
     isamb_set_int_count(isb_postings, int_count_enable);

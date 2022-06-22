@@ -39,7 +39,7 @@ void tst(void)
 
     YAZ_CHECK(block_size <= sizeof(buf));
     if (!(block_size <= sizeof(buf)))
-	return;
+        return;
 
     YAZ_CHECK(max_block * block_size < 4 * 1000000); /* 4M */
 
@@ -52,12 +52,12 @@ void tst(void)
     bfs = bfs_create("register.bad:4M", 0 /* base: current dir */);
     YAZ_CHECK(!bfs);
     if (bfs)
-	return;
+        return;
 
     bfs = bfs_create("register:4M", 0 /* base: current dir */);
     YAZ_CHECK(bfs);
     if (!bfs)
-	return;
+        return;
 
     r = bf_cache(bfs, "shadow.bad:4M");
     YAZ_CHECK_EQ(r, ZEBRA_FAIL);
@@ -74,7 +74,7 @@ void tst(void)
     bfs = bfs_create("register:4M", 0 /* base: current dir */);
     YAZ_CHECK(bfs);
     if (!bfs)
-	return;
+        return;
 
     r = bf_cache(bfs, "shadow:4M");
     YAZ_CHECK_EQ(r, ZEBRA_OK);
@@ -85,22 +85,22 @@ void tst(void)
     YAZ_CHECK(bf);
     if (bf)
     {
-	zint bno[2];
-	memset(buf, ' ', block_size);
+        zint bno[2];
+        memset(buf, ' ', block_size);
 
-	bno[0] = 0;
-	bno[1] = 1;
-	while (bno[0] < max_block)
-	{
-	    zint next = bno[0] + bno[1];
+        bno[0] = 0;
+        bno[1] = 1;
+        while (bno[0] < max_block)
+        {
+            zint next = bno[0] + bno[1];
 
-	    sprintf(buf, ZINT_FORMAT, bno[0]);
-	    YAZ_CHECK_EQ(bf_write(bf, bno[0], 0, 0, buf), 0);
+            sprintf(buf, ZINT_FORMAT, bno[0]);
+            YAZ_CHECK_EQ(bf_write(bf, bno[0], 0, 0, buf), 0);
 
-	    bno[0] = bno[1];
-	    bno[1] = next;
-	}
-	bf_close(bf);
+            bno[0] = bno[1];
+            bno[1] = next;
+        }
+        bf_close(bf);
     }
 
     yaz_log(YLOG_LOG, "reading file 1");
@@ -108,22 +108,22 @@ void tst(void)
     YAZ_CHECK(bf);
     if (bf)
     {
-	zint bno[2];
+        zint bno[2];
 
-	bno[0] = 0;
-	bno[1] = 1;
-	while (bno[0] < max_block)
-	{
-	    zint next = bno[0] + bno[1];
-	    memset(buf, ' ', block_size);
+        bno[0] = 0;
+        bno[1] = 1;
+        while (bno[0] < max_block)
+        {
+            zint next = bno[0] + bno[1];
+            memset(buf, ' ', block_size);
 
-	    YAZ_CHECK_EQ(bf_read(bf, bno[0], 0, 0, buf), 1);
-	    YAZ_CHECK_EQ(atoi(buf), bno[0]);
+            YAZ_CHECK_EQ(bf_read(bf, bno[0], 0, 0, buf), 1);
+            YAZ_CHECK_EQ(atoi(buf), bno[0]);
 
-	    bno[0] = bno[1];
-	    bno[1] = next;
-	}
-	bf_close(bf);
+            bno[0] = bno[1];
+            bno[1] = next;
+        }
+        bf_close(bf);
     }
 
 #if 1
@@ -132,17 +132,17 @@ void tst(void)
     YAZ_CHECK(bf);
     if (bf)
     {
-	zint bno = 0;
-	while (bno < max_block)
-	{
-	    memset(buf, ' ', block_size);
+        zint bno = 0;
+        while (bno < max_block)
+        {
+            memset(buf, ' ', block_size);
 
-	    sprintf(buf, ZINT_FORMAT, bno);
-	    YAZ_CHECK_EQ(bf_write(bf, bno, 0, 0, buf), 0);
+            sprintf(buf, ZINT_FORMAT, bno);
+            YAZ_CHECK_EQ(bf_write(bf, bno, 0, 0, buf), 0);
 
-	    bno = bno + 2;
-	}
-	bf_close(bf);
+            bno = bno + 2;
+        }
+        bf_close(bf);
     }
 
     yaz_log(YLOG_LOG, "reading file 2");
@@ -150,19 +150,19 @@ void tst(void)
     YAZ_CHECK(bf);
     if (bf)
     {
-	zint bno = 0;
-	int step = max_block / 50;
+        zint bno = 0;
+        int step = max_block / 50;
 
-	while (bno < max_block)
-	{
-	    memset(buf, ' ', block_size);
+        while (bno < max_block)
+        {
+            memset(buf, ' ', block_size);
 
-	    YAZ_CHECK_EQ(bf_read(bf, bno, 0, 0, buf), 1);
-	    YAZ_CHECK_EQ(atoi(buf), bno);
+            YAZ_CHECK_EQ(bf_read(bf, bno, 0, 0, buf), 1);
+            YAZ_CHECK_EQ(atoi(buf), bno);
 
-	    bno = bno + 2*step;
-	}
-	bf_close(bf);
+            bno = bno + 2*step;
+        }
+        bf_close(bf);
     }
 #endif
     bfs_destroy(bfs);

@@ -51,7 +51,7 @@ struct recTypes {
 };
 
 static void recTypeClass_add (struct recTypeClass **rts, RecType *rt,
-			      NMEM nmem, void *module_handle);
+                              NMEM nmem, void *module_handle);
 
 
 RecTypeClass recTypeClass_create (Res res, NMEM nmem)
@@ -61,16 +61,16 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 #if IDZEBRA_STATIC_GRS_SGML
     if (1)
     {
-	extern RecType idzebra_filter_grs_sgml[];
-	recTypeClass_add (&rts, idzebra_filter_grs_sgml, nmem, 0);
+        extern RecType idzebra_filter_grs_sgml[];
+        recTypeClass_add (&rts, idzebra_filter_grs_sgml, nmem, 0);
     }
 #endif
 
 #if IDZEBRA_STATIC_TEXT
     if (1)
     {
-	extern RecType idzebra_filter_text[];
-	recTypeClass_add (&rts, idzebra_filter_text, nmem, 0);
+        extern RecType idzebra_filter_text[];
+        recTypeClass_add (&rts, idzebra_filter_text, nmem, 0);
     }
 #endif
 
@@ -78,8 +78,8 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 #if HAVE_EXPAT_H
     if (1)
     {
-	extern RecType idzebra_filter_grs_xml[];
-	recTypeClass_add (&rts, idzebra_filter_grs_xml, nmem, 0);
+        extern RecType idzebra_filter_grs_xml[];
+        recTypeClass_add (&rts, idzebra_filter_grs_xml, nmem, 0);
     }
 #endif
 #endif
@@ -87,40 +87,40 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 #if IDZEBRA_STATIC_GRS_REGX
     if (1)
     {
-	extern RecType idzebra_filter_grs_regx[];
-	recTypeClass_add (&rts, idzebra_filter_grs_regx, nmem, 0);
+        extern RecType idzebra_filter_grs_regx[];
+        recTypeClass_add (&rts, idzebra_filter_grs_regx, nmem, 0);
     }
 #endif
 
 #if IDZEBRA_STATIC_GRS_MARC
     if (1)
     {
-	extern RecType idzebra_filter_grs_marc[];
-	recTypeClass_add (&rts, idzebra_filter_grs_marc, nmem, 0);
+        extern RecType idzebra_filter_grs_marc[];
+        recTypeClass_add (&rts, idzebra_filter_grs_marc, nmem, 0);
     }
 #endif
 
 #if IDZEBRA_STATIC_SAFARI
     if (1)
     {
-	extern RecType idzebra_filter_safari[];
-	recTypeClass_add (&rts, idzebra_filter_safari, nmem, 0);
+        extern RecType idzebra_filter_safari[];
+        recTypeClass_add (&rts, idzebra_filter_safari, nmem, 0);
     }
 #endif
 
 #if IDZEBRA_STATIC_ALVIS
     if (1)
     {
-	extern RecType idzebra_filter_alvis[];
-	recTypeClass_add (&rts, idzebra_filter_alvis, nmem, 0);
+        extern RecType idzebra_filter_alvis[];
+        recTypeClass_add (&rts, idzebra_filter_alvis, nmem, 0);
     }
 #endif
 
 #if IDZEBRA_STATIC_DOM
     if (1)
     {
-	extern RecType idzebra_filter_dom[];
-	recTypeClass_add (&rts, idzebra_filter_dom, nmem, 0);
+        extern RecType idzebra_filter_dom[];
+        recTypeClass_add (&rts, idzebra_filter_dom, nmem, 0);
     }
 #endif
 
@@ -175,7 +175,7 @@ static void load_from_dir(RecTypeClass *rts, NMEM nmem, const char *dirname)
 }
 
 void recTypeClass_load_modules(RecTypeClass *rts, NMEM nmem,
-			       const char *module_path)
+                               const char *module_path)
 {
     while (module_path)
     {
@@ -195,29 +195,29 @@ void recTypeClass_load_modules(RecTypeClass *rts, NMEM nmem,
 }
 
 static void recTypeClass_add(struct recTypeClass **rts, RecType *rt,
-			     NMEM nmem, void *module_handle)
+                             NMEM nmem, void *module_handle)
 {
     while (*rt)
     {
-	struct recTypeClass *r = (struct recTypeClass *)
-	    nmem_malloc (nmem, sizeof(*r));
+        struct recTypeClass *r = (struct recTypeClass *)
+            nmem_malloc (nmem, sizeof(*r));
 
-	r->next = *rts;
-	*rts = r;
+        r->next = *rts;
+        *rts = r;
 
-	r->module_handle = module_handle;
-	module_handle = 0; /* so that we only store module_handle once */
-	r->recType = *rt;
+        r->module_handle = module_handle;
+        module_handle = 0; /* so that we only store module_handle once */
+        r->recType = *rt;
 
-	rt++;
+        rt++;
     }
 }
 
 void recTypeClass_info(RecTypeClass rtc, void *cd,
-		       void (*cb)(void *cd, const char *s))
+                       void (*cb)(void *cd, const char *s))
 {
     for (; rtc; rtc = rtc->next)
-	(*cb)(cd, rtc->recType->name);
+        (*cb)(cd, rtc->recType->name);
 }
 
 void recTypeClass_destroy(RecTypeClass rtc)
@@ -225,8 +225,8 @@ void recTypeClass_destroy(RecTypeClass rtc)
     for (; rtc; rtc = rtc->next)
     {
 #if HAVE_DLFCN_H
-	if (rtc->module_handle)
-	    dlclose(rtc->module_handle);
+        if (rtc->module_handle)
+            dlclose(rtc->module_handle);
 #endif
     }
 }
@@ -241,10 +241,10 @@ RecTypes recTypes_init(RecTypeClass rtc, data1_handle dh)
 
     for (; rtc; rtc = rtc->next)
     {
-	*rti = nmem_malloc(data1_nmem_get(dh), sizeof(**rti));
-	(*rti)->recType = rtc->recType;
-	(*rti)->init_flag = 0;
-	rti = &(*rti)->next;
+        *rti = nmem_malloc(data1_nmem_get(dh), sizeof(**rti));
+        (*rti)->recType = rtc->recType;
+        (*rti)->init_flag = 0;
+        rti = &(*rti)->next;
     }
     *rti = 0;
     return rts;
@@ -256,40 +256,40 @@ void recTypes_destroy (RecTypes rts)
 
     for (rti = rts->entries; rti; rti = rti->next)
     {
-	if (rti->init_flag)
-	    (*(rti->recType)->destroy)(rti->clientData);
+        if (rti->init_flag)
+            (*(rti->recType)->destroy)(rti->clientData);
     }
 }
 
 RecType recType_byName (RecTypes rts, Res res, const char *name,
-			void **clientDataP)
+                        void **clientDataP)
 {
     struct recTypeInstance *rti;
 
     for (rti = rts->entries; rti; rti = rti->next)
     {
-	size_t slen = strlen(rti->recType->name);
-	if (!strncmp (rti->recType->name, name, slen)
-	    && (name[slen] == '\0' || name[slen] == '.'))
-	{
-	    if (!rti->init_flag)
-	    {
-		rti->init_flag = 1;
-		rti->clientData =
-		    (*(rti->recType)->init)(res, rti->recType);
-	    }
-	    *clientDataP = rti->clientData;
-	    if (name[slen])
-		slen++;  /* skip . */
+        size_t slen = strlen(rti->recType->name);
+        if (!strncmp (rti->recType->name, name, slen)
+            && (name[slen] == '\0' || name[slen] == '.'))
+        {
+            if (!rti->init_flag)
+            {
+                rti->init_flag = 1;
+                rti->clientData =
+                    (*(rti->recType)->init)(res, rti->recType);
+            }
+            *clientDataP = rti->clientData;
+            if (name[slen])
+                slen++;  /* skip . */
 
-	    if (rti->recType->config)
-	    {
-		if ((*(rti->recType)->config)
-		    (rti->clientData, res, name+slen) != ZEBRA_OK)
-		    return 0;
-	    }
-	    return rti->recType;
-	}
+            if (rti->recType->config)
+            {
+                if ((*(rti->recType)->config)
+                    (rti->clientData, res, name+slen) != ZEBRA_OK)
+                    return 0;
+            }
+            return rti->recType;
+        }
     }
     return 0;
 }

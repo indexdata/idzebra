@@ -36,48 +36,48 @@ static void dict_del_subtree(Dict dict, Dict_ptr ptr,
     int i, hi;
 
     if (!ptr)
-	return;
+        return;
 
     dict_bf_readp(dict->dbf, ptr, &p);
     indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     hi = DICT_nodir(p)-1;
     for (i = 0; i <= hi; i++)
     {
-	if (indxp[-i] > 0)
-	{
-	    /* string (Dict_char *) DICT_EOS terminated */
-	    /* unsigned char        length of information */
-	    /* char *               information */
-	    char *info = (char*)p + indxp[-i];
-	    if (f)
-		(*f)(info + (dict_strlen((Dict_char*) info)+1)
-		     *sizeof(Dict_char), client);
-	}
-	else
-	{
-	    Dict_ptr subptr;
+        if (indxp[-i] > 0)
+        {
+            /* string (Dict_char *) DICT_EOS terminated */
+            /* unsigned char        length of information */
+            /* char *               information */
+            char *info = (char*)p + indxp[-i];
+            if (f)
+                (*f)(info + (dict_strlen((Dict_char*) info)+1)
+                     *sizeof(Dict_char), client);
+        }
+        else
+        {
+            Dict_ptr subptr;
 
-	    /* Dict_ptr             subptr */
-	    /* Dict_char            sub char */
-	    /* unsigned char        length of information */
-	    /* char *               information */
-	    char *info = (char*)p - indxp[-i];
-	    memcpy(&subptr, info, sizeof(Dict_ptr));
+            /* Dict_ptr             subptr */
+            /* Dict_char            sub char */
+            /* unsigned char        length of information */
+            /* char *               information */
+            char *info = (char*)p - indxp[-i];
+            memcpy(&subptr, info, sizeof(Dict_ptr));
 
-	    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
-	    {
-		if (f)
-		    (*f)(info+sizeof(Dict_ptr)+sizeof(Dict_char), client);
-	    }
-	    if (subptr)
-	    {
-		dict_del_subtree(dict, subptr, client, f);
+            if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
+            {
+                if (f)
+                    (*f)(info+sizeof(Dict_ptr)+sizeof(Dict_char), client);
+            }
+            if (subptr)
+            {
+                dict_del_subtree(dict, subptr, client, f);
 
-		/* page may be gone. reread it .. */
-		dict_bf_readp(dict->dbf, ptr, &p);
-		indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
-	    }
-	}
+                /* page may be gone. reread it .. */
+                dict_bf_readp(dict->dbf, ptr, &p);
+                indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
+            }
+        }
     }
     DICT_backptr(p) = dict->head.freelist;
     dict->head.freelist = ptr;
@@ -97,7 +97,7 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
     Dict_ptr subptr = 0;
 
     if (!ptr)
-	return 0;
+        return 0;
     dict_bf_readp(dict->dbf, ptr, &p);
     mid = lo = 0;
     hi = DICT_nodir(p)-1;
@@ -112,50 +112,50 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
             /* char *               information */
             info = (char*)p + indxp[-mid];
 
-	    cmp = dict_strcmp((Dict_char*) info, str);
-	    if (sub_flag)
-	    {
-		/* determine if prefix match */
-		if (!dict_strncmp(str, (Dict_char*) info, dict_strlen(str)))
-		{
-		    if (f)
-			(*f)(info + (dict_strlen((Dict_char*) info)+1)
-			     *sizeof(Dict_char), client);
+            cmp = dict_strcmp((Dict_char*) info, str);
+            if (sub_flag)
+            {
+                /* determine if prefix match */
+                if (!dict_strncmp(str, (Dict_char*) info, dict_strlen(str)))
+                {
+                    if (f)
+                        (*f)(info + (dict_strlen((Dict_char*) info)+1)
+                             *sizeof(Dict_char), client);
 
-		    hi = DICT_nodir(p)-1;
-		    while (mid < hi)
-		    {
-			indxp[-mid] = indxp[-mid-1];
-			mid++;
-		    }
-		    DICT_type(p) = 1;
-		    (DICT_nodir(p))--;
-		    dict_bf_touch(dict->dbf, ptr);
-		    --hi;
-		    mid = lo = 0;
+                    hi = DICT_nodir(p)-1;
+                    while (mid < hi)
+                    {
+                        indxp[-mid] = indxp[-mid-1];
+                        mid++;
+                    }
+                    DICT_type(p) = 1;
+                    (DICT_nodir(p))--;
+                    dict_bf_touch(dict->dbf, ptr);
+                    --hi;
+                    mid = lo = 0;
                     r = 1; /* signal deleted */
                     /* start again (may not be the most efficient way to go)*/
-		    continue;
-		}
-	    }
-	    else
-	    {
-		/* normal delete: delete if equal */
-		if (!cmp)
-		{
-		    hi = DICT_nodir(p)-1;
-		    while (mid < hi)
-		    {
-			indxp[-mid] = indxp[-mid-1];
-			mid++;
-		    }
-		    DICT_type(p) = 1;
-		    (DICT_nodir(p))--;
-		    dict_bf_touch(dict->dbf, ptr);
+                    continue;
+                }
+            }
+            else
+            {
+                /* normal delete: delete if equal */
+                if (!cmp)
+                {
+                    hi = DICT_nodir(p)-1;
+                    while (mid < hi)
+                    {
+                        indxp[-mid] = indxp[-mid-1];
+                        mid++;
+                    }
+                    DICT_type(p) = 1;
+                    (DICT_nodir(p))--;
+                    dict_bf_touch(dict->dbf, ptr);
                     r = 1;
                     break;
-		}
-	    }
+                }
+            }
         }
         else
         {
@@ -180,13 +180,13 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
                         DICT_type(p) = 1;
                         dict_bf_touch(dict->dbf, ptr);
 
-			if (f)
-			    (*f)(info+sizeof(Dict_ptr)+sizeof(Dict_char),
-				 client);
+                        if (f)
+                            (*f)(info+sizeof(Dict_ptr)+sizeof(Dict_char),
+                                 client);
                         r = 1;
                     }
-		    if (sub_flag)
-		    {
+                    if (sub_flag)
+                    {
                         /* must delete all suffixes (subtrees) as well */
                         hi = DICT_nodir(p)-1;
                         while (mid < hi)
@@ -197,7 +197,7 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
                         (DICT_nodir(p))--;
                         DICT_type(p) = 1;
                         dict_bf_touch(dict->dbf, ptr);
-		    }
+                    }
                 }
                 else
                 {

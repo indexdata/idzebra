@@ -78,7 +78,7 @@ struct records_info {
 
     struct records_head {
         char magic[8];
-	char version[4];
+        char version[4];
         zint block_size[REC_BLOCK_TYPES];
         zint block_free[REC_BLOCK_TYPES];
         zint block_last[REC_BLOCK_TYPES];
@@ -139,7 +139,7 @@ static void rec_tmp_expand(Records p, int size)
     {
         xfree(p->tmp_buf);
         p->tmp_size = size + (int)
-	        	(p->head.block_size[REC_BLOCK_TYPES-1])*2 + 2048;
+                        (p->head.block_size[REC_BLOCK_TYPES-1])*2 + 2048;
         p->tmp_buf = (char *) xmalloc(p->tmp_size);
     }
 }
@@ -163,38 +163,38 @@ static ZEBRA_RES rec_release_blocks(Records p, zint sysno)
     while (freeblock)
     {
         if (bf_read(p->data_BFile[dst_type], freeblock, 0,
-		     first ? sizeof(block_and_ref) : sizeof(zint),
-		     block_and_ref) != 1)
+                     first ? sizeof(block_and_ref) : sizeof(zint),
+                     block_and_ref) != 1)
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "read in rec_del_single");
-	    return ZEBRA_FAIL;
+            return ZEBRA_FAIL;
         }
-	if (first)
-	{
-	    short ref;
-	    memcpy(&ref, block_and_ref + sizeof(freeblock), sizeof(ref));
-	    --ref;
-	    memcpy(block_and_ref + sizeof(freeblock), &ref, sizeof(ref));
-	    if (ref)
-	    {
+        if (first)
+        {
+            short ref;
+            memcpy(&ref, block_and_ref + sizeof(freeblock), sizeof(ref));
+            --ref;
+            memcpy(block_and_ref + sizeof(freeblock), &ref, sizeof(ref));
+            if (ref)
+            {
                 /* there is still a reference to this block.. */
-		if (bf_write(p->data_BFile[dst_type], freeblock, 0,
-			      sizeof(block_and_ref), block_and_ref))
-		{
-		    yaz_log(YLOG_FATAL|YLOG_ERRNO, "write in rec_del_single");
-		    return ZEBRA_FAIL;
-		}
-		return ZEBRA_OK;
-	    }
+                if (bf_write(p->data_BFile[dst_type], freeblock, 0,
+                              sizeof(block_and_ref), block_and_ref))
+                {
+                    yaz_log(YLOG_FATAL|YLOG_ERRNO, "write in rec_del_single");
+                    return ZEBRA_FAIL;
+                }
+                return ZEBRA_OK;
+            }
             /* the list of blocks can all be removed (ref == 0) */
             first = 0;
-	}
+        }
 
         if (bf_write(p->data_BFile[dst_type], freeblock, 0, sizeof(freeblock),
                       &p->head.block_free[dst_type]))
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "write in rec_del_single");
-	    return ZEBRA_FAIL;
+            return ZEBRA_FAIL;
         }
         p->head.block_free[dst_type] = freeblock;
         memcpy(&freeblock, block_and_ref, sizeof(freeblock));
@@ -212,7 +212,7 @@ static ZEBRA_RES rec_delete_single(Records p, Record rec)
     /* all data in entry must be reset, since it's written verbatim */
     memset(&entry, '\0', sizeof(entry));
     if (rec_release_blocks(p, rec_sysno_to_int(rec->sysno)) != ZEBRA_OK)
-	return ZEBRA_FAIL;
+        return ZEBRA_FAIL;
 
     entry.next = p->head.index_free;
     entry.size = 0;
@@ -246,9 +246,9 @@ static ZEBRA_RES rec_write_tmp_buf(Records p, int size, zint *sysnos)
                          &p->head.block_free[dst_type]) != 1)
             {
                 yaz_log(YLOG_FATAL|YLOG_ERRNO, "read in %s at free block "
-			 ZINT_FORMAT,
-			 p->data_fname[dst_type], block_free);
-		return ZEBRA_FAIL;
+                         ZINT_FORMAT,
+                         p->data_fname[dst_type], block_free);
+                return ZEBRA_FAIL;
             }
         }
         else
@@ -258,11 +258,11 @@ static ZEBRA_RES rec_write_tmp_buf(Records p, int size, zint *sysnos)
             entry.next = block_free*8 + dst_type;
             entry.size = size;
             p->head.total_bytes += size;
-	    while (*sysnos > 0)
-	    {
-		recindex_write_indx(p->recindex, *sysnos, &entry, sizeof(entry));
-		sysnos++;
-	    }
+            while (*sysnos > 0)
+            {
+                recindex_write_indx(p->recindex, *sysnos, &entry, sizeof(entry));
+                sysnos++;
+            }
         }
         else
         {
@@ -327,7 +327,7 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
     {
     case 0:
         memcpy(p->head.magic, REC_HEAD_MAGIC, sizeof(p->head.magic));
-	sprintf(p->head.version, "%3d", REC_VERSION);
+        sprintf(p->head.version, "%3d", REC_VERSION);
         p->head.index_free = 0;
         p->head.index_last = 1;
         p->head.no_records = 0;
@@ -346,11 +346,11 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
             p->head.block_move[i] = p->head.block_size[i] * 2;
         }
         if (rw)
-	{
+        {
             if (recindex_write_head(p->recindex,
                                     &p->head, sizeof(p->head)) != ZEBRA_OK)
-		ret = ZEBRA_FAIL;
-	}
+                ret = ZEBRA_FAIL;
+        }
         break;
     case 1:
         memcpy(&p->head, p->tmp_buf, sizeof(p->head));
@@ -358,16 +358,16 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
         {
             yaz_log(YLOG_FATAL, "file %s has bad format",
                     recindex_get_fname(p->recindex));
-	    ret = ZEBRA_FAIL;
+            ret = ZEBRA_FAIL;
         }
-	version = atoi(p->head.version);
-	if (version != REC_VERSION)
-	{
-	    yaz_log(YLOG_FATAL, "file %s is version %d, but version"
-		  " %d is required",
+        version = atoi(p->head.version);
+        if (version != REC_VERSION)
+        {
+            yaz_log(YLOG_FATAL, "file %s is version %d, but version"
+                  " %d is required",
                     recindex_get_fname(p->recindex), version, REC_VERSION);
-	    ret = ZEBRA_FAIL;
-	}
+            ret = ZEBRA_FAIL;
+        }
         break;
     }
     for (i = 0; i<REC_BLOCK_TYPES; i++)
@@ -385,17 +385,17 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
                       CAST_ZINT_TO_INT(p->head.block_size[i]), rw)))
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "bf_open %s", p->data_fname[i]);
-	    ret = ZEBRA_FAIL;
+            ret = ZEBRA_FAIL;
             break;
         }
     }
     p->cache_max = 400;
     p->cache_cur = 0;
     p->record_cache = (struct record_cache_entry *)
-	xmalloc(sizeof(*p->record_cache)*p->cache_max);
+        xmalloc(sizeof(*p->record_cache)*p->cache_max);
     zebra_mutex_init(&p->mutex);
     if (ret == ZEBRA_FAIL)
-	rec_close(&p);
+        rec_close(&p);
     return p;
 }
 
@@ -404,9 +404,9 @@ static void rec_encode_unsigned(unsigned n, unsigned char *buf, int *len)
     (*len) = 0;
     while (n > 127)
     {
-	buf[*len] = 128 + (n & 127);
-	n = n >> 7;
-	(*len)++;
+        buf[*len] = 128 + (n & 127);
+        n = n >> 7;
+        (*len)++;
     }
     buf[*len] = n;
     (*len)++;
@@ -420,9 +420,9 @@ static void rec_decode_unsigned(unsigned *np, unsigned char *buf, int *len)
 
     while (buf[*len] > 127)
     {
-	n += w*(buf[*len] & 127);
-	w = w << 7;
-	(*len)++;
+        n += w*(buf[*len] & 127);
+        w = w << 7;
+        (*len)++;
     }
     n += w * buf[*len];
     (*len)++;
@@ -434,9 +434,9 @@ static void rec_encode_zint(zint n, unsigned char *buf, int *len)
     (*len) = 0;
     while (n > 127)
     {
-	buf[*len] = (unsigned) (128 + (n & 127));
-	n = n >> 7;
-	(*len)++;
+        buf[*len] = (unsigned) (128 + (n & 127));
+        n = n >> 7;
+        (*len)++;
     }
     buf[*len] = (unsigned) n;
     (*len)++;
@@ -450,9 +450,9 @@ static void rec_decode_zint(zint *np, unsigned char *buf, int *len)
 
     while (buf[*len] > 127)
     {
-	n += w*(buf[*len] & 127);
-	w = w << 7;
-	(*len)++;
+        n += w*(buf[*len] & 127);
+        w = w << 7;
+        (*len)++;
     }
     n += w * buf[*len];
     (*len)++;
@@ -460,52 +460,52 @@ static void rec_decode_zint(zint *np, unsigned char *buf, int *len)
 }
 
 static void rec_cache_flush_block1(Records p, Record rec, Record last_rec,
-				   char **out_buf, int *out_size,
-				   int *out_offset)
+                                   char **out_buf, int *out_size,
+                                   int *out_offset)
 {
     int i;
     int len;
 
     for (i = 0; i<REC_NO_INFO; i++)
     {
-	if (*out_offset + CAST_ZINT_TO_INT(rec->size[i]) + 20 > *out_size)
-	{
-	    int new_size = *out_offset + rec->size[i] + 65536;
-	    char *np = (char *) xmalloc(new_size);
-	    if (*out_offset)
-		memcpy(np, *out_buf, *out_offset);
-	    xfree(*out_buf);
-	    *out_size = new_size;
-	    *out_buf = np;
-	}
-	if (i == 0)
-	{
-	    rec_encode_zint(rec_sysno_to_int(rec->sysno),
-			    (unsigned char *) *out_buf + *out_offset, &len);
-	    (*out_offset) += len;
-	}
-	if (rec->size[i] == 0)
-	{
-	    rec_encode_unsigned(1, (unsigned char *) *out_buf + *out_offset,
-				&len);
-	    (*out_offset) += len;
-	}
-	else if (last_rec && rec->size[i] == last_rec->size[i] &&
-		 !memcmp(rec->info[i], last_rec->info[i], rec->size[i]))
-	{
-	    rec_encode_unsigned(0, (unsigned char *) *out_buf + *out_offset,
-				&len);
-	    (*out_offset) += len;
-	}
-	else
-	{
-	    rec_encode_unsigned(rec->size[i]+1,
-				(unsigned char *) *out_buf + *out_offset,
-				&len);
-	    (*out_offset) += len;
-	    memcpy(*out_buf + *out_offset, rec->info[i], rec->size[i]);
-	    (*out_offset) += rec->size[i];
-	}
+        if (*out_offset + CAST_ZINT_TO_INT(rec->size[i]) + 20 > *out_size)
+        {
+            int new_size = *out_offset + rec->size[i] + 65536;
+            char *np = (char *) xmalloc(new_size);
+            if (*out_offset)
+                memcpy(np, *out_buf, *out_offset);
+            xfree(*out_buf);
+            *out_size = new_size;
+            *out_buf = np;
+        }
+        if (i == 0)
+        {
+            rec_encode_zint(rec_sysno_to_int(rec->sysno),
+                            (unsigned char *) *out_buf + *out_offset, &len);
+            (*out_offset) += len;
+        }
+        if (rec->size[i] == 0)
+        {
+            rec_encode_unsigned(1, (unsigned char *) *out_buf + *out_offset,
+                                &len);
+            (*out_offset) += len;
+        }
+        else if (last_rec && rec->size[i] == last_rec->size[i] &&
+                 !memcmp(rec->info[i], last_rec->info[i], rec->size[i]))
+        {
+            rec_encode_unsigned(0, (unsigned char *) *out_buf + *out_offset,
+                                &len);
+            (*out_offset) += len;
+        }
+        else
+        {
+            rec_encode_unsigned(rec->size[i]+1,
+                                (unsigned char *) *out_buf + *out_offset,
+                                &len);
+            (*out_offset) += len;
+            memcpy(*out_buf + *out_offset, rec->info[i], rec->size[i]);
+            (*out_offset) += rec->size[i];
+        }
     }
 }
 
@@ -518,13 +518,13 @@ static ZEBRA_RES rec_flush_shared(Records p, short ref_count, zint *sysnos,
 #if HAVE_BZLIB_H
         int i;
 #endif
-	unsigned int csize = 0;  /* indicate compression "not performed yet" */
-	char compression_method = p->compression_method;
-	switch (compression_method)
-	{
+        unsigned int csize = 0;  /* indicate compression "not performed yet" */
+        char compression_method = p->compression_method;
+        switch (compression_method)
+        {
         case REC_COMPRESS_ZLIB:
 #if HAVE_ZLIB_H
-	    csize = out_offset + (out_offset >> 6) + 620;
+            csize = out_offset + (out_offset >> 6) + 620;
             while (1)
             {
                 int r;
@@ -548,46 +548,46 @@ static ZEBRA_RES rec_flush_shared(Records p, short ref_count, zint *sysnos,
             }
 #endif
             break;
-	case REC_COMPRESS_BZIP2:
+        case REC_COMPRESS_BZIP2:
 #if HAVE_BZLIB_H
-	    csize = out_offset + (out_offset >> 6) + 620;
-	    rec_tmp_expand(p, csize);
+            csize = out_offset + (out_offset >> 6) + 620;
+            rec_tmp_expand(p, csize);
 #ifdef BZ_CONFIG_ERROR
-	    i = BZ2_bzBuffToBuffCompress
+            i = BZ2_bzBuffToBuffCompress
 #else
-	    i = bzBuffToBuffCompress
+            i = bzBuffToBuffCompress
 #endif
-			 	    (p->tmp_buf+sizeof(zint)+sizeof(short)+
-				      sizeof(char),
-				      &csize, out_buf, out_offset, 1, 0, 30);
-	    if (i != BZ_OK)
-	    {
-		yaz_log(YLOG_WARN, "bzBuffToBuffCompress error code=%d", i);
-		csize = 0;
-	    }
+                                    (p->tmp_buf+sizeof(zint)+sizeof(short)+
+                                      sizeof(char),
+                                      &csize, out_buf, out_offset, 1, 0, 30);
+            if (i != BZ_OK)
+            {
+                yaz_log(YLOG_WARN, "bzBuffToBuffCompress error code=%d", i);
+                csize = 0;
+            }
 #endif
-	    break;
-	case REC_COMPRESS_NONE:
-	    break;
-	}
-	if (!csize)
-	{
-	    /* either no compression or compression not supported ... */
-	    csize = out_offset;
-	    rec_tmp_expand(p, csize);
-	    memcpy(p->tmp_buf + sizeof(zint) + sizeof(short) + sizeof(char),
-		    out_buf, out_offset);
-	    csize = out_offset;
-	    compression_method = REC_COMPRESS_NONE;
-	}
-	memcpy(p->tmp_buf + sizeof(zint), &ref_count, sizeof(ref_count));
-	memcpy(p->tmp_buf + sizeof(zint)+sizeof(short),
-		&compression_method, sizeof(compression_method));
+            break;
+        case REC_COMPRESS_NONE:
+            break;
+        }
+        if (!csize)
+        {
+            /* either no compression or compression not supported ... */
+            csize = out_offset;
+            rec_tmp_expand(p, csize);
+            memcpy(p->tmp_buf + sizeof(zint) + sizeof(short) + sizeof(char),
+                    out_buf, out_offset);
+            csize = out_offset;
+            compression_method = REC_COMPRESS_NONE;
+        }
+        memcpy(p->tmp_buf + sizeof(zint), &ref_count, sizeof(ref_count));
+        memcpy(p->tmp_buf + sizeof(zint)+sizeof(short),
+                &compression_method, sizeof(compression_method));
 
-	/* -------- compression */
-	if (rec_write_tmp_buf(p, csize + sizeof(short) + sizeof(char), sysnos)
-	    != ZEBRA_OK)
-	    ret = ZEBRA_FAIL;
+        /* -------- compression */
+        if (rec_write_tmp_buf(p, csize + sizeof(short) + sizeof(char), sysnos)
+            != ZEBRA_OK)
+            ret = ZEBRA_FAIL;
     }
     return ret;
 }
@@ -611,33 +611,33 @@ static ZEBRA_RES rec_write_multiple(Records p, int saveCount)
         {
         case recordFlagNew:
             rec_cache_flush_block1(p, e->rec, last_rec, &out_buf,
-				    &out_size, &out_offset);
-	    *sysnop++ = rec_sysno_to_int(e->rec->sysno);
-	    ref_count++;
-	    e->flag = recordFlagNop;
-	    last_rec = e->rec;
+                                    &out_size, &out_offset);
+            *sysnop++ = rec_sysno_to_int(e->rec->sysno);
+            ref_count++;
+            e->flag = recordFlagNop;
+            last_rec = e->rec;
             break;
         case recordFlagWrite:
-	    if (rec_release_blocks(p, rec_sysno_to_int(e->rec->sysno))
-		!= ZEBRA_OK)
-		ret = ZEBRA_FAIL;
+            if (rec_release_blocks(p, rec_sysno_to_int(e->rec->sysno))
+                != ZEBRA_OK)
+                ret = ZEBRA_FAIL;
 
             rec_cache_flush_block1(p, e->rec, last_rec, &out_buf,
-				    &out_size, &out_offset);
-	    *sysnop++ = rec_sysno_to_int(e->rec->sysno);
-	    ref_count++;
-	    e->flag = recordFlagNop;
-	    last_rec = e->rec;
+                                    &out_size, &out_offset);
+            *sysnop++ = rec_sysno_to_int(e->rec->sysno);
+            ref_count++;
+            e->flag = recordFlagNop;
+            last_rec = e->rec;
             break;
         case recordFlagDelete:
             if (rec_delete_single(p, e->rec) != ZEBRA_OK)
-		ret = ZEBRA_FAIL;
+                ret = ZEBRA_FAIL;
 
-	    e->flag = recordFlagNop;
+            e->flag = recordFlagNop;
             break;
         case recordFlagNop:
-	    break;
-	default:
+            break;
+        default:
             break;
         }
     }
@@ -673,7 +673,7 @@ static ZEBRA_RES rec_cache_flush(Records p, int saveCount)
 }
 
 static Record *rec_cache_lookup(Records p, zint sysno,
-				enum recordCacheFlag flag)
+                                enum recordCacheFlag flag)
 {
     int i;
     for (i = 0; i<p->cache_cur; i++)
@@ -724,18 +724,18 @@ ZEBRA_RES rec_close(Records *pp)
     ZEBRA_RES ret = ZEBRA_OK;
 
     if (!p)
-	return ret;
+        return ret;
 
     zebra_mutex_destroy(&p->mutex);
     if (rec_cache_flush(p, 0) != ZEBRA_OK)
-	ret = ZEBRA_FAIL;
+        ret = ZEBRA_FAIL;
 
     xfree(p->record_cache);
 
     if (p->rw)
     {
         if (recindex_write_head(p->recindex, &p->head, sizeof(p->head)) != ZEBRA_OK)
-	    ret = ZEBRA_FAIL;
+            ret = ZEBRA_FAIL;
     }
 
     recindex_close(p->recindex);
@@ -787,7 +787,7 @@ static Record rec_get_int(Records p, zint sysno)
     cptr = p->tmp_buf;
     r = bf_read(p->data_BFile[dst_type], freeblock, 0, 0, cptr);
     if (r < 0)
-	return 0;
+        return 0;
     memcpy(&freeblock, cptr, sizeof(freeblock));
 
     while (freeblock)
@@ -798,8 +798,8 @@ static Record rec_get_int(Records p, zint sysno)
 
         memcpy(&tmp, cptr, sizeof(tmp));
         r = bf_read(p->data_BFile[dst_type], freeblock, 0, 0, cptr);
-	if (r < 0)
-	    return 0;
+        if (r < 0)
+            return 0;
         memcpy(&freeblock, cptr, sizeof(freeblock));
         memcpy(cptr, &tmp, sizeof(tmp));
     }
@@ -807,7 +807,7 @@ static Record rec_get_int(Records p, zint sysno)
     rec = (Record) xmalloc(sizeof(*rec));
     rec->sysno = sysno;
     memcpy(&compression_method, p->tmp_buf + sizeof(zint) + sizeof(short),
-	    sizeof(compression_method));
+            sizeof(compression_method));
     in_buf = p->tmp_buf + sizeof(zint) + sizeof(short) + sizeof(char);
     in_size = entry.size - sizeof(short) - sizeof(char);
     switch (compression_method)
@@ -864,63 +864,63 @@ static Record rec_get_int(Records p, zint sysno)
             in_size = bz_size;
         }
 #else
-	yaz_log(YLOG_FATAL, "cannot decompress record(s) in BZIP2 format");
-	return 0;
+        yaz_log(YLOG_FATAL, "cannot decompress record(s) in BZIP2 format");
+        return 0;
 #endif
-	break;
+        break;
     case REC_COMPRESS_NONE:
-	break;
+        break;
     }
     for (i = 0; i<REC_NO_INFO; i++)
-	rec->info[i] = 0;
+        rec->info[i] = 0;
 
     nptr = in_buf;                /* skip ref count */
     while (nptr < in_buf + in_size)
     {
-	zint this_sysno;
-	int len;
-	rec_decode_zint(&this_sysno, (unsigned char *) nptr, &len);
-	nptr += len;
+        zint this_sysno;
+        int len;
+        rec_decode_zint(&this_sysno, (unsigned char *) nptr, &len);
+        nptr += len;
 
-	for (i = 0; i < REC_NO_INFO; i++)
-	{
-	    unsigned int this_size;
-	    rec_decode_unsigned(&this_size, (unsigned char *) nptr, &len);
-	    nptr += len;
+        for (i = 0; i < REC_NO_INFO; i++)
+        {
+            unsigned int this_size;
+            rec_decode_unsigned(&this_size, (unsigned char *) nptr, &len);
+            nptr += len;
 
-	    if (this_size == 0)
-		continue;
-	    rec->size[i] = this_size-1;
+            if (this_size == 0)
+                continue;
+            rec->size[i] = this_size-1;
 
-	    if (rec->size[i])
-	    {
-		rec->info[i] = nptr;
-		nptr += rec->size[i];
-	    }
-	    else
-		rec->info[i] = NULL;
-	}
-	if (this_sysno == rec_sysno_to_int(sysno))
-	    break;
+            if (rec->size[i])
+            {
+                rec->info[i] = nptr;
+                nptr += rec->size[i];
+            }
+            else
+                rec->info[i] = NULL;
+        }
+        if (this_sysno == rec_sysno_to_int(sysno))
+            break;
     }
     for (i = 0; i<REC_NO_INFO; i++)
     {
-	if (rec->info[i] && rec->size[i])
-	{
-	    char *np = xmalloc(rec->size[i]+1);
-	    memcpy(np, rec->info[i], rec->size[i]);
+        if (rec->info[i] && rec->size[i])
+        {
+            char *np = xmalloc(rec->size[i]+1);
+            memcpy(np, rec->info[i], rec->size[i]);
             np[rec->size[i]] = '\0';
-	    rec->info[i] = np;
-	}
-	else
-	{
-	    assert(rec->info[i] == 0);
-	    assert(rec->size[i] == 0);
-	}
+            rec->info[i] = np;
+        }
+        else
+        {
+            assert(rec->info[i] == 0);
+            assert(rec->size[i] == 0);
+        }
     }
     xfree(bz_buf);
     if (rec_cache_insert(p, rec, recordFlagNop) != ZEBRA_OK)
-	return 0;
+        return 0;
     return rec;
 }
 
@@ -969,10 +969,10 @@ static Record rec_new_int(Records p)
         struct record_index_entry entry;
 
         if (recindex_read_indx(p->recindex, p->head.index_free, &entry, sizeof(entry), 0) < 1)
-	{
-	    xfree(rec);
-	    return 0;
-	}
+        {
+            xfree(rec);
+            return 0;
+        }
         sysno = p->head.index_free;
         p->head.index_free = entry.next;
     }
@@ -1106,7 +1106,7 @@ void rec_prstat(Records records, int verbose)
               records->head.block_size[i]);
         yaz_log (YLOG_LOG,
           " Used/Total/Bytes used            "
-	      ZINT_FORMAT "/" ZINT_FORMAT "/" ZINT_FORMAT,
+              ZINT_FORMAT "/" ZINT_FORMAT "/" ZINT_FORMAT,
               records->head.block_used[i], records->head.block_last[i]-1,
               records->head.block_used[i] * records->head.block_size[i]);
         total_bytes +=
@@ -1145,7 +1145,7 @@ void rec_prstat(Records records, int verbose)
           records->head.total_bytes);
     yaz_log (YLOG_LOG,
           "Total size with overhead             %8" ZINT_FORMAT0,
-	  total_bytes);
+          total_bytes);
 }
 
 /*

@@ -250,18 +250,18 @@ struct term_set_list {
 void zebra_limit_destroy(struct zebra_limit *zl);
 struct zebra_limit *zebra_limit_create(int exclude_flag, zint *ids);
 void zebra_limit_for_rset(struct zebra_limit *zl,
-			  int (**filter_func)(const void *buf, void *data),
-			  void (**filter_destroy)(void *data),
-			  void **filter_data);
+                          int (**filter_func)(const void *buf, void *data),
+                          void (**filter_destroy)(void *data),
+                          void **filter_data);
 
 struct rset_key_control *zebra_key_control_create(ZebraHandle zh);
 
 ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
-			 const Odr_oid *attributeSet, zint hits_limit,
-			 NMEM stream, NMEM rset_nmem,
-			 Z_SortKeySpecList *sort_sequence,
-			 int num_bases, const char **basenames,
-			 RSET *result_set);
+                         const Odr_oid *attributeSet, zint hits_limit,
+                         NMEM stream, NMEM rset_nmem,
+                         Z_SortKeySpecList *sort_sequence,
+                         int num_bases, const char **basenames,
+                         RSET *result_set);
 
 ZEBRA_RES rpn_get_top_approx_limit(ZebraHandle zh, Z_RPNStructure *zs,
                                    zint *approx_limit);
@@ -273,11 +273,11 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                    int *is_partial, const char *set_name);
 
 RSET rset_trunc(ZebraHandle zh, ISAM_P *isam_p, int no,
-		const char *term, int length_term, const char *flags,
-		int preserve_position, int term_type, NMEM rset_nmem,
-		struct rset_key_control *kctrl, int scope,
-		struct ord_list *ol, const char *index_type,
-		zint hits_limit, const char *term_ref_id);
+                const char *term, int length_term, const char *flags,
+                int preserve_position, int term_type, NMEM rset_nmem,
+                struct rset_key_control *kctrl, int scope,
+                struct ord_list *ol, const char *index_type,
+                zint hits_limit, const char *term_ref_id);
 
 ZEBRA_RES resultSetGetBaseNames(ZebraHandle zh, const char *setname,
                                 const char ***basenames, int *num_bases);
@@ -293,17 +293,17 @@ ZEBRA_RES resultSetAddRPN(ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
                           zint *hits, int *estimated_hit_count);
 RSET resultSetRef(ZebraHandle zh, const char *resultSetId);
 void resultSetDestroy(ZebraHandle zh, int num_names, char **names,
-		       int *statuses);
+                       int *statuses);
 ZEBRA_RES resultSetSort(ZebraHandle zh, NMEM nmem,
-			 int num_input_setnames, const char **input_setnames,
-			 const char *output_setname,
-			 Z_SortKeySpecList *sort_sequence, int *sort_status);
+                         int num_input_setnames, const char **input_setnames,
+                         const char *output_setname,
+                         Z_SortKeySpecList *sort_sequence, int *sort_status);
 ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
-			       ZebraSet sset, RSET rset,
-			       Z_SortKeySpecList *sort_sequence,
-			       int *sort_status);
+                               ZebraSet sset, RSET rset,
+                               Z_SortKeySpecList *sort_sequence,
+                               int *sort_status);
 ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet, RSET rset,
-			 NMEM nmem);
+                         NMEM nmem);
 void resultSetInvalidate(ZebraHandle zh);
 
 int zebra_record_fetch(ZebraHandle zh, const char *setname,
@@ -343,7 +343,7 @@ void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys);
 ZEBRA_RES zebra_rec_keys_to_snippets(ZebraHandle zh, zebra_rec_keys_t reckeys,
                                      zebra_snippets *snippets);
 ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
-				    zint sysno, zebra_snippets *snippets);
+                                    zint sysno, zebra_snippets *snippets);
 
 ZEBRA_RES zebra_extract_explain(void *handle, Record rec, data1_node *n);
 
@@ -408,7 +408,7 @@ void rpn_char_map_prepare(struct zebra_register *reg, zebra_map_t zm,
                           struct rpn_char_map_info *map_info);
 
 ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-			    char *termz);
+                            char *termz);
 
 
 void zebra_set_partial_result(ZebraHandle zh);

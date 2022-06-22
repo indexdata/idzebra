@@ -31,7 +31,7 @@ static void create_search_drop(ZebraHandle zh)
 
     /* bug #447 */
     YAZ_CHECK(zebra_update_record(
-		  zh, action_update,
+                  zh, action_update,
                   0 /* record type */,
                   0 /* sysno */,
                   opaque_id,
@@ -40,7 +40,7 @@ static void create_search_drop(ZebraHandle zh)
               == ZEBRA_OK); /* insert really */
 
     YAZ_CHECK(zebra_update_record(
-		  zh, action_update,
+                  zh, action_update,
                   0 /* record type */,
                   0 /* sysno */,
                   opaque_id,

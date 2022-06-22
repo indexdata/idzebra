@@ -48,13 +48,13 @@ static void common_init(Dict_BFile bf, int block_size, int cache)
 
     /* Allocate and initialize hash array (as empty) */
     bf->hash_array = (struct Dict_file_block **)
-	xmalloc(sizeof(*bf->hash_array) * bf->hash_size);
+        xmalloc(sizeof(*bf->hash_array) * bf->hash_size);
     for (i=bf->hash_size; --i >= 0; )
         bf->hash_array[i] = NULL;
 
     /* Allocate all block descriptors in one chunk */
     bf->all_blocks = (struct Dict_file_block *)
-	xmalloc(sizeof(*bf->all_blocks) * cache);
+        xmalloc(sizeof(*bf->all_blocks) * cache);
 
     /* Initialize the free list */
     bf->free_list = bf->all_blocks;

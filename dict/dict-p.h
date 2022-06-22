@@ -88,7 +88,7 @@ int        dict_bf_newp (Dict_BFile bf, int no, void **bufp, int nbytes);
 int        dict_bf_touch (Dict_BFile bf, int no);
 void       dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush);
 Dict_BFile dict_bf_open (BFiles bfs, const char *name, int block_size,
-			 int cache, int rw);
+                         int cache, int rw);
 int        dict_bf_close (Dict_BFile dbf);
 void       dict_bf_compact (Dict_BFile dbf);
 

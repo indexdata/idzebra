@@ -55,7 +55,7 @@ static void print_dict_item (ZebraHandle zh, const char *s, zint count,
     const char *db = 0;
 
     if (!zh)
-	*dst = '\0';
+        *dst = '\0';
     else
     {
         zebraExplain_lookup_ord (zh->reg->zei, ord, &index_type, &db, 0);
@@ -63,7 +63,7 @@ static void print_dict_item (ZebraHandle zh, const char *s, zint count,
         zebra_term_untrans(zh, index_type, dst, s + len);
     }
     printf("%02d:%10" ZINT_FORMAT0 " %s %d.%d - %d.%d\n", ord, count, dst,
-	   firstsys, firstseq, lastsys, lastseq);
+           firstsys, firstseq, lastsys, lastseq);
 }
 
 static int inv_stat_handle (char *name, const char *info, int pos,
@@ -88,32 +88,32 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     {
         ISAMS_PP pp;
         int occurx = 0;
-	struct it_key key;
+        struct it_key key;
 
         pp = isams_pp_open (stat_info->zh->reg->isams, isam_p);
         occur = isams_pp_num (pp);
         while (isams_pp_read(pp, &key))
-	{
+        {
             occurx++;
-	}
+        }
         assert (occurx == occur);
-	stat_info->no_isam_entries[0] += occur;
+        stat_info->no_isam_entries[0] += occur;
         isams_pp_close (pp);
     }
     if (stat_info->zh->reg->isamc)
     {
         ISAMC_PP pp;
         zint occurx = 0;
-	struct it_key key;
+        struct it_key key;
 
         pp = isamc_pp_open (stat_info->zh->reg->isamc, isam_p);
         occur = isamc_pp_num (pp);
         while (isamc_pp_read(pp, &key))
-	{
+        {
             occurx++;
-	}
+        }
         assert (occurx == occur);
-	stat_info->no_isam_entries[isamc_type(isam_p)] += occur;
+        stat_info->no_isam_entries[isamc_type(isam_p)] += occur;
         isamc_pp_close (pp);
     }
     if (stat_info->zh->reg->isamb)
@@ -137,15 +137,15 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         if (level > 4)
             level = 4;
         stat_info->isamb_levels[cat][level] ++;
-	stat_info->no_isam_entries[cat] += occur;
+        stat_info->no_isam_entries[cat] += occur;
     }
     i=0;
     while (occur > stat_info->isam_bounds[i] && stat_info->isam_bounds[i])
         i++;
     ++(stat_info->isam_occurrences[i]);
     if (stat_info->dumpwords)
-	print_dict_item(stat_info->zh, name, occur,
-			firstsys, firstseq, lastsys, lastseq);
+        print_dict_item(stat_info->zh, name, occur,
+                        firstsys, firstseq, lastsys, lastseq);
     return 0;
 }
 
@@ -156,18 +156,18 @@ static void show_bfs_stats(BFiles bfs)
     double used_bytes, max_bytes;
     printf("Register:\n");
     while (bfs_register_directory_stat(bfs, i, &directory,
-				       &used_bytes, &max_bytes))
+                                       &used_bytes, &max_bytes))
     {
-	printf ("%s %10.0lf %10.0lf\n", directory, used_bytes, max_bytes);
-	i++;
+        printf ("%s %10.0lf %10.0lf\n", directory, used_bytes, max_bytes);
+        i++;
     }
     i = 0;
     printf("Shadow:\n");
     while (bfs_shadow_directory_stat(bfs, i, &directory,
-				       &used_bytes, &max_bytes))
+                                       &used_bytes, &max_bytes))
     {
-	printf ("%s %10.0lf %10.0lf\n", directory, used_bytes, max_bytes);
-	i++;
+        printf ("%s %10.0lf %10.0lf\n", directory, used_bytes, max_bytes);
+        i++;
     }
 }
 
@@ -181,7 +181,7 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
     char term_dict[2*IT_MAX_WORD+2];
 
     if (zebra_begin_read (zh))
-	return 1;
+        return 1;
 
     show_bfs_stats(zebra_get_bfs(zh));
 
@@ -192,7 +192,7 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
     term_dict[1] = 0;
 
     for (i = 0; i<=SINGLETON_TYPE; i++)
-	stat_info.no_isam_entries[i] = 0;
+        stat_info.no_isam_entries[i] = 0;
     stat_info.no_dict_entries = 0;
     stat_info.no_dict_bytes = 0;
     stat_info.isam_bounds[0] = 1;
@@ -234,23 +234,23 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
 
     if (zh->reg->isamc)
     {
-	fprintf (stdout, "   Blocks    Occur  Size KB   Bytes/Entry\n");
-	for (i = 0; isamc_block_used (zh->reg->isamc, i) >= 0; i++)
-	{
-	    fprintf (stdout, " %8" ZINT_FORMAT0 " %8" ZINT_FORMAT0,
-		     isamc_block_used (zh->reg->isamc, i),
-		     stat_info.no_isam_entries[i]);
+        fprintf (stdout, "   Blocks    Occur  Size KB   Bytes/Entry\n");
+        for (i = 0; isamc_block_used (zh->reg->isamc, i) >= 0; i++)
+        {
+            fprintf (stdout, " %8" ZINT_FORMAT0 " %8" ZINT_FORMAT0,
+                     isamc_block_used (zh->reg->isamc, i),
+                     stat_info.no_isam_entries[i]);
 
-	    if (stat_info.no_isam_entries[i])
-		fprintf(stdout, " %8d   %f",
+            if (stat_info.no_isam_entries[i])
+                fprintf(stdout, " %8d   %f",
                         (int) ((1023.0 + (double)
                           isamc_block_used(zh->reg->isamc, i) *
                           isamc_block_size(zh->reg->isamc,i))/1024),
                         ((double) isamc_block_used(zh->reg->isamc, i) *
-			  isamc_block_size(zh->reg->isamc,i))/
+                          isamc_block_size(zh->reg->isamc,i))/
                         stat_info.no_isam_entries[i]);
-	    fprintf (stdout, "\n");
-	}
+            fprintf (stdout, "\n");
+        }
     }
 
     if (zh->reg->isamb)
@@ -266,7 +266,7 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
             fprintf (stdout, "Blocks:    " ZINT_FORMAT "\n", stat_info.isamb_blocks[i]);
             fprintf (stdout, "Size:      " ZINT_FORMAT "\n", stat_info.isamb_sizes[i]);
             fprintf (stdout, "Entries:   " ZINT_FORMAT "\n",
-		     stat_info.no_isam_entries[i]);
+                     stat_info.no_isam_entries[i]);
             fprintf (stdout, "Total      " ZINT_FORMAT "\n", stat_info.isamb_blocks[i]*
                      bsize);
             for (j = 0; j<5; j++)

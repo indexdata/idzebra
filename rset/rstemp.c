@@ -85,7 +85,7 @@ RSET rset_create_temp(NMEM nmem, struct rset_key_control *kcontrol,
                       int scope, const char *temp_path, TERMID term)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term,
-				 0, 0);
+                                 0, 0);
     struct rset_private *info;
     if (!log_level_initialized)
     {
@@ -185,7 +185,7 @@ static void r_flush(RSFD rfd, int mk)
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: mkstemp %s", template);
             zebra_exit("r_flush");
         }
-	info->fname = nmem_strdup(rfd->rset->nmem, template);
+        info->fname = nmem_strdup(rfd->rset->nmem, template);
 #else
         char *s = (char*) tempnam(info->temp_path, "zrs");
         info->fname= nmem_strdup(rfd->rset->nmem, s);
@@ -230,12 +230,12 @@ static void r_close(RSFD rfd)
     struct rset_private *info = (struct rset_private *)rfd->rset->priv;
     if (rfd_is_last(rfd))
     {
-	r_flush(rfd, 0);
-	if (info->fname && info->fd != -1)
-	{
-	    close(info->fd);
-	    info->fd = -1;
-	}
+        r_flush(rfd, 0);
+        if (info->fname && info->fd != -1)
+        {
+            close(info->fd);
+            info->fd = -1;
+        }
     }
 }
 

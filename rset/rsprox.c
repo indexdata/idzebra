@@ -76,7 +76,7 @@ RSET rset_create_prox(NMEM nmem, struct rset_key_control *kcontrol,
                       int relation, int distance)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, 0,
-				 rset_no, rset);
+                                 rset_no, rset);
     struct rset_prox_info *info;
     info = (struct rset_prox_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->ordered = ordered;

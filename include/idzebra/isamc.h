@@ -59,7 +59,7 @@ void isamc_getmethod(ISAMC_M *m);
 
 YAZ_EXPORT
 ISAMC isamc_open(BFiles bfs, const char *name, int writeflag,
-		  ISAMC_M *method);
+                  ISAMC_M *method);
 YAZ_EXPORT
 int isamc_close(ISAMC is);
 

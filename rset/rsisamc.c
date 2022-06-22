@@ -59,8 +59,8 @@ static int log_level = 0;
 static int log_level_initialized = 0;
 
 RSET rsisamc_create(NMEM nmem, struct rset_key_control *kcontrol,
-		    int scope,
-		    ISAMC is, ISAM_P pos, TERMID term)
+                    int scope,
+                    ISAMC is, ISAM_P pos, TERMID term)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term, 0, 0);
     struct rset_isamc_info *info;

@@ -41,12 +41,12 @@ static int handler(char *name, const char *info, int pos, void *client)
     struct handle_info *hi = (struct handle_info *) client;
     int idx;
     if (pos > 0)
-	idx = hi->a - pos + hi->b;
+        idx = hi->a - pos + hi->b;
     else
-	idx = -pos - 1;
+        idx = -pos - 1;
 
     if (idx < 0)
-	return 0;
+        return 0;
     if (idx < hi->start_cut || idx > hi->end_cut)
     {
         return 1;
@@ -75,7 +75,7 @@ int do_scan(Dict dict, int before, int after, const char *sterm,
     hi.b = before;
     hi.ar = malloc(sizeof(char*) * (after+before+1));
     for (i = 0; i <= after+before; i++)
-	hi.ar[i] = 0;
+        hi.ar[i] = 0;
     yaz_log(YLOG_DEBUG, "dict_scan before=%d after=%d term=%s",
             before, after, scan_term);
     dict_scan (dict, scan_term, &before, &after, &hi, handler);
@@ -101,7 +101,7 @@ int do_scan(Dict dict, int before, int after, const char *sterm,
             }
         }
         else
-	{
+        {
             if (i >= start_cut && i <= end_cut)
             {
                 if (!hi.ar[i])
@@ -128,21 +128,21 @@ int do_scan(Dict dict, int before, int after, const char *sterm,
                     errors++;
                 }
             }
-	}
-	if (verbose || errors)
-	{
-	    if (i == hi.b)
-		printf ("* ");
-	    else
-		printf ("  ");
-	    if (hi.ar[i])
-		printf ("%s", hi.ar[i]);
-	    else
-		printf ("NULL");
-	    putchar('\n');
-	}
-	if (hi.ar[i])
-	    free(hi.ar[i]);
+        }
+        if (verbose || errors)
+        {
+            if (i == hi.b)
+                printf ("* ");
+            else
+                printf ("  ");
+            if (hi.ar[i])
+                printf ("%s", hi.ar[i]);
+            else
+                printf ("NULL");
+            putchar('\n');
+        }
+        if (hi.ar[i])
+            free(hi.ar[i]);
     }
     free(hi.ar);
     return errors;
@@ -253,30 +253,30 @@ int main(int argc, char **argv)
     strcpy(scan_term, "1004");
     while ((ret = options("b:a:t:n:v:", argv, argc, &arg)) != -2)
     {
-	switch(ret)
-	{
-	case 0:
-	    break;
-	case 'b':
-	    before = atoi(arg);
-	    break;
-	case 'a':
-	    after = atoi(arg);
-	    break;
-	case 't':
+        switch(ret)
+        {
+        case 0:
+            break;
+        case 'b':
+            before = atoi(arg);
+            break;
+        case 'a':
+            after = atoi(arg);
+            break;
+        case 't':
             if (strlen(arg) >= sizeof(scan_term)-1)
             {
                 fprintf(stderr, "scan term too long\n");
                 exit(1);
             }
             strcpy(scan_term, arg);
-	    break;
-	case 'n':
-	    number = atoi(arg);
-	    break;
-	case 'v':
-	    yaz_log_init_level(yaz_log_mask_str(arg));
-	}
+            break;
+        case 'n':
+            number = atoi(arg);
+            break;
+        case 'v':
+            yaz_log_init_level(yaz_log_mask_str(arg));
+        }
     }
 
     bfs = bfs_create(".:100M", 0);

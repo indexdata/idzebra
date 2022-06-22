@@ -74,7 +74,7 @@ void isams_getmethod (ISAMS_M *m)
 }
 
 ISAMS isams_open (BFiles bfs, const char *name, int writeflag,
-		  ISAMS_M *method)
+                  ISAMS_M *method)
 {
     ISAMS is = (ISAMS) xmalloc (sizeof(*is));
 
@@ -87,8 +87,8 @@ ISAMS isams_open (BFiles bfs, const char *name, int writeflag,
 
     if (!bf_read (is->bf, 0, 0, sizeof(ISAMS_head), &is->head))
     {
-	is->head.last_block = 1;
-	is->head.last_offset = 0;
+        is->head.last_block = 1;
+        is->head.last_offset = 0;
     }
     memcpy (&is->head_old, &is->head, sizeof(is->head));
     is->merge_buf = (char *) xmalloc(2*is->block_size);
@@ -100,10 +100,10 @@ int isams_close (ISAMS is)
 {
     if (memcmp(&is->head, &is->head_old, sizeof(is->head)))
     {
-	if (is->head.last_offset)
-	    bf_write(is->bf, is->head.last_block, 0, is->head.last_offset,
-		     is->merge_buf);
-	bf_write (is->bf, 0, 0, sizeof(is->head), &is->head);
+        if (is->head.last_offset)
+            bf_write(is->bf, is->head.last_block, 0, is->head.last_offset,
+                     is->merge_buf);
+        bf_write (is->bf, 0, 0, sizeof(is->head), &is->head);
     }
     bf_close (is->bf);
     xfree (is->merge_buf);
@@ -126,60 +126,60 @@ ISAM_P isams_merge (ISAMS is, ISAMS_I data)
     is->head.last_offset += sizeof(int);
     if (is->head.last_offset > is->block_size)
     {
-	if (is->debug > 2)
-	    yaz_log (YLOG_LOG, "first_block=%d", first_block);
-	bf_write(is->bf, is->head.last_block, 0, 0, is->merge_buf);
-	(is->head.last_block)++;
-	is->head.last_offset -= is->block_size;
-	memcpy (is->merge_buf, is->merge_buf + is->block_size,
-		is->head.last_offset);
+        if (is->debug > 2)
+            yaz_log (YLOG_LOG, "first_block=%d", first_block);
+        bf_write(is->bf, is->head.last_block, 0, 0, is->merge_buf);
+        (is->head.last_block)++;
+        is->head.last_offset -= is->block_size;
+        memcpy (is->merge_buf, is->merge_buf + is->block_size,
+                is->head.last_offset);
     }
     while (1)
     {
-	char *tmp_ptr = i_item;
-	i_more = (*data->read_item)(data->clientData, &tmp_ptr, &i_mode);
-	assert (i_mode);
+        char *tmp_ptr = i_item;
+        i_more = (*data->read_item)(data->clientData, &tmp_ptr, &i_mode);
+        assert (i_mode);
 
-	if (!i_more)
-	    break;
-	else
-	{
-	    char *r_out_ptr = is->merge_buf + is->head.last_offset;
+        if (!i_more)
+            break;
+        else
+        {
+            char *r_out_ptr = is->merge_buf + is->head.last_offset;
 
-	    const char *i_item_ptr = i_item;
-	    (*is->method->codec.encode)(r_clientData, &r_out_ptr, &i_item_ptr);
-	    is->head.last_offset = r_out_ptr - is->merge_buf;
-	    if (is->head.last_offset > is->block_size)
-	    {
-		bf_write(is->bf, is->head.last_block, 0, 0, is->merge_buf);
-		(is->head.last_block)++;
-		is->head.last_offset -= is->block_size;
-		memcpy (is->merge_buf, is->merge_buf + is->block_size,
-			is->head.last_offset);
-	    }
-	    count++;
-	}
+            const char *i_item_ptr = i_item;
+            (*is->method->codec.encode)(r_clientData, &r_out_ptr, &i_item_ptr);
+            is->head.last_offset = r_out_ptr - is->merge_buf;
+            if (is->head.last_offset > is->block_size)
+            {
+                bf_write(is->bf, is->head.last_block, 0, 0, is->merge_buf);
+                (is->head.last_block)++;
+                is->head.last_offset -= is->block_size;
+                memcpy (is->merge_buf, is->merge_buf + is->block_size,
+                        is->head.last_offset);
+            }
+            count++;
+        }
     }
     (*is->method->codec.stop)(r_clientData);
     if (first_block == is->head.last_block)
-	memcpy(is->merge_buf + first_offset, &count, sizeof(int));
+        memcpy(is->merge_buf + first_offset, &count, sizeof(int));
     else if (first_block == is->head.last_block-1)
     {
-	int gap = first_offset + sizeof(int) - is->block_size;
-	assert (gap <= (int) sizeof(int));
-	if (gap > 0)
-	{
-	    if (gap < (int) sizeof(int))
-		bf_write(is->bf, first_block, first_offset, sizeof(int)-gap,
-			 &count);
-	    memcpy (is->merge_buf, ((char*)&count)+(sizeof(int)-gap), gap);
-	}
-	else
-	    bf_write(is->bf, first_block, first_offset, sizeof(int), &count);
+        int gap = first_offset + sizeof(int) - is->block_size;
+        assert (gap <= (int) sizeof(int));
+        if (gap > 0)
+        {
+            if (gap < (int) sizeof(int))
+                bf_write(is->bf, first_block, first_offset, sizeof(int)-gap,
+                         &count);
+            memcpy (is->merge_buf, ((char*)&count)+(sizeof(int)-gap), gap);
+        }
+        else
+            bf_write(is->bf, first_block, first_offset, sizeof(int), &count);
     }
     else
     {
-	bf_write(is->bf, first_block, first_offset, sizeof(int), &count);
+        bf_write(is->bf, first_block, first_offset, sizeof(int), &count);
     }
     return first_block * is->block_size + first_offset;
 }
@@ -189,7 +189,7 @@ ISAMS_PP isams_pp_open (ISAMS is, ISAM_P pos)
     ISAMS_PP pp = (ISAMS_PP) xmalloc (sizeof(*pp));
 
     if (is->debug > 1)
-	yaz_log (YLOG_LOG, "isams: isams_pp_open pos=%ld", (long) pos);
+        yaz_log (YLOG_LOG, "isams: isams_pp_open pos=%ld", (long) pos);
     pp->is = is;
     pp->decodeClientData = (*is->method->codec.start)();
     pp->numKeys = 0;
@@ -202,12 +202,12 @@ ISAMS_PP isams_pp_open (ISAMS is, ISAM_P pos)
               pp->block_offset, pp->block_no);
     if (pos)
     {
-	bf_read (is->bf, pp->block_no, 0, 0, pp->buf);
-	bf_read (is->bf, pp->block_no+1, 0, 0, pp->buf + is->block_size);
-	memcpy(&pp->numKeys, pp->buf + pp->block_offset, sizeof(int));
+        bf_read (is->bf, pp->block_no, 0, 0, pp->buf);
+        bf_read (is->bf, pp->block_no+1, 0, 0, pp->buf + is->block_size);
+        memcpy(&pp->numKeys, pp->buf + pp->block_offset, sizeof(int));
         if (is->debug)
-	    yaz_log (YLOG_LOG, "isams: isams_pp_open numKeys=%d", pp->numKeys);
-	pp->block_offset += sizeof(int);
+            yaz_log (YLOG_LOG, "isams: isams_pp_open numKeys=%d", pp->numKeys);
+        pp->block_offset += sizeof(int);
     }
     return pp;
 }
@@ -234,15 +234,15 @@ int isams_read_item (ISAMS_PP pp, char **dst)
 {
     const char *src;
     if (pp->numRead >= pp->numKeys)
-	return 0;
+        return 0;
     (pp->numRead)++;
     if (pp->block_offset > pp->is->block_size)
     {
-	pp->block_offset -= pp->is->block_size;
-	(pp->block_no)++;
-	memcpy (pp->buf, pp->buf + pp->is->block_size, pp->is->block_size);
-	bf_read (pp->is->bf, pp->block_no+1, 0, 0,
-		 pp->buf + pp->is->block_size);
+        pp->block_offset -= pp->is->block_size;
+        (pp->block_no)++;
+        memcpy (pp->buf, pp->buf + pp->is->block_size, pp->is->block_size);
+        bf_read (pp->is->bf, pp->block_no+1, 0, 0,
+                 pp->buf + pp->is->block_size);
     }
     src = pp->buf + pp->block_offset;
     (*pp->is->method->codec.decode)(pp->decodeClientData, dst, &src);

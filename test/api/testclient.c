@@ -74,8 +74,8 @@ int main(int argc, char **argv)
             format = xstrdup(arg);
             break;
         case 'c':
-	    check_count = atoi(arg);
-	    break;
+            check_count = atoi(arg);
+            break;
         default:
             printf ("%s: unknown option %s\n", prog, arg);
             printf ("usage:\n%s [options] target query \n", prog);
@@ -101,26 +101,26 @@ int main(int argc, char **argv)
 
     if ((error = ZOOM_connection_error(z, &errmsg, &addinfo)))
     {
-	printf ("Error: %s (%d) %s\n", errmsg, error, addinfo);
-	exit (2);
+        printf ("Error: %s (%d) %s\n", errmsg, error, addinfo);
+        exit (2);
     }
 
     r = ZOOM_connection_search_pqf (z, query);
     if ((error = ZOOM_connection_error(z, &errmsg, &addinfo)))
     {
-	printf ("Error: %s (%d) %s\n", errmsg, error, addinfo);
-	if (check_count != -1)
+        printf ("Error: %s (%d) %s\n", errmsg, error, addinfo);
+        if (check_count != -1)
             exit_code = 10;
     }
     else
     {
-	printf ("Result count: %ld\n", (long) ZOOM_resultset_size(r));
-	if (check_count != -1 && check_count != ZOOM_resultset_size(r))
-	{
-	    printf("Wrong number of hits, expected %d, got %ld\n",
-			    check_count, (long) ZOOM_resultset_size(r) );
-	    exit(3);
-	}
+        printf ("Result count: %ld\n", (long) ZOOM_resultset_size(r));
+        if (check_count != -1 && check_count != ZOOM_resultset_size(r))
+        {
+            printf("Wrong number of hits, expected %d, got %ld\n",
+                            check_count, (long) ZOOM_resultset_size(r) );
+            exit(3);
+        }
     }
     if (format)
         ZOOM_resultset_option_set(r, "preferredRecordSyntax", format);
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
             fwrite (rec, 1, len, stdout);
     }
     if (delay_sec > 0)
-	sleep(delay_sec);
+        sleep(delay_sec);
     ZOOM_resultset_destroy (r);
     ZOOM_connection_destroy (z);
     exit (exit_code);

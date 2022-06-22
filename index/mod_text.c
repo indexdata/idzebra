@@ -46,7 +46,7 @@ static ZEBRA_RES filter_config(void *clientData, Res res, const char *args)
     xfree(tinfo->sep);
     tinfo->sep = 0;
     if (args && *args)
-	tinfo->sep = xstrdup(args);
+        tinfo->sep = xstrdup(args);
     return ZEBRA_OK;
 }
 
@@ -89,10 +89,10 @@ static int buf_getchar(struct filter_info *tinfo, struct buf_info *fi, char *dst
     *dst = fi->buf[(fi->offset)++];
     if (tinfo->sep && *dst == *tinfo->sep)
     {
-	off_t off = fi->p->stream->tellf(fi->p->stream);
+        off_t off = fi->p->stream->tellf(fi->p->stream);
         off_t end_offset = off - (fi->max - fi->offset);
-	fi->p->stream->endf(fi->p->stream, &end_offset);
-	return 0;
+        fi->p->stream->endf(fi->p->stream, &end_offset);
+        return 0;
     }
     return 1;
 }
@@ -114,7 +114,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 
 #if 0
     yaz_log(YLOG_LOG, "filter_extract off=%ld",
-	    (long) (*fi->p->tellf)(fi->p->fh));
+            (long) (*fi->p->tellf)(fi->p->fh));
 #endif
     (*p->init)(p, &recWord);
     do
@@ -126,18 +126,18 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
         {
             i++;
             r = buf_getchar(tinfo, fi, w + i);
-	}
+        }
         if (i)
         {
-	    no_read += i;
+            no_read += i;
             recWord.term_buf = w;
-	    recWord.term_len = i;
+            recWord.term_len = i;
             (*p->tokenAdd)(&recWord);
         }
     } while (r > 0);
     buf_close(fi);
     if (no_read == 0)
-	return RECCTRL_EXTRACT_EOF;
+        return RECCTRL_EXTRACT_EOF;
     return RECCTRL_EXTRACT_OK;
 }
 
@@ -157,18 +157,18 @@ static int filter_retrieve(void *clientData, struct recRetrieveCtrl *p)
 
     if (elementSetName)
     {
-	/* don't make header for the R(aw) element set name */
-	if (!strcmp(elementSetName, "R"))
-	{
-	    make_header = 0;
-	    make_body = 1;
-	}
-	/* only make header for the H(eader) element set name */
-	else if (!strcmp(elementSetName, "H"))
-	{
-	    make_header = 1;
-	    make_body = 0;
-	}
+        /* don't make header for the R(aw) element set name */
+        if (!strcmp(elementSetName, "R"))
+        {
+            make_header = 0;
+            make_body = 1;
+        }
+        /* only make header for the H(eader) element set name */
+        else if (!strcmp(elementSetName, "H"))
+        {
+            make_header = 1;
+            make_body = 0;
+        }
     }
     while (1)
     {
@@ -193,17 +193,17 @@ static int filter_retrieve(void *clientData, struct recRetrieveCtrl *p)
                 filter_ptr = strlen(filter_buf);
             }
             sprintf(filter_buf + filter_ptr, "Local Number: " ZINT_FORMAT "\n",
-		     p->localno);
+                     p->localno);
             filter_ptr = strlen(filter_buf);
-	    if (p->fname)
-	    {
-		sprintf(filter_buf + filter_ptr, "Filename: %s\n", p->fname);
-		filter_ptr = strlen(filter_buf);
-	    }
-	    strcpy(filter_buf+filter_ptr++, "\n");
+            if (p->fname)
+            {
+                sprintf(filter_buf + filter_ptr, "Filename: %s\n", p->fname);
+                filter_ptr = strlen(filter_buf);
+            }
+            strcpy(filter_buf+filter_ptr++, "\n");
         }
-	if (!make_body)
-	    break;
+        if (!make_body)
+            break;
         r = p->stream->readf(p->stream, filter_buf + filter_ptr, 4096);
         if (r <= 0)
             break;

@@ -44,8 +44,8 @@ static void tst(int argc, char **argv)
     zebra_commit(zh);
 
     YAZ_CHECK(tl_query(zh, "@and "
-	     "@attr 1=54 eng "
-	     "@and @attr 1=1003 jack @attr 1=4 computer", 2));
+             "@attr 1=54 eng "
+             "@and @attr 1=1003 jack @attr 1=4 computer", 2));
 
     YAZ_CHECK(tl_query(zh, "@attr 1=leader 00366", 2));
     YAZ_CHECK(tl_query(zh, "@attr 1=leader2 nam", 2));

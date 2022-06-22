@@ -55,9 +55,9 @@ int compare_item(const void *a, const void *b)
     memcpy(&ia, (const char *) a + 1, sizeof(int));
     memcpy(&ib, (const char *) b + 1, sizeof(int));
     if (ia > ib)
-	return 1;
+        return 1;
     if (ia < ib)
-	return -1;
+        return -1;
    return 0;
 }
 
@@ -97,7 +97,7 @@ int code_read(void *vp, char **dst, int *insertMode)
     int x;
 
     if (ri->no >= ri->max)
-	return 0;
+        return 0;
     ri->no++;
 
     x = ri->val;
@@ -231,8 +231,8 @@ int main(int argc, char **argv)
     bfs = bfs_create(0, 0);
     if (!bfs)
     {
-	yaz_log(YLOG_WARN, "bfs_create failed");
-	exit(1);
+        yaz_log(YLOG_WARN, "bfs_create failed");
+        exit(1);
     }
 
     bf_reset(bfs);
@@ -241,8 +241,8 @@ int main(int argc, char **argv)
     isb = isamb_open (bfs, "isamb", 1, &method, 0);
     if (!isb)
     {
-	yaz_log(YLOG_WARN, "isamb_open failed");
-	exit(2);
+        yaz_log(YLOG_WARN, "isamb_open failed");
+        exit(2);
     }
     bench_insert(isb, number_of_isams, number_of_rounds, number_of_items,
                  extra_size);

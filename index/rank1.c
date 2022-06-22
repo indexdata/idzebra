@@ -61,9 +61,9 @@ static int log2_int(zint g)
 {
     int n = 0;
     if (g < 0)
-	return 0;
+        return 0;
     while ((g = g>>1))
-	n++;
+        n++;
     return n;
 }
 
@@ -117,30 +117,30 @@ static void *begin(struct zebra_register *reg,
     si->no_rank_entries = 0;
     si->nmem=nmem;
     si->entries = (struct rank_term_info *)
-	nmem_malloc(si->nmem, sizeof(*si->entries)*numterms);
+        nmem_malloc(si->nmem, sizeof(*si->entries)*numterms);
     for (i = 0; i < numterms; i++)
     {
-	zint g = rset_count(terms[i]->rset);
+        zint g = rset_count(terms[i]->rset);
         yaz_log(log_level, "i=%d flags=%s '%s'", i,
                 terms[i]->flags, terms[i]->name );
-	if  (!strncmp(terms[i]->flags, "rank,", 5))
-	{
+        if  (!strncmp(terms[i]->flags, "rank,", 5))
+        {
             const char *cp = strstr(terms[i]->flags+4, ",w=");
-	    si->entries[i].rank_flag = 1;
+            si->entries[i].rank_flag = 1;
             if (cp)
                 si->entries[i].rank_weight = atoi(cp+3);
             else
               si->entries[i].rank_weight = 34; /* sqrroot of 1000 */
             yaz_log(log_level, " i=%d weight=%d g="ZINT_FORMAT, i,
                      si->entries[i].rank_weight, g);
-	    (si->no_rank_entries)++;
-	}
-	else
-	    si->entries[i].rank_flag = 0;
-	si->entries[i].local_occur = 0;  /* FIXME */
-	si->entries[i].global_occur = g;
-	si->entries[i].global_inv = 32 - log2_int(g);
-	yaz_log(log_level, " global_inv = %d g = " ZINT_FORMAT,
+            (si->no_rank_entries)++;
+        }
+        else
+            si->entries[i].rank_flag = 0;
+        si->entries[i].local_occur = 0;  /* FIXME */
+        si->entries[i].global_occur = g;
+        si->entries[i].global_inv = 32 - log2_int(g);
+        yaz_log(log_level, " global_inv = %d g = " ZINT_FORMAT,
                 (int) (32-log2_int(g)), g);
         si->entries[i].term = terms[i];
         si->entries[i].term_index=i;
@@ -196,24 +196,24 @@ static int calc_1(void *set_handle, zint sysno, zint staticrank,
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
 
     if (!si->no_rank_entries)
-	return -1;   /* ranking not enabled for any terms */
+        return -1;   /* ranking not enabled for any terms */
 
     for (i = 0; i < si->no_entries; i++)
     {
         yaz_log(log_level, "calc: i=%d rank_flag=%d lo=%d",
                 i, si->entries[i].rank_flag, si->entries[i].local_occur);
-	if (si->entries[i].rank_flag && (lo = si->entries[i].local_occur))
-	    score += (8+log2_int (lo)) * si->entries[i].global_inv *
+        if (si->entries[i].rank_flag && (lo = si->entries[i].local_occur))
+            score += (8+log2_int (lo)) * si->entries[i].global_inv *
                 si->entries[i].rank_weight;
     }
     divisor = si->no_rank_entries * (8+log2_int(si->last_pos/si->no_entries));
     score = score / divisor;
     yaz_log(log_level, "calc sysno=" ZINT_FORMAT " score=%d", sysno, score);
     if (score > 1000)
-	score = 1000;
+        score = 1000;
     /* reset the counts for the next term */
     for (i = 0; i < si->no_entries; i++)
-	si->entries[i].local_occur = 0;
+        si->entries[i].local_occur = 0;
     return score;
 }
 

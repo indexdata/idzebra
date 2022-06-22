@@ -63,7 +63,7 @@ static struct res_entry *add_entry(Res r)
 
     if (!r->first)
         resp = r->last = r->first =
-	    (struct res_entry *) xmalloc(sizeof(*resp));
+            (struct res_entry *) xmalloc(sizeof(*resp));
     else
     {
         resp = (struct res_entry *) xmalloc(sizeof(*resp));
@@ -83,61 +83,61 @@ static char *xstrdup_env(const char *src)
 
     while (src[i])
     {
-	if (src[i] == '$' && src[i+1] == '{')
-	{
-	    char envname[128];
-	    char *env_val;
-	    int k = 0;
-	    i = i + 2;
-	    while (k < 127 && src[i] && !strchr(":}\n\r\f", src[i]))
-		envname[k++] = src[i++];
-	    envname[k] = '\0';
+        if (src[i] == '$' && src[i+1] == '{')
+        {
+            char envname[128];
+            char *env_val;
+            int k = 0;
+            i = i + 2;
+            while (k < 127 && src[i] && !strchr(":}\n\r\f", src[i]))
+                envname[k++] = src[i++];
+            envname[k] = '\0';
 
-	    env_val = getenv(envname);
-	    if (env_val)
-		env_strlen += 1 + strlen(env_val);
-	    else
-		env_strlen++;
-	    while (src[i] && !strchr("}\n\r\f", src[i]))
-		i++;
-	    if (src[i] == '}')
-		i++;
-	}
-	else
-	    i++;
+            env_val = getenv(envname);
+            if (env_val)
+                env_strlen += 1 + strlen(env_val);
+            else
+                env_strlen++;
+            while (src[i] && !strchr("}\n\r\f", src[i]))
+                i++;
+            if (src[i] == '}')
+                i++;
+        }
+        else
+            i++;
     }
     dst = xmalloc(1 + env_strlen + i);
     i = 0;
     while (src[i])
     {
-	if (src[i] == '$' && src[i+1] == '{')
-	{
-	    char envname[128];
-	    char *env_val;
-	    int k = 0;
-	    i = i + 2;
-	    while(k < 127 && src[i] && !strchr(":}\n\r\f", src[i]))
-		envname[k++] = src[i++];
-	    envname[k] = '\0';
-	    env_val = getenv(envname);
-	    if (env_val)
-	    {
-		strcpy(dst+j, env_val);
-		j += strlen(env_val);
-	    }
-	    else if (src[i] == ':' && src[i+1] == '-')
-	    {
-		i = i + 2;
-		while (src[i] && !strchr("}\n\r\f", src[i]))
-		    dst[j++] = src[i++];
-	    }
-	    while (src[i] && !strchr("}\n\r\f", src[i]))
-		i++;
-	    if (src[i] == '}')
-		i++;
-	}
-	else
-	    dst[j++] = src[i++];
+        if (src[i] == '$' && src[i+1] == '{')
+        {
+            char envname[128];
+            char *env_val;
+            int k = 0;
+            i = i + 2;
+            while(k < 127 && src[i] && !strchr(":}\n\r\f", src[i]))
+                envname[k++] = src[i++];
+            envname[k] = '\0';
+            env_val = getenv(envname);
+            if (env_val)
+            {
+                strcpy(dst+j, env_val);
+                j += strlen(env_val);
+            }
+            else if (src[i] == ':' && src[i+1] == '-')
+            {
+                i = i + 2;
+                while (src[i] && !strchr("}\n\r\f", src[i]))
+                    dst[j++] = src[i++];
+            }
+            while (src[i] && !strchr("}\n\r\f", src[i]))
+                i++;
+            if (src[i] == '}')
+                i++;
+        }
+        else
+            dst[j++] = src[i++];
     }
     dst[j] = '\0';
     return dst;
@@ -248,12 +248,12 @@ void res_clear(Res r)
     struct res_entry *re, *re1;
     for (re = r->first; re; re=re1)
     {
-	if (re->name)
-	    xfree(re->name);
-	if (re->value)
-	    xfree(re->value);
-	re1 = re->next;
-	xfree(re);
+        if (re->name)
+            xfree(re->name);
+        if (re->value)
+            xfree(re->value);
+        re1 = re->next;
+        xfree(re);
     }
     r->first = r->last = NULL;
 }
@@ -270,24 +270,24 @@ void res_close(Res r)
 }
 
 const char *res_get_prefix(Res r, const char *name, const char *prefix,
-			    const char *def)
+                            const char *def)
 {
     const char *v = 0;;
     if (prefix)
     {
-	char rname[128];
+        char rname[128];
 
-	if (strlen(name) + strlen(prefix) >= (sizeof(rname)-2))
-	    return 0;
-	strcpy(rname, prefix);
-	strcat(rname, ".");
-	strcat(rname, name);
-	v = res_get(r, rname);
+        if (strlen(name) + strlen(prefix) >= (sizeof(rname)-2))
+            return 0;
+        strcpy(rname, prefix);
+        strcat(rname, ".");
+        strcat(rname, name);
+        v = res_get(r, rname);
     }
     if (!v)
-	v = res_get(r, name);
+        v = res_get(r, name);
     if (!v)
-	v = def;
+        v = def;
     return v;
 }
 
@@ -297,11 +297,11 @@ const char *res_get(Res r, const char *name)
     const char *v;
 
     if (!r)
-	return 0;
+        return 0;
 
     v = res_get(r->over_res, name);
     if (v)
-	return v;
+        return v;
 
     for (re = r->first; re; re=re->next)
         if (re->value && !yaz_matchstr(re->name, name))
@@ -316,12 +316,12 @@ const char *res_get_def(Res r, const char *name, const char *def)
 
     if (!(t = res_get(r, name)))
     {
-	if (def)
-    	    yaz_log(YLOG_DEBUG, "Using default resource %s:%s", name, def);
-    	return def;
+        if (def)
+            yaz_log(YLOG_DEBUG, "Using default resource %s:%s", name, def);
+        return def;
     }
     else
-    	return t;
+        return t;
 }
 
 int res_get_match(Res r, const char *name, const char *value, const char *s)
@@ -329,7 +329,7 @@ int res_get_match(Res r, const char *name, const char *value, const char *s)
     const char *cn = res_get(r, name);
 
     if (!cn)
-	cn = s;
+        cn = s;
     if (cn && !yaz_matchstr(cn, value))
         return 1;
     return 0;
@@ -365,16 +365,16 @@ int res_trav(Res r, const char *prefix, void *p,
         return 0;
     no = res_trav(r->over_res, prefix, p, f);
     if (no)
-	return no;
+        return no;
     if (prefix)
         l = strlen(prefix);
     for (re = r->first; re; re=re->next)
         if (re->value)
             if (l==0 || !memcmp(re->name, prefix, l))
-	    {
+            {
                 (*f)(p, re->name, re->value);
-		no++;
-	    }
+                no++;
+            }
     if (!no)
         return res_trav(r->def_res, prefix, p, f);
     return no;
@@ -391,7 +391,7 @@ ZEBRA_RES res_write_file(Res r, const char *fname)
     if (!fr)
     {
         yaz_log(YLOG_FATAL|YLOG_ERRNO, "Cannot create `%s'", fname);
-	return ZEBRA_FAIL;
+        return ZEBRA_FAIL;
     }
 
     for (re = r->first; re; re=re->next)
@@ -434,9 +434,9 @@ ZEBRA_RES res_get_int(Res r, const char *name, int *val)
     const char *cp = res_get(r, name);
     if (cp)
     {
-	if (sscanf(cp, "%d", val) == 1)
-	    return ZEBRA_OK;
-	yaz_log(YLOG_WARN, "Expected integer for resource %s", name);
+        if (sscanf(cp, "%d", val) == 1)
+            return ZEBRA_OK;
+        yaz_log(YLOG_WARN, "Expected integer for resource %s", name);
     }
     return ZEBRA_FAIL;
 }
@@ -459,20 +459,20 @@ void res_dump(Res r, int level)
     struct res_entry *re;
 
     if (!r)
-	return;
+        return;
 
     for (re = r->first; re; re=re->next) {
-	printf("%*s - %s:='%s'\n",level * 4,"",re->name,re->value);
+        printf("%*s - %s:='%s'\n",level * 4,"",re->name,re->value);
     }
 
     if (r->def_res) {
-	printf("%*s DEF ",level * 4,"");
-	res_dump(r->def_res, level + 1);
+        printf("%*s DEF ",level * 4,"");
+        res_dump(r->def_res, level + 1);
     }
 
     if (r->over_res) {
-	printf("%*s OVER ",level * 4,"");
-	res_dump(r->over_res, level + 1);
+        printf("%*s OVER ",level * 4,"");
+        res_dump(r->over_res, level + 1);
     }
 }
 

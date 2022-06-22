@@ -68,7 +68,7 @@ int dfa_verbose = 0;
 
 static struct Tnode *mk_Tnode      (struct DFA_parse *parse_info);
 static struct Tnode *mk_Tnode_cset (struct DFA_parse *parse_info,
-				    BSet charset);
+                                    BSet charset);
 static void        term_Tnode      (struct DFA_parse *parse_info);
 
 static void
@@ -374,15 +374,15 @@ static int read_charset (struct DFA_parse *parse_info)
         int ch1, esc1;
         if (!esc0 && ch0 == ']')
             break;
-	if (!esc0 && ch0 == '-')
-	{
-	    ch1 = ch0;
-	    esc1 = esc0;
-	    ch0 = 1;
-	    add_BSet (parse_info->charset, parse_info->look_chars, ch0);
-	}
-	else
-	{
+        if (!esc0 && ch0 == '-')
+        {
+            ch1 = ch0;
+            esc1 = esc0;
+            ch0 = 1;
+            add_BSet (parse_info->charset, parse_info->look_chars, ch0);
+        }
+        else
+        {
             if (ch0 == 1)
             {
                 ch0 = nextchar(parse_info, &esc0);
@@ -400,9 +400,9 @@ static int read_charset (struct DFA_parse *parse_info)
                     ch0 = mapto[0][0];
                 }
             }
-	    add_BSet (parse_info->charset, parse_info->look_chars, ch0);
-	    ch1 = nextchar_set (parse_info, &esc1);
-	}
+            add_BSet (parse_info->charset, parse_info->look_chars, ch0);
+            ch1 = nextchar_set (parse_info, &esc1);
+        }
         if (!esc1 && ch1 == '-')
         {
             int open_range = 0;
@@ -420,7 +420,7 @@ static int read_charset (struct DFA_parse *parse_info)
             else if (parse_info->cmap)
             {
                 const char **mapto;
-		char mapfrom[2];
+                char mapfrom[2];
                 const char *mcp = mapfrom;
                 mapfrom[0] = ch1;
                 mapto = (*parse_info->cmap) (parse_info->cmap_data, &mcp, 1);
@@ -634,13 +634,13 @@ static void del_pos (struct DFA_parse *parse_info)
 }
 
 static void add_follow (struct DFA_parse *parse_info,
-			DFASet lastpos, DFASet firstpos)
+                        DFASet lastpos, DFASet firstpos)
 {
     while (lastpos)
     {
         parse_info->followpos[lastpos->value] =
-	    union_DFASet (parse_info->poset,
-		       parse_info->followpos[lastpos->value], firstpos);
+            union_DFASet (parse_info->poset,
+                       parse_info->followpos[lastpos->value], firstpos);
         lastpos = lastpos->next;
     }
 }
@@ -723,7 +723,7 @@ static void dfa_trav (struct DFA_parse *parse_info, struct Tnode *n)
         n->lastpos = mk_DFASet (poset);
         n->lastpos = add_DFASet (poset, n->lastpos, n->pos);
         if (debug_dfa_trav)
-	{
+        {
             if (n->u.ch[0] < 0)
                 printf ("#%d (n#%d)", -n->u.ch[0], -n->u.ch[1]);
             else if (n->u.ch[1] > n->u.ch[0])
@@ -737,7 +737,7 @@ static void dfa_trav (struct DFA_parse *parse_info, struct Tnode *n)
             }
             else
                 out_char (n->u.ch[0]);
-	}
+        }
     }
     if (debug_dfa_trav)
     {
@@ -754,7 +754,7 @@ static void init_followpos (struct DFA_parse *parse_info)
     DFASet *fa;
     int i;
     parse_info->followpos = fa =
-	(DFASet *) imalloc (sizeof(DFASet) * (1+parse_info->position));
+        (DFASet *) imalloc (sizeof(DFASet) * (1+parse_info->position));
     for (i = parse_info->position+1; --i >= 0; fa++)
         *fa = mk_DFASet (parse_info->poset);
 }
@@ -808,12 +808,12 @@ static void mk_dfa_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
             for (pos_i = pos; (i = *pos_i) != -1; ++pos_i)
                 if (posar[i]->u.ch[1] >= char_1
                     && (c=posar[i]->u.ch[0]) < char_0)
-		{
+                {
                     if (c < char_1)
                         char_0 = char_1;
                     else
                         char_0 = c;
-		}
+                }
 
             if (char_0 > max_char)
                 break;
@@ -930,7 +930,7 @@ void dfa_parse_cmap_clean (struct DFA *d)
     {
         dfa->charMapSize = 7;
         dfa->charMap = (int *)
-	    imalloc (dfa->charMapSize * sizeof(*dfa->charMap));
+            imalloc (dfa->charMapSize * sizeof(*dfa->charMap));
     }
     dfa->charMap[0] = 0;
 }
@@ -1025,7 +1025,7 @@ void dfa_parse_cmap_thompson (struct DFA *d)
 static struct DFA_parse *dfa_parse_init (void)
 {
     struct DFA_parse *parse_info =
-	(struct DFA_parse *) imalloc (sizeof (struct DFA_parse));
+        (struct DFA_parse *) imalloc (sizeof (struct DFA_parse));
 
     parse_info->charset = mk_BSetHandle (255, 20);
     parse_info->position = 0;
@@ -1105,7 +1105,7 @@ void dfa_anyset_includes_nl(struct DFA *dfa)
 }
 
 void dfa_set_cmap (struct DFA *dfa, void *vp,
-		   const char **(*cmap)(void *vp, const char **from, int len))
+                   const char **(*cmap)(void *vp, const char **from, int len))
 {
     dfa->parse_info->cmap = cmap;
     dfa->parse_info->cmap_data = vp;

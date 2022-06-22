@@ -34,13 +34,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <idzebra/data1.h>
 
 static int match_children(data1_handle dh, data1_node *n,
-			  Z_Espec1 *e, int i, Z_ETagUnit **t,
-			  int num,
-			  int select_flag);
+                          Z_Espec1 *e, int i, Z_ETagUnit **t,
+                          int num,
+                          int select_flag);
 
 static int match_children_wildpath(data1_handle dh, data1_node *n,
-				   Z_Espec1 *e, int i,
-				   Z_ETagUnit **t, int num)
+                                   Z_Espec1 *e, int i,
+                                   Z_ETagUnit **t, int num)
 {
     return 0;
 }
@@ -62,13 +62,13 @@ static Z_Triple *find_triple(Z_Variant *var, const Odr_oid *universal_oid,
             cur_oid = var->globalVariantSetId;
         if (cur_oid && var_oid
             && !oid_oidcmp(var_oid, cur_oid) && *var->triples[i]->type == type)
-	    return var->triples[i];
+            return var->triples[i];
     }
     return 0;
 }
 
 static void mark_subtree(data1_node *n, int make_variantlist, int no_data,
-			 int get_bytes, Z_Variant *vreq, int select_flag)
+                         int get_bytes, Z_Variant *vreq, int select_flag)
 {
     data1_node *c;
 
@@ -84,24 +84,24 @@ static void mark_subtree(data1_node *n, int make_variantlist, int no_data,
      */
 #endif
     {
-	n->u.tag.node_selected = select_flag;
-	n->u.tag.make_variantlist = make_variantlist;
-	n->u.tag.no_data_requested = no_data;
-	n->u.tag.get_bytes = get_bytes;
+        n->u.tag.node_selected = select_flag;
+        n->u.tag.make_variantlist = make_variantlist;
+        n->u.tag.no_data_requested = no_data;
+        n->u.tag.get_bytes = get_bytes;
     }
 
     for (c = n->child; c; c = c->next)
     {
-	if (c->which == DATA1N_tag && (!n->child ||
-	    n->child->which != DATA1N_tag))
-	{
-	    c->u.tag.node_selected = select_flag;
-	    c->u.tag.make_variantlist = make_variantlist;
-	    c->u.tag.no_data_requested = no_data;
-	    c->u.tag.get_bytes = get_bytes;
-	}
-	mark_subtree(c, make_variantlist, no_data, get_bytes, vreq,
-		     select_flag);
+        if (c->which == DATA1N_tag && (!n->child ||
+            n->child->which != DATA1N_tag))
+        {
+            c->u.tag.node_selected = select_flag;
+            c->u.tag.make_variantlist = make_variantlist;
+            c->u.tag.no_data_requested = no_data;
+            c->u.tag.get_bytes = get_bytes;
+        }
+        mark_subtree(c, make_variantlist, no_data, get_bytes, vreq,
+                     select_flag);
     }
 }
 
@@ -115,36 +115,36 @@ static void match_triple(data1_handle dh, Z_Variant *vreq,
     if (!(n = n->child))
         return;
     if (n->which != DATA1N_variant)
-	return;
+        return;
     c = &n->child;
     while (*c)
     {
-	int remove_flag = 0;
-	Z_Triple *r;
+        int remove_flag = 0;
+        Z_Triple *r;
 
-	assert ((*c)->which == DATA1N_variant);
+        assert ((*c)->which == DATA1N_variant);
 
-	if ((*c)->u.variant.type->zclass->zclass == 4 &&
-	    (*c)->u.variant.type->type == 1)
-	{
-	    if ((r = find_triple(vreq, def_oid, var_oid, 4, 1)) &&
-		(r->which == Z_Triple_internationalString))
-	    {
-		const char *string_value =
-		    r->value.internationalString;
-		if (strcmp ((*c)->u.variant.value, string_value))
-		    remove_flag = 1;
-	    }
-	}
-	if (remove_flag)
-	{
-	    *c = (*c)->next;
-	}
-	else
-	{
-	    match_triple(dh, vreq, def_oid, var_oid, *c);
-	    c = &(*c)->next;
-	}
+        if ((*c)->u.variant.type->zclass->zclass == 4 &&
+            (*c)->u.variant.type->type == 1)
+        {
+            if ((r = find_triple(vreq, def_oid, var_oid, 4, 1)) &&
+                (r->which == Z_Triple_internationalString))
+            {
+                const char *string_value =
+                    r->value.internationalString;
+                if (strcmp ((*c)->u.variant.value, string_value))
+                    remove_flag = 1;
+            }
+        }
+        if (remove_flag)
+        {
+            *c = (*c)->next;
+        }
+        else
+        {
+            match_triple(dh, vreq, def_oid, var_oid, *c);
+            c = &(*c)->next;
+        }
     }
 }
 
@@ -159,42 +159,42 @@ static int match_node_and_attr (data1_node *c, const char *spec)
 
     data1_tag *tag = 0;
     if (c->u.tag.element)
-	tag = c->u.tag.element->tag;
+        tag = c->u.tag.element->tag;
 
     *predicate = '\0';
     sscanf(spec, "%63[^[]%c%63[^]]", elem, &dummy_ch, predicate);
     if (data1_matchstr(elem, tag ? tag->value.string : c->u.tag.tag))
-	return 0;
+        return 0;
 
     if (*predicate == '\0')
-	return 1;
+        return 1;
     else if (sscanf(predicate, "@%63[^=]=%63s", attr, value) == 2)
     {
-	data1_xattr *xa;
-	for (xa = c->u.tag.attributes; xa; xa = xa->next)
-	    if (!strcmp(xa->name, attr) &&
-		!strcmp(xa->value, value))
-		return 1;
-	return 0;
+        data1_xattr *xa;
+        for (xa = c->u.tag.attributes; xa; xa = xa->next)
+            if (!strcmp(xa->name, attr) &&
+                !strcmp(xa->value, value))
+                return 1;
+        return 0;
     }
     else if (sscanf(predicate, "@%63s", attr) == 1)
     {
-	data1_xattr *xa;
-	for (xa = c->u.tag.attributes; xa; xa = xa->next)
-	    if (!strcmp(xa->name, attr))
-		return 1;
+        data1_xattr *xa;
+        for (xa = c->u.tag.attributes; xa; xa = xa->next)
+            if (!strcmp(xa->name, attr))
+                return 1;
     }
     else
     {
-	yaz_log(YLOG_WARN, "Bad simpleelement component: '%s'", spec);
+        yaz_log(YLOG_WARN, "Bad simpleelement component: '%s'", spec);
     }
     return 0;
 }
 
 static int match_children_here (data1_handle dh, data1_node *n,
-				Z_Espec1 *e, int i,
-				Z_ETagUnit **t, int num,
-				int select_flag)
+                                Z_Espec1 *e, int i,
+                                Z_ETagUnit **t, int num,
+                                int select_flag)
 {
     int counter = 0, hits = 0;
     data1_node *c;
@@ -203,148 +203,148 @@ static int match_children_here (data1_handle dh, data1_node *n,
 
     for (c = n->child; c ; c = c->next)
     {
-	data1_tag *tag = 0;
+        data1_tag *tag = 0;
 
-	if (c->which != DATA1N_tag)
+        if (c->which != DATA1N_tag)
             continue;
 
-	if (tp->which == Z_ETagUnit_specificTag)
-	{
-	    Z_SpecificTag *want = tp->u.specificTag;
-	    occur = want->occurrences;
-	    if (c->u.tag.element)
-		tag = c->u.tag.element->tag;
-	    if (*want->tagType != ((tag && tag->tagset) ? tag->tagset->type :
-		3))
-		continue;
-	    if (want->tagValue->which == Z_StringOrNumeric_numeric)
-	    {
-		if (!tag || tag->which != DATA1T_numeric)
-		    continue;
-		if (*want->tagValue->u.numeric != tag->value.numeric)
-		    continue;
-	    }
-	    else if (want->tagValue->which == Z_StringOrNumeric_string)
-	    {
-		const char *str_val = want->tagValue->u.string;
-		if (str_val[0] == '!')
-		{
-		    str_val++;
-		    select_flag = 0;
-		}
-		if (tag && tag->which != DATA1T_string)
-		    continue;
+        if (tp->which == Z_ETagUnit_specificTag)
+        {
+            Z_SpecificTag *want = tp->u.specificTag;
+            occur = want->occurrences;
+            if (c->u.tag.element)
+                tag = c->u.tag.element->tag;
+            if (*want->tagType != ((tag && tag->tagset) ? tag->tagset->type :
+                3))
+                continue;
+            if (want->tagValue->which == Z_StringOrNumeric_numeric)
+            {
+                if (!tag || tag->which != DATA1T_numeric)
+                    continue;
+                if (*want->tagValue->u.numeric != tag->value.numeric)
+                    continue;
+            }
+            else if (want->tagValue->which == Z_StringOrNumeric_string)
+            {
+                const char *str_val = want->tagValue->u.string;
+                if (str_val[0] == '!')
+                {
+                    str_val++;
+                    select_flag = 0;
+                }
+                if (tag && tag->which != DATA1T_string)
+                    continue;
 #if 1
-		if (!match_node_and_attr(c, str_val))
-		    continue;
+                if (!match_node_and_attr(c, str_val))
+                    continue;
 #else
-		if (data1_matchstr(str_val,
-				   tag ? tag->value.string : c->u.tag.tag))
-		    continue;
+                if (data1_matchstr(str_val,
+                                   tag ? tag->value.string : c->u.tag.tag))
+                    continue;
 #endif
-	    }
-	    else
-	    {
-		yaz_log(YLOG_WARN, "Bad SpecificTag type: %d",
-			want->tagValue->which);
-		continue;
-	    }
-	}
-	else if (tp->which == Z_ETagUnit_wildThing)
-	    occur = tp->u.wildThing;
-	else
-	    continue;
-	/*
-	 * Ok, so we have a matching tag. Are we within occurrences-range?
-	 */
-	counter++;
-	if (occur && occur->which == Z_Occurrences_last)
-	{
-	    yaz_log(YLOG_WARN, "Can't do occurrences=last (yet)");
-	    return 0;
-	}
-	if (!occur || occur->which == Z_Occurrences_all ||
-	    (occur->which == Z_Occurrences_values && counter >=
-	    *occur->u.values->start))
-	{
-	    if (match_children(dh, c, e, i, t + 1, num - 1, select_flag))
-	    {
-		c->u.tag.node_selected = select_flag;
-		/*
-		 * Consider the variant specification if this is a complete
-		 * match.
-		 */
-		if (num == 1)
-		{
-		    int show_variantlist = 0;
-		    int no_data = 0;
-		    int get_bytes = -1;
+            }
+            else
+            {
+                yaz_log(YLOG_WARN, "Bad SpecificTag type: %d",
+                        want->tagValue->which);
+                continue;
+            }
+        }
+        else if (tp->which == Z_ETagUnit_wildThing)
+            occur = tp->u.wildThing;
+        else
+            continue;
+        /*
+         * Ok, so we have a matching tag. Are we within occurrences-range?
+         */
+        counter++;
+        if (occur && occur->which == Z_Occurrences_last)
+        {
+            yaz_log(YLOG_WARN, "Can't do occurrences=last (yet)");
+            return 0;
+        }
+        if (!occur || occur->which == Z_Occurrences_all ||
+            (occur->which == Z_Occurrences_values && counter >=
+            *occur->u.values->start))
+        {
+            if (match_children(dh, c, e, i, t + 1, num - 1, select_flag))
+            {
+                c->u.tag.node_selected = select_flag;
+                /*
+                 * Consider the variant specification if this is a complete
+                 * match.
+                 */
+                if (num == 1)
+                {
+                    int show_variantlist = 0;
+                    int no_data = 0;
+                    int get_bytes = -1;
 
-		    Z_Variant *vreq =
-			e->elements[i]->u.simpleElement->variantRequest;
+                    Z_Variant *vreq =
+                        e->elements[i]->u.simpleElement->variantRequest;
 
                     const Odr_oid *var_oid = yaz_oid_varset_variant_1;
-		    if (!vreq)
-			vreq = e->defaultVariantRequest;
+                    if (!vreq)
+                        vreq = e->defaultVariantRequest;
 
-		    if (vreq)
-		    {
-			Z_Triple *r;
+                    if (vreq)
+                    {
+                        Z_Triple *r;
 
-			/*
-			 * 6,5: meta-data requested, variant list.
-			 */
-			if (find_triple(vreq, e->defaultVariantSetId,
+                        /*
+                         * 6,5: meta-data requested, variant list.
+                         */
+                        if (find_triple(vreq, e->defaultVariantSetId,
                                         var_oid, 6, 5))
-			    show_variantlist = 1;
-			/*
-			 * 9,1: Miscellaneous, no data requested.
-			 */
-			if (find_triple(vreq, e->defaultVariantSetId,
+                            show_variantlist = 1;
+                        /*
+                         * 9,1: Miscellaneous, no data requested.
+                         */
+                        if (find_triple(vreq, e->defaultVariantSetId,
                                         var_oid, 9, 1))
-			    no_data = 1;
+                            no_data = 1;
 
-			/* howmuch */
-			if ((r = find_triple(vreq, e->defaultVariantSetId,
+                        /* howmuch */
+                        if ((r = find_triple(vreq, e->defaultVariantSetId,
                                              var_oid, 5, 5)))
-			    if (r->which == Z_Triple_integer)
-				get_bytes = *r->value.integer;
+                            if (r->which == Z_Triple_integer)
+                                get_bytes = *r->value.integer;
 
-			if (!show_variantlist)
-			    match_triple(dh, vreq, e->defaultVariantSetId,
+                        if (!show_variantlist)
+                            match_triple(dh, vreq, e->defaultVariantSetId,
                                          var_oid, c);
-		    }
-		    mark_subtree(c, show_variantlist, no_data, get_bytes, vreq,
-				 select_flag);
-		}
-		hits++;
-		/*
-		 * have we looked at enough children?
-		 */
-		if (!occur || (occur->which == Z_Occurrences_values &&
-		    (!occur->u.values->howMany ||
-		    counter - *occur->u.values->start >=
-		    *occur->u.values->howMany - 1)))
-		    return hits;
-	    }
-	}
+                    }
+                    mark_subtree(c, show_variantlist, no_data, get_bytes, vreq,
+                                 select_flag);
+                }
+                hits++;
+                /*
+                 * have we looked at enough children?
+                 */
+                if (!occur || (occur->which == Z_Occurrences_values &&
+                    (!occur->u.values->howMany ||
+                    counter - *occur->u.values->start >=
+                    *occur->u.values->howMany - 1)))
+                    return hits;
+            }
+        }
     }
     return hits;
 }
 
 static int match_children(data1_handle dh, data1_node *n, Z_Espec1 *e,
-			  int i, Z_ETagUnit **t, int num, int select_flag)
+                          int i, Z_ETagUnit **t, int num, int select_flag)
 {
     int res;
 
     if (!num)
-	return 1;
+        return 1;
     switch (t[0]->which)
     {
     case Z_ETagUnit_wildThing:
     case Z_ETagUnit_specificTag:
         res = match_children_here(dh, n, e, i, t, num, select_flag);
-	break;
+        break;
     case Z_ETagUnit_wildPath:
         res = match_children_wildpath(dh, n, e, i, t, num); break;
     default:
@@ -368,7 +368,7 @@ int data1_doespec1 (data1_handle dh, data1_node *n, Z_Espec1 *e)
         match_children(dh, n, e, i,
                        e->elements[i]->u.simpleElement->path->tags,
                        e->elements[i]->u.simpleElement->path->num_tags,
-		       1 /* select (include) by default */ );
+                       1 /* select (include) by default */ );
     }
     return 0;
 }

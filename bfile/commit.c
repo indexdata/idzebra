@@ -203,8 +203,8 @@ static int cf_commit_flat(CFile cf)
     fp = (zint *) xmalloc (HASH_BSIZE);
     for (hno = cf->head.next_bucket; hno < cf->head.flat_bucket; hno++)
     {
-	for (i = 0; i < (int) (HASH_BSIZE/sizeof(zint)); i++)
-	    fp[i] = 0;
+        for (i = 0; i < (int) (HASH_BSIZE/sizeof(zint)); i++)
+            fp[i] = 0;
         if (!mf_read (cf->hash_mf, hno, 0, 0, fp) &&
             hno != cf->head.flat_bucket-1)
         {

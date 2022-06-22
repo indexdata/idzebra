@@ -27,9 +27,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /* Compare string (ignore case) */
 #ifdef WIN32
-#define STRCASECMP	stricmp
+#define STRCASECMP      stricmp
 #else
-#define STRCASECMP	strcasecmp
+#define STRCASECMP      strcasecmp
 #endif
 
 YAZ_BEGIN_CDECL
@@ -56,9 +56,9 @@ ZebraExplainInfo zebraExplain_open(Records records, data1_handle dh,
 void zebraExplain_close(ZebraExplainInfo zei);
 int zebraExplain_curDatabase(ZebraExplainInfo zei, const char *database);
 int zebraExplain_newDatabase(ZebraExplainInfo zei, const char *database,
-			      int explain_database);
+                              int explain_database);
 int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
-			     int set, int use);
+                             int set, int use);
 
 /** \brief lookup ordinal from string index + index type
     \param zei explain info
@@ -71,11 +71,11 @@ int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
 int zebraExplain_lookup_attr_str(ZebraExplainInfo zei,
                                  zinfo_index_category_t cat,
                                  const char *index_type,
-				 const char *str);
+                                 const char *str);
 int zebraExplain_add_attr_str(ZebraExplainInfo zei,
                               zinfo_index_category_t cat,
                               const char *index_type,
-			      const char *str);
+                              const char *str);
 void zebraExplain_addSchema(ZebraExplainInfo zei, Odr_oid *oid);
 void zebraExplain_recordCountIncrement(ZebraExplainInfo zei, int adjust_num);
 void zebraExplain_recordBytesIncrement(ZebraExplainInfo zei, int adjust_num);
@@ -84,8 +84,8 @@ void zebraExplain_loadAttsets(data1_handle dh, Res res);
 void zebraExplain_flush(ZebraExplainInfo zei, void *updateHandle);
 
 int zebraExplain_lookup_ord(ZebraExplainInfo zei, int ord,
-			     const char **index_type, const char **db,
-			     const char **string_index);
+                             const char **index_type, const char **db,
+                             const char **string_index);
 
 int zebraExplain_ord_adjust_occurrences(ZebraExplainInfo zei, int ord,
                                         int term_delta, int doc_delta);
@@ -94,7 +94,7 @@ zint zebraExplain_ord_get_term_occurrences(ZebraExplainInfo zei, int ord);
 zint zebraExplain_ord_get_doc_occurrences(ZebraExplainInfo zei, int ord);
 
 int zebraExplain_trav_ord(ZebraExplainInfo zei, void *handle,
-			  int (*f)(void *handle, int ord,
+                          int (*f)(void *handle, int ord,
                                    const char *index_type,
                                    const char *string_index,
                                    zinfo_index_category_t cat));

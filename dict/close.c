@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 int dict_close(Dict dict)
 {
     if (!dict)
-	return 0;
+        return 0;
 
     if (dict->rw)
     {

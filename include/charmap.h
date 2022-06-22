@@ -38,14 +38,14 @@ typedef struct chr_t_entry chr_t_entry;
 typedef struct chrmaptab_info *chrmaptab;
 
 YAZ_EXPORT chrmaptab chrmaptab_create(const char *tabpath, const char *name,
-				      const char *tabroot);
+                                      const char *tabroot);
 YAZ_EXPORT void chrmaptab_destroy (chrmaptab tab);
 
 YAZ_EXPORT const char **chr_map_input(chrmaptab t, const char **from, int len, int first);
 YAZ_EXPORT const char **chr_map_input_x(chrmaptab t,
-					const char **from, int *len, int first);
+                                        const char **from, int *len, int first);
 YAZ_EXPORT const char **chr_map_q_input(chrmaptab maptab,
-					const char **from, int len, int first);
+                                        const char **from, int len, int first);
 
 YAZ_EXPORT const char *chr_map_output(chrmaptab t, const char **from, int len);
 

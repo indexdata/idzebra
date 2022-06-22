@@ -50,13 +50,13 @@ static void dict_copy_page(Dict dict, char *to_p, char *from_p, int *map)
             *--to_indxp = to_info - to_p;
             slen = (dict_strlen((Dict_char*) from_info)+1)*sizeof(Dict_char);
             memcpy(to_info, from_info, slen);
-	    from_info += slen;
+            from_info += slen;
             to_info += slen;
         }
         else
         {
-	    Dict_ptr subptr;
-	    Dict_char subchar;
+            Dict_ptr subptr;
+            Dict_char subchar;
             /* Dict_ptr             subptr */
             /* Dict_char            sub char */
             /* unsigned char        length of information */
@@ -65,18 +65,18 @@ static void dict_copy_page(Dict dict, char *to_p, char *from_p, int *map)
             *--to_indxp = -(to_info - to_p);
             from_info = (char*) from_p - *from_indxp;
 
-	    memcpy(&subptr, from_info, sizeof(subptr));
-	    subptr = map[subptr];
-	    from_info += sizeof(Dict_ptr);
-	    memcpy(&subchar, from_info, sizeof(subchar));
-	    from_info += sizeof(Dict_char);
+            memcpy(&subptr, from_info, sizeof(subptr));
+            subptr = map[subptr];
+            from_info += sizeof(Dict_ptr);
+            memcpy(&subchar, from_info, sizeof(subchar));
+            from_info += sizeof(Dict_char);
 
             memcpy(to_info, &subptr, sizeof(Dict_ptr));
-	    to_info += sizeof(Dict_ptr);
-	    memcpy(to_info, &subchar, sizeof(Dict_char));
-	    to_info += sizeof(Dict_char);
+            to_info += sizeof(Dict_ptr);
+            memcpy(to_info, &subchar, sizeof(Dict_char));
+            to_info += sizeof(Dict_char);
         }
-	assert(to_info < (char*) to_indxp);
+        assert(to_info < (char*) to_indxp);
         slen = *from_info+1;
         memcpy(to_info, from_info, slen);
         to_info += slen;
@@ -94,28 +94,28 @@ int dict_copy_compact(BFiles bfs, const char *from_name, const char *to_name)
     int *map, i;
     dict_from = dict_open(bfs, from_name, 0, 0, 0, 4096);
     if (!dict_from)
-	return -1;
+        return -1;
     map = (int *) xmalloc((dict_from->head.last+1) * sizeof(*map));
     for (i = 0; i <= (int)(dict_from->head.last); i++)
-	map[i] = -1;
+        map[i] = -1;
     dict_to = dict_open(bfs, to_name, 0, 1, 1, 4096);
     if (!dict_to)
-	return -1;
+        return -1;
     map[0] = 0;
     map[1] = dict_from->head.page_size;
 
     for (i = 1; i < (int) (dict_from->head.last); i++)
     {
-	void *buf;
-	int size;
+        void *buf;
+        int size;
 #if 0
-	yaz_log(YLOG_LOG, "map[%d] = %d", i, map[i]);
+        yaz_log(YLOG_LOG, "map[%d] = %d", i, map[i]);
 #endif
-	dict_bf_readp(dict_from->dbf, i, &buf);
-	size = ((DICT_size(buf)+sizeof(short)-1)/sizeof(short) +
-		DICT_nodir(buf))*sizeof(short);
-	map[i+1] = map[i] + size;
-	no_dir += DICT_nodir(buf);
+        dict_bf_readp(dict_from->dbf, i, &buf);
+        size = ((DICT_size(buf)+sizeof(short)-1)/sizeof(short) +
+                DICT_nodir(buf))*sizeof(short);
+        map[i+1] = map[i] + size;
+        no_dir += DICT_nodir(buf);
     }
 #if 0
     yaz_log(YLOG_LOG, "map[%d] = %d", i, map[i]);
@@ -125,18 +125,18 @@ int dict_copy_compact(BFiles bfs, const char *from_name, const char *to_name)
     dict_to->head.last = map[i];
     for (i = 1; i< (int) (dict_from->head.last); i++)
     {
-	void *old_p, *new_p;
-	dict_bf_readp(dict_from->dbf, i, &old_p);
+        void *old_p, *new_p;
+        dict_bf_readp(dict_from->dbf, i, &old_p);
 
-	yaz_log(YLOG_LOG, "dict_bf_newp no=%d size=%d", map[i],
-	      map[i+1] - map[i]);
+        yaz_log(YLOG_LOG, "dict_bf_newp no=%d size=%d", map[i],
+              map[i+1] - map[i]);
         dict_bf_newp(dict_to->dbf, map[i], &new_p, map[i+1] - map[i]);
 
-	DICT_type(new_p) = 0;
-	DICT_backptr(new_p) = map[i-1];
-	DICT_bsize(new_p) = map[i+1] - map[i];
+        DICT_type(new_p) = 0;
+        DICT_backptr(new_p) = map[i-1];
+        DICT_bsize(new_p) = map[i+1] - map[i];
 
-	dict_copy_page(dict_from, (char*) new_p, (char*) old_p, map);
+        dict_copy_page(dict_from, (char*) new_p, (char*) old_p, map);
     }
     dict_close(dict_from);
     dict_close(dict_to);

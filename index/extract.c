@@ -141,49 +141,49 @@ static int parse_complete_field(RecWord *p, zebra_map_t zm,
     int i = 0, remain = p->term_len;
 
     if (remain > 0)
-	map = zebra_maps_input(zm, &b, remain, 1);
+        map = zebra_maps_input(zm, &b, remain, 1);
     while (remain > 0 && i < IT_MAX_WORD)
     {
-	while (map && *map && **map == *CHR_SPACE)
-	{
-	    remain = p->term_len - (b - p->term_buf);
+        while (map && *map && **map == *CHR_SPACE)
+        {
+            remain = p->term_len - (b - p->term_buf);
 
-	    if (remain > 0)
-	    {
-		int first = i ? 0 : 1;  /* first position */
-		map = zebra_maps_input(zm, &b, remain, first);
-	    }
-	    else
-		map = 0;
-	}
-	if (!map)
-	    break;
+            if (remain > 0)
+            {
+                int first = i ? 0 : 1;  /* first position */
+                map = zebra_maps_input(zm, &b, remain, first);
+            }
+            else
+                map = 0;
+        }
+        if (!map)
+            break;
 
-	if (i && i < IT_MAX_WORD)
-	    buf[i++] = *CHR_SPACE;
-	while (map && *map && **map != *CHR_SPACE)
-	{
-	    const char *cp = *map;
+        if (i && i < IT_MAX_WORD)
+            buf[i++] = *CHR_SPACE;
+        while (map && *map && **map != *CHR_SPACE)
+        {
+            const char *cp = *map;
 
-	    if (**map == *CHR_CUT)
-	    {
-		i = 0;
-	    }
-	    else
-	    {
-		if (i >= IT_MAX_WORD)
-		    break;
-		while (i < IT_MAX_WORD && *cp)
-		    buf[i++] = *(cp++);
-	    }
-	    remain = p->term_len  - (b - p->term_buf);
-	    if (remain > 0)
-	    {
-		map = zebra_maps_input(zm, &b, remain, 0);
-	    }
-	    else
-		map = 0;
-	}
+            if (**map == *CHR_CUT)
+            {
+                i = 0;
+            }
+            else
+            {
+                if (i >= IT_MAX_WORD)
+                    break;
+                while (i < IT_MAX_WORD && *cp)
+                    buf[i++] = *(cp++);
+            }
+            remain = p->term_len  - (b - p->term_buf);
+            if (remain > 0)
+            {
+                map = zebra_maps_input(zm, &b, remain, 0);
+            }
+            else
+                map = 0;
+        }
     }
     return i;
 }
@@ -215,39 +215,39 @@ static void snippet_add_incomplete_field(RecWord *p, int ord, zebra_map_t zm)
     const char *last = b;
 
     if (remain > 0)
-	map = zebra_maps_input(zm, &b, remain, 0);
+        map = zebra_maps_input(zm, &b, remain, 0);
 
     while (map)
     {
-	int remain;
+        int remain;
 
-	/* Skip spaces */
-	while (map && *map && **map == *CHR_SPACE)
-	{
-	    remain = p->term_len - (b - p->term_buf);
+        /* Skip spaces */
+        while (map && *map && **map == *CHR_SPACE)
+        {
+            remain = p->term_len - (b - p->term_buf);
             last = b;
-	    if (remain > 0)
-		map = zebra_maps_input(zm, &b, remain, 0);
-	    else
-		map = 0;
-	}
-	if (!map)
-	    break;
+            if (remain > 0)
+                map = zebra_maps_input(zm, &b, remain, 0);
+            else
+                map = 0;
+        }
+        if (!map)
+            break;
         if (start != last && zebra_maps_is_index(zm))
         {
             zebra_snippets_appendn(h->snippets, p->seqno, 1, ord,
                                    start, last - start);
         }
         start = last;
-	while (map && *map && **map != *CHR_SPACE)
-	{
-	    remain = p->term_len - (b - p->term_buf);
+        while (map && *map && **map != *CHR_SPACE)
+        {
+            remain = p->term_len - (b - p->term_buf);
             last = b;
-	    if (remain > 0)
-		map = zebra_maps_input(zm, &b, remain, 0);
-	    else
-		map = 0;
-	}
+            if (remain > 0)
+                map = zebra_maps_input(zm, &b, remain, 0);
+            else
+                map = 0;
+        }
         if (start == last)
             return ;
 
@@ -352,9 +352,9 @@ void extract_snippet(ZebraHandle zh, zebra_snippets *sn,
 }
 
 static void searchRecordKey(ZebraHandle zh,
-			    zebra_rec_keys_t reckeys,
+                            zebra_rec_keys_t reckeys,
                             const char *index_name,
-			    const char **ws, int ws_length)
+                            const char **ws, int ws_length)
 {
     int i;
     int ch = -1;
@@ -371,32 +371,32 @@ static void searchRecordKey(ZebraHandle zh,
         ch = zebraExplain_lookup_attr_str(zh->reg->zei, cat, "w", index_name);
 
     if (ch < 0)
-	return ;
+        return ;
 
     if (zebra_rec_keys_rewind(reckeys))
     {
-	zint startSeq = -1;
-	const char *str;
-	size_t slen;
-	struct it_key key;
-	zint seqno;
-	while (zebra_rec_keys_read(reckeys, &str, &slen, &key))
-	{
-	    assert(key.len <= IT_KEY_LEVEL_MAX && key.len > 2);
+        zint startSeq = -1;
+        const char *str;
+        size_t slen;
+        struct it_key key;
+        zint seqno;
+        while (zebra_rec_keys_read(reckeys, &str, &slen, &key))
+        {
+            assert(key.len <= IT_KEY_LEVEL_MAX && key.len > 2);
 
-	    seqno = key.mem[key.len-1];
+            seqno = key.mem[key.len-1];
 
-	    if (key.mem[0] == ch)
-	    {
-		zint woff;
+            if (key.mem[0] == ch)
+            {
+                zint woff;
 
-		if (startSeq == -1)
-		    startSeq = seqno;
-		woff = seqno - startSeq;
-		if (woff >= 0 && woff < ws_length)
-		    ws[woff] = str;
-	    }
-	}
+                if (startSeq == -1)
+                    startSeq = seqno;
+                woff = seqno - startSeq;
+                if (woff >= 0 && woff < ws_length)
+                    ws[woff] = str;
+            }
+        }
     }
 }
 
@@ -412,39 +412,39 @@ static char *get_match_from_spec(ZebraHandle zh,
 
     while (1)
     {
-	for (; *s && strchr(FILE_MATCH_BLANK, *s); s++)
-	    ;
+        for (; *s && strchr(FILE_MATCH_BLANK, *s); s++)
+            ;
         if (!*s)
             break;
         if (*s == '(')
         {
-	    const char *ws[32];
-	    char attset_str[64], attname_str[64];
-	    int i;
+            const char *ws[32];
+            char attset_str[64], attname_str[64];
+            int i;
             int first = 1;
 
-	    for (s++; strchr(FILE_MATCH_BLANK, *s); s++)
-		;
-	    for (i = 0; *s && *s != ',' && *s != ')' &&
-		     !strchr(FILE_MATCH_BLANK, *s); s++)
-		if (i+1 < sizeof(attset_str))
-		    attset_str[i++] = *s;
-	    attset_str[i] = '\0';
+            for (s++; strchr(FILE_MATCH_BLANK, *s); s++)
+                ;
+            for (i = 0; *s && *s != ',' && *s != ')' &&
+                     !strchr(FILE_MATCH_BLANK, *s); s++)
+                if (i+1 < sizeof(attset_str))
+                    attset_str[i++] = *s;
+            attset_str[i] = '\0';
 
-	    for (; strchr(FILE_MATCH_BLANK, *s); s++)
-		;
-	    if (*s != ',')
+            for (; strchr(FILE_MATCH_BLANK, *s); s++)
+                ;
+            if (*s != ',')
                 strcpy(attname_str, attset_str);
             else
-	    {
-		for (s++; strchr(FILE_MATCH_BLANK, *s); s++)
-		    ;
-		for (i = 0; *s && *s != ')' &&
-			 !strchr(FILE_MATCH_BLANK, *s); s++)
-		    if (i+1 < sizeof(attname_str))
-			attname_str[i++] = *s;
-		attname_str[i] = '\0';
-	    }
+            {
+                for (s++; strchr(FILE_MATCH_BLANK, *s); s++)
+                    ;
+                for (i = 0; *s && *s != ')' &&
+                         !strchr(FILE_MATCH_BLANK, *s); s++)
+                    if (i+1 < sizeof(attname_str))
+                        attname_str[i++] = *s;
+                attname_str[i] = '\0';
+            }
             if (*s != ')')
             {
                 yaz_log(YLOG_WARN, "Missing ) in match criteria %s in group %s",
@@ -507,7 +507,7 @@ static char *get_match_from_spec(ZebraHandle zh,
                 spec_src = zh->basenames[0];
             else if (!strcmp(special, "filename")) {
                 spec_src = fname;
-	    }
+            }
             else if (!strcmp(special, "type"))
                 spec_src = zh->m_record_type;
             else
@@ -648,7 +648,7 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
     if (!zh->m_record_type)
     {
         check_log_limit(zh);
-	if (zh->records_processed + zh->records_skipped
+        if (zh->records_processed + zh->records_skipped
             < zh->m_file_verbose_limit)
             yaz_log(YLOG_LOG, "? %s", fname);
         zh->records_skipped++;
@@ -662,8 +662,8 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
     }
 
     if (!(recType =
-	  recType_byName(zh->reg->recTypes, zh->res, zh->m_record_type,
-			  &recTypeClientData)))
+          recType_byName(zh->reg->recTypes, zh->res, zh->m_record_type,
+                          &recTypeClientData)))
     {
         yaz_log(YLOG_WARN, "No such record type: %s", zh->m_record_type);
         return ZEBRA_FAIL;
@@ -672,9 +672,9 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
     switch(recType->version)
     {
     case 0:
-	break;
+        break;
     default:
-	yaz_log(YLOG_WARN, "Bad filter version: %s", zh->m_record_type);
+        yaz_log(YLOG_WARN, "Bad filter version: %s", zh->m_record_type);
     }
     if (sysno && (action == action_delete || action == action_a_delete))
     {
@@ -696,7 +696,7 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
         if ((fd = open(full_rep, O_BINARY|O_RDONLY)) == -1)
         {
             yaz_log(YLOG_WARN|YLOG_ERRNO, "open %s", full_rep);
-	    zh->m_record_type = original_record_type;
+            zh->m_record_type = original_record_type;
             return ZEBRA_FAIL;
         }
         streamp = &stream;
@@ -745,14 +745,14 @@ ZEBRA_RES zebra_buffer_extract_record(ZebraHandle zh,
     else
     {
         if (!(zh->m_record_type))
-	{
+        {
             yaz_log(YLOG_WARN, "No such record type defined");
             return ZEBRA_FAIL;
         }
         yaz_log(log_level_extract, "Get record type from rgroup: %s",
                 zh->m_record_type);
         recType = recType_byName(zh->reg->recTypes, zh->res,
-				  zh->m_record_type, &clientData);
+                                  zh->m_record_type, &clientData);
         recordType = zh->m_record_type;
     }
 
@@ -801,7 +801,7 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
     zebra_init_log_level();
 
     if (!pr_fname)
-	pr_fname = "<no file>";  /* make it printable if file is omitted */
+        pr_fname = "<no file>";  /* make it printable if file is omitted */
 
     zebra_rec_keys_reset(zh->reg->keys);
     zebra_rec_keys_reset(zh->reg->sortKeys);
@@ -809,7 +809,7 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
     if (zebraExplain_curDatabase(zh->reg->zei, zh->basenames[0]))
     {
         if (zebraExplain_newDatabase(zh->reg->zei, zh->basenames[0],
-				      zh->m_explain_database))
+                                      zh->m_explain_database))
             return ZEBRA_FAIL;
     }
 
@@ -895,7 +895,7 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 
     if (!sysno)
     {
-	sysno = &sysno0;
+        sysno = &sysno0;
 
         if (match_criteria && *match_criteria)
             matchStr = match_criteria;
@@ -905,11 +905,11 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
             {
                 matchStr = get_match_from_spec(zh, zh->reg->keys, pr_fname,
                                                zh->m_record_id);
-		if (!matchStr)
+                if (!matchStr)
                 {
                     yaz_log(YLOG_LOG, "error %s %s " ZINT_FORMAT, recordType,
                              pr_fname, (zint) start_offset);
-		    return ZEBRA_FAIL;
+                    return ZEBRA_FAIL;
                 }
                 if (0 && matchStr)
                 {
@@ -925,10 +925,10 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
             }
         }
         if (matchStr)
-	{
-	    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
-	    char *rinfo = dict_lookup_ord(zh->reg->matchDict, db_ord,
-					  matchStr);
+        {
+            int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
+            char *rinfo = dict_lookup_ord(zh->reg->matchDict, db_ord,
+                                          matchStr);
 
 
             if (log_level_extract)
@@ -938,10 +938,10 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
                 wrbuf_destroy(w);
             }
             if (rinfo)
-	    {
-		assert(*rinfo == sizeof(*sysno));
+            {
+                assert(*rinfo == sizeof(*sysno));
                 memcpy(sysno, rinfo+1, sizeof(*sysno));
-	    }
+            }
        }
     }
 
@@ -962,16 +962,16 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
                         pr_fname, (zint) start_offset);
             return ZEBRA_OK;
         }
-	else if (action == action_replace)
-	{
-	    yaz_log(YLOG_LOG, "update %s %s " ZINT_FORMAT, recordType,
-			 pr_fname, (zint) start_offset);
+        else if (action == action_replace)
+        {
+            yaz_log(YLOG_LOG, "update %s %s " ZINT_FORMAT, recordType,
+                         pr_fname, (zint) start_offset);
             yaz_log(YLOG_WARN, "cannot update record above (seems new)");
             return ZEBRA_FAIL;
-	}
-	if (show_progress)
-	    yaz_log(YLOG_LOG, "add %s %s " ZINT_FORMAT, recordType, pr_fname,
-		     (zint) start_offset);
+        }
+        if (show_progress)
+            yaz_log(YLOG_LOG, "add %s %s " ZINT_FORMAT, recordType, pr_fname,
+                     (zint) start_offset);
         rec = rec_new(zh->reg->records);
 
         *sysno = rec->sysno;
@@ -985,39 +985,39 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
         }
 
 
-	recordAttr = rec_init_attr(zh->reg->zei, rec);
-	if (extractCtrl.staticrank < 0)
+        recordAttr = rec_init_attr(zh->reg->zei, rec);
+        if (extractCtrl.staticrank < 0)
         {
             yaz_log(YLOG_WARN, "Negative staticrank for record. Set to 0");
-	    extractCtrl.staticrank = 0;
+            extractCtrl.staticrank = 0;
         }
 
         if (matchStr)
         {
-	    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
+            int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
             dict_insert_ord(zh->reg->matchDict, db_ord, matchStr,
-			    sizeof(*sysno), sysno);
+                            sizeof(*sysno), sysno);
         }
 
-	extract_flush_sort_keys(zh, *sysno, 1, zh->reg->sortKeys);
+        extract_flush_sort_keys(zh, *sysno, 1, zh->reg->sortKeys);
         extract_flush_record_keys2(zh, *sysno,
                                    zh->reg->keys, extractCtrl.staticrank,
                                    0, recordAttr->staticrank);
-	recordAttr->staticrank = extractCtrl.staticrank;
+        recordAttr->staticrank = extractCtrl.staticrank;
         zh->records_inserted++;
     }
     else
     {
         /* record already exists */
-	zebra_rec_keys_t delkeys = zebra_rec_keys_open();
-	zebra_rec_keys_t sortKeys = zebra_rec_keys_open();
-	if (action == action_insert)
-	{
-	    yaz_log(YLOG_LOG, "skipped %s %s " ZINT_FORMAT,
-			 recordType, pr_fname, (zint) start_offset);
-	    logRecord(zh);
-	    return ZEBRA_FAIL;
-	}
+        zebra_rec_keys_t delkeys = zebra_rec_keys_open();
+        zebra_rec_keys_t sortKeys = zebra_rec_keys_open();
+        if (action == action_insert)
+        {
+            yaz_log(YLOG_LOG, "skipped %s %s " ZINT_FORMAT,
+                         recordType, pr_fname, (zint) start_offset);
+            logRecord(zh);
+            return ZEBRA_FAIL;
+        }
 
         rec = rec_get(zh->reg->records, *sysno);
         assert(rec);
@@ -1029,22 +1029,22 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
                             *sysno);
         }
 
-	recordAttr = rec_init_attr(zh->reg->zei, rec);
+        recordAttr = rec_init_attr(zh->reg->zei, rec);
 
         /* decrease total size */
         zebraExplain_recordBytesIncrement(zh->reg->zei,
                                            - recordAttr->recordSize);
 
-	zebra_rec_keys_set_buf(delkeys,
-			       rec->info[recInfo_delKeys],
-			       rec->size[recInfo_delKeys],
-			       0);
-	zebra_rec_keys_set_buf(sortKeys,
-			       rec->info[recInfo_sortKeys],
-			       rec->size[recInfo_sortKeys],
-			       0);
+        zebra_rec_keys_set_buf(delkeys,
+                               rec->info[recInfo_delKeys],
+                               rec->size[recInfo_delKeys],
+                               0);
+        zebra_rec_keys_set_buf(sortKeys,
+                               rec->info[recInfo_sortKeys],
+                               rec->size[recInfo_sortKeys],
+                               0);
 
-	extract_flush_sort_keys(zh, *sysno, 0, sortKeys);
+        extract_flush_sort_keys(zh, *sysno, 0, sortKeys);
         if (action == action_delete || action == action_a_delete)
         {
             /* record going to be deleted */
@@ -1052,33 +1052,33 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
                                        delkeys, recordAttr->staticrank);
             if (zebra_rec_keys_empty(delkeys))
             {
-		yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
+                yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
                         pr_fname, (zint) start_offset);
-		yaz_log(YLOG_WARN, "cannot delete file above, "
+                yaz_log(YLOG_WARN, "cannot delete file above, "
                         "storeKeys false (3)");
-	    }
+            }
             else
             {
-		if (show_progress)
-		    yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
+                if (show_progress)
+                    yaz_log(YLOG_LOG, "delete %s %s " ZINT_FORMAT, recordType,
                             pr_fname, (zint) start_offset);
                 zh->records_deleted++;
                 if (matchStr)
-		{
-		    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
+                {
+                    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
                     dict_delete_ord(zh->reg->matchDict, db_ord, matchStr);
-		}
+                }
                 rec_del(zh->reg->records, &rec);
             }
             zebra_rec_keys_close(delkeys);
             zebra_rec_keys_close(sortKeys);
-	    rec_free(&rec);
+            rec_free(&rec);
             logRecord(zh);
             return ZEBRA_OK;
         }
         else
         {   /* update or special_update */
-	    if (show_progress)
+            if (show_progress)
                 yaz_log(YLOG_LOG, "update %s %s " ZINT_FORMAT, recordType,
                         pr_fname, (zint) start_offset);
             extract_flush_sort_keys(zh, *sysno, 1, zh->reg->sortKeys);
@@ -1086,11 +1086,11 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
             extract_flush_record_keys2(zh, *sysno,
                                        zh->reg->keys, extractCtrl.staticrank,
                                        delkeys, recordAttr->staticrank);
-	    recordAttr->staticrank = extractCtrl.staticrank;
+            recordAttr->staticrank = extractCtrl.staticrank;
             zh->records_updated++;
         }
-	zebra_rec_keys_close(delkeys);
-	zebra_rec_keys_close(sortKeys);
+        zebra_rec_keys_close(delkeys);
+        zebra_rec_keys_close(sortKeys);
     }
     /* update file type */
     xfree(rec->info[recInfo_fileType]);
@@ -1106,9 +1106,9 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
     xfree(rec->info[recInfo_delKeys]);
     if (!zebra_rec_keys_empty(zh->reg->keys) && zh->m_store_keys == 1)
     {
-	zebra_rec_keys_get_buf(zh->reg->keys,
-			       &rec->info[recInfo_delKeys],
-			       &rec->size[recInfo_delKeys]);
+        zebra_rec_keys_get_buf(zh->reg->keys,
+                               &rec->info[recInfo_delKeys],
+                               &rec->size[recInfo_delKeys]);
     }
     else
     {
@@ -1119,8 +1119,8 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
     xfree(rec->info[recInfo_sortKeys]);
 
     zebra_rec_keys_get_buf(zh->reg->sortKeys,
-			   &rec->info[recInfo_sortKeys],
-			   &rec->size[recInfo_sortKeys]);
+                           &rec->info[recInfo_sortKeys],
+                           &rec->size[recInfo_sortKeys]);
 
     if (stream)
     {
@@ -1131,7 +1131,7 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 
     /* set run-number for this record */
     recordAttr->runNumber =
-	zebraExplain_runNumberIncrement(zh->reg->zei, 0);
+        zebraExplain_runNumberIncrement(zh->reg->zei, 0);
 
     /* update store data */
     xfree(rec->info[recInfo_storeData]);
@@ -1141,7 +1141,7 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
     {
         rec->size[recInfo_storeData] = zh->store_data_size;
         rec->info[recInfo_storeData] = zh->store_data_buf;
-	zh->store_data_buf = 0;
+        zh->store_data_buf = 0;
         recordAttr->recordSize = zh->store_data_size;
     }
     else if (zh->m_store_data)
@@ -1150,7 +1150,7 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 
         rec->size[recInfo_storeData] = recordAttr->recordSize;
         rec->info[recInfo_storeData] = (char *)
-	    xmalloc(recordAttr->recordSize);
+            xmalloc(recordAttr->recordSize);
         stream->seekf(stream, start_offset);
         stream->readf(stream, rec->info[recInfo_storeData],
                       recordAttr->recordSize);
@@ -1227,11 +1227,11 @@ ZEBRA_RES zebra_extract_explain(void *handle, Record rec, data1_node *n)
     struct recExtractCtrl extractCtrl;
 
     if (zebraExplain_curDatabase(zh->reg->zei,
-				  rec->info[recInfo_databaseName]))
+                                  rec->info[recInfo_databaseName]))
     {
-	abort();
+        abort();
         if (zebraExplain_newDatabase(zh->reg->zei,
-				      rec->info[recInfo_databaseName], 0))
+                                      rec->info[recInfo_databaseName], 0))
             abort();
     }
 
@@ -1256,43 +1256,43 @@ ZEBRA_RES zebra_extract_explain(void *handle, Record rec, data1_node *n)
     extract_set_store_data_prepare(&extractCtrl);
 
     if (n)
-	grs_extract_tree(&extractCtrl, n);
+        grs_extract_tree(&extractCtrl, n);
 
     if (rec->size[recInfo_delKeys])
     {
-	zebra_rec_keys_t delkeys = zebra_rec_keys_open();
+        zebra_rec_keys_t delkeys = zebra_rec_keys_open();
 
-	zebra_rec_keys_t sortkeys = zebra_rec_keys_open();
+        zebra_rec_keys_t sortkeys = zebra_rec_keys_open();
 
-	zebra_rec_keys_set_buf(delkeys, rec->info[recInfo_delKeys],
-			       rec->size[recInfo_delKeys],
-			       0);
-	extract_flush_record_keys2(zh, rec->sysno,
+        zebra_rec_keys_set_buf(delkeys, rec->info[recInfo_delKeys],
+                               rec->size[recInfo_delKeys],
+                               0);
+        extract_flush_record_keys2(zh, rec->sysno,
                                    zh->reg->keys, 0, delkeys, 0);
-	zebra_rec_keys_close(delkeys);
+        zebra_rec_keys_close(delkeys);
 
-	zebra_rec_keys_set_buf(sortkeys, rec->info[recInfo_sortKeys],
-			       rec->size[recInfo_sortKeys],
-			       0);
+        zebra_rec_keys_set_buf(sortkeys, rec->info[recInfo_sortKeys],
+                               rec->size[recInfo_sortKeys],
+                               0);
 
-	extract_flush_sort_keys(zh, rec->sysno, 0, sortkeys);
-	zebra_rec_keys_close(sortkeys);
+        extract_flush_sort_keys(zh, rec->sysno, 0, sortkeys);
+        zebra_rec_keys_close(sortkeys);
     }
     else
     {
-	extract_flush_record_keys2(zh, rec->sysno, zh->reg->keys, 0, 0, 0);
+        extract_flush_record_keys2(zh, rec->sysno, zh->reg->keys, 0, 0, 0);
     }
     extract_flush_sort_keys(zh, rec->sysno, 1, zh->reg->sortKeys);
 
     xfree(rec->info[recInfo_delKeys]);
     zebra_rec_keys_get_buf(zh->reg->keys,
-			   &rec->info[recInfo_delKeys],
-			   &rec->size[recInfo_delKeys]);
+                           &rec->info[recInfo_delKeys],
+                           &rec->size[recInfo_delKeys]);
 
     xfree(rec->info[recInfo_sortKeys]);
     zebra_rec_keys_get_buf(zh->reg->sortKeys,
-			   &rec->info[recInfo_sortKeys],
-			   &rec->size[recInfo_sortKeys]);
+                           &rec->info[recInfo_sortKeys],
+                           &rec->size[recInfo_sortKeys]);
     return ZEBRA_OK;
 }
 
@@ -1361,12 +1361,12 @@ void extract_rec_keys_log(ZebraHandle zh, int is_insert,
 {
     if (zebra_rec_keys_rewind(reckeys))
     {
-	size_t slen;
-	const char *str;
-	struct it_key key;
+        size_t slen;
+        const char *str;
+        struct it_key key;
         NMEM nmem = nmem_create();
 
-	while(zebra_rec_keys_read(reckeys, &str, &slen, &key))
+        while(zebra_rec_keys_read(reckeys, &str, &slen, &key))
         {
             zebra_it_key_str_dump(zh, &key, str, slen, nmem, level);
             nmem_reset(nmem);
@@ -1389,10 +1389,10 @@ void extract_rec_keys_adjust(ZebraHandle zh, int is_insert,
     {
         struct ord_stat *ord_list = 0;
         struct ord_stat *p;
-	size_t slen;
-	const char *str;
-	struct it_key key_in;
-	while(zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
+        size_t slen;
+        const char *str;
+        struct it_key key_in;
+        while(zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
         {
             int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
 
@@ -1438,7 +1438,7 @@ static void extract_flush_record_keys2(
 
     if (!zh->reg->key_block)
     {
-	size_t mem = 1024*1024 * atol(res_get_def(zh->res, "memmax", "8"));
+        size_t mem = 1024*1024 * atol(res_get_def(zh->res, "memmax", "8"));
         const char *key_tmp_dir = res_get_def(zh->res, "keyTmpDir", ".");
         int use_threads = atoi(res_get_def(zh->res, "threads", "1"));
         zh->reg->key_block = key_block_create(mem, key_tmp_dir, use_threads);
@@ -1461,14 +1461,14 @@ static void extract_flush_record_keys2(
 
     while (1)
     {
-	size_t del_slen;
-	const char *del_str;
-	struct it_key del_key_in;
+        size_t del_slen;
+        const char *del_str;
+        struct it_key del_key_in;
         int del = 0;
 
-	size_t ins_slen;
-	const char *ins_str;
-	struct it_key ins_key_in;
+        size_t ins_slen;
+        const char *ins_str;
+        struct it_key ins_key_in;
         int ins = 0;
 
         if (del_keys)
@@ -1508,28 +1508,28 @@ ZEBRA_RES zebra_rec_keys_to_snippets1(ZebraHandle zh,
     NMEM nmem = nmem_create();
     if (zebra_rec_keys_rewind(reckeys))
     {
-	const char *str;
-	size_t slen;
-	struct it_key key;
-	while (zebra_rec_keys_read(reckeys, &str, &slen, &key))
-	{
-	    char *dst_term = 0;
-	    int ord;
+        const char *str;
+        size_t slen;
+        struct it_key key;
+        while (zebra_rec_keys_read(reckeys, &str, &slen, &key))
+        {
+            char *dst_term = 0;
+            int ord;
             zint seqno;
-	    const char *index_type;
+            const char *index_type;
 
-	    assert(key.len <= IT_KEY_LEVEL_MAX && key.len > 2);
-	    seqno = key.mem[key.len-1];
-	    ord = CAST_ZINT_TO_INT(key.mem[0]);
+            assert(key.len <= IT_KEY_LEVEL_MAX && key.len > 2);
+            seqno = key.mem[key.len-1];
+            ord = CAST_ZINT_TO_INT(key.mem[0]);
 
-	    zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type,
-				    0/* db */, 0 /* string_index */);
-	    assert(index_type);
-	    zebra_term_untrans_iconv(zh, nmem, index_type,
-				     &dst_term, str);
-	    zebra_snippets_append(snippets, seqno, 0, ord, dst_term);
-	    nmem_reset(nmem);
-	}
+            zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type,
+                                    0/* db */, 0 /* string_index */);
+            assert(index_type);
+            zebra_term_untrans_iconv(zh, nmem, index_type,
+                                     &dst_term, str);
+            zebra_snippets_append(snippets, seqno, 0, ord, dst_term);
+            nmem_reset(nmem);
+        }
     }
     nmem_destroy(nmem);
     return ZEBRA_OK;
@@ -1540,27 +1540,27 @@ void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys)
     yaz_log(YLOG_LOG, "print_rec_keys");
     if (zebra_rec_keys_rewind(reckeys))
     {
-	const char *str;
-	size_t slen;
-	struct it_key key;
-	while (zebra_rec_keys_read(reckeys, &str, &slen, &key))
-	{
-	    char dst_buf[IT_MAX_WORD];
-	    zint seqno;
-	    const char *index_type;
+        const char *str;
+        size_t slen;
+        struct it_key key;
+        while (zebra_rec_keys_read(reckeys, &str, &slen, &key))
+        {
+            char dst_buf[IT_MAX_WORD];
+            zint seqno;
+            const char *index_type;
             int ord = CAST_ZINT_TO_INT(key.mem[0]);
-	    const char *db = 0;
-	    assert(key.len <= IT_KEY_LEVEL_MAX && key.len > 2);
+            const char *db = 0;
+            assert(key.len <= IT_KEY_LEVEL_MAX && key.len > 2);
 
-	    zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db, 0);
+            zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db, 0);
 
-	    seqno = key.mem[key.len-1];
+            seqno = key.mem[key.len-1];
 
-	    zebra_term_untrans(zh, index_type, dst_buf, str);
+            zebra_term_untrans(zh, index_type, dst_buf, str);
 
-	    yaz_log(YLOG_LOG, "ord=%d seqno=" ZINT_FORMAT
+            yaz_log(YLOG_LOG, "ord=%d seqno=" ZINT_FORMAT
                     " term=%s", ord, seqno, dst_buf);
-	}
+        }
     }
 }
 
@@ -1640,7 +1640,7 @@ static void extract_add_string(RecWord *p, zebra_map_t zm,
     }
     if (zebra_maps_is_index(zm))
     {
-	extract_add_index_string(p, zinfo_index_category_index,
+        extract_add_index_string(p, zinfo_index_category_index,
                                  string, length);
         if (zebra_maps_is_alwaysmatches(zm))
         {
@@ -1654,11 +1654,11 @@ static void extract_add_string(RecWord *p, zebra_map_t zm,
     }
     else if (zebra_maps_is_sort(zm))
     {
-	extract_add_sort_string(p, string, length);
+        extract_add_sort_string(p, string, length);
     }
     else if (zebra_maps_is_staticrank(zm))
     {
-	extract_add_staticrank_string(p, string, length);
+        extract_add_staticrank_string(p, string, length);
     }
 }
 
@@ -1670,39 +1670,39 @@ static void extract_add_incomplete_field(RecWord *p, zebra_map_t zm)
     const char **map = 0;
 
     if (remain > 0)
-	map = zebra_maps_input(zm, &b, remain, 0);
+        map = zebra_maps_input(zm, &b, remain, 0);
 
     while (map)
     {
-	char buf[IT_MAX_WORD+1];
-	int i, remain;
+        char buf[IT_MAX_WORD+1];
+        int i, remain;
 
-	/* Skip spaces */
-	while (map && *map && **map == *CHR_SPACE)
-	{
-	    remain = p->term_len - (b - p->term_buf);
-	    if (remain > 0)
-		map = zebra_maps_input(zm, &b, remain, 0);
-	    else
-		map = 0;
-	}
-	if (!map)
-	    break;
-	i = 0;
-	while (map && *map && **map != *CHR_SPACE)
-	{
-	    const char *cp = *map;
+        /* Skip spaces */
+        while (map && *map && **map == *CHR_SPACE)
+        {
+            remain = p->term_len - (b - p->term_buf);
+            if (remain > 0)
+                map = zebra_maps_input(zm, &b, remain, 0);
+            else
+                map = 0;
+        }
+        if (!map)
+            break;
+        i = 0;
+        while (map && *map && **map != *CHR_SPACE)
+        {
+            const char *cp = *map;
 
-	    while (i < IT_MAX_WORD && *cp)
-		buf[i++] = *(cp++);
-	    remain = p->term_len - (b - p->term_buf);
-	    if (remain > 0)
-		map = zebra_maps_input(zm, &b, remain, 0);
-	    else
-		map = 0;
-	}
-	if (!i)
-	    return;
+            while (i < IT_MAX_WORD && *cp)
+                buf[i++] = *(cp++);
+            remain = p->term_len - (b - p->term_buf);
+            if (remain > 0)
+                map = zebra_maps_input(zm, &b, remain, 0);
+            else
+                map = 0;
+        }
+        if (!i)
+            return;
 
         if (first)
         {
@@ -1714,7 +1714,7 @@ static void extract_add_incomplete_field(RecWord *p, zebra_map_t zm)
                 p->seqno++;
             }
         }
-	extract_add_string(p, zm, buf, i);
+        extract_add_string(p, zm, buf, i);
         p->seqno++;
     }
 }
@@ -1724,7 +1724,7 @@ static void extract_add_complete_field(RecWord *p, zebra_map_t zm)
     char buf[IT_MAX_WORD+1];
     int i = parse_complete_field(p, zm, buf);
     if (!i)
-	return;
+        return;
     extract_add_string(p, zm, buf, i);
     p->seqno++;
 }
@@ -1789,7 +1789,7 @@ static void extract_token_add(RecWord *p)
 }
 
 static void extract_set_store_data_cb(struct recExtractCtrl *p,
-				      void *buf, size_t sz)
+                                      void *buf, size_t sz)
 {
     ZebraHandle zh = (ZebraHandle) p->handle;
 
@@ -1798,9 +1798,9 @@ static void extract_set_store_data_cb(struct recExtractCtrl *p,
     zh->store_data_size = 0;
     if (buf && sz)
     {
-	zh->store_data_buf = xmalloc(sz);
-	zh->store_data_size = sz;
-	memcpy(zh->store_data_buf, buf, sz);
+        zh->store_data_buf = xmalloc(sz);
+        zh->store_data_size = sz;
+        memcpy(zh->store_data_buf, buf, sz);
     }
 }
 
@@ -1831,9 +1831,9 @@ void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
     if (zebra_rec_keys_rewind(reckeys))
     {
         zebra_sort_index_t si = zh->reg->sort_index;
-	size_t slen;
-	const char *str;
-	struct it_key key_in;
+        size_t slen;
+        const char *str;
+        struct it_key key_in;
 
         NMEM nmem = nmem_create();
         struct sort_add_ent {
@@ -1846,7 +1846,7 @@ void extract_flush_sort_keys(ZebraHandle zh, zint sysno,
         };
         struct sort_add_ent *sort_ent_list = 0;
 
-	while (zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
+        while (zebra_rec_keys_read(reckeys, &str, &slen, &key_in))
         {
             int ord = CAST_ZINT_TO_INT(key_in.mem[0]);
             zint filter_sysno = key_in.mem[1];

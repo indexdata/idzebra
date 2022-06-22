@@ -50,29 +50,29 @@ static void tst(int argc, char **argv)
                                           "@attr 1=4 my");
         zint hits;
         if (zebra_begin_trans (zh, 1) != ZEBRA_OK)
-	{
-	    fprintf(stderr, "zebra_begin_trans failed\n");
-	    exit(1);
-	}
+        {
+            fprintf(stderr, "zebra_begin_trans failed\n");
+            exit(1);
+        }
         if (zebra_begin_trans (zh, 0) != ZEBRA_OK)
-	{
-	    fprintf(stderr, "zebra_begin_trans failed\n");
-	    exit(1);
-	}
+        {
+            fprintf(stderr, "zebra_begin_trans failed\n");
+            exit(1);
+        }
 
         sprintf(setname, "s%d", i+1);
         zebra_search_RPN (zh, odr_input, query, setname, &hits);
 
         if (zebra_end_trans (zh) != ZEBRA_OK)
-	{
-	    fprintf(stderr, "zebra_end_trans failed\n");
-	    exit(1);
-	}
+        {
+            fprintf(stderr, "zebra_end_trans failed\n");
+            exit(1);
+        }
         if (zebra_end_trans (zh) != ZEBRA_OK)
-	{
-	    fprintf(stderr, "zebra_end_trans failed\n");
-	    exit(1);
-	}
+        {
+            fprintf(stderr, "zebra_end_trans failed\n");
+            exit(1);
+        }
         yaz_pqf_destroy(parser);
         zebra_deleteResultSet(zh, Z_DeleteResultSetRequest_list,
                               1, &setnamep, &status);

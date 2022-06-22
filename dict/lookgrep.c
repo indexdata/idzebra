@@ -395,7 +395,7 @@ int dict_lookup_grep(Dict dict, const char *pattern, int range, void *client,
     yaz_log(YLOG_DEBUG, "dict_lookup_grep range=%d", range);
     for (i = 0; pattern[i]; i++)
     {
-	yaz_log(YLOG_DEBUG, " %2d %3d  %c", i, pattern[i],
+        yaz_log(YLOG_DEBUG, " %2d %3d  %c", i, pattern[i],
                 (pattern[i] > ' ' && pattern[i] < 127) ? pattern[i] : '?');
     }
 

@@ -77,7 +77,7 @@ struct data1_attset
 typedef struct data1_handle_info *data1_handle;
 
 YAZ_EXPORT data1_att *data1_getattbyname(data1_handle dh, data1_attset *s,
-					 const char *name);
+                                         const char *name);
 YAZ_EXPORT data1_attset *data1_read_attset(data1_handle dh, const char *file);
 
 YAZ_EXPORT data1_attset *data1_empty_attset(data1_handle dh);
@@ -91,8 +91,8 @@ typedef struct data1_maptag
     int which;
     union
     {
-	int numeric;
-	char *string;
+        int numeric;
+        char *string;
     } value;
     struct data1_maptag *next;
 } data1_maptag;
@@ -206,8 +206,8 @@ typedef struct data1_tag
     int which;
     union
     {
-	int numeric;
-	char *string;
+        int numeric;
+        char *string;
     } value;
     data1_datatype kind;
 
@@ -285,27 +285,27 @@ typedef struct data1_node
     int which;
     union
     {
-	struct
-	{
-	    char *type;
-	    struct data1_absyn *absyn;  /* abstract syntax for this type */
-	} root;
+        struct
+        {
+            char *type;
+            struct data1_absyn *absyn;  /* abstract syntax for this type */
+        } root;
 
-	struct
-	{
-	    char *tag;
-	    data1_element *element;
-	    int no_data_requested;
-	    int get_bytes;
-	    unsigned node_selected : 1;
-	    unsigned make_variantlist : 1;
+        struct
+        {
+            char *tag;
+            data1_element *element;
+            int no_data_requested;
+            int get_bytes;
+            unsigned node_selected : 1;
+            unsigned make_variantlist : 1;
             data1_xattr *attributes;
-	} tag;
+        } tag;
 
-	struct
-	{
-	    char *data;      /* filename or data */
-	    int len;
+        struct
+        {
+            char *data;      /* filename or data */
+            int len;
             /* text inclusion */
 #define DATA1I_inctxt 1
             /* binary data inclusion */
@@ -319,14 +319,14 @@ typedef struct data1_node
             /* XML text */
 #define DATA1I_xmltext 6
             unsigned what:7;
-	    unsigned formatted_text : 1;   /* newlines are significant */
-	} data;
+            unsigned formatted_text : 1;   /* newlines are significant */
+        } data;
 
-	struct
-	{
-	    data1_vartype *type;
-	    char *value;
-	} variant;
+        struct
+        {
+            data1_vartype *type;
+            char *value;
+        } variant;
 
         struct
         {
@@ -355,34 +355,34 @@ YAZ_EXPORT data1_handle data1_create (void);
 YAZ_EXPORT void data1_destroy(data1_handle dh);
 YAZ_EXPORT data1_node *get_parent_tag(data1_handle dh, data1_node *n);
 YAZ_EXPORT data1_node *data1_read_node(data1_handle dh, const char **buf,
-				       NMEM m);
+                                       NMEM m);
 YAZ_EXPORT data1_node *data1_read_nodex (data1_handle dh, NMEM m,
-					 int (*get_byte)(void *fh), void *fh,
-					 WRBUF wrbuf);
+                                         int (*get_byte)(void *fh), void *fh,
+                                         WRBUF wrbuf);
 YAZ_EXPORT data1_node *data1_read_record(data1_handle dh,
-					 int (*rf)(void *, char *, size_t),
-					 void *fh, NMEM m);
+                                         int (*rf)(void *, char *, size_t),
+                                         void *fh, NMEM m);
 
 YAZ_EXPORT void data1_remove_node (data1_handle dh, data1_node *n);
 YAZ_EXPORT void data1_remove_idzebra_subtree (data1_handle dh, data1_node *n);
 YAZ_EXPORT data1_tag *data1_gettagbynum(data1_handle dh,
-					data1_tagset *s,
-					int type, int value);
+                                        data1_tagset *s,
+                                        int type, int value);
 YAZ_EXPORT data1_tagset *data1_empty_tagset (data1_handle dh);
 YAZ_EXPORT data1_tagset *data1_read_tagset(data1_handle dh,
-					   const char *file,
-					   int type);
+                                           const char *file,
+                                           int type);
 YAZ_EXPORT data1_element *data1_getelementbytagname(data1_handle dh,
-						    data1_absyn *abs,
-						    data1_element *parent,
-						    const char *tagname);
+                                                    data1_absyn *abs,
+                                                    data1_element *parent,
+                                                    const char *tagname);
 YAZ_EXPORT Z_GenericRecord *data1_nodetogr(data1_handle dh, data1_node *n,
-					   int select, ODR o,
-					   int *len);
+                                           int select, ODR o,
+                                           int *len);
 YAZ_EXPORT data1_tag *data1_gettagbyname(data1_handle dh, data1_tagset *s,
-					 const char *name);
+                                         const char *name);
 YAZ_EXPORT char *data1_nodetobuf(data1_handle dh, data1_node *n,
-				 int select, int *len);
+                                 int select, int *len);
 YAZ_EXPORT data1_node *data1_mk_tag_data_wd(data1_handle dh,
                                             data1_node *at,
                                             const char *tagname, NMEM m);
@@ -391,20 +391,20 @@ YAZ_EXPORT data1_node *data1_mk_tag_data(data1_handle dh, data1_node *at,
 YAZ_EXPORT data1_datatype data1_maptype(data1_handle dh, char *t);
 YAZ_EXPORT data1_varset *data1_read_varset(data1_handle dh, const char *file);
 YAZ_EXPORT data1_vartype *data1_getvartypebyct(data1_handle dh,
-					       data1_varset *set,
-					       const char *zclass,
-					       const char *type);
+                                               data1_varset *set,
+                                               const char *zclass,
+                                               const char *type);
 YAZ_EXPORT data1_vartype *data1_getvartypeby_absyn(data1_handle dh,
-						   data1_absyn *absyn,
-						   char *zclass, char *type);
+                                                   data1_absyn *absyn,
+                                                   char *zclass, char *type);
 YAZ_EXPORT Z_Espec1 *data1_read_espec1(data1_handle dh, const char *file);
 YAZ_EXPORT int data1_doespec1(data1_handle dh, data1_node *n, Z_Espec1 *e);
 YAZ_EXPORT data1_esetname *data1_getesetbyname(data1_handle dh,
-					       data1_absyn *a,
-					       const char *name);
+                                               data1_absyn *a,
+                                               const char *name);
 YAZ_EXPORT data1_element *data1_getelementbyname(data1_handle dh,
-						 data1_absyn *absyn,
-						 const char *name);
+                                                 data1_absyn *absyn,
+                                                 const char *name);
 YAZ_EXPORT data1_node *data1_mk_node2(data1_handle dh, NMEM m,
                                       int type, data1_node *parent);
 
@@ -445,15 +445,15 @@ YAZ_EXPORT data1_node *data1_mk_preprocess (data1_handle dh, NMEM nmem,
                                             data1_node *at);
 
 YAZ_EXPORT data1_node *data1_insert_preprocess_n (data1_handle dh, NMEM nmem,
-						  const char *target,
-						  size_t len,
-						  const char **attr,
-						  data1_node *at);
+                                                  const char *target,
+                                                  size_t len,
+                                                  const char **attr,
+                                                  data1_node *at);
 
 YAZ_EXPORT data1_node *data1_insert_preprocess (data1_handle dh, NMEM nmem,
-						const char *target,
-						const char **attr,
-						data1_node *at);
+                                                const char *target,
+                                                const char **attr,
+                                                data1_node *at);
 
 YAZ_EXPORT data1_node *data1_mk_root (data1_handle dh, NMEM nmem,
                                       const char *name);
@@ -461,8 +461,8 @@ YAZ_EXPORT void data1_set_root(data1_handle dh, data1_node *res,
                                NMEM nmem, const char *name);
 
 YAZ_EXPORT data1_node *data1_mk_tag_data_zint (data1_handle dh, data1_node *at,
-					       const char *tag, zint num,
-					       NMEM nmem);
+                                               const char *tag, zint num,
+                                               NMEM nmem);
 YAZ_EXPORT data1_node *data1_mk_tag_data_int (data1_handle dh, data1_node *at,
                                               const char *tag, int num,
                                               NMEM nmem);
@@ -489,25 +489,25 @@ YAZ_EXPORT data1_node *data1_mk_tag_uni (data1_handle dh, NMEM nmem,
 YAZ_EXPORT data1_attset *data1_get_attset (data1_handle dh, const char *name);
 YAZ_EXPORT data1_maptab *data1_read_maptab(data1_handle dh, const char *file);
 YAZ_EXPORT data1_node *data1_map_record(data1_handle dh, data1_node *n,
-					data1_maptab *map, NMEM m);
+                                        data1_maptab *map, NMEM m);
 YAZ_EXPORT data1_marctab *data1_read_marctab (data1_handle dh,
-					      const char *file);
+                                              const char *file);
 YAZ_EXPORT data1_marctab *data1_absyn_getmarctab(data1_handle dh,
-						 data1_node *root);
+                                                 data1_node *root);
 YAZ_EXPORT data1_element *data1_absyn_getelements(data1_handle dh,
-						 data1_node *root);
+                                                 data1_node *root);
 YAZ_EXPORT char *data1_nodetomarc(data1_handle dh, data1_marctab *p,
-				  data1_node *n, int selected, int *len);
+                                  data1_node *n, int selected, int *len);
 YAZ_EXPORT char *data1_nodetoidsgml(data1_handle dh, data1_node *n,
-				    int select, int *len);
+                                    int select, int *len);
 YAZ_EXPORT Z_ExplainRecord *data1_nodetoexplain(data1_handle dh,
-						data1_node *n, int select,
-						ODR o);
+                                                data1_node *n, int select,
+                                                ODR o);
 YAZ_EXPORT Z_BriefBib *data1_nodetosummary(data1_handle dh,
-					   data1_node *n, int select,
-					   ODR o);
+                                           data1_node *n, int select,
+                                           ODR o);
 YAZ_EXPORT char *data1_nodetosoif(data1_handle dh, data1_node *n, int select,
-				  int *len);
+                                  int *len);
 YAZ_EXPORT void data1_set_tabpath(data1_handle dh, const char *path);
 YAZ_EXPORT void data1_set_tabroot (data1_handle dp, const char *p);
 YAZ_EXPORT const char *data1_get_tabpath(data1_handle dh);
@@ -521,17 +521,17 @@ YAZ_EXPORT data1_attset_cache *data1_attset_cache_get (data1_handle dh);
 YAZ_EXPORT NMEM data1_nmem_get (data1_handle dh);
 YAZ_EXPORT void data1_pr_tree (data1_handle dh, data1_node *n, FILE *out);
 YAZ_EXPORT char *data1_insert_string (data1_handle dh, data1_node *res,
-				      NMEM m, const char *str);
+                                      NMEM m, const char *str);
 YAZ_EXPORT char *data1_insert_string_n (data1_handle dh, data1_node *res,
                                         NMEM m, const char *str, size_t len);
 YAZ_EXPORT data1_node *data1_read_sgml (data1_handle dh, NMEM m,
-					const char *buf);
+                                        const char *buf);
 YAZ_EXPORT data1_node *data1_read_xml (data1_handle dh,
                                        int (*rf)(void *, char *, size_t),
                                        void *fh, NMEM m);
 YAZ_EXPORT void data1_absyn_trav (data1_handle dh, void *handle,
-				  void (*fh)(data1_handle dh,
-					     void *h, data1_absyn *a));
+                                  void (*fh)(data1_handle dh,
+                                             void *h, data1_absyn *a));
 
 YAZ_EXPORT data1_attset *data1_attset_search_id (data1_handle dh,
                                                  const Odr_oid *oid);

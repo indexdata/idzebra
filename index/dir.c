@@ -88,7 +88,7 @@ struct dir_entry *dir_open(const char *rep, const char *base,
             struct dir_entry *entry_n;
 
             entry_n = (struct dir_entry *)
-		xmalloc(sizeof(*entry) * (entry_max += 1000));
+                xmalloc(sizeof(*entry) * (entry_max += 1000));
             memcpy(entry_n, entry, idx * sizeof(*entry));
             xfree(entry);
             entry = entry_n;
@@ -118,7 +118,7 @@ struct dir_entry *dir_open(const char *rep, const char *base,
             entry[idx].mtime = finfo.st_mtime;
             entry[idx].name = (char *) xmalloc(strlen(dent->d_name)+2);
             strcpy(entry[idx].name, dent->d_name);
-	    strcat(entry[idx].name, "/");
+            strcat(entry[idx].name, "/");
             idx++;
             break;
         }

@@ -179,7 +179,7 @@ CFile cf_open(MFile mf, MFile_area area, const char *fname,
     if (cf->head.state == CFILE_STATE_HASH)
     {
         cf->parray = (struct CFile_hash_bucket **)
-	    xmalloc(cf->head.hash_size * sizeof(*cf->parray));
+            xmalloc(cf->head.hash_size * sizeof(*cf->parray));
         for (i = 0; i<cf->head.hash_size; i++)
             cf->parray[i] = NULL;
     }
@@ -395,8 +395,8 @@ static int cf_moveto_flat(CFile cf)
 
     yaz_log(YLOG_DEBUG, "cf: Moving to flat shadow: %s", cf->rmf->name);
     yaz_log(YLOG_DEBUG, "cf: hits=%d miss=%d bucket_in_memory=" ZINT_FORMAT " total="
-	  ZINT_FORMAT,
-	cf->no_hits, cf->no_miss, cf->bucket_in_memory,
+          ZINT_FORMAT,
+        cf->no_hits, cf->no_miss, cf->bucket_in_memory,
         cf->head.next_bucket - cf->head.first_bucket);
     assert(cf->head.state == CFILE_STATE_HASH);
     if (flush_bucket(cf, -1))
@@ -616,7 +616,7 @@ int cf_close(CFile cf)
 {
     int ret = 0;
     yaz_log(YLOG_DEBUG, "cf: close hits=%d miss=%d bucket_in_memory=" ZINT_FORMAT
-	  " total=" ZINT_FORMAT,
+          " total=" ZINT_FORMAT,
           cf->no_hits, cf->no_miss, cf->bucket_in_memory,
           cf->head.next_bucket - cf->head.first_bucket);
     if (flush_bucket(cf, -1))

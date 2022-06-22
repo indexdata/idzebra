@@ -54,22 +54,22 @@ static void tst_res(void)
     /* run this a few times so we can see leaks easier */
     for (i = 0; i<10; i++)
     {
-	/* we should find the name1 from default_res */
-	val = zebra_get_resource(zh, "name1", 0);
-	YAZ_CHECK(val && !strcmp(val, "value1"));
+        /* we should find the name1 from default_res */
+        val = zebra_get_resource(zh, "name1", 0);
+        YAZ_CHECK(val && !strcmp(val, "value1"));
 
-	/* make local override */
-	res_set(temp_res, "name1", "value2");
-	res_set(temp_res, "name4", "value4");
+        /* make local override */
+        res_set(temp_res, "name1", "value2");
+        res_set(temp_res, "name4", "value4");
 
-	/* we should find the name1 from temp_res */
-	val = zebra_get_resource(zh, "name1", 0);
-	YAZ_CHECK(val && !strcmp(val, "value2"));
+        /* we should find the name1 from temp_res */
+        val = zebra_get_resource(zh, "name1", 0);
+        YAZ_CHECK(val && !strcmp(val, "value2"));
 
-	val = zebra_get_resource(zh, "name4", 0);
-	YAZ_CHECK(val && !strcmp(val, "value4"));
+        val = zebra_get_resource(zh, "name4", 0);
+        YAZ_CHECK(val && !strcmp(val, "value4"));
 
-	res_clear(temp_res);
+        res_clear(temp_res);
     }
     zebra_close(zh);
     zebra_stop(zs);
@@ -99,11 +99,11 @@ static void tst_no_config(void)
 
     YAZ_CHECK_EQ(zebra_update_record(zh /* handle */,
                                      action_insert,
-				     "grs.sgml" /* record type */,
-				     &sysno, 0 /* match */,
-				     0 /* fname */,
-				     xml_buf, strlen(xml_buf)),
-	      ZEBRA_OK);
+                                     "grs.sgml" /* record type */,
+                                     &sysno, 0 /* match */,
+                                     0 /* fname */,
+                                     xml_buf, strlen(xml_buf)),
+              ZEBRA_OK);
 
     zebra_close(zh);
     zebra_stop(zs);

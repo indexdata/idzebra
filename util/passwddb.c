@@ -60,44 +60,44 @@ static int get_entry (const char **p, char *dst, int max)
 {
     int i = 0;
     while ((*p)[i] != ':' && (*p)[i])
-	i++;
+        i++;
     if (i >= max)
-	i = max-1;
+        i = max-1;
     if (i)
-	memcpy (dst, *p, i);
+        memcpy (dst, *p, i);
     dst[i] = '\0';
     *p += i;
     if (*p)
-	(*p)++;
+        (*p)++;
     return i;
 }
 
 static int passwd_db_file_int(Passwd_db db, const char *fname,
-			      int encrypt_flag)
+                              int encrypt_flag)
 {
     FILE *f;
     char buf[1024];
     f = fopen (fname, "r");
     if (!f)
-	return -1;
+        return -1;
     while (fgets (buf, sizeof(buf)-1, f))
     {
-	struct passwd_entry *pe;
-	char name[128];
-	char des[128];
-	char *p;
-	const char *cp = buf;
-	if ((p = strchr (buf, '\n')))
-	    *p = '\0';
-	get_entry (&cp, name, 128);
-	get_entry (&cp, des, 128);
+        struct passwd_entry *pe;
+        char name[128];
+        char des[128];
+        char *p;
+        const char *cp = buf;
+        if ((p = strchr (buf, '\n')))
+            *p = '\0';
+        get_entry (&cp, name, 128);
+        get_entry (&cp, des, 128);
 
-	pe = (struct passwd_entry *) xmalloc (sizeof(*pe));
-	pe->name = xstrdup (name);
-	pe->des = xstrdup (des);
-	pe->encrypt_flag = encrypt_flag;
-	pe->next = db->entries;
-	db->entries = pe;
+        pe = (struct passwd_entry *) xmalloc (sizeof(*pe));
+        pe->name = xstrdup (name);
+        pe->des = xstrdup (des);
+        pe->encrypt_flag = encrypt_flag;
+        pe->next = db->entries;
+        db->entries = pe;
     }
     fclose (f);
     return 0;
@@ -108,12 +108,12 @@ void passwd_db_close(Passwd_db db)
     struct passwd_entry *pe = db->entries;
     while (pe)
     {
-	struct passwd_entry *pe_next = pe->next;
+        struct passwd_entry *pe_next = pe->next;
 
-	xfree (pe->name);
-	xfree (pe->des);
-	xfree (pe);
-	pe = pe_next;
+        xfree (pe->name);
+        xfree (pe->des);
+        xfree (pe);
+        pe = pe_next;
     }
     xfree (db);
 }
@@ -122,7 +122,7 @@ void passwd_db_show(Passwd_db db)
 {
     struct passwd_entry *pe;
     for (pe = db->entries; pe; pe = pe->next)
-	yaz_log (YLOG_LOG,"%s:%s", pe->name, pe->des);
+        yaz_log (YLOG_LOG,"%s:%s", pe->name, pe->des);
 }
 
 int passwd_db_auth(Passwd_db db, const char *user, const char *pass)
@@ -131,40 +131,40 @@ int passwd_db_auth(Passwd_db db, const char *user, const char *pass)
 
     assert(db);
     for (pe = db->entries; pe; pe = pe->next)
-	if (user && !strcmp (user, pe->name))
-	    break;
+        if (user && !strcmp (user, pe->name))
+            break;
     if (!pe)
-	return -1;
+        return -1;
     if (!pass)
-	return -2;
+        return -2;
     if (pe->encrypt_flag)
     {
 #if HAVE_CRYPT_H
-	const char *des_try;
+        const char *des_try;
         assert(pe->des);
-	if (strlen (pe->des) < 3)
-	    return -3;
+        if (strlen (pe->des) < 3)
+            return -3;
 
         if (pe->des[0] != '$') /* Not MD5? (assume DES) */
         {
             if (strlen(pass) > 8) /* maximum key length is 8 */
                 return -2;
         }
-	des_try = crypt (pass, pe->des);
+        des_try = crypt (pass, pe->des);
 
         assert(des_try);
-	if (strcmp (des_try, pe->des))
-	    return -2;
+        if (strcmp (des_try, pe->des))
+            return -2;
 #else
-	return -2;
+        return -2;
 #endif
     }
     else
     {
         assert(pass);
         assert(pe->des);
-	if (strcmp (pe->des, pass))
-	    return -2;
+        if (strcmp (pe->des, pass))
+            return -2;
     }
     return 0;
 }

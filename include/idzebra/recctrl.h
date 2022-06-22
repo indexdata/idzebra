@@ -118,7 +118,7 @@ struct recExtractCtrl {
 struct recRetrieveCtrl {
     struct ZebraRecStream *stream;
     /* Input parameters ... */
-    Res       res;		      /* Resource pool                     */
+    Res       res;                    /* Resource pool                     */
     ODR       odr;                    /* ODR used to create response       */
     const Odr_oid * input_format;     /* Preferred record syntax OID       */
     Z_RecordComposition *comp;        /* formatting instructions           */
@@ -155,9 +155,9 @@ struct recType
     ZEBRA_RES (*config)(void *clientData, Res res, const char *args); /* Config */
     void (*destroy)(void *clientData);    /* Destroy function */
     int  (*extract)(void *clientData,
-		    struct recExtractCtrl *ctrl);   /* Extract proc */
+                    struct recExtractCtrl *ctrl);   /* Extract proc */
     int  (*retrieve)(void *clientData,
-		     struct recRetrieveCtrl *ctrl); /* Retrieve proc */
+                     struct recRetrieveCtrl *ctrl); /* Retrieve proc */
 };
 
 #define RECCTRL_EXTRACT_OK    0
@@ -174,18 +174,18 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem);
 
 YAZ_EXPORT
 void recTypeClass_load_modules(RecTypeClass *rts, NMEM nmem,
-			       const char *module_path);
+                               const char *module_path);
 
 YAZ_EXPORT
 RecTypeClass recTypeClass_add_modules(Res res, NMEM nmem,
-				      const char *module_path);
+                                      const char *module_path);
 
 YAZ_EXPORT
 void recTypeClass_destroy(RecTypeClass rtc);
 
 YAZ_EXPORT
 void recTypeClass_info(RecTypeClass rtc, void *cd,
-		       void (*cb)(void *cd, const char *s));
+                       void (*cb)(void *cd, const char *s));
 
 YAZ_EXPORT
 RecTypes recTypes_init(RecTypeClass rtc, data1_handle dh);
@@ -198,7 +198,7 @@ void recTypes_default_handlers(RecTypes recTypes, Res res);
 
 YAZ_EXPORT
 RecType recType_byName(RecTypes rts, Res res, const char *name,
-		       void **clientDataP);
+                       void **clientDataP);
 
 YAZ_END_CDECL
 

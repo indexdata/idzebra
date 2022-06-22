@@ -33,11 +33,11 @@ struct grs_read_info {
 
 YAZ_EXPORT
 int zebra_grs_extract(void *clientData, struct recExtractCtrl *p,
-		      data1_node *(*grs_read)(struct grs_read_info *));
+                      data1_node *(*grs_read)(struct grs_read_info *));
 
 YAZ_EXPORT
 int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
-		       data1_node *(*grs_read)(struct grs_read_info *));
+                       data1_node *(*grs_read)(struct grs_read_info *));
 
 
 YAZ_EXPORT

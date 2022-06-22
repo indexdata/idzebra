@@ -83,16 +83,16 @@ int tl_query(ZebraHandle zh, const char *query, zint exphits
  * tl_query does a simple query, and checks that error is what is expected
  */
 int tl_query_x(ZebraHandle zh, const char *query, zint exphits,
-	       int experror
+               int experror
     ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 /**
  * tl_scan is a utility for scan testing
  */
 int tl_scan(ZebraHandle zh, const char *query,
-	    int pos, int num,  /* input params */
-	    int exp_pos, int exp_num,  int exp_partial, /* expected result */
-	    const char **exp_entries  /* expected entries (or NULL) */
+            int pos, int num,  /* input params */
+            int exp_pos, int exp_num,  int exp_partial, /* expected result */
+            const char **exp_entries  /* expected entries (or NULL) */
     ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 int tl_sort(ZebraHandle zh, const char *query, zint hits, zint *exp
@@ -104,7 +104,7 @@ int tl_sort(ZebraHandle zh, const char *query, zint hits, zint *exp
  * gets the right score
  */
 int tl_ranking_query(ZebraHandle zh, char *query,
-		     int exphits, char *firstrec, int firstscore
+                     int exphits, char *firstrec, int firstscore
     ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 /**
@@ -112,7 +112,7 @@ int tl_ranking_query(ZebraHandle zh, char *query,
  * checks that the all records in result set has the proper identifiers (ids)
  */
 int tl_meta_query(ZebraHandle zh, char *query, int exphits,
-		  zint *ids
+                  zint *ids
     ) ZEBRA_GCC_ATTR((warn_unused_result));
 
 /**

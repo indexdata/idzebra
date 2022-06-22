@@ -33,8 +33,8 @@ static Odr_int *f_integer(data1_node *c, ODR o)
     char intbuf[64];
 
     if (!c->child || c->child->which != DATA1N_data ||
-	c->child->u.data.len > 63)
-	return 0;
+        c->child->u.data.len > 63)
+        return 0;
     sprintf(intbuf, "%.*s", 63, c->child->u.data.data);
     return odr_intdup(o, atoi(intbuf));
 }
@@ -44,7 +44,7 @@ static char *f_string(data1_node *c, ODR o)
     char *r;
 
     if (!c->child || c->child->which != DATA1N_data)
-	return 0;
+        return 0;
     r = (char *)odr_malloc(o, c->child->u.data.len+1);
     memcpy(r, c->child->u.data.data, c->child->u.data.len);
     r[c->child->u.data.len] = '\0';
@@ -52,7 +52,7 @@ static char *f_string(data1_node *c, ODR o)
 }
 
 Z_BriefBib *data1_nodetosummary (data1_handle dh, data1_node *n,
-				 int select, ODR o)
+                                 int select, ODR o)
 {
     Z_BriefBib *res = (Z_BriefBib *)odr_malloc(o, sizeof(*res));
     data1_node *c;
@@ -60,8 +60,8 @@ Z_BriefBib *data1_nodetosummary (data1_handle dh, data1_node *n,
     assert(n->which == DATA1N_root);
     if (strcmp(n->u.root.type, "summary"))
     {
-	yaz_log(YLOG_WARN, "Attempt to convert a non-summary record");
-	return 0;
+        yaz_log(YLOG_WARN, "Attempt to convert a non-summary record");
+        return 0;
     }
 
     res->title = "[UNKNOWN]";
@@ -82,32 +82,32 @@ Z_BriefBib *data1_nodetosummary (data1_handle dh, data1_node *n,
 
     for (c = n->child; c; c = c->next)
     {
-	if (c->which != DATA1N_tag || !c->u.tag.element)
-	{
-	    yaz_log(YLOG_WARN, "Malformed element in Summary record");
-	    return 0;
-	}
-	if (select && !c->u.tag.node_selected)
-	    continue;
-	switch (c->u.tag.element->tag->value.numeric)
-	{
-	    case 0: res->title = f_string(c, o); break;
-	    case 1: res->author = f_string(c, o); break;
-	    case 2: res->callNumber = f_string(c, o); break;
-	    case 3: res->recordType = f_string(c, o); break;
-	    case 4: res->bibliographicLevel = f_string(c, o); break;
-	    case 5: abort();   /* TODO */
-	    case 10: res->publicationPlace = f_string(c, o); break;
-	    case 11: res->publicationDate = f_string(c, o); break;
-	    case 12: res->targetSystemKey = f_string(c, o); break;
-	    case 13: res->satisfyingElement = f_string(c, o); break;
-	    case 14: res->rank = f_integer(c, o); break;
-	    case 15: res->documentId = f_string(c, o); break;
-	    case 16: res->abstract = f_string(c, o); break;
-	    case 17: abort(); /* TODO */
-	    default:
-	        yaz_log(YLOG_WARN, "Unknown element in Summary record.");
-	}
+        if (c->which != DATA1N_tag || !c->u.tag.element)
+        {
+            yaz_log(YLOG_WARN, "Malformed element in Summary record");
+            return 0;
+        }
+        if (select && !c->u.tag.node_selected)
+            continue;
+        switch (c->u.tag.element->tag->value.numeric)
+        {
+            case 0: res->title = f_string(c, o); break;
+            case 1: res->author = f_string(c, o); break;
+            case 2: res->callNumber = f_string(c, o); break;
+            case 3: res->recordType = f_string(c, o); break;
+            case 4: res->bibliographicLevel = f_string(c, o); break;
+            case 5: abort();   /* TODO */
+            case 10: res->publicationPlace = f_string(c, o); break;
+            case 11: res->publicationDate = f_string(c, o); break;
+            case 12: res->targetSystemKey = f_string(c, o); break;
+            case 13: res->satisfyingElement = f_string(c, o); break;
+            case 14: res->rank = f_integer(c, o); break;
+            case 15: res->documentId = f_string(c, o); break;
+            case 16: res->abstract = f_string(c, o); break;
+            case 17: abort(); /* TODO */
+            default:
+                yaz_log(YLOG_WARN, "Unknown element in Summary record.");
+        }
     }
     return res;
 }

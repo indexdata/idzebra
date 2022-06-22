@@ -42,14 +42,14 @@ static void tst(int argc, char **argv)
 
     for (i = 0; i<no_db; i++)
     {
-	char dbstr[20];
-	char rec_buf[100];
+        char dbstr[20];
+        char rec_buf[100];
 
-	sprintf(dbstr, "%d", i);
-	YAZ_CHECK(zebra_select_database(zh, dbstr) == ZEBRA_OK);
+        sprintf(dbstr, "%d", i);
+        YAZ_CHECK(zebra_select_database(zh, dbstr) == ZEBRA_OK);
 
-	sprintf(rec_buf, "<gils><title>title %d</title></gils>\n", i);
-	zebra_add_record (zh, rec_buf, strlen(rec_buf));
+        sprintf(rec_buf, "<gils><title>title %d</title></gils>\n", i);
+        zebra_add_record (zh, rec_buf, strlen(rec_buf));
 
     }
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
@@ -59,20 +59,20 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(zh);
     for (i = 0; i<=no_db; i++)
     {
-	char dbstr[20];
-	char querystr[50];
-	sprintf(dbstr, "%d", i);
-	YAZ_CHECK(zebra_select_database(zh, dbstr) == ZEBRA_OK);
+        char dbstr[20];
+        char querystr[50];
+        sprintf(dbstr, "%d", i);
+        YAZ_CHECK(zebra_select_database(zh, dbstr) == ZEBRA_OK);
 
-	sprintf(querystr, "@attr 1=4 %d", i);
-	if (i == no_db)
-	{
-	    YAZ_CHECK(tl_query_x(zh, querystr, 0, 109));
-	}
-	else
-	{
-	    YAZ_CHECK(tl_query(zh, querystr, 1));
-	}
+        sprintf(querystr, "@attr 1=4 %d", i);
+        if (i == no_db)
+        {
+            YAZ_CHECK(tl_query_x(zh, querystr, 0, 109));
+        }
+        else
+        {
+            YAZ_CHECK(tl_query(zh, querystr, 1));
+        }
     }
     YAZ_CHECK(tl_close_down(zh, zs));
 }

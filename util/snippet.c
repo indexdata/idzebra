@@ -45,11 +45,11 @@ zebra_snippets *zebra_snippets_create(void)
 void zebra_snippets_destroy(zebra_snippets *l)
 {
     if (l)
-	nmem_destroy(l->nmem);
+        nmem_destroy(l->nmem);
 }
 
 void zebra_snippets_append(zebra_snippets *l,
-			   zint seqno, int ws, int ord, const char *term)
+                           zint seqno, int ws, int ord, const char *term)
 {
     zebra_snippets_append_match(l, seqno, ws, ord, term, strlen(term), 0);
 }
@@ -63,9 +63,9 @@ void zebra_snippets_appendn(zebra_snippets *l,
 
 
 void zebra_snippets_append_match(zebra_snippets *l,
-				 zint seqno, int ws, int ord,
+                                 zint seqno, int ws, int ord,
                                  const char *term, size_t term_len,
-				 int match)
+                                 int match)
 {
     struct zebra_snippet_word *w = nmem_malloc(l->nmem, sizeof(*w));
 
@@ -73,11 +73,11 @@ void zebra_snippets_append_match(zebra_snippets *l,
     w->prev = l->tail;
     if (l->tail)
     {
-	l->tail->next = w;
+        l->tail->next = w;
     }
     else
     {
-	l->front = w;
+        l->front = w;
     }
     l->tail = w;
 
@@ -120,86 +120,86 @@ void zebra_snippets_log(const zebra_snippets *l, int log_level, int all)
 
 zebra_snippets *zebra_snippets_window(const zebra_snippets *doc,
                                       const zebra_snippets *hit,
-				      int window_size)
+                                      int window_size)
 {
     int ord = -1;
     zebra_snippets *result = zebra_snippets_create();
     if (window_size == 0)
-	window_size = 1000000;
+        window_size = 1000000;
 
     while(1)
     {
-	zint window_start;
-	zint first_seq_no_best_window = 0;
-	zint last_seq_no_best_window = 0;
-	int number_best_window = 0;
-	const zebra_snippet_word *hit_w, *doc_w;
-	int min_ord = 0; /* not set yet */
+        zint window_start;
+        zint first_seq_no_best_window = 0;
+        zint last_seq_no_best_window = 0;
+        int number_best_window = 0;
+        const zebra_snippet_word *hit_w, *doc_w;
+        int min_ord = 0; /* not set yet */
 
-	for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
-	    if (hit_w->ord > ord &&
-		(min_ord == 0 || hit_w->ord < min_ord))
-	    {
-		min_ord = hit_w->ord;
-	    }
-	if (min_ord == 0)
-	    break;
-	ord = min_ord;
+        for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
+            if (hit_w->ord > ord &&
+                (min_ord == 0 || hit_w->ord < min_ord))
+            {
+                min_ord = hit_w->ord;
+            }
+        if (min_ord == 0)
+            break;
+        ord = min_ord;
 
-	for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
-	{
-	    if (hit_w->ord == ord)
-	    {
-		const zebra_snippet_word *look_w = hit_w;
-		int number_this = 0;
-		zint seq_no_last = 0;
-		while (look_w && look_w->seqno < hit_w->seqno + window_size)
-		{
-		    if (look_w->ord == ord)
-		    {
-			seq_no_last = look_w->seqno;
-			number_this++;
-		    }
-		    look_w = look_w->next;
-		}
-		if (number_this > number_best_window)
-		{
-		    number_best_window = number_this;
-		    first_seq_no_best_window = hit_w->seqno;
-		    last_seq_no_best_window = seq_no_last;
-		}
-	    }
-	}
-	yaz_log(YLOG_DEBUG, "ord=%d", ord);
-	yaz_log(YLOG_DEBUG, "first_seq_no_best_window=" ZINT_FORMAT,
+        for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
+        {
+            if (hit_w->ord == ord)
+            {
+                const zebra_snippet_word *look_w = hit_w;
+                int number_this = 0;
+                zint seq_no_last = 0;
+                while (look_w && look_w->seqno < hit_w->seqno + window_size)
+                {
+                    if (look_w->ord == ord)
+                    {
+                        seq_no_last = look_w->seqno;
+                        number_this++;
+                    }
+                    look_w = look_w->next;
+                }
+                if (number_this > number_best_window)
+                {
+                    number_best_window = number_this;
+                    first_seq_no_best_window = hit_w->seqno;
+                    last_seq_no_best_window = seq_no_last;
+                }
+            }
+        }
+        yaz_log(YLOG_DEBUG, "ord=%d", ord);
+        yaz_log(YLOG_DEBUG, "first_seq_no_best_window=" ZINT_FORMAT,
                 first_seq_no_best_window);
-	yaz_log(YLOG_DEBUG, "last_seq_no_best_window=" ZINT_FORMAT,
+        yaz_log(YLOG_DEBUG, "last_seq_no_best_window=" ZINT_FORMAT,
                 last_seq_no_best_window);
-	yaz_log(YLOG_DEBUG, "number_best_window=%d", number_best_window);
+        yaz_log(YLOG_DEBUG, "number_best_window=%d", number_best_window);
 
-	window_start = (first_seq_no_best_window + last_seq_no_best_window -
-			window_size) / 2;
-	for (doc_w = zebra_snippets_constlist(doc); doc_w; doc_w = doc_w->next)
-	    if (doc_w->ord == ord
-		&& doc_w->seqno >= window_start
-		&& doc_w->seqno < window_start + window_size)
-	    {
-		int match = 0;
-		for (hit_w = zebra_snippets_constlist(hit); hit_w;
-		     hit_w = hit_w->next)
-		{
-		    if (hit_w->ord == ord && hit_w->seqno == doc_w->seqno)
+        window_start = (first_seq_no_best_window + last_seq_no_best_window -
+                        window_size) / 2;
+        for (doc_w = zebra_snippets_constlist(doc); doc_w; doc_w = doc_w->next)
+            if (doc_w->ord == ord
+                && doc_w->seqno >= window_start
+                && doc_w->seqno < window_start + window_size)
+            {
+                int match = 0;
+                for (hit_w = zebra_snippets_constlist(hit); hit_w;
+                     hit_w = hit_w->next)
+                {
+                    if (hit_w->ord == ord && hit_w->seqno == doc_w->seqno)
 
-		    {
-			match = 1;
-			break;
-		    }
-		}
-		zebra_snippets_append_match(result, doc_w->seqno,
+                    {
+                        match = 1;
+                        break;
+                    }
+                }
+                zebra_snippets_append_match(result, doc_w->seqno,
                                             doc_w->ws,
-					    ord, doc_w->term,
+                                            ord, doc_w->term,
                                             strlen(doc_w->term), match);
-	    }
+            }
     }
     return result;
 }
@@ -221,7 +221,7 @@ const struct zebra_snippet_word *zebra_snippets_lookup(
     const zebra_snippet_word *hit_w;
     for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
     {
-	const zebra_snippet_word *doc_w;
+        const zebra_snippet_word *doc_w;
         for (doc_w = zebra_snippets_constlist(doc); doc_w; doc_w = doc_w->next)
         {
             if (doc_w->ord == hit_w->ord && doc_w->seqno == hit_w->seqno
@@ -242,24 +242,24 @@ void zebra_snippets_ring(zebra_snippets *doc, const zebra_snippets *hit,
     zebra_snippets_clear(doc);
     while (1)
     {
-	const zebra_snippet_word *hit_w;
-	zebra_snippet_word *doc_w;
-	int min_ord = 0; /* not set yet */
+        const zebra_snippet_word *hit_w;
+        zebra_snippet_word *doc_w;
+        int min_ord = 0; /* not set yet */
 
-	for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
-	    if (hit_w->ord > ord &&
-		(min_ord == 0 || hit_w->ord < min_ord))
-	    {
-		min_ord = hit_w->ord;
-	    }
-	if (min_ord == 0)
-	    break;
-	ord = min_ord;
+        for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
+            if (hit_w->ord > ord &&
+                (min_ord == 0 || hit_w->ord < min_ord))
+            {
+                min_ord = hit_w->ord;
+            }
+        if (min_ord == 0)
+            break;
+        ord = min_ord;
 
-	for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
-	{
-	    if (hit_w->ord == ord)
-	    {
+        for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
+        {
+            if (hit_w->ord == ord)
+            {
                 for (doc_w = zebra_snippets_list(doc); doc_w; doc_w = doc_w->next)
                 {
                     if (doc_w->ord == ord && doc_w->seqno == hit_w->seqno
@@ -301,8 +301,8 @@ void zebra_snippets_ring(zebra_snippets *doc, const zebra_snippets *hit,
                         else
                             break;
                 }
-	    }
-	}
+            }
+        }
     }
 }
 

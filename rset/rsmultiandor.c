@@ -244,20 +244,20 @@ int compare_ands(const void *x, const void *y)
     rset_pos(hx->fd, &cur, &totx);
     rset_pos(hy->fd, &cur, &toty);
     if (totx > toty + 0.5)
-	return 1;
+        return 1;
     if (totx < toty - 0.5)
-	return -1;
+        return -1;
     return 0;  /* return totx - toty, except for overflows and rounding */
 }
 
 static RSET rsmulti_andor_create(NMEM nmem,
-				 struct rset_key_control *kcontrol,
-				 int scope, TERMID termid,
-				 int no_rsets, RSET* rsets,
-				 const struct rset_control *ctrl)
+                                 struct rset_key_control *kcontrol,
+                                 int scope, TERMID termid,
+                                 int no_rsets, RSET* rsets,
+                                 const struct rset_control *ctrl)
 {
     RSET rnew = rset_create_base(ctrl, nmem, kcontrol, scope, termid,
-				 no_rsets, rsets);
+                                 no_rsets, rsets);
     struct rset_private *info;
     if (!log_level_initialized)
     {
@@ -320,9 +320,9 @@ static RSFD r_open_andor(RSET ct, int flag, int is_and)
         else
             p->h = heap_create(ct->nmem, ct->no_children, kctrl);
         p->items = (struct heap_item *)
-	    nmem_malloc(ct->nmem, ct->no_children*sizeof(*p->items));
+            nmem_malloc(ct->nmem, ct->no_children*sizeof(*p->items));
         for (i = 0; i < ct->no_children; i++)
-	{
+        {
             p->items[i].rset = ct->children[i];
             p->items[i].buf = nmem_malloc(ct->nmem, kctrl->key_size);
         }
@@ -419,10 +419,10 @@ static int r_read_or(RSFD rfd, void *buf, TERMID *term)
     memcpy(buf, it->buf, kctrl->key_size);
     if (term)
     {
-	if (rset->term)
-	    *term = rset->term;
-	else
-	    *term = it->term;
+        if (rset->term)
+            *term = rset->term;
+        else
+            *term = it->term;
     }
     (mrfd->hits)++;
     rdres = rset_read(it->fd, it->buf, &it->term);
@@ -633,9 +633,9 @@ static void r_pos_x(RSFD rfd, double *current, double *total, int and_op)
     }
     else
     {
-	*current = (double) (mrfd->hits);
-	*total = *current / ratio;
-	yaz_log(log_level, "r_pos: =  %0.1f %0.1f",  *current, *total);
+        *current = (double) (mrfd->hits);
+        *total = *current / ratio;
+        yaz_log(log_level, "r_pos: =  %0.1f %0.1f",  *current, *total);
     }
 }
 
@@ -652,22 +652,22 @@ static void r_pos_or(RSFD rfd, double *current, double *total)
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
 {
     if (ct->term)
-	rset_get_one_term(ct, terms, maxterms, curterm);
+        rset_get_one_term(ct, terms, maxterms, curterm);
     else
     {
-	/* Special case: Some multi-ors have all terms pointing to the same
-	   term. We do not want to duplicate those. Other multiors (and ands)
-	   have different terms under them. Those we want.
-	*/
-	int firstterm = *curterm;
-	int i;
- 	for (i = 0; i < ct->no_children; i++)
-	{
-	    rset_getterms(ct->children[i], terms, maxterms, curterm);
-	    if (*curterm > firstterm + 1 && *curterm <= maxterms &&
-		terms[(*curterm) - 1] == terms[firstterm])
-		(*curterm)--; /* forget the term, seen that before */
-	}
+        /* Special case: Some multi-ors have all terms pointing to the same
+           term. We do not want to duplicate those. Other multiors (and ands)
+           have different terms under them. Those we want.
+        */
+        int firstterm = *curterm;
+        int i;
+        for (i = 0; i < ct->no_children; i++)
+        {
+            rset_getterms(ct->children[i], terms, maxterms, curterm);
+            if (*curterm > firstterm + 1 && *curterm <= maxterms &&
+                terms[(*curterm) - 1] == terms[firstterm])
+                (*curterm)--; /* forget the term, seen that before */
+        }
     }
 }
 

@@ -48,7 +48,7 @@ typedef struct ISAMS_I_s {
 void isams_getmethod (ISAMS_M *me);
 
 ISAMS isams_open (BFiles bfs, const char *name, int writeflag,
-		  ISAMS_M *method);
+                  ISAMS_M *method);
 int isams_close (ISAMS is);
 ISAM_P isams_merge (ISAMS is, ISAMS_I data);
 ISAMS_PP isams_pp_open (ISAMS is, ISAM_P pos);

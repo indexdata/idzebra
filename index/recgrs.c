@@ -45,21 +45,21 @@ struct source_parser {
 static int sp_lex(struct source_parser *sp)
 {
     while (*sp->src == ' ')
-	(sp->src)++;
+        (sp->src)++;
     sp->tok = sp->src;
     sp->len = 0;
     while (*sp->src && !strchr("<>();,-: ", *sp->src))
     {
-	sp->src++;
-	sp->len++;
+        sp->src++;
+        sp->len++;
     }
     if (sp->len)
-	sp->lookahead = 't';
+        sp->lookahead = 't';
     else
     {
-	sp->lookahead = *sp->src;
-	if (*sp->src)
-	    sp->src++;
+        sp->lookahead = *sp->src;
+        if (*sp->src)
+            sp->src++;
     }
     return sp->lookahead;
 }
@@ -74,37 +74,37 @@ static int sp_range(struct source_parser *sp, data1_node *n, RecWord *wrd)
     /* ( */
     sp_lex(sp);
     if (sp->lookahead != '(')
-	return 0;
+        return 0;
     sp_lex(sp); /* skip ( */
 
     /* 1st arg: string */
     if (!sp_expr(sp, n, wrd))
-	return 0;
+        return 0;
 
     if (sp->lookahead != ',')
-	return 0;
+        return 0;
     sp_lex(sp); /* skip , */
 
     /* 2nd arg: start */
     if (!sp_expr(sp, n, &tmp_w))
-	return 0;
+        return 0;
     start = atoi_n(tmp_w.term_buf, tmp_w.term_len);
 
     if (sp->lookahead == ',')
     {
-	sp_lex(sp); /* skip , */
+        sp_lex(sp); /* skip , */
 
-	/* 3rd arg: length */
-	if (!sp_expr(sp, n, &tmp_w))
-	    return 0;
-	len = atoi_n(tmp_w.term_buf, tmp_w.term_len);
+        /* 3rd arg: length */
+        if (!sp_expr(sp, n, &tmp_w))
+            return 0;
+        len = atoi_n(tmp_w.term_buf, tmp_w.term_len);
     }
     else
-	len = wrd->term_len;
+        len = wrd->term_len;
 
     /* ) */
     if (sp->lookahead != ')')
-	return 0;
+        return 0;
     sp_lex(sp);
 
     if (wrd->term_buf)
@@ -129,37 +129,37 @@ static int sp_first(struct source_parser *sp, data1_node *n, RecWord *wrd)
     int min_pos = -1;
     sp_lex(sp);
     if (sp->lookahead != '(')
-	return 0;
+        return 0;
     sp_lex(sp); /* skip ( */
     if (!sp_expr(sp, n, wrd))
-	return 0;
+        return 0;
     while (sp->lookahead == ',')
     {
-	RecWord search_w;
-	int i;
-	sp_lex(sp); /* skip , */
+        RecWord search_w;
+        int i;
+        sp_lex(sp); /* skip , */
 
-	if (!sp_expr(sp, n, &search_w))
-	    return 0;
-	for (i = 0; i<wrd->term_len; i++)
-	{
-	    int j;
-	    for (j = 0; j<search_w.term_len && i+j < wrd->term_len; j++)
-		if (wrd->term_buf[i+j] != search_w.term_buf[j])
-		    break;
-	    if (j == search_w.term_len) /* match ? */
-	    {
-		if (min_pos == -1 || i < min_pos)
-		    min_pos = i;
-		break;
-	    }
-	}
+        if (!sp_expr(sp, n, &search_w))
+            return 0;
+        for (i = 0; i<wrd->term_len; i++)
+        {
+            int j;
+            for (j = 0; j<search_w.term_len && i+j < wrd->term_len; j++)
+                if (wrd->term_buf[i+j] != search_w.term_buf[j])
+                    break;
+            if (j == search_w.term_len) /* match ? */
+            {
+                if (min_pos == -1 || i < min_pos)
+                    min_pos = i;
+                break;
+            }
+        }
     }
     if (sp->lookahead != ')')
-	return 0;
+        return 0;
     sp_lex(sp);
     if (min_pos == -1)
-	min_pos = 0;  /* the default if not found */
+        min_pos = 0;  /* the default if not found */
     sprintf(num_str, "%d", min_pos);
     wrd->term_buf = nmem_strdup(sp->nmem, num_str);
     wrd->term_len = strlen(wrd->term_buf);
@@ -169,85 +169,85 @@ static int sp_first(struct source_parser *sp, data1_node *n, RecWord *wrd)
 static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
 {
     if (sp->lookahead != 't')
-	return 0;
+        return 0;
     if (sp->len == 4 && !memcmp(sp->tok, "data", sp->len))
     {
-	if (n->which == DATA1N_data)
-	{
-	    wrd->term_buf = n->u.data.data;
-	    wrd->term_len = n->u.data.len;
-	}
-	sp_lex(sp);
+        if (n->which == DATA1N_data)
+        {
+            wrd->term_buf = n->u.data.data;
+            wrd->term_len = n->u.data.len;
+        }
+        sp_lex(sp);
     }
     else if (sp->len == 3 && !memcmp(sp->tok, "tag", sp->len))
     {
-	if (n->which == DATA1N_tag)
-	{
-	    wrd->term_buf = n->u.tag.tag;
-	    wrd->term_len = strlen(n->u.tag.tag);
-	}
-	sp_lex(sp);
+        if (n->which == DATA1N_tag)
+        {
+            wrd->term_buf = n->u.tag.tag;
+            wrd->term_len = strlen(n->u.tag.tag);
+        }
+        sp_lex(sp);
     }
     else if (sp->len == 4 && !memcmp(sp->tok, "attr", sp->len))
     {
-	RecWord tmp_w;
-	sp_lex(sp);
-	if (sp->lookahead != '(')
-	    return 0;
-	sp_lex(sp);
+        RecWord tmp_w;
+        sp_lex(sp);
+        if (sp->lookahead != '(')
+            return 0;
+        sp_lex(sp);
 
-	if (!sp_expr(sp, n, &tmp_w))
-	    return 0;
+        if (!sp_expr(sp, n, &tmp_w))
+            return 0;
 
-	wrd->term_buf = "";
-	wrd->term_len = 0;
-	if (n->which == DATA1N_tag)
-	{
-	    data1_xattr *p = n->u.tag.attributes;
-	    while (p && strlen(p->name) != tmp_w.term_len &&
-		   memcmp (p->name, tmp_w.term_buf, tmp_w.term_len))
-		p = p->next;
-	    if (p)
-	    {
-		wrd->term_buf = p->value;
-		wrd->term_len = strlen(p->value);
-	    }
-	}
-	if (sp->lookahead != ')')
-	    return 0;
-	sp_lex(sp);
+        wrd->term_buf = "";
+        wrd->term_len = 0;
+        if (n->which == DATA1N_tag)
+        {
+            data1_xattr *p = n->u.tag.attributes;
+            while (p && strlen(p->name) != tmp_w.term_len &&
+                   memcmp (p->name, tmp_w.term_buf, tmp_w.term_len))
+                p = p->next;
+            if (p)
+            {
+                wrd->term_buf = p->value;
+                wrd->term_len = strlen(p->value);
+            }
+        }
+        if (sp->lookahead != ')')
+            return 0;
+        sp_lex(sp);
     }
     else if (sp->len == 5 && !memcmp(sp->tok, "first", sp->len))
     {
-	return sp_first(sp, n, wrd);
+        return sp_first(sp, n, wrd);
     }
     else if (sp->len == 5 && !memcmp(sp->tok, "range", sp->len))
     {
-	return sp_range(sp, n, wrd);
+        return sp_range(sp, n, wrd);
     }
     else if (sp->len > 0 && isdigit(*(unsigned char *)sp->tok))
     {
-	char *b;
-	wrd->term_len = sp->len;
-	b = nmem_malloc(sp->nmem, sp->len);
-	memcpy(b, sp->tok, sp->len);
-	wrd->term_buf = b;
-	sp_lex(sp);
+        char *b;
+        wrd->term_len = sp->len;
+        b = nmem_malloc(sp->nmem, sp->len);
+        memcpy(b, sp->tok, sp->len);
+        wrd->term_buf = b;
+        sp_lex(sp);
     }
     else if (sp->len > 2 && sp->tok[0] == '\'' && sp->tok[sp->len-1] == '\'')
     {
-	char *b;
-	wrd->term_len = sp->len - 2;
-	b = nmem_malloc(sp->nmem, wrd->term_len);
-	memcpy(b, sp->tok+1, wrd->term_len);
-	wrd->term_buf = b;
-	sp_lex(sp);
+        char *b;
+        wrd->term_len = sp->len - 2;
+        b = nmem_malloc(sp->nmem, wrd->term_len);
+        memcpy(b, sp->tok+1, wrd->term_len);
+        wrd->term_buf = b;
+        sp_lex(sp);
     }
     else
     {
-	wrd->term_buf = "";
-	wrd->term_len = 0;
-	sp_lex(sp);
+        wrd->term_buf = "";
+        wrd->term_len = 0;
+        sp_lex(sp);
     }
     return 1;
 }
@@ -263,13 +263,13 @@ static struct source_parser *source_parser_create(void)
 static void source_parser_destroy(struct source_parser *sp)
 {
     if (!sp)
-	return;
+        return;
     nmem_destroy(sp->nmem);
     xfree(sp);
 }
 
 static int sp_parse(struct source_parser *sp,
-		    data1_node *n, RecWord *wrd, const char *src)
+                    data1_node *n, RecWord *wrd, const char *src)
 {
     sp->len = 0;
     sp->tok = 0;
@@ -353,23 +353,23 @@ static int dfa_match_first(struct DFA_state **dfaar, const char *text)
 
     for (c = *p++, t = s->trans, i = s->tran_no; --i >= 0; t++)
     {
-	if (c >= t->ch[0] && c <= t->ch[1])
-	{
-	    while (i >= 0)
-	    {
-		/* move to next state and return if we get a match */
-		s = dfaar[t->to];
-		if (s->rule_no)
-		    return 1;
-		/* next char */
-		if (!c)
-		    return 0;
-		c = *p++;
-		for (t = s->trans, i = s->tran_no; --i >= 0; t++)
-		    if (c >= t->ch[0] && c <= t->ch[1])
-			break;
-	    }
-	}
+        if (c >= t->ch[0] && c <= t->ch[1])
+        {
+            while (i >= 0)
+            {
+                /* move to next state and return if we get a match */
+                s = dfaar[t->to];
+                if (s->rule_no)
+                    return 1;
+                /* next char */
+                if (!c)
+                    return 0;
+                c = *p++;
+                for (t = s->trans, i = s->tran_no; --i >= 0; t++)
+                    if (c >= t->ch[0] && c <= t->ch[1])
+                        break;
+            }
+        }
     }
     return 0;
 }
@@ -409,7 +409,7 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 
     for (xpe = abs->xp_elements; xpe; xpe = xpe->next)
     {
-	int i;
+        int i;
         int ok = xpe->match_state;
         if (ok == -1)
         {   /* don't know whether there is a match yet */
@@ -432,14 +432,14 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 
             /* find the first tag up in the node structure */
             for (nn = n; nn && nn->which != DATA1N_tag; nn = nn->parent)
-		;
+                ;
 
             /* go from inside out in the node structure, while going
                backwards trough xpath location steps ... */
             for (i = xpe->xpath_len - 1; i>0; i--)
-	    {
+            {
                 if (!d1_check_xpath_predicate(nn, xp[i].predicate))
-		{
+                {
                     ok = 0;
                     break;
                 }
@@ -450,7 +450,7 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 #endif
             if (ok)
                 break;
-	}
+        }
     }
 
     xfree(pexpr);
@@ -482,8 +482,8 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 
 /* add xpath index for an attribute */
 static void index_xpath_attr(char *tag_path, char *name, char *value,
-			      char *structure, struct recExtractCtrl *p,
-			      RecWord *wrd)
+                              char *structure, struct recExtractCtrl *p,
+                              RecWord *wrd)
 {
     wrd->index_name = ZEBRA_XPATH_ELM_BEGIN;
     wrd->index_type = "0";
@@ -492,7 +492,7 @@ static void index_xpath_attr(char *tag_path, char *name, char *value,
     (*p->tokenAdd)(wrd);
 
     if (value) {
-	wrd->index_name = ZEBRA_XPATH_ATTR_CDATA;
+        wrd->index_name = ZEBRA_XPATH_ATTR_CDATA;
         wrd->index_type = "w";
         wrd->term_buf = value;
         wrd->term_len = strlen(value);
@@ -514,28 +514,28 @@ static void mk_tag_path_full(char *tag_path_full, size_t max, data1_node *n)
     /* we have to fetch the whole path to the data tag */
     for (nn = n; nn; nn = nn->parent)
     {
-	if (nn->which == DATA1N_tag)
-	{
-	    size_t tlen = strlen(nn->u.tag.tag);
-	    if (tlen + flen > (max - 2))
-		break;
-	    memcpy(tag_path_full + flen, nn->u.tag.tag, tlen);
-	    flen += tlen;
-	    tag_path_full[flen++] = '/';
-	}
-	else
-	    if (nn->which == DATA1N_root)
-		break;
+        if (nn->which == DATA1N_tag)
+        {
+            size_t tlen = strlen(nn->u.tag.tag);
+            if (tlen + flen > (max - 2))
+                break;
+            memcpy(tag_path_full + flen, nn->u.tag.tag, tlen);
+            flen += tlen;
+            tag_path_full[flen++] = '/';
+        }
+        else
+            if (nn->which == DATA1N_root)
+                break;
     }
     tag_path_full[flen] = 0;
 }
 
 
 static void index_xpath(struct source_parser *sp, data1_node *n,
-			struct recExtractCtrl *p,
-			int level, RecWord *wrd,
-			char *xpath_index,
-			int xpath_is_start
+                        struct recExtractCtrl *p,
+                        int level, RecWord *wrd,
+                        char *xpath_index,
+                        int xpath_is_start
     )
 {
     int i;
@@ -547,7 +547,7 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
         ||
         n->root->u.root.absyn->xpath_indexing == DATA1_XPATH_INDEXING_ENABLE)
     {
-	termlist_only = 0;
+        termlist_only = 0;
     }
 
 
@@ -557,21 +557,21 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
         wrd->term_buf = n->u.data.data;
         wrd->term_len = n->u.data.len;
 
-	mk_tag_path_full(tag_path_full, sizeof(tag_path_full), n);
+        mk_tag_path_full(tag_path_full, sizeof(tag_path_full), n);
 
-	/* If we have a matching termlist... */
-	if (n->root->u.root.absyn &&
-	    (tl = xpath_termlist_by_tagpath(tag_path_full, n)))
-	{
+        /* If we have a matching termlist... */
+        if (n->root->u.root.absyn &&
+            (tl = xpath_termlist_by_tagpath(tag_path_full, n)))
+        {
             zint max_seqno = 0;
-	    for (; tl; tl = tl->next)
-	    {
-		/* need to copy recword because it may be changed */
-		RecWord wrd_tl;
-		wrd->index_type = tl->structure;
-		memcpy(&wrd_tl, wrd, sizeof(*wrd));
-		if (tl->source)
-		    sp_parse(sp, n, &wrd_tl, tl->source);
+            for (; tl; tl = tl->next)
+            {
+                /* need to copy recword because it may be changed */
+                RecWord wrd_tl;
+                wrd->index_type = tl->structure;
+                memcpy(&wrd_tl, wrd, sizeof(*wrd));
+                if (tl->source)
+                    sp_parse(sp, n, &wrd_tl, tl->source);
 
                 /* this is just the old fashioned attribute based index */
                 wrd_tl.index_name = tl->index_name;
@@ -595,27 +595,27 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                 }
                 if (wrd_tl.seqno > max_seqno)
                     max_seqno = wrd_tl.seqno;
-	    }
+            }
             if (max_seqno)
                 wrd->seqno = max_seqno;
 
-	}
-	/* xpath indexing is done, if there was no termlist given,
-	   or no ! in the termlist, and default indexing is enabled... */
-	if (!p->flagShowRecords && !termlist_only)
-	{
-	    wrd->index_name = xpath_index;
-	    wrd->index_type = "w";
-	    (*p->tokenAdd)(wrd);
-	}
+        }
+        /* xpath indexing is done, if there was no termlist given,
+           or no ! in the termlist, and default indexing is enabled... */
+        if (!p->flagShowRecords && !termlist_only)
+        {
+            wrd->index_name = xpath_index;
+            wrd->index_type = "w";
+            (*p->tokenAdd)(wrd);
+        }
         break;
     case DATA1N_tag:
-	mk_tag_path_full(tag_path_full, sizeof(tag_path_full), n);
+        mk_tag_path_full(tag_path_full, sizeof(tag_path_full), n);
 
         wrd->index_type = "0";
         wrd->term_buf = tag_path_full;
         wrd->term_len = strlen(tag_path_full);
-	wrd->index_name = xpath_index;
+        wrd->index_name = xpath_index;
         if (p->flagShowRecords)
         {
             printf("%*s tag=", (level + 1) * 4, "");
@@ -693,8 +693,8 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                         /* If there is a termlist given (=xelm directive) */
                         for (; tl; tl = tl->next)
                         {
-			    if (!tl->index_name)
-			    {
+                            if (!tl->index_name)
+                            {
                                 /* add xpath index for the attribute */
                                 index_xpath_attr(attr_tag_path_full, xp->name,
                                                   xp->value, tl->structure,
@@ -703,8 +703,8 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                             } else {
                                 /* index attribute value (only path/@attr) */
                                 if (xp->value)
-				{
-				    wrd->index_name = tl->index_name;
+                                {
+                                    wrd->index_name = tl->index_name;
                                     wrd->index_type = tl->structure;
                                     wrd->term_buf = xp->value;
                                     wrd->term_len = strlen(xp->value);
@@ -724,12 +724,12 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                     i++;
                 }
             }
-	}
+        }
     }
 }
 
 static void index_termlist(struct source_parser *sp, data1_node *par,
-			    data1_node *n,
+                            data1_node *n,
                             struct recExtractCtrl *p, int level, RecWord *wrd)
 {
     data1_termlist *tlist = 0;
@@ -746,129 +746,129 @@ static void index_termlist(struct source_parser *sp, data1_node *par,
         return;
     for (; tlist; tlist = tlist->next)
     {
-	/* consider source */
-	wrd->term_buf = 0;
-	assert(tlist->source);
-	sp_parse(sp, n, wrd, tlist->source);
+        /* consider source */
+        wrd->term_buf = 0;
+        assert(tlist->source);
+        sp_parse(sp, n, wrd, tlist->source);
 
-	if (wrd->term_buf && wrd->term_len)
-	{
-	    if (p->flagShowRecords)
-	    {
-		int i;
-		printf("%*sIdx: [%s]", (level + 1) * 4, "",
-		       tlist->structure);
-		printf("%s %s", tlist->index_name, tlist->source);
-		printf(" XData:\"");
-		for (i = 0; i<wrd->term_len && i < 40; i++)
-		    fputc(wrd->term_buf[i], stdout);
-		fputc('"', stdout);
-		if (wrd->term_len > 40)
-		    printf(" ...");
-		fputc('\n', stdout);
-	    }
-	    else
-	    {
-		wrd->index_type = tlist->structure;
-		wrd->index_name = tlist->index_name;
-		(*p->tokenAdd)(wrd);
-	    }
-	}
+        if (wrd->term_buf && wrd->term_len)
+        {
+            if (p->flagShowRecords)
+            {
+                int i;
+                printf("%*sIdx: [%s]", (level + 1) * 4, "",
+                       tlist->structure);
+                printf("%s %s", tlist->index_name, tlist->source);
+                printf(" XData:\"");
+                for (i = 0; i<wrd->term_len && i < 40; i++)
+                    fputc(wrd->term_buf[i], stdout);
+                fputc('"', stdout);
+                if (wrd->term_len > 40)
+                    printf(" ...");
+                fputc('\n', stdout);
+            }
+            else
+            {
+                wrd->index_type = tlist->structure;
+                wrd->index_name = tlist->index_name;
+                (*p->tokenAdd)(wrd);
+            }
+        }
     }
 }
 
 static int dumpkeys_r(struct source_parser *sp,
-		      data1_node *n, struct recExtractCtrl *p, int level,
-		      RecWord *wrd)
+                      data1_node *n, struct recExtractCtrl *p, int level,
+                      RecWord *wrd)
 {
     for (; n; n = n->next)
     {
-	if (p->flagShowRecords) /* display element description to user */
-	{
-	    if (n->which == DATA1N_root)
-	    {
-		printf("%*s", level * 4, "");
+        if (p->flagShowRecords) /* display element description to user */
+        {
+            if (n->which == DATA1N_root)
+            {
+                printf("%*s", level * 4, "");
                 printf("Record type: '%s'\n", n->u.root.type);
-	    }
-	    else if (n->which == DATA1N_tag)
-	    {
-		data1_element *e;
+            }
+            else if (n->which == DATA1N_tag)
+            {
+                data1_element *e;
 
-		printf("%*s", level * 4, "");
-		if (!(e = n->u.tag.element))
-		    printf("Local tag: '%s'\n", n->u.tag.tag);
-		else
-		{
-		    printf("Elm: '%s' ", e->name);
-		    if (e->tag)
-		    {
-			data1_tag *t = e->tag;
+                printf("%*s", level * 4, "");
+                if (!(e = n->u.tag.element))
+                    printf("Local tag: '%s'\n", n->u.tag.tag);
+                else
+                {
+                    printf("Elm: '%s' ", e->name);
+                    if (e->tag)
+                    {
+                        data1_tag *t = e->tag;
 
-			printf("TagNam: '%s' ", t->names->name);
-			printf("(");
-			if (t->tagset)
-			    printf("%s[%d],", t->tagset->name, t->tagset->type);
-			else
-			    printf("?,");
-			if (t->which == DATA1T_numeric)
-			    printf("%d)", t->value.numeric);
-			else
-			    printf("'%s')", t->value.string);
-		    }
-		    printf("\n");
-		}
-	    }
-	}
+                        printf("TagNam: '%s' ", t->names->name);
+                        printf("(");
+                        if (t->tagset)
+                            printf("%s[%d],", t->tagset->name, t->tagset->type);
+                        else
+                            printf("?,");
+                        if (t->which == DATA1T_numeric)
+                            printf("%d)", t->value.numeric);
+                        else
+                            printf("'%s')", t->value.string);
+                    }
+                    printf("\n");
+                }
+            }
+        }
 
-	if (n->which == DATA1N_tag)
-	{
+        if (n->which == DATA1N_tag)
+        {
             index_termlist(sp, n, n, p, level, wrd);
             /* index start tag */
-	    if (n->root->u.root.absyn)
-      	        index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_ELM_BEGIN,
-			    1 /* is start */);
- 	}
+            if (n->root->u.root.absyn)
+                index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_ELM_BEGIN,
+                            1 /* is start */);
+        }
 
-	if (n->child)
-	    if (dumpkeys_r(sp, n->child, p, level + 1, wrd) < 0)
-		return -1;
+        if (n->child)
+            if (dumpkeys_r(sp, n->child, p, level + 1, wrd) < 0)
+                return -1;
 
 
-	if (n->which == DATA1N_data)
-	{
-	    data1_node *par = get_parent_tag(p->dh, n);
+        if (n->which == DATA1N_data)
+        {
+            data1_node *par = get_parent_tag(p->dh, n);
 
-	    if (p->flagShowRecords)
-	    {
-		printf("%*s", level * 4, "");
-		printf("Data: ");
-		if (n->u.data.len > 256)
-		    printf("'%.170s ... %.70s'\n", n->u.data.data,
-			   n->u.data.data + n->u.data.len-70);
-		else if (n->u.data.len > 0)
-		    printf("'%.*s'\n", n->u.data.len, n->u.data.data);
-		else
-		    printf("NULL\n");
-	    }
+            if (p->flagShowRecords)
+            {
+                printf("%*s", level * 4, "");
+                printf("Data: ");
+                if (n->u.data.len > 256)
+                    printf("'%.170s ... %.70s'\n", n->u.data.data,
+                           n->u.data.data + n->u.data.len-70);
+                else if (n->u.data.len > 0)
+                    printf("'%.*s'\n", n->u.data.len, n->u.data.data);
+                else
+                    printf("NULL\n");
+            }
 
-	    if (par)
-		index_termlist(sp, par, n, p, level, wrd);
+            if (par)
+                index_termlist(sp, par, n, p, level, wrd);
 
-	    index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_CDATA,
-			0 /* is start */);
- 	}
+            index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_CDATA,
+                        0 /* is start */);
+        }
 
-	if (n->which == DATA1N_tag)
-	{
+        if (n->which == DATA1N_tag)
+        {
             /* index end tag */
-	    index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_ELM_END,
-			0 /* is start */);
-	}
+            index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_ELM_END,
+                        0 /* is start */);
+        }
 
-	if (p->flagShowRecords && n->which == DATA1N_root)
-	{
-	    printf("%*s-------------\n\n", level * 4, "");
-	}
+        if (p->flagShowRecords && n->which == DATA1N_root)
+        {
+            printf("%*s-------------\n\n", level * 4, "");
+        }
     }
     return 0;
 }
@@ -895,8 +895,8 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
 }
 
 static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
-			   NMEM mem,
-			   data1_node *(*grs_read)(struct grs_read_info *))
+                           NMEM mem,
+                           data1_node *(*grs_read)(struct grs_read_info *))
 {
     data1_node *n;
     struct grs_read_info gri;
@@ -927,13 +927,13 @@ static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
     (*p->init)(p, &wrd);
     if (dumpkeys(n, p, &wrd) < 0)
     {
-	return RECCTRL_EXTRACT_ERROR_GENERIC;
+        return RECCTRL_EXTRACT_ERROR_GENERIC;
     }
     return RECCTRL_EXTRACT_OK;
 }
 
 int zebra_grs_extract(void *clientData, struct recExtractCtrl *p,
-		      data1_node *(*grs_read)(struct grs_read_info *))
+                      data1_node *(*grs_read)(struct grs_read_info *))
 {
     int ret;
     NMEM mem = nmem_create();
@@ -946,7 +946,7 @@ int zebra_grs_extract(void *clientData, struct recExtractCtrl *p,
  * Return: -1: Nothing done. 0: Ok. >0: Bib-1 diagnostic.
  */
 static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c,
-			char **addinfo, ODR o)
+                        char **addinfo, ODR o)
 {
     data1_esetname *eset;
     Z_Espec1 *espec = 0;
@@ -955,68 +955,68 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c,
     switch (c->which)
     {
     case Z_RecordComp_simple:
-	if (c->u.simple->which != Z_ElementSetNames_generic)
-	    return 26; /* only generic form supported. Fix this later */
-	if (!(eset = data1_getesetbyname(dh, n->u.root.absyn,
-					 c->u.simple->u.generic)))
-	{
-	    yaz_log(YLOG_LOG, "Unknown esetname '%s'", c->u.simple->u.generic);
-	    *addinfo = odr_strdup(o, c->u.simple->u.generic);
-	    return 25; /* invalid esetname */
-	}
-	yaz_log(YLOG_DEBUG, "Esetname '%s' in simple compspec",
-	     c->u.simple->u.generic);
-	espec = eset->spec;
-	break;
+        if (c->u.simple->which != Z_ElementSetNames_generic)
+            return 26; /* only generic form supported. Fix this later */
+        if (!(eset = data1_getesetbyname(dh, n->u.root.absyn,
+                                         c->u.simple->u.generic)))
+        {
+            yaz_log(YLOG_LOG, "Unknown esetname '%s'", c->u.simple->u.generic);
+            *addinfo = odr_strdup(o, c->u.simple->u.generic);
+            return 25; /* invalid esetname */
+        }
+        yaz_log(YLOG_DEBUG, "Esetname '%s' in simple compspec",
+             c->u.simple->u.generic);
+        espec = eset->spec;
+        break;
     case Z_RecordComp_complex:
-	if (c->u.complex->generic)
-	{
-	    /* insert check for schema */
-	    if ((p = c->u.complex->generic->elementSpec))
-	    {
-		switch (p->which)
-		{
-		case Z_ElementSpec_elementSetName:
-		    if (!(eset =
-			  data1_getesetbyname(dh, n->u.root.absyn,
-					      p->u.elementSetName)))
-		    {
-			yaz_log(YLOG_DEBUG, "Unknown esetname '%s'",
-			     p->u.elementSetName);
-			*addinfo = odr_strdup(o, p->u.elementSetName);
-			return 25; /* invalid esetname */
-		    }
-		    yaz_log(YLOG_DEBUG, "Esetname '%s' in complex compspec",
-			 p->u.elementSetName);
-		    espec = eset->spec;
-		    break;
-		case Z_ElementSpec_externalSpec:
-		    if (p->u.externalSpec->which == Z_External_espec1)
-		    {
-			yaz_log(YLOG_DEBUG, "Got Espec-1");
-			espec = p->u.externalSpec-> u.espec1;
-		    }
-		    else
-		    {
-			yaz_log(YLOG_LOG, "Unknown external espec.");
-			return 25; /* bad. what is proper diagnostic? */
-		    }
-		    break;
-		}
-	    }
-	}
-	else
-	    return 26; /* fix */
+        if (c->u.complex->generic)
+        {
+            /* insert check for schema */
+            if ((p = c->u.complex->generic->elementSpec))
+            {
+                switch (p->which)
+                {
+                case Z_ElementSpec_elementSetName:
+                    if (!(eset =
+                          data1_getesetbyname(dh, n->u.root.absyn,
+                                              p->u.elementSetName)))
+                    {
+                        yaz_log(YLOG_DEBUG, "Unknown esetname '%s'",
+                             p->u.elementSetName);
+                        *addinfo = odr_strdup(o, p->u.elementSetName);
+                        return 25; /* invalid esetname */
+                    }
+                    yaz_log(YLOG_DEBUG, "Esetname '%s' in complex compspec",
+                         p->u.elementSetName);
+                    espec = eset->spec;
+                    break;
+                case Z_ElementSpec_externalSpec:
+                    if (p->u.externalSpec->which == Z_External_espec1)
+                    {
+                        yaz_log(YLOG_DEBUG, "Got Espec-1");
+                        espec = p->u.externalSpec-> u.espec1;
+                    }
+                    else
+                    {
+                        yaz_log(YLOG_LOG, "Unknown external espec.");
+                        return 25; /* bad. what is proper diagnostic? */
+                    }
+                    break;
+                }
+            }
+        }
+        else
+            return 26; /* fix */
     }
     if (espec)
     {
         yaz_log(YLOG_DEBUG, "Element: Espec-1 match");
-	return data1_doespec1(dh, n, espec);
+        return data1_doespec1(dh, n, espec);
     }
     else
     {
-	yaz_log(YLOG_DEBUG, "Element: all match");
-	return -1;
+        yaz_log(YLOG_DEBUG, "Element: all match");
+        return -1;
     }
 }
 
@@ -1069,7 +1069,7 @@ static void zebra_xml_metadata(struct recRetrieveCtrl *p, data1_node *top,
 }
 
 int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
-		       data1_node *(*grs_read)(struct grs_read_info *))
+                       data1_node *(*grs_read)(struct grs_read_info *))
 {
     data1_node *node = 0, *onode = 0, *top;
     data1_node *dnew;
@@ -1093,9 +1093,9 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     node = (*grs_read)(&gri);
     if (!node)
     {
-	p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+        p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
         nmem_destroy(mem);
-	return 0;
+        return 0;
     }
     data1_concat_text(p->dh, mem, node);
 
@@ -1111,21 +1111,21 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     if (tagname &&
         (dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
-	dnew->u.data.what = DATA1I_text;
-	dnew->u.data.data = dnew->lbuf;
-	sprintf(dnew->u.data.data, "%d", p->recordSize);
-	dnew->u.data.len = strlen(dnew->u.data.data);
+        dnew->u.data.what = DATA1I_text;
+        dnew->u.data.data = dnew->lbuf;
+        sprintf(dnew->u.data.data, "%d", p->recordSize);
+        dnew->u.data.len = strlen(dnew->u.data.data);
     }
 
     tagname = data1_systag_lookup(node->u.root.absyn, "rank", "rank");
     if (tagname && p->score >= 0 &&
-	(dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
+        (dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
         yaz_log(YLOG_DEBUG, "grs_retrieve: %s", tagname);
-	dnew->u.data.what = DATA1I_num;
-	dnew->u.data.data = dnew->lbuf;
-	sprintf(dnew->u.data.data, "%d", p->score);
-	dnew->u.data.len = strlen(dnew->u.data.data);
+        dnew->u.data.what = DATA1I_num;
+        dnew->u.data.data = dnew->lbuf;
+        sprintf(dnew->u.data.data, "%d", p->score);
+        dnew->u.data.len = strlen(dnew->u.data.data);
     }
 
     tagname = data1_systag_lookup(node->u.root.absyn, "sysno",
@@ -1134,11 +1134,11 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
         (dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
         yaz_log(YLOG_DEBUG, "grs_retrieve: %s", tagname);
-	dnew->u.data.what = DATA1I_text;
-	dnew->u.data.data = dnew->lbuf;
+        dnew->u.data.what = DATA1I_text;
+        dnew->u.data.data = dnew->lbuf;
 
-	sprintf(dnew->u.data.data, ZINT_FORMAT, p->localno);
-	dnew->u.data.len = strlen(dnew->u.data.data);
+        sprintf(dnew->u.data.data, ZINT_FORMAT, p->localno);
+        dnew->u.data.len = strlen(dnew->u.data.data);
     }
 
     if (!p->input_format)
@@ -1154,7 +1154,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     data1_pr_tree(p->dh, node, stdout);
 #endif
     if (p->comp && p->comp->which == Z_RecordComp_complex &&
-	p->comp->u.complex->generic &&
+        p->comp->u.complex->generic &&
         p->comp->u.complex->generic->which == Z_Schema_oid &&
         p->comp->u.complex->generic->schema.oid)
     {
@@ -1165,28 +1165,28 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
      */
     if (requested_schema)
     {
-	yaz_log(YLOG_DEBUG, "grs_retrieve: schema mapping");
-	for (map = node->u.root.absyn->maptabs; map; map = map->next)
-	{
-	    if (!oid_oidcmp(map->oid, requested_schema))
-	    {
-		onode = node;
-		if (!(node = data1_map_record(p->dh, onode, map, mem)))
-		{
-		    p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
-		    nmem_destroy(mem);
-		    return 0;
-		}
-		break;
-	    }
-	}
-	if (node->u.root.absyn
+        yaz_log(YLOG_DEBUG, "grs_retrieve: schema mapping");
+        for (map = node->u.root.absyn->maptabs; map; map = map->next)
+        {
+            if (!oid_oidcmp(map->oid, requested_schema))
+            {
+                onode = node;
+                if (!(node = data1_map_record(p->dh, onode, map, mem)))
+                {
+                    p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
+                    nmem_destroy(mem);
+                    return 0;
+                }
+                break;
+            }
+        }
+        if (node->u.root.absyn
             && oid_oidcmp(requested_schema, node->u.root.absyn->oid))
-	{
-	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
-	    nmem_destroy(mem);
-	    return 0;
-	}
+        {
+            p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
+            nmem_destroy(mem);
+            return 0;
+        }
     }
     /*
      * Does the requested format match a known syntax-mapping? (this reflects
@@ -1222,19 +1222,19 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
             dnew->u.data.what = DATA1I_oid;
             dnew->u.data.data = (char *) nmem_strdup(mem, dot_str);
             dnew->u.data.len = strlen(dot_str);
-	}
+        }
     }
 
     yaz_log(YLOG_DEBUG, "grs_retrieve: element spec");
     if (p->comp && (res = process_comp(p->dh, node, p->comp, &p->addinfo,
-				       p->odr)) > 0)
+                                       p->odr)) > 0)
     {
-	p->diagnostic = res;
-	nmem_destroy(mem);
-	return 0;
+        p->diagnostic = res;
+        nmem_destroy(mem);
+        return 0;
     }
     else if (p->comp && !res)
-	selected = 1;
+        selected = 1;
 
 #if 0
     data1_pr_tree(p->dh, node, stdout);
@@ -1249,86 +1249,86 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 #if 0
         data1_pr_tree(p->dh, node, stdout);
 #endif
-	/* default output encoding for XML is UTF-8 */
-	data1_iconv(p->dh, mem, node,
-		     p->encoding ? p->encoding : "UTF-8",
-		     data1_get_encoding(p->dh, node));
+        /* default output encoding for XML is UTF-8 */
+        data1_iconv(p->dh, mem, node,
+                     p->encoding ? p->encoding : "UTF-8",
+                     data1_get_encoding(p->dh, node));
 
-	if (!(p->rec_buf = data1_nodetoidsgml(p->dh, node, selected,
-					      &p->rec_len)))
-	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
-	else
-	{
-	    char *new_buf = (char*) odr_malloc(p->odr, p->rec_len);
-	    memcpy(new_buf, p->rec_buf, p->rec_len);
-	    p->rec_buf = new_buf;
-	}
+        if (!(p->rec_buf = data1_nodetoidsgml(p->dh, node, selected,
+                                              &p->rec_len)))
+            p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
+        else
+        {
+            char *new_buf = (char*) odr_malloc(p->odr, p->rec_len);
+            memcpy(new_buf, p->rec_buf, p->rec_len);
+            p->rec_buf = new_buf;
+        }
     }
     else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_grs_1))
     {
-	data1_iconv(p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
-	dummy = 0;
-	if (!(p->rec_buf = data1_nodetogr(p->dh, node, selected,
-					  p->odr, &dummy)))
-	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
-	else
-	    p->rec_len = -1;
+        data1_iconv(p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
+        dummy = 0;
+        if (!(p->rec_buf = data1_nodetogr(p->dh, node, selected,
+                                          p->odr, &dummy)))
+            p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
+        else
+            p->rec_len = -1;
     }
     else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_explain))
     {
-	/* ensure our data1 tree is UTF-8 */
-	data1_iconv(p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
+        /* ensure our data1 tree is UTF-8 */
+        data1_iconv(p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
 
-	if (!(p->rec_buf = data1_nodetoexplain(p->dh, node, selected,
-					       p->odr)))
-	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
-	else
-	    p->rec_len = -1;
+        if (!(p->rec_buf = data1_nodetoexplain(p->dh, node, selected,
+                                               p->odr)))
+            p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
+        else
+            p->rec_len = -1;
     }
     else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_summary))
     {
-	/* ensure our data1 tree is UTF-8 */
-	data1_iconv(p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
-	if (!(p->rec_buf = data1_nodetosummary(p->dh, node, selected,
-					       p->odr)))
-	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
-	else
-	    p->rec_len = -1;
+        /* ensure our data1 tree is UTF-8 */
+        data1_iconv(p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
+        if (!(p->rec_buf = data1_nodetosummary(p->dh, node, selected,
+                                               p->odr)))
+            p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
+        else
+            p->rec_len = -1;
     }
     else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_sutrs))
     {
-	if (p->encoding)
+        if (p->encoding)
             data1_iconv(p->dh, mem, node, p->encoding,
-			 data1_get_encoding(p->dh, node));
-	if (!(p->rec_buf = data1_nodetobuf(p->dh, node, selected,
-					   &p->rec_len)))
-	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
-	else
-	{
-	    char *new_buf = (char*) odr_malloc(p->odr, p->rec_len);
-	    memcpy(new_buf, p->rec_buf, p->rec_len);
-	    p->rec_buf = new_buf;
-	}
+                         data1_get_encoding(p->dh, node));
+        if (!(p->rec_buf = data1_nodetobuf(p->dh, node, selected,
+                                           &p->rec_len)))
+            p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
+        else
+        {
+            char *new_buf = (char*) odr_malloc(p->odr, p->rec_len);
+            memcpy(new_buf, p->rec_buf, p->rec_len);
+            p->rec_buf = new_buf;
+        }
     }
     else if (!oid_oidcmp(p->input_format, yaz_oid_recsyn_soif))
     {
-	if (p->encoding)
+        if (p->encoding)
             data1_iconv(p->dh, mem, node, p->encoding,
-			 data1_get_encoding(p->dh, node));
-	if (!(p->rec_buf = data1_nodetosoif(p->dh, node, selected,
-					    &p->rec_len)))
-	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
-	else
-	{
-	    char *new_buf = (char*) odr_malloc(p->odr, p->rec_len);
-	    memcpy(new_buf, p->rec_buf, p->rec_len);
-	    p->rec_buf = new_buf;
-	}
+                         data1_get_encoding(p->dh, node));
+        if (!(p->rec_buf = data1_nodetosoif(p->dh, node, selected,
+                                            &p->rec_len)))
+            p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
+        else
+        {
+            char *new_buf = (char*) odr_malloc(p->odr, p->rec_len);
+            memcpy(new_buf, p->rec_buf, p->rec_len);
+            p->rec_buf = new_buf;
+        }
     }
     else
     {
-	if (!node->u.root.absyn)
-	    p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
+        if (!node->u.root.absyn)
+            p->diagnostic = YAZ_BIB1_RECORD_NOT_AVAILABLE_IN_REQUESTED_SYNTAX;
         else
         {
             for (marctab = node->u.root.absyn->marc; marctab;

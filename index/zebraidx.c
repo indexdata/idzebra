@@ -80,7 +80,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "%s [options] command <dir> ...\n"
         "Commands:\n"
         " update <dir>  Update index with files below <dir>.\n"
-	"               If <dir> is empty filenames are read from stdin.\n"
+        "               If <dir> is empty filenames are read from stdin.\n"
         " delete <dir>  Delete index with files below <dir>.\n"
         " create <db>   Create database <db>\n"
         " drop <db>     Drop database <db>\n"
@@ -88,14 +88,14 @@ int main(int argc, char **argv)
         " clean         Clean shadow files\n"
         " check mode    Check register; mode is one of: default, full, quick\n"
         "Options:\n"
-	" -t <type>     Index files as <type> (grs or text).\n"
-	" -c <config>   Read configuration file <config>.\n"
-	" -g <group>    Index files according to group settings.\n"
-	" -d <database> Records belong to Z39.50 database <database>.\n"
-	" -m <mbytes>   Use <mbytes> before flushing keys to disk.\n"
+        " -t <type>     Index files as <type> (grs or text).\n"
+        " -c <config>   Read configuration file <config>.\n"
+        " -g <group>    Index files according to group settings.\n"
+        " -d <database> Records belong to Z39.50 database <database>.\n"
+        " -m <mbytes>   Use <mbytes> before flushing keys to disk.\n"
         " -n            Don't use shadow system.\n"
-	" -s            Show analysis on stdout, but do no work.\n"
-	" -v <level>    Set logging to <level>.\n"
+        " -s            Show analysis on stdout, but do no work.\n"
+        " -v <level>    Set logging to <level>.\n"
         " -l <file>     Write log to <file>.\n"
         " -L            Don't follow symbolic links.\n"
         " -f <n>        Display information for the first <n> records.\n"
@@ -113,25 +113,25 @@ int main(int argc, char **argv)
             {
                 if (!zs)
                 {
-		    const char *config = configName ? configName : "zebra.cfg";
+                    const char *config = configName ? configName : "zebra.cfg";
                     zs = zebra_start_res(config, default_res, res);
                     if (!zs)
                     {
-			yaz_log(YLOG_FATAL, "Cannot read config %s", config);
+                        yaz_log(YLOG_FATAL, "Cannot read config %s", config);
                         exit(1);
-	            }
+                    }
                     zh = zebra_open(zs, 0);
-		    zebra_shadow_enable(zh, enable_commit);
+                    zebra_shadow_enable(zh, enable_commit);
                 }
 
-		if (database &&
-		    zebra_select_database(zh, database) == ZEBRA_FAIL)
-		{
-		    yaz_log(YLOG_FATAL, "Could not select database %s "
-			    "errCode=%d",
-			    database, zebra_errCode(zh) );
-		    exit(1);
-		}
+                if (database &&
+                    zebra_select_database(zh, database) == ZEBRA_FAIL)
+                {
+                    yaz_log(YLOG_FATAL, "Could not select database %s "
+                            "errCode=%d",
+                            database, zebra_errCode(zh) );
+                    exit(1);
+                }
                 if (!strcmp(arg, "update"))
                     cmd = 'u';
                 else if (!strcmp(arg, "update1"))
@@ -144,18 +144,18 @@ int main(int argc, char **argv)
                     cmd = 'd';
                 else if (!strcmp(arg, "adelete"))
                     cmd = 'a';
-		else if (!strcmp(arg, "init"))
-		{
+                else if (!strcmp(arg, "init"))
+                {
                     zebra_init(zh);
-		}
-		else if (!strcmp(arg, "drop"))
-		{
-		    cmd = 'D';
-		}
-		else if (!strcmp(arg, "create"))
-		{
-		    cmd = 'C';
-		}
+                }
+                else if (!strcmp(arg, "drop"))
+                {
+                    cmd = 'D';
+                }
+                else if (!strcmp(arg, "create"))
+                {
+                    cmd = 'C';
+                }
                 else if (!strcmp(arg, "commit"))
                 {
                     zebra_commit(zh);
@@ -180,25 +180,25 @@ int main(int argc, char **argv)
                 {
                     show_filters(zs);
                 }
-		else if (!strcmp(arg, "check"))
-		{
+                else if (!strcmp(arg, "check"))
+                {
                     cmd = 'K';
- 		}
+                }
                 else
                 {
                     yaz_log(YLOG_FATAL, "unknown command: %s", arg);
                     exit(1);
                 }
             }
-	    else
+            else
             {
-		ZEBRA_RES res = ZEBRA_OK;
-		if (!trans_started)
-		{
-		    trans_started = 1;
+                ZEBRA_RES res = ZEBRA_OK;
+                if (!trans_started)
+                {
+                    trans_started = 1;
                     if (zebra_begin_trans(zh, 1) != ZEBRA_OK)
                         exit(1);
-		}
+                }
                 switch (cmd)
                 {
                 case 'K':
@@ -216,17 +216,17 @@ int main(int argc, char **argv)
                 case 's':
                     res = zebra_repository_show(zh, arg);
                     break;
-		case 'C':
-		    res = zebra_create_database(zh, arg);
-		    break;
-		case 'D':
-		    res = zebra_drop_database(zh, arg);
-		    break;
+                case 'C':
+                    res = zebra_create_database(zh, arg);
+                    break;
+                case 'D':
+                    res = zebra_drop_database(zh, arg);
+                    break;
                 }
-		if (res != ZEBRA_OK)
-		{
+                if (res != ZEBRA_OK)
+                {
                     const char *add = zebra_errAdd(zh);
-		    yaz_log(YLOG_FATAL, "Operation failed: %s %s",
+                    yaz_log(YLOG_FATAL, "Operation failed: %s %s",
                             zebra_errString(zh), add ? add : "");
 
                     if (trans_started)
@@ -236,8 +236,8 @@ int main(int argc, char **argv)
 
                     zebra_close(zh);
                     zebra_stop(zs);
-		    exit(1);
-		}
+                    exit(1);
+                }
                 log_event_end(NULL, NULL);
             }
         }
@@ -248,7 +248,7 @@ int main(int argc, char **argv)
             zebra_get_version(version_str, sys_str);
 
             printf("Zebra %s\n", version_str);
-	    printf("(C) 1994-2022, Index Data\n");
+            printf("(C) 1994-2022, Index Data\n");
             printf("Zebra is free software, covered by the GNU General Public License, and you are\n");
             printf("welcome to change it and/or distribute copies of it under certain conditions.\n");
             printf("SHA1 ID: %s\n", sys_str);
@@ -260,26 +260,26 @@ int main(int argc, char **argv)
         }
         else if (ret == 'v')
             yaz_log_init_level(yaz_log_mask_str(arg));
-	else if (ret == 'l')
-	    yaz_log_init_file(arg);
+        else if (ret == 'l')
+            yaz_log_init_file(arg);
         else if (ret == 'm')
-	    res_set(res, "memMax", arg);
+            res_set(res, "memMax", arg);
         else if (ret == 'd')
             database = arg;
-	else if (ret == 's')
-	    res_set(res, "openRW", "0");
+        else if (ret == 's')
+            res_set(res, "openRW", "0");
         else if (ret == 'g')
-	    res_set(res, "group", arg);
+            res_set(res, "group", arg);
         else if (ret == 'f')
-	    res_set(res, "fileVerboseLimit", arg);
+            res_set(res, "fileVerboseLimit", arg);
         else if (ret == 'c')
             configName = arg;
         else if (ret == 't')
-	    res_set(res, "recordType", arg);
+            res_set(res, "recordType", arg);
         else if (ret == 'n')
-	    enable_commit = 0;
-	else if (ret == 'L')
-	    res_set(res, "followLinks", "0");
+            enable_commit = 0;
+        else if (ret == 'L')
+            res_set(res, "followLinks", "0");
         else
             yaz_log(YLOG_WARN, "unknown option '-%s'", arg);
     } /* while arg */

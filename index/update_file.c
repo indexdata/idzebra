@@ -39,7 +39,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #if 0
 static int dump_file_dict_func(char *name, const char *info, int pos,
-				void *client)
+                                void *client)
 {
     yaz_log(YLOG_LOG, "%s", name);
     return 0;
@@ -149,7 +149,7 @@ static void file_update_r(ZebraHandle zh,
             if (e_src[i_src].name)
             {
                 yaz_log(YLOG_DEBUG, "dst=%s src=%s", dst->path + src_len,
-		      e_src[i_src].name);
+                      e_src[i_src].name);
                 sd = strcmp(dst->path + src_len, e_src[i_src].name);
             }
             else
@@ -175,7 +175,7 @@ static void file_update_r(ZebraHandle zh,
                     {
                         dirs_add(di, src, dst->sysno, e_src[i_src].mtime);
                     }
-		    yaz_log(YLOG_DEBUG, "old: %s", ctime(&dst->mtime));
+                    yaz_log(YLOG_DEBUG, "old: %s", ctime(&dst->mtime));
                     yaz_log(YLOG_DEBUG, "new: %s", ctime(&e_src[i_src].mtime));
                 }
                 dst = dirs_read(di);

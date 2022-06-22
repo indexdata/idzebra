@@ -29,7 +29,7 @@ static void tst(int argc, char **argv)
     char profile_path[256];
     char record_buf[20000];
     const char *records_array[] = {
-	record_buf, 0
+        record_buf, 0
     };
     FILE *f;
     size_t r;
@@ -53,14 +53,14 @@ static void tst(int argc, char **argv)
     f = fopen(path, "rb");
     if (!f)
     {
-	yaz_log(YLOG_FATAL|YLOG_ERRNO, "Cannot open %s", path);
-	exit(1);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "Cannot open %s", path);
+        exit(1);
     }
     r = fread(record_buf, 1, sizeof(record_buf)-1, f);
     if (r < 2 || r == sizeof(record_buf)-1)
     {
-	yaz_log(YLOG_FATAL, "Bad size of %s", path);
-	exit(1);
+        yaz_log(YLOG_FATAL, "Bad size of %s", path);
+        exit(1);
     }
     fclose(f);
 

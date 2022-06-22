@@ -53,8 +53,8 @@ void tst_latin1(void)
 {
     /* open existing map chrmaptab.chr */
     chrmaptab tab = chrmaptab_create(get_srcdir() /* tabpath */,
-				     "tstcharmap.chr" /* file */,
-				     0 /* tabroot */ );
+                                     "tstcharmap.chr" /* file */,
+                                     0 /* tabroot */ );
     YAZ_CHECK(tab);
     tst_string(tab, "b", 16);
     tst_string(tab, "æ", 42);
@@ -66,8 +66,8 @@ void tst_utf8(void)
 {
     /* open existing map chrmaptab.chr */
     chrmaptab tab = chrmaptab_create(get_srcdir() /* tabpath */,
-				     "tstcharmap_utf8.chr" /* file */,
-				     0 /* tabroot */ );
+                                     "tstcharmap_utf8.chr" /* file */,
+                                     0 /* tabroot */ );
     YAZ_CHECK(tab);
     tst_string(tab, "b", 16);
     tst_string(tab, "æ", 42);
@@ -79,8 +79,8 @@ void tst2(void)
 {
     /* open non-existing nonexist.chr */
     chrmaptab tab = chrmaptab_create(get_srcdir() /* tabpath */,
-				     "nonexist.chr" /* file */,
-				     0 /* tabroot */ );
+                                     "nonexist.chr" /* file */,
+                                     0 /* tabroot */ );
     YAZ_CHECK(!tab);
     chrmaptab_destroy(tab);
 }
@@ -89,8 +89,8 @@ void tst3(void)
 {
     /* open empty emptycharmap.chrr */
     chrmaptab tab = chrmaptab_create(get_srcdir() /* tabpath */,
-				     "emptycharmap.chr" /* file */,
-				     0 /* tabroot */ );
+                                     "emptycharmap.chr" /* file */,
+                                     0 /* tabroot */ );
     YAZ_CHECK(!tab);
     chrmaptab_destroy(tab);
 }

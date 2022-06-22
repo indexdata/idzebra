@@ -46,10 +46,10 @@ static void my_dec(struct rset_key_control *kc)
     (cp->ref_count)--;
     if (cp->ref_count == 0)
     {
-	if (cp->filter_destroy)
-	    (*cp->filter_destroy)(kc->filter_data);
-	xfree(cp);
-	xfree(kc);
+        if (cp->filter_destroy)
+            (*cp->filter_destroy)(kc->filter_data);
+        xfree(cp);
+        xfree(kc);
     }
 }
 
@@ -77,9 +77,9 @@ struct rset_key_control *zebra_key_control_create(ZebraHandle zh)
     }
 
     zebra_limit_for_rset(zh->m_limit,
-			 &kc->filter_func,
-			 &cp->filter_destroy,
-			 &kc->filter_data);
+                         &kc->filter_func,
+                         &cp->filter_destroy,
+                         &kc->filter_data);
     kc->inc = my_inc;
     kc->dec = my_dec;
     cp->ref_count = 1;

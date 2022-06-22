@@ -86,7 +86,7 @@ int zebra_maps_is_first_in_field(zebra_map_t zm);
 
 YAZ_EXPORT
 WRBUF zebra_replace(zebra_map_t zm, const char *ex_list,
-		    const char *input_str, int input_len);
+                    const char *input_str, int input_len);
 
 YAZ_EXPORT
 zebra_map_t zebra_map_get(zebra_maps_t zms, const char *id);

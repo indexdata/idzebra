@@ -48,7 +48,7 @@ const char *myrec[] = {
         "<gils>\n<title>" char_ae "rme</title>\n</gils>\n" ,
         "<gils>\n<title>B" char_aring "d</title>\n"
         "<abstract>זיהוי סדר הארועים בסיפור המרד הגדול מאת צביה בן-שלום 提示:直接点击数据库名称,将进入单库检索 Ngày xửa ngày xưa D.W. all wet</abstract>\n</gils>\n" ,
-	0} ;
+        0} ;
 
 static void tst(int argc, char **argv)
 {
@@ -202,7 +202,7 @@ static void tst2(int argc, char **argv)
     const char *myrec2[] = {
         "<gils>\n<title>one two three four\n</gils>\n",
         "<gils>\n<title>Jensen, S. E.\n</gils>\n",
-	0} ;
+        0} ;
 
     ZebraService zs = tl_start_up("test_icu_indexing.cfg", argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);

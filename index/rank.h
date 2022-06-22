@@ -32,13 +32,13 @@ struct rank_control {
                    void *class_handle, RSET rset, NMEM nmem,
                    TERMID *terms, int numterms);
     /* ### Could add parameters to begin:
-     *	char *index;	// author, title, etc.
-     *	int dbsize;	// number of records in database
-     *	int rssize;	// number of records in result set (estimate?)
+     *  char *index;    // author, title, etc.
+     *  int dbsize;     // number of records in database
+     *  int rssize;     // number of records in result set (estimate?)
      */
     void (*end)(struct zebra_register *reg, void *set_handle);
     int (*calc)(void *set_handle, zint sysno, zint staticrank,
-		int *stop_flag);
+                int *stop_flag);
     void (*add)(void *set_handle, int seqno, TERMID term);
 };
 

@@ -98,7 +98,7 @@ ZEBRA_RES bf_cache(BFiles bfs, const char *spec)
     {
         yaz_log(YLOG_LOG, "enabling shadow spec=%s", spec);
         if (!bfs->commit_area)
-	    bfs->commit_area = mf_init("shadow", spec, bfs->base, 1);
+            bfs->commit_area = mf_init("shadow", spec, bfs->base, 1);
         if (bfs->commit_area)
         {
             bfs->cache_fname = xmalloc(strlen(bfs->commit_area->dirs->name)+
@@ -107,11 +107,11 @@ ZEBRA_RES bf_cache(BFiles bfs, const char *spec)
             strcat(bfs->cache_fname, "/cache");
             yaz_log(YLOG_LOG, "cache_fname = %s", bfs->cache_fname);
         }
-	else
-	{
-	    yaz_log(YLOG_WARN, "shadow could not be enabled");
-	    return ZEBRA_FAIL;
-	}
+        else
+        {
+            yaz_log(YLOG_WARN, "shadow could not be enabled");
+            return ZEBRA_FAIL;
+        }
     }
     else
         bfs->commit_area = 0;
@@ -220,11 +220,11 @@ int bf_read2(BFile bf, zint no, int offset, int nbytes, void *buf)
     zebra_lock_rdwr_rlock(&bf->rdwr_lock);
     if (bf->cf)
     {
-	if ((ret = cf_read(bf->cf, no, offset, nbytes, buf)) == 0)
-	    ret = mf_read(bf->mf, no, offset, nbytes, buf);
+        if ((ret = cf_read(bf->cf, no, offset, nbytes, buf)) == 0)
+            ret = mf_read(bf->mf, no, offset, nbytes, buf);
     }
     else
-	ret = mf_read(bf->mf, no, offset, nbytes, buf);
+        ret = mf_read(bf->mf, no, offset, nbytes, buf);
     zebra_lock_rdwr_runlock(&bf->rdwr_lock);
     return ret;
 }
@@ -247,7 +247,7 @@ int bf_write2(BFile bf, zint no, int offset, int nbytes, const void *buf)
     if (bf->cf)
         r = cf_write(bf->cf, no, offset, nbytes, buf);
     else
-	r = mf_write(bf->mf, no, offset, nbytes, buf);
+        r = mf_write(bf->mf, no, offset, nbytes, buf);
     zebra_lock_rdwr_wunlock(&bf->rdwr_lock);
     return r;
 }
@@ -268,7 +268,7 @@ int bf_commitExists(BFiles bfs)
 void bf_reset(BFiles bfs)
 {
     if (!bfs)
-	return;
+        return;
     mf_reset(bfs->commit_area, 1);
     mf_reset(bfs->register_area, 1);
     unlink_cache(bfs);
@@ -336,20 +336,20 @@ void bf_commitClean(BFiles bfs, const char *spec)
 }
 
 int bfs_register_directory_stat(BFiles bfs, int no, const char **directory,
-				double *used_bytes, double *max_bytes)
+                                double *used_bytes, double *max_bytes)
 {
     return mf_area_directory_stat(bfs->register_area, no, directory,
-				  used_bytes, max_bytes);
+                                  used_bytes, max_bytes);
 }
 
 
 int bfs_shadow_directory_stat(BFiles bfs, int no, const char **directory,
-			      double *used_bytes, double *max_bytes)
+                              double *used_bytes, double *max_bytes)
 {
     if (!bfs->commit_area)
-	return 0;
+        return 0;
     return mf_area_directory_stat(bfs->commit_area, no, directory,
-				  used_bytes, max_bytes);
+                                  used_bytes, max_bytes);
 }
 
 /* unimplemented functions not in use, but kept to ensure ABI */

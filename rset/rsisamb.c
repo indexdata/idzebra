@@ -74,12 +74,12 @@ static int log_level = 0;
 static int log_level_initialized = 0;
 
 RSET rsisamb_create(NMEM nmem, struct rset_key_control *kcontrol,
-		    int scope,
-		    ISAMB is, ISAM_P pos, TERMID term)
+                    int scope,
+                    ISAMB is, ISAM_P pos, TERMID term)
 {
     RSET rnew = rset_create_base(
-	kcontrol->filter_func ? &control_filter : &control,
-	nmem, kcontrol, scope, term, 0, 0);
+        kcontrol->filter_func ? &control_filter : &control,
+        nmem, kcontrol, scope, term, 0, 0);
     struct rset_private *info;
     assert(pos);
     if (!log_level_initialized)
@@ -170,9 +170,9 @@ static int r_read_filter(RSFD rfd, void *buf, TERMID *term)
     int rc;
     while((rc = isamb_pp_read(pinfo->pt, buf)))
     {
-	int incl = (*kctrl->filter_func)(buf, kctrl->filter_data);
-	if (incl)
-	    break;
+        int incl = (*kctrl->filter_func)(buf, kctrl->filter_data);
+        if (incl)
+            break;
     }
     if (rc && term)
         *term = rfd->rset->term;

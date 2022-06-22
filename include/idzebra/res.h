@@ -59,7 +59,7 @@ int res_trav(Res r, const char *prefix, void *p,
 
 YAZ_EXPORT
 const char *res_get_prefix(Res r, const char *name, const char *prefix,
-			   const char *def);
+                           const char *def);
 
 YAZ_EXPORT
 ZEBRA_RES res_get_int(Res r, const char *name, int *val);

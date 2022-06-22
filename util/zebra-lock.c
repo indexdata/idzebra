@@ -113,7 +113,7 @@ int zebra_lock_rdwr_rlock (Zebra_lock_rdwr *p)
 #if YAZ_POSIX_THREADS
     pthread_mutex_lock (& p->mutex);
     while (p->writers_writing)
-	pthread_cond_wait (&p->lock_free, &p->mutex);
+        pthread_cond_wait (&p->lock_free, &p->mutex);
     p->readers_reading++;
     pthread_mutex_unlock(&p->mutex);
 #endif
@@ -125,7 +125,7 @@ int zebra_lock_rdwr_wlock (Zebra_lock_rdwr *p)
 #if YAZ_POSIX_THREADS
     pthread_mutex_lock (&p->mutex);
     while (p->writers_writing || p->readers_reading)
-	pthread_cond_wait (&p->lock_free, &p->mutex);
+        pthread_cond_wait (&p->lock_free, &p->mutex);
     p->writers_writing++;
     pthread_mutex_unlock (&p->mutex);
 #endif
@@ -138,15 +138,15 @@ int zebra_lock_rdwr_runlock (Zebra_lock_rdwr *p)
     pthread_mutex_lock (&p->mutex);
     if (p->readers_reading == 0)
     {
-	pthread_mutex_unlock (&p->mutex);
-	return -1;
+        pthread_mutex_unlock (&p->mutex);
+        return -1;
     }
     else
     {
-	p->readers_reading--;
-	if (p->readers_reading == 0)
-	    pthread_cond_signal (&p->lock_free);
-	pthread_mutex_unlock (&p->mutex);
+        p->readers_reading--;
+        if (p->readers_reading == 0)
+            pthread_cond_signal (&p->lock_free);
+        pthread_mutex_unlock (&p->mutex);
     }
 #endif
     return 0;
@@ -158,14 +158,14 @@ int zebra_lock_rdwr_wunlock (Zebra_lock_rdwr *p)
     pthread_mutex_lock (&p->mutex);
     if (p->writers_writing == 0)
     {
-	pthread_mutex_unlock (&p->mutex);
-	return -1;
+        pthread_mutex_unlock (&p->mutex);
+        return -1;
     }
     else
     {
-	p->writers_writing--;
-	pthread_cond_broadcast(&p->lock_free);
-	pthread_mutex_unlock(&p->mutex);
+        p->writers_writing--;
+        pthread_cond_broadcast(&p->lock_free);
+        pthread_mutex_unlock(&p->mutex);
     }
 #endif
     return 0;

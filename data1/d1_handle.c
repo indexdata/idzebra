@@ -49,7 +49,7 @@ data1_handle data1_create(void)
 {
     data1_handle p = (data1_handle)xmalloc (sizeof(*p));
     if (!p)
-	return 0;
+        return 0;
     p->tab_path = NULL;
     p->tab_root = NULL;
     p->wrbuf = wrbuf_alloc();
@@ -81,7 +81,7 @@ data1_attset_cache *data1_attset_cache_get (data1_handle dh)
 void data1_destroy (data1_handle dh)
 {
     if (!dh)
-	return;
+        return;
 
     /* *ostrich*
        We need to destroy DFAs, in xp_element (xelm) definitions
@@ -91,11 +91,11 @@ void data1_destroy (data1_handle dh)
 
     wrbuf_destroy(dh->wrbuf);
     if (dh->tab_path)
-	xfree (dh->tab_path);
+        xfree (dh->tab_path);
     if (dh->tab_root)
-	xfree (dh->tab_root);
+        xfree (dh->tab_root);
     if (dh->read_buf)
-	xfree (dh->read_buf);
+        xfree (dh->read_buf);
     if (dh->map_buf)
         xfree (dh->map_buf);
     nmem_destroy (dh->mem);
@@ -158,11 +158,11 @@ FILE *data1_path_fopen (data1_handle dh, const char *file, const char *mode)
             "file=%s mode=%s", path ? path : "NULL",
             root ? root : "NULL", file, mode);
     if (!path || !*path)
-	return 0;
+        return 0;
     f = yaz_fopen(path, file, mode, root);
     if (!f)
     {
-	yaz_log(YLOG_WARN|YLOG_ERRNO, "Couldn't open %s", file);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "Couldn't open %s", file);
         if (root)
             yaz_log(YLOG_LOG, "for root=%s", root);
         if (path)

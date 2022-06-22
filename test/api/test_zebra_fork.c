@@ -45,12 +45,12 @@ static void update_process(ZebraService zs, int iter)
     int i;
     for (i = 0; i<iter; i++)
     {
-	const char *rec = "<gils><title>some</title></gils>";
-	ZebraHandle zh = zebra_open(zs, 0);
-	zebra_add_record(zh, rec, strlen(rec));
-	if ((i % 30) == 0 || i == iter-1)
-	    zebra_commit(zh);
-	zebra_close(zh);
+        const char *rec = "<gils><title>some</title></gils>";
+        ZebraHandle zh = zebra_open(zs, 0);
+        zebra_add_record(zh, rec, strlen(rec));
+        if ((i % 30) == 0 || i == iter-1)
+            zebra_commit(zh);
+        zebra_close(zh);
     }
 }
 
@@ -60,28 +60,28 @@ static void search_process(ZebraService zs, int iter)
     int i;
     for (i = 0; i<iter; i++)
     {
-	ZebraHandle zh = zebra_open(zs, 0);
-	zint hits;
-	ZEBRA_RES res = zebra_search_PQF(zh, "@attr 1=4 some", "default",
-					 &hits);
-	YAZ_CHECK(res == ZEBRA_OK);
+        ZebraHandle zh = zebra_open(zs, 0);
+        zint hits;
+        ZEBRA_RES res = zebra_search_PQF(zh, "@attr 1=4 some", "default",
+                                         &hits);
+        YAZ_CHECK(res == ZEBRA_OK);
 
-	YAZ_CHECK(hits >= hits_max);
-	if (hits < hits_max)
-	    printf("i=%d hits=%lld hits_max=%lld\n", i, hits, hits_max);
+        YAZ_CHECK(hits >= hits_max);
+        if (hits < hits_max)
+            printf("i=%d hits=%lld hits_max=%lld\n", i, hits, hits_max);
         hits_max = hits;
-	zebra_close(zh);
+        zebra_close(zh);
     }
 }
 
 static pid_t fork_service(ZebraService zs, int iter,
-			   void (*f)(ZebraService zs, int iter))
+                           void (*f)(ZebraService zs, int iter))
 {
     pid_t pid = fork();
 
     YAZ_CHECK(pid != -1);
     if (pid)
-	return pid;
+        return pid;
 
     (*f)(zs, iter);
     YAZ_CHECK_TERM;
@@ -118,8 +118,8 @@ static void tst(int argc, char **argv)
     if (1)
     {
         int tst_with_fork = 1;
-	int status[3];
-	pid_t pids[3];
+        int status[3];
+        pid_t pids[3];
         struct utsname s;
         uname(&s);
         if (!strcmp(s.sysname, "FreeBSD"))
@@ -129,15 +129,15 @@ static void tst(int argc, char **argv)
             tst_with_fork);
         if (tst_with_fork)
         {
-	    pids[0] = fork_service(zs, 200, search_process);
-	    pids[1] = fork_service(zs, 20, update_process);
-	    pids[2] = fork_service(zs, 20, update_process);
-	    waitpid(pids[0], &status[0], 0);
-	    YAZ_CHECK(status[0] == 0);
-	    waitpid(pids[1], &status[1], 0);
-	    YAZ_CHECK(status[1] == 0);
-	    waitpid(pids[2], &status[2], 0);
-	    YAZ_CHECK(status[2] == 0);
+            pids[0] = fork_service(zs, 200, search_process);
+            pids[1] = fork_service(zs, 20, update_process);
+            pids[2] = fork_service(zs, 20, update_process);
+            waitpid(pids[0], &status[0], 0);
+            YAZ_CHECK(status[0] == 0);
+            waitpid(pids[1], &status[1], 0);
+            YAZ_CHECK(status[1] == 0);
+            waitpid(pids[2], &status[2], 0);
+            YAZ_CHECK(status[2] == 0);
         }
     }
 #endif

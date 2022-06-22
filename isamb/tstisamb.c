@@ -55,9 +55,9 @@ int compare_item(const void *a, const void *b)
     memcpy(&ia, a, sizeof(int));
     memcpy(&ib, b, sizeof(int));
     if (ia > ib)
-	return 1;
+        return 1;
     if (ia < ib)
-	return -1;
+        return -1;
    return 0;
 }
 
@@ -95,7 +95,7 @@ int code_read(void *vp, char **dst, int *insertMode)
     int x;
 
     if (ri->no >= ri->max)
-	return 0;
+        return 0;
     ri->no++;
 
     x = ri->val;
@@ -140,24 +140,24 @@ void tst_insert(ISAMB isb, int n)
     ri.val = 0;
     while(isamb_pp_read (pp, key_buf))
     {
-	int x;
-	memcpy (&x, key_buf, sizeof(int));
-	if (x != ri.val)
-	{
-	    yaz_log(YLOG_WARN, "isamb_pp_read. n=%d Got %d (expected %d)",
-		    n, x, ri.val);
-	    nerrs++;
-	}
-	else if (nerrs)
-	    yaz_log(log_level, "isamb_pp_read. n=%d Got %d",
-		    n, x);
+        int x;
+        memcpy (&x, key_buf, sizeof(int));
+        if (x != ri.val)
+        {
+            yaz_log(YLOG_WARN, "isamb_pp_read. n=%d Got %d (expected %d)",
+                    n, x, ri.val);
+            nerrs++;
+        }
+        else if (nerrs)
+            yaz_log(log_level, "isamb_pp_read. n=%d Got %d",
+                    n, x);
 
-	ri.val++;
+        ri.val++;
     }
     if (ri.val != ri.max)
     {
-	yaz_log(YLOG_WARN, "ri.max != ri.max (%d != %d)", ri.val, ri.max);
-	nerrs++;
+        yaz_log(YLOG_WARN, "ri.max != ri.max (%d != %d)", ri.val, ri.max);
+        nerrs++;
     }
     isamb_dump(isb, isamc_p, log_pr);
     isamb_pp_close(pp);
@@ -192,9 +192,9 @@ void tst_insert(ISAMB isb, int n)
 
     if (isamc_p)
     {
-	yaz_log(YLOG_WARN, "isamb_merge did not return empty list n=%d",
-		n);
-	exit(3);
+        yaz_log(YLOG_WARN, "isamb_merge did not return empty list n=%d",
+                n);
+        exit(3);
     }
 }
 
@@ -225,32 +225,32 @@ void tst_forward(ISAMB isb, int n)
 
     for (i = 0; i<ri.max; i +=2 )
     {
-	int x = -1;
-	int xu = i;
-	isamb_pp_forward(pp, &x, &xu);
-	if (x != xu && xu != x+1)
-	{
-	    yaz_log(YLOG_WARN, "isamb_pp_forward (1). Got %d (expected %d)",
-		    x, xu);
-	    exit(4);
-	}
-	ri.no++;
+        int x = -1;
+        int xu = i;
+        isamb_pp_forward(pp, &x, &xu);
+        if (x != xu && xu != x+1)
+        {
+            yaz_log(YLOG_WARN, "isamb_pp_forward (1). Got %d (expected %d)",
+                    x, xu);
+            exit(4);
+        }
+        ri.no++;
     }
     isamb_pp_close(pp);
 
     pp = isamb_pp_open (isb, isamc_p, 1);
     for (i = 0; i<ri.max; i += 100)
     {
-	int x = -1;
-	int xu = i;
-	isamb_pp_forward(pp, &x, &xu);
-	if (x != xu && xu != x+1)
-	{
-	    yaz_log(YLOG_WARN, "isamb_pp_forward (2). Got %d (expected %d)",
-		    x, xu);
-	    exit(4);
-	}
-	ri.no++;
+        int x = -1;
+        int xu = i;
+        isamb_pp_forward(pp, &x, &xu);
+        if (x != xu && xu != x+1)
+        {
+            yaz_log(YLOG_WARN, "isamb_pp_forward (2). Got %d (expected %d)",
+                    x, xu);
+            exit(4);
+        }
+        ri.no++;
     }
     isamb_pp_close(pp);
 
@@ -294,18 +294,18 @@ void tst_append(ISAMB isb, int n)
 
     for (i = 0; i < n; i += chunk)
     {
-	/* insert a number of entries */
-	ri.no = 0;
-	ri.max = i + chunk;
+        /* insert a number of entries */
+        ri.no = 0;
+        ri.max = i + chunk;
 
-	ri.val = 0;
-	ri.step = 1;
-	ri.insertMode = 1;
+        ri.val = 0;
+        ri.step = 1;
+        ri.insertMode = 1;
 
-	isamc_i.clientData = &ri;
-	isamc_i.read_item = code_read;
+        isamc_i.clientData = &ri;
+        isamc_i.read_item = code_read;
 
-	isamb_merge (isb, &isamb_p , &isamc_i);
+        isamb_merge (isb, &isamb_p , &isamc_i);
     }
 }
 
@@ -324,21 +324,21 @@ int tst_random_read(void *vp, char **dst, int *insertMode)
 
     while(ri->idx < ri->max && ri->delta[ri->idx] == ri->level)
     {
-	ri->idx++;
-	ri->level = 0;
+        ri->idx++;
+        ri->level = 0;
     }
     if (ri->idx >= ri->max)
-	return 0;
+        return 0;
 
     if (ri->delta[ri->idx] > 0)
     {
-	ri->level++;
-	*insertMode = 1;
+        ri->level++;
+        *insertMode = 1;
     }
     else
     {
-	ri->level--;
-	*insertMode = 0;
+        ri->level--;
+        *insertMode = 0;
     }
     x = ri->idx;
     memcpy (*dst, &x, sizeof(int));
@@ -356,95 +356,95 @@ void tst_random(ISAMB isb, int n, int rounds, int max_dups)
     int *delta = malloc(sizeof(int) * n);
     int i, j;
     for (i = 0; i<n; i++)
-	freq[i] = 0;
+        freq[i] = 0;
 
     for (j = 0; j<rounds; j++)
     {
-	yaz_log(YLOG_DEBUG, "round %d", j);
-	for (i = 0; i<n; i++)
-	{
-	    if (rand() & 1)
-		delta[i] = (rand() % (1+max_dups)) - freq[i];
-	    else
-		delta[i] = 0;
-	}
-	if (n)
-	{
-	    ISAMC_I isamc_i;
-	    struct random_read_info ri;
+        yaz_log(YLOG_DEBUG, "round %d", j);
+        for (i = 0; i<n; i++)
+        {
+            if (rand() & 1)
+                delta[i] = (rand() % (1+max_dups)) - freq[i];
+            else
+                delta[i] = 0;
+        }
+        if (n)
+        {
+            ISAMC_I isamc_i;
+            struct random_read_info ri;
 
-	    ri.delta = delta;
-	    ri.idx = 0;
-	    ri.max = n;
-	    ri.level = 0;
+            ri.delta = delta;
+            ri.idx = 0;
+            ri.max = n;
+            ri.level = 0;
 
-	    isamc_i.clientData = &ri;
-	    isamc_i.read_item = tst_random_read;
+            isamc_i.clientData = &ri;
+            isamc_i.read_item = tst_random_read;
 
-	    isamb_merge (isb, &isamb_p , &isamc_i);
-	}
+            isamb_merge (isb, &isamb_p , &isamc_i);
+        }
 
-	yaz_log(YLOG_DEBUG, "dump %d", j);
-	isamb_dump(isb, isamb_p, log_pr);
+        yaz_log(YLOG_DEBUG, "dump %d", j);
+        isamb_dump(isb, isamb_p, log_pr);
 
-	yaz_log(YLOG_DEBUG, "----------------------------");
-	for (i = 0; i<n; i++)
-	    freq[i] += delta[i];
+        yaz_log(YLOG_DEBUG, "----------------------------");
+        for (i = 0; i<n; i++)
+            freq[i] += delta[i];
 
-	if (!isamb_p)
-	{
-	    for (i = 0; i<n; i++)
-		if (freq[i])
-		{
-		    yaz_log(YLOG_WARN, "isamb_merge returned 0, but "
-			    "freq is non-empty");
-		    exit(1);
-		}
-	}
-	else
-	{
-	    int level = 0;
-	    int idx = 0;
-	    char key_buf[20];
-	    ISAMB_PP pp = isamb_pp_open (isb, isamb_p, 1);
+        if (!isamb_p)
+        {
+            for (i = 0; i<n; i++)
+                if (freq[i])
+                {
+                    yaz_log(YLOG_WARN, "isamb_merge returned 0, but "
+                            "freq is non-empty");
+                    exit(1);
+                }
+        }
+        else
+        {
+            int level = 0;
+            int idx = 0;
+            char key_buf[20];
+            ISAMB_PP pp = isamb_pp_open (isb, isamb_p, 1);
 
-	    yaz_log(YLOG_DEBUG, "test %d", j);
+            yaz_log(YLOG_DEBUG, "test %d", j);
 
-	    while(isamb_pp_read (pp, key_buf))
-	    {
-		int x;
-		memcpy (&x, key_buf, sizeof(int));
-		yaz_log(YLOG_DEBUG, "Got %d", x);
-		while (idx < n && freq[idx] == level)
-		{
-		    idx++;
-		    level = 0;
-		}
-		if (idx == n)
-		{
-		    yaz_log(YLOG_WARN, "tst_random: Extra item: %d", x);
-		    exit(1);
-		}
-		if (idx != x)
-		{
-		    yaz_log(YLOG_WARN, "tst_random: Mismatch %d != %d",
-			    x, idx);
-		    exit(1);
-		}
-		level++;
-	    }
-	    while (idx < n && freq[idx] == level)
-	    {
-		idx++;
-		level = 0;
-	    }
-	    if (idx != n)
-	    {
-		yaz_log(YLOG_WARN, "tst_random: Missing item: %d", idx);
-		exit(1);
-	    }
-	    isamb_pp_close(pp);
-	}
+            while(isamb_pp_read (pp, key_buf))
+            {
+                int x;
+                memcpy (&x, key_buf, sizeof(int));
+                yaz_log(YLOG_DEBUG, "Got %d", x);
+                while (idx < n && freq[idx] == level)
+                {
+                    idx++;
+                    level = 0;
+                }
+                if (idx == n)
+                {
+                    yaz_log(YLOG_WARN, "tst_random: Extra item: %d", x);
+                    exit(1);
+                }
+                if (idx != x)
+                {
+                    yaz_log(YLOG_WARN, "tst_random: Mismatch %d != %d",
+                            x, idx);
+                    exit(1);
+                }
+                level++;
+            }
+            while (idx < n && freq[idx] == level)
+            {
+                idx++;
+                level = 0;
+            }
+            if (idx != n)
+            {
+                yaz_log(YLOG_WARN, "tst_random: Missing item: %d", idx);
+                exit(1);
+            }
+            isamb_pp_close(pp);
+        }
     }
     free(freq);
     free(delta);
@@ -493,9 +493,9 @@ void tst_minsert(ISAMB isb, int n)
     isamb_merge (isb, &isamb_p , &isamc_i);
     if (isamb_p)
     {
-	yaz_log(YLOG_WARN, "tst_minsert: isamb_merge should be empty n=%d",
-		n);
-	exit(1);
+        yaz_log(YLOG_WARN, "tst_minsert: isamb_merge should be empty n=%d",
+                n);
+        exit(1);
     }
 }
 
@@ -537,7 +537,7 @@ int main(int argc, char **argv)
     ISAMC_M method;
 
     if (argc == 2)
-	yaz_log_init_level(YLOG_ALL);
+        yaz_log_init_level(YLOG_ALL);
 
     /* setup method (attributes) */
     method.compare_item = compare_item;
@@ -552,8 +552,8 @@ int main(int argc, char **argv)
     bfs = bfs_create(0, 0);
     if (!bfs)
     {
-	yaz_log(YLOG_WARN, "bfs_create failed");
-	exit(1);
+        yaz_log(YLOG_WARN, "bfs_create failed");
+        exit(1);
     }
 
     bf_reset(bfs);
@@ -562,8 +562,8 @@ int main(int argc, char **argv)
     isb = isamb_open (bfs, "isamb", 1, &method, 0);
     if (!isb)
     {
-	yaz_log(YLOG_WARN, "isamb_open failed");
-	exit(2);
+        yaz_log(YLOG_WARN, "isamb_open failed");
+        exit(2);
     }
     tst_insert(isb, 1);
     tst_insert(isb, 2);
@@ -579,7 +579,7 @@ int main(int argc, char **argv)
     tst_append(isb, 1000);
 
     if (0)
-	identical_keys_tests(isb);
+        identical_keys_tests(isb);
 
     isamb_close(isb);
 

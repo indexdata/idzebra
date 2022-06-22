@@ -265,7 +265,7 @@ int recindex_read_indx(recindex_t p, zint sysno, void *buf, int itemsize,
         r = bf_read(p->index_BFile, 1+pos/RIDX_CHUNK, off, sz1, buf);
         if (r == 1 && sz1 < itemsize) /* boundary? - must read second part */
             r = bf_read(p->index_BFile, 2+pos/RIDX_CHUNK, 0, itemsize - sz1,
-			(char*) buf + sz1);
+                        (char*) buf + sz1);
         if (r != 1 && !ignoreError)
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "read in %s at pos %ld",

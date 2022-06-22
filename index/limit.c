@@ -38,8 +38,8 @@ void zebra_limit_destroy(struct zebra_limit *zl)
 {
     if (zl)
     {
-	xfree(zl->ids);
-	xfree(zl);
+        xfree(zl->ids);
+        xfree(zl);
     }
 }
 
@@ -49,12 +49,12 @@ struct zebra_limit *zebra_limit_create(int complement_flag, zint *ids)
     size_t i;
     if (ids)
     {
-	for (i = 0; ids[i]; i++)
-	    ;
-	zl = xmalloc(sizeof(*zl));
-	zl->ids = xmalloc((i+1) * sizeof(*ids));
-	memcpy(zl->ids, ids, (i+1) * sizeof(*ids));
-	zl->complement_flag = complement_flag;
+        for (i = 0; ids[i]; i++)
+            ;
+        zl = xmalloc(sizeof(*zl));
+        zl->ids = xmalloc((i+1) * sizeof(*ids));
+        memcpy(zl->ids, ids, (i+1) * sizeof(*ids));
+        zl->complement_flag = complement_flag;
     }
     return zl;
 }
@@ -71,16 +71,16 @@ static int zebra_limit_filter_cb(const void *buf, void *data)
     for (i = 0; zl->ids[i]; i++)
     {
 #if ZEBRA_LIMIT_DEBUG
-	yaz_log(YLOG_LOG, " i=%d ids=" ZINT_FORMAT " mem=" ZINT_FORMAT,
-		i, zl->ids[i], key->mem[1]);
+        yaz_log(YLOG_LOG, " i=%d ids=" ZINT_FORMAT " mem=" ZINT_FORMAT,
+                i, zl->ids[i], key->mem[1]);
 #endif
-	if (zl->ids[i] == key->mem[1])
-	{
+        if (zl->ids[i] == key->mem[1])
+        {
 #if ZEBRA_LIMIT_DEBUG
-	    yaz_log(YLOG_LOG, " match. Ret=%d", zl->complement_flag ? 0:1);
+            yaz_log(YLOG_LOG, " match. Ret=%d", zl->complement_flag ? 0:1);
 #endif
-	    return zl->complement_flag ? 0 : 1;
-	}
+            return zl->complement_flag ? 0 : 1;
+        }
     }
 #if ZEBRA_LIMIT_DEBUG
     yaz_log(YLOG_LOG, " no match. Ret=%d", zl->complement_flag ? 1:0);
@@ -94,30 +94,30 @@ static void zebra_limit_destroy_cb(void *data)
 }
 
 void zebra_limit_for_rset(struct zebra_limit *zl,
-			  int (**filter_func)(const void *buf, void *data),
-			  void (**filter_destroy)(void *data),
-			  void **filter_data)
+                          int (**filter_func)(const void *buf, void *data),
+                          void (**filter_destroy)(void *data),
+                          void **filter_data)
 {
 #if ZEBRA_LIMIT_DEBUG
     yaz_log(YLOG_LOG, "zebra_limit_for_rset debug enabled zl=%p", zl);
 #endif
     if (zl && zl->ids)
     {
-	struct zebra_limit *hl;
+        struct zebra_limit *hl;
 
 #if ZEBRA_LIMIT_DEBUG
-	yaz_log(YLOG_LOG, "enable limit");
+        yaz_log(YLOG_LOG, "enable limit");
 #endif
-	hl = zebra_limit_create(zl->complement_flag, zl->ids);
-	*filter_data = hl;
-	*filter_func = zebra_limit_filter_cb;
-	*filter_destroy = zebra_limit_destroy_cb;
+        hl = zebra_limit_create(zl->complement_flag, zl->ids);
+        *filter_data = hl;
+        *filter_func = zebra_limit_filter_cb;
+        *filter_destroy = zebra_limit_destroy_cb;
     }
     else
     {
-	*filter_data = 0;
-	*filter_func = 0;
-	*filter_destroy = 0;
+        *filter_data = 0;
+        *filter_func = 0;
+        *filter_destroy = 0;
     }
 }
 

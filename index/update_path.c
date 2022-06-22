@@ -55,10 +55,10 @@ static void repositoryExtractR(ZebraHandle zh, char *rep, int level,
 
     for (i=0; e[i].name; i++)
     {
-	char *ecp;
+        char *ecp;
         strcpy(rep +rep_len+1, e[i].name);
-	if ((ecp = strrchr(e[i].name, '/')))
-	    *ecp = '\0';
+        if ((ecp = strrchr(e[i].name, '/')))
+            *ecp = '\0';
 
         switch (e[i].kind)
         {
@@ -85,7 +85,7 @@ void repositoryShow(ZebraHandle zh, const char *path)
     if (!(dict = dict_open_res(zh->reg->bfs, FMATCH_DICT, 50, 0, 0, zh->res)))
     {
         yaz_log(YLOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
-	return;
+        return;
     }
 
     strncpy(src, path, sizeof(src)-1);
@@ -134,7 +134,7 @@ static void repositoryExtract(ZebraHandle zh,
     else if (S_ISREG(sbuf.st_mode))
         zebra_extract_file(zh, NULL, src, action);
     else if (S_ISDIR(sbuf.st_mode))
-	repositoryExtractR(zh, src, 0, action);
+        repositoryExtractR(zh, src, 0, action);
     else
         yaz_log(YLOG_WARN, "Skipping path %s", src);
 }

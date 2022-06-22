@@ -191,12 +191,12 @@ int zebra_parse_xpath_str(const char *xpath_string,
             while (*cp == ' ')
                 cp++;
 
-	    a = (char *)cp;
-	    xpath[no].predicate = get_xpath_predicate(a, mem);
-	    while(*cp && *cp != ']') {
-	      cp++;
-	    }
-	    if (*cp == ']')
+            a = (char *)cp;
+            xpath[no].predicate = get_xpath_predicate(a, mem);
+            while(*cp && *cp != ']') {
+              cp++;
+            }
+            if (*cp == ']')
                 cp++;
         } /* end of ] predicate */
         no++;

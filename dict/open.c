@@ -56,7 +56,7 @@ Dict dict_open(BFiles bfs, const char *name, int cache, int rw,
     dict = (Dict) xmalloc(sizeof(*dict));
 
     if (cache < 5)
-	cache = 5;
+        cache = 5;
 
     dict->grep_cmap = NULL;
     page_size = DICT_DEFAULT_PAGESIZE;
@@ -80,19 +80,19 @@ Dict dict_open(BFiles bfs, const char *name, int cache, int rw,
     }
     if (dict_bf_readp(dict->dbf, 0, &head_buf) <= 0)
     {
-	dict->head.page_size = page_size;
+        dict->head.page_size = page_size;
         dict->head.compact_flag = compact_flag;
         dict_clean(dict);
     }
     else /* header was there, check magic and page size */
     {
-	memcpy(&dict->head, head_buf, sizeof(dict->head));
+        memcpy(&dict->head, head_buf, sizeof(dict->head));
         if (strcmp(dict->head.magic_str, DICT_MAGIC))
         {
             yaz_log(YLOG_WARN, "Bad magic of `%s'", name);
-	    dict_bf_close(dict->dbf);
-	    xfree(dict);
-	    return 0;
+            dict_bf_close(dict->dbf);
+            xfree(dict);
+            return 0;
         }
         if (dict->head.page_size != page_size)
         {
@@ -101,7 +101,7 @@ Dict dict_open(BFiles bfs, const char *name, int cache, int rw,
         }
     }
     if (dict->head.compact_flag)
-	dict_bf_compact(dict->dbf);
+        dict_bf_compact(dict->dbf);
     return dict;
 }
 

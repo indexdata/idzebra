@@ -85,8 +85,8 @@ void zebra_maps_close(zebra_maps_t zms)
     struct zebra_map *zm = zms->map_list;
     while (zm)
     {
-	if (zm->maptab)
-	    chrmaptab_destroy(zm->maptab);
+        if (zm->maptab)
+            chrmaptab_destroy(zm->maptab);
 #if YAZ_HAVE_ICU
         if (zm->icu_chain)
             icu_chain_destroy(zm->icu_chain);
@@ -96,7 +96,7 @@ void zebra_maps_close(zebra_maps_t zms)
 #endif
         wrbuf_destroy(zm->input_str);
         wrbuf_destroy(zm->print_str);
-	zm = zm->next;
+        zm = zm->next;
     }
     wrbuf_destroy(zms->wrbuf_1);
     nmem_destroy(zms->nmem);
@@ -302,8 +302,8 @@ ZEBRA_RES zebra_maps_read_file(zebra_maps_t zms, const char *fname)
 
     if (!(f = yaz_fopen(zms->tabpath, fname, "r", zms->tabroot)))
     {
-	yaz_log(YLOG_ERRNO|YLOG_FATAL, "%s", fname);
-	return ZEBRA_FAIL;
+        yaz_log(YLOG_ERRNO|YLOG_FATAL, "%s", fname);
+        return ZEBRA_FAIL;
     }
     while ((argc = readconf_line(f, &lineno, line, 512, argv, 10)))
     {
@@ -367,12 +367,12 @@ zebra_map_t zebra_map_get_or_add(zebra_maps_t zms, const char *id)
     {
         zm = zebra_add_map(zms, id, ZEBRA_MAP_TYPE_INDEX);
 
-	/* no reason to warn if no maps are read from file */
-	if (zms->no_files_read)
-	    yaz_log(YLOG_WARN, "Unknown register type: %s", id);
+        /* no reason to warn if no maps are read from file */
+        if (zms->no_files_read)
+            yaz_log(YLOG_WARN, "Unknown register type: %s", id);
 
-	zm->maptab_name = nmem_strdup(zms->nmem, "@");
-	zm->completeness = 0;
+        zm->maptab_name = nmem_strdup(zms->nmem, "@");
+        zm->completeness = 0;
         zm->positioned = 1;
     }
     return zm;
@@ -382,25 +382,25 @@ chrmaptab zebra_charmap_get(zebra_map_t zm)
 {
     if (!zm->maptab)
     {
-	if (!zm->maptab_name || !yaz_matchstr(zm->maptab_name, "@"))
-	    return NULL;
-	if (!(zm->maptab = chrmaptab_create(zm->zebra_maps->tabpath,
-					    zm->maptab_name,
-					    zm->zebra_maps->tabroot)))
-	    yaz_log(YLOG_WARN, "Failed to read character table %s",
-		    zm->maptab_name);
-	else
-	    yaz_log(YLOG_DEBUG, "Read character table %s", zm->maptab_name);
+        if (!zm->maptab_name || !yaz_matchstr(zm->maptab_name, "@"))
+            return NULL;
+        if (!(zm->maptab = chrmaptab_create(zm->zebra_maps->tabpath,
+                                            zm->maptab_name,
+                                            zm->zebra_maps->tabroot)))
+            yaz_log(YLOG_WARN, "Failed to read character table %s",
+                    zm->maptab_name);
+        else
+            yaz_log(YLOG_DEBUG, "Read character table %s", zm->maptab_name);
     }
     return zm->maptab;
 }
 
 const char **zebra_maps_input(zebra_map_t zm,
-			      const char **from, int len, int first)
+                              const char **from, int len, int first)
 {
     chrmaptab maptab = zebra_charmap_get(zm);
     if (maptab)
-	return chr_map_input(maptab, from, len, first);
+        return chr_map_input(maptab, from, len, first);
 
     zm->zebra_maps->temp_map_str[0] = **from;
 
@@ -409,7 +409,7 @@ const char **zebra_maps_input(zebra_map_t zm,
 }
 
 const char **zebra_maps_search(zebra_map_t zm,
-			       const char **from, int len,  int *q_map_match)
+                               const char **from, int len,  int *q_map_match)
 {
     chrmaptab maptab;
 
@@ -417,16 +417,16 @@ const char **zebra_maps_search(zebra_map_t zm,
     maptab = zebra_charmap_get(zm);
     if (maptab)
     {
-	const char **map;
-	map = chr_map_q_input(maptab, from, len, 0);
-	if (map && map[0])
-	{
-	    *q_map_match = 1;
-	    return map;
-	}
-	map = chr_map_input(maptab, from, len, 0);
-	if (map)
-	    return map;
+        const char **map;
+        map = chr_map_q_input(maptab, from, len, 0);
+        if (map && map[0])
+        {
+            *q_map_match = 1;
+            return map;
+        }
+        map = chr_map_input(maptab, from, len, 0);
+        if (map)
+            return map;
     }
     zm->zebra_maps->temp_map_str[0] = **from;
 
@@ -435,11 +435,11 @@ const char **zebra_maps_search(zebra_map_t zm,
 }
 
 const char *zebra_maps_output(zebra_map_t zm,
-			      const char **from)
+                              const char **from)
 {
     chrmaptab maptab = zebra_charmap_get(zm);
     if (!maptab)
-	return 0;
+        return 0;
     return chr_map_output(maptab, from, 1);
 }
 
@@ -449,54 +449,54 @@ const char *zebra_maps_output(zebra_map_t zm,
 int zebra_maps_is_complete(zebra_map_t zm)
 {
     if (zm)
-	return zm->completeness;
+        return zm->completeness;
     return 0;
 }
 
 int zebra_maps_is_positioned(zebra_map_t zm)
 {
     if (zm)
-	return zm->positioned;
+        return zm->positioned;
     return 0;
 }
 
 int zebra_maps_is_index(zebra_map_t zm)
 {
     if (zm)
-	return zm->type == ZEBRA_MAP_TYPE_INDEX;
+        return zm->type == ZEBRA_MAP_TYPE_INDEX;
     return 0;
 }
 
 int zebra_maps_is_staticrank(zebra_map_t zm)
 {
     if (zm)
-	return zm->type == ZEBRA_MAP_TYPE_STATICRANK;
+        return zm->type == ZEBRA_MAP_TYPE_STATICRANK;
     return 0;
 }
 
 int zebra_maps_is_sort(zebra_map_t zm)
 {
     if (zm)
-	return zm->type == ZEBRA_MAP_TYPE_SORT;
+        return zm->type == ZEBRA_MAP_TYPE_SORT;
     return 0;
 }
 
 int zebra_maps_is_alwaysmatches(zebra_map_t zm)
 {
     if (zm)
-	return zm->alwaysmatches;
+        return zm->alwaysmatches;
     return 0;
 }
 
 int zebra_maps_is_first_in_field(zebra_map_t zm)
 {
     if (zm)
-	return zm->first_in_field;
+        return zm->first_in_field;
     return 0;
 }
 
 int zebra_maps_sort(zebra_maps_t zms, Z_SortAttributes *sortAttributes,
-		    int *numerical)
+                    int *numerical)
 {
     AttrType use;
     AttrType structure;
@@ -512,8 +512,8 @@ int zebra_maps_sort(zebra_maps_t zms, Z_SortAttributes *sortAttributes,
 }
 
 int zebra_maps_attr(zebra_maps_t zms, Z_AttributesPlusTerm *zapt,
-		    const char **index_type, char **search_type, char *rank_type,
-		    int *complete_flag, int *sort_flag)
+                    const char **index_type, char **search_type, char *rank_type,
+                    int *complete_flag, int *sort_flag)
 {
     AttrType completeness;
     AttrType structure;
@@ -544,9 +544,9 @@ int zebra_maps_attr(zebra_maps_t zms, Z_AttributesPlusTerm *zapt,
     use_value = attr_find(&use, NULL);
 
     if (completeness_value == 2 || completeness_value == 3)
-	*complete_flag = 1;
+        *complete_flag = 1;
     else
-	*complete_flag = 0;
+        *complete_flag = 0;
     *index_type = 0;
 
     *sort_flag =(sort_relation_value > 0) ? 1 : 0;
@@ -559,38 +559,38 @@ int zebra_maps_attr(zebra_maps_t zms, Z_AttributesPlusTerm *zapt,
         sprintf(rank_type, "rank,w=%d,u=%d", weight_value, use_value);
     }
     if (*complete_flag)
-	*index_type = "p";
+        *index_type = "p";
     else
-	*index_type = "w";
+        *index_type = "w";
     switch (structure_value)
     {
     case 6:   /* word list */
-	*search_type = "and-list";
-	break;
+        *search_type = "and-list";
+        break;
     case 105: /* free-form-text */
-	*search_type = "or-list";
-	break;
+        *search_type = "or-list";
+        break;
     case 106: /* document-text */
         *search_type = "or-list";
-	break;
+        break;
     case -1:
     case 1:   /* phrase */
     case 2:   /* word */
     case 108: /* string */
-	*search_type = "phrase";
-	break;
+        *search_type = "phrase";
+        break;
     case 107: /* local-number */
-	*search_type = "local";
-	*index_type = 0;
-	break;
+        *search_type = "local";
+        *index_type = 0;
+        break;
     case 109: /* numeric string */
-	*index_type = "n";
-	*search_type = "numeric";
+        *index_type = "n";
+        *search_type = "numeric";
         break;
     case 104: /* urx */
-	*index_type = "u";
-	*search_type = "phrase";
-	break;
+        *index_type = "u";
+        *search_type = "phrase";
+        break;
     case 3:   /* key */
         *index_type = "0";
         *search_type = "phrase";
@@ -610,13 +610,13 @@ int zebra_maps_attr(zebra_maps_t zms, Z_AttributesPlusTerm *zapt,
             return -1;
         break;
     default:
-	return -1;
+        return -1;
     }
     return 0;
 }
 
 WRBUF zebra_replace(zebra_map_t zm, const char *ex_list,
-		    const char *input_str, int input_len)
+                    const char *input_str, int input_len)
 {
     wrbuf_rewind(zm->zebra_maps->wrbuf_1);
     wrbuf_write(zm->zebra_maps->wrbuf_1, input_str, input_len);

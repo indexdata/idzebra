@@ -47,10 +47,10 @@ void isamc_getmethod (ISAMC_M *m)
     static struct ISAMC_filecat_s def_cat[] = {
 #if SMALL_TEST
         {    32,     28,      0,  3 },
-	{    64,     54,     30,  0 },
+        {    64,     54,     30,  0 },
 #else
         {    64,     56,     40,  5 },
-	{   128,    120,    100,  10 },
+        {   128,    120,    100,  10 },
         {   512,    490,    350,  10 },
         {  2048,   1900,   1700,  10 },
         {  8192,   8000,   7900,  10 },
@@ -113,7 +113,7 @@ ISAMC isamc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
     if (writeflag)
     {
         is->merge_buf = (char *) xmalloc (max_buf_size+256);
-	memset (is->merge_buf, 0, max_buf_size+256);
+        memset (is->merge_buf, 0, max_buf_size+256);
     }
     else
         is->merge_buf = NULL;
@@ -123,23 +123,23 @@ ISAMC isamc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
         is->files[i].head_is_dirty = 0;
         is->files[i].head.lastblock = 1;
         is->files[i].head.freelist = 0;
-	is->files[i].alloc_entries_num = 0;
-	is->files[i].alloc_entries_max =
-	    is->method->filecat[i].bsize / sizeof(zint) - 1;
-	is->files[i].alloc_buf = (char *)
-	    xmalloc (is->method->filecat[i].bsize);
+        is->files[i].alloc_entries_num = 0;
+        is->files[i].alloc_entries_max =
+            is->method->filecat[i].bsize / sizeof(zint) - 1;
+        is->files[i].alloc_buf = (char *)
+            xmalloc (is->method->filecat[i].bsize);
         is->files[i].no_writes = 0;
         is->files[i].no_reads = 0;
         is->files[i].no_skip_writes = 0;
         is->files[i].no_allocated = 0;
         is->files[i].no_released = 0;
         is->files[i].no_remap = 0;
-	is->files[i].no_forward = 0;
-	is->files[i].no_backward = 0;
-	is->files[i].sum_forward = 0;
-	is->files[i].sum_backward = 0;
-	is->files[i].no_next = 0;
-	is->files[i].no_prev = 0;
+        is->files[i].no_forward = 0;
+        is->files[i].no_backward = 0;
+        is->files[i].sum_forward = 0;
+        is->files[i].sum_backward = 0;
+        is->files[i].no_next = 0;
+        is->files[i].no_prev = 0;
 
         init_fc (is, i);
     }
@@ -171,7 +171,7 @@ ISAMC isamc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
 zint isamc_block_used (ISAMC is, int type)
 {
     if (type < 0 || type >= is->no_files)
-	return -1;
+        return -1;
     return is->files[type].head.lastblock-1;
 }
 
@@ -179,7 +179,7 @@ int isamc_block_size (ISAMC is, int type)
 {
     ISAMC_filecat filecat = is->method->filecat;
     if (type < 0 || type >= is->no_files)
-	return -1;
+        return -1;
     return filecat[type].bsize;
 }
 
@@ -189,19 +189,19 @@ int isamc_close (ISAMC is)
 
     if (is->method->debug)
     {
-	yaz_log (YLOG_LOG, "isc:    next    forw   mid-f    prev   backw   mid-b");
-	for (i = 0; i<is->no_files; i++)
-	    yaz_log (YLOG_LOG, "isc:%8d%8d%8.1f%8d%8d%8.1f",
-		  is->files[i].no_next,
-		  is->files[i].no_forward,
-		  is->files[i].no_forward ?
-		  (double) is->files[i].sum_forward/is->files[i].no_forward
-		  : 0.0,
-		  is->files[i].no_prev,
-		  is->files[i].no_backward,
-		  is->files[i].no_backward ?
-		  (double) is->files[i].sum_backward/is->files[i].no_backward
-		  : 0.0);
+        yaz_log (YLOG_LOG, "isc:    next    forw   mid-f    prev   backw   mid-b");
+        for (i = 0; i<is->no_files; i++)
+            yaz_log (YLOG_LOG, "isc:%8d%8d%8.1f%8d%8d%8.1f",
+                  is->files[i].no_next,
+                  is->files[i].no_forward,
+                  is->files[i].no_forward ?
+                  (double) is->files[i].sum_forward/is->files[i].no_forward
+                  : 0.0,
+                  is->files[i].no_prev,
+                  is->files[i].no_backward,
+                  is->files[i].no_backward ?
+                  (double) is->files[i].sum_backward/is->files[i].no_backward
+                  : 0.0);
     }
     if (is->method->debug)
         yaz_log (YLOG_LOG, "isc:  writes   reads skipped   alloc released  remap");
@@ -268,9 +268,9 @@ static void flush_block (ISAMC is, int cat)
     zint block = is->files[cat].head.freelist;
     if (block && is->files[cat].alloc_entries_num)
     {
-	memcpy (abuf, &is->files[cat].alloc_entries_num, sizeof(block));
-	bf_write (is->files[cat].bf, block, 0, 0, abuf);
-	is->files[cat].alloc_entries_num = 0;
+        memcpy (abuf, &is->files[cat].alloc_entries_num, sizeof(block));
+        bf_write (is->files[cat].bf, block, 0, 0, abuf);
+        is->files[cat].alloc_entries_num = 0;
     }
 }
 
@@ -284,38 +284,38 @@ static zint alloc_block (ISAMC is, int cat)
     if (!block)
     {
         block = (is->files[cat].head.lastblock)++;   /* no free list */
-	is->files[cat].head_is_dirty = 1;
+        is->files[cat].head_is_dirty = 1;
     }
     else
     {
-	if (!is->files[cat].alloc_entries_num) /* read first time */
-	{
-	    bf_read (is->files[cat].bf, block, 0, 0, abuf);
-	    memcpy (&is->files[cat].alloc_entries_num, abuf,
-		    sizeof(is->files[cat].alloc_entries_num));
-	    assert (is->files[cat].alloc_entries_num > 0);
-	}
-	/* have some free blocks now */
-	assert (is->files[cat].alloc_entries_num > 0);
-	is->files[cat].alloc_entries_num--;
-	if (!is->files[cat].alloc_entries_num)  /* last one in block? */
-	{
-	    memcpy (&is->files[cat].head.freelist, abuf + sizeof(int),
-		    sizeof(zint));
-	    is->files[cat].head_is_dirty = 1;
+        if (!is->files[cat].alloc_entries_num) /* read first time */
+        {
+            bf_read (is->files[cat].bf, block, 0, 0, abuf);
+            memcpy (&is->files[cat].alloc_entries_num, abuf,
+                    sizeof(is->files[cat].alloc_entries_num));
+            assert (is->files[cat].alloc_entries_num > 0);
+        }
+        /* have some free blocks now */
+        assert (is->files[cat].alloc_entries_num > 0);
+        is->files[cat].alloc_entries_num--;
+        if (!is->files[cat].alloc_entries_num)  /* last one in block? */
+        {
+            memcpy (&is->files[cat].head.freelist, abuf + sizeof(int),
+                    sizeof(zint));
+            is->files[cat].head_is_dirty = 1;
 
-	    if (is->files[cat].head.freelist)
-	    {
-		bf_read (is->files[cat].bf, is->files[cat].head.freelist,
-			 0, 0, abuf);
-		memcpy (&is->files[cat].alloc_entries_num, abuf,
-			sizeof(is->files[cat].alloc_entries_num));
-		assert (is->files[cat].alloc_entries_num);
-	    }
-	}
-	else
-	    memcpy (&block, abuf + sizeof(zint) + sizeof(int) *
-		    is->files[cat].alloc_entries_num, sizeof(zint));
+            if (is->files[cat].head.freelist)
+            {
+                bf_read (is->files[cat].bf, is->files[cat].head.freelist,
+                         0, 0, abuf);
+                memcpy (&is->files[cat].alloc_entries_num, abuf,
+                        sizeof(is->files[cat].alloc_entries_num));
+                assert (is->files[cat].alloc_entries_num);
+            }
+        }
+        else
+            memcpy (&block, abuf + sizeof(zint) + sizeof(int) *
+                    is->files[cat].alloc_entries_num, sizeof(zint));
     }
     return block;
 }
@@ -329,30 +329,30 @@ static void release_block (ISAMC is, int cat, zint pos)
 
     if (block && !is->files[cat].alloc_entries_num) /* must read block */
     {
-	bf_read (is->files[cat].bf, block, 0, 0, abuf);
-	memcpy (&is->files[cat].alloc_entries_num, abuf,
-		sizeof(is->files[cat].alloc_entries_num));
-	assert (is->files[cat].alloc_entries_num > 0);
+        bf_read (is->files[cat].bf, block, 0, 0, abuf);
+        memcpy (&is->files[cat].alloc_entries_num, abuf,
+                sizeof(is->files[cat].alloc_entries_num));
+        assert (is->files[cat].alloc_entries_num > 0);
     }
     assert (is->files[cat].alloc_entries_num <= is->files[cat].alloc_entries_max);
     if (is->files[cat].alloc_entries_num == is->files[cat].alloc_entries_max)
     {
-	assert (block);
-	memcpy (abuf, &is->files[cat].alloc_entries_num, sizeof(int));
-	bf_write (is->files[cat].bf, block, 0, 0, abuf);
-	is->files[cat].alloc_entries_num = 0;
+        assert (block);
+        memcpy (abuf, &is->files[cat].alloc_entries_num, sizeof(int));
+        bf_write (is->files[cat].bf, block, 0, 0, abuf);
+        is->files[cat].alloc_entries_num = 0;
     }
     if (!is->files[cat].alloc_entries_num) /* make new buffer? */
     {
-	memcpy (abuf + sizeof(int), &block, sizeof(zint));
-	is->files[cat].head.freelist = pos;
-	is->files[cat].head_is_dirty = 1;
+        memcpy (abuf + sizeof(int), &block, sizeof(zint));
+        is->files[cat].head.freelist = pos;
+        is->files[cat].head_is_dirty = 1;
     }
     else
     {
-	memcpy (abuf + sizeof(int) +
-		is->files[cat].alloc_entries_num*sizeof(zint),
-		&pos, sizeof(zint));
+        memcpy (abuf + sizeof(int) +
+                is->files[cat].alloc_entries_num*sizeof(zint),
+                &pos, sizeof(zint));
     }
     is->files[cat].alloc_entries_num++;
 }
@@ -397,12 +397,12 @@ zint isamc_alloc_block (ISAMC is, int cat)
     if (is->files[cat].fc_list)
     {
         int j;
-	zint nb;
+        zint nb;
         for (j = 0; j < is->files[cat].fc_max; j++)
             if ((nb = is->files[cat].fc_list[j]) && (!block || nb < block))
             {
                 is->files[cat].fc_list[j] = 0;
-		block = nb;
+                block = nb;
                 break;
             }
     }
@@ -436,7 +436,7 @@ static void init_fc (ISAMC is, int cat)
 
     is->files[cat].fc_max = j;
     is->files[cat].fc_list = (zint *)
-	xmalloc (sizeof(*is->files[0].fc_list) * j);
+        xmalloc (sizeof(*is->files[0].fc_list) * j);
     while (--j >= 0)
         is->files[cat].fc_list[j] = 0;
 }
@@ -491,17 +491,17 @@ ISAMC_PP isamc_pp_open (ISAMC is, ISAM_P ipos)
         src += sizeof(pp->size);
         memcpy (&pp->numKeys, src, sizeof(pp->numKeys));
         src += sizeof(pp->numKeys);
-	if (pp->next == pp->pos)
-	{
-	    yaz_log(YLOG_FATAL|YLOG_LOG, "pp->next = " ZINT_FORMAT, pp->next);
-	    yaz_log(YLOG_FATAL|YLOG_LOG, "pp->pos = " ZINT_FORMAT, pp->pos);
-	    assert (pp->next != pp->pos);
-	}
+        if (pp->next == pp->pos)
+        {
+            yaz_log(YLOG_FATAL|YLOG_LOG, "pp->next = " ZINT_FORMAT, pp->next);
+            yaz_log(YLOG_FATAL|YLOG_LOG, "pp->pos = " ZINT_FORMAT, pp->pos);
+            assert (pp->next != pp->pos);
+        }
         pp->offset = src - pp->buf;
         assert (pp->offset == ISAMC_BLOCK_OFFSET_1);
         if (is->method->debug > 2)
             yaz_log (YLOG_LOG, "isc: read_block size=%d %d " ZINT_FORMAT " next="
-		  ZINT_FORMAT, pp->size, pp->cat, pp->pos, pp->next);
+                  ZINT_FORMAT, pp->size, pp->cat, pp->pos, pp->next);
     }
     return pp;
 }
@@ -525,35 +525,35 @@ int isamc_read_item (ISAMC_PP pp, char **dst)
 
     if (pp->offset >= pp->size)
     {
-	if (!pp->next)
-	{
-	    pp->pos = 0;
-	    return 0; /* end of file */
-	}
-	if (pp->next > pp->pos)
-	{
-	    if (pp->next == pp->pos + 1)
-		is->files[pp->cat].no_next++;
-	    else
-	    {
-		is->files[pp->cat].no_forward++;
-		is->files[pp->cat].sum_forward += pp->next - pp->pos;
-	    }
-	}
-	else
-	{
-	    if (pp->next + 1 == pp->pos)
-		is->files[pp->cat].no_prev++;
-	    else
-	    {
-		is->files[pp->cat].no_backward++;
-		is->files[pp->cat].sum_backward += pp->pos - pp->next;
-	    }
-	}
-	/* out new block position */
+        if (!pp->next)
+        {
+            pp->pos = 0;
+            return 0; /* end of file */
+        }
+        if (pp->next > pp->pos)
+        {
+            if (pp->next == pp->pos + 1)
+                is->files[pp->cat].no_next++;
+            else
+            {
+                is->files[pp->cat].no_forward++;
+                is->files[pp->cat].sum_forward += pp->next - pp->pos;
+            }
+        }
+        else
+        {
+            if (pp->next + 1 == pp->pos)
+                is->files[pp->cat].no_prev++;
+            else
+            {
+                is->files[pp->cat].no_backward++;
+                is->files[pp->cat].sum_backward += pp->pos - pp->next;
+            }
+        }
+        /* out new block position */
         pp->pos = pp->next;
         src = pp->buf;
-	/* read block and save 'next' and 'size' entry */
+        /* read block and save 'next' and 'size' entry */
         isamc_read_block (is, pp->cat, pp->pos, pp->buf);
         memcpy (&pp->next, src, sizeof(pp->next));
         src += sizeof(pp->next);
@@ -562,12 +562,12 @@ int isamc_read_item (ISAMC_PP pp, char **dst)
         /* assume block is non-empty */
         assert (src - pp->buf == ISAMC_BLOCK_OFFSET_N);
 
-	if (pp->next == pp->pos)
-	{
-	    yaz_log(YLOG_FATAL|YLOG_LOG, "pp->next = " ZINT_FORMAT, pp->next);
-	    yaz_log(YLOG_FATAL|YLOG_LOG, "pp->pos = " ZINT_FORMAT, pp->pos);
-	    assert (pp->next != pp->pos);
-	}
+        if (pp->next == pp->pos)
+        {
+            yaz_log(YLOG_FATAL|YLOG_LOG, "pp->next = " ZINT_FORMAT, pp->next);
+            yaz_log(YLOG_FATAL|YLOG_LOG, "pp->pos = " ZINT_FORMAT, pp->pos);
+            assert (pp->next != pp->pos);
+        }
 
         if (pp->deleteFlag)
             isamc_release_block (is, pp->cat, pp->pos);
@@ -575,7 +575,7 @@ int isamc_read_item (ISAMC_PP pp, char **dst)
         pp->offset = src - pp->buf;
         if (is->method->debug > 2)
             yaz_log (YLOG_LOG, "isc: read_block size=%d %d " ZINT_FORMAT " next="
-		  ZINT_FORMAT, pp->size, pp->cat, pp->pos, pp->next);
+                  ZINT_FORMAT, pp->size, pp->cat, pp->pos, pp->next);
         return 2;
     }
     (*is->method->codec.decode)(pp->decodeClientData, dst, &src);

@@ -36,7 +36,7 @@ static int wordlen(char *b, int max)
     int l = 0;
 
     while (l < max && !d1_isspace(*b))
-	l++, b++;
+        l++, b++;
     return l;
 }
 
@@ -76,22 +76,22 @@ static void wrbuf_write_tag(WRBUF b, const char *tag, int opening)
     /* see if we must fix the tag.. The grs.marc filter produces
        a data1 tree with not well-formed XML */
     if (*tag >= '0' && *tag <= '9')
-	fixup = 1;
+        fixup = 1;
     for (i = 0; tag[i]; i++)
-	if (strchr( " <>$,()[]", tag[i]))
-	    fixup = 1;
+        if (strchr( " <>$,()[]", tag[i]))
+            fixup = 1;
     if (fixup)
     {
-	wrbuf_puts(b, "tag");
-	if (opening)
-	{
-	    wrbuf_puts(b, " value=\"");
-	    wrbuf_xmlputs(b, tag);
-	    wrbuf_puts(b, "\"");
-	}
+        wrbuf_puts(b, "tag");
+        if (opening)
+        {
+            wrbuf_puts(b, " value=\"");
+            wrbuf_xmlputs(b, tag);
+            wrbuf_puts(b, "\"");
+        }
     }
     else
-	wrbuf_puts(b, tag);
+        wrbuf_puts(b, tag);
 }
 
 static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
@@ -101,13 +101,13 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
 
     for (c = n->child; c; c = c->next)
     {
-	char *tag;
+        char *tag;
 
         if (c->which == DATA1N_preprocess)
         {
             if (pretty_format)
                 indent (b, col);
-	    wrbuf_puts (b, "<?");
+            wrbuf_puts (b, "<?");
             wrbuf_xmlputs (b, c->u.preprocess.target);
             wrbuf_put_xattr (b, c->u.preprocess.attributes);
             if (c->child)
@@ -118,54 +118,54 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
             wrbuf_puts (b, "?>\n");
         }
         else if (c->which == DATA1N_tag)
-	{
-	    if (select && !c->u.tag.node_selected)
-		continue;
+        {
+            if (select && !c->u.tag.node_selected)
+                continue;
             tag = c->u.tag.tag;
-	    if (!data1_matchstr(tag, "wellknown")) /* skip wellknown */
-	    {
-		if (nodetoidsgml(c, select, b, col, pretty_format) < 0)
-		    return -1;
-	    }
-	    else
-	    {
+            if (!data1_matchstr(tag, "wellknown")) /* skip wellknown */
+            {
+                if (nodetoidsgml(c, select, b, col, pretty_format) < 0)
+                    return -1;
+            }
+            else
+            {
                 if (pretty_format)
                     indent (b, col);
-		wrbuf_puts(b, "<");
-		wrbuf_write_tag(b, tag, 1);
+                wrbuf_puts(b, "<");
+                wrbuf_write_tag(b, tag, 1);
                 wrbuf_put_xattr (b, c->u.tag.attributes);
-		wrbuf_puts(b, ">");
+                wrbuf_puts(b, ">");
                 if (pretty_format)
                     wrbuf_puts(b, "\n");
-		if (nodetoidsgml(c, select, b, (col > 40) ? 40 : col+2,
+                if (nodetoidsgml(c, select, b, (col > 40) ? 40 : col+2,
                                  pretty_format) < 0)
-		    return -1;
+                    return -1;
                 if (pretty_format)
                     indent (b, col);
-		wrbuf_puts(b, "</");
-		wrbuf_write_tag(b, tag, 0);
-		wrbuf_puts(b, ">");
+                wrbuf_puts(b, "</");
+                wrbuf_write_tag(b, tag, 0);
+                wrbuf_puts(b, ">");
                 if (pretty_format)
                     wrbuf_puts (b, "\n");
-	    }
-	}
-	else if (c->which == DATA1N_data || c->which == DATA1N_comment)
-	{
-	    char *p = c->u.data.data;
-	    int l = c->u.data.len;
-	    int first = 1;
-	    int lcol = col;
+            }
+        }
+        else if (c->which == DATA1N_data || c->which == DATA1N_comment)
+        {
+            char *p = c->u.data.data;
+            int l = c->u.data.len;
+            int first = 1;
+            int lcol = col;
 
             if (pretty_format && !c->u.data.formatted_text)
                 indent (b, col);
             if (c->which == DATA1N_comment)
                 wrbuf_puts (b, "<!--");
-	    switch (c->u.data.what)
-	    {
+            switch (c->u.data.what)
+            {
             case DATA1I_xmltext:
-		wrbuf_write(b, c->u.data.data, c->u.data.len);
+                wrbuf_write(b, c->u.data.data, c->u.data.len);
                 break;
-	    case DATA1I_text:
+            case DATA1I_text:
                 if (!pretty_format || c->u.data.formatted_text)
                 {
                     wrbuf_xmlputs_n (b, p, l);
@@ -205,24 +205,24 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
                     }
                     wrbuf_puts(b, "\n");
                 }
-		break;
-	    case DATA1I_num:
-		wrbuf_xmlputs_n(b, c->u.data.data, c->u.data.len);
+                break;
+            case DATA1I_num:
+                wrbuf_xmlputs_n(b, c->u.data.data, c->u.data.len);
                 if (pretty_format)
                     wrbuf_puts(b, "\n");
-		break;
-	    case DATA1I_oid:
-		wrbuf_xmlputs_n(b, c->u.data.data, c->u.data.len);
+                break;
+            case DATA1I_oid:
+                wrbuf_xmlputs_n(b, c->u.data.data, c->u.data.len);
                 if (pretty_format)
                     wrbuf_puts(b, "\n");
-	    }
+            }
             if (c->which == DATA1N_comment)
             {
                 wrbuf_puts(b, "-->");
                 if (pretty_format)
                     wrbuf_puts(b, "\n");
             }
-	}
+        }
     }
     return 0;
 }
@@ -240,7 +240,7 @@ char *data1_nodetoidsgml (data1_handle dh, data1_node *n, int select, int *len)
         wrbuf_puts (b, ">\n");
     }
     if (nodetoidsgml(n, select, b, 0, 0 /* no pretty format */))
-	return 0;
+        return 0;
     if (!data1_is_xmlmode (dh))
     {
         wrbuf_puts (b, "</");

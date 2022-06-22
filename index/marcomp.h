@@ -29,13 +29,13 @@ typedef struct mc_subfield
     char *prefix;
     char *suffix;
     struct {
-	int start;
-	int end;
+        int start;
+        int end;
     } interval;
     int which;
     union {
 #define MC_SF           1
-#define MC_SFGROUP	2
+#define MC_SFGROUP      2
 #define MC_SFVARIANT    3
         struct mc_field *in_line;
         struct mc_subfield *child;
@@ -44,11 +44,11 @@ typedef struct mc_subfield
     struct mc_subfield *parent;
 } mc_subfield;
 
-#define SZ_FNAME	3
-#define SZ_IND		1
-#define SZ_SFNAME	1
-#define SZ_PREFIX	1
-#define SZ_SUFFIX	1
+#define SZ_FNAME        3
+#define SZ_IND          1
+#define SZ_SFNAME       1
+#define SZ_PREFIX       1
+#define SZ_SUFFIX       1
 
 typedef struct mc_field
 {
@@ -56,8 +56,8 @@ typedef struct mc_field
     char *ind1;
     char *ind2;
     struct {
-	int start;
-	int end;
+        int start;
+        int end;
     } interval;
     struct mc_subfield *list;
 } mc_field;
@@ -79,14 +79,14 @@ typedef enum
 
 typedef enum
 {
-    EMCOK = 0,	/* first always, mondatory */
+    EMCOK = 0,  /* first always, mondatory */
     EMCNOMEM,
     EMCF,
     EMCSF,
     EMCSFGROUP,
     EMCSFVAR,
     EMCSFINLINE,
-    EMCEND	/* last always, mondatory */
+    EMCEND      /* last always, mondatory */
 } mc_errcode;
 
 typedef struct mc_context

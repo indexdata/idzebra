@@ -45,7 +45,7 @@ RSET zebra_create_rset_isam(ZebraHandle zh,
         return rsisamc_create(rset_nmem, kctrl, scope,
                               zh->reg->isamc, pos, termid);
     else
-	return rset_create_null(rset_nmem, kctrl, termid);
+        return rset_create_null(rset_nmem, kctrl, termid);
 }
 
 /*

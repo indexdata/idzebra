@@ -51,11 +51,11 @@ struct rset_term {
     char *name;    /** the term itself in internal encoding (UTF-8/raw) */
     char *flags;   /** flags for rank method */
     int  type;     /** Term_type from RPN Query. Actually this
-		       is Z_Term_general, Z_Term_numeric,
-		       Z_Term_characterString, ..
-		       This info is used to return encoded term back for
-		       search-result-1 .
-		   */
+                       is Z_Term_general, Z_Term_numeric,
+                       Z_Term_characterString, ..
+                       This info is used to return encoded term back for
+                       search-result-1 .
+                   */
     int reg_type;  /** register type */
     RSET rset;     /** the rset corresponding to this term */
     void *rankpriv;/** private stuff for the ranking algorithm */
@@ -66,8 +66,8 @@ struct rset_term {
 
 typedef struct rset_term *TERMID;
 TERMID rset_term_create (const char *name, int length, const char *flags,
-			 int type, NMEM nmem, struct ord_list *ol,
-			 int reg_type, zint hits_limit, const char *ref_id);
+                         int type, NMEM nmem, struct ord_list *ol,
+                         int reg_type, zint hits_limit, const char *ref_id);
 
 /** rsfd is a "file descriptor" for reading from a rset */
 struct rsfd {  /* the stuff common to all rsfd's. */
@@ -187,10 +187,10 @@ int rfd_is_last(RSFD rfd);
 
 RSET rset_create_base(const struct rset_control *sel,
                       NMEM nmem,
-		      struct rset_key_control *kcontrol,
+                      struct rset_key_control *kcontrol,
                       int scope,
                       TERMID term,
-		      int no_children, RSET *children);
+                      int no_children, RSET *children);
 
 void rset_delete(RSET rs);
 RSET rset_dup (RSET rs);
@@ -248,13 +248,13 @@ RSET rset_create_prox(NMEM nmem, struct rset_key_control *kcontrol,
                       int ordered, int exclusion, int relation, int distance);
 
 RSET rsisamb_create(NMEM nmem, struct rset_key_control *kcontrol,
-		    int scope, ISAMB is, ISAM_P pos, TERMID term);
+                    int scope, ISAMB is, ISAM_P pos, TERMID term);
 
 RSET rsisamc_create(NMEM nmem, struct rset_key_control *kcontrol,
-		    int scope, ISAMC is, ISAM_P pos, TERMID term);
+                    int scope, ISAMC is, ISAM_P pos, TERMID term);
 
 RSET rsisams_create(NMEM nmem, struct rset_key_control *kcontrol,
-		    int scope, ISAMS is, ISAM_P pos, TERMID term);
+                    int scope, ISAMS is, ISAM_P pos, TERMID term);
 
 void rset_visit(RSET rset, int level);
 

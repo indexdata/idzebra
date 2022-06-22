@@ -82,7 +82,7 @@ const char *myrec[] = {
         "</title>"
         "</gils>"
         ,
-	0} ;
+        0} ;
 
 static void tst(int argc, char **argv)
 {
@@ -379,15 +379,15 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query_x(zh, "@attr 1=999 @attr 4=105 x", 0, 114));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=999 @attr 4=109 123", 0, 114));
     YAZ_CHECK(tl_query_x(zh, "@attrset 1.2.840.10003.3.1 @attr 1=999 x",
-			 0, 114));
+                         0, 114));
     /* provoke unsupported attribute set */
     YAZ_CHECK(tl_query_x(zh, "@attrset 1.2.8 @attr 1=999 @attr 4=1 x", 0, 121));
     YAZ_CHECK(tl_query_x(zh, "@attrset 1.2.8 @attr 1=999 @attr 4=6 x", 0,
-	       121));
+               121));
     YAZ_CHECK(tl_query_x(zh, "@attrset 1.2.8 @attr 1=999 @attr 4=105 x", 0,
-	       121));
+               121));
     YAZ_CHECK(tl_query_x(zh, "@attrset 1.2.8 @attr 1=999 @attr 4=109 123",
-	       0, 121));
+               0, 121));
 
     /* provoke unsupported relation */
     YAZ_CHECK(tl_query_x(zh, "@attr 1=4 @attr 2=6 x", 0, 117));
