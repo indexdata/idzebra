@@ -1,7 +1,7 @@
 
 noinst_LTLIBRARIES = libidzebra-dict.la
-noinst_PROGRAMS = dicttest dictext inserttest
-check_PROGRAMS = scantest
+noinst_PROGRAMS = dicttest dictext
+check_PROGRAMS = scantest inserttest
 
 TESTS = $(check_PROGRAMS)
 

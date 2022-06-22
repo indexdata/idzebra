@@ -32,10 +32,14 @@ int main(int argc, char **argv)
 {
     BFiles bfs = 0;
     Dict dict = 0;
-    long no = 5000000L;
+    long no = 10000L;
 
     YAZ_CHECK_INIT(argc, argv);
 
+    if (argc > 1)
+    {
+        no = atol(argv[1]);
+    }
     bfs = bfs_create(".:40G", 0);
     YAZ_CHECK(bfs);
     if (bfs)
@@ -66,16 +70,11 @@ int main(int argc, char **argv)
                 lex[j] = 0;
                 for (j = 0; j < userlen; j++)
                 {
-                    userinfo[j] = sz;
+                    userinfo[j] = sz + 1;
                 }
                 if (pass == 0)
                 {
                     dict_insert(dict, lex, userlen, userinfo);
-                    if ((i % 1000000L) == 0L)
-                    {
-                        printf("[%ld]", i);
-                        fflush(stdout);
-                    }
                 }
                 else
                 {
