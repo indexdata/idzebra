@@ -79,6 +79,12 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_sort(zh, "@or @attr 1=4 computer @attr 7=1 @attr 1=1021 @attr 4=109 0", 4, ids));
     YAZ_CHECK(tl_sort(zh, "@or @attr 1=4 computer @attr 7=1 @attr 1=Bib-Level @attr 4=109 0", 4, ids));
 
+    ids[0] = 3;
+    ids[1] = 4;
+    ids[2] = 5;
+    ids[3] = 2;
+    YAZ_CHECK(tl_sort(zh, "@or @attr 1=4 computer @attr 7=2 @attr 1=Bib-Level @attr 4=109 0", 4, ids));
+
     YAZ_CHECK(tl_close_down(zh, zs));
 }
 
