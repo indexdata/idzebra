@@ -878,6 +878,7 @@ static void bend_stop(struct statserv_options_block *sob)
 
 int main(int argc, char **argv)
 {
+    int exit_code;
     struct statserv_options_block *sob;
 
     sob = statserv_getcontrol();
@@ -889,8 +890,9 @@ int main(int argc, char **argv)
     strcpy(sob->service_display_name, "Zebra Server");
 #endif
     statserv_setcontrol(sob);
-
-    return statserv_main(argc, argv, bend_init, bend_close);
+    exit_code = statserv_main(argc, argv, bend_init, bend_close);
+    zebra_stop((ZebraService) sob->handle);
+    return exit_code;
 }
 /*
  * Local variables:
