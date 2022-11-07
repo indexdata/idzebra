@@ -87,7 +87,7 @@ static void check_log_limit(ZebraHandle zh)
 {
     if (zh->records_processed + zh->records_skipped == zh->m_file_verbose_limit)
     {
-        yaz_log(YLOG_LOG, "More than %d file log entries. Omitting rest",
+        yaz_log(YLOG_LOG, "More than %d file log entries. Omitting rest (-fn to see more)",
                 zh->m_file_verbose_limit);
     }
 }
