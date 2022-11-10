@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 {
     BFiles bfs = 0;
     Dict dict = 0;
-    long no = 10000L;
+    long no = 1000L;
 
     YAZ_CHECK_INIT(argc, argv);
 
