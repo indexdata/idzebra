@@ -14,6 +14,8 @@ jobs:
       repository: indexdata/yaz
       path: yaz
       ref: master
+   - name: Update packages
+     run: sudo apt update
    - name: Install required and optional dependencies
      run: >
       sudo apt install autoconf automake libtool gcc make bison
