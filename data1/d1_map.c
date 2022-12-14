@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <yaz/log.h>
 #include <yaz/oid_db.h>
+#include <yaz/snprintf.h>
 #include <yaz/readconf.h>
 #include <yaz/tpath.h>
 #include <d1_absyn.h>
@@ -39,9 +40,9 @@ struct data1_mapunit
     struct data1_mapunit *next;
 };
 
-data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
+data1_maptab *data1_read_maptab(data1_handle dh, const char *file)
 {
-    NMEM mem = data1_nmem_get (dh);
+    NMEM mem = data1_nmem_get(dh);
     data1_maptab *res = (data1_maptab *)nmem_malloc(mem, sizeof(*res));
     FILE *f;
     int lineno = 0;
@@ -209,16 +210,20 @@ static int tagmatch(data1_node *n, data1_maptag *t)
     }
     else /* local tag */
     {
-        char str[10];
-
         if (t->type != 3)
             return 0;
         if (t->which == D1_MAPTAG_numeric)
-            sprintf(str, "%d", t->value.numeric);
+        {
+            char str[16];
+            yaz_snprintf(str, sizeof(str) - 1, "%d", t->value.numeric);
+            if (data1_matchstr(n->u.tag.tag, str))
+                return 0;
+        }
         else
-            strcpy(str, t->value.string);
-        if (data1_matchstr(n->u.tag.tag, str))
-            return 0;
+        {
+            if (data1_matchstr(n->u.tag.tag, t->value.string))
+                return 0;
+        }
     }
     return 1;
 }
@@ -273,7 +278,7 @@ static int map_children(data1_handle dh, data1_node *n, data1_maptab *map,
                         {
                             if (mt->which == D1_MAPTAG_string)
                             {
-                                cur = data1_mk_node2 (dh, mem, DATA1N_tag, pn);
+                                cur = data1_mk_node2(dh, mem, DATA1N_tag, pn);
                                 cur->u.tag.tag = mt->value.string;
                             }
                             else if (mt->which == D1_MAPTAG_numeric)
@@ -337,7 +342,7 @@ data1_node *data1_map_record (data1_handle dh, data1_node *n,
     n = n->child;
     if (!n)
         return 0;
-    res1 = data1_mk_tag (dh, m, map->target_absyn_name, 0, res);
+    res1 = data1_mk_tag(dh, m, map->target_absyn_name, 0, res);
     while (n && n->which != DATA1N_tag)
         n = n->next;
     if (map_children(dh, n, map, res1, m) < 0)

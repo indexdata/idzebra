@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 
 #include <yaz/log.h>
+#include <yaz/snprintf.h>
 #include <yaz/oid_db.h>
 #include <yaz/marcdisp.h>
 #include <yaz/readconf.h>
@@ -34,7 +35,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/tpath.h>
 #include <idzebra/data1.h>
 
-data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
+data1_marctab *data1_read_marctab(data1_handle dh, const char *file)
 {
     FILE *f;
     NMEM mem = data1_nmem_get (dh);
@@ -178,7 +179,6 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 static void get_data2(data1_node *n, int *len, char *dst, size_t max)
 {
     *len = 0;
-
     while (n)
     {
         if (n->which == DATA1N_data)
@@ -201,7 +201,7 @@ static void get_data2(data1_node *n, int *len, char *dst, size_t max)
     }
 }
 
-static void memint (char *p, int val, int len)
+static void memint(char *p, int val, int len)
 {
     char buf[10];
 
@@ -209,13 +209,13 @@ static void memint (char *p, int val, int len)
         *p = val + '0';
     else
     {
-        sprintf (buf, "%08d", val);
-        memcpy (p, buf+8-len, len);
+        yaz_snprintf(buf, sizeof(buf) -1, "%08d", val);
+        memcpy(p, buf+8-len, len);
     }
 }
 
 /* check for indicator. non MARCXML only */
-static int is_indicator (data1_marctab *p, data1_node *subf)
+static int is_indicator(data1_marctab *p, data1_node *subf)
 {
     if (p->indicator_length != 2 ||
         (subf && subf->which == DATA1N_tag && strlen(subf->u.tag.tag) == 2))
@@ -239,17 +239,17 @@ static int nodetomarc(data1_handle dh,
 #if 0
     data1_pr_tree(dh, n, stdout);
 #endif
-    yaz_log (YLOG_DEBUG, "nodetomarc");
+    yaz_log(YLOG_DEBUG, "nodetomarc");
 
-    memcpy (leader+5, p->record_status, 1);
-    memcpy (leader+6, p->implementation_codes, 4);
-    memint (leader+10, p->indicator_length, 1);
-    memint (leader+11, p->identifier_length, 1);
-    memcpy (leader+17, p->user_systems, 3);
-    memint (leader+20, p->length_data_entry, 1);
-    memint (leader+21, p->length_starting, 1);
-    memint (leader+22, p->length_implementation, 1);
-    memcpy (leader+23, p->future_use, 1);
+    memcpy(leader+5, p->record_status, 1);
+    memcpy(leader+6, p->implementation_codes, 4);
+    memint(leader+10, p->indicator_length, 1);
+    memint(leader+11, p->identifier_length, 1);
+    memcpy(leader+17, p->user_systems, 3);
+    memint(leader+20, p->length_data_entry, 1);
+    memint(leader+21, p->length_starting, 1);
+    memint(leader+22, p->length_implementation, 1);
+    memcpy(leader+23, p->future_use, 1);
 
     for (field = n->child; field; field = field->next)
     {
@@ -328,11 +328,11 @@ static int nodetomarc(data1_handle dh,
     op = *buf;
 
     /* we know the base address now */
-    memint (leader+12, base_address, 5);
+    memint(leader+12, base_address, 5);
 
     /* copy temp leader to real output buf op */
-    memcpy (op, leader, 24);
-    memint (op, len, 5);
+    memcpy(op, leader, 24);
+    memint(op, len, 5);
 
     entry_p = 24;
     data_p = base_address;
@@ -403,7 +403,7 @@ static int nodetomarc(data1_handle dh,
         }
         if (!control_field)
         {
-            memcpy (op + data_p, indicator_data, p->indicator_length);
+            memcpy(op + data_p, indicator_data, p->indicator_length);
             data_p += p->indicator_length;
         }
         for (; subf; subf = subf->next)
@@ -429,7 +429,7 @@ static int nodetomarc(data1_handle dh,
                 else
                     identifier = subf->u.tag.tag;
                 op[data_p] = ISO2709_IDFS;
-                memcpy (op + data_p+1, identifier, p->identifier_length-1);
+                memcpy(op + data_p+1, identifier, p->identifier_length-1);
                 data_p += p->identifier_length;
             }
             get_data2(subf, &dlen, op + data_p, 100000);
@@ -449,12 +449,12 @@ static int nodetomarc(data1_handle dh,
 
         if (!tag || strlen(tag) != 3)
             tag = "000";
-        memcpy (op + entry_p, tag, 3);
+        memcpy(op + entry_p, tag, 3);
 
         entry_p += 3;
-        memint (op + entry_p, data_p - data_0, p->length_data_entry);
+        memint(op + entry_p, data_p - data_0, p->length_data_entry);
         entry_p += p->length_data_entry;
-        memint (op + entry_p, data_0 - base_address, p->length_starting);
+        memint(op + entry_p, data_0 - base_address, p->length_starting);
         entry_p += p->length_starting;
         entry_p += p->length_implementation;
     }
@@ -469,9 +469,9 @@ char *data1_nodetomarc(data1_handle dh, data1_marctab *p, data1_node *n,
                        int selected, int *len)
 {
     int *size;
-    char **buf = data1_get_map_buf (dh, &size);
+    char **buf = data1_get_map_buf(dh, &size);
 
-    n = data1_get_root_tag (dh, n);
+    n = data1_get_root_tag(dh, n);
     if (!n)
         return 0;
     *len = nodetomarc(dh, p, n, selected, buf, size);

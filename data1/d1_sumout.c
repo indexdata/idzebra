@@ -33,9 +33,10 @@ static Odr_int *f_integer(data1_node *c, ODR o)
     char intbuf[64];
 
     if (!c->child || c->child->which != DATA1N_data ||
-        c->child->u.data.len > 63)
+        c->child->u.data.len >= sizeof(intbuf))
         return 0;
-    sprintf(intbuf, "%.*s", 63, c->child->u.data.data);
+    memcpy(intbuf, c->child->u.data.data, c->u.data.len);
+    intbuf[c->u.data.len] = '\0';
     return odr_intdup(o, atoi(intbuf));
 }
 
@@ -45,7 +46,7 @@ static char *f_string(data1_node *c, ODR o)
 
     if (!c->child || c->child->which != DATA1N_data)
         return 0;
-    r = (char *)odr_malloc(o, c->child->u.data.len+1);
+    r = (char *)odr_malloc(o, c->child->u.data.len + 1);
     memcpy(r, c->child->u.data.data, c->child->u.data.len);
     r[c->child->u.data.len] = '\0';
     return r;

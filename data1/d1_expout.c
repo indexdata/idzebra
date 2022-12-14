@@ -62,7 +62,7 @@ static int is_numeric_tag (ExpHandle *eh, data1_node *c)
     return c->u.tag.element->tag->value.numeric;
 }
 
-static int is_data_tag (ExpHandle *eh, data1_node *c)
+static int is_data_tag(ExpHandle *eh, data1_node *c)
 {
     if (!c || c->which != DATA1N_data)
         return 0;
@@ -78,7 +78,8 @@ static Odr_int *f_integer(ExpHandle *eh, data1_node *c)
     c = c->child;
     if (!is_data_tag (eh, c) || c->u.data.len >= sizeof(intbuf))
         return 0;
-    sprintf(intbuf, "%.*s", c->u.data.len, c->u.data.data);
+    memcpy(intbuf, c->u.data.data, c->u.data.len);
+    intbuf[c->u.data.len] = '\0';
     return odr_intdup(eh->o, atoi(intbuf));
 }
 
@@ -89,7 +90,7 @@ static char *f_string(ExpHandle *eh, data1_node *c)
     c = c->child;
     if (!is_data_tag (eh, c))
         return 0;
-    r = (char *)odr_malloc(eh->o, c->u.data.len+1);
+    r = (char *)odr_malloc(eh->o, c->u.data.len + 1);
     memcpy(r, c->u.data.data, c->u.data.len);
     r[c->u.data.len] = '\0';
     return r;
@@ -101,10 +102,11 @@ static bool_t *f_bool(ExpHandle *eh, data1_node *c)
     char intbuf[64];
 
     c = c->child;
-    if (!is_data_tag (eh, c) || c->u.data.len > 63)
+    if (!is_data_tag (eh, c) || c->u.data.len >= sizeof(intbuf))
         return 0;
-    tf = (int *)odr_malloc (eh->o, sizeof(*tf));
-    sprintf(intbuf, "%.*s", c->u.data.len, c->u.data.data);
+    memcpy(intbuf, c->u.data.data, c->u.data.len);
+    intbuf[c->u.data.len] = '\0';
+    tf = (int *)odr_malloc(eh->o, sizeof(*tf));
     *tf = atoi(intbuf);
     return tf;
 }
@@ -114,10 +116,10 @@ static Odr_oid *f_oid(ExpHandle *eh, data1_node *c, oid_class oclass)
     char oidstr[64];
 
     c = c->child;
-    if (!is_data_tag (eh, c) || c->u.data.len > 63)
+    if (!is_data_tag (eh, c) || c->u.data.len >= sizeof(oidstr))
         return 0;
-    yaz_snprintf(oidstr, sizeof(oidstr)-1,
-                 "%.*s", c->u.data.len, c->u.data.data);
+    memcpy(oidstr, c->u.data.data, c->u.data.len);
+    oidstr[c->u.data.len] = '\0';
 
     return yaz_string_to_oid_odr(yaz_oid_std(),
                                  CLASS_GENERAL, oidstr, eh->o);
@@ -405,7 +407,8 @@ static Odr_int *f_recordCount(ExpHandle *eh, data1_node *c, int *which)
     if (!c->child || c->child->which != DATA1N_data ||
         c->child->u.data.len >= sizeof(intbuf))
         return 0;
-    sprintf(intbuf, "%.*s", c->child->u.data.len, c->child->u.data.data);
+    memcpy(intbuf, c->u.data.data, c->u.data.len);
+    intbuf[c->u.data.len] = '\0';
     return odr_intdup(eh->o, atoi(intbuf));
 }
 

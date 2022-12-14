@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/log.h>
 #include <yaz/test.h>
 #include <yaz/options.h>
+#include <yaz/snprintf.h>
 #include <idzebra/dict.h>
 
 struct handle_info {
@@ -87,7 +88,7 @@ int do_scan(Dict dict, int before, int after, const char *sterm,
             {
                 if (!hi.ar[i])
                 {
-                    printf ("--> FAIL i=%d hi.ar[i] == NULL\n", i);
+                    printf("--> FAIL i=%d hi.ar[i] == NULL\n", i);
                     errors++;
                 }
             }
@@ -95,7 +96,7 @@ int do_scan(Dict dict, int before, int after, const char *sterm,
             {
                 if (hi.ar[i])
                 {
-                    printf ("--> FAIL i=%d hi.ar[i] = %s\n", i, hi.ar[i]);
+                    printf("--> FAIL i=%d hi.ar[i] = %s\n", i, hi.ar[i]);
                     errors++;
                 }
             }
@@ -106,17 +107,17 @@ int do_scan(Dict dict, int before, int after, const char *sterm,
             {
                 if (!hi.ar[i])
                 {
-                    printf ("--> FAIL i=%d strs == NULL\n", i);
+                    printf("--> FAIL i=%d strs == NULL\n", i);
                     errors++;
                 }
                 else if (!cmp_strs[i])
                 {
-                    printf ("--> FAIL i=%d cmp_strs == NULL\n", i);
+                    printf("--> FAIL i=%d cmp_strs == NULL\n", i);
                     errors++;
                 }
                 else if (strcmp(cmp_strs[i], hi.ar[i]))
                 {
-                    printf ("--> FAIL i=%d expected %s\n", i, cmp_strs[i]);
+                    printf("--> FAIL i=%d expected %s\n", i, cmp_strs[i]);
                     errors++;
                 }
             }
@@ -124,7 +125,7 @@ int do_scan(Dict dict, int before, int after, const char *sterm,
             {
                 if (hi.ar[i])
                 {
-                    printf ("--> FAIL i=%d hi.ar[i] != NULL\n", i);
+                    printf("--> FAIL i=%d hi.ar[i] != NULL\n", i);
                     errors++;
                 }
             }
@@ -132,13 +133,13 @@ int do_scan(Dict dict, int before, int after, const char *sterm,
         if (verbose || errors)
         {
             if (i == hi.b)
-                printf ("* ");
+                printf("* ");
             else
-                printf ("  ");
+                printf("  ");
             if (hi.ar[i])
-                printf ("%s", hi.ar[i]);
+                printf("%s", hi.ar[i]);
             else
-                printf ("NULL");
+                printf("NULL");
             putchar('\n');
         }
         if (hi.ar[i])
@@ -157,7 +158,7 @@ static void tst(Dict dict, int start, int number)
     {
         int v = i;
         char w[32];
-        sprintf(w, "%d", i);
+        yaz_snprintf(w, sizeof(w) - 1, "%d", i);
         YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(v), &v), 2);
     }
     /* insert again with different value */
@@ -165,7 +166,7 @@ static void tst(Dict dict, int start, int number)
     {
         int v = i-1;
         char w[32];
-        sprintf(w, "%d", i);
+        yaz_snprintf(w, sizeof(w) - 1, "%d", i);
         YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(v), &v), 1);
     }
     /* insert again with original value again */
@@ -173,7 +174,7 @@ static void tst(Dict dict, int start, int number)
     {
         int v = i;
         char w[32];
-        sprintf(w, "%d", i);
+        yaz_snprintf(w, sizeof(w) - 1, "%d", i);
         YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(v), &v), 1);
     }
 
@@ -294,7 +295,7 @@ int main(int argc, char **argv)
         for (i = start; i<number; i++)
         {
             char w[32];
-            sprintf(w, "%d", i);
+            yaz_snprintf(w, sizeof(w) - 1, "%d", i);
             YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(int), &i), 0);
         }
 

@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <yaz/log.h>
 #include <yaz/oid_db.h>
+#include <yaz/snprintf.h>
 #include <idzebra/data1.h>
 #include <idzebra/recctrl.h>
 #include <zebra_xpath.h>
@@ -219,7 +220,7 @@ static data1_absyn *data1_absyn_add(data1_handle dh, const char *name,
     data1_absyn_cache p = (data1_absyn_cache)nmem_malloc (mem, sizeof(*p));
     data1_absyn_cache *pp = data1_absyn_cache_get (dh);
 
-    sprintf(fname, "%.500s.abs", name);
+    yaz_snprintf(fname, sizeof(fname) - 1, "%s.abs", name);
     p->absyn = data1_read_absyn(dh, fname, en);
     p->name = nmem_strdup(mem, name);
     p->next = *pp;
@@ -436,7 +437,7 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
         abs =0;
         p++;
     }
-    while (*p)
+    while (*p && e < 30)
     {
         int is_predicate = 0;
         char *s;
@@ -444,8 +445,7 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
         for (i = 0; *p && !strchr("/",*p); i++, p++)
             ;
         res_size += (i+3); /* we'll add / between later .. */
-        stack[e] = (char *) nmem_malloc(data1_nmem_get(dh), i+1);
-        s = stack[e];
+        s = stack[e] = (char *) nmem_malloc(data1_nmem_get(dh), i + 1);
         for (j = 0; j < i; j++)
         {
             const char *pp = p-i+j;
@@ -475,15 +475,16 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
         strcpy(res_p, "[^@]*/");  /* path .. (index all cdata below it) */
     res_p = res_p + strlen(res_p);
     while (--e >= 0) {
-        sprintf(res_p, "%s/", stack[e]);
+        strcpy(res_p, stack[e]);
+        strcat(res_p, "/");
         res_p += strlen(stack[e]) + 1;
     }
     if (!abs)
     {
-        sprintf(res_p, ".*");
+        strcpy(res_p, ".*");
         res_p += 2;
     }
-    sprintf (res_p, "$");
+    strcpy(res_p, "$");
     res_p++;
     yaz_log(YLOG_DEBUG, "Got regexp: %s", res);
     return res;
@@ -599,9 +600,9 @@ static int melm2xpath(char *melm, char *buf)
         fieldtype = "controlfield";
     else
         fieldtype = "datafield";
-    sprintf(buf, "/*/%s[@tag=\"%s\"]", fieldtype, field);
+    yaz_snprintf(buf, 60, "/*/%s[@tag=\"%s\"]", fieldtype, field);
     if (*subfield)
-        sprintf(buf + strlen(buf), "/subfield[@code=\"%s\"]", subfield);
+        yaz_snprintf(buf + strlen(buf), 60, "/subfield[@code=\"%s\"]", subfield);
     else if (field[0] != '0' || field[1] != '0')
         strcat(buf, "/subfield");
     yaz_log(YLOG_DEBUG, "Created xpath: '%s'", buf);

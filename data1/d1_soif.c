@@ -28,9 +28,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <config.h>
 #endif
 #include <yaz/wrbuf.h>
+#include <yaz/snprintf.h>
 #include <idzebra/data1.h>
 
-static int nodetoelement(data1_node *n, int select, char *prefix, WRBUF b)
+static int nodetoelement(data1_node *n, int select, const char *prefix, WRBUF b)
 {
     data1_node *c;
     char tmp[1024];
@@ -46,12 +47,12 @@ static int nodetoelement(data1_node *n, int select, char *prefix, WRBUF b)
             if (c->u.tag.element && c->u.tag.element->tag)
                 tag = c->u.tag.element->tag->names->name; /* first name */
             else
-            tag = c->u.tag.tag; /* local string tag */
+                tag = c->u.tag.tag; /* local string tag */
 
-            if (*prefix)
-                sprintf(tmp, "%s-%s", prefix, tag);
+            if (prefix)
+                yaz_snprintf(tmp, sizeof(tmp) - 1, "%s-%s", prefix, tag);
             else
-                strcpy(tmp, tag);
+                yaz_snprintf(tmp, sizeof(tmp) - 1, "%s", tag);
 
             if (nodetoelement(c, select, tmp, b) < 0)
                 return 0;
@@ -61,10 +62,9 @@ static int nodetoelement(data1_node *n, int select, char *prefix, WRBUF b)
             char *p = c->u.data.data;
             int l = c->u.data.len;
 
-            wrbuf_write(b, prefix, strlen(prefix));
-
-            sprintf(tmp, "{%d}:\t", l);
-            wrbuf_write(b, tmp, strlen(tmp));
+            wrbuf_puts(b, prefix);
+            yaz_snprintf(tmp, sizeof(tmp) - 1, "{%d}:\t", l);
+            wrbuf_puts(b, tmp);
             wrbuf_write(b, p, l);
             wrbuf_putc(b, '\n');
         }
@@ -72,20 +72,17 @@ static int nodetoelement(data1_node *n, int select, char *prefix, WRBUF b)
     return 0;
 }
 
-char *data1_nodetosoif (data1_handle dh, data1_node *n, int select, int *len)
+char *data1_nodetosoif(data1_handle dh, data1_node *n, int select, int *len)
 {
-    WRBUF b = data1_get_wrbuf (dh);
-    char buf[128];
+    WRBUF b = data1_get_wrbuf(dh);
 
     wrbuf_rewind(b);
-
     if (n->which != DATA1N_root)
         return 0;
-    sprintf(buf, "@%s{\n", n->u.root.type);
-    wrbuf_write(b, buf, strlen(buf));
-    if (nodetoelement(n, select, "", b))
+    wrbuf_printf(b, "@%s{\n", n->u.root.type);
+    if (nodetoelement(n, select, 0, b))
         return 0;
-    wrbuf_write(b, "}\n", 2);
+    wrbuf_puts(b, "}\n");
     *len = wrbuf_len(b);
     return wrbuf_buf(b);
 }
