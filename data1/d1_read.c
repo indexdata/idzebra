@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <yaz/snprintf.h>
 #include <yaz/yaz-util.h>
 #include <d1_absyn.h>
 
@@ -459,14 +460,15 @@ data1_node *data1_mk_tag_data_zint (data1_handle dh, data1_node *at,
                                    NMEM nmem)
 {
     data1_node *node_data;
+    char str[64];
 
-    node_data = data1_mk_tag_data (dh, at, tag, nmem);
+    node_data = data1_mk_tag_data(dh, at, tag, nmem);
     if (!node_data)
         return 0;
+    yaz_snprintf(str, sizeof(str) - 1, ZINT_FORMAT, num);
     node_data->u.data.what = DATA1I_num;
-    node_data->u.data.data = node_data->lbuf;
-    sprintf (node_data->u.data.data, ZINT_FORMAT, num);
-    node_data->u.data.len = strlen (node_data->u.data.data);
+    node_data->u.data.len = strlen(str);
+    node_data->u.data.data = data1_insert_string(dh, node_data, nmem, str);
     return node_data;
 }
 
