@@ -459,13 +459,18 @@ data1_node *data1_mk_tag_data_zint (data1_handle dh, data1_node *at,
                                    NMEM nmem)
 {
     data1_node *node_data;
+    int sz = 0;
 
     node_data = data1_mk_tag_data (dh, at, tag, nmem);
     if (!node_data)
         return 0;
     node_data->u.data.what = DATA1I_num;
     node_data->u.data.data = node_data->lbuf;
-    sprintf (node_data->u.data.data, ZINT_FORMAT, num);
+    sz = snprintf (node_data->u.data.data, sizeof(node_data->u.data.data), ZINT_FORMAT, num);
+    if (sz >= sizeof(node_data->u.data.data)) {
+        node_data->u.data.data[sizeof(node_data->u.data.data)] = '\0';
+        yaz_log(YLOG_WARN, "buffer overflow for tag '%s', chars to print = %d, available = %d", tag, sz, sizeof(node_data->u.data.data));
+    }
     node_data->u.data.len = strlen (node_data->u.data.data);
     return node_data;
 }
