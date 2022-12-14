@@ -485,17 +485,17 @@ data1_node *data1_mk_tag_data_oid (data1_handle dh, data1_node *at,
 {
     data1_node *node_data;
     char str[128], *p = str;
-    Odr_oid *ii;
+    size_t i;
 
     node_data = data1_mk_tag_data (dh, at, tag, nmem);
     if (!node_data)
         return 0;
 
-    for (ii = oid; *ii >= 0; ii++)
+    for (i = 0; i < 14 && oid[i] >= 0; i++)
     {
-        if (ii != oid)
+        if (i > 0)
             *p++ = '.';
-        sprintf (p, "%d", *ii);
+        sprintf (p, "%d", oid[i]);
         p += strlen (p);
     }
     node_data->u.data.what = DATA1I_oid;
