@@ -495,7 +495,7 @@ data1_node *data1_mk_tag_data_oid (data1_handle dh, data1_node *at,
     {
         if (i > 0)
             *p++ = '.';
-        sprintf (p, "%d", oid[i]);
+        yaz_snprintf(p, 7, "%d", oid[i]);
         p += strlen (p);
     }
     node_data->u.data.what = DATA1I_oid;
