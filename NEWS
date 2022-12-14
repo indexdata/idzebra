@@ -1,3 +1,9 @@
+--- 2.2.6 2022/12/14
+
+zebraidx: Mention -f option when skipping index lines #39
+
+Fix result-sets not removed in some cases #38
+
 --- 2.2.5 2022/06/22
 
 Fix buffer overflow in dictionary insert handling. Could lead to
