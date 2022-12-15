@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 #include <direntz.h>
+#include <yaz/snprintf.h>
 #include <idzebra/util.h>
 #include <idzebra/recctrl.h>
 
@@ -144,9 +145,8 @@ static void load_from_dir(RecTypeClass *rts, NMEM nmem, const char *dirname)
             {
                 void *mod_p, *fl;
                 char fname[FILENAME_MAX*2+1];
-                sprintf(fname, "%.*s/%.*s",
-                        FILENAME_MAX, dirname,
-                        FILENAME_MAX, de->d_name);
+                yaz_snprintf(fname, sizeof(fname), "%s/%s",
+                        dirname, de->d_name);
                 mod_p = dlopen(fname, RTLD_NOW|RTLD_GLOBAL);
                 if (mod_p && (fl = dlsym(mod_p, "idzebra_filter")))
                 {

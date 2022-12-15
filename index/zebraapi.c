@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 #include <yaz/diagbib1.h>
+#include <yaz/snprintf.h>
 #include <yaz/pquery.h>
 #include <yaz/sortspec.h>
 #include "index.h"
@@ -321,12 +322,12 @@ Dict dict_open_res(BFiles bfs, const char *name, int cache, int rw,
                    int compact_flag, Res res)
 {
     int page_size = 4096;
-    char resource_str[200];
-    sprintf(resource_str, "dict.%.100s.pagesize", name);
+    char res_str[200];
+    yaz_snprintf(res_str, sizeof(res_str), "dict.%s.pagesize", name);
     assert(bfs);
     assert(name);
 
-    if (res_get_int(res, resource_str, &page_size) == ZEBRA_OK)
+    if (res_get_int(res, res_str, &page_size) == ZEBRA_OK)
         yaz_log(YLOG_LOG, "Using custom dictionary page size %d for %s",
                 page_size, name);
     return dict_open(bfs, name, cache, rw, compact_flag, page_size);
@@ -732,7 +733,7 @@ static void zebra_open_res(ZebraHandle zh)
 
     if (zh->path_reg)
     {
-        sprintf(fname, "%.200s/zebra.cfg", zh->path_reg);
+        yaz_snprintf(fname, sizeof(fname), "%s/zebra.cfg", zh->path_reg);
         zh->res = res_open(zh->session_res, 0);
         res_read_file(zh->res, fname);
     }
@@ -809,11 +810,11 @@ static void zebra_select_register(ZebraHandle zh, const char *new_reg)
 
         if (!lock_area && zh->path_reg)
             res_set(zh->res, "lockDir", zh->path_reg);
-        sprintf(fname, "norm.%s.LCK", zh->reg_name);
+        yaz_snprintf(fname, sizeof(fname), "norm.%s.LCK", zh->reg_name);
         zh->lock_normal =
             zebra_lock_create(res_get(zh->res, "lockDir"), fname);
 
-        sprintf(fname, "shadow.%s.LCK", zh->reg_name);
+        yaz_snprintf(fname, sizeof(fname), "shadow.%s.LCK", zh->reg_name);
         zh->lock_shadow =
             zebra_lock_create(res_get(zh->res, "lockDir"), fname);
 
@@ -1379,7 +1380,7 @@ ZEBRA_RES zebra_auth(ZebraHandle zh, const char *user, const char *pass)
 
     zs = zh->service;
 
-    sprintf(u, "perm.%.30s", user ? user : "anonymous");
+    yaz_snprintf(u, sizeof(u), "perm.%s", user ? user : "anonymous");
     p = res_get(zs->global_res, u);
     xfree(zh->user_perm);
     zh->user_perm = xstrdup(p ? p : "r");
@@ -1626,7 +1627,7 @@ static void zebra_set_state(ZebraHandle zh, int val, int seqno)
     ASSERTZH;
     yaz_log(log_level, "zebra_set_state v=%c seq=%d", val, seqno);
 
-    sprintf(state_fname, "state.%s.LCK", zh->reg_name);
+    yaz_snprintf(state_fname, sizeof(state_fname), "state.%s.LCK", zh->reg_name);
     fname = zebra_mk_fname(res_get(zh->res, "lockDir"), state_fname);
     f = fopen(fname, "w");
     if (!f)
@@ -1649,7 +1650,7 @@ static void zebra_get_state(ZebraHandle zh, char *val, int *seqno)
     ASSERTZH;
     yaz_log(log_level, "zebra_get_state ");
 
-    sprintf(state_fname, "state.%s.LCK", zh->reg_name);
+    yaz_snprintf(state_fname, sizeof(state_fname), "state.%s.LCK", zh->reg_name);
     fname = zebra_mk_fname(res_get(zh->res, "lockDir"), state_fname);
     f = fopen(fname, "r");
     *val = 'o';
@@ -2763,7 +2764,7 @@ void zebra_setError(ZebraHandle zh, int code, const char *addinfo)
 void zebra_setError_zint(ZebraHandle zh, int code, zint i)
 {
     char vstr[60];
-    sprintf(vstr, ZINT_FORMAT, i);
+    yaz_snprintf(vstr, sizeof(vstr), ZINT_FORMAT, i);
 
     zh->errCode = code;
     nmem_reset(zh->nmem_error);

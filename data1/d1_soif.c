@@ -50,9 +50,9 @@ static int nodetoelement(data1_node *n, int select, const char *prefix, WRBUF b)
                 tag = c->u.tag.tag; /* local string tag */
 
             if (prefix)
-                yaz_snprintf(tmp, sizeof(tmp) - 1, "%s-%s", prefix, tag);
+                yaz_snprintf(tmp, sizeof(tmp), "%s-%s", prefix, tag);
             else
-                yaz_snprintf(tmp, sizeof(tmp) - 1, "%s", tag);
+                yaz_snprintf(tmp, sizeof(tmp), "%s", tag);
 
             if (nodetoelement(c, select, tmp, b) < 0)
                 return 0;
@@ -63,8 +63,7 @@ static int nodetoelement(data1_node *n, int select, const char *prefix, WRBUF b)
             int l = c->u.data.len;
 
             wrbuf_puts(b, prefix);
-            yaz_snprintf(tmp, sizeof(tmp) - 1, "{%d}:\t", l);
-            wrbuf_puts(b, tmp);
+            wrbuf_printf(b, "{%d}:\t", l);
             wrbuf_write(b, p, l);
             wrbuf_putc(b, '\n');
         }

@@ -40,6 +40,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/yaz-version.h>
 #include <yaz/diagbib1.h>
 #include <yaz/querytowrbuf.h>
+#include <yaz/snprintf.h>
 #include <yaz/pquery.h>
 #include <sys/types.h>
 
@@ -846,7 +847,7 @@ static void bend_start(struct statserv_options_block *sob)
         {
             char pidstr[30];
 
-            sprintf(pidstr, "%ld", (long) getpid());
+            yaz_snprintf(pidstr, sizeof(pidstr), "%ld", (long) getpid());
             if (write(fd, pidstr, strlen(pidstr)) != strlen(pidstr))
             {
                 yaz_log(YLOG_ERRNO|YLOG_FATAL, "write fail %s", pidfname);

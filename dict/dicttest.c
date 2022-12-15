@@ -187,7 +187,7 @@ int main (int argc, char **argv)
         char ipf_buf[1024];
         int line = 1;
         char infobytes[120];
-        memset (infobytes, 0, 120);
+        memset(infobytes, 0, sizeof(infobytes));
 
         if (!(ipf = fopen(inputfile, "r")))
         {
@@ -198,7 +198,7 @@ int main (int argc, char **argv)
         while (fgets (ipf_buf, 1023, ipf))
         {
             char *ipf_ptr = ipf_buf;
-            yaz_snprintf(infobytes, sizeof(infobytes) - 1, "%d", line);
+            yaz_snprintf(infobytes, sizeof(infobytes), "%d", line);
             for (;*ipf_ptr && *ipf_ptr != '\n';ipf_ptr++)
             {
                 if (isalpha(*ipf_ptr) || *ipf_ptr == '_')

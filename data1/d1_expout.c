@@ -34,7 +34,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/snprintf.h>
 #include <idzebra/data1.h>
 
-typedef struct {
     data1_handle dh;
     ODR o;
     int select;
@@ -76,7 +75,7 @@ static Odr_int *f_integer(ExpHandle *eh, data1_node *c)
     char intbuf[64];
 
     c = c->child;
-    if (!is_data_tag (eh, c) || c->u.data.len >= sizeof(intbuf))
+    if (!is_data_tag(eh, c) || c->u.data.len >= sizeof(intbuf))
         return 0;
     memcpy(intbuf, c->u.data.data, c->u.data.len);
     intbuf[c->u.data.len] = '\0';
@@ -88,7 +87,7 @@ static char *f_string(ExpHandle *eh, data1_node *c)
     char *r;
 
     c = c->child;
-    if (!is_data_tag (eh, c))
+    if (!is_data_tag(eh, c))
         return 0;
     r = (char *)odr_malloc(eh->o, c->u.data.len + 1);
     memcpy(r, c->u.data.data, c->u.data.len);
@@ -113,7 +112,7 @@ static bool_t *f_bool(ExpHandle *eh, data1_node *c)
 
 static Odr_oid *f_oid(ExpHandle *eh, data1_node *c, oid_class oclass)
 {
-    char oidstr[64];
+    char oidstr[128];
 
     c = c->child;
     if (!is_data_tag (eh, c) || c->u.data.len >= sizeof(oidstr))
@@ -404,8 +403,8 @@ static Odr_int *f_recordCount(ExpHandle *eh, data1_node *c, int *which)
         *wp = Z_DatabaseInfo_approxNumber;
     else
         return 0;
-    if (!c->child || c->child->which != DATA1N_data ||
-        c->child->u.data.len >= sizeof(intbuf))
+    c = c->child;
+    if (!c || c->which != DATA1N_data || c->u.data.len >= sizeof(intbuf))
         return 0;
     memcpy(intbuf, c->u.data.data, c->u.data.len);
     intbuf[c->u.data.len] = '\0';

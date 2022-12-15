@@ -332,10 +332,7 @@ data1_node *data1_mk_text_n(data1_handle dh, NMEM mem,
                             const char *buf, size_t len, data1_node *parent)
 {
     data1_node *res = data1_mk_node2(dh, mem, DATA1N_data, parent);
-    res->u.data.what = DATA1I_text;
-    res->u.data.len = len;
-
-    res->u.data.data = data1_insert_string_n(dh, res, mem, buf, len);
+    data1_set_data_string_n(dh, res, mem, buf, len);
     return res;
 }
 
@@ -358,10 +355,7 @@ data1_node *data1_mk_comment_n(data1_handle dh, NMEM mem,
                                data1_node *parent)
 {
     data1_node *res = data1_mk_node2(dh, mem, DATA1N_comment, parent);
-    res->u.data.what = DATA1I_text;
-    res->u.data.len = len;
-
-    res->u.data.data = data1_insert_string_n(dh, res, mem, buf, len);
+    data1_set_data_string_n(dh, res, mem, buf, len);
     return res;
 }
 
@@ -369,6 +363,20 @@ data1_node *data1_mk_comment(data1_handle dh, NMEM mem,
                              const char *buf, data1_node *parent)
 {
     return data1_mk_comment_n(dh, mem, buf, strlen(buf), parent);
+}
+
+void data1_set_data_string_n(data1_handle dh, data1_node *res, NMEM m,
+                             const char *str, size_t len)
+{
+    res->u.data.what = DATA1I_text;
+    res->u.data.data = data1_insert_string_n(dh, res, m, str, len);
+    res->u.data.len = len;
+}
+
+void data1_set_data_string(data1_handle dh, data1_node *res, NMEM m,
+                           const char *str)
+{
+    data1_set_data_string_n(dh, res, m, str, strlen(str));
 }
 
 char *data1_insert_string_n(data1_handle dh, data1_node *res,
@@ -382,6 +390,21 @@ char *data1_insert_string_n(data1_handle dh, data1_node *res,
     memcpy(b, str, len);
     b[len] = 0;
     return b;
+}
+
+char *data1_insert_zint(data1_handle dh, data1_node *res, NMEM m, zint num)
+{
+    char str[64];
+
+    yaz_snprintf(str, sizeof(str), ZINT_FORMAT, num);
+    return data1_insert_string(dh, res, m, str);
+}
+
+void data1_set_data_zint(data1_handle dh, data1_node *res, NMEM m, zint num)
+{
+    res->u.data.what = DATA1I_num;
+    res->u.data.data = data1_insert_zint(dh, res, m, num);
+    res->u.data.len = strlen(res->u.data.data);
 }
 
 char *data1_insert_string(data1_handle dh, data1_node *res,
@@ -460,15 +483,11 @@ data1_node *data1_mk_tag_data_zint(data1_handle dh, data1_node *at,
                                    NMEM nmem)
 {
     data1_node *node_data;
-    char str[64];
 
     node_data = data1_mk_tag_data(dh, at, tag, nmem);
     if (!node_data)
         return 0;
-    yaz_snprintf(str, sizeof(str) - 1, ZINT_FORMAT, num);
-    node_data->u.data.what = DATA1I_num;
-    node_data->u.data.len = strlen(str);
-    node_data->u.data.data = data1_insert_string(dh, node_data, nmem, str);
+    data1_set_data_zint(dh, node_data, nmem, num);
     return node_data;
 }
 
@@ -498,9 +517,8 @@ data1_node *data1_mk_tag_data_oid(data1_handle dh, data1_node *at,
         yaz_snprintf(p, 7, "%d", oid[i]);
         p += strlen(p);
     }
+    data1_set_data_string(dh, node_data, nmem, str);
     node_data->u.data.what = DATA1I_oid;
-    node_data->u.data.len = strlen(str);
-    node_data->u.data.data = data1_insert_string(dh, node_data, nmem, str);
     return node_data;
 }
 
@@ -509,14 +527,10 @@ data1_node *data1_mk_tag_data_text(data1_handle dh, data1_node *at,
                                    const char *tag, const char *str,
                                    NMEM nmem)
 {
-    data1_node *node_data;
-
-    node_data = data1_mk_tag_data(dh, at, tag, nmem);
+    data1_node *node_data = data1_mk_tag_data(dh, at, tag, nmem);
     if (!node_data)
         return 0;
-    node_data->u.data.what = DATA1I_text;
-    node_data->u.data.len = strlen(str);
-    node_data->u.data.data = data1_insert_string(dh, node_data, nmem, str);
+    data1_set_data_string(dh, node_data, nmem, str);
     return node_data;
 }
 
@@ -528,16 +542,10 @@ data1_node *data1_mk_tag_data_text_uni(data1_handle dh, data1_node *at,
     data1_node *node = data1_search_tag(dh, at->child, tag);
     if (!node)
         return data1_mk_tag_data_text(dh, at, tag, str, nmem);
-    else
-    {
-        data1_node *node_data = node->child;
-        node_data->u.data.what = DATA1I_text;
-        node_data->u.data.len = strlen(str);
-        node_data->u.data.data = data1_insert_string(dh, node_data,
-                                                      nmem, str);
-        node_data->child = node_data->last_child = 0;
-        return node_data;
-    }
+    node = node->child;
+    data1_set_data_string(dh, node, nmem, str);
+    node->child = node->last_child = 0;
+    return node;
 }
 
 static int ampr(int (*get_byte)(void *fh), void *fh, int *amp)
@@ -989,8 +997,7 @@ static void data1_iconv_s(data1_handle dh, NMEM m, data1_node *n,
             if (conv_item(m, t, wrbuf, n->u.data.data, n->u.data.len) == 0)
             {
                 n->u.data.data =
-                    data1_insert_string_n(dh, n, m, wrbuf->buf,
-                                           wrbuf->pos);
+                    data1_insert_string_n(dh, n, m, wrbuf->buf, wrbuf->pos);
                 n->u.data.len = wrbuf->pos;
             }
             break;
@@ -999,8 +1006,7 @@ static void data1_iconv_s(data1_handle dh, NMEM m, data1_node *n,
                 == 0)
             {
                 n->u.tag.tag =
-                    data1_insert_string_n(dh, n, m,
-                                           wrbuf->buf, wrbuf->pos);
+                    data1_insert_string_n(dh, n, m, wrbuf->buf, wrbuf->pos);
             }
             if (n->u.tag.attributes)
             {

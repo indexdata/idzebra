@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdlib.h>
 #include <yaz/yconfig.h>
 #include <yaz/pquery.h>
+#include <yaz/snprintf.h>
 #include <yaz/log.h>
 #include <idzebra/api.h>
 #include <yaz/test.h>

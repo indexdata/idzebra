@@ -158,7 +158,7 @@ static void tst(Dict dict, int start, int number)
     {
         int v = i;
         char w[32];
-        yaz_snprintf(w, sizeof(w) - 1, "%d", i);
+        yaz_snprintf(w, sizeof(w), "%d", i);
         YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(v), &v), 2);
     }
     /* insert again with different value */
@@ -166,7 +166,7 @@ static void tst(Dict dict, int start, int number)
     {
         int v = i-1;
         char w[32];
-        yaz_snprintf(w, sizeof(w) - 1, "%d", i);
+        yaz_snprintf(w, sizeof(w), "%d", i);
         YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(v), &v), 1);
     }
     /* insert again with original value again */
@@ -174,7 +174,7 @@ static void tst(Dict dict, int start, int number)
     {
         int v = i;
         char w[32];
-        yaz_snprintf(w, sizeof(w) - 1, "%d", i);
+        yaz_snprintf(w, sizeof(w), "%d", i);
         YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(v), &v), 1);
     }
 
@@ -295,7 +295,7 @@ int main(int argc, char **argv)
         for (i = start; i<number; i++)
         {
             char w[32];
-            yaz_snprintf(w, sizeof(w) - 1, "%d", i);
+            yaz_snprintf(w, sizeof(w), "%d", i);
             YAZ_CHECK_EQ(dict_insert(dict, w, sizeof(int), &i), 0);
         }
 

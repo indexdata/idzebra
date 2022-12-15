@@ -46,6 +46,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/options.h>
 #include <yaz/wrbuf.h>
 #include <yaz/oid_db.h>
+#include <yaz/snprintf.h>
 
 #define MAX_NO_ARGS 32
 #define MAX_OUT_BUFF 4096
@@ -215,7 +216,7 @@ static int cmd_quickstart( char *args[], WRBUF outbuff)
         rc=onecommand("yaz_log_file zebrash.log",outbuff,"");
     if (!rc)
         rc=onecommand("yaz_log_prefix ZebraSh", outbuff,"");
-    sprintf(tmp, "yaz_log_level 0x%x", YLOG_DEFAULT_LEVEL | log_level );
+    yaz_snprintf(tmp, sizeof(tmp), "yaz_log_level 0x%x", YLOG_DEFAULT_LEVEL | log_level );
     if (!rc)
         rc=onecommand(tmp,outbuff,"");
     yaz_log(log_level,"quickstart");

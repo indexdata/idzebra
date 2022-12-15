@@ -130,7 +130,7 @@ data1_marctab *data1_read_marctab(data1_handle dh, const char *file)
                         *argv);
                 continue;
             }
-            strncpy(res->future_use, argv[1], 2);
+            res->future_use[0] = argv[1][0]; /* use[1] already \0 */
         }
         else if (!strcmp(*argv, "force-indicator-length"))
         {
@@ -209,7 +209,7 @@ static void memint(char *p, int val, int len)
         *p = val + '0';
     else
     {
-        yaz_snprintf(buf, sizeof(buf) -1, "%08d", val);
+        yaz_snprintf(buf, sizeof(buf), "%08d", val);
         memcpy(p, buf+8-len, len);
     }
 }
@@ -346,7 +346,7 @@ static int nodetomarc(data1_handle dh,
         int data_0 = data_p;
         char indicator_data[6];
 
-        memset (indicator_data, ' ', sizeof(indicator_data)-1);
+        memset(indicator_data, ' ', sizeof(indicator_data) - 1);
         indicator_data[sizeof(indicator_data)-1] = '\0';
 
         if (field->which != DATA1N_tag)
@@ -383,9 +383,10 @@ static int nodetomarc(data1_handle dh,
             control_field = 0;
             marc_xml = 0;
         }
-        if (marc_xml == 0 && is_indicator (p, subf))
+        if (marc_xml == 0 && is_indicator(p, subf))
         {
-            strncpy(indicator_data, subf->u.tag.tag, sizeof(indicator_data)-1);
+            if (strlen(subf->u.tag.tag) < sizeof(indicator_data))
+               strcpy(indicator_data, subf->u.tag.tag);
             subf = subf->child;
         }
         else if (marc_xml == 1 && !control_field)

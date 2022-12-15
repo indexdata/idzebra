@@ -215,7 +215,7 @@ static int tagmatch(data1_node *n, data1_maptag *t)
         if (t->which == D1_MAPTAG_numeric)
         {
             char str[16];
-            yaz_snprintf(str, sizeof(str) - 1, "%d", t->value.numeric);
+            yaz_snprintf(str, sizeof(str), "%d", t->value.numeric);
             if (data1_matchstr(n->u.tag.tag, str))
                 return 0;
         }
