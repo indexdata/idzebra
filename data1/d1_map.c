@@ -86,9 +86,7 @@ data1_maptab *data1_read_maptab(data1_handle dh, const char *file)
                         file, lineno);
                 continue;
             }
-            res->target_absyn_name =
-                (char *)nmem_malloc(mem, strlen(argv[1])+1);
-            strcpy(res->target_absyn_name, argv[1]);
+            res->target_absyn_name = nmem_strdup(mem, argv[1]);
         }
         else if (!yaz_matchstr(argv[0], "localnumeric"))
             local_numeric = 1;
@@ -99,8 +97,7 @@ data1_maptab *data1_read_maptab(data1_handle dh, const char *file)
                 yaz_log(YLOG_WARN, "%s:%d: Bad # args for name", file, lineno);
                 continue;
             }
-            res->name = (char *)nmem_malloc(mem, strlen(argv[1])+1);
-            strcpy(res->name, argv[1]);
+            res->name = nmem_strdup(mem, argv[1]);
         }
         else if (!strcmp(argv[0], "map"))
         {
@@ -123,9 +120,7 @@ data1_maptab *data1_read_maptab(data1_handle dh, const char *file)
                 (*mapp)->no_chop = 1;
             else
                 (*mapp)->no_chop = 0;
-            (*mapp)->source_element_name =
-                (char *)nmem_malloc(mem, strlen(argv[1])+1);
-            strcpy((*mapp)->source_element_name, argv[1]);
+            (*mapp)->source_element_name = nmem_strdup(mem, argv[1]);
             mtp = &(*mapp)->target_path;
             if (*path == '/')
                 path++;
@@ -160,9 +155,7 @@ data1_maptab *data1_read_maptab(data1_handle dh, const char *file)
                 else
                 {
                     (*mtp)->which = D1_MAPTAG_string;
-                    (*mtp)->value.string =
-                        (char *)nmem_malloc(mem, strlen(valstr)+1);
-                    strcpy((*mtp)->value.string, valstr);
+                    (*mtp)->value.string = nmem_strdup(mem, valstr);
                 }
                 mtp = &(*mtp)->next;
             }
@@ -228,17 +221,17 @@ static int tagmatch(data1_node *n, data1_maptag *t)
     return 1;
 }
 
-static data1_node *dup_child (data1_handle dh, data1_node *n,
-                              data1_node **last, NMEM mem,
-                              data1_node *parent)
+static data1_node *dup_child(data1_handle dh, data1_node *n,
+                             data1_node **last, NMEM mem,
+                             data1_node *parent)
 {
     data1_node *first = 0;
     data1_node **m = &first;
 
     for (; n; n = n->next)
     {
-        *last = *m = (data1_node *) nmem_malloc (mem, sizeof(**m));
-        memcpy (*m, n, sizeof(**m));
+        *last = *m = (data1_node *) nmem_malloc(mem, sizeof(**m));
+        memcpy(*m, n, sizeof(**m));
 
         (*m)->parent = parent;
         (*m)->root = parent->root;
@@ -292,7 +285,7 @@ static int map_children(data1_handle dh, data1_node *n, data1_maptab *map,
 
                                 if (tag && tag->names->name)
                                 {
-                                    cur = data1_mk_tag (
+                                    cur = data1_mk_tag(
                                         dh, mem, tag->names->name, 0, pn);
 
                                 }
@@ -304,8 +297,8 @@ static int map_children(data1_handle dh, data1_node *n, data1_maptab *map,
                         else if (!m->no_data)
                         {
                             cur->child =
-                                dup_child (dh, c->child,
-                                           &cur->last_child, mem, cur);
+                                dup_child(dh, c->child,
+                                          &cur->last_child, mem, cur);
                             if (!m->no_chop)
                             {
                                 data1_concat_text(dh, mem, cur->child);
@@ -326,10 +319,10 @@ static int map_children(data1_handle dh, data1_node *n, data1_maptab *map,
  * table. The new copy will refer back to the data of the original record,
  * which should not be discarded during the lifetime of the copy.
  */
-data1_node *data1_map_record (data1_handle dh, data1_node *n,
-                              data1_maptab *map, NMEM m)
+data1_node *data1_map_record(data1_handle dh, data1_node *n,
+                             data1_maptab *map, NMEM m)
 {
-    data1_node *res1, *res = data1_mk_node2 (dh, m, DATA1N_root, 0);
+    data1_node *res1, *res = data1_mk_node2(dh, m, DATA1N_root, 0);
 
     res->which = DATA1N_root;
     res->u.root.type = map->target_absyn_name;

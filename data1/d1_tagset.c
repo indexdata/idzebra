@@ -33,7 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * functions eventually.
  */
 
-data1_datatype data1_maptype (data1_handle dh, char *t)
+data1_datatype data1_maptype(data1_handle dh, char *t)
 {
     static struct
     {
@@ -61,8 +61,8 @@ data1_datatype data1_maptype (data1_handle dh, char *t)
     return DATA1K_unknown;
 }
 
-data1_tag *data1_gettagbynum (data1_handle dh, data1_tagset *s,
-                              int type, int value)
+data1_tag *data1_gettagbynum(data1_handle dh, data1_tagset *s,
+                             int type, int value)
 {
     data1_tag *r;
 
@@ -75,14 +75,14 @@ data1_tag *data1_gettagbynum (data1_handle dh, data1_tagset *s,
                     return r;
         /* scan included sets */
         if (s->children &&
-            (r = data1_gettagbynum (dh, s->children, type, value)))
+            (r = data1_gettagbynum(dh, s->children, type, value)))
             return r;
     }
     return 0;
 }
 
-data1_tag *data1_gettagbyname (data1_handle dh, data1_tagset *s,
-                               const char *name)
+data1_tag *data1_gettagbyname(data1_handle dh, data1_tagset *s,
+                              const char *name)
 {
     data1_tag *r;
 
@@ -98,16 +98,16 @@ data1_tag *data1_gettagbyname (data1_handle dh, data1_tagset *s,
                     return r;
         }
         /* scan included sets */
-        if (s->children && (r = data1_gettagbyname (dh, s->children, name)))
+        if (s->children && (r = data1_gettagbyname(dh, s->children, name)))
             return r;
     }
     return 0;
 }
 
-data1_tagset *data1_empty_tagset (data1_handle dh)
+data1_tagset *data1_empty_tagset(data1_handle dh)
 {
     data1_tagset *res =
-        (data1_tagset *) nmem_malloc(data1_nmem_get (dh), sizeof(*res));
+        (data1_tagset *) nmem_malloc(data1_nmem_get(dh), sizeof(*res));
     res->name = 0;
     res->oid = 0;
     res->tags = 0;
@@ -117,9 +117,9 @@ data1_tagset *data1_empty_tagset (data1_handle dh)
     return res;
 }
 
-data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
+data1_tagset *data1_read_tagset(data1_handle dh, const char *file, int type)
 {
-    NMEM mem = data1_nmem_get (dh);
+    NMEM mem = data1_nmem_get(dh);
     data1_tagset *res = 0;
     data1_tagset **childp;
     data1_tag **tagp;
@@ -133,7 +133,7 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
         yaz_log(YLOG_WARN|YLOG_ERRNO, "%s", file);
         return 0;
     }
-    res = data1_empty_tagset (dh);
+    res = data1_empty_tagset(dh);
     res->type = type;
     childp = &res->children;
     tagp = &res->tags;
@@ -245,7 +245,7 @@ data1_tagset *data1_read_tagset (data1_handle dh, const char *file, int type)
             name = argv[1];
             if (argc == 3)
                 type = atoi(argv[2]);
-            *childp = data1_read_tagset (dh, name, type);
+            *childp = data1_read_tagset(dh, name, type);
             if (!(*childp))
             {
                 yaz_log(YLOG_WARN, "%s:%d: Inclusion failed for tagset %s",

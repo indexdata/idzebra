@@ -163,7 +163,7 @@ data1_absyn *data1_absyn_search(data1_handle dh, const char *name)
 
     while (p)
     {
-        if (!yaz_matchstr (name, p->name))
+        if (!yaz_matchstr(name, p->name))
             return p->absyn;
         p = p->next;
     }
@@ -217,8 +217,8 @@ static data1_absyn *data1_absyn_add(data1_handle dh, const char *name,
     char fname[512];
     NMEM mem = data1_nmem_get(dh);
 
-    data1_absyn_cache p = (data1_absyn_cache)nmem_malloc (mem, sizeof(*p));
-    data1_absyn_cache *pp = data1_absyn_cache_get (dh);
+    data1_absyn_cache p = (data1_absyn_cache)nmem_malloc(mem, sizeof(*p));
+    data1_absyn_cache *pp = data1_absyn_cache_get(dh);
 
     yaz_snprintf(fname, sizeof(fname), "%s.abs", name);
     p->absyn = data1_read_absyn(dh, fname, en);
@@ -271,7 +271,7 @@ data1_attset *data1_attset_add(data1_handle dh, const char *name)
 
     attset = data1_read_attset(dh, name);
     if (!attset)
-        yaz_log (YLOG_WARN|YLOG_ERRNO, "Couldn't load attribute set %s", name);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "Couldn't load attribute set %s", name);
     else
     {
         data1_attset_cache p = (data1_attset_cache)
@@ -384,7 +384,7 @@ void fix_element_ref(data1_handle dh, data1_absyn *absyn, data1_element *e)
         if (!e->sub_name)
         {
             if (e->children)
-                fix_element_ref (dh, absyn, e->children);
+                fix_element_ref(dh, absyn, e->children);
         }
         else
         {
@@ -394,8 +394,8 @@ void fix_element_ref(data1_handle dh, data1_absyn *absyn, data1_element *e)
             if (sub_e)
                 e->children = sub_e->elements;
             else
-                yaz_log (YLOG_WARN, "Unresolved reference to sub-elements %s",
-                      e->sub_name);
+                yaz_log(YLOG_WARN, "Unresolved reference to sub-elements %s",
+                        e->sub_name);
         }
     }
 }
@@ -434,7 +434,7 @@ static const char * mk_xpath_regexp(data1_handle dh, const char *expr)
     p++;
     if (*p == '/')
     {
-        abs =0;
+        abs = 0;
         p++;
     }
     while (*p && e < 30)
@@ -450,9 +450,9 @@ static const char * mk_xpath_regexp(data1_handle dh, const char *expr)
         {
             const char *pp = p-i+j;
             if (*pp == '[')
-                is_predicate=1;
+                is_predicate = 1;
             else if (*pp == ']')
-                is_predicate=0;
+                is_predicate = 0;
             else
             {
                 if (!is_predicate) {
@@ -567,14 +567,12 @@ static int parse_termlists(data1_handle dh, data1_termlist ***tpp,
             *source++ = '\0';   /* cut off structure .. */
         else
             source = "data";    /* ok: default is leaf data */
-        (*tp)->source = (char *)
-            nmem_strdup (data1_nmem_get (dh), source);
+        (*tp)->source = nmem_strdup(data1_nmem_get (dh), source);
 
         if (r < 2) /* is the structure qualified? */
             (*tp)->structure = "w";
         else
-            (*tp)->structure = (char *)
-                nmem_strdup (data1_nmem_get (dh), structure);
+            (*tp)->structure = nmem_strdup(data1_nmem_get (dh), structure);
         tp = &(*tp)->next;
     }
 

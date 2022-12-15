@@ -52,8 +52,8 @@ static char *f_string(data1_node *c, ODR o)
     return r;
 }
 
-Z_BriefBib *data1_nodetosummary (data1_handle dh, data1_node *n,
-                                 int select, ODR o)
+Z_BriefBib *data1_nodetosummary(data1_handle dh, data1_node *n,
+                                int select, ODR o)
 {
     Z_BriefBib *res = (Z_BriefBib *)odr_malloc(o, sizeof(*res));
     data1_node *c;

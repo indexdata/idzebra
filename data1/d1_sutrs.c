@@ -133,9 +133,9 @@ static int nodetobuf(data1_node *n, int select, WRBUF b, int indent, int col)
  * need changing.
  */
 
-char *data1_nodetobuf (data1_handle dh, data1_node *n, int select, int *len)
+char *data1_nodetobuf(data1_handle dh, data1_node *n, int select, int *len)
 {
-    WRBUF b = data1_get_wrbuf (dh);
+    WRBUF b = data1_get_wrbuf(dh);
 
     wrbuf_rewind(b);
     if (nodetobuf(n, select, b, 0, 0))
