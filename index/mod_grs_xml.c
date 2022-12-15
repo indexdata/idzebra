@@ -31,11 +31,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 #include <yaz/log.h>
-
-#include <idzebra/recgrs.h>
-
+#include <yaz/snprintf.h>
 #include <yaz/log.h>
 #include <yaz/xmalloc.h>
+#include <idzebra/recgrs.h>
 
 #include <expat.h>
 
@@ -53,17 +52,17 @@ static void report_xml_error(XML_Parser parser)
 {
     zint line = XML_GetCurrentLineNumber(parser);
     zint col = XML_GetCurrentColumnNumber(parser);
-    yaz_log (YLOG_WARN, ZINT_FORMAT ":" ZINT_FORMAT ":XML error: %s",
-             line, col, XML_ErrorString(XML_GetErrorCode(parser)));
+    yaz_log(YLOG_WARN, ZINT_FORMAT ":" ZINT_FORMAT ":XML error: %s",
+            line, col, XML_ErrorString(XML_GetErrorCode(parser)));
 }
 
-static void cb_start (void *user, const char *el, const char **attr)
+static void cb_start(void *user, const char *el, const char **attr)
 {
     struct user_info *ui = (struct user_info*) user;
     if (ui->level == 1)
         data1_set_root (ui->dh, ui->d1_stack[0], ui->nmem, el);
-    ui->d1_stack[ui->level] = data1_mk_tag (ui->dh, ui->nmem, el, attr,
-                                                ui->d1_stack[ui->level-1]);
+    ui->d1_stack[ui->level] = data1_mk_tag(ui->dh, ui->nmem, el, attr,
+                                           ui->d1_stack[ui->level-1]);
     ui->level++;
     yaz_log (ui->loglevel, "cb_start %s", el);
 }
@@ -73,21 +72,21 @@ static void cb_end (void *user, const char *el)
     struct user_info *ui = (struct user_info*) user;
 
     ui->level--;
-    yaz_log (ui->loglevel, "cb_end %s", el);
+    yaz_log(ui->loglevel, "cb_end %s", el);
 }
 
-static void cb_chardata (void *user, const char *s, int len)
+static void cb_chardata(void *user, const char *s, int len)
 {
     struct user_info *ui = (struct user_info*) user;
 #if 0
     yaz_log (ui->loglevel, "cb_chardata %.*s", len, s);
 #endif
-    ui->d1_stack[ui->level] = data1_mk_text_n (ui->dh, ui->nmem, s, len,
-                                                   ui->d1_stack[ui->level -1]);
+    ui->d1_stack[ui->level] = data1_mk_text_n(ui->dh, ui->nmem, s, len,
+                                              ui->d1_stack[ui->level -1]);
 }
 
-static void cb_decl (void *user, const char *version, const char *encoding,
-                     int standalone)
+static void cb_decl(void *user, const char *version, const char *encoding,
+                    int standalone)
 {
     struct user_info *ui = (struct user_info*) user;
     const char *attr_list[7];
@@ -103,8 +102,8 @@ static void cb_decl (void *user, const char *version, const char *encoding,
 
     attr_list[6] = 0;
 
-    data1_mk_preprocess (ui->dh, ui->nmem, "xml", attr_list,
-                             ui->d1_stack[ui->level-1]);
+    data1_mk_preprocess(ui->dh, ui->nmem, "xml", attr_list,
+                        ui->d1_stack[ui->level-1]);
 #if 0
     yaz_log (YLOG_LOG, "decl version=%s encoding=%s",
              version ? version : "null",
@@ -112,55 +111,55 @@ static void cb_decl (void *user, const char *version, const char *encoding,
 #endif
 }
 
-static void cb_processing (void *user, const char *target,
-                           const char *data)
+static void cb_processing(void *user, const char *target,
+                          const char *data)
 {
     struct user_info *ui = (struct user_info*) user;
     data1_node *res =
-        data1_mk_preprocess (ui->dh, ui->nmem, target, 0,
-                             ui->d1_stack[ui->level-1]);
-    data1_mk_text_nf (ui->dh, ui->nmem, data, strlen(data), res);
+        data1_mk_preprocess(ui->dh, ui->nmem, target, 0,
+                            ui->d1_stack[ui->level-1]);
+    data1_mk_text_nf(ui->dh, ui->nmem, data, strlen(data), res);
 
-    yaz_log (ui->loglevel, "decl processing target=%s data=%s",
-             target ? target : "null",
-             data ? data : "null");
+    yaz_log(ui->loglevel, "decl processing target=%s data=%s",
+            target ? target : "null",
+            data ? data : "null");
 }
 
-static void cb_comment (void *user, const char *data)
+static void cb_comment(void *user, const char *data)
 {
     struct user_info *ui = (struct user_info*) user;
-    yaz_log (ui->loglevel, "decl comment data=%s", data ? data : "null");
-    data1_mk_comment (ui->dh, ui->nmem, data, ui->d1_stack[ui->level-1]);
+    yaz_log(ui->loglevel, "decl comment data=%s", data ? data : "null");
+    data1_mk_comment(ui->dh, ui->nmem, data, ui->d1_stack[ui->level-1]);
 }
 
-static void cb_doctype_start (void *userData, const char *doctypeName,
+static void cb_doctype_start(void *userData, const char *doctypeName,
                               const char *sysid, const char *pubid,
                               int has_internal_subset)
 {
     struct user_info *ui = (struct user_info*) userData;
-    yaz_log (ui->loglevel, "doctype start doctype=%s sysid=%s pubid=%s",
-             doctypeName, sysid, pubid);
+    yaz_log(ui->loglevel, "doctype start doctype=%s sysid=%s pubid=%s",
+            doctypeName, sysid, pubid);
 }
 
-static void cb_doctype_end (void *userData)
+static void cb_doctype_end(void *userData)
 {
     struct user_info *ui = (struct user_info*) userData;
-    yaz_log (ui->loglevel, "doctype end");
+    yaz_log(ui->loglevel, "doctype end");
 }
 
 
-static void cb_entity_decl (void *userData, const char *entityName,
-                            int is_parameter_entity,
-                            const char *value, int value_length,
-                            const char *base, const char *systemId,
-                            const char *publicId, const char *notationName)
+static void cb_entity_decl(void *userData, const char *entityName,
+                           int is_parameter_entity,
+                           const char *value, int value_length,
+                           const char *base, const char *systemId,
+                           const char *publicId, const char *notationName)
 {
     struct user_info *ui = (struct user_info*) userData;
-    yaz_log (ui->loglevel,
-             "entity decl %s is_para_entry=%d value=%.*s base=%s systemId=%s"
-             " publicId=%s notationName=%s",
-             entityName, is_parameter_entity, value_length, value,
-             base, systemId, publicId, notationName);
+    yaz_log(ui->loglevel,
+            "entity decl %s is_para_entry=%d value=%.*s base=%s systemId=%s"
+            " publicId=%s notationName=%s",
+            entityName, is_parameter_entity, value_length, value,
+            base, systemId, publicId, notationName);
 
 }
 
@@ -175,52 +174,52 @@ static int cb_external_entity(XML_Parser pparser,
     int done = 0;
     XML_Parser parser;
 
-    yaz_log (ui->loglevel,
-             "external entity context=%s base=%s systemid=%s publicid=%s",
-             context, base, systemId, publicId);
+    yaz_log(ui->loglevel,
+            "external entity context=%s base=%s systemid=%s publicid=%s",
+            context, base, systemId, publicId);
     if (!systemId)
         return 1;
 
-    if (!(inf = fopen (systemId, "rb")))
+    if (!(inf = fopen(systemId, "rb")))
     {
         yaz_log (YLOG_WARN|YLOG_ERRNO, "fopen %s", systemId);
         return 0;
     }
 
-    parser = XML_ExternalEntityParserCreate (pparser, "", 0);
+    parser = XML_ExternalEntityParserCreate(pparser, "", 0);
     while (!done)
     {
         int r;
-        void *buf = XML_GetBuffer (parser, XML_CHUNK);
+        void *buf = XML_GetBuffer(parser, XML_CHUNK);
         if (!buf)
         {
-            yaz_log (YLOG_WARN, "XML_GetBuffer fail");
+            yaz_log(YLOG_WARN, "XML_GetBuffer fail");
             break;
         }
-        r = fread (buf, 1, XML_CHUNK, inf);
+        r = fread(buf, 1, XML_CHUNK, inf);
         if (r == 0)
         {
             if (ferror(inf))
             {
-                yaz_log (YLOG_WARN|YLOG_ERRNO, "fread %s", systemId);
+                yaz_log(YLOG_WARN|YLOG_ERRNO, "fread %s", systemId);
                 break;
             }
             done = 1;
         }
-        if (!XML_ParseBuffer (parser, r, done))
+        if (!XML_ParseBuffer(parser, r, done))
         {
             done = 1;
             report_xml_error(parser);
         }
     }
     fclose (inf);
-    XML_ParserFree (parser);
+    XML_ParserFree(parser);
     return done;
 }
 
 
 #if HAVE_ICONV_H
-static int cb_encoding_convert (void *data, const char *s)
+static int cb_encoding_convert(void *data, const char *s)
 {
     iconv_t t = (iconv_t) data;
     size_t ret;
@@ -233,7 +232,7 @@ static int cb_encoding_convert (void *data, const char *s)
 #if 1
     yaz_log(YLOG_LOG, "------------------------- cb_encoding_convert --- ");
 #endif
-    ret = iconv (t, &inbuf, &inleft, &outbuf, &outleft);
+    ret = iconv(t, &inbuf, &inleft, &outbuf, &outleft);
     if (ret == (size_t) (-1) && errno != E2BIG)
     {
         iconv (t, 0, 0, 0, 0);
@@ -245,25 +244,25 @@ static int cb_encoding_convert (void *data, const char *s)
     return code;
 }
 
-static void cb_encoding_release (void *data)
+static void cb_encoding_release(void *data)
 {
     iconv_t t = (iconv_t) data;
     iconv_close (t);
 }
 
-static int cb_encoding_handler (void *userData, const char *name,
-                                XML_Encoding *info)
+static int cb_encoding_handler(void *userData, const char *name,
+                               XML_Encoding *info)
 {
     int i = 0;
     int no_ok = 0;
     struct user_info *ui = (struct user_info*) userData;
 
-    iconv_t t = iconv_open ("UNICODE", name);
+    iconv_t t = iconv_open("UNICODE", name);
     if (t == (iconv_t) (-1))
         return 0;
 
     info->data = 0;  /* signal that multibyte is not in use */
-    yaz_log (ui->loglevel, "Encoding handler of %s", name);
+    yaz_log(ui->loglevel, "Encoding handler of %s", name);
     for (i = 0; i<256; i++)
     {
         size_t ret;
@@ -282,7 +281,7 @@ static int cb_encoding_handler (void *userData, const char *name,
         {
             if (errno == EILSEQ)
             {
-                yaz_log (ui->loglevel, "Encoding %d: invalid sequence", i);
+                yaz_log(ui->loglevel, "Encoding %d: invalid sequence", i);
                 info->map[i] = -1;  /* invalid sequence */
             }
             if (errno == EINVAL)
@@ -293,8 +292,6 @@ static int cb_encoding_handler (void *userData, const char *name,
 
                 while (len <= 4)
                 {
-                    char sbuf[80];
-                    int k;
                     inbuf = inbuf_;
                     inleft = len;
                     outbuf = outbuf_;
@@ -305,12 +302,7 @@ static int cb_encoding_handler (void *userData, const char *name,
 
                     assert (i >= 0 && i<255);
 
-                    *sbuf = 0;
-                    for (k = 0; k<len; k++)
-                    {
-                        sprintf (sbuf+strlen(sbuf), "%d ", inbuf_[k]&255);
-                    }
-                    ret = iconv (t, &inbuf, &inleft, &outbuf, &outleft);
+                    ret = iconv(t, &inbuf, &inleft, &outbuf, &outleft);
                     if (ret == (size_t) (-1))
                     {
                         if (errno == EILSEQ || errno == E2BIG)
@@ -337,18 +329,18 @@ static int cb_encoding_handler (void *userData, const char *name,
                     }
                 }
                 if (info->map[i] < -1)
-                    yaz_log (ui->loglevel, "Encoding %d: multibyte input %d",
-                             i, -info->map[i]);
+                    yaz_log(ui->loglevel, "Encoding %d: multibyte input %d",
+                            i, -info->map[i]);
                 else
-                    yaz_log (ui->loglevel, "Encoding %d: multibyte input failed",
-                             i);
+                    yaz_log(ui->loglevel, "Encoding %d: multibyte input failed",
+                            i);
             }
             if (errno == E2BIG)
             {
                 info->map[i] = -1;  /* no room for output */
                 if (i != 0)
-                    yaz_log (YLOG_WARN, "Encoding %d: no room for output",
-                             i);
+                    yaz_log(YLOG_WARN, "Encoding %d: no room for output",
+                            i);
             }
         }
         else if (outleft == 0)
@@ -416,47 +408,47 @@ data1_node *zebra_read_xml(data1_handle dh,
 
     parser = XML_ParserCreate (0 /* encoding */);
 
-    XML_SetElementHandler (parser, cb_start, cb_end);
-    XML_SetCharacterDataHandler (parser, cb_chardata);
-    XML_SetXmlDeclHandler (parser, cb_decl);
-    XML_SetProcessingInstructionHandler (parser, cb_processing);
-    XML_SetUserData (parser, &uinfo);
-    XML_SetCommentHandler (parser, cb_comment);
-    XML_SetDoctypeDeclHandler (parser, cb_doctype_start, cb_doctype_end);
-    XML_SetEntityDeclHandler (parser, cb_entity_decl);
-    XML_SetExternalEntityRefHandler (parser, cb_external_entity);
+    XML_SetElementHandler(parser, cb_start, cb_end);
+    XML_SetCharacterDataHandler(parser, cb_chardata);
+    XML_SetXmlDeclHandler(parser, cb_decl);
+    XML_SetProcessingInstructionHandler(parser, cb_processing);
+    XML_SetUserData(parser, &uinfo);
+    XML_SetCommentHandler(parser, cb_comment);
+    XML_SetDoctypeDeclHandler(parser, cb_doctype_start, cb_doctype_end);
+    XML_SetEntityDeclHandler(parser, cb_entity_decl);
+    XML_SetExternalEntityRefHandler(parser, cb_external_entity);
     XML_SetNamespaceDeclHandler(parser, cb_ns_start, cb_ns_end);
 #if HAVE_ICONV_H
-    XML_SetUnknownEncodingHandler (parser, cb_encoding_handler, &uinfo);
+    XML_SetUnknownEncodingHandler(parser, cb_encoding_handler, &uinfo);
 #endif
     while (!done)
     {
         int r;
-        void *buf = XML_GetBuffer (parser, XML_CHUNK);
+        void *buf = XML_GetBuffer(parser, XML_CHUNK);
         if (!buf)
         {
             /* error */
-            yaz_log (YLOG_WARN, "XML_GetBuffer fail");
+            yaz_log(YLOG_WARN, "XML_GetBuffer fail");
             break;
         }
         r = stream->readf(stream, buf, XML_CHUNK);
         if (r < 0)
         {
             /* error */
-            yaz_log (YLOG_WARN, "XML read fail");
+            yaz_log(YLOG_WARN, "XML read fail");
             break;
         }
         else if (r == 0)
             done = 1;
         else
             no_read += r;
-        if (no_read && !XML_ParseBuffer (parser, r, done))
+        if (no_read && !XML_ParseBuffer(parser, r, done))
         {
             done = 1;
             report_xml_error(parser);
         }
     }
-    XML_ParserFree (parser);
+    XML_ParserFree(parser);
     if (no_read == 0)
         return 0;
     if (!uinfo.d1_stack[1] || !done)
@@ -476,8 +468,8 @@ data1_node *zebra_read_xml(data1_handle dh,
 
         attr_list[4] = 0;
 
-        data1_insert_preprocess (uinfo.dh, uinfo.nmem, "xml", attr_list,
-                                 uinfo.d1_stack[0]);
+        data1_insert_preprocess(uinfo.dh, uinfo.nmem, "xml", attr_list,
+                                uinfo.d1_stack[0]);
     }
     return uinfo.d1_stack[0];
 }

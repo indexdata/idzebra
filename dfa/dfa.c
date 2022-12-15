@@ -28,6 +28,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 #include <ctype.h>
 
+#include <yaz/snprintf.h>
+
 #include <idzebra/util.h>
 #include "dfap.h"
 #include "imalloc.h"
@@ -520,7 +522,7 @@ static const char *str_char (unsigned c)
             strcpy (s+1, "t");
             break;
         default:
-            sprintf (s+1, "x%02x", c);
+            yaz_snprintf(s + 1, sizeof(s) - 1, "x%02x", c);
             break;
         }
     else

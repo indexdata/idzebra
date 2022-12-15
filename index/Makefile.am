@@ -14,7 +14,7 @@ aux_libs = \
 # Should also match the libidzebra_..._la lines..!
 zebralib = libidzebra-2.0.la
 
-noinst_PROGRAMS = kdump zebrash
+noinst_PROGRAMS = kdump 
 
 modlibdir=$(libdir)/$(PACKAGE)$(PACKAGE_SUFFIX)/modules
 tabdatadir = $(datadir)/$(PACKAGE)$(PACKAGE_SUFFIX)/tab
@@ -103,7 +103,6 @@ bin_PROGRAMS = zebraidx zebrasrv
 
 zebraidx_SOURCES = zebraidx.c
 zebrasrv_SOURCES = zebrasrv.c
-zebrash_SOURCES = zebrash.c
 kdump_SOURCES = kdump.c
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) \
@@ -112,8 +111,6 @@ AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) \
   $(TCL_CFLAGS)
 
 LDADD = $(zebralib) $(YAZLALIB) 
-
-zebrash_LDADD= $(LDADD) $(READLINE_LIBS)
 
 install-exec-hook:
 	cd $(DESTDIR)$(bindir); for p in $(bin_PROGRAMS); do \

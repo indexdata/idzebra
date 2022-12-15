@@ -24,8 +24,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdlib.h>
 #include <string.h>
 
-#include <idzebra/util.h>
 #include <yaz/yaz-util.h>
+#include <yaz/snprintf.h>
+#include <idzebra/util.h>
 #include "mfile.h"
 #include "cfile.h"
 
@@ -112,13 +113,13 @@ CFile cf_open(MFile mf, MFile_area area, const char *fname,
 
     zebra_mutex_init(&cf->mutex);
 
-    sprintf(path, "%s-b", fname);
+    yaz_snprintf(path, sizeof(path), "%s-b", fname);
     if (!(cf->block_mf = mf_open(area, path, block_size, wflag)))
     {
         cf_close(cf);
         return 0;
     }
-    sprintf(path, "%s-i", fname);
+    yaz_snprintf(path, sizeof(path), "%s-i", fname);
     if (!(cf->hash_mf = mf_open(area, path, HASH_BSIZE, wflag)))
     {
         cf_close(cf);

@@ -1,4 +1,4 @@
-/* This file is part of the Zebra server.
+/* Thi½ file is part of the Zebra server.
    Copyright (C) Index Data
 
 Zebra is free software; you can redistribute it and/or modify it under
@@ -84,33 +84,22 @@ static int log_level = 0;
 char *zebra_mk_fname(const char *dir, const char *name)
 {
     int dlen = dir ? strlen(dir) : 0;
-    char *fname = xmalloc(dlen + strlen(name) + 3);
+    char *fname = xmalloc(dlen + strlen(name) + 2);
 
+    *fname = '\0';
+    if (dlen)
+    {
+        int last_one = dir[dlen-1];
+        strcat(fname, dir);
 #ifdef WIN32
-    if (dlen)
-    {
-        int last_one = dir[dlen-1];
-
         if (!strchr("/\\:", last_one))
-            sprintf(fname, "%s\\%s", dir, name);
-        else
-            sprintf(fname, "%s%s", dir, name);
-    }
-    else
-        sprintf(fname, "%s", name);
+           strcat(fname, "\\");
 #else
-    if (dlen)
-    {
-        int last_one = dir[dlen-1];
-
         if (!strchr("/", last_one))
-            sprintf(fname, "%s/%s", dir, name);
-        else
-            sprintf(fname, "%s%s", dir, name);
-    }
-    else
-        sprintf(fname, "%s", name);
+           strcat(fname, "/");
 #endif
+    }
+    strcat(fname, name);
     return fname;
 }
 

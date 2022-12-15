@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/diagbib1.h>
 #include <yaz/tpath.h>
 #include <yaz/oid_db.h>
+#include <yaz/snprintf.h>
 
 #include <libxml/xmlversion.h>
 #include <libxml/parser.h>
@@ -76,7 +77,7 @@ static void set_param_str(const char **params, const char *name,
                           const char *value, ODR odr)
 {
     char *quoted = odr_malloc(odr, 3 + strlen(value));
-    sprintf(quoted, "'%s'", value);
+    yaz_snprintf(quoted, 3 + strlen(value), "'" ZINT_FORMAT "'", value);
     while (*params)
         params++;
     params[0] = name;
@@ -88,9 +89,9 @@ static void set_param_int(const char **params, const char *name,
                           zint value, ODR odr)
 {
     char *quoted = odr_malloc(odr, 30); /* 25 digits enough for 2^64 */
+    yaz_snprintf(quoted, 30, "'" ZINT_FORMAT "'", value);
     while (*params)
         params++;
-    sprintf(quoted, "'" ZINT_FORMAT "'", value);
     params[0] = name;
     params[1] = quoted;
     params[2] = 0;
