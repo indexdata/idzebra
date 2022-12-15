@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "index.h"
 #include <zebra_xpath.h>
 #include <yaz/wrbuf.h>
+#include <yaz/snprintf.h>
 #include <attrfind.h>
 #include <charmap.h>
 #include <rset.h>
@@ -504,8 +505,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         {
             if (termset_value_numeric != -2)
             {
-                char resname[32];
-                sprintf(resname, "%d", termset_value_numeric);
+                char resname[20];
+                yaz_snprintf(resname, sizeof(resname), "%d", termset_value_numeric);
                 set_name = odr_strdup(stream, resname);
             }
             else

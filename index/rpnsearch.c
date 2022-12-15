@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <ctype.h>
 
 #include <yaz/diagbib1.h>
+#include <yaz/snprintf.h>
 #include "index.h"
 #include <zebra_xpath.h>
 #include <attrfind.h>
@@ -39,8 +40,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static int log_level_set = 0;
 static int log_level_rpn = 0;
-
-#define TERMSET_DISABLE 1
 
 static const char **rpn_char_map_handler(void *vp, const char **from, int len)
 {
@@ -195,7 +194,7 @@ static void esc_str(char *out_buf, size_t out_size,
             pc = '?';
         else
             pc = c;
-        sprintf(out_buf +strlen(out_buf), "%02X:%c  ", c, pc);
+        yaz_snprintf(out_buf + strlen(out_buf), 20, "%02X:%c  ", c, pc);
         if (strlen(out_buf) > out_size-20)
         {
             strcat(out_buf, "..");
@@ -626,11 +625,8 @@ static int term_105(zebra_map_t zm, const char **src,
  *  val:     border value (inclusive)
  *  islt:    1 if <=; 0 if >=.
  */
-static void gen_regular_rel(WRBUF term_dict, int val, int islt)
+static void gen_regular_rel(WRBUF dst, int val, int islt)
 {
-    char dst_buf[20*5*20]; /* assuming enough for expansion */
-    char *dst = dst_buf;
-    int dst_p;
     int w, d, i;
     int pos = 0;
     char numstr[20];
@@ -639,26 +635,25 @@ static void gen_regular_rel(WRBUF term_dict, int val, int islt)
     if (val >= 0)
     {
         if (islt)
-            strcpy(dst, "(-[0-9]+|(");
+            wrbuf_puts(dst, "(-[0-9]+|(");
         else
-            strcpy(dst, "((");
+            wrbuf_puts(dst, "((");
     }
     else
     {
         if (!islt)
         {
-            strcpy(dst, "([0-9]+|-(");
+            wrbuf_puts(dst, "([0-9]+|-(");
             islt = 1;
         }
         else
         {
-            strcpy(dst, "(-(");
+            wrbuf_puts(dst, "(-(");
             islt = 0;
         }
         val = -val;
     }
-    dst_p = strlen(dst);
-    sprintf(numstr, "%d", val);
+    yaz_snprintf(numstr, sizeof(numstr), "%d", val);
     for (w = strlen(numstr); --w >= 0; pos++)
     {
         d = numstr[w];
@@ -677,63 +672,52 @@ static void gen_regular_rel(WRBUF term_dict, int val, int islt)
                 d++;
             }
         }
-
-        strcpy(dst + dst_p, numstr);
-        dst_p = strlen(dst) - pos - 1;
-
+        wrbuf_write(dst, numstr, w);
         if (islt)
         {
             if (d != '0')
             {
-                dst[dst_p++] = '[';
-                dst[dst_p++] = '0';
-                dst[dst_p++] = '-';
-                dst[dst_p++] = d;
-                dst[dst_p++] = ']';
+                wrbuf_putc(dst, '[');
+                wrbuf_putc(dst, '0');
+                wrbuf_putc(dst, '-');
+                wrbuf_putc(dst, d);
+                wrbuf_putc(dst, ']');
             }
             else
-                dst[dst_p++] = d;
+                wrbuf_putc(dst, d);
         }
         else
         {
             if (d != '9')
             {
-                dst[dst_p++] = '[';
-                dst[dst_p++] = d;
-                dst[dst_p++] = '-';
-                dst[dst_p++] = '9';
-                dst[dst_p++] = ']';
+                wrbuf_putc(dst, '[');
+                wrbuf_putc(dst, d);
+                wrbuf_putc(dst, '-');
+                wrbuf_putc(dst, '9');
+                wrbuf_putc(dst, ']');
             }
             else
-                dst[dst_p++] = d;
+                wrbuf_putc(dst, d);
         }
         for (i = 0; i < pos; i++)
-        {
-            dst[dst_p++] = '[';
-            dst[dst_p++] = '0';
-            dst[dst_p++] = '-';
-            dst[dst_p++] = '9';
-            dst[dst_p++] = ']';
-        }
-        dst[dst_p++] = '|';
+            wrbuf_puts(dst, "[0-9]");
+        wrbuf_putc(dst, '|');
     }
-    dst[dst_p] = '\0';
     if (islt)
     {
         /* match everything less than 10^(pos-1) */
-        strcat(dst, "0*");
+        wrbuf_puts(dst, "0*");
         for (i = 1; i < pos; i++)
-            strcat(dst, "[0-9]?");
+            wrbuf_puts(dst, "[0-9]?");
     }
     else
     {
         /* match everything greater than 10^pos */
         for (i = 0; i <= pos; i++)
-            strcat(dst, "[0-9]");
-        strcat(dst, "[0-9]*");
+            wrbuf_puts(dst, "[0-9]");
+        wrbuf_puts(dst, "[0-9]*");
     }
-    strcat(dst, "))");
-    wrbuf_puts(term_dict, dst);
+    wrbuf_puts(dst, "))");
 }
 
 void string_rel_add_char(WRBUF term_p, WRBUF wsrc, int *indx)
@@ -975,7 +959,7 @@ ZEBRA_RES zebra_term_limits_APT(ZebraHandle zh,
     if (term_ref_id_int >= 0)
     {
         char *res = nmem_malloc(nmem, 20);
-        sprintf(res, "%d", term_ref_id_int);
+        yaz_snprintf(res, 20, "%d", term_ref_id_int);
         *term_ref_id_str = res;
     }
     if (hits_limit_from_attr != -1)
@@ -1340,28 +1324,8 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
             attr_find_ex(&termset, NULL, &termset_value_string);
         if (termset_value_numeric != -1)
         {
-#if TERMSET_DISABLE
             zebra_setError(zh, YAZ_BIB1_UNSUPP_SEARCH, "termset");
             return ZEBRA_FAIL;
-#else
-            char resname[32];
-            const char *termset_name = 0;
-            if (termset_value_numeric != -2)
-            {
-
-                sprintf(resname, "%d", termset_value_numeric);
-                termset_name = resname;
-            }
-            else
-                termset_name = termset_value_string;
-            yaz_log(log_level_rpn, "creating termset set %s", termset_name);
-            grep_info->termset = resultSetAdd(zh, termset_name, 1);
-            if (!grep_info->termset)
-            {
-                zebra_setError(zh, YAZ_BIB1_ILLEGAL_RESULT_SET_NAME, termset_name);
-                return ZEBRA_FAIL;
-            }
-#endif
         }
     }
     return ZEBRA_OK;
@@ -2088,7 +2052,7 @@ static ZEBRA_RES rpn_sort_spec(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                    zapt->term->u.general->len);
     if (i >= sort_sequence->num_specs)
         i = 0;
-    sprintf(termz, "%d", i);
+    yaz_snprintf(termz, sizeof(termz), "%d", i);
 
     sks = (Z_SortKeySpec *) nmem_malloc(stream, sizeof(*sks));
     sks->sortElement = (Z_SortElement *)
