@@ -18,6 +18,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 LDADD = ../api/libtestlib.a ../../$(main_zebralib) $(YAZLALIB)
 
 clean-local:
-	-rm -rf *.LCK 
-	-rm -rf *.log 
-	-rm -rf *.mf 
+	-rm -f *.LCK
+	-rm -f *.log
+	-rm -f *.mf
