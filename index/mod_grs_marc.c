@@ -227,7 +227,7 @@ static data1_node *grs_read_iso2709(struct grs_read_info *p, int marc_xml)
                 for (j = 0; j < indicator_length; j++)
                 {
                     char str1[18], str2[2];
-                    yaz_snprintf(str1, 18, "ind%d", j+1);
+                    yaz_snprintf(str1, sizeof(str1), "ind%d", j+1);
                     str2[0] = buf[i+j];
                     str2[1] = '\0';
 
