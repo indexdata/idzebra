@@ -41,6 +41,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 
 #include <yaz/yaz-util.h>
+#include <yaz/snprintf.h>
 #include <idzebra/bfile.h>
 #include "recindex.h"
 
@@ -327,7 +328,8 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
     {
     case 0:
         memcpy(p->head.magic, REC_HEAD_MAGIC, sizeof(p->head.magic));
-        sprintf(p->head.version, "%3d", REC_VERSION);
+        yaz_snprintf(p->head.version, sizeof(p->head.version),
+            "%3d", REC_VERSION);
         p->head.index_free = 0;
         p->head.index_last = 1;
         p->head.no_records = 0;
@@ -373,9 +375,8 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
     for (i = 0; i<REC_BLOCK_TYPES; i++)
     {
         char str[80];
-        sprintf(str, "recd%c", i + 'A');
-        p->data_fname[i] = (char *) xmalloc(strlen(str)+1);
-        strcpy(p->data_fname[i], str);
+        yaz_snprintf(str, sizeof(str), "recd%c", i + 'A');
+        p->data_fname[i] = (char *) xstrdup(str);
         p->data_BFile[i] = NULL;
     }
     for (i = 0; i<REC_BLOCK_TYPES; i++)

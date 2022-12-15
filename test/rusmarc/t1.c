@@ -49,7 +49,8 @@ static void tst(int argc, char **argv)
     zebra_init(zh);
 
     YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
-    sprintf(path, "%.200s/records/simple-rusmarc", tl_get_srcdir());
+    yaz_snprintf(path, sizeof(path),
+        "%s/records/simple-rusmarc", tl_get_srcdir());
     zebra_repository_update(zh, path);
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);

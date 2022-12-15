@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 #include <idzebra/data1.h>
 
-#define NTOBUF_INDENT   2
+#define NTOBUF_INDENT  2
 #define NTOBUF_MARGIN 75
 
 static int wordlen(char *b, int i)
@@ -39,7 +39,6 @@ static int wordlen(char *b, int i)
 static int nodetobuf(data1_node *n, int select, WRBUF b, int indent, int col)
 {
     data1_node *c;
-    char line[1024];
 
     for (c = n->child; c; c = c->next)
     {
@@ -57,9 +56,8 @@ static int nodetobuf(data1_node *n, int select, WRBUF b, int indent, int col)
             {
                 if (col)
                     wrbuf_putc(b, '\n');
-                sprintf(line, "%*s%s:", indent * NTOBUF_INDENT, "", tag);
-                wrbuf_write(b, line, strlen(line));
-                col = strlen(line);
+                wrbuf_printf(b, "%*s%s:", indent * NTOBUF_INDENT, "", tag);
+                col = indent * NTOBUF_INDENT + 1 + strlen(tag);
             }
             if (nodetobuf(c, select, b, indent+1, col) < 0)
                 return 0;
@@ -75,8 +73,7 @@ static int nodetobuf(data1_node *n, int select, WRBUF b, int indent, int col)
             {
                 wrbuf_putc(b, '\n');
                 wrbuf_write(b, c->u.data.data, c->u.data.len);
-                sprintf(line, "%*s", indent * NTOBUF_INDENT, "");
-                wrbuf_write(b, line, strlen(line));
+                wrbuf_printf(b, "%*s", indent * NTOBUF_INDENT, "");
                 col = indent * NTOBUF_INDENT;
             }
             else if (c->u.data.what == DATA1I_text ||
@@ -94,8 +91,7 @@ static int nodetobuf(data1_node *n, int select, WRBUF b, int indent, int col)
                     if (col + (wlen = wordlen(p, l)) > NTOBUF_MARGIN && wlen <
                         NTOBUF_MARGIN - indent * NTOBUF_INDENT)
                     {
-                        sprintf(line, "\n%*s", indent * NTOBUF_INDENT, "");
-                        wrbuf_write(b, line, strlen(line));
+                        wrbuf_printf(b, "\n%*s", indent * NTOBUF_INDENT, "");
                         col = indent * NTOBUF_INDENT;
                         first = 1;
                     }
@@ -110,8 +106,7 @@ static int nodetobuf(data1_node *n, int select, WRBUF b, int indent, int col)
                         {
                             wrbuf_putc(b, '=');
                             wrbuf_putc(b, '\n');
-                            sprintf(line, "%*s", indent * NTOBUF_INDENT, "");
-                            wrbuf_write(b, line, strlen(line));
+                            wrbuf_printf(b, "%*s", indent * NTOBUF_INDENT, "");
                             col = indent * NTOBUF_INDENT;
                         }
                         wrbuf_putc(b, *p);
@@ -138,9 +133,9 @@ static int nodetobuf(data1_node *n, int select, WRBUF b, int indent, int col)
  * need changing.
  */
 
-char *data1_nodetobuf (data1_handle dh, data1_node *n, int select, int *len)
+char *data1_nodetobuf(data1_handle dh, data1_node *n, int select, int *len)
 {
-    WRBUF b = data1_get_wrbuf (dh);
+    WRBUF b = data1_get_wrbuf(dh);
 
     wrbuf_rewind(b);
     if (nodetobuf(n, select, b, 0, 0))

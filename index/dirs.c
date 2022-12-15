@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <errno.h>
 #include <fcntl.h>
 
+#include <yaz/snprintf.h>
 #include "index.h"
 
 #define DIRS_MAX_PATH 1024
@@ -170,7 +171,7 @@ void dirs_mkdir(struct dirs_info *p, const char *src, time_t mtime)
 {
     char path[DIRS_MAX_PATH];
 
-    sprintf(path, "%s%s", p->prefix, src);
+    yaz_snprintf(path, sizeof(path), "%s%s", p->prefix, src);
     yaz_log(YLOG_DEBUG, "dirs_mkdir %s", path);
     if (p->rw)
         dict_insert(p->dict, path, sizeof(mtime), &mtime);
@@ -180,7 +181,7 @@ void dirs_rmdir(struct dirs_info *p, const char *src)
 {
     char path[DIRS_MAX_PATH];
 
-    sprintf(path, "%s%s", p->prefix, src);
+    yaz_snprintf(path, sizeof(path), "%s%s", p->prefix, src);
     yaz_log(YLOG_DEBUG, "dirs_rmdir %s", path);
     if (p->rw)
         dict_delete(p->dict, path);
@@ -191,7 +192,7 @@ void dirs_add(struct dirs_info *p, const char *src, zint sysno, time_t mtime)
     char path[DIRS_MAX_PATH];
     char info[16];
 
-    sprintf(path, "%s%s", p->prefix, src);
+    yaz_snprintf(path, sizeof(path), "%s%s", p->prefix, src);
     yaz_log(YLOG_DEBUG, "dirs_add %s", path);
     memcpy(info, &sysno, sizeof(sysno));
     memcpy(info+sizeof(sysno), &mtime, sizeof(mtime));
@@ -203,7 +204,7 @@ void dirs_del(struct dirs_info *p, const char *src)
 {
     char path[DIRS_MAX_PATH];
 
-    sprintf(path, "%s%s", p->prefix, src);
+    yaz_snprintf(path, sizeof(path), "%s%s", p->prefix, src);
     yaz_log(YLOG_DEBUG, "dirs_del %s", path);
     if (p->rw)
     {

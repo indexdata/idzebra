@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <yaz/log.h>
 #include <yaz/xmalloc.h>
+#include <yaz/snprintf.h>
 #include <idzebra/isamb.h>
 #include <idzebra/bfile.h>
 #include <sortidx.h>
@@ -260,7 +261,7 @@ int zebra_sort_type(zebra_sort_index_t si, int id)
     {
     case ZEBRA_SORT_TYPE_FLAT:
         sf->u.bf = NULL;
-        sprintf(fname, "sort%d", id);
+        yaz_snprintf(fname, sizeof(fname), "sort%d", id);
         yaz_log(YLOG_DEBUG, "sort idx %s wr=%d", fname, si->write_flag);
         sf->u.bf = bf_open(si->bfs, fname, SORT_IDX_BLOCKSIZE, si->write_flag);
         if (!sf->u.bf)
@@ -283,7 +284,7 @@ int zebra_sort_type(zebra_sort_index_t si, int id)
         method.codec.encode = sort_term_encode1;
         method.codec.decode = sort_term_decode1;
 
-        sprintf(fname, "sortb%d", id);
+        yaz_snprintf(fname, sizeof(fname), "sortb%d", id);
         sf->u.isamb = isamb_open2(si->bfs, fname, si->write_flag, &method,
                                   /* cache */ 0,
                                   /* no_cat */ 1, &isam_block_size,
@@ -303,7 +304,7 @@ int zebra_sort_type(zebra_sort_index_t si, int id)
         method.codec.encode = sort_term_encode2;
         method.codec.decode = sort_term_decode2;
 
-        sprintf(fname, "sortm%d", id);
+        yaz_snprintf(fname, sizeof(fname), "sortm%d", id);
         sf->u.isamb = isamb_open2(si->bfs, fname, si->write_flag, &method,
                                   /* cache */ 0,
                                   /* no_cat */ 1, &isam_block_size,

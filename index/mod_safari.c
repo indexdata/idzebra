@@ -20,10 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <yaz/oid_db.h>
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
+
+#include <yaz/oid_db.h>
+#include <yaz/snprintf.h>
 
 #include <idzebra/util.h>
 #include <idzebra/recctrl.h>
@@ -189,6 +191,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
     int r, filter_ptr = 0;
+    /* not reentrant and thread safe as static buffer is returned */
     static char *filter_buf = NULL;
     static int filter_size = 0;
     int make_header = 1;
@@ -222,11 +225,11 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
             char *nb;
 
             filter_size = 2*filter_size + 8192;
-            nb = (char *) xmalloc (filter_size);
+            nb = (char *) xmalloc(filter_size);
             if (filter_buf)
             {
-                memcpy (nb, filter_buf, filter_ptr);
-                xfree (filter_buf);
+                memcpy(nb, filter_buf, filter_ptr);
+                xfree(filter_buf);
             }
             filter_buf = nb;
         }
@@ -234,15 +237,15 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
         {
             if (p->score >= 0)
             {
-                sprintf (filter_buf, "Rank: %d\n", p->score);
+                yaz_snprintf(filter_buf, 50, "Rank: %d\n", p->score);
                 filter_ptr = strlen(filter_buf);
             }
-            sprintf (filter_buf + filter_ptr, "Local Number: " ZINT_FORMAT "\n",
-                     p->localno);
+            yaz_snprintf(filter_buf + filter_ptr, 50, "Local Number: " ZINT_FORMAT "\n",
+                         p->localno);
             filter_ptr = strlen(filter_buf);
             if (p->fname)
             {
-                sprintf (filter_buf + filter_ptr, "Filename: %s\n", p->fname);
+                yaz_snprintf(filter_buf + filter_ptr, 200, "Filename: %s\n", p->fname);
                 filter_ptr = strlen(filter_buf);
             }
             strcpy(filter_buf+filter_ptr++, "\n");
@@ -257,9 +260,9 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     filter_buf[filter_ptr] = '\0';
     if (elementSetName)
     {
-        if (!strcmp (elementSetName, "B"))
+        if (!strcmp(elementSetName, "B"))
             no_lines = 4;
-        if (!strcmp (elementSetName, "M"))
+        if (!strcmp(elementSetName, "M"))
             no_lines = 20;
     }
     if (no_lines)

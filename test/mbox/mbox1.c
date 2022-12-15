@@ -20,11 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include "testlib.h"
+#include "../api/testlib.h"
 
 static void tst(int argc, char **argv)
 {
-    char path[256];
+    char path[FILENAME_MAX];
 
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
@@ -35,17 +35,15 @@ static void tst(int argc, char **argv)
     zebra_init(zh);
 
     YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
-    sprintf(path, "%.200s/mail1.mbx", tl_get_srcdir());
+    yaz_snprintf(path, sizeof(path), "%s/mail1.mbx", tl_get_srcdir());
     zebra_repository_update(zh, path);
 
-    sprintf(path, "%.200s/mail3.mbx", tl_get_srcdir());
+    yaz_snprintf(path, sizeof(path), "%s/mail3.mbx", tl_get_srcdir());
     zebra_repository_update(zh, path);
 
-#if 1
     /* bug #234 */
-    sprintf(path, "%.200s/invalid.mbx", tl_get_srcdir());
+    yaz_snprintf(path, sizeof(path), "%s/invalid.mbx", tl_get_srcdir());
     zebra_repository_update(zh, path);
-#endif
 
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);

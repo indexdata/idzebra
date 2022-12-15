@@ -40,11 +40,11 @@ static int wordlen(char *b, int max)
     return l;
 }
 
-static void indent (WRBUF b, int col)
+static void indent(WRBUF b, int col)
 {
     int i;
-    for (i = 0; i<col; i++)
-        wrbuf_putc (b, ' ');
+    for (i = 0; i < col; i++)
+        wrbuf_putc(b, ' ');
 }
 
 static void wrbuf_put_xattr(WRBUF b, data1_xattr *p)
@@ -53,18 +53,18 @@ static void wrbuf_put_xattr(WRBUF b, data1_xattr *p)
     {
         wrbuf_putc (b, ' ');
         if (p->what == DATA1I_xmltext)
-            wrbuf_puts (b, p->name);
+            wrbuf_puts(b, p->name);
         else
-            wrbuf_xmlputs (b, p->name);
+            wrbuf_xmlputs(b, p->name);
         if (p->value)
         {
-            wrbuf_putc (b, '=');
-            wrbuf_putc (b, '"');
+            wrbuf_putc(b, '=');
+            wrbuf_putc(b, '"');
             if (p->what == DATA1I_text)
-                wrbuf_xmlputs (b, p->value);
+                wrbuf_xmlputs(b, p->value);
             else
-                wrbuf_puts (b, p->value);
-            wrbuf_putc (b, '"');
+                wrbuf_puts(b, p->value);
+            wrbuf_putc(b, '"');
         }
     }
 }
@@ -106,16 +106,16 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
         if (c->which == DATA1N_preprocess)
         {
             if (pretty_format)
-                indent (b, col);
-            wrbuf_puts (b, "<?");
-            wrbuf_xmlputs (b, c->u.preprocess.target);
-            wrbuf_put_xattr (b, c->u.preprocess.attributes);
+                indent(b, col);
+            wrbuf_puts(b, "<?");
+            wrbuf_xmlputs(b, c->u.preprocess.target);
+            wrbuf_put_xattr(b, c->u.preprocess.attributes);
             if (c->child)
                 wrbuf_puts(b, " ");
             if (nodetoidsgml(c, select, b, (col > 40) ? 40 : col+2,
                              pretty_format) < 0)
                 return -1;
-            wrbuf_puts (b, "?>\n");
+            wrbuf_puts(b, "?>\n");
         }
         else if (c->which == DATA1N_tag)
         {
@@ -133,7 +133,7 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
                     indent (b, col);
                 wrbuf_puts(b, "<");
                 wrbuf_write_tag(b, tag, 1);
-                wrbuf_put_xattr (b, c->u.tag.attributes);
+                wrbuf_put_xattr(b, c->u.tag.attributes);
                 wrbuf_puts(b, ">");
                 if (pretty_format)
                     wrbuf_puts(b, "\n");
@@ -146,7 +146,7 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
                 wrbuf_write_tag(b, tag, 0);
                 wrbuf_puts(b, ">");
                 if (pretty_format)
-                    wrbuf_puts (b, "\n");
+                    wrbuf_puts(b, "\n");
             }
         }
         else if (c->which == DATA1N_data || c->which == DATA1N_comment)
@@ -157,9 +157,9 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
             int lcol = col;
 
             if (pretty_format && !c->u.data.formatted_text)
-                indent (b, col);
+                indent(b, col);
             if (c->which == DATA1N_comment)
-                wrbuf_puts (b, "<!--");
+                wrbuf_puts(b, "<!--");
             switch (c->u.data.what)
             {
             case DATA1I_xmltext:
@@ -168,7 +168,7 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
             case DATA1I_text:
                 if (!pretty_format || c->u.data.formatted_text)
                 {
-                    wrbuf_xmlputs_n (b, p, l);
+                    wrbuf_xmlputs_n(b, p, l);
                 }
                 else
                 {
@@ -184,8 +184,8 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
                         if (lcol + (wlen = wordlen(p, l)) > IDSGML_MARGIN &&
                             wlen < IDSGML_MARGIN)
                         {
-                            wrbuf_puts (b, "\n");
-                            indent (b, col);
+                            wrbuf_puts(b, "\n");
+                            indent(b, col);
                             lcol = col;
                             first = 1;
                         }
@@ -227,25 +227,25 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
     return 0;
 }
 
-char *data1_nodetoidsgml (data1_handle dh, data1_node *n, int select, int *len)
+char *data1_nodetoidsgml(data1_handle dh, data1_node *n, int select, int *len)
 {
-    WRBUF b = data1_get_wrbuf (dh);
+    WRBUF b = data1_get_wrbuf(dh);
 
     wrbuf_rewind(b);
 
-    if (!data1_is_xmlmode (dh))
+    if (!data1_is_xmlmode(dh))
     {
-        wrbuf_puts (b, "<");
+        wrbuf_puts(b, "<");
         wrbuf_write_tag(b, n->u.root.type, 1);
-        wrbuf_puts (b, ">\n");
+        wrbuf_puts(b, ">\n");
     }
     if (nodetoidsgml(n, select, b, 0, 0 /* no pretty format */))
         return 0;
-    if (!data1_is_xmlmode (dh))
+    if (!data1_is_xmlmode(dh))
     {
-        wrbuf_puts (b, "</");
+        wrbuf_puts(b, "</");
         wrbuf_write_tag(b, n->u.root.type, 0);
-        wrbuf_puts (b, ">\n");
+        wrbuf_puts(b, ">\n");
     }
     *len = wrbuf_len(b);
     return wrbuf_buf(b);

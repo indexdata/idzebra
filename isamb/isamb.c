@@ -22,10 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <yaz/log.h>
+#include <yaz/snprintf.h>
 #include <yaz/xmalloc.h>
 #include <idzebra/isamb.h>
-#include <assert.h>
 
 #ifndef ISAMB_DEBUG
 #define ISAMB_DEBUG 0
@@ -255,7 +256,7 @@ ISAMB isamb_open2(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
         char fname[DST_BUF_SIZE];
         char hbuf[DST_BUF_SIZE];
 
-        sprintf(fname, "%s%c", name, i+'A');
+        yaz_snprintf(fname, sizeof(fname), "%s%c", name, i+'A');
         if (cache)
             isamb->file[i].bf = bf_open(bfs, fname, ISAMB_CACHE_ENTRY_SIZE,
                                         writeflag);
@@ -488,8 +489,8 @@ void isamb_close(ISAMB isamb)
             len = dst - hbuf;
 
             /* print exactly 16 bytes (including trailing 0) */
-            sprintf(hbuf, "isamb%02d %02d %02d\r\n", major,
-                    isamb->minor_version, len);
+            yaz_snprintf(hbuf, 16, "isamb%02d %02d %02d\r\n", major,
+                         isamb->minor_version, len);
 
             bf_write(isamb->file[i].bf, pos, 0, 0, hbuf);
 
@@ -1439,12 +1440,13 @@ static void isamb_dump_r(ISAMB b, ISAM_P pos, void (*pr)(const char *str),
     if (pos)
     {
         struct ISAMB_block *p = open_block(b, pos);
-        sprintf(prefix_str, "%*s " ZINT_FORMAT " cat=%d size=%d max=%d items="
-                ZINT_FORMAT, level*2, "",
-                pos, p->cat, p->size, b->file[p->cat].head.block_max,
-                p->no_items);
+        yaz_snprintf(prefix_str, sizeof(prefix_str),
+                     "%*s " ZINT_FORMAT " cat=%d size=%d max=%d items="
+                     ZINT_FORMAT, level*2, "", pos, p->cat, p->size,
+                     b->file[p->cat].head.block_max, p->no_items);
         (*pr)(prefix_str);
-        sprintf(prefix_str, "%*s " ZINT_FORMAT, level*2, "", pos);
+        yaz_snprintf(prefix_str, sizeof(prefix_str),
+                     "%*s " ZINT_FORMAT, level*2, "", pos);
         if (p->leaf)
         {
             while (p->offset < p->size)

@@ -27,7 +27,7 @@ static void tst(int argc, char **argv)
     int i;
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
-    char path[256];
+    char path[FILENAME_MAX];
 
     YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
@@ -40,7 +40,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
     for (i = 1; i <= 2; i++)
     {
-        sprintf(path, "%.200s/rec%d.xml", tl_get_srcdir(), i);
+        yaz_snprintf(path, sizeof(path), "%s/rec%d.xml", tl_get_srcdir(), i);
         zebra_repository_update(zh, path);
     }
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);

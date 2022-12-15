@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <idzebra/util.h>
 #include <idzebra/res.h>
 #include <yaz/yaz-util.h>
+#include <yaz/snprintf.h>
 
 char *prog;
 static Dict dict;
@@ -38,13 +39,13 @@ static int look_hits;
 static int grep_handler (char *name, const char *info, void *client)
 {
     look_hits++;
-    printf ("%s\n", name);
+    printf("%s\n", name);
     return 0;
 }
 
 static int scan_handler (char *name, const char *info, int pos, void *client)
 {
-    printf ("%s\n", name);
+    printf("%s\n", name);
     return 0;
 }
 
@@ -75,23 +76,23 @@ int main (int argc, char **argv)
     prog = argv[0];
     if (argc < 2)
     {
-        fprintf (stderr, "usage:\n "
-                 " %s [-d] [-D t] [-S] [-r n] [-p n] [-u] [-g pat] [-s n] "
-                 "[-v n] [-i f] [-w] [-c n] config file\n\n",
-                 prog);
-        fprintf (stderr, "  -d      delete instead of insert\n");
-        fprintf (stderr, "  -D t    delete subtree instead of insert\n");
-        fprintf (stderr, "  -r n    set regular match range\n");
-        fprintf (stderr, "  -p n    set regular match start range\n");
-        fprintf (stderr, "  -u      report if keys change during insert\n");
-        fprintf (stderr, "  -g p    try pattern n (see -r)\n");
-        fprintf (stderr, "  -s n    set info size to n (instead of 4)\n");
-        fprintf (stderr, "  -v n    set logging level\n");
-        fprintf (stderr, "  -i f    read file with words\n");
-        fprintf (stderr, "  -w      insert/delete instead of lookup\n");
-        fprintf (stderr, "  -c n    cache size (number of pages)\n");
-        fprintf (stderr, "  -S      scan the dictionary\n");
-        exit (1);
+        fprintf(stderr, "usage:\n "
+                " %s [-d] [-D t] [-S] [-r n] [-p n] [-u] [-g pat] [-s n] "
+                "[-v n] [-i f] [-w] [-c n] config file\n\n",
+                prog);
+        fprintf(stderr, "  -d      delete instead of insert\n");
+        fprintf(stderr, "  -D t    delete subtree instead of insert\n");
+        fprintf(stderr, "  -r n    set regular match range\n");
+        fprintf(stderr, "  -p n    set regular match start range\n");
+        fprintf(stderr, "  -u      report if keys change during insert\n");
+        fprintf(stderr, "  -g p    try pattern n (see -r)\n");
+        fprintf(stderr, "  -s n    set info size to n (instead of 4)\n");
+        fprintf(stderr, "  -v n    set logging level\n");
+        fprintf(stderr, "  -i f    read file with words\n");
+        fprintf(stderr, "  -w      insert/delete instead of lookup\n");
+        fprintf(stderr, "  -c n    cache size (number of pages)\n");
+        fprintf(stderr, "  -S      scan the dictionary\n");
+        exit(1);
     }
     while ((ret = options ("D:Sdr:p:ug:s:v:i:wc:", argv, argc, &arg)) != -2)
     {
@@ -186,7 +187,7 @@ int main (int argc, char **argv)
         char ipf_buf[1024];
         int line = 1;
         char infobytes[120];
-        memset (infobytes, 0, 120);
+        memset(infobytes, 0, sizeof(infobytes));
 
         if (!(ipf = fopen(inputfile, "r")))
         {
@@ -197,7 +198,7 @@ int main (int argc, char **argv)
         while (fgets (ipf_buf, 1023, ipf))
         {
             char *ipf_ptr = ipf_buf;
-            sprintf (infobytes, "%d", line);
+            yaz_snprintf(infobytes, sizeof(infobytes), "%d", line);
             for (;*ipf_ptr && *ipf_ptr != '\n';ipf_ptr++)
             {
                 if (isalpha(*ipf_ptr) || *ipf_ptr == '_')

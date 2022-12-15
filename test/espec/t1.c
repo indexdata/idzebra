@@ -38,7 +38,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
     for (i = 1; i <= 1; i++)
     {
-        sprintf(path, "%.200s/rec%d.xml", tl_get_srcdir(), i);
+        yaz_snprintf(path, sizeof(path), "%s/rec%d.xml", tl_get_srcdir(), i);
         zebra_repository_update(zh, path);
     }
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);

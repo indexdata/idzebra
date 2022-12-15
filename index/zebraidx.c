@@ -35,6 +35,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/icu.h>
 #endif
 #include <yaz/log.h>
+#include <yaz/snprintf.h>
 #include <yaz/options.h>
 #include <idzebra/version.h>
 #include <idzebra/api.h>
@@ -71,7 +72,7 @@ int main(int argc, char **argv)
 
 #ifdef WIN32
 #else
-    sprintf(nbuf, "%.40s(%ld)", *argv, (long) getpid());
+    yaz_snprintf(nbuf, sizeof(nbuf), "%s(%ld)", *argv, (long) getpid());
     yaz_log_init_prefix(nbuf);
 #endif
     prog = *argv;

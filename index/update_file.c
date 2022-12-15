@@ -34,26 +34,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <direntz.h>
 #include <fcntl.h>
 #include <time.h>
+#include <yaz/snprintf.h>
 
 #include "index.h"
-
-#if 0
-static int dump_file_dict_func(char *name, const char *info, int pos,
-                                void *client)
-{
-    yaz_log(YLOG_LOG, "%s", name);
-    return 0;
-}
-static void dump_file_dict(Dict dict)
-{
-    int before = 10;
-    int after = 1000;
-    char term[1000];
-
-    strcpy(term, "0");
-    dict_scan(dict, term, &before, &after, 0, dump_file_dict_func);
-}
-#endif
 
 static int repComp(const char *a, const char *b, size_t len)
 {
@@ -74,7 +57,7 @@ static void fileDelete_r(ZebraHandle zh,
         switch (dst->kind)
         {
         case dirs_file:
-            sprintf(tmppath, "%s%s", base, dst->path);
+            yaz_snprintf(tmppath, sizeof(tmppath), "%s%s", base, dst->path);
             zebra_extract_file(zh, &dst->sysno, tmppath, action_delete);
             strcpy(tmppath, dst->path);
             dst = dirs_read(di);
@@ -101,15 +84,11 @@ static void file_update_r(ZebraHandle zh,
     static char tmppath[1024];
     size_t src_len = strlen(src);
 
-    sprintf(tmppath, "%s%s", base, src);
+    yaz_snprintf(tmppath, sizeof(tmppath), "%s%s", base, src);
     e_src = dir_open(tmppath, zh->path_reg, zh->m_follow_links);
     yaz_log(YLOG_LOG, "dir %s", tmppath);
 
-#if 0
-    if (!dst || repComp(dst->path, src, src_len))
-#else
     if (!dst || strcmp(dst->path, src))
-#endif
     {
         if (!e_src)
             return;
@@ -164,7 +143,7 @@ static void file_update_r(ZebraHandle zh,
         if (sd == 0)
         {
             strcpy(src + src_len, e_src[i_src].name);
-            sprintf(tmppath, "%s%s", base, src);
+            yaz_snprintf(tmppath, sizeof(tmppath), "%s%s", base, src);
 
             switch(e_src[i_src].kind)
             {
@@ -194,7 +173,7 @@ static void file_update_r(ZebraHandle zh,
         {
             zint sysno = 0;
             strcpy(src + src_len, e_src[i_src].name);
-            sprintf(tmppath, "%s%s", base, src);
+            yaz_snprintf(tmppath, sizeof(tmppath), "%s%s", base, src);
 
             switch (e_src[i_src].kind)
             {
@@ -213,7 +192,7 @@ static void file_update_r(ZebraHandle zh,
         else  /* sd < 0 */
         {
             strcpy(src, dst->path);
-            sprintf(tmppath, "%s%s", base, dst->path);
+            yaz_snprintf(tmppath, sizeof(tmppath), "%s%s", base, dst->path);
 
             switch (dst->kind)
             {
@@ -302,7 +281,7 @@ static ZEBRA_RES zebra_open_fmatch(ZebraHandle zh, Dict *dictp)
     int ord;
 
     ord = zebraExplain_get_database_ord(zh->reg->zei);
-    sprintf(fmatch_fname, FMATCH_DICT, ord);
+    yaz_snprintf(fmatch_fname, sizeof(fmatch_fname), FMATCH_DICT, ord);
     if (!(*dictp = dict_open_res(zh->reg->bfs, fmatch_fname, 50,
                                 zh->m_flag_rw, 0, zh->res)))
     {

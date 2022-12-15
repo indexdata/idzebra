@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <yaz/log.h>
 #include <yaz/oid_db.h>
+#include <yaz/snprintf.h>
 #include <idzebra/data1.h>
 #include <idzebra/recctrl.h>
 #include <zebra_xpath.h>
@@ -156,13 +157,13 @@ data1_element *data1_mk_element(data1_handle dh)
     return e;
 }
 
-data1_absyn *data1_absyn_search (data1_handle dh, const char *name)
+data1_absyn *data1_absyn_search(data1_handle dh, const char *name)
 {
-    data1_absyn_cache p = *data1_absyn_cache_get (dh);
+    data1_absyn_cache p = *data1_absyn_cache_get(dh);
 
     while (p)
     {
-        if (!yaz_matchstr (name, p->name))
+        if (!yaz_matchstr(name, p->name))
             return p->absyn;
         p = p->next;
     }
@@ -173,9 +174,9 @@ data1_absyn *data1_absyn_search (data1_handle dh, const char *name)
    pop, 2002-12-13
 */
 
-void data1_absyn_destroy (data1_handle dh)
+void data1_absyn_destroy(data1_handle dh)
 {
-    data1_absyn_cache p = *data1_absyn_cache_get (dh);
+    data1_absyn_cache p = *data1_absyn_cache_get(dh);
 
     while (p)
     {
@@ -195,10 +196,10 @@ void data1_absyn_destroy (data1_handle dh)
 }
 
 
-void data1_absyn_trav (data1_handle dh, void *handle,
-                       void (*fh)(data1_handle dh, void *h, data1_absyn *a))
+void data1_absyn_trav(data1_handle dh, void *handle,
+                      void (*fh)(data1_handle dh, void *h, data1_absyn *a))
 {
-    data1_absyn_cache p = *data1_absyn_cache_get (dh);
+    data1_absyn_cache p = *data1_absyn_cache_get(dh);
 
     while (p)
     {
@@ -214,12 +215,12 @@ static data1_absyn *data1_absyn_add(data1_handle dh, const char *name,
                                     enum DATA1_XPATH_INDEXING en)
 {
     char fname[512];
-    NMEM mem = data1_nmem_get (dh);
+    NMEM mem = data1_nmem_get(dh);
 
-    data1_absyn_cache p = (data1_absyn_cache)nmem_malloc (mem, sizeof(*p));
-    data1_absyn_cache *pp = data1_absyn_cache_get (dh);
+    data1_absyn_cache p = (data1_absyn_cache)nmem_malloc(mem, sizeof(*p));
+    data1_absyn_cache *pp = data1_absyn_cache_get(dh);
 
-    sprintf(fname, "%.500s.abs", name);
+    yaz_snprintf(fname, sizeof(fname), "%s.abs", name);
     p->absyn = data1_read_absyn(dh, fname, en);
     p->name = nmem_strdup(mem, name);
     p->next = *pp;
@@ -227,23 +228,23 @@ static data1_absyn *data1_absyn_add(data1_handle dh, const char *name,
     return p->absyn;
 }
 
-data1_absyn *data1_get_absyn (data1_handle dh, const char *name,
-                              enum DATA1_XPATH_INDEXING en)
+data1_absyn *data1_get_absyn(data1_handle dh, const char *name,
+                             enum DATA1_XPATH_INDEXING en)
 {
     data1_absyn *absyn;
 
-    if (!(absyn = data1_absyn_search (dh, name)))
-        absyn = data1_absyn_add (dh, name, en);
+    if (!(absyn = data1_absyn_search(dh, name)))
+        absyn = data1_absyn_add(dh, name, en);
     return absyn;
 }
 
-data1_attset *data1_attset_search_name (data1_handle dh, const char *name)
+data1_attset *data1_attset_search_name(data1_handle dh, const char *name)
 {
-    data1_attset_cache p = *data1_attset_cache_get (dh);
+    data1_attset_cache p = *data1_attset_cache_get(dh);
 
     while (p)
     {
-        if (!yaz_matchstr (name, p->name))
+        if (!yaz_matchstr(name, p->name))
             return p->attset;
         p = p->next;
     }
@@ -252,7 +253,7 @@ data1_attset *data1_attset_search_name (data1_handle dh, const char *name)
 
 data1_attset *data1_attset_search_id(data1_handle dh, const Odr_oid *oid)
 {
-    data1_attset_cache p = *data1_attset_cache_get (dh);
+    data1_attset_cache p = *data1_attset_cache_get(dh);
 
     while (p)
     {
@@ -263,19 +264,19 @@ data1_attset *data1_attset_search_id(data1_handle dh, const Odr_oid *oid)
     return 0;
 }
 
-data1_attset *data1_attset_add (data1_handle dh, const char *name)
+data1_attset *data1_attset_add(data1_handle dh, const char *name)
 {
-    NMEM mem = data1_nmem_get (dh);
+    NMEM mem = data1_nmem_get(dh);
     data1_attset *attset;
 
-    attset = data1_read_attset (dh, name);
+    attset = data1_read_attset(dh, name);
     if (!attset)
-        yaz_log (YLOG_WARN|YLOG_ERRNO, "Couldn't load attribute set %s", name);
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "Couldn't load attribute set %s", name);
     else
     {
         data1_attset_cache p = (data1_attset_cache)
             nmem_malloc (mem, sizeof(*p));
-        data1_attset_cache *pp = data1_attset_cache_get (dh);
+        data1_attset_cache *pp = data1_attset_cache_get(dh);
 
         attset->name = p->name = nmem_strdup(mem, name);
         p->attset = attset;
@@ -285,12 +286,12 @@ data1_attset *data1_attset_add (data1_handle dh, const char *name)
     return attset;
 }
 
-data1_attset *data1_get_attset (data1_handle dh, const char *name)
+data1_attset *data1_get_attset(data1_handle dh, const char *name)
 {
     data1_attset *attset;
 
-    if (!(attset = data1_attset_search_name (dh, name)))
-        attset = data1_attset_add (dh, name);
+    if (!(attset = data1_attset_search_name(dh, name)))
+        attset = data1_attset_add(dh, name);
     return attset;
 }
 
@@ -308,15 +309,15 @@ data1_esetname *data1_getesetbyname(data1_handle dh, data1_absyn *a,
 /* we have multiple versions of data1_getelementbyname */
 #define DATA1_GETELEMENTBYTAGNAME_VERSION 1
 
-data1_element *data1_getelementbytagname (data1_handle dh, data1_absyn *abs,
-                                          data1_element *parent,
-                                          const char *tagname)
+data1_element *data1_getelementbytagname(data1_handle dh, data1_absyn *abs,
+                                         data1_element *parent,
+                                         const char *tagname)
 {
     data1_element *r;
     struct data1_hash_table *ht;
 
     /* It's now possible to have a data1 tree with no abstract syntax */
-    if ( !abs )
+    if (abs == 0)
         return 0;
 
     if (!parent)
@@ -357,13 +358,13 @@ data1_element *data1_getelementbytagname (data1_handle dh, data1_absyn *abs,
 #endif
 }
 
-data1_element *data1_getelementbyname (data1_handle dh, data1_absyn *absyn,
-                                       const char *name)
+data1_element *data1_getelementbyname(data1_handle dh, data1_absyn *absyn,
+                                      const char *name)
 {
     data1_element *r;
 
     /* It's now possible to have a data1 tree with no abstract syntax */
-    if ( !absyn )
+    if (absyn == 0)
         return 0;
     for (r = absyn->main_elements; r; r = r->next)
         if (!data1_matchstr(r->name, name))
@@ -372,10 +373,10 @@ data1_element *data1_getelementbyname (data1_handle dh, data1_absyn *absyn,
 }
 
 
-void fix_element_ref (data1_handle dh, data1_absyn *absyn, data1_element *e)
+void fix_element_ref(data1_handle dh, data1_absyn *absyn, data1_element *e)
 {
     /* It's now possible to have a data1 tree with no abstract syntax */
-    if ( !absyn )
+    if (absyn == 0)
         return;
 
     for (; e; e = e->next)
@@ -383,18 +384,18 @@ void fix_element_ref (data1_handle dh, data1_absyn *absyn, data1_element *e)
         if (!e->sub_name)
         {
             if (e->children)
-                fix_element_ref (dh, absyn, e->children);
+                fix_element_ref(dh, absyn, e->children);
         }
         else
         {
             data1_sub_elements *sub_e = absyn->sub_elements;
-            while (sub_e && strcmp (e->sub_name, sub_e->name))
+            while (sub_e && strcmp(e->sub_name, sub_e->name))
                 sub_e = sub_e->next;
             if (sub_e)
                 e->children = sub_e->elements;
             else
-                yaz_log (YLOG_WARN, "Unresolved reference to sub-elements %s",
-                      e->sub_name);
+                yaz_log(YLOG_WARN, "Unresolved reference to sub-elements %s",
+                        e->sub_name);
         }
     }
 }
@@ -419,7 +420,7 @@ void fix_element_ref (data1_handle dh, data1_absyn *absyn, data1_element *e)
 
  */
 
-static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
+static const char * mk_xpath_regexp(data1_handle dh, const char *expr)
 {
     const char *p = expr;
     int abs = 1;
@@ -433,10 +434,10 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
     p++;
     if (*p == '/')
     {
-        abs =0;
+        abs = 0;
         p++;
     }
-    while (*p)
+    while (*p && e < 30)
     {
         int is_predicate = 0;
         char *s;
@@ -444,15 +445,14 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
         for (i = 0; *p && !strchr("/",*p); i++, p++)
             ;
         res_size += (i+3); /* we'll add / between later .. */
-        stack[e] = (char *) nmem_malloc(data1_nmem_get(dh), i+1);
-        s = stack[e];
+        s = stack[e] = (char *) nmem_malloc(data1_nmem_get(dh), i + 1);
         for (j = 0; j < i; j++)
         {
             const char *pp = p-i+j;
             if (*pp == '[')
-                is_predicate=1;
+                is_predicate = 1;
             else if (*pp == ']')
-                is_predicate=0;
+                is_predicate = 0;
             else
             {
                 if (!is_predicate) {
@@ -475,15 +475,16 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
         strcpy(res_p, "[^@]*/");  /* path .. (index all cdata below it) */
     res_p = res_p + strlen(res_p);
     while (--e >= 0) {
-        sprintf(res_p, "%s/", stack[e]);
+        strcpy(res_p, stack[e]);
+        strcat(res_p, "/");
         res_p += strlen(stack[e]) + 1;
     }
     if (!abs)
     {
-        sprintf(res_p, ".*");
+        strcpy(res_p, ".*");
         res_p += 2;
     }
-    sprintf (res_p, "$");
+    strcpy(res_p, "$");
     res_p++;
     yaz_log(YLOG_DEBUG, "Got regexp: %s", res);
     return res;
@@ -566,14 +567,12 @@ static int parse_termlists(data1_handle dh, data1_termlist ***tpp,
             *source++ = '\0';   /* cut off structure .. */
         else
             source = "data";    /* ok: default is leaf data */
-        (*tp)->source = (char *)
-            nmem_strdup (data1_nmem_get (dh), source);
+        (*tp)->source = nmem_strdup(data1_nmem_get (dh), source);
 
         if (r < 2) /* is the structure qualified? */
             (*tp)->structure = "w";
         else
-            (*tp)->structure = (char *)
-                nmem_strdup (data1_nmem_get (dh), structure);
+            (*tp)->structure = nmem_strdup(data1_nmem_get (dh), structure);
         tp = &(*tp)->next;
     }
 
@@ -599,9 +598,9 @@ static int melm2xpath(char *melm, char *buf)
         fieldtype = "controlfield";
     else
         fieldtype = "datafield";
-    sprintf(buf, "/*/%s[@tag=\"%s\"]", fieldtype, field);
+    yaz_snprintf(buf, 60, "/*/%s[@tag=\"%s\"]", fieldtype, field);
     if (*subfield)
-        sprintf(buf + strlen(buf), "/subfield[@code=\"%s\"]", subfield);
+        yaz_snprintf(buf + strlen(buf), 60, "/subfield[@code=\"%s\"]", subfield);
     else if (field[0] != '0' || field[1] != '0')
         strcat(buf, "/subfield");
     yaz_log(YLOG_DEBUG, "Created xpath: '%s'", buf);
@@ -792,8 +791,8 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                     fclose(f);
                     return 0;
                 }
-                if (!(new_element->tag = data1_gettagbynum (dh, res->tagset,
-                                                            type, value)))
+                if (!(new_element->tag = data1_gettagbynum(dh, res->tagset,
+                                                           type, value)))
                 {
                     yaz_log(YLOG_WARN, "%s:%d: Couldn't find tag %s in tagset",
                          file, lineno, p);
@@ -809,7 +808,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                     nmem_malloc(data1_nmem_get (dh),
                                 sizeof(*new_element->tag));
                 nt->which = DATA1T_string;
-                nt->value.string = nmem_strdup(data1_nmem_get (dh), p);
+                nt->value.string = nmem_strdup(data1_nmem_get(dh), p);
                 nt->names = (data1_name *)
                     nmem_malloc(data1_nmem_get(dh),
                                 sizeof(*new_element->tag->names));
@@ -829,15 +828,15 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
             p = termlists;
             if (*p != '-')
             {
-                if (parse_termlists (dh, &tp, p, file, lineno, name, res, 0,
-                                     attset_list))
+                if (parse_termlists(dh, &tp, p, file, lineno, name, res, 0,
+                                    attset_list))
                 {
                     fclose (f);
                     return 0;
                 }
                 *tp = all; /* append any ALL entries to the list */
             }
-            new_element->name = nmem_strdup(data1_nmem_get (dh), name);
+            new_element->name = nmem_strdup(data1_nmem_get(dh), name);
         }
         /* *ostrich*
            New code to support xelm directive
@@ -930,8 +929,8 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
             p = termlists;
             if (*p != '-')
             {
-                if (parse_termlists (dh, &tp, p, file, lineno,
-                                     xpath_expr, res, 1, attset_list))
+                if (parse_termlists(dh, &tp, p, file, lineno,
+                                    xpath_expr, res, 1, attset_list))
                 {
                     fclose (f);
                     return 0;
@@ -956,7 +955,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                 nmem_malloc(data1_nmem_get(dh), sizeof(*cur_elements));
             cur_elements->next = res->sub_elements;
             cur_elements->elements = NULL;
-            cur_elements->name = nmem_strdup (data1_nmem_get(dh), name);
+            cur_elements->name = nmem_strdup(data1_nmem_get(dh), name);
             res->sub_elements = cur_elements;
 
             level = 0;
@@ -995,8 +994,8 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                      file, lineno);
                 continue;
             }
-            if (parse_termlists (dh, &tp, argv[1], file, lineno, 0, res, 0,
-                                 attset_list))
+            if (parse_termlists(dh, &tp, argv[1], file, lineno, 0, res, 0,
+                                attset_list))
             {
                 fclose (f);
                 return 0;
@@ -1045,14 +1044,14 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                continue;
            }
            name = argv[1];
-           if (!(attset = data1_get_attset (dh, name)))
+           if (!(attset = data1_get_attset(dh, name)))
            {
                yaz_log(YLOG_WARN, "%s:%d: Couldn't find attset  %s",
                        file, lineno, name);
                continue;
            }
            *attset_childp = (data1_attset_child *)
-               nmem_malloc (data1_nmem_get(dh), sizeof(**attset_childp));
+               nmem_malloc(data1_nmem_get(dh), sizeof(**attset_childp));
            (*attset_childp)->child = attset;
            (*attset_childp)->next = 0;
            attset_childp = &(*attset_childp)->next;
@@ -1070,7 +1069,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
             name = argv[1];
             if (argc == 3)
                 type = atoi(argv[2]);
-            *tagset_childp = data1_read_tagset (dh, name, type);
+            *tagset_childp = data1_read_tagset(dh, name, type);
             if (!(*tagset_childp))
             {
                 yaz_log(YLOG_WARN, "%s:%d: Couldn't load tagset %s",
@@ -1090,7 +1089,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                 continue;
             }
             name = argv[1];
-            if (!(res->varset = data1_read_varset (dh, name)))
+            if (!(res->varset = data1_read_varset(dh, name)))
             {
                 yaz_log(YLOG_WARN, "%s:%d: Couldn't load Varset %s",
                      file, lineno, name);
@@ -1116,7 +1115,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
             (*esetpp)->next = 0;
             if (*fname == '@')
                 (*esetpp)->spec = 0;
-            else if (!((*esetpp)->spec = data1_read_espec1 (dh, fname)))
+            else if (!((*esetpp)->spec = data1_read_espec1(dh, fname)))
             {
                 yaz_log(YLOG_WARN, "%s:%d: Espec-1 read failed for %s",
                      file, lineno, fname);
@@ -1135,7 +1134,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                 continue;
             }
             name = argv[1];
-            if (!(*maptabp = data1_read_maptab (dh, name)))
+            if (!(*maptabp = data1_read_maptab(dh, name)))
             {
                 yaz_log(YLOG_WARN, "%s:%d: Couldn't load maptab %s",
                      file, lineno, name);
@@ -1154,7 +1153,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                 continue;
             }
             name = argv[1];
-            if (!(*marcp = data1_read_marctab (dh, name)))
+            if (!(*marcp = data1_read_marctab(dh, name)))
             {
                 yaz_log(YLOG_WARN, "%s:%d: Couldn't read marctab %s",
                      file, lineno, name);
@@ -1170,7 +1169,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                      file, lineno);
                 continue;
             }
-            res->encoding = nmem_strdup (data1_nmem_get(dh), argv[1]);
+            res->encoding = nmem_strdup(data1_nmem_get(dh), argv[1]);
         }
         else if (!strcmp(cmd, "systag"))
         {
@@ -1180,7 +1179,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                      file, lineno);
                 continue;
             }
-            *systagsp = nmem_malloc (data1_nmem_get(dh), sizeof(**systagsp));
+            *systagsp = nmem_malloc(data1_nmem_get(dh), sizeof(**systagsp));
 
             (*systagsp)->name = nmem_strdup(data1_nmem_get(dh), argv[1]);
             (*systagsp)->value = nmem_strdup(data1_nmem_get(dh), argv[2]);
@@ -1199,9 +1198,9 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
     for (cur_elements = res->sub_elements; cur_elements;
          cur_elements = cur_elements->next)
     {
-        if (!strcmp (cur_elements->name, "main"))
+        if (!strcmp(cur_elements->name, "main"))
             res->main_elements = cur_elements->elements;
-        fix_element_ref (dh, res, cur_elements->elements);
+        fix_element_ref(dh, res, cur_elements->elements);
     }
     *systagsp = 0;
     return res;

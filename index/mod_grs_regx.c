@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <ctype.h>
 
 #include <yaz/tpath.h>
+#include <yaz/snprintf.h>
 #include <idzebra/util.h>
 #include <dfa.h>
 #include <idzebra/recgrs.h>
@@ -579,24 +580,24 @@ int readFileSpec (struct lexSpec *spec)
 #if HAVE_TCL_H
     if (spec->tcl_interp)
     {
-        sprintf (fname, "%s.tflt", spec->name);
+        yaz_snprintf(fname, sizeof(fname), "%s.tflt", spec->name);
         spec_inf = data1_path_fopen (spec->dh, fname, "r");
     }
 #endif
     if (!spec_inf)
     {
-        sprintf (fname, "%s.flt", spec->name);
+        yaz_snprintf(fname, sizeof(fname), "%s.flt", spec->name);
         spec_inf = data1_path_fopen (spec->dh, fname, "r");
     }
     if (!spec_inf)
     {
-        yaz_log (YLOG_ERRNO|YLOG_WARN, "cannot read spec file %s", spec->name);
+        yaz_log(YLOG_ERRNO|YLOG_WARN, "cannot read spec file %s", spec->name);
         return -1;
     }
-    yaz_log (YLOG_LOG, "reading regx filter %s", fname);
+    yaz_log(YLOG_LOG, "reading regx filter %s", fname);
 #if HAVE_TCL_H
     if (spec->tcl_interp)
-        yaz_log (YLOG_LOG, "Tcl enabled");
+        yaz_log(YLOG_LOG, "Tcl enabled");
 #endif
 
 #if 0
@@ -1281,9 +1282,9 @@ static void execTcl (struct lexSpec *spec, struct regxCode *code)
         char var_name[10], *var_buf;
         int var_len, ch;
 
-        sprintf (var_name, "%d", i);
-        var_buf = f_win_get (spec, spec->arg_start[i], spec->arg_end[i],
-                             &var_len);
+        yaz_snprintf(var_name, sizeof(var_name), "%d", i);
+        var_buf = f_win_get(spec, spec->arg_start[i], spec->arg_end[i],
+                            &var_len);
         if (var_buf)
         {
             ch = var_buf[var_len];

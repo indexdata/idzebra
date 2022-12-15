@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <yaz/snprintf.h>
 
 #include <idzebra/version.h>
 #include "zinfo.h"
@@ -370,12 +371,14 @@ ZebraExplainInfo zebraExplain_open(
     {
         time(&our_time);
         tm = localtime(&our_time);
-        sprintf(zei->date, "%04d%02d%02d%02d%02d%02d",
-                 tm->tm_year+1900, tm->tm_mon+1,  tm->tm_mday,
-                 tm->tm_hour, tm->tm_min, tm->tm_sec);
+        yaz_snprintf(zei->date, sizeof(zei->date),
+                     "%04d%02d%02d%02d%02d%02d",
+                     tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
+                     tm->tm_hour, tm->tm_min, tm->tm_sec);
     } else {
-        sprintf(zei->date, "%04d%02d%02d%02d%02d%02d",
-                 0, 0, 0,  0, 0, 0);
+        yaz_snprintf(zei->date, sizeof(zei->date),
+                     "%04d%02d%02d%02d%02d%02d",
+                      0, 0, 0, 0, 0, 0);
     }
     zdip = &zei->databaseInfo;
     trec = rec_get_root(records);      /* get "root" record */
@@ -389,11 +392,7 @@ ZebraExplainInfo zebraExplain_open(
         data1_node *node_tgtinfo, *node_zebra, *node_list, *np;
 
         zei->data1_target = read_sgml_rec(zei->dh, zei->nmem, trec);
-#if 0
-        if (!zei->data1_target || !zei->data1_target->u.root.absyn)
-#else
         if (!zei->data1_target)
-#endif
         {
             yaz_log(YLOG_FATAL, "Explain schema missing. Check profilePath");
             nmem_destroy(zei->nmem);

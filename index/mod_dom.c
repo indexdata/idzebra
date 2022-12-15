@@ -167,7 +167,7 @@ static void set_param_str(const char **params, const char *name,
                           const char *value, NMEM nmem)
 {
     char *quoted = nmem_malloc(nmem, 3 + strlen(value));
-    sprintf(quoted, "'%s'", value);
+    yaz_snprintf(quoted, 3 + strlen(value), "'%s'", value);
     while (*params)
         params++;
     params[0] = name;
@@ -181,7 +181,7 @@ static void set_param_int(const char **params, const char *name,
     char *quoted = nmem_malloc(nmem, 30); /* 25 digits enough for 2^64 */
     while (*params)
         params++;
-    sprintf(quoted, "'" ZINT_FORMAT "'", value);
+    yaz_snprintf(quoted, 30, "'" ZINT_FORMAT "'", value);
     params[0] = name;
     params[1] = quoted;
     params[2] = 0;

@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "key_block.h"
 #include <yaz/nmem.h>
 #include <yaz/xmalloc.h>
+#include <yaz/snprintf.h>
 
 struct zebra_key_block {
     char **key_buf;
@@ -330,7 +331,8 @@ void key_block_flush_int(zebra_key_block_t p,
     qsort(key_buf + ptr_top - ptr_i, ptr_i,
           sizeof(char*), key_qsort_compare);
 #endif
-    sprintf(out_fname, "%s/key%d.tmp", p->key_tmp_dir, p->key_file_no);
+    yaz_snprintf(out_fname, sizeof(out_fname), "%s/key%d.tmp",
+        p->key_tmp_dir, p->key_file_no);
 
     if (!(outf = fopen (out_fname, "wb")))
     {

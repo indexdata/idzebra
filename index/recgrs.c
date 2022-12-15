@@ -28,6 +28,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/log.h>
 #include <yaz/oid_db.h>
 #include <yaz/diagbib1.h>
+#include <yaz/wrbuf.h>
+#include <yaz/snprintf.h>
 
 #include <d1_absyn.h>
 #include <idzebra/recgrs.h>
@@ -160,7 +162,7 @@ static int sp_first(struct source_parser *sp, data1_node *n, RecWord *wrd)
     sp_lex(sp);
     if (min_pos == -1)
         min_pos = 0;  /* the default if not found */
-    sprintf(num_str, "%d", min_pos);
+    yaz_snprintf(num_str, sizeof(num_str), "%d", min_pos);
     wrd->term_buf = nmem_strdup(sp->nmem, num_str);
     wrd->term_len = strlen(wrd->term_buf);
     return 1;
@@ -400,9 +402,9 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 #ifdef ENHANCED_XELM
     struct xpath_location_step *xp;
 #endif
-    char *pexpr = xmalloc(strlen(tagpath)+5);
+    WRBUF pexpr = wrbuf_alloc();
 
-    sprintf(pexpr, "/%s\n", tagpath);
+    wrbuf_printf(pexpr, "/%s\n", tagpath);
 
     for (xpe = abs->xp_elements; xpe; xpe = xpe->next)
         xpe->match_state = -1; /* don't know if it matches yet */
@@ -416,7 +418,7 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
             data1_xpelement *xpe1;
 
             assert(xpe->dfa);
-            ok = dfa_match_first(xpe->dfa->states, pexpr);
+            ok = dfa_match_first(xpe->dfa->states, wrbuf_cstr(pexpr));
 
 #if OPTIMIZE_MELM
             /* mark this and following ones with same regexp */
@@ -453,13 +455,12 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
         }
     }
 
-    xfree(pexpr);
+    wrbuf_destroy(pexpr);
 
-    if (xpe) {
+    if (xpe)
         return xpe->termlists;
-    } else {
+    else
         return NULL;
-    }
 }
 
 /* use
@@ -643,8 +644,8 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                     char attr_tag_path_full[1026];
 
                     /* this could be cached as well */
-                    sprintf(attr_tag_path_full, "@%s/%s",
-                             xp->name, tag_path_full);
+                    yaz_snprintf(attr_tag_path_full, sizeof(attr_tag_path_full),
+                        "@%s/%s", xp->name, tag_path_full);
 
                     tll[i] = xpath_termlist_by_tagpath(attr_tag_path_full,n);
 
@@ -686,8 +687,8 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                     char attr_tag_path_full[1026];
                     int xpdone = 0;
 
-                    sprintf(attr_tag_path_full, "@%s/%s",
-                             xp->name, tag_path_full);
+                    yaz_snprintf(attr_tag_path_full, sizeof(attr_tag_path_full),
+                        "@%s/%s", xp->name, tag_path_full);
                     if ((tl = tll[i]))
                     {
                         /* If there is a termlist given (=xelm directive) */
@@ -1111,10 +1112,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     if (tagname &&
         (dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
-        dnew->u.data.what = DATA1I_text;
-        dnew->u.data.data = dnew->lbuf;
-        sprintf(dnew->u.data.data, "%d", p->recordSize);
-        dnew->u.data.len = strlen(dnew->u.data.data);
+        data1_set_data_zint(p->dh, dnew, mem, p->recordSize);
     }
 
     tagname = data1_systag_lookup(node->u.root.absyn, "rank", "rank");
@@ -1122,10 +1120,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
         (dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
         yaz_log(YLOG_DEBUG, "grs_retrieve: %s", tagname);
-        dnew->u.data.what = DATA1I_num;
-        dnew->u.data.data = dnew->lbuf;
-        sprintf(dnew->u.data.data, "%d", p->score);
-        dnew->u.data.len = strlen(dnew->u.data.data);
+        data1_set_data_zint(p->dh, dnew, mem, p->score);
     }
 
     tagname = data1_systag_lookup(node->u.root.absyn, "sysno",
@@ -1134,11 +1129,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
         (dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
         yaz_log(YLOG_DEBUG, "grs_retrieve: %s", tagname);
-        dnew->u.data.what = DATA1I_text;
-        dnew->u.data.data = dnew->lbuf;
-
-        sprintf(dnew->u.data.data, ZINT_FORMAT, p->localno);
-        dnew->u.data.len = strlen(dnew->u.data.data);
+        data1_set_data_zint(p->dh, dnew, mem, p->localno);
     }
 
     if (!p->input_format)

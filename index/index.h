@@ -314,7 +314,8 @@ int zebra_record_fetch(ZebraHandle zh, const char *setname,
                        int *rec_lenp, char **basenamep,
                        WRBUF addinfo_w);
 
-void extract_get_fname_tmp(ZebraHandle zh, char *fname, int no);
+void extract_get_fname_tmp(ZebraHandle zh, char *fname, size_t fname_size,
+                           int no);
 
 void extract_snippet(ZebraHandle zh, zebra_snippets *sn,
                      struct ZebraRecStream *stream, RecType rt,

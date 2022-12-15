@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 
 #include <yaz/log.h>
+#include <yaz/snprintf.h>
 #include <yaz/xmalloc.h>
 #include "isamc-p.h"
 
@@ -73,7 +74,7 @@ void isamc_getmethod (ISAMC_M *m)
     m->max_blocks_mem = 10;
 }
 
-ISAMC isamc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
+ISAMC isamc_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
 {
     ISAMC is;
     ISAMC_filecat filecat;
@@ -89,7 +90,7 @@ ISAMC isamc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
 
     /* determine number of block categories */
     if (is->method->debug)
-        yaz_log (YLOG_LOG, "isc: bsize  ifill  mfill mblocks");
+        yaz_log(YLOG_LOG, "isc: bsize  ifill  mfill mblocks");
     do
     {
         if (is->method->debug)
@@ -149,9 +150,9 @@ ISAMC isamc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
         char fname[FILENAME_MAX];
         int r;
 
-        sprintf (fname, "%s%c", name, i+'A');
-        is->files[i].bf = bf_open (bfs, fname, is->method->filecat[i].bsize,
-                                   writeflag);
+        yaz_snprintf(fname, sizeof(fname), "%s%c", name, i+'A');
+        is->files[i].bf = bf_open(bfs, fname, is->method->filecat[i].bsize,
+                                  writeflag);
         if (!is->files[i].bf)
         {
             isamc_close(is);

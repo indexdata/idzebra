@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <assert.h>
 
 #include <yaz/xmalloc.h>
+#include <yaz/snprintf.h>
 #include <it_key.h>
 
 #ifdef __GNUC__
@@ -41,17 +42,17 @@ void key_logdump_txt(int logmask, const void *p, const char *txt)
         txt = "(none)";
     if (p)
     {
-        char formstr[128];
+        char formstr[IT_KEY_LEVEL_MAX * 24];
         int i;
 
-        memcpy (&key, p, sizeof(key));
+        memcpy(&key, p, sizeof(key));
         assert(key.len > 0 && key.len <= IT_KEY_LEVEL_MAX);
         *formstr = '\0';
         for (i = 0; i<key.len; i++)
         {
             if (i)
                 strcat(formstr, ".");
-            sprintf(formstr + strlen(formstr), ZINT_FORMAT, key.mem[i]);
+            yaz_snprintf(formstr + strlen(formstr), 23, ZINT_FORMAT, key.mem[i]);
         }
         yaz_log(logmask, "%s %s", formstr, txt);
     }

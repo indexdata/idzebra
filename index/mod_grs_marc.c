@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <assert.h>
 
 #include <yaz/yaz-util.h>
+#include <yaz/snprintf.h>
 #include <yaz/marcdisp.h>
 #include <idzebra/recgrs.h>
 #include "marcomp.h"
@@ -226,7 +227,7 @@ static data1_node *grs_read_iso2709(struct grs_read_info *p, int marc_xml)
                 for (j = 0; j < indicator_length; j++)
                 {
                     char str1[18], str2[2];
-                    sprintf (str1, "ind%d", j+1);
+                    yaz_snprintf(str1, sizeof(str1), "ind%d", j+1);
                     str2[0] = buf[i+j];
                     str2[1] = '\0';
 

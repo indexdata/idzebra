@@ -21,12 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <config.h>
 #endif
 #include <stdio.h>
-#include "testlib.h"
+#include "../api/testlib.h"
 
 static void tst(int argc, char **argv)
 {
-    char path[256];
-    char profile_path[256];
+    char path[FILENAME_MAX];
     char record_buf[20000];
     const char *records_array[] = {
         record_buf, 0
@@ -43,13 +42,11 @@ static void tst(int argc, char **argv)
 
     zebra_init(zh);
 
-    sprintf(profile_path, "%s:%s/../../tab",
-            tl_get_srcdir(), tl_get_srcdir());
-    zebra_set_resource(zh, "profilePath", profile_path);
+    tl_profile_path(zh);
 
     zebra_set_resource(zh, "recordType", "alvis.marcschema-one.xml");
 
-    sprintf(path, "%.200s/marc-one.xml", tl_get_srcdir());
+    yaz_snprintf(path, sizeof(path), "%s/marc-one.xml", tl_get_srcdir());
     f = fopen(path, "rb");
     if (!f)
     {
@@ -73,7 +70,6 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=title computer", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 1));
     YAZ_CHECK(tl_query_x(zh, "@attr 1=titl computer", 0, 114));
-
 
     /* index one more time to see that we don't get dups, since
      index.xsl has a record ID associated with them */

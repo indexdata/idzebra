@@ -20,13 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include "testlib.h"
+#include "../api/testlib.h"
 
 static void tst(int argc, char **argv)
 {
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
-    char path[256];
+    char path[FILENAME_MAX];
 
     YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
@@ -36,7 +36,7 @@ static void tst(int argc, char **argv)
 
     YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
 
-    sprintf(path, "%.200s/sample-marc", tl_get_srcdir());
+    yaz_snprintf(path, sizeof(path), "%s/sample-marc", tl_get_srcdir());
     zebra_repository_update(zh, path);
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);

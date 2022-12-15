@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 #include <assert.h>
 
+#include <yaz/snprintf.h>
 #include "index.h"
 
 #define KEY_SIZE (1+sizeof(struct it_key))
@@ -65,28 +66,22 @@ static void pkey(const char *b, int mode)
 }
 #endif
 
-
-void getFnameTmp(Res res, char *fname, int no)
-{
-    const char *pre;
-
-    pre = res_get_def(res, "keyTmpDir", ".");
-    sprintf(fname, "%s/key%d.tmp", pre, no);
-}
-
-void extract_get_fname_tmp(ZebraHandle zh, char *fname, int no)
+void extract_get_fname_tmp(ZebraHandle zh, char *fname, size_t fname_size, int no)
 {
     const char *pre;
 
     pre = res_get_def(zh->res, "keyTmpDir", ".");
-    sprintf(fname, "%s/key%d.tmp", pre, no);
+    yaz_snprintf(fname, fname_size, "%s/key%d.tmp", pre, no);
 }
 
 void key_file_chunk_read(struct key_file *f)
 {
     int nr = 0, r = 0, fd;
     char fname[1024];
-    getFnameTmp(f->res, fname, f->no);
+    const char *pre;
+
+    pre = res_get_def(f->res, "keyTmpDir", ".");
+    yaz_snprintf(fname, sizeof(fname), "%s/key%d.tmp", pre, f->no);
     fd = open(fname, O_BINARY|O_RDONLY);
 
     f->buf_ptr = 0;
@@ -729,7 +724,7 @@ void zebra_index_merge(ZebraHandle zh)
         nkeys = 0;
         while (1)
         {
-            extract_get_fname_tmp (zh, fname, nkeys+1);
+            extract_get_fname_tmp (zh, fname, sizeof fname, nkeys+1);
             if (access(fname, R_OK) == -1)
                 break;
             nkeys++;
@@ -784,7 +779,7 @@ void zebra_index_merge(ZebraHandle zh)
 
     for (i = 1; i<=nkeys; i++)
     {
-        extract_get_fname_tmp (zh, rbuf, i);
+        extract_get_fname_tmp (zh, rbuf, sizeof rbuf, i);
         unlink(rbuf);
     }
     for (i = 1; i<=nkeys; i++)

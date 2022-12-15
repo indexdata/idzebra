@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#include <stdio.h>
 
 #include <assert.h>
 #include <yaz/log.h>
@@ -75,13 +76,13 @@ const char *tl_get_srcdir(void)
 /** tl_zebra_start - do a zebra_start with a decent config name */
 ZebraService tl_zebra_start(const char *cfgname)
 {
-    char cfg[256];
+    char cfg[FILENAME_MAX];
     const char *srcdir = tl_get_srcdir();
     if (!cfgname || ! *cfgname )
         cfgname="zebra.cfg";
 
-    sprintf(cfg, "%.200s/%.50s", srcdir, cfgname);
-    return  zebra_start(cfg);
+    yaz_snprintf(cfg, sizeof(cfg), "%s/%s", srcdir, cfgname);
+    return zebra_start(cfg);
 }
 
 /** tl_close_down closes down the zebra, logfile, nmem, xmalloc etc. logs an OK */
@@ -509,6 +510,14 @@ ZEBRA_RES tl_fetch_first_compare(ZebraHandle zh,
                                  const Odr_oid *format, const char *cmp_rec)
 {
     return tl_fetch_compare(zh, 1, element_set, format, cmp_rec);
+}
+
+void tl_profile_path(ZebraHandle zh)
+{
+    char profile_path[FILENAME_MAX];
+    yaz_snprintf(profile_path, sizeof(profile_path), "%s:%s/../../tab",
+                tl_get_srcdir(), tl_get_srcdir());
+    zebra_set_resource(zh, "profilePath", profile_path);
 }
 
 /*

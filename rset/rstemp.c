@@ -33,6 +33,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 #include <sys/types.h>
 
+#include <yaz/snprintf.h>
+
 #include <idzebra/util.h>
 #include <rset.h>
 
@@ -169,13 +171,14 @@ static void r_flush(RSFD rfd, int mk)
 #if HAVE_MKSTEMP
         char template[1024];
 
-        *template = '\0';
-
         if (info->temp_path)
-            sprintf(template, "%s/", info->temp_path);
+            yaz_snprintf(template, sizeof(template) - 80,
+                "%s/", info->temp_path);
+        else
+            strcpy(template, "");
         strcat(template, "zrs_");
 #if HAVE_UNISTD_H
-        sprintf(template + strlen(template), "%ld_", (long) getpid());
+        yaz_snprintf(template + strlen(template), 40, "%ld_", (long) getpid());
 #endif
         strcat(template, "XXXXXX");
 
@@ -188,15 +191,15 @@ static void r_flush(RSFD rfd, int mk)
         info->fname = nmem_strdup(rfd->rset->nmem, template);
 #else
         char *s = (char*) tempnam(info->temp_path, "zrs");
-        info->fname= nmem_strdup(rfd->rset->nmem, s);
 
-        yaz_log(log_level, "creating tempfile %s", info->fname);
-        info->fd = open(info->fname, O_BINARY|O_RDWR|O_CREAT, 0666);
+        yaz_log(log_level, "creating tempfile %s", s);
+        info->fd = open(s, O_BINARY|O_RDWR|O_CREAT, 0666);
         if (info->fd == -1)
         {
-            yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: open %s", info->fname);
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: open %s", s);
             zebra_exit("r_flush");
         }
+        info->fname= nmem_strdup(rfd->rset->nmem, s);
 #endif
     }
     if (info->fname && info->fd != -1 && info->dirty)

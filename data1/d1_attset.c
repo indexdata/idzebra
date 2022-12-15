@@ -41,7 +41,7 @@ data1_att *data1_getattbyname(data1_handle dh, data1_attset *s, const char *name
     {
         assert (c->child);
         /* scan included sets */
-        if ((r = data1_getattbyname (dh, c->child, name)))
+        if ((r = data1_getattbyname(dh, c->child, name)))
             return r;
     }
     return 0;
@@ -49,7 +49,7 @@ data1_att *data1_getattbyname(data1_handle dh, data1_attset *s, const char *name
 
 data1_attset *data1_empty_attset(data1_handle dh)
 {
-    NMEM mem = data1_nmem_get (dh);
+    NMEM mem = data1_nmem_get(dh);
     data1_attset *res = (data1_attset*) nmem_malloc(mem,sizeof(*res));
 
     res->name = 0;
@@ -66,14 +66,14 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
     data1_attset_child **childp;
     data1_att **attp;
     FILE *f;
-    NMEM mem = data1_nmem_get (dh);
+    NMEM mem = data1_nmem_get(dh);
     int lineno = 0;
     int argc;
     char *argv[50], line[512];
 
     if (!(f = data1_path_fopen(dh, file, "r")))
         return NULL;
-    res = data1_empty_attset (dh);
+    res = data1_empty_attset(dh);
 
     childp = &res->children;
     attp = &res->atts;
@@ -134,8 +134,8 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
             }
             name = argv[1];
 
-            res->oid  = yaz_string_to_oid_nmem(yaz_oid_std(),
-                                               CLASS_ATTSET, name, mem);
+            res->oid = yaz_string_to_oid_nmem(yaz_oid_std(),
+                                              CLASS_ATTSET, name, mem);
             if (!res->oid)
             {
                 yaz_log(YLOG_WARN, "%s:%d: Unknown reference oid '%s'",
@@ -162,7 +162,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
             }
             name = argv[1];
 
-            if (!(attset = data1_get_attset (dh, name)))
+            if (!(attset = data1_get_attset(dh, name)))
             {
                 yaz_log(YLOG_WARN, "%s:%d: Include of attset %s failed",
                         file, lineno, name);
@@ -170,7 +170,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
 
             }
             *childp = (data1_attset_child *)
-                nmem_malloc (mem, sizeof(**childp));
+                nmem_malloc(mem, sizeof(**childp));
             (*childp)->child = attset;
             (*childp)->next = 0;
             childp = &(*childp)->next;

@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <charmap.h>
 #include <attrfind.h>
 #include <yaz/yaz-util.h>
+#include <yaz/snprintf.h>
 
 #if YAZ_HAVE_ICU
 #include <yaz/icu.h>
@@ -556,7 +557,7 @@ int zebra_maps_attr(zebra_maps_t zms, Z_AttributesPlusTerm *zapt,
     {
         if (weight_value == -1)
             weight_value = 34;
-        sprintf(rank_type, "rank,w=%d,u=%d", weight_value, use_value);
+        yaz_snprintf(rank_type, 128, "rank,w=%d,u=%d", weight_value, use_value);
     }
     if (*complete_flag)
         *index_type = "p";

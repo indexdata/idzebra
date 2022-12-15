@@ -54,9 +54,10 @@ zebralibs = ../../$(main_zebralib)
 LDADD = libtestlib.a $(zebralibs) $(YAZLALIB)
 
 clean-local:
-	-rm -rf *.LCK 
-	-rm -rf *.log 
-	-rm -rf *.mf 
-	-rm -rf register/*.LCK 
-	-rm -rf register/*.log 
-	-rm -rf register/*.mf 
+	-rm -f *.LCK
+	-rm -f *.log
+	-rm -f *.mf
+	-rm -f *.tmp
+	-rm -f register/*.LCK
+	-rm -f register/*.log
+	-rm -f register/*.mf
