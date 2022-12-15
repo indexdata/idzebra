@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <config.h>
 #endif
 #include <stdio.h>
-#include "testlib.h"
+#include "../api/testlib.h"
 
 #if YAZ_HAVE_XML2
 #include <libxml/xmlversion.h>
@@ -29,8 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static void tst(int argc, char **argv)
 {
-    char path[256];
-    char profile_path[256];
+    char path[FILENAME_MAX];
     char record_buf[20000];
     FILE *f;
     size_t r;
@@ -44,13 +43,11 @@ static void tst(int argc, char **argv)
 
     zebra_init(zh);
 
-    sprintf(profile_path, "%s:%s/../../tab",
-            tl_get_srcdir(), tl_get_srcdir());
-    zebra_set_resource(zh, "profilePath", profile_path);
+    tl_profile_path(zh);
 
     zebra_set_resource(zh, "recordType", "alvis.marcschema-one.xml");
 
-    sprintf(path, "%.200s/marc-missing-ns.xml", tl_get_srcdir());
+    yaz_snprintf(path, sizeof(path), "%s/marc-missing-ns.xml", tl_get_srcdir());
     f = fopen(path, "rb");
     YAZ_CHECK(f);
     if (f)

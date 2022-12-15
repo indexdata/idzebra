@@ -21,12 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <config.h>
 #endif
 #include <yaz/test.h>
-#include "testlib.h"
+#include "../api/testlib.h"
 
 void tst(int argc, char **argv)
 {
-    char path[256];
-    char profile_path[256];
+    char path[FILENAME_MAX];
 
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
@@ -37,14 +36,12 @@ void tst(int argc, char **argv)
 
     zebra_init(zh);
 
-    sprintf(profile_path, "%s:%s/../../tab",
-            tl_get_srcdir(), tl_get_srcdir());
-    zebra_set_resource(zh, "profilePath", profile_path);
+    tl_profile_path(zh);
 
     zebra_set_resource(zh, "recordType", "alvis.marcschema-col.xml");
 
     YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
-    sprintf(path, "%s/marc-col.xml", tl_get_srcdir());
+    yaz_snprintf(path, sizeof(path), "%s/marc-col.xml", tl_get_srcdir());
 
     YAZ_CHECK(zebra_repository_update(zh, path) == ZEBRA_OK);
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);

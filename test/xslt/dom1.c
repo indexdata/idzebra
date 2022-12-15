@@ -22,22 +22,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 #include <yaz/test.h>
 #include <yaz/diagbib1.h>
-#include "testlib.h"
+#include "../api/testlib.h"
 
 
 void index_more(ZebraHandle zh, const char *filter, const char *file)
 {
-    char path[256];
-    char profile_path[256];
+    char path[FILENAME_MAX];
 
-    sprintf(profile_path, "%.80s:%.80s/../../tab",
-            tl_get_srcdir(), tl_get_srcdir());
-    zebra_set_resource(zh, "profilePath", profile_path);
+    tl_profile_path(zh);
 
     zebra_set_resource(zh, "recordType", filter);
 
     YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
-    sprintf(path, "%.80s/%.80s", tl_get_srcdir(), file);
+    yaz_snprintf(path, sizeof(path), "%s/%s", tl_get_srcdir(), file);
 
     YAZ_CHECK(zebra_repository_update(zh, path) == ZEBRA_OK);
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);

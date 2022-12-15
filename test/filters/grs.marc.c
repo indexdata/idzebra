@@ -26,7 +26,7 @@ static void tst(int argc, char **argv)
 {
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
-    char path[256];
+    char path[FILENAME_MAX];
 
     tl_check_filter(zs, "grs.marc");
 
@@ -37,7 +37,7 @@ static void tst(int argc, char **argv)
     zebra_init(zh);
 
     YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
-    sprintf(path, "%.200s/record.mrc", tl_get_srcdir());
+    yaz_snprintf(path, sizeof(path), "%s/record.mrc", tl_get_srcdir());
     zebra_repository_update(zh, path);
     YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
     zebra_commit(zh);

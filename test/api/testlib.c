@@ -511,6 +511,14 @@ ZEBRA_RES tl_fetch_first_compare(ZebraHandle zh,
     return tl_fetch_compare(zh, 1, element_set, format, cmp_rec);
 }
 
+void tl_profile_path(ZebraHandle zh)
+{
+    char profile_path[FILENAME_MAX];
+    yaz_snprintf(profile_path, sizeof(profile_path), "%s:%s/../../tab",
+                tl_get_srcdir(), tl_get_srcdir());
+    zebra_set_resource(zh, "profilePath", profile_path);
+}
+
 /*
  * Local variables:
  * c-basic-offset: 4

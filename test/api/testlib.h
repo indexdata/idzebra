@@ -133,6 +133,8 @@ ZEBRA_RES tl_fetch_compare(ZebraHandle zh,
                            int position, const char *element_set,
                            const Odr_oid *format, const char *cmp_rec);
 
+void tl_profile_path(ZebraHandle zh);
+
 #define TL_MAIN int main(int argc, char **argv) { \
  YAZ_CHECK_INIT(argc, argv); YAZ_CHECK_LOG(); tst(argc, argv); YAZ_CHECK_TERM; }
 /*
