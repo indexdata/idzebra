@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/snprintf.h>
 #include <idzebra/data1.h>
 
+typedef struct {
     data1_handle dh;
     ODR o;
     int select;
