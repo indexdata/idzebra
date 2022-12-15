@@ -25,6 +25,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <yaz/snprintf.h>
 #include <yaz/test.h>
 #include <idzebra/bfile.h>
 
@@ -92,9 +94,10 @@ void tst(void)
         bno[1] = 1;
         while (bno[0] < max_block)
         {
-            zint next = bno[0] + bno[1];
+            zint next
+             = bno[0] + bno[1];
 
-            sprintf(buf, ZINT_FORMAT, bno[0]);
+            yaz_snprintf(buf, sizeof(buf), ZINT_FORMAT, bno[0]);
             YAZ_CHECK_EQ(bf_write(bf, bno[0], 0, 0, buf), 0);
 
             bno[0] = bno[1];
@@ -137,7 +140,7 @@ void tst(void)
         {
             memset(buf, ' ', block_size);
 
-            sprintf(buf, ZINT_FORMAT, bno);
+            yaz_snprintf(buf, sizeof(buf), ZINT_FORMAT, bno);
             YAZ_CHECK_EQ(bf_write(bf, bno, 0, 0, buf), 0);
 
             bno = bno + 2;

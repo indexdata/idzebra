@@ -29,6 +29,7 @@ static void tst(int argc, char **argv)
     int i;
     ZebraService zs = tl_start_up("test_trunc.cfg", argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
+    WRBUF rec_buf = wrbuf_alloc();
 
     srand(17);
 
@@ -36,7 +37,7 @@ static void tst(int argc, char **argv)
     zebra_init(zh);
     zebra_close(zh);
 
-    for (i = 0; i<10; i++)
+    for (i = 0; i < 10; i++)
     {
         int l;
 
@@ -47,15 +48,15 @@ static void tst(int argc, char **argv)
 
         YAZ_CHECK(zebra_begin_trans (zh, 1) == ZEBRA_OK);
 
-        for (l = 0; l<100; l++)
+        for (l = 0; l < 100; l++)
         {
-            char rec_buf[5120];
             int j;
-            *rec_buf = '\0';
-            strcat(rec_buf, "<gils><title>");
+
+            wrbuf_rewind(rec_buf);
+            wrbuf_puts(rec_buf, "<gils><title>");
             if (i == 0)
             {
-                sprintf(rec_buf + strlen(rec_buf), "aaa");
+                wrbuf_puts(rec_buf, "aaa");
             }
             else
             {
@@ -63,14 +64,14 @@ static void tst(int argc, char **argv)
                 while (--j >= 0)
                 {
                     int c = 65 + (rand() & 15);
-                    sprintf(rec_buf + strlen(rec_buf), "%c", c);
+                    wrbuf_printf(rec_buf, "%c", c);
                 }
             }
-            strcat(rec_buf, "</title><Control-Identifier>");
+            wrbuf_puts(rec_buf, "</title><Control-Identifier>");
             j = rand() & 31;
-            sprintf(rec_buf + strlen(rec_buf), "%d", j);
-            strcat(rec_buf, "</Control-Identifier></gils>");
-            zebra_add_record (zh, rec_buf, strlen(rec_buf));
+            wrbuf_printf(rec_buf, "%d", j);
+            wrbuf_puts(rec_buf, "</Control-Identifier></gils>");
+            zebra_add_record (zh, wrbuf_cstr(rec_buf), wrbuf_len(rec_buf));
         }
         YAZ_CHECK(zebra_end_trans(zh) == ZEBRA_OK);
         zebra_close(zh);
@@ -86,6 +87,7 @@ static void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=4 @attr 2=1 z", -1));
 
     YAZ_CHECK(tl_close_down(zh, zs));
+    wrbuf_destroy(rec_buf);
 }
 
 TL_MAIN

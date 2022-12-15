@@ -71,7 +71,7 @@ static void tst(int argc, char **argv)
         Z_RPNQuery *query = yaz_pqf_parse(parser, odr_input, "@attr 1=4 my");
         zint hits;
 
-        sprintf(setname, "s%d", i+1);
+        yaz_snprintf(setname, sizeof(setname), "s%d", i+1);
         ret = zebra_search_RPN(zh, odr_input, query, setname, &hits);
         if (ret != ZEBRA_OK)
         {
