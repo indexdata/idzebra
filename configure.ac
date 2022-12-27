@@ -39,7 +39,8 @@ if test "$YAZVERSION" = "NONE"; then
 fi
 YAZ_DOC
 
-PKG_CHECK_MODULES([TCL], [tcl], [], [AC_DEFINE([HAVE_TCL_H], [0], [Define to 1 if we have TCL])])
+PKG_CHECK_MODULES([TCL], [tcl], [havetcl=1], [havetcl=0])
+AC_DEFINE_UNQUOTED([HAVE_TCL_H], [$havetcl], [Define to 1 if we have TCL])
 
 dnl
 dnl ------ various functions
@@ -113,7 +114,7 @@ if test "${ac_cv_type_long_long}" = "yes"; then
     ZINT_VALUE=1
 else
     ZINT_VALUE=0
-fi 
+fi
 ZEBRA_CFLAGS="-DZEBRA_ZINT=${ZINT_VALUE}"
 AC_DEFINE_UNQUOTED([ZEBRA_ZINT],${ZINT_VALUE},[Whether zint is long long])
 dnl ------ Modules
@@ -127,7 +128,7 @@ AC_DEFUN([ZEBRA_MODULE],[
 	AC_ARG_ENABLE(mod-$1,[$3],[myen=$enableval],[myen=$2])
 	AC_MSG_CHECKING([for module $1])
 	if test "$myen" = "yes"; then
-	   myen="shared" 
+	   myen="shared"
 	fi
 	if test "$enable_shared" != "yes"; then
 	    if test "$myen" = "shared"; then
@@ -239,17 +240,17 @@ AC_CONFIG_FILES([
   test/Makefile test/gils/Makefile test/usmarc/Makefile test/api/Makefile
   test/xslt/Makefile
   test/xpath/Makefile
-  test/rusmarc/Makefile test/cddb/Makefile test/malxml/Makefile 
+  test/rusmarc/Makefile test/cddb/Makefile test/malxml/Makefile
   test/mbox/Makefile
   test/config/Makefile
   test/dmoz/Makefile
   test/marcxml/Makefile test/charmap/Makefile test/codec/Makefile
   test/espec/Makefile
   test/filters/Makefile
-  examples/Makefile 
-  examples/gils/Makefile 
-  examples/marc21/Makefile 
-  examples/marcxml/Makefile 
+  examples/Makefile
+  examples/gils/Makefile
+  examples/marc21/Makefile
+  examples/marcxml/Makefile
   examples/oai-pmh/Makefile
   examples/zthes/Makefile
   idzebra-config-2.0
