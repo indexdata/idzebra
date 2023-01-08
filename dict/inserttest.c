@@ -28,6 +28,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <yaz/options.h>
 #include <idzebra/dict.h>
 
+#define TERM_SIZE 150
+#define USERINFO_SIZE 4
+
 int main(int argc, char **argv)
 {
     BFiles bfs = 0;
@@ -56,10 +59,10 @@ int main(int argc, char **argv)
             srandom(9);
             for (i = 0; i < no; i++)
             {
-                char lex[100];
-                char userinfo[100];
-                int userlen = 4;
-                int sz = 1 + (random() % 150);
+                char userinfo[USERINFO_SIZE + 1];
+                int userlen = USERINFO_SIZE;
+                char lex[TERM_SIZE + 1];
+                int sz = 1 + (random() % (TERM_SIZE- 1));
                 int j;
                 for (j = 0; j < sz; j++)
                 {
