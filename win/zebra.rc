@@ -23,7 +23,7 @@ VS_VERSION_INFO VERSIONINFO
             VALUE "FileDescription", "idzebra DLL\0"
             VALUE "FileVersion", ZEBRAVER "\0"
             VALUE "InternalName", "idzebra\0"
-            VALUE "LegalCopyright", "Copyright © 1994-2022 Index Data\0"
+            VALUE "LegalCopyright", "Copyright © 1994-2023 Index Data\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "zebra.rc\0"
             VALUE "PrivateBuild", "\0"
