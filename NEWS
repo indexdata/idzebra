@@ -1,3 +1,9 @@
+--- 2.2.7 2023/01/13
+
+Fix Tcl not enabled by confiugre (#48)
+
+Buffer overflow fixes and reformats (#47)
+
 --- 2.2.6 2022/12/14
 
 zebraidx: Mention -f option when skipping index lines #39
