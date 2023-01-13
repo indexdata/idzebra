@@ -19,7 +19,7 @@ ICONV_DIR=c:\iconv-1.9.2.win32
 
 # EXPAT is optional. It's required for grs.xml-filters.
 HAVE_EXPAT=1
-EXPAT_DIR=c:\Program files (x86)\Expat 2.2.10
+EXPAT_DIR=c:\Program files (x86)\Expat 2.5.0
 
 # ICU support
 HAVE_ICU=1
@@ -211,7 +211,6 @@ MOD_DOM_CFLAGS=
 
 COMMON_C_OPTIONS=          \
   /nologo /W3 /EHsc /FD /c \
-  /DYAZ_USE_NEW_LOG=1      \
   /D"_CRT_SECURE_NO_DEPRECATE" \
   /D"_CRT_NONSTDC_NO_DEPRECATE" \
   /D "WIN32"               \
@@ -238,7 +237,7 @@ COMMON_C_OPTIONS=          \
 
 COMMON_C_INCLUDES= \
   /I"$(SRCDIR)\include" \
-  /I"$(YAZDIR)\include" \
+  /I"$(YAZDIR)\src" \
   $(BZIP2INCLUDE)
 
 DEBUG_C_OPTIONS=  \
@@ -279,7 +278,7 @@ MT=echo
 LINK_LIBS= kernel32.lib advapi32.lib \
 	   $(ICONV_LIB) $(EXPAT_LIB) $(LIBXML2_LIB) $(LIBXSLT_LIB)
 
-COMMON_LNK_OPTIONS= /nologo /machine:i386 /incremental:no
+COMMON_LNK_OPTIONS= /nologo /subsystem:windows /incremental:no
 
 DEBUG_LNK_OPTIONS= /debug 
 
@@ -513,7 +512,7 @@ RSOPT=/d_NDEBUG
 
 
 $(RES): $(RC)
-	$(RSC) $(RSOPT) /I"../include" /I"$(YAZDIR)\include" /fo"$(RES)" $(RC)
+	$(RSC) $(RSOPT) /I"../include" /I"$(YAZDIR)\src" /fo"$(RES)" $(RC)
 
 $(DLL) $(IMPLIB): "$(BINDIR)" $(ZEBRALIB_OBJS) $(RES)
 	$(LINK) \
