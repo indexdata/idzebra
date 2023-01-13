@@ -211,7 +211,6 @@ MOD_DOM_CFLAGS=
 
 COMMON_C_OPTIONS=          \
   /nologo /W3 /EHsc /FD /c \
-  /DYAZ_USE_NEW_LOG=1      \
   /D"_CRT_SECURE_NO_DEPRECATE" \
   /D"_CRT_NONSTDC_NO_DEPRECATE" \
   /D "WIN32"               \
