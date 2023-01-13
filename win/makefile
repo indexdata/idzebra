@@ -19,7 +19,7 @@ ICONV_DIR=c:\iconv-1.9.2.win32
 
 # EXPAT is optional. It's required for grs.xml-filters.
 HAVE_EXPAT=1
-EXPAT_DIR=c:\Program files (x86)\Expat 2.2.10
+EXPAT_DIR=c:\Program files (x86)\Expat 2.5.0
 
 # ICU support
 HAVE_ICU=1
