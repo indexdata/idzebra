@@ -238,7 +238,7 @@ COMMON_C_OPTIONS=          \
 
 COMMON_C_INCLUDES= \
   /I"$(SRCDIR)\include" \
-  /I"$(YAZDIR)\include" \
+  /I"$(YAZDIR)\src" \
   $(BZIP2INCLUDE)
 
 DEBUG_C_OPTIONS=  \
@@ -279,7 +279,7 @@ MT=echo
 LINK_LIBS= kernel32.lib advapi32.lib \
 	   $(ICONV_LIB) $(EXPAT_LIB) $(LIBXML2_LIB) $(LIBXSLT_LIB)
 
-COMMON_LNK_OPTIONS= /nologo /machine:i386 /incremental:no
+COMMON_LNK_OPTIONS= /nologo /subsystem:windows /incremental:no
 
 DEBUG_LNK_OPTIONS= /debug 
 
@@ -513,7 +513,7 @@ RSOPT=/d_NDEBUG
 
 
 $(RES): $(RC)
-	$(RSC) $(RSOPT) /I"../include" /I"$(YAZDIR)\include" /fo"$(RES)" $(RC)
+	$(RSC) $(RSOPT) /I"../include" /I"$(YAZDIR)\src" /fo"$(RES)" $(RC)
 
 $(DLL) $(IMPLIB): "$(BINDIR)" $(ZEBRALIB_OBJS) $(RES)
 	$(LINK) \
