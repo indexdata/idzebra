@@ -285,7 +285,7 @@ int main(int argc, char **argv)
     if (bfs)
     {
         bf_reset(bfs);
-        dict = dict_open(bfs, "dict", 100, 1, 0, 0);
+        dict = dict_open(bfs, "scantest", 100, 1, 0, 0);
         YAZ_CHECK(dict);
     }
     if (dict)

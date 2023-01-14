@@ -25,7 +25,6 @@ dictext_SOURCES = dictext.c
 
 scantest_SOURCES = scantest.c
 
-
 clean-local:
 	-rm -rf *.LCK 
 	-rm -rf *.log 
