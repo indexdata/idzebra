@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     if (bfs)
     {
         bf_reset(bfs);
-        dict = dict_open(bfs, "dict", 50, 1, 0, 4096);
+        dict = dict_open(bfs, "inserttest", 50, 1, 0, 4096);
         YAZ_CHECK(dict);
     }
 
