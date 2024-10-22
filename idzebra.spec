@@ -1,3 +1,6 @@
+#disable LTO otherwise compilation fails on centos9
+%global _lto_cflags %nil
+
 %define idmetaversion %(. ./IDMETA; echo $VERSION)
 Name: idzebra
 %define namev idzebra-2.0

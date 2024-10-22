@@ -1,5 +1,7 @@
 #!/usr/bin/make -f
 export DH_VERBOSE=1
+#disable LTO otherwise compilation fails on ubuntu noble
+export DEB_BUILD_MAINT_OPTIONS=optimize=-lto
 
 %:
 	dh $@ --parallel --without python-support
