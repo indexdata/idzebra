@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <config.h>
 #endif
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <ctype.h>
 
@@ -731,4 +732,3 @@ idzebra_filter
  * End:
  * vim: shiftwidth=4 tabstop=8 expandtab
  */
-
