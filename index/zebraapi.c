@@ -873,7 +873,7 @@ void map_basenames_func(void *vp, const char *name, const char *value)
         return ;
     no--;
     for (i = 0; i<p->num_bases; i++)
-        if (p->basenames[i] && !STRCASECMP(p->basenames[i], fromdb))
+        if (p->basenames[i] && !yaz_strcasecmp(p->basenames[i], fromdb))
         {
             p->basenames[i] = 0;
             for (i = 0; i < no; i++)

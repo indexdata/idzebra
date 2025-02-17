@@ -799,11 +799,11 @@ int zebraExplain_curDatabase(ZebraExplainInfo zei, const char *database)
 
     assert(zei);
     if (zei->curDatabaseInfo &&
-        !STRCASECMP(zei->curDatabaseInfo->databaseName, database))
+        !yaz_strcasecmp(zei->curDatabaseInfo->databaseName, database))
         return 0;
     for (zdi = zei->databaseInfo; zdi; zdi=zdi->next)
     {
-        if (!STRCASECMP(zdi->databaseName, database_n))
+        if (!yaz_strcasecmp(zdi->databaseName, database_n))
             break;
     }
     if (!zdi)
@@ -897,7 +897,7 @@ int zebraExplain_newDatabase(ZebraExplainInfo zei, const char *database,
     assert(zei);
     for (zdi = zei->databaseInfo; zdi; zdi=zdi->next)
     {
-        if (!STRCASECMP(zdi->databaseName, database_n))
+        if (!yaz_strcasecmp(zdi->databaseName, database_n))
             break;
     }
     if (zdi)
