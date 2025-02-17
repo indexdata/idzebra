@@ -7,6 +7,7 @@ AC_CONFIG_HEADERS([include/config.h])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR([config])
 AM_INIT_AUTOMAKE([1.9])
+AC_DEFINE([_POSIX_C_SOURCE],[200809L],[Enable POSIX])
 PACKAGE_SUFFIX="-2.0"
 AC_SUBST(PACKAGE_SUFFIX)
 dnl https://www.gnu.org/software/libtool/manual/libtool.html#Libtool-versioning
