@@ -48,4 +48,4 @@ RUN cd examples/gils && ../../index/zebraidx -d marc -t grs.marcxml.marc21 updat
 EXPOSE 9999/tcp
 
 ENTRYPOINT [ "/app/index/zebrasrv" ]
-CMD [ "-w", "/app/examples/gils", "-c", "zebra.cfg", "-T" ]
+CMD [ "-w", "/app/examples/gils", "-c", "zebra.cfg" ]
