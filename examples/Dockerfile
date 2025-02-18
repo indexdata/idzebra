@@ -15,7 +15,8 @@ RUN apt-get update && apt-get install -y \
     automake \
     libtool \
     docbook-xsl \
-    xsltproc
+    xsltproc \
+    inkscape
 
 COPY m4 m4/
 COPY bfile bfile/
