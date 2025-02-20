@@ -19,7 +19,7 @@ jobs:
    - name: Install required and optional dependencies
      run: >
       sudo apt install autoconf automake libtool gcc make bison
-      tclsh xsltproc docbook docbook-xml docbook-xsl inkscape
+      tclsh xsltproc docbook docbook-xml docbook-xsl librsvg2-bin
       libexpat1-dev libbz2-dev tcl-dev zlib1g-dev
       pkg-config libxslt1-dev libgnutls28-dev libicu-dev
    - name: Run buildconf for YAZ
