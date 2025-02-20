@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     libtool \
     docbook-xsl \
     xsltproc \
-    inkscape
+    librsvg2-bin
 
 COPY m4 m4/
 COPY bfile bfile/
