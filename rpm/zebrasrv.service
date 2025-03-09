@@ -1,0 +1,15 @@
+[Unit]
+Description=The zebra Z39.50 Server
+After=network.target remote-fs.target nss-lookup.target
+Documentation=https://software.indexdata.com/zebra/doc/
+
+[Service]
+Type=simple
+Environment="DAEMON=/usr/bin/zebrasrv" "CONFIG=zebra.cfg" "DAEMON_OPTS=-l /var/log/zebrasrv.log -u nobody tcp:@6:2100"
+EnvironmentFile=/etc/default/zebrasrv
+ExecStart=$DAEMON $DAEMON_OPTS -c $CONFIG
+ExecReload=kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+
