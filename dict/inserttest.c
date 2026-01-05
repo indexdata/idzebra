@@ -56,17 +56,17 @@ int main(int argc, char **argv)
         for (pass = 0; pass < 2; pass++)
         {
             long i;
-            srandom(9);
+            srand(9);
             for (i = 0; i < no; i++)
             {
                 char userinfo[USERINFO_SIZE + 1];
                 int userlen = USERINFO_SIZE;
                 char lex[TERM_SIZE + 1];
-                int sz = 1 + (random() % (TERM_SIZE- 1));
+                int sz = 1 + (rand() % (TERM_SIZE- 1));
                 int j;
                 for (j = 0; j < sz; j++)
                 {
-                    lex[j] = 1 + (random() & 127L);
+                    lex[j] = 1 + (rand() & 127L);
                 }
                 lex[j] = 0;
                 for (j = 0; j < userlen; j++)
