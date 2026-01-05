@@ -54,6 +54,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define REGX_CONTEXT 6
 #define REGX_INIT    7
 
+#define REGX_MAX_ARGS 20
+
 struct regxCode {
     char *str;
 #if HAVE_TCL_OBJECTS
@@ -132,8 +134,8 @@ struct lexSpec {
     int d1_level;
     int stop_flag;
 
-    int *arg_start;
-    int *arg_end;
+    int arg_start[REGX_MAX_ARGS];
+    int arg_end[REGX_MAX_ARGS];
     int arg_no;
     int ptr;
 };
@@ -1615,50 +1617,46 @@ static int execAction (struct lexSpec *spec, struct lexRuleAction *ap,
                        int start_ptr, int *pptr)
 {
     int sptr;
-    int arg_start[20];
-    int arg_end[20];
     int arg_no = 1;
 
     if (!ap)
         return 1;
-    arg_start[0] = start_ptr;
-    arg_end[0] = *pptr;
-    spec->arg_start = arg_start;
-    spec->arg_end = arg_end;
+    spec->arg_start[0] = start_ptr;
+    spec->arg_end[0] = *pptr;
 
-    while (ap)
+    while (ap && arg_no < REGX_MAX_ARGS)
     {
         switch (ap->which)
         {
         case REGX_PATTERN:
             if (ap->u.pattern.body)
             {
-                arg_start[arg_no] = *pptr;
+                spec->arg_start[arg_no] = *pptr;
                 if (!tryMatch (spec, pptr, &sptr, ap->u.pattern.dfa, 0))
                 {
-                    arg_end[arg_no] = F_WIN_EOF;
+                    spec->arg_end[arg_no] = F_WIN_EOF;
                     arg_no++;
-                    arg_start[arg_no] = F_WIN_EOF;
-                    arg_end[arg_no] = F_WIN_EOF;
+                    spec->arg_start[arg_no] = F_WIN_EOF;
+                    spec->arg_end[arg_no] = F_WIN_EOF;
                     yaz_log(YLOG_DEBUG, "Pattern match rest of record");
                     *pptr = F_WIN_EOF;
                 }
                 else
                 {
-                    arg_end[arg_no] = sptr;
+                    spec->arg_end[arg_no] = sptr;
                     arg_no++;
-                    arg_start[arg_no] = sptr;
-                    arg_end[arg_no] = *pptr;
+                    spec->arg_start[arg_no] = sptr;
+                    spec->arg_end[arg_no] = *pptr;
                 }
             }
             else
             {
-                arg_start[arg_no] = *pptr;
+                spec->arg_start[arg_no] = *pptr;
                 if (!tryMatch (spec, pptr, &sptr, ap->u.pattern.dfa, 1))
                     return 1;
-                if (sptr != arg_start[arg_no])
+                if (sptr != spec->arg_start[arg_no])
                     return 1;
-                arg_end[arg_no] = *pptr;
+                spec->arg_end[arg_no] = *pptr;
             }
             arg_no++;
             break;
@@ -1678,8 +1676,8 @@ static int execAction (struct lexSpec *spec, struct lexRuleAction *ap,
                 return 0;
             break;
         case REGX_END:
-            arg_start[arg_no] = *pptr;
-            arg_end[arg_no] = F_WIN_EOF;
+            spec->arg_start[arg_no] = *pptr;
+            spec->arg_end[arg_no] = F_WIN_EOF;
             arg_no++;
             *pptr = F_WIN_EOF;
         }
