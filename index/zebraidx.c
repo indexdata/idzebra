@@ -249,7 +249,7 @@ int main(int argc, char **argv)
             zebra_get_version(version_str, sys_str);
 
             printf("Zebra %s\n", version_str);
-            printf("(C) 1994-2023, Index Data\n");
+            printf("(C) 1994-2026, Index Data\n");
             printf("Zebra is free software, covered by the GNU General Public License, and you are\n");
             printf("welcome to change it and/or distribute copies of it under certain conditions.\n");
             printf("SHA1 ID: %s\n", sys_str);

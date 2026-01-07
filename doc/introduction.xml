@@ -33,13 +33,13 @@
     based systems.
    </para>
    <para>
-    <ulink url="http://www.indexdata.com/zebra/">http://www.indexdata.com/zebra/</ulink>
-    <ulink url="http://ftp.indexdata.dk/pub/zebra/win32/">http://ftp.indexdata.dk/pub/zebra/win32/</ulink>
-    <ulink url="http://ftp.indexdata.dk/pub/zebra/debian/">http://ftp.indexdata.dk/pub/zebra/debian/</ulink>
+    <ulink url="https://www.indexdata.com/zebra/">https://www.indexdata.com/zebra/</ulink>
+    <ulink url="https://ftp.indexdata.com/pub/zebra/win32/">https://ftp.indexdata.com/pub/zebra/win32/</ulink>
+    <ulink url="https://ftp.indexdata.com/pub/zebra/debian/">https://ftp.indexdata.com/pub/zebra/debian/</ulink>
    </para>
 
    <para>
-    <ulink url="http://indexdata.dk/zebra/">&zebra;</ulink>
+    <ulink url="https://www.indexdata.com/zebra/">&zebra;</ulink>
     is a high-performance, general-purpose structured text
     indexing and retrieval engine. It reads records in a
     variety of input formats (e.g. email, &acro.xml;, &acro.marc;) and provides access
@@ -908,13 +908,10 @@
      whether it's fixed in the current release.
    </para>
    <para>
-    Second, there's the &zebra; mailing list.  Its home page at
-    <ulink url="&url.idzebra.mailinglist;"/>
-     includes a complete archive of all messages that have ever been
-     posted on the list.  The &zebra; mailing list is used both for
-     announcements from the authors (new
-     releases, bug fixes, etc.) and general discussion.  You are welcome
-     to seek support there.  Join by filling the form on the list home page.
+     Second, there's the
+     <ulink url="https://github.com/indexdata/idzebra/discussions">discussions</ulink>
+     and <ulink url="https://github.com/indexdata/idzebra/issues">issues</ulink>
+     at the <ulink url="https://github.com/indexdata/idzebra">GitHub repository</ulink>.
    </para>
   </section>
  </chapter>

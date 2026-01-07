@@ -1652,7 +1652,7 @@
      records indexed with &acro.grs1; indexing filters, the &zebra; internal
      ID number is returned in the field
      <literal>/*/id:idzebra/localnumber</literal> in the namespace
-     <literal>xmlns:id="http://www.indexdata.dk/zebra/"</literal>,
+     <literal>xmlns:id="https://www.indexdata.com/zebra/"</literal>,
      where it can be picked up for later record updates or deletes.
     </para>
 
