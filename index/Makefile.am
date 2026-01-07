@@ -77,7 +77,7 @@ EXTRA_libidzebra_2_0_la_SOURCES = \
 lib_LTLIBRARIES = $(zebralib)
 
 libidzebra_2_0_la_DEPENDENCIES = $(STATIC_MODULE_OBJ) $(aux_libs)
-libidzebra_2_0_la_LIBADD = $(STATIC_MODULE_OBJ)  $(aux_libs) $(STATIC_MODULE_LADD)
+libidzebra_2_0_la_LIBADD = $(STATIC_MODULE_OBJ) $(aux_libs) $(STATIC_MODULE_LADD) $(YAZLALIB)
 libidzebra_2_0_la_LDFLAGS=-export-dynamic -version-info $(ZEBRALIBS_VERSION_INFO)
 libidzebra_2_0_la_SOURCES = \
   recctrl.c \
