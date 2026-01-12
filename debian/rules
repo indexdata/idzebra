@@ -26,7 +26,7 @@ override_dh_installlogrotate:
 	dh_installlogrotate --name=zebrasrv
 
 override_dh_installsystemd:
-	dh_installsystemd --name=zebrasrv.service
+	dh_installsystemd --name=zebrasrv
 
 override_dh_installchangelogs:
 	dh_installchangelogs NEWS
