@@ -6,8 +6,8 @@
 	delaycompress
 	notifempty
 	postrotate
-		if [ -f /var/run/zebrasrv.pid ]; then
-			/etc/init.d/zebrasrv force-reload > /dev/null
+		if [ -d /run/systemd/system ]; then
+			/usr/bin/systemctl try-reload-or-restart > /dev/null
 		fi
 	endscript
 }

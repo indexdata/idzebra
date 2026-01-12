@@ -1,0 +1,15 @@
+# idzebra systemd-style configuration
+
+[Unit]
+Description=Index Data Zebra server
+Documentation=man:idzebra(1)
+After=network.target
+
+[Service]
+Type=forking
+EnvironmentFile=/etc/default/zebrasrv
+ExecStart=/bin/sh -c "exec ${DAEMON} ${OPTIONS}"
+PIDFile=/run/zebrasrv.pid
+
+[Install]
+WantedBy=multi-user.target

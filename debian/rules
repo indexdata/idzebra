@@ -25,8 +25,8 @@ override_dh_makeshlibs:
 override_dh_installlogrotate:
 	dh_installlogrotate --name=zebrasrv
 
-override_dh_installinit:
-	dh_installinit --name=zebrasrv
+override_dh_installsystemd:
+	dh_installsystemd --name=zebrasrv.service
 
 override_dh_installchangelogs:
 	dh_installchangelogs NEWS
