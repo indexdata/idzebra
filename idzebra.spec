@@ -7,20 +7,27 @@ Name: idzebra
 Version: %{idmetaversion}
 Release: 1.indexdata
 License: GPL
+Group: Applications/Databases
 Vendor: Index Data ApS <info@indexdata.dk>
 Source: idzebra-%{version}.tar.gz
 BuildRoot: %{_tmppath}/idzebra-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
-URL: http://www.indexdata.com/zebra
+Summary: High-performance, structured text indexing and retrival engine.
+URL: httpd://www.indexdata.com/zebra
 BuildRequires: libyaz5-devel >= 5.29.0
 BuildRequires: expat-devel, bzip2-devel, tcl, zlib-devel, pkgconfig
-Summary: High-performance, structured text indexing and retrival engine.
-Group: Applications/Databases
+%if 0%{?rhel} >= 9
+BuildRequires: systemd-rpm-macros
+%else
+BuildRequires: systemd
+%endif
+# Use systemd macros for safe scriptlets
+%{?systemd_requires}
 %description
 Zebra is a high-performance, general-purpose structured text indexing
 and retrieval engine. It reads structured records in a variety of input
 formats (eg. email, XML, MARC) and allows access to them through exact
-boolean search expressions and relevance-ranked free-text queries. 
+boolean search expressions and relevance-ranked free-text queries.
 
 %package -n %{namev}
 Summary: High-performance, structured text indexing and retrival engine.
@@ -30,7 +37,7 @@ Requires: lib%{namev}-modules = %{version}
 Zebra is a high-performance, general-purpose structured text indexing
 and retrieval engine. It reads structured records in a variety of input
 formats (eg. email, XML, MARC) and allows access to them through exact
-boolean search expressions and relevance-ranked free-text queries. 
+boolean search expressions and relevance-ranked free-text queries.
 
 
 %package -n lib%{namev}
@@ -50,7 +57,7 @@ Modules for the Zebra search engine.
 %package -n lib%{namev}-devel
 Summary: Zebra development libraries
 Group: Development/Libraries
-Requires: lib%{namev} = %{version} libyaz5-devel bzip2-devel 
+Requires: lib%{namev} = %{version} libyaz5-devel bzip2-devel
 %description -n lib%{namev}-devel
 Development libraries for the Zebra search engine.
 
@@ -78,10 +85,12 @@ rm ${RPM_BUILD_ROOT}/%{_bindir}/zebrasrv
 rm ${RPM_BUILD_ROOT}/%{_mandir}/man8/zebrasrv.*
 rm ${RPM_BUILD_ROOT}/%{_mandir}/man1/idzebra-config.*
 mkdir -p ${RPM_BUILD_ROOT}/etc/idzebra
-mkdir -p ${RPM_BUILD_ROOT}/etc/rc.d/init.d
-install -m755 rpm/zebrasrv.init ${RPM_BUILD_ROOT}/etc/rc.d/init.d/zebrasrv
+mkdir -p ${RPM_BUILD_ROOT}/etc/sysconfig
+install rpm/zebrasrv.sysconfig ${RPM_BUILD_ROOT}/etc/sysconfig/zebrasrv
+mkdir -p ${RPM_BUILD_ROOT}/etc/systemd/system
+install rpm/zebrasrv.service ${RPM_BUILD_ROOT}/etc/systemd/system/zebrasrv.service
 mkdir -p ${RPM_BUILD_ROOT}/etc/logrotate.d
-install -m644 rpm/zebrasrv.logrotate ${RPM_BUILD_ROOT}/etc/logrotate.d/zebrasrv
+install rpm/zebrasrv.logrotate ${RPM_BUILD_ROOT}/etc/logrotate.d/zebrasrv
 
 %clean
 rm -fr ${RPM_BUILD_ROOT}
@@ -99,8 +108,9 @@ rm -fr ${RPM_BUILD_ROOT}
 %{_mandir}/*/idzebra-abs2dom*
 /usr/share/idzebra-2.0-examples
 %dir %{_sysconfdir}/idzebra
-%config %{_sysconfdir}/rc.d/init.d/zebrasrv
-%config(noreplace) /etc/logrotate.d/zebrasrv
+%config /etc/sysconfig/zebrasrv
+%config /etc/systemd/system/zebrasrv.service
+%config /etc/logrotate.d/zebrasrv
 
 %files -n lib%{namev}
 %{_libdir}/*.so.*
@@ -118,19 +128,12 @@ rm -fr ${RPM_BUILD_ROOT}
 %{_libdir}/pkgconfig/*.pc
 
 %post -n lib%{namev}
-/sbin/ldconfig 
+/sbin/ldconfig
 %postun -n lib%{namev}
-/sbin/ldconfig 
+/sbin/ldconfig
 %post -n %{namev}
-if [ $1 = 1 ]; then
-	/sbin/chkconfig --add zebrasrv
-	/sbin/service zebrasrv start > /dev/null 2>&1
-else
-	/sbin/service zebrasrv restart > /dev/null 2>&1
-fi
+%systemd_post zebrasrv.service
+
 %preun -n %{namev}
-if [ $1 = 0 ]; then
-	/sbin/service zebrasrv stop > /dev/null 2>&1
-	/sbin/chkconfig --del zebrasrv
-fi
+%systemd_preun zebrasrv.service
 
