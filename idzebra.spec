@@ -12,8 +12,8 @@ Vendor: Index Data ApS <info@indexdata.dk>
 Source: idzebra-%{version}.tar.gz
 BuildRoot: %{_tmppath}/idzebra-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
-Summary: High-performance, structured text indexing and retrival engine.
-URL: httpd://www.indexdata.com/zebra
+Summary: High-performance, structured text indexing and retrieval engine.
+URL: https://www.indexdata.com/zebra
 BuildRequires: libyaz5-devel >= 5.29.0
 BuildRequires: expat-devel, bzip2-devel, tcl, zlib-devel, pkgconfig
 %if 0%{?rhel} >= 9
@@ -86,11 +86,11 @@ rm ${RPM_BUILD_ROOT}/%{_mandir}/man8/zebrasrv.*
 rm ${RPM_BUILD_ROOT}/%{_mandir}/man1/idzebra-config.*
 mkdir -p ${RPM_BUILD_ROOT}/etc/idzebra
 mkdir -p ${RPM_BUILD_ROOT}/etc/sysconfig
-install rpm/zebrasrv.sysconfig ${RPM_BUILD_ROOT}/etc/sysconfig/zebrasrv
-mkdir -p ${RPM_BUILD_ROOT}/etc/systemd/system
-install rpm/zebrasrv.service ${RPM_BUILD_ROOT}/etc/systemd/system/zebrasrv.service
+install -m 644 rpm/zebrasrv.sysconfig ${RPM_BUILD_ROOT}/etc/sysconfig/zebrasrv
+mkdir -p ${RPM_BUILD_ROOT}/usr/lib/systemd/system
+install -m 644 rpm/zebrasrv.service ${RPM_BUILD_ROOT}/usr/lib/systemd/system/zebrasrv.service
 mkdir -p ${RPM_BUILD_ROOT}/etc/logrotate.d
-install rpm/zebrasrv.logrotate ${RPM_BUILD_ROOT}/etc/logrotate.d/zebrasrv
+install -m 644 rpm/zebrasrv.logrotate ${RPM_BUILD_ROOT}/etc/logrotate.d/zebrasrv
 
 %clean
 rm -fr ${RPM_BUILD_ROOT}
@@ -107,9 +107,9 @@ rm -fr ${RPM_BUILD_ROOT}
 %{_mandir}/*/zebrasrv-*
 %{_mandir}/*/idzebra-abs2dom*
 /usr/share/idzebra-2.0-examples
+/usr/lib/systemd/system/zebrasrv.service
 %dir %{_sysconfdir}/idzebra
-%config /etc/sysconfig/zebrasrv
-%config /etc/systemd/system/zebrasrv.service
+%config(noreplace) /etc/sysconfig/zebrasrv
 %config /etc/logrotate.d/zebrasrv
 
 %files -n lib%{namev}
@@ -137,3 +137,5 @@ rm -fr ${RPM_BUILD_ROOT}
 %preun -n %{namev}
 %systemd_preun zebrasrv.service
 
+%postun
+%systemd_postun_with_restart zebrasrv.service
