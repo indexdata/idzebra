@@ -1,0 +1,5 @@
+# zebrasrv sysconfig file
+CONFIG=/etc/idzebra/zebra.cfg
+# this is used in zebrasrv systemd service file (not only the final OPTIONS value)
+DAEMON=/usr/bin/zebrasrv-2.0
+OPTIONS="-c $CONFIG -l /var/log/zebrasrv.log -u nobody tcp:@6:2100"
