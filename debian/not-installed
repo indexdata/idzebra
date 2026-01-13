@@ -4,3 +4,4 @@ usr/lib/*/idzebra-2.0/modules/mod*.la
 usr/lib/*/idzebra-2.0/modules/mod*.a
 usr/lib/*/idzebra-2.0/modules/mod-safari*
 usr/lib/*/lib*.la
+usr/share/man/man*/*

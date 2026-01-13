@@ -1,3 +1,3 @@
-usr/share/man/man8/zebrasrv*
-usr/share/man/man1/zebraidx*
-usr/share/man/man1/idzebra-abs2dom*
+doc/zebrasrv-2.0.8
+doc/zebraidx-2.0.1
+doc/idzebra-abs2dom.1
