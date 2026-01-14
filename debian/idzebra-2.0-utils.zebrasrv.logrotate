@@ -7,7 +7,7 @@
 	notifempty
 	postrotate
 		if [ -d /run/systemd/system ]; then
-			/usr/bin/systemctl try-reload-or-restart > /dev/null
+			/usr/bin/systemctl try-reload-or-restart zebrasrv > /dev/null
 		fi
 	endscript
 }

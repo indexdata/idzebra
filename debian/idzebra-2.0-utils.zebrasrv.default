@@ -4,13 +4,8 @@
 # zebra.cfg (will be supplied with option -c)
 CONFIG="/etc/idzebra/zebra.cfg"
 
-# Full path to zebra server
-DAEMON=/usr/sbin/zebrasrv-2.0
+# Full path to zebra server. Referred to in zebrasrv.service
+DAEMON=/usr/bin/zebrasrv-2.0
 
-# PID file
-PIDFILE=/run/zebrasrv.pid
-
-# Options that are passed to the Daemon.
-OPTIONS="-D -p ${PIDFILE} -l /var/log/zebrasrv -u nobody -c ${CONFIG} tcp:@6:2100"
-
-
+# Options that are passed to the Daemon and used in zebrasrv.service
+OPTIONS="-l /var/log/zebrasrv.log -u nobody -c ${CONFIG} tcp:@:2100"

@@ -8,8 +8,9 @@ After=network.target
 [Service]
 Type=forking
 EnvironmentFile=/etc/default/zebrasrv
-ExecStart=/bin/sh -c "exec ${DAEMON} ${OPTIONS}"
+ExecStart=/bin/sh -c "exec ${DAEMON} ${OPTIONS} -p /run/zebrasrv.pid -D"
 PIDFile=/run/zebrasrv.pid
+Restart=on-abnormal
 
 [Install]
 WantedBy=multi-user.target
