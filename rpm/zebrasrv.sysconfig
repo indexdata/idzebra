@@ -8,4 +8,4 @@ CONFIG="/etc/idzebra/zebra.cfg"
 DAEMON=/usr/bin/zebrasrv-2.0
 
 # Options that are passed to the Daemon and used in zebrasrv.service
-OPTIONS="-l /var/log/zebrasrv.log -u nobody -c ${CONFIG} tcp:@:2100"
+OPTIONS="-l /var/log/zebrasrv.log -u nobody -c ${CONFIG} tcp:@6:2100"

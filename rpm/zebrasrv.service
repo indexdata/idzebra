@@ -2,7 +2,7 @@
 
 [Unit]
 Description=Index Data Zebra server
-Documentation=man:idzebra(1)
+Documentation=man:zebrasrv(8)
 After=network.target
 
 [Service]
