@@ -5,7 +5,7 @@
 CONFIG="/etc/idzebra/zebra.cfg"
 
 # Full path to zebra server. Referred to in zebrasrv.service
-DAEMON=/usr/bin/zebrasrv-2.0
+DAEMON="/usr/bin/zebrasrv-2.0"
 
 # Options that are passed to the Daemon and used in zebrasrv.service
 OPTIONS="-l /var/log/zebrasrv.log -u nobody -c ${CONFIG} tcp:@6:2100"

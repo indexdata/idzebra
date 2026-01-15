@@ -1,5 +1,11 @@
-# zebrasrv sysconfig file
-CONFIG=/etc/idzebra/zebra.cfg
-# this is used in zebrasrv systemd service file (not only the final OPTIONS value)
-DAEMON=/usr/bin/zebrasrv-2.0
-OPTIONS="-c $CONFIG -l /var/log/zebrasrv.log -u nobody tcp:@6:2100"
+# Defaults for zebrasrv systemd service
+# This is a POSIX shell fragment
+
+# zebra.cfg (will be supplied with option -c)
+CONFIG="/etc/idzebra/zebra.cfg"
+
+# Full path to zebra server. Referred to in zebrasrv.service
+DAEMON="/usr/bin/zebrasrv-2.0"
+
+# Options that are passed to the Daemon and used in zebrasrv.service
+OPTIONS="-l /var/log/zebrasrv.log -u nobody -c ${CONFIG} tcp:@6:2100"
