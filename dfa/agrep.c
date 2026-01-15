@@ -39,6 +39,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 #include <idzebra/util.h>
+#include <idzebra/version.h>
 #include <dfa.h>
 #include "imalloc.h"
 
@@ -62,6 +63,8 @@ static int show_lines = 0;
 
 int agrep_options (int argc, char **argv)
 {
+    char version_str[16];
+    zebra_get_version(version_str, NULL);
     while (--argc > 0)
         if (**++argv == '-')
             while (*++*argv)
@@ -69,7 +72,7 @@ int agrep_options (int argc, char **argv)
                 switch (**argv)
                 {
                 case 'V':
-                    fprintf (stderr, "%s: %s %s\n", prog, __DATE__, __TIME__);
+                    fprintf (stderr, "%s: %s\n", prog, version_str);
                     continue;
                 case 'v':
                     dfa_verbose = 1;

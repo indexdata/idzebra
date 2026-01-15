@@ -27,15 +27,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 #include <yaz/snprintf.h>
-#include <string.h>
 #include <idzebra/version.h>
 
 void zebra_get_version(char *version_str, char *sha1_str)
 {
     if (version_str)
-        strcpy(version_str, ZEBRAVER);
+        yaz_snprintf(version_str, 16, "%s", ZEBRAVER);
     if (sha1_str)
-        strcpy(sha1_str, ZEBRA_VERSION_SHA1);
+        yaz_snprintf(sha1_str, 65, "%s", ZEBRA_VERSION_SHA1);
 }
 
 /*
