@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <it_key.h>
 #include <idzebra/isamb.h>
 #include <idzebra/dict.h>
+#include <idzebra/version.h>
 #include <assert.h>
 
 struct index_block {
@@ -520,7 +521,9 @@ int main(int argc, char **argv)
     const char *dict_info;
     const char *type = "iso2709";
     int int_count_enable = 1;
+    char version_str[16];
 
+    zebra_get_version(version_str, NULL);
     while ((ret = options("im:t:c:N", argv, argc, &arg)) != -2)
     {
         switch(ret)
@@ -571,7 +574,7 @@ int main(int argc, char **argv)
             exit(1);
         }
     }
-    printf("# benchindex1 %s %s\n", __DATE__, __TIME__);
+    printf("# benchindex1 %s\n", version_str);
     printf("# isam_cache_size = %d\n", isam_cache_size);
     printf("# dict_cache_size = %d\n", dict_cache_size);
     printf("# int_count_enable = %d\n", int_count_enable);
