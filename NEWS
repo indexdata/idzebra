@@ -1,3 +1,13 @@
+--- 2.2.9 2026/01/28
+
+Debian: systemd service
+
+Add YAZ libs + deps to libidzebra #69
+
+doc: Use rsvg-convert rather than inkscape
+
+Fix compilation with c23 #63
+
 --- 2.2.8 2024/10/22
 
 Fix implicit atoi/stdlib import
