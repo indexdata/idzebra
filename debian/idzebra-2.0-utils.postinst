@@ -16,31 +16,18 @@ fi
 
 # Automatically added by dh_installsystemd/13.24.2
 if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
-    # The following line should be removed in trixie or trixie+1
-    deb-systemd-helper unmask 'zebrasrv.service' >/dev/null || true
+    if deb-systemd-helper debian-installed 'zebrasrv.service'; then
+        # The following line should be removed in trixie or trixie+1
+        deb-systemd-helper unmask 'zebrasrv.service' >/dev/null || true
 
-    # was-enabled defaults to true, so new installations run enable.
-    if deb-systemd-helper --quiet was-enabled 'zebrasrv.service'; then
-        # Enables the unit on first installation, creates new
-        # symlinks on upgrades if the unit file has changed.
-        deb-systemd-helper enable 'zebrasrv.service' >/dev/null || true
-    else
-        # Update the statefile to add new symlinks (if any), which need to be
-        # cleaned up on purge. Also remove old symlinks.
-        deb-systemd-helper update-state 'zebrasrv.service' >/dev/null || true
-    fi
-fi
-# End automatically added section
-# Automatically added by dh_installsystemd/13.24.2
-if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
-    if [ -d /run/systemd/system ]; then
-        systemctl --system daemon-reload >/dev/null || true
-        if [ -n "$2" ]; then
-            _dh_action=restart
-        else
-            _dh_action=start
+        if deb-systemd-helper --quiet was-enabled 'zebrasrv.service'; then
+            # Create new symlinks, if any.
+            deb-systemd-helper enable 'zebrasrv.service' >/dev/null || true
         fi
-        deb-systemd-invoke $_dh_action 'zebrasrv.service' >/dev/null || true
     fi
+
+    # Update the statefile to add new symlinks (if any), which need to be cleaned
+    # up on purge. Also remove old symlinks.
+    deb-systemd-helper update-state 'zebrasrv.service' >/dev/null || true
 fi
 # End automatically added section

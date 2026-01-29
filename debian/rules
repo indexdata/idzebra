@@ -29,7 +29,7 @@ override_dh_installinit:
 	dh_installinit --name=zebrasrv
 
 override_dh_installsystemd:
-	dh_installsystemd --name=zebrasrv
+	dh_installsystemd --no-start --no-enable --name=zebrasrv
 
 override_dh_installchangelogs:
 	dh_installchangelogs NEWS
