@@ -137,5 +137,5 @@ rm -fr ${RPM_BUILD_ROOT}
 %preun -n %{namev}
 %systemd_preun zebrasrv.service
 
-%postun
+%postun -n %{namev}
 %systemd_postun_with_restart zebrasrv.service
