@@ -1,3 +1,10 @@
+--- 2.2.10 2026/01/29
+
+Debian: do not enable and start systemd service by default as
+there is no configuration in /etc/idzebra/zebra.cfg
+
+RPM: fix postun section to be part of idzebra-2.0 pkg
+
 --- 2.2.9 2026/01/28
 
 Debian: systemd service
