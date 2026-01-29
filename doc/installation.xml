@@ -9,8 +9,7 @@
   <para>
    The software is regularly tested on
    <ulink url="&url.debian;">Debian GNU/Linux</ulink>,
-   <ulink url="&url.redhat;">Red Hat Linux</ulink>,
-   <ulink url="&url.freebsd;">FreeBSD (i386)</ulink>,
+   <ulink url="&url.ubuntu;">Ubuntu Linux</ulink>,
    <ulink url="&url.macosx;">MAC OSX</ulink>,
    Windows 7.
   </para>
@@ -220,7 +219,7 @@
 
   <section id="installation-debian"><title>GNU/Debian</title>
    <section id="installation-debian-linux"><title>GNU/Debian Linux on
-     amd64/i386 Platform</title>
+     amd64 Platform</title>
     <para>
      Index Data provides pre-compiled GNU/Debian and Ubuntu packages
      at our Debian package archive, both for recent releases.
@@ -228,9 +227,9 @@
 
     <para>
      For Debian, refer to 
-     <ulink url="http://ftp.indexdata.dk/pub/zebra/debian/README"/>
+     <ulink url="https://ftp.indexdata.com/pub/zebra/debian/README"/>
      for how to configure APT. For Ubuntu, refer to
-     <ulink url="http://ftp.indexdata.dk/pub/zebra/ubuntu/README"/>.
+     <ulink url="https://ftp.indexdata.com/pub/zebra/ubuntu/README"/>.
      After refreshing the package cache with the command
      <screen>
       apt-get update
