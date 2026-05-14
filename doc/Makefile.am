@@ -78,7 +78,7 @@ idzebra.pdf: $(XMLFILES) domfilter.pdf
 manref.xml: $(XMLMAN) $(srcdir)/common/ref2dbinc.xsl local.ent
 	rm -f manref.xml
 	for i in $(XMLMAN); do \
-		xsltproc $(srcdir)/common/stripref.xsl $(srcdir)/$$i | sed 1d >> manref.xml; \
+		$(XSLTPROC_COMPILE) $(srcdir)/common/stripref.xsl $(srcdir)/$$i | sed 1d >> manref.xml; \
 	done
 
 gils.txt: gils.sgml
