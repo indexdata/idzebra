@@ -1,3 +1,9 @@
+--- 2.2.11 2026/05/20
+
+Update CSS for documentation.
+
+Make packages for Ubuntu 26.04 LTS (Resolute Raccoon).
+
 --- 2.2.10 2026/01/29
 
 Debian: do not enable and start systemd service by default as
@@ -383,13 +389,13 @@ Handle right-truncation for ICU normalized terms.
 
 Updated OAI-PMH example.
 
---- 2.0.26 2008/01/28 
+--- 2.0.26 2008/01/28
 
 Fixes for searches on Chinese text.
 
 Fixes for scan using ICU indexing terms.
 
---- 2.0.24 2008/01/18 
+--- 2.0.24 2008/01/18
 
 Fixed some memory violations for ICU enabled indexing that could be
 triggered by long phrases.
@@ -444,7 +450,7 @@ Fixed bug #1121: Crash for some searches with customized string.chr.
 --- 2.0.14 2007/05/09
 
 Zebra uses the YAZ 3 API. Note that this changes the Zebra API
-as well. The register layout is the same however. 
+as well. The register layout is the same however.
 
 Fixed bug #1114: scan within set may use excessive CPU.
 
@@ -479,7 +485,7 @@ even though there was plenty of space.
 
 Fixed bug #884: Entity declarations in input are lost at retrieval time.
 
-Implemented new filter 'dom'. See test/xslt/dom-config*xml for examples. 
+Implemented new filter 'dom'. See test/xslt/dom-config*xml for examples.
 This, like alvis, performs indexing and retrieval using XSLT. But Unlike
 alvis, it allows multiple XSLT steps to be performed and does ISO2709
 reading. Bug #843.
@@ -496,7 +502,7 @@ If given, that overrides the value of 'truncmax'.
 For truncations being limited (abort at truncmax terms), zebrasrv returns
 SearchResponse with resultSetStatus=subset.
 
-For estimated hit counts, zebrasrv returns SearchResponse with 
+For estimated hit counts, zebrasrv returns SearchResponse with
 resultSetStatus=estimate.
 
 --- 2.0.8 2007/01/15
@@ -517,7 +523,7 @@ Implemented sorting via the ISAMB system. To enable, use sortindex:i in
 zebra.cfg.
 
 Added special retrieval support for sort keys. These keys can also be
-fetched using zebra::index:field:s   
+fetched using zebra::index:field:s
 
 Added support for specification of approximative limits for whole query.
 This is specified as attribute type 12. Semantics is the same as
@@ -582,7 +588,7 @@ to drive both indexing as well as retrieval. See example configuration in the
 'isamc'. The type used can still be configured with the 'isam' setting
 in 'zebra.cfg'.
 
-Index structure is now 64-bit based, also on 32 bit systems. 
+Index structure is now 64-bit based, also on 32 bit systems.
 There are no more 2GB register file limits.
 
 Extended search result tuning. Approximate limit for terms can be enabled
@@ -601,7 +607,7 @@ modules (.so's) on Unix. In particular the Zebra 2.0 Debian package uses
 separate packages for each of them. This also means that zebra programs
 such as zebraidx is no longer depending on Tcl/other..
 
-Documentation updates, especially on query structure and syntax, SRU, 
+Documentation updates, especially on query structure and syntax, SRU,
 XSLT support, alvis filter module, and many added examples.
 
 Improved logging of the 'zebrasrv' and 'zebraidx' binaries.
