@@ -6,11 +6,11 @@ Documentation=man:zebrasrv(8)
 After=network.target
 
 [Service]
-Type=forking
+Type=exec
 EnvironmentFile=/etc/default/zebrasrv
-ExecStart=/bin/sh -c "exec ${DAEMON} ${OPTIONS} -p /run/zebrasrv.pid -D"
-PIDFile=/run/zebrasrv.pid
-Restart=on-abnormal
+ExecStart=/bin/sh -c "exec ${DAEMON} ${OPTIONS}"
+ExecReload=kill -HUP $MAINPID
+Restart=on-abort
 
 [Install]
 WantedBy=multi-user.target
