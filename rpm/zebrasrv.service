@@ -6,10 +6,10 @@ Documentation=man:zebrasrv(8)
 After=network.target
 
 [Service]
-Type=forking
+Type=simple
 EnvironmentFile=/etc/sysconfig/zebrasrv
-ExecStart=/bin/sh -c "exec ${DAEMON} ${OPTIONS} -p /run/zebrasrv.pid -D"
-PIDFile=/run/zebrasrv.pid
+ExecStart=/bin/sh -c "exec ${DAEMON} ${OPTIONS}"
+ExecReload=kill -HUP $MAINPID
 Restart=on-abnormal
 
 [Install]
