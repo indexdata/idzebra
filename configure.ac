@@ -267,8 +267,14 @@ AC_CONFIG_COMMANDS([default],[
 	sed -e 's%echo_source=yes%echo_source=no%g; s%src_root=.*$%%g; s%build_root=.*%%g' \
 		< idzebra-config-2.0 > util/idzebra-config-2.0 \
 		&& chmod +x idzebra-config-2.0 util/idzebra-config-2.0
-	diff doc/local.ent doc/local0.ent >/dev/null 2>/dev/null \
-		|| cp doc/local0.ent doc/local.ent
+	if ! diff doc/local.ent doc/local0.ent >/dev/null 2>/dev/null; then
+		# Reuse distributed entities through VPATH without rebuilding documentation.
+		if diff "$srcdir/doc/local.ent" doc/local0.ent >/dev/null 2>/dev/null; then
+			rm -f doc/local.ent
+		else
+			cp doc/local0.ent doc/local.ent
+		fi
+	fi
 ],[])
 AC_OUTPUT
 
