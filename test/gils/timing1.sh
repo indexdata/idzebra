@@ -1,7 +1,8 @@
 #!/bin/sh
-# tests that updates are reflected immediately # in the registers.
+# Tests that updates are reflected immediately in the registers.
 # Repeatedly modifies a record and counts hits.
-# Test 1: with good sleeps in every between - should pass always
+# Zebra stores file mtimes in whole seconds. Sleep before each modification
+# so its mtime advances; indexing and searching need no intervening sleeps.
 
 set -e
 srcdir=${srcdir:-"."}
@@ -31,7 +32,6 @@ test -f z.pid
 
 echo "  update 1..." >>$LOG
 ../../index/zebraidx -l $LOG -c $srcdir/zebra2.cfg update $srcdir/records
-sleep 1
 
 echo "  search 1..." >>$LOG
 ../api/testclient -c 9 unix:socket "@attr 1=4 utah" >>$LOG
@@ -53,7 +53,6 @@ mv $srcdir/records/esdd0002x.grs $srcdir/records/esdd0002.grs
 echo "    indexing it..." >>$LOG
 ../../index/zebraidx -l $LOG -c $srcdir/zebra2.cfg update $srcdir/records
 
-sleep 1
 echo "    search 3..." >>$LOG
 ../api/testclient -c 9 unix:socket "@attr 1=4 utah" >>$LOG
 
@@ -65,7 +64,6 @@ mv $srcdir/records/esdd0002x.grs $srcdir/records/esdd0002.grs
 echo "    indexing it..." >>$LOG
 ../../index/zebraidx -l $LOG -c $srcdir/zebra2.cfg update $srcdir/records
 
-sleep 1
 echo "    search 4..." >>$LOG
 ../api/testclient -c 10 unix:socket "@attr 1=4 utah" >>$LOG
 
@@ -77,7 +75,6 @@ mv $srcdir/records/esdd0002x.grs $srcdir/records/esdd0002.grs
 echo "    indexing it..." >>$LOG
 ../../index/zebraidx -l $LOG -c $srcdir/zebra2.cfg update $srcdir/records
 
-sleep 1
 echo "    search 5..." >>$LOG
 ../api/testclient -c 9 unix:socket "@attr 1=4 utah" >>$LOG
 
@@ -86,11 +83,9 @@ echo "  2b: modifying the test record back (utah)..." >>$LOG
 sed 's/XYZ/UTAH/g' <$srcdir/records/esdd0002.grs >$srcdir/records/esdd0002x.grs
 mv $srcdir/records/esdd0002x.grs $srcdir/records/esdd0002.grs
 
-sleep 1
 echo "    indexing it..." >>$LOG
 ../../index/zebraidx -l $LOG -c $srcdir/zebra2.cfg update $srcdir/records
 
-sleep 1
 echo "    search 6..." >>$LOG
 ../api/testclient -c 10 unix:socket "@attr 1=4 utah" >>$LOG
 
@@ -99,7 +94,6 @@ echo "  3a: modifying the test record (xyz)..." >>$LOG
 sed 's/UTAH/XYZ/g' <$srcdir/records/esdd0002.grs >$srcdir/records/esdd0002x.grs
 mv $srcdir/records/esdd0002x.grs $srcdir/records/esdd0002.grs
 
-sleep 1
 echo "    indexing it..." >>$LOG
 ../../index/zebraidx -l $LOG -c $srcdir/zebra2.cfg update $srcdir/records
 
@@ -114,6 +108,5 @@ mv $srcdir/records/esdd0002x.grs $srcdir/records/esdd0002.grs
 echo "    indexing it..." >>$LOG
 ../../index/zebraidx -l $LOG -c $srcdir/zebra2.cfg update $srcdir/records
 
-sleep 1
 echo "    search 8..." >>$LOG
 ../api/testclient -c 10 unix:socket "@attr 1=4 utah" >>$LOG
