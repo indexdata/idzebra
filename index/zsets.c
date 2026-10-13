@@ -1121,7 +1121,6 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
         RSFD rfd = rset_open(rset, RSETF_READ);
         struct rank_control *rc = rank_class->control;
         int score;
-        zint count = 0;
         void *handle = (*rc->begin) (zh->reg, rank_class->class_handle, rset,
                                      nmem, terms, numTerms);
         zint psysno = 0;  /* previous doc id / sys no */
@@ -1158,7 +1157,6 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
                                         &stop_flag);
                     /* insert the hit. A=Ascending */
                     resultSetInsertRank(zh, sort_info, psysno, score, 'A');
-                    count++;
                 }
                 psysno = this_sys;
                 if (zh->m_staticrank)
@@ -1172,7 +1170,6 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
             score = (*rc->calc)(handle, psysno, pstaticrank, &stop_flag);
             /* insert the hit. A=Ascending */
             resultSetInsertRank(zh, sort_info, psysno, score, 'A');
-            count++;
         }
         (*rc->end)(zh->reg, handle);
         rset_close(rfd);

@@ -108,19 +108,13 @@ int dict_copy_compact(BFiles bfs, const char *from_name, const char *to_name)
     {
         void *buf;
         int size;
-#if 0
-        yaz_log(YLOG_LOG, "map[%d] = %d", i, map[i]);
-#endif
         dict_bf_readp(dict_from->dbf, i, &buf);
         size = ((DICT_size(buf)+sizeof(short)-1)/sizeof(short) +
                 DICT_nodir(buf))*sizeof(short);
         map[i+1] = map[i] + size;
         no_dir += DICT_nodir(buf);
     }
-#if 0
-    yaz_log(YLOG_LOG, "map[%d] = %d", i, map[i]);
     yaz_log(YLOG_LOG, "nodir = %d", no_dir);
-#endif
     dict_to->head.root = map[1];
     dict_to->head.last = map[i];
     for (i = 1; i< (int) (dict_from->head.last); i++)
