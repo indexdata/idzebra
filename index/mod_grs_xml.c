@@ -50,8 +50,13 @@ struct user_info {
 
 static void report_xml_error(XML_Parser parser)
 {
+#if XML_MAJOR_VERSION > 2 || (XML_MAJOR_VERSION == 2 && XML_MINOR_VERSION >= 9)
+    zint line = XML_GetCurrentLineNumber64(parser);
+    zint col = XML_GetCurrentColumnNumber64(parser);
+#else
     zint line = XML_GetCurrentLineNumber(parser);
     zint col = XML_GetCurrentColumnNumber(parser);
+#endif
     yaz_log(YLOG_WARN, ZINT_FORMAT ":" ZINT_FORMAT ":XML error: %s",
             line, col, XML_ErrorString(XML_GetErrorCode(parser)));
 }
