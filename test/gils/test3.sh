@@ -41,7 +41,6 @@ echo "search A2..." >>$LOG
 echo "search A3..." >>$LOG
 ../api/testclient -c 4 unix:socket deposits >>$LOG
 
-
 echo "search B1..." >>$LOG
 ../api/testclient -c 7 unix:socket "@and utah the" >>$LOG
 
@@ -65,7 +64,6 @@ echo "search C5..." >>$LOG
 
 echo "search C6..." >>$LOG
 ../api/testclient -c 1 unix:socket "@and @and epicenter utah the" >>$LOG
-
 
 echo "search D1..." >>$LOG
 ../api/testclient -c 30 unix:socket "@and the of " >>$LOG

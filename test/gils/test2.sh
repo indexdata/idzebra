@@ -69,7 +69,6 @@ mv $srcdir/records/esdd0002x.grs $srcdir/records/esdd0002.grs
 
 echo "indexing it..." >>$LOG
 ../../index/zebraidx -l $LOG -c $srcdir/zebra2.cfg update $srcdir/records
-sleep 1
 
 echo "search 6..." >>$LOG
 ../api/testclient -c 9 unix:socket "@attr 1=4 utah" >> $LOG
