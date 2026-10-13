@@ -296,6 +296,7 @@ int main (int argc, char **argv)
         {
             yaz_log (YLOG_LOG, "No of new..... %d", no_of_new);
             yaz_log (YLOG_LOG, "No of change.. %d", no_of_change);
+            yaz_log (YLOG_LOG, "No of same.... %d", no_of_same);
         }
     }
     else

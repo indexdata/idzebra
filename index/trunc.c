@@ -132,7 +132,6 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
 {
     RSET result;
     RSFD result_rsfd;
-    int nn = 0;
 
     result = rset_create_temp(rset_nmem, kctrl, scope,
                               res_get(zi->res, "setTmpDir"), termid);
@@ -186,7 +185,6 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
             int n = ti->indx[ti->ptr[1]];
 
             rset_write(result_rsfd, ti->heap[ti->ptr[1]]);
-            nn++;
 
             while (1)
             {
@@ -233,7 +231,6 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
             int n = ti->indx[ti->ptr[1]];
 
             rset_write(result_rsfd, ti->heap[ti->ptr[1]]);
-            nn++;
             if (preserve_position)
             {
                 heap_delete(ti);
@@ -269,7 +266,6 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
         ISAMS_PP *ispt;
         int i;
         struct trunc_info *ti;
-        int nn = 0;
 
         ispt = (ISAMS_PP *) xmalloc(sizeof(*ispt) * (to-from));
 
@@ -288,7 +284,6 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
             int n = ti->indx[ti->ptr[1]];
 
             rset_write(result_rsfd, ti->heap[ti->ptr[1]]);
-            nn++;
             while (1)
             {
                 if (!isams_pp_read(ispt[n], ti->tmpbuf))
@@ -333,7 +328,6 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
             int n = ti->indx[ti->ptr[1]];
 
             rset_write(result_rsfd, ti->heap[ti->ptr[1]]);
-            nn++;
 
             if (preserve_position)
             {
