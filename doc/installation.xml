@@ -11,7 +11,7 @@
    <ulink url="&url.debian;">Debian GNU/Linux</ulink>,
    <ulink url="&url.ubuntu;">Ubuntu Linux</ulink>,
    <ulink url="&url.macosx;">MAC OSX</ulink>,
-   Windows 7.
+   Windows.
   </para>
 
   <para>
@@ -285,13 +285,61 @@
    <para>
     &zebra; is shipped with "makefiles" for the NMAKE tool that comes
     with <ulink url="&url.vstudio;">Microsoft Visual C++</ulink>.
-    Version 2013 has been tested.
+    Visual Studio 2022 Build Tools has been tested.
    </para>
    <para>
-    Start a command prompt and switch the sub directory
-    <filename>WIN</filename> where the file <filename>makefile</filename>
-    is located. Customize the installation by editing the
-    <filename>makefile</filename> file (for example by using notepad).
+    Open a Visual Studio developer command prompt for the target
+    architecture, for example the x64 Native Tools Command Prompt.
+    Use the same architecture for &yaz;, &zebra;, and their dependencies.
+    The makefiles select <literal>BARCH</literal> from the Visual Studio
+    environment variable <literal>VSCMD_ARG_TGT_ARCH</literal>, falling
+    back to <literal>x64</literal> if it is not set. You can override
+    this with <literal>nmake BARCH=x86</literal> or
+    <literal>nmake BARCH=x64</literal>; the compiler environment must
+    match the selected architecture.
+   </para>
+   <para>
+    Install libxml2, libxslt, ICU, Expat, libiconv, and bzip2 with vcpkg.
+    For an x64 build with vcpkg installed in <filename>c:\vcpkg</filename>,
+    run:
+    <screen>
+     c:\vcpkg\vcpkg install libxml2:x64-windows libxslt:x64-windows icu:x64-windows expat:x64-windows libiconv:x64-windows bzip2:x64-windows
+    </screen>
+    For an x86 build, use <literal>x86-windows</literal> instead.
+    The makefiles use the DLL-based vcpkg triplets and expect headers,
+    import libraries, and DLLs under
+    <filename>c:\vcpkg\installed\$(BARCH)-windows</filename>.
+    If vcpkg is installed elsewhere, adjust the dependency paths in
+    both makefiles.
+   </para>
+   <para>
+    When building from Git, initialize the submodules in both source
+    repositories before compiling:
+    <screen>
+     git submodule update --init --recursive
+    </screen>
+    In particular, the <filename>m4</filename> submodule supplies the
+    Tcl script that generates version information. Ensure that
+    <command>tclsh</command> is on your PATH, or set
+    <literal>TCL</literal> in the makefiles to its location. The default
+    &yaz; build also uses <command>win_bison</command> to generate its
+    CQL parser.
+   </para>
+   <para>
+    Place the &yaz; and &zebra; source directories next to each other,
+    named <filename>yaz</filename> and <filename>idzebra</filename>.
+    Build &yaz; first, then &zebra;, from their respective
+    <filename>win</filename> directories:
+    <screen>
+     cd yaz\win
+     nmake
+     cd ..\..\idzebra\win
+     nmake
+    </screen>
+   </para>
+   <para>
+    Customize the build by editing <filename>win\makefile</filename>
+    or overriding settings on the NMAKE command line.
 
     The following summarizes the most important settings in that file:
 
@@ -306,13 +354,24 @@
        </para></listitem>
      </varlistentry>
 
+     <varlistentry><term><literal>BARCH</literal></term>
+      <listitem><para>
+        Target architecture, <literal>x86</literal> or
+        <literal>x64</literal>. This also selects the vcpkg installation
+        directory, as described above.
+       </para></listitem>
+     </varlistentry>
+
      <varlistentry>
       <term><literal>YAZDIR</literal></term>
       <listitem><para>
-        Directory of &yaz; source. &zebra;'s makefile expects to find
-        YAZ<filename>.lib</filename>, YAZ<filename>.dll</filename>
-        in <replaceable>yazdir</replaceable><literal>/lib</literal> and
-        <replaceable>yazdir</replaceable><literal>/bin</literal> respectively.
+        Directory of &yaz; source, defaulting to the sibling
+        <filename>yaz</filename> directory. &zebra;'s makefile expects
+        headers under <filename>src</filename>, import libraries such
+        as <filename>yaz5.lib</filename> and <filename>yaz_icu5.lib</filename>
+        under <filename>lib</filename>, and DLLs under
+        <filename>bin</filename>. Debug builds use the corresponding
+        names with a <literal>d</literal> suffix.
        </para>
       </listitem>
      </varlistentry>
@@ -323,21 +382,47 @@
       <listitem><para>
         If <literal>HAVE_EXPAT</literal> is set to 1, &zebra; is compiled
         with <ulink url="&url.expat;">Expat</ulink> support.
-	In this configuration, set
-        <literal>ZEBRA_DIR</literal> to the Expat source directory.
-	Windows version of Expat can be downloaded from
-	<ulink url="&url.expat;">SourceForge</ulink>.
+        <literal>EXPAT_DIR</literal> defaults to
+        <filename>c:\vcpkg\installed\$(BARCH)-windows</filename>, with
+        headers in <filename>include</filename>,
+        <filename>libexpat.lib</filename> in <filename>lib</filename>,
+        and <filename>libexpat.dll</filename> in <filename>bin</filename>.
        </para></listitem>
      </varlistentry>
 
      <varlistentry>
-      <term><literal>BZIP2INCLUDE</literal>,
-       <literal>BZIP2LIB</literal>,
-       <literal>BZIP2DEF</literal>
-      </term>
+      <term><literal>HAVE_LIBXML2</literal>, <literal>LIBXML2_DIR</literal>,
+       <literal>HAVE_LIBXSLT</literal>, <literal>LIBXSLT_DIR</literal></term>
       <listitem><para>
-        Define these symbols if &zebra; is to be compiled with
-	<ulink url="&url.bzip2;">BZIP2</ulink> record compression support.
+        Enable libxml2 and libxslt support, including the DOM XML and
+        ALVIS filters. Both are enabled by default, and both directories
+        default to <filename>c:\vcpkg\installed\$(BARCH)-windows</filename>.
+       </para></listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><literal>HAVE_ICU</literal>, <literal>ICU_BASE</literal>,
+       <literal>ICU_VER</literal></term>
+      <listitem><para>
+        Enable ICU support through &yaz;. ICU is enabled by default,
+        with <literal>ICU_BASE</literal> set to
+        <filename>c:\vcpkg\installed\$(BARCH)-windows</filename>.
+        Set <literal>ICU_VER</literal> to the major version installed
+        by vcpkg so the makefile copies the correct versioned DLLs.
+        Keep this setting consistent with the &yaz; makefile.
+       </para></listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><literal>HAVE_BZIP2</literal>, <literal>BZIP2_DIR</literal></term>
+      <listitem><para>
+        <ulink url="&url.bzip2;">BZIP2</ulink> record compression support
+        is enabled by default. <literal>BZIP2_DIR</literal> defaults to
+        <filename>c:\vcpkg\installed\$(BARCH)-windows</filename>, with
+        <filename>bzlib.h</filename> in <filename>include</filename>,
+        <filename>bz2.lib</filename> in <filename>lib</filename>, and
+        <filename>bz2.dll</filename> in <filename>bin</filename>.
+        Set <literal>HAVE_BZIP2=0</literal> to disable this support.
        </para></listitem>
      </varlistentry>
 
@@ -348,7 +433,7 @@
      The <literal>DEBUG</literal> setting in the makefile for &zebra; must
      be set to the same value as <literal>DEBUG</literal> setting in the
      makefile for &yaz;.
-     If not, the &zebra; server/indexer will crash.
+     The default is <literal>DEBUG=0</literal> in both makefiles.
     </para>
    </warning>
    <para>
@@ -360,11 +445,9 @@
    <note>
     <para>
      If the <filename>nmake</filename> command is not found on your system
-     you probably haven't defined the environment variables required to
-     use that tool. To fix that, find and run the batch file
-     <filename>vcvars32.bat</filename>. You need to run it from within
-     the command prompt or set the environment variables "globally";
-     otherwise it doesn't work.
+     open a Visual Studio developer command prompt with the C++ build
+     tools installed. This sets the compiler, linker, and Windows SDK
+     environment for the selected target architecture.
     </para>
    </note>
    <para>
@@ -391,6 +474,13 @@
 
     </variablelist>
 
+   </para>
+   <para>
+    These paths are relative to the &zebra; source directory. The build
+    also copies the &yaz; and vcpkg runtime DLLs into
+    <filename>bin</filename>, including the libxml2 dependencies zlib
+    and libiconv. Keep these DLLs alongside the executables when
+    running or copying them to another directory.
    </para>
   </section>
 
