@@ -1,67 +1,48 @@
 #!/bin/sh
 
+set -e
 srcdir=${srcdir:-"."}
-
 if [ "$srcdir" != "." ]
     then
     echo "Jumping over test"
     exit 0
 fi
 
-
 LOG=test1.log
-
 rm -f $LOG
 echo  "initializing..." >>$LOG
 test -d reg || mkdir reg
 
 # these should not be here, will be created later
 $srcdir/cleanrecords.sh
-#if [ -f $srcdir/records/esdd0001.grs ] 
-#    then
-#    rm -f $srcdir/records/esdd0001.grs
-#fi
-#if [ -f $srcdir/records/esdd0002.grs ] 
-#    then
-#    rm -f $srcdir/records/esdd0002.grs
-#fi
 
-../../index/zebraidx -l $LOG -c $srcdir/zebra1.cfg init || exit 1
+../../index/zebraidx -l $LOG -c $srcdir/zebra1.cfg init
 
 echo "updating..." >>$LOG
-../../index/zebraidx -l $LOG -c $srcdir/zebra1.cfg update $srcdir/records  || exit 1
+../../index/zebraidx -l $LOG -c $srcdir/zebra1.cfg update $srcdir/records
 
 echo "starting server..." >>$LOG
 ../../index/zebrasrv -D -p z.pid -S -c $srcdir/zebra1.cfg -l $LOG unix:socket
 
 echo "checking it runs..." >>$LOG
-test -f z.pid || exit 1
+test -f z.pid
+. "$srcdir/cleanup.sh"
 
 echo "search 1..." >>$LOG
-../api/testclient unix:socket utah > log || exit 1
-grep "^Result count: 17$" log >/dev/null || exit 1
+../api/testclient -c 17 unix:socket utah >> $LOG
 
 echo "search 2..." >>$LOG
-../api/testclient unix:socket "@or utah the" > log || exit 1
-grep "^Result count: 41$" log >/dev/null || exit 1
+../api/testclient -c 41 unix:socket "@or utah the" >> $LOG
 
 echo "search 3..." >>$LOG
-../api/testclient unix:socket "@attr 1=4 the" > log || exit 1
-grep "^Result count: 1$" log >/dev/null || exit 1
+../api/testclient -c 1 unix:socket "@attr 1=4 the" >> $LOG
 
 echo "search 4..." >>$LOG
-../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
-grep "^Result count: 9$" log >/dev/null || exit 1
+../api/testclient -c 9 unix:socket "@attr 1=4 utah" >> $LOG
 
 echo "reindexing..." >>$LOG
-../../index/zebraidx -l $LOG -c $srcdir/zebra1.cfg update $srcdir/records || exit 1
+../../index/zebraidx -l $LOG -c $srcdir/zebra1.cfg update $srcdir/records
 
 echo "search 5..." >>$LOG
-../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
-grep "^Result count: 18$" log >/dev/null || exit 1
-
-echo "stopping server..." >>$LOG
-test -f z.pid || exit 1
-kill `cat z.pid` || exit 1
-rm -f z.pid
+../api/testclient -c 18 unix:socket "@attr 1=4 utah" >> $LOG
 

@@ -9,7 +9,7 @@ check_SCRIPTS = stop01.sh stop02.sh stop03.sh stop04.sh \
 
 TESTS = $(check_SCRIPTS)
 
-EXTRA_DIST = cleanrecords.sh zebra1.cfg zebra2.cfg $(check_SCRIPTS)
+EXTRA_DIST = cleanrecords.sh cleanup.sh zebra1.cfg zebra2.cfg $(check_SCRIPTS)
 
 clean-local:
 	-rm -rf *.LCK 
