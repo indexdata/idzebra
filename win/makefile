@@ -5,7 +5,16 @@
 ###########################################################
 
 DEBUG=0   # 0 for release, 1 for debug
-BARCH = 32
+
+# Target architecture: x86 or x64
+!IFNDEF BARCH
+!IFDEF VSCMD_ARG_TGT_ARCH
+BARCH = $(VSCMD_ARG_TGT_ARCH)
+!ELSE
+BARCH = x64
+!ENDIF
+!ENDIF
+
 USE_MANIFEST = 0
 
 # TCL is optional - ONLY needed for source straight from Git
@@ -19,24 +28,29 @@ ICONV_DIR=c:\iconv-1.9.2.win32
 
 # EXPAT is optional. It's required for grs.xml-filters.
 HAVE_EXPAT=1
-EXPAT_DIR=c:\Program files (x86)\Expat 2.5.0
+EXPAT_DIR=c:\vcpkg\installed\$(BARCH)-windows
 
 # ICU support
 HAVE_ICU=1
-ICU_VER=68
-ICU_BASE=c:\icu4c-$(ICU_VER)_2-Win$(BARCH)-MSVC2019
+ICU_VER=78
+ICU_BASE=c:\vcpkg\installed\$(BARCH)-windows
+ICU_BIN=$(ICU_BASE)\bin
 ICU_INCLUDE=$(ICU_BASE)\include
 
 # libxslt. For mod_dom and mod_alvis
 HAVE_LIBXSLT=1
-LIBXSLT_DIR=c:\libxslt-1.1.28.win$(BARCH)
+LIBXSLT_DIR=c:\vcpkg\installed\$(BARCH)-windows
 
 # libxml2. Used by libxslt
 HAVE_LIBXML2=1
-LIBXML2_DIR=c:\libxml2-2.9.2.win$(BARCH)
+LIBXML2_DIR=c:\vcpkg\installed\$(BARCH)-windows
+
+# BZIP2 record compression support
+HAVE_BZIP2=1
+BZIP2_DIR=c:\vcpkg\installed\$(BARCH)-windows
 
 default: all
-all: dirs generate expat iconv yaz dll zserver zebraidx tstflock
+all: dirs generate expat iconv icu libxml2 libxslt bzip2 yaz dll zserver zebraidx tstflock
 
 # Directories
 # The current directory is supposed to be something like
@@ -62,13 +76,6 @@ YAZLIB=$(YAZLIB) "$(YAZDIR)\lib\yaz_icu5.lib"
 YAZ_DLL_SOURCE="$(YAZBINDIR)\yaz5.dll"
 YAZ_DLL_TARGET="$(BINDIR)\yaz5.dll"
 !endif
-
-# BZIP2 settings. Uncomment and specify if you wish to use LIBBZIP2.
-# (C) 1996-1999 Julian Seward <jseward@acm.org> http://www.bzip2.org
-
-#BZIP2INCLUDE=/I"$(ROOTDIR)\..\bzip2-0.9.5d"
-#BZIP2LIB=$(ROOTDIR)\..\bzip2-0.9.5d\libbz2.lib
-#BZIP2DEF=/D"HAVE_BZLIB_H=1"
 
 # ZEBRA Include files, libraries, programs, etc.
 INCLDIR=$(ROOTDIR)\include  # our includes
@@ -111,7 +118,7 @@ dist: version.nsi
 	nmake nsis
 
 nsis: version.nsi
-	$(NSIS) /DVSARCH=x86 zebra.nsi
+	$(NSIS) /DVSARCH=$(BARCH) zebra.nsi
 
 version.nsi: $(ROOTDIR)/IDMETA
 	$(TCL) $(M4DIR)/mk_version.tcl $(ROOTDIR)/IDMETA version.nsi
@@ -138,9 +145,24 @@ dll: $(DLL)
 
 # External libs and modules (enabled or disabled)
 
+!if $(HAVE_BZIP2)
+BZIP2INCLUDE=/I"$(BZIP2_DIR)\include"
+BZIP2LIB="$(BZIP2_DIR)\lib\bz2.lib"
+BZIP2DEF=/D HAVE_BZLIB_H=1
+bzip2: $(BINDIR)\bz2.dll
+
+$(BINDIR)\bz2.dll:
+	copy "$(BZIP2_DIR)\bin\bz2.dll" $(BINDIR)
+!else
+BZIP2INCLUDE=
+BZIP2LIB=
+BZIP2DEF=/D HAVE_BZLIB_H=0
+bzip2:
+!endif
+
 !if $(HAVE_EXPAT)
-EXPAT_DEF= /D HAVE_EXPAT_H=1 /I"$(EXPAT_DIR)\source\lib"
-EXPAT_LIB= "$(EXPAT_DIR)\bin\libexpat.lib"
+EXPAT_DEF= /D HAVE_EXPAT_H=1 /I"$(EXPAT_DIR)\include"
+EXPAT_LIB= "$(EXPAT_DIR)\lib\libexpat.lib"
 EXPAT_DLL_SOURCE= "$(EXPAT_DIR)\bin\libexpat.dll"
 EXPAT_DLL_TARGET= "$(BINDIR)\libexpat.dll"
 expat: $(EXPAT_DLL_TARGET)
@@ -171,24 +193,45 @@ iconv:
 !if $(HAVE_LIBXML2)
 LIBXML2_LIB="$(LIBXML2_DIR)\lib\libxml2.lib"
 LIBXML2_DEF=/DYAZ_HAVE_XML2=1 /D HAVE_XML2=1 /I"$(LIBXML2_DIR)\include\libxml2"
+libxml2: $(BINDIR)\libxml2.dll
+
+$(BINDIR)\libxml2.dll:
+	copy "$(LIBXML2_DIR)\bin\z.dll" $(BINDIR)
+	copy "$(LIBXML2_DIR)\bin\iconv-2.dll" $(BINDIR)
+	copy "$(LIBXML2_DIR)\bin\libxml2.dll" $(BINDIR)
 !else
 LIBXML2_LIB=
 LIBXML2_DEF=/D HAVE_XML2=0
+libxml2:
 !endif
 
 !if $(HAVE_LIBXSLT)
 LIBXSLT_LIB="$(LIBXSLT_DIR)\lib\libxslt.lib"
 LIBXSLT_DEF=/D HAVE_XSLT=1 /I"$(LIBXSLT_DIR)\include"
+libxslt: $(BINDIR)\libxslt.dll
+
+$(BINDIR)\libxslt.dll:
+	copy "$(LIBXSLT_DIR)\bin\libxslt.dll" $(BINDIR)
 !else
 LIBXSLT_LIB=
 LIBXSLT_DEF=/D HAVE_XSLT=0
+libxslt:
 
 !endif
 
 !if $(HAVE_ICU)
 ICU_DEF= /DYAZ_HAVE_ICU=1 /I"$(ICU_INCLUDE)"
+icu: $(BINDIR)\icudt$(ICU_VER).dll $(BINDIR)\icuin$(ICU_VER).dll $(BINDIR)\icuuc$(ICU_VER).dll
+
+$(BINDIR)\icudt$(ICU_VER).dll:
+	copy "$(ICU_BIN)\icudt$(ICU_VER).dll" $(BINDIR)
+$(BINDIR)\icuin$(ICU_VER).dll:
+	copy "$(ICU_BIN)\icuin$(ICU_VER).dll" $(BINDIR)
+$(BINDIR)\icuuc$(ICU_VER).dll:
+	copy "$(ICU_BIN)\icuuc$(ICU_VER).dll" $(BINDIR)
 !else
 ICU_DEF= /DYAZ_HAVE_ICU=0
+icu:
 !endif
 
 !if $(HAVE_LIBXSLT)
@@ -276,7 +319,7 @@ MT=echo
 # wsock32.lib  advapi32.lib \
 
 LINK_LIBS= kernel32.lib advapi32.lib \
-	   $(ICONV_LIB) $(EXPAT_LIB) $(LIBXML2_LIB) $(LIBXSLT_LIB)
+	   $(ICONV_LIB) $(EXPAT_LIB) $(LIBXML2_LIB) $(LIBXSLT_LIB) $(BZIP2LIB)
 
 COMMON_LNK_OPTIONS= /nologo /subsystem:windows /incremental:no
 
@@ -309,7 +352,6 @@ LINK_PROGRAM= $(LINK) \
 		$(CLIENT_LINK_OPTIONS) \
 		$(IMPLIB) \
 		$(YAZLIB) \
-		$(BZIP2LIB) \
 		$(LINK_LIBS)
 
 
