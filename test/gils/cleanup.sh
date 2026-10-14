@@ -28,8 +28,15 @@ cleanup()
         kill "$PID" 2>/dev/null
     done
     if [ -n "${CLIENT_PID:-}" ]; then
-        kill "$CLIENT_PID" 2>/dev/null
-        wait "$CLIENT_PID" 2>/dev/null
+        # The delayed testclient is bounded; let it finish and check its result.
+        if wait "$CLIENT_PID"; then
+            :
+        else
+            client_status=$?
+            if [ "$status" -eq 0 ]; then
+                status=$client_status
+            fi
+        fi
     fi
     if [ "$stopped" -eq 1 ]; then
         rm -f z.pid
