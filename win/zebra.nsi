@@ -64,7 +64,7 @@ Section "" ; (default section)
  	CreateShortCut "$SMPROGRAMS\Index Data\Zebra\Zebra Program Directory.lnk" \
                  "$INSTDIR"
 	WriteINIStr "$SMPROGRAMS\Index Data\Zebra\Zebra Home page.url" \
-              "InternetShortcut" "URL" "http://www.indexdata.dk/zebra/"
+              "InternetShortcut" "URL" "https://www.indexdata.com/zebra/"
 	CreateShortCut "$SMPROGRAMS\Index Data\Zebra\Uninstall Zebra.lnk" \
 		"$INSTDIR\uninst.exe"
 	SetOutPath $INSTDIR
@@ -77,21 +77,9 @@ SectionEnd ; end of default section
 Section "Zebra Runtime"
 	SectionIn 1 2
 	SetOutPath $INSTDIR\bin
-!if "${VS_REDIST_FULL}" != ""
-	File "${VS_REDIST_FULL}"
-	ReadRegDword $1 HKLM "${VS_REDIST_KEY}" "Version"
-	${If} $1 == ""
-	  ExecWait '"$INSTDIR\bin\${VS_REDIST_EXE}" /passive /nostart'
-	${endif}
-	Delete "$INSTDIR\bin\${VS_REDIST_EXE}"
-!endif
+	!insertmacro InstallVSRedist
 	File ..\bin\*.exe
-	File ..\bin\idzebra.dll
-	File ..\bin\libxml2.dll
-	File ..\bin\libxslt.dll
-	File ..\bin\yaz*.dll
-	File ..\bin\icu*.dll
-	File ..\bin\libexpat.dll
+	File ..\bin\*.dll
 SectionEnd
 
 Section "Zebra Development"
