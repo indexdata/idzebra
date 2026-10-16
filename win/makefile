@@ -1,7 +1,7 @@
 # Zebra makefile for MS NMAKE
- 
+
 ###########################################################
-############### Parameters 
+############### Parameters
 ###########################################################
 
 DEBUG=0   # 0 for release, 1 for debug
@@ -141,7 +141,7 @@ TSTFLOCK=$(BINDIR)\tstflock.exe
 zebraidx: $(ZEBRAIDX)
 zserver: $(ZSERVER)
 tstflock: $(TSTFLOCK)
-dll: $(DLL) 
+dll: $(DLL)
 
 # External libs and modules (enabled or disabled)
 
@@ -323,15 +323,15 @@ LINK_LIBS= kernel32.lib advapi32.lib \
 
 COMMON_LNK_OPTIONS= /nologo /subsystem:windows /incremental:no
 
-DEBUG_LNK_OPTIONS= /debug 
+DEBUG_LNK_OPTIONS= /debug
 
-RELEASE_LNK_OPTIONS= 
+RELEASE_LNK_OPTIONS=
 
-ZEBRALIB_LINK_OPTIONS= -lib 
+ZEBRALIB_LINK_OPTIONS= -lib
 
-DLL_LINK_OPTIONS= /dll  
+DLL_LINK_OPTIONS= /dll
 
-CLIENT_LINK_OPTIONS= /subsystem:console  
+CLIENT_LINK_OPTIONS= /subsystem:console
 
 # Final opt variables
 !if $(DEBUG)
@@ -341,7 +341,7 @@ RCOPT=  $(COMMON_RC_OPTIONS)  $(DEBUG_RC_OPTIONS)
 LNKOPT= $(COMMON_LNK_OPTIONS) $(DEBUG_LNK_OPTIONS)   $(LNK_LIBS)
 
 !else
-COPT=   $(COMMON_C_OPTIONS)   $(RELEASE_C_OPTIONS)   $(COMMON_C_INCLUDES) 
+COPT=   $(COMMON_C_OPTIONS)   $(RELEASE_C_OPTIONS)   $(COMMON_C_INCLUDES)
 MTLOPT= $(COMMON_MTL_OPTIONS) $(RELEASE_MTL_OPTIONS)
 RCOPT=  $(COMMON_RC_OPTIONS)  $(RELEASE_RC_OPTIONS)
 LNKOPT= $(COMMON_LNK_OPTIONS) $(RELEASE_LNK_OPTIONS) $(LNK_LIBS)
@@ -358,20 +358,20 @@ LINK_PROGRAM= $(LINK) \
 # Generated sources
 generate: $(INCLDIR)\idzebra\version.h
 
-$(INCLDIR)\idzebra\version.h: $(ROOTDIR)/IDMETA 
+$(INCLDIR)\idzebra\version.h: $(ROOTDIR)/IDMETA
 	@cd $(M4DIR)
 	$(TCL) mk_version.tcl $(ROOTDIR)/IDMETA $(INCLDIR)\idzebra\version.h
 
 # Source and object modules
-# Note: Ordinary source files are not specified here at 
+# Note: Ordinary source files are not specified here at
 # all, make finds them in suitable dirs. The object modules
 # need to be specified, though
 
 ZSERVER_OBJS= \
-	$(OBJDIR)\zebrasrv.obj 
+	$(OBJDIR)\zebrasrv.obj
 
 ZEBRAIDX_OBJS= \
-	$(OBJDIR)\zebraidx.obj 
+	$(OBJDIR)\zebraidx.obj
 TSTFLOCK_OBJS= \
 	$(OBJDIR)\tstflock.obj
 
@@ -493,39 +493,39 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\zint.obj \
 	$(OBJDIR)\zsets.obj
 
-# Compiling 
+# Compiling
 # Note: This defines where to look for the necessary
 # source files. Funny way of doing it, but it works.
 
 {$(INDEXDIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $<
 
 {$(BFILEDIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $<
 
 {$(DFADIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $<
 
 {$(DICTDIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $<
 
 {$(ISAMSDIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $<
 
 {$(ISAMCDIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $<
 
 {$(ISAMBDIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $<
 
 {$(RSETDIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $<
 
 {$(UTILDIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $<
 
 {$(DATA1DIR)}.c{$(OBJDIR)}.obj:
-	$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $<
 
 # Linking
 
@@ -552,7 +552,6 @@ RSOPT=/d_DEBUG
 RSOPT=/d_NDEBUG
 !endif
 
-
 $(RES): $(RC)
 	$(RSC) $(RSOPT) /I"../include" /I"$(YAZDIR)\src" /fo"$(RES)" $(RC)
 
@@ -566,7 +565,7 @@ $(DLL) $(IMPLIB): "$(BINDIR)" $(ZEBRALIB_OBJS) $(RES)
 		/out:$@ \
 		$(YAZLIB) \
 		/implib:"$(IMPLIB)" \
-		/map:"$(LIBDIR)\idzebra.map" 
+		/map:"$(LIBDIR)\idzebra.map"
 	$(MT) -manifest $@.manifest -outputresource:$@;2
 
 # Other rules
@@ -587,7 +586,6 @@ $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR):
 yaz: $(YAZ_DLL_TARGET)
 
 $(YAZ_DLL_TARGET) : $(YAZ_DLL_SOURCE)
-#	copy "$(YAZBINDIR)\*.dll.manifest" $(BINDIR)
 	copy "$(YAZBINDIR)\*.dll" $(BINDIR)
 
 
