@@ -1,0 +1,101 @@
+# Build shared libraries with GCC and test the archive with Clang.
+name: Build idzebra on Ubuntu
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CC: gcc
+      CFLAGS: -g -O2 -Wall
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          submodules: recursive
+
+      - name: Clone YAZ
+        uses: actions/checkout@v6
+        with:
+          repository: indexdata/yaz
+          path: yaz
+          ref: master
+          fetch-depth: 1
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf automake libtool gcc clang make bison \
+            tclsh xsltproc docbook docbook-xml docbook-xsl librsvg2-bin \
+            libexpat1-dev libbz2-dev tcl-dev zlib1g-dev \
+            pkg-config libxslt1-dev libgnutls28-dev libicu-dev libstemmer-dev
+
+      - name: Run buildconf for YAZ
+        working-directory: yaz
+        run: ./buildconf.sh
+
+      - name: Configure shared YAZ libraries with GCC
+        working-directory: yaz
+        run: ./configure --enable-shared --disable-static
+
+      - name: Build YAZ
+        working-directory: yaz
+        run: make -j4
+
+      - name: Run buildconf for idzebra
+        run: ./buildconf.sh
+
+      - name: Configure shared libraries with GCC
+        run: ./configure --with-yaz=yaz --enable-shared --disable-static
+
+      - name: Build and test with GCC
+        run: make -j4 check
+
+      - name: Build distribution archive
+        run: make -j4 dist
+
+      - name: Unpack distribution archive for Clang
+        if: github.event_name != 'push'
+        run: |
+          . ./IDMETA
+          mkdir build-clang
+          tar -xzf "idzebra-$VERSION.tar.gz" -C build-clang --strip-components=1
+
+      - name: Configure static libraries with Clang
+        if: github.event_name != 'push'
+        working-directory: build-clang
+        env:
+          CC: clang
+        run: >
+          ./configure --with-yaz="$GITHUB_WORKSPACE/yaz"
+          --disable-shared --enable-static
+
+      - name: Build and test with Clang
+        if: github.event_name != 'push'
+        working-directory: build-clang
+        run: make -j4 check
+
+      - name: Show build and test failures
+        if: failure()
+        run: |
+          find . -type f \( -name config.log -o -name test-suite.log \) -print0 |
+            while IFS= read -r -d '' log; do
+              echo "::group::$log"
+              cat "$log"
+              echo "::endgroup::"
+            done
