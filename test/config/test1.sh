@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 pp=${srcdir:-"."}
 
 LOG=test1.log

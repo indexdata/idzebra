@@ -1,9 +1,6 @@
 
 AUTOMAKE_OPTIONS = serial-tests
 
-noinst_PROGRAMS = testclient
-testclient_SOURCES = testclient.c 
-
 check_PROGRAMS = test_start_stop test_result_sets \
 	test_insert_fetch test_search test_trunc test_sort_set \
 	test_rank test_private_attset \

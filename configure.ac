@@ -241,7 +241,7 @@ AC_CONFIG_FILES([
 	doc/local0.ent
 	doc/common/Makefile
 	doc/common/print.dsl
-	test/Makefile test/gils/Makefile test/usmarc/Makefile test/api/Makefile
+	test/Makefile test/usmarc/Makefile test/api/Makefile
 	test/xslt/Makefile
 	test/xpath/Makefile
 	test/rusmarc/Makefile test/cddb/Makefile test/malxml/Makefile
