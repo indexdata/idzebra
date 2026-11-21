@@ -1,0 +1,104 @@
+# Build and test a distribution archive with Clang on FreeBSD.
+name: Build idzebra on FreeBSD
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build-freebsd:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          submodules: recursive
+
+      - name: Clone YAZ
+        uses: actions/checkout@v6
+        with:
+          repository: indexdata/yaz
+          path: yaz
+          ref: master
+          fetch-depth: 1
+          submodules: recursive
+
+      - name: Build distribution archive and test on FreeBSD
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: '14'
+          prepare: |
+            set -eu
+            pkg install -y autoconf automake libtool gmake bison git \
+              tcl86 pkgconf libxml2 libxslt gnutls readline icu \
+              snowballstemmer expat docbook-xml docbook-xsl librsvg2
+          run: |
+            set -eu
+            source_dir=$(pwd)
+            show_failures()
+            {
+              result=$?
+              if test "$result" -ne 0; then
+                find "$source_dir" -type f \( -name config.log -o -name test-suite.log \) \
+                  -exec sh -c '
+                    for log do
+                      printf "::group::%s\n" "$log"
+                      cat "$log"
+                      printf "%s\n" "::endgroup::"
+                    done
+                  ' sh {} +
+              fi
+              exit "$result"
+            }
+            trap show_failures EXIT
+
+            # The VM runs as root and the synced checkouts retain their owner.
+            git config --global --add safe.directory "$source_dir"
+            git config --global --add safe.directory "$source_dir/yaz"
+
+            export CC=clang
+            export CFLAGS='-g -O2 -Wall'
+            export CPPFLAGS='-I/usr/local/include'
+            export LDFLAGS='-L/usr/local/lib'
+            export TCLSH=tclsh8.6
+            export XML_CATALOG_FILES=/usr/local/share/xml/catalog.ports
+
+            freebsd-version
+            "$CC" --version
+            cd "$source_dir/yaz"
+            ./buildconf.sh
+            ./configure --enable-shared --disable-static \
+              --with-xslt --with-gnutls --with-icu --with-stemmer=/usr/local \
+              --disable-tcpd --without-memcached --without-redis \
+              --with-docbook-dtd=/usr/local/share/xml/docbook/4.5 \
+              --with-docbook-xsl=/usr/local/share/xsl/docbook
+            gmake -j3
+
+            configure_zebra()
+            {
+              ./configure --with-yaz="$source_dir/yaz" --enable-shared --disable-static \
+                --with-docbook-dtd=/usr/local/share/xml/docbook/4.5 \
+                --with-docbook-xsl=/usr/local/share/xsl/docbook
+            }
+
+            cd "$source_dir"
+            ./buildconf.sh
+            configure_zebra
+            gmake -j3 dist
+
+            . ./IDMETA
+            mkdir dist-test
+            tar -xzf "idzebra-$VERSION.tar.gz" -C dist-test
+            cd "dist-test/idzebra-$VERSION"
+            configure_zebra
+            gmake -j3 check

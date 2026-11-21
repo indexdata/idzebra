@@ -1,0 +1,2057 @@
+<Zthes>
+ <termId>1</termId>
+ <termName>Dinosauria</termName>
+ <termType>PT</termType>
+ <termNote>The MRCA of Saurischia and Ornithischia, and its descendants</termNote>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>2</termId>
+  <termName>Eoraptor</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>3</termId>
+  <termName>Saurischia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>82</termId>
+  <termName>Ornithischia</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>2</termId>
+ <termName>Eoraptor</termName>
+ <termType>PT</termType>
+ <termNote>The most basal known dinosaur</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>1</termId>
+  <termName>Dinosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>3</termId>
+ <termName>Saurischia</termName>
+ <termType>PT</termType>
+ <termNote>Everything closer to Megalosaurus than to Iguanodon</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>1</termId>
+  <termName>Dinosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>4</termId>
+  <termName>Sauropodomorpha</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>26</termId>
+  <termName>Theropoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>4</termId>
+ <termName>Sauropodomorpha</termName>
+ <termType>PT</termType>
+ <termNote>Sauropods and their ancestors and close relatives</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>3</termId>
+  <termName>Saurischia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>5</termId>
+  <termName>Brontosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>5</termId>
+ <termName>Brontosauria</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>4</termId>
+  <termName>Sauropodomorpha</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>6</termId>
+  <termName>Plateosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>10</termId>
+  <termName>Sauropoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>6</termId>
+ <termName>Plateosauria</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>5</termId>
+  <termName>Brontosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>7</termId>
+  <termName>Massospondylidae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>7</termId>
+ <termName>Massospondylidae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>6</termId>
+  <termName>Plateosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>8</termId>
+  <termName>Yunnanosaurinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>8</termId>
+ <termName>Yunnanosaurinae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>7</termId>
+  <termName>Massospondylidae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>9</termId>
+  <termName>Yunnanosaurus</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>9</termId>
+ <termName>Yunnanosaurus</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>8</termId>
+  <termName>Yunnanosaurinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>10</termId>
+ <termName>Sauropoda</termName>
+ <termType>PT</termType>
+ <termNote>Huge, long-necked herbivores</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>5</termId>
+  <termName>Brontosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>11</termId>
+  <termName>Eusauropoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>11</termId>
+ <termName>Eusauropoda</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>10</termId>
+  <termName>Sauropoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>12</termId>
+  <termName>Jobaria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>13</termId>
+  <termName>Neosauropoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>12</termId>
+ <termName>Jobaria</termName>
+ <termType>PT</termType>
+ <termNote>A surprisingly primitive Early Cretaceous form</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>11</termId>
+  <termName>Eusauropoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>13</termId>
+ <termName>Neosauropoda</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>11</termId>
+  <termName>Eusauropoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>14</termId>
+  <termName>Diplodocimorpha</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>18</termId>
+  <termName>Macronaria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>14</termId>
+ <termName>Diplodocimorpha</termName>
+ <termType>PT</termType>
+ <termNote>Diplodocus, Apatosaurus, Seismosaurus and kin</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>13</termId>
+  <termName>Neosauropoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>15</termId>
+  <termName>Rebbachisauridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>15</termId>
+ <termName>Rebbachisauridae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>14</termId>
+  <termName>Diplodocimorpha</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>16</termId>
+  <termName>Rebbachisaurinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>16</termId>
+ <termName>Rebbachisaurinae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>15</termId>
+  <termName>Rebbachisauridae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>17</termId>
+  <termName>Rebbachisaurus</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>17</termId>
+ <termName>Rebbachisaurus</termName>
+ <termType>PT</termType>
+ <termNote>Had a sail on its back</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>16</termId>
+  <termName>Rebbachisaurinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>18</termId>
+ <termName>Macronaria</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>13</termId>
+  <termName>Neosauropoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>19</termId>
+  <termName>Camarasauromorpha</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>19</termId>
+ <termName>Camarasauromorpha</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>18</termId>
+  <termName>Macronaria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>20</termId>
+  <termName>Titanosauriformes</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>20</termId>
+ <termName>Titanosauriformes</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>19</termId>
+  <termName>Camarasauromorpha</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>21</termId>
+  <termName>Brachiosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>23</termId>
+  <termName>Titanosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>21</termId>
+ <termName>Brachiosauridae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>20</termId>
+  <termName>Titanosauriformes</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>22</termId>
+  <termName>Sauroposeidon</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>22</termId>
+ <termName>Sauroposeidon</termName>
+ <termType>PT</termType>
+ <termNote>The tallest known dinosaur (18m)</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>21</termId>
+  <termName>Brachiosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>23</termId>
+ <termName>Titanosauria</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>20</termId>
+  <termName>Titanosauriformes</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>24</termId>
+  <termName>Eutitanosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>24</termId>
+ <termName>Eutitanosauria</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>23</termId>
+  <termName>Titanosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>25</termId>
+  <termName>Argentinosaurus</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>25</termId>
+ <termName>Argentinosaurus</termName>
+ <termType>PT</termType>
+ <termNote>The heaviest known dinosaur (100 tonnes)</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>24</termId>
+  <termName>Eutitanosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>26</termId>
+ <termName>Theropoda</termName>
+ <termType>PT</termType>
+ <termNote>Bipedal carnivores</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>3</termId>
+  <termName>Saurischia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>27</termId>
+  <termName>Neotheropoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>27</termId>
+ <termName>Neotheropoda</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>26</termId>
+  <termName>Theropoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>28</termId>
+  <termName>Ceratosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>35</termId>
+  <termName>Tetanurae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>28</termId>
+ <termName>Ceratosauria</termName>
+ <termType>PT</termType>
+ <termNote>May be polyphyletic if neoceratosaurs are tenanuran</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>27</termId>
+  <termName>Neotheropoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>29</termId>
+  <termName>Coelophysoidea</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>33</termId>
+  <termName>Neoceratosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>29</termId>
+ <termName>Coelophysoidea</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>28</termId>
+  <termName>Ceratosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>30</termId>
+  <termName>Coelophysidae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>30</termId>
+ <termName>Coelophysidae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>29</termId>
+  <termName>Coelophysoidea</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>31</termId>
+  <termName>Coelophysinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>31</termId>
+ <termName>Coelophysinae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>30</termId>
+  <termName>Coelophysidae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>32</termId>
+  <termName>Dilophosaurus</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>32</termId>
+ <termName>Dilophosaurus</termName>
+ <termType>PT</termType>
+ <termNote>Had a pair of long crests on its nose</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>31</termId>
+  <termName>Coelophysinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>33</termId>
+ <termName>Neoceratosauria</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>28</termId>
+  <termName>Ceratosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>34</termId>
+  <termName>Xenotarsosaurus</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>34</termId>
+ <termName>Xenotarsosaurus</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>33</termId>
+  <termName>Neoceratosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>35</termId>
+ <termName>Tetanurae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>27</termId>
+  <termName>Neotheropoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>36</termId>
+  <termName>Spinosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>41</termId>
+  <termName>Avetheropoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>36</termId>
+ <termName>Spinosauria</termName>
+ <termType>PT</termType>
+ <termNote>Large carnivores with sails on their backs</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>35</termId>
+  <termName>Tetanurae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>37</termId>
+  <termName>Spinosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>37</termId>
+ <termName>Spinosauridae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>36</termId>
+  <termName>Spinosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>38</termId>
+  <termName>Spinosaurinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>38</termId>
+ <termName>Spinosaurinae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>37</termId>
+  <termName>Spinosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>39</termId>
+  <termName>Irritatorini</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>39</termId>
+ <termName>Irritatorini</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>38</termId>
+  <termName>Spinosaurinae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>40</termId>
+  <termName>Irritator</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>40</termId>
+ <termName>Irritator</termName>
+ <termType>PT</termType>
+ <termNote></termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>39</termId>
+  <termName>Irritatorini</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>41</termId>
+ <termName>Avetheropoda</termName>
+ <termType>PT</termType>
+ <termNote>aka. Neotetanurae</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>35</termId>
+  <termName>Tetanurae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>42</termId>
+  <termName>Carnosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>48</termId>
+  <termName>Coelurosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>42</termId>
+ <termName>Carnosauria</termName>
+ <termType>PT</termType>
+ <termNote>Previously used just to mean "large theropods"</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>41</termId>
+  <termName>Avetheropoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>43</termId>
+  <termName>Fukuiraptor</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>44</termId>
+  <termName>Allosauroidea</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>43</termId>
+ <termName>Fukuiraptor</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>42</termId>
+  <termName>Carnosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>44</termId>
+ <termName>Allosauroidea</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>42</termId>
+  <termName>Carnosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>45</termId>
+  <termName>Allosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>45</termId>
+ <termName>Allosauridae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>44</termId>
+  <termName>Allosauroidea</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>46</termId>
+  <termName>Carcharodontosaurinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>46</termId>
+ <termName>Carcharodontosaurinae</termName>
+ <termType>PT</termType>
+ <termNote>Some consider these animals derived abelisaurs</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>45</termId>
+  <termName>Allosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>47</termId>
+  <termName>Giganotosaurus</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>47</termId>
+ <termName>Giganotosaurus</termName>
+ <termType>PT</termType>
+ <termNote>Probably the heaviest known theropod</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>46</termId>
+  <termName>Carcharodontosaurinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>48</termId>
+ <termName>Coelurosauria</termName>
+ <termType>PT</termType>
+ <termNote>Previously used just to mean "small theropods"</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>41</termId>
+  <termName>Avetheropoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>49</termId>
+  <termName>Maniraptoriformes</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>49</termId>
+ <termName>Maniraptoriformes</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>48</termId>
+  <termName>Coelurosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>50</termId>
+  <termName>[unnamed]</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>59</termId>
+  <termName>Maniraptora</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>50</termId>
+ <termName>[unnamed]</termName>
+ <termType>PT</termType>
+ <termNote>Unnamed clade {Ornithomimosauria+Tyrannosauria}</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>49</termId>
+  <termName>Maniraptoriformes</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>51</termId>
+  <termName>Arctometatarsalia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>54</termId>
+  <termName>Tyrannosauroidea</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>51</termId>
+ <termName>Arctometatarsalia</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>50</termId>
+  <termName>[unnamed]</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>52</termId>
+  <termName>Ornithomimosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>52</termId>
+ <termName>Ornithomimosauria</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>51</termId>
+  <termName>Arctometatarsalia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>53</termId>
+  <termName>Harpymimus</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>53</termId>
+ <termName>Harpymimus</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>52</termId>
+  <termName>Ornithomimosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>54</termId>
+ <termName>Tyrannosauroidea</termName>
+ <termType>PT</termType>
+ <termNote>Includes early form Eotyrannus</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>50</termId>
+  <termName>[unnamed]</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>55</termId>
+  <termName>Tyrannosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>55</termId>
+ <termName>Tyrannosauridae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>54</termId>
+  <termName>Tyrannosauroidea</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>56</termId>
+  <termName>Tyrannosaurinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>56</termId>
+ <termName>Tyrannosaurinae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>55</termId>
+  <termName>Tyrannosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>57</termId>
+  <termName>Tyrannosaurini</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>57</termId>
+ <termName>Tyrannosaurini</termName>
+ <termType>PT</termType>
+ <termNote>Could be defined as {Tyrannosaurs+Tarbosaurus}</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>56</termId>
+  <termName>Tyrannosaurinae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>58</termId>
+  <termName>Tyrannosaurus</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>58</termId>
+ <termName>Tyrannosaurus</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>57</termId>
+  <termName>Tyrannosaurini</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>59</termId>
+ <termName>Maniraptora</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>49</termId>
+  <termName>Maniraptoriformes</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>60</termId>
+  <termName>Oviraptorosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>63</termId>
+  <termName>Therizinosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>67</termId>
+  <termName>Paraves</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>60</termId>
+ <termName>Oviraptorosauria</termName>
+ <termType>PT</termType>
+ <termNote>Includes Caenagnathidae</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>59</termId>
+  <termName>Maniraptora</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>61</termId>
+  <termName>Oviraptoridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>61</termId>
+ <termName>Oviraptoridae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>60</termId>
+  <termName>Oviraptorosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>62</termId>
+  <termName>Oviraptor</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>62</termId>
+ <termName>Oviraptor</termName>
+ <termType>PT</termType>
+ <termNote>Some specimens found brooding their nests</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>61</termId>
+  <termName>Oviraptoridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>63</termId>
+ <termName>Therizinosauria</termName>
+ <termType>PT</termType>
+ <termNote>Truly freaky long-necked, huge-clawed fatsos</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>59</termId>
+  <termName>Maniraptora</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>64</termId>
+  <termName>Therizinosauroidea</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>64</termId>
+ <termName>Therizinosauroidea</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>63</termId>
+  <termName>Therizinosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>65</termId>
+  <termName>Therizinosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>65</termId>
+ <termName>Therizinosauridae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>64</termId>
+  <termName>Therizinosauroidea</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>66</termId>
+  <termName>Nanshiungosaurus</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>66</termId>
+ <termName>Nanshiungosaurus</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>65</termId>
+  <termName>Therizinosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>67</termId>
+ <termName>Paraves</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>59</termId>
+  <termName>Maniraptora</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>68</termId>
+  <termName>Eumaniraptora</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>68</termId>
+ <termName>Eumaniraptora</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>67</termId>
+  <termName>Paraves</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>69</termId>
+  <termName>Deinonychosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>75</termId>
+  <termName>Avialae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>69</termId>
+ <termName>Deinonychosauria</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>68</termId>
+  <termName>Eumaniraptora</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>70</termId>
+  <termName>Troodontidae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>72</termId>
+  <termName>Dromaeosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>70</termId>
+ <termName>Troodontidae</termName>
+ <termType>PT</termType>
+ <termNote>Highest encephalisation quotient on known dinos</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>69</termId>
+  <termName>Deinonychosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>71</termId>
+  <termName>Byronosaurus</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>71</termId>
+ <termName>Byronosaurus</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>70</termId>
+  <termName>Troodontidae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>72</termId>
+ <termName>Dromaeosauridae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>69</termId>
+  <termName>Deinonychosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>73</termId>
+  <termName>Velociraptorinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>73</termId>
+ <termName>Velociraptorinae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>72</termId>
+  <termName>Dromaeosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>74</termId>
+  <termName>Velociraptor</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>74</termId>
+ <termName>Velociraptor</termName>
+ <termType>PT</termType>
+ <termNote>Much smaller in real life than in Jurassic Park</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>73</termId>
+  <termName>Velociraptorinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>75</termId>
+ <termName>Avialae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>68</termId>
+  <termName>Eumaniraptora</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>76</termId>
+  <termName>Aves</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>76</termId>
+ <termName>Aves</termName>
+ <termType>PT</termType>
+ <termNote>Birds, including modern birds</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>75</termId>
+  <termName>Avialae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>77</termId>
+  <termName>Metornithes</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>77</termId>
+ <termName>Metornithes</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>76</termId>
+  <termName>Aves</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>78</termId>
+  <termName>Alvarezsauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>78</termId>
+ <termName>Alvarezsauria</termName>
+ <termType>PT</termType>
+ <termNote>Short, stong args; long, gracile legs.  Weird</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>77</termId>
+  <termName>Metornithes</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>79</termId>
+  <termName>Alvarezsauridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>79</termId>
+ <termName>Alvarezsauridae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>78</termId>
+  <termName>Alvarezsauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>80</termId>
+  <termName>Mononykinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>80</termId>
+ <termName>Mononykinae</termName>
+ <termType>PT</termType>
+ <termNote>Hands had only a single, spike-like finger</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>79</termId>
+  <termName>Alvarezsauridae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>81</termId>
+  <termName>Parvicursor</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>81</termId>
+ <termName>Parvicursor</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>80</termId>
+  <termName>Mononykinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>82</termId>
+ <termName>Ornithischia</termName>
+ <termType>PT</termType>
+ <termNote>Everything closer to Iguanodon than to Megalosaurus</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>1</termId>
+  <termName>Dinosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>83</termId>
+  <termName>Genasauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>83</termId>
+ <termName>Genasauria</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>82</termId>
+  <termName>Ornithischia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>84</termId>
+  <termName>Thyreophora</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>92</termId>
+  <termName>Cerapoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>84</termId>
+ <termName>Thyreophora</termName>
+ <termType>PT</termType>
+ <termNote>The armoured dinosaurs, ankylosaurs and stegosaurs</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>83</termId>
+  <termName>Genasauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>85</termId>
+  <termName>Thyreophoroidea</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>85</termId>
+ <termName>Thyreophoroidea</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>84</termId>
+  <termName>Thyreophora</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>86</termId>
+  <termName>Eurypoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>86</termId>
+ <termName>Eurypoda</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>85</termId>
+  <termName>Thyreophoroidea</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>87</termId>
+  <termName>Stegosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>90</termId>
+  <termName>Ankylosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>87</termId>
+ <termName>Stegosauria</termName>
+ <termType>PT</termType>
+ <termNote>Single or double row of plates down the back</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>86</termId>
+  <termName>Eurypoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>88</termId>
+  <termName>Stegosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>88</termId>
+ <termName>Stegosauridae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>87</termId>
+  <termName>Stegosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>89</termId>
+  <termName>Kentrosaurus</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>89</termId>
+ <termName>Kentrosaurus</termName>
+ <termType>PT</termType>
+ <termNote>Had spikes on its back instead of plates</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>88</termId>
+  <termName>Stegosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>90</termId>
+ <termName>Ankylosauria</termName>
+ <termType>PT</termType>
+ <termNote>Heavily armoured, above and below</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>86</termId>
+  <termName>Eurypoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>91</termId>
+  <termName>Minmi</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>91</termId>
+ <termName>Minmi</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>90</termId>
+  <termName>Ankylosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>92</termId>
+ <termName>Cerapoda</termName>
+ <termType>PT</termType>
+ <termNote>Defined as {Triceratops+Iguanodon}</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>83</termId>
+  <termName>Genasauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>93</termId>
+  <termName>Marginocephalia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>104</termId>
+  <termName>Ornithopoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>93</termId>
+ <termName>Marginocephalia</termName>
+ <termType>PT</termType>
+ <termNote>Defined as {Triceratops+Pachycephalosaurus}</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>92</termId>
+  <termName>Cerapoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>94</termId>
+  <termName>Ceratopsia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>102</termId>
+  <termName>Pachycephalosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>94</termId>
+ <termName>Ceratopsia</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>93</termId>
+  <termName>Marginocephalia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>95</termId>
+  <termName>Neoceratopsia</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>95</termId>
+ <termName>Neoceratopsia</termName>
+ <termType>PT</termType>
+ <termNote>Everything closer to Triceratops than to Psittacosaurus</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>94</termId>
+  <termName>Ceratopsia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>96</termId>
+  <termName>Udanoceratops</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>97</termId>
+  <termName>Coronosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>96</termId>
+ <termName>Udanoceratops</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>95</termId>
+  <termName>Neoceratopsia</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>97</termId>
+ <termName>Coronosauria</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>95</termId>
+  <termName>Neoceratopsia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>98</termId>
+  <termName>Ceratopsoidea</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>98</termId>
+ <termName>Ceratopsoidea</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>97</termId>
+  <termName>Coronosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>99</termId>
+  <termName>Ceratopsomorpha</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>99</termId>
+ <termName>Ceratopsomorpha</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>98</termId>
+  <termName>Ceratopsoidea</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>100</termId>
+  <termName>Ceratopsidae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>100</termId>
+ <termName>Ceratopsidae</termName>
+ <termType>PT</termType>
+ <termNote>{Chasmosaurinae+Centrosaurinae}</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>99</termId>
+  <termName>Ceratopsomorpha</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>101</termId>
+  <termName>Zuniceratops</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>101</termId>
+ <termName>Zuniceratops</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>100</termId>
+  <termName>Ceratopsidae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>102</termId>
+ <termName>Pachycephalosauria</termName>
+ <termType>PT</termType>
+ <termNote>Thick-headed, wide-bodied herbivorous bipeds</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>93</termId>
+  <termName>Marginocephalia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>103</termId>
+  <termName>Wannanosaurus</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>103</termId>
+ <termName>Wannanosaurus</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>102</termId>
+  <termName>Pachycephalosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>104</termId>
+ <termName>Ornithopoda</termName>
+ <termType>PT</termType>
+ <termNote>The least interesting of all the dinosaur groups</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>92</termId>
+  <termName>Cerapoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>105</termId>
+  <termName>Qantassaurus</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>106</termId>
+  <termName>Euornithopoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>105</termId>
+ <termName>Qantassaurus</termName>
+ <termType>PT</termType>
+ <termNote>A profoundly dull basal ornithopod</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>104</termId>
+  <termName>Ornithopoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>106</termId>
+ <termName>Euornithopoda</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>104</termId>
+  <termName>Ornithopoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>107</termId>
+  <termName>Iguanodontia</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>107</termId>
+ <termName>Iguanodontia</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>106</termId>
+  <termName>Euornithopoda</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>108</termId>
+  <termName>Euiguanodontia</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>108</termId>
+ <termName>Euiguanodontia</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>107</termId>
+  <termName>Iguanodontia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>109</termId>
+  <termName>Dryomorpha</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>109</termId>
+ <termName>Dryomorpha</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>108</termId>
+  <termName>Euiguanodontia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>110</termId>
+  <termName>Ankylopollexia</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>110</termId>
+ <termName>Ankylopollexia</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>109</termId>
+  <termName>Dryomorpha</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>111</termId>
+  <termName>Styracosterna</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>111</termId>
+ <termName>Styracosterna</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>110</termId>
+  <termName>Ankylopollexia</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>112</termId>
+  <termName>Lurdosaurus</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>113</termId>
+  <termName>Iguanodontoidea</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>112</termId>
+ <termName>Lurdosaurus</termName>
+ <termType>PT</termType>
+ <termNote>Looks a lot like a fat Iguanodon</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>111</termId>
+  <termName>Styracosterna</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>113</termId>
+ <termName>Iguanodontoidea</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>111</termId>
+  <termName>Styracosterna</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>114</termId>
+  <termName>Hadrosauroidea</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>114</termId>
+ <termName>Hadrosauroidea</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>113</termId>
+  <termName>Iguanodontoidea</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>115</termId>
+  <termName>Hadrosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>115</termId>
+ <termName>Hadrosauridae</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>114</termId>
+  <termName>Hadrosauroidea</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>116</termId>
+  <termName>Euhadrosauria</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>116</termId>
+ <termName>Euhadrosauria</termName>
+ <termType>PT</termType>
+ <termNote>Lambeosaurs (crested) + Hadrosaurs (not)</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>115</termId>
+  <termName>Hadrosauridae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>117</termId>
+  <termName>Lambeosaurinae</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>117</termId>
+ <termName>Lambeosaurinae</termName>
+ <termType>PT</termType>
+ <termNote>The least dull of all the ornithopods</termNote>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>116</termId>
+  <termName>Euhadrosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>118</termId>
+  <termName>Lambeosaurini</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>118</termId>
+ <termName>Lambeosaurini</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>117</termId>
+  <termName>Lambeosaurinae</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>119</termId>
+  <termName>Corythosaurus</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>119</termId>
+ <termName>Corythosaurus</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>118</termId>
+  <termName>Lambeosaurini</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
