@@ -41,13 +41,12 @@ void tst2(void)
 {
     char buf[BLOCK_SIZE];
     MFile_area a = mf_init("main", 0 /* spec */, 0 /* base */, 0 /* only sh */);
-    MFile f;
 
     YAZ_CHECK(a);
 
     mf_reset(a, 1);
 
-    f = mf_open(a, "mymfile", BLOCK_SIZE, 1);
+    MFile f = mf_open(a, "mymfile", BLOCK_SIZE, 1);
     YAZ_CHECK(f);
 
     YAZ_CHECK_EQ(mf_read(f, 0, 0, 0, buf), 0);

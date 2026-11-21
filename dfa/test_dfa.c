@@ -25,9 +25,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 int test_parse(struct DFA *dfa, const char *pattern)
 {
-    int i;
     const char *cp = pattern;
-    i = dfa_parse(dfa, &cp);
+    int i = dfa_parse(dfa, &cp);
     return i;
 }
 

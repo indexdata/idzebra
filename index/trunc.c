@@ -41,9 +41,7 @@ struct trunc_info {
 
 static void heap_swap(struct trunc_info *ti, int i1, int i2)
 {
-    int swap;
-
-    swap = ti->ptr[i1];
+    int swap = ti->ptr[i1];
     ti->ptr[i1] = ti->ptr[i2];
     ti->ptr[i2] = swap;
 }
@@ -72,12 +70,10 @@ static void heap_delete(struct trunc_info *ti)
 
 static void heap_insert(struct trunc_info *ti, const char *buf, int indx)
 {
-    int cur, parent;
-
-    cur = ++(ti->heapnum);
+    int cur = ++(ti->heapnum);
     memcpy(ti->heap[ti->ptr[cur]], buf, ti->keysize);
     ti->indx[ti->ptr[cur]] = indx;
-    parent = cur/2;
+    int parent = cur/2;
     while (parent && (*ti->cmp)(ti->heap[ti->ptr[parent]],
                                 ti->heap[ti->ptr[cur]]) > 0)
     {
@@ -92,7 +88,6 @@ static struct trunc_info *heap_init(int size, int key_size,
                                                const void *p2))
 {
     struct trunc_info *ti = (struct trunc_info *) xmalloc(sizeof(*ti));
-    int i;
 
     ++size;
     ti->heapnum = 0;
@@ -104,7 +99,7 @@ static struct trunc_info *heap_init(int size, int key_size,
     ti->swapbuf = (char *) xmalloc(ti->keysize);
     ti->tmpbuf = (char *) xmalloc(ti->keysize);
     ti->buf = (char *) xmalloc(size * ti->keysize);
-    for (i = size; --i >= 0; )
+    for (int i = size; --i >= 0; )
     {
         ti->ptr[i] = i;
         ti->heap[i] = ti->buf + ti->keysize * i;
@@ -130,27 +125,21 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
                          struct rset_key_control *kctrl, int scope,
                          TERMID termid)
 {
-    RSET result;
-    RSFD result_rsfd;
-
-    result = rset_create_temp(rset_nmem, kctrl, scope,
+    RSET result = rset_create_temp(rset_nmem, kctrl, scope,
                               res_get(zi->res, "setTmpDir"), termid);
-    result_rsfd = rset_open(result, RSETF_WRITE);
+    RSFD result_rsfd = rset_open(result, RSETF_WRITE);
 
     if (to - from > merge_chunk)
     {
-        RSFD *rsfd;
-        RSET *rset;
         int i, i_add = (to-from)/merge_chunk + 1;
-        struct trunc_info *ti;
         int rscur = 0;
         int rsmax = (to-from)/i_add + 1;
         int cmp_border = preserve_position ? 0 : 1;
         NMEM rset_nmem_sub = nmem_create(); /* all sub rsets not needed
                                                after this */
 
-        rset = (RSET *) xmalloc(sizeof(*rset) * rsmax);
-        rsfd = (RSFD *) xmalloc(sizeof(*rsfd) * rsmax);
+        RSET *rset = (RSET *) xmalloc(sizeof(*rset) * rsmax);
+        RSFD *rsfd = (RSFD *) xmalloc(sizeof(*rsfd) * rsmax);
 
         for (i = from; i < to; i += i_add)
         {
@@ -168,7 +157,7 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
                                            kctrl, scope, 0);
             rscur++;
         }
-        ti = heap_init (rscur, sizeof(struct it_key), key_compare);
+        struct trunc_info *ti = heap_init (rscur, sizeof(struct it_key), key_compare);
         for (i = rscur; --i >= 0; )
         {
             rsfd[i] = rset_open(rset[i], RSETF_READ);
@@ -210,15 +199,11 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
     }
     else if (zi->reg->isamc)
     {
-        ISAMC_PP *ispt;
-        int i;
-        struct trunc_info *ti;
+        ISAMC_PP *ispt = (ISAMC_PP *) xmalloc(sizeof(*ispt) * (to-from));
 
-        ispt = (ISAMC_PP *) xmalloc(sizeof(*ispt) * (to-from));
-
-        ti = heap_init(to-from, sizeof(struct it_key),
+        struct trunc_info *ti = heap_init(to-from, sizeof(struct it_key),
                        key_compare);
-        for (i = to-from; --i >= 0; )
+        for (int i = to-from; --i >= 0; )
         {
             ispt[i] = isamc_pp_open(zi->reg->isamc, isam_p[from+i]);
             if (isamc_pp_read(ispt[i], ti->tmpbuf))
@@ -263,15 +248,11 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
     }
     else if (zi->reg->isams)
     {
-        ISAMS_PP *ispt;
-        int i;
-        struct trunc_info *ti;
+        ISAMS_PP *ispt = (ISAMS_PP *) xmalloc(sizeof(*ispt) * (to-from));
 
-        ispt = (ISAMS_PP *) xmalloc(sizeof(*ispt) * (to-from));
-
-        ti = heap_init(to-from, sizeof(struct it_key),
+        struct trunc_info *ti = heap_init(to-from, sizeof(struct it_key),
                        key_compare);
-        for (i = to-from; --i >= 0; )
+        for (int i = to-from; --i >= 0; )
         {
             ispt[i] = isams_pp_open(zi->reg->isams, isam_p[from+i]);
             if (isams_pp_read(ispt[i], ti->tmpbuf))
@@ -305,15 +286,11 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
     }
     else if (zi->reg->isamb)
     {
-        ISAMB_PP *ispt;
-        int i;
-        struct trunc_info *ti;
+        ISAMB_PP *ispt = (ISAMB_PP *) xmalloc(sizeof(*ispt) * (to-from));
 
-        ispt = (ISAMB_PP *) xmalloc(sizeof(*ispt) * (to-from));
-
-        ti = heap_init(to-from, sizeof(struct it_key),
+        struct trunc_info *ti = heap_init(to-from, sizeof(struct it_key),
                        key_compare);
-        for (i = to-from; --i >= 0; )
+        for (int i = to-from; --i >= 0; )
         {
             if (isam_p[from+i]) {
                 ispt[i] = isamb_pp_open(zi->reg->isamb, isam_p[from+i], scope);
@@ -382,9 +359,8 @@ static int isamc_trunc_cmp(const void *p1, const void *p2)
 {
     ISAM_P i1 = *(ISAM_P*) p1;
     ISAM_P i2 = *(ISAM_P*) p2;
-    zint d;
 
-    d = (isamc_type(i1) - isamc_type(i2));
+    zint d = (isamc_type(i1) - isamc_type(i2));
     if (d == 0)
         d = isamc_block(i1) - isamc_block(i2);
     if (d > 0)
@@ -401,12 +377,9 @@ RSET rset_trunc(ZebraHandle zh, ISAM_P *isam_p, int no,
                 struct ord_list *ol, const char *index_type,
                 zint hits_limit, const char *term_ref_id)
 {
-    TERMID termid;
-    RSET result;
-    int trunc_chunk;
     int trunc_limit = atoi(res_get_def(zh->res, "trunclimit", "10000"));
 
-    termid = rset_term_create(term, length, flags, term_type, rset_nmem, ol,
+    TERMID termid = rset_term_create(term, length, flags, term_type, rset_nmem, ol,
                               *index_type, hits_limit, term_ref_id);
 
     if (no < 1)
@@ -416,14 +389,12 @@ RSET rset_trunc(ZebraHandle zh, ISAM_P *isam_p, int no,
                                       scope, *isam_p, termid);
     else if (zh->reg->isamb && no > 1 && no < trunc_limit)
     {
-        RSET r;
         RSET *rsets = xmalloc(no*sizeof(RSET)); /* use nmem! */
-        int i;
-        for (i = 0; i<no; i++)
+        for (int i = 0; i<no; i++)
             rsets[i] = rsisamb_create(rset_nmem, kctrl, scope,
                                       zh->reg->isamb, isam_p[i],
                                       0 /* termid */);
-        r = rset_create_or(rset_nmem, kctrl, scope,
+        RSET r = rset_create_or(rset_nmem, kctrl, scope,
                            termid, no, rsets);
         xfree(rsets);
         return r;
@@ -432,8 +403,8 @@ RSET rset_trunc(ZebraHandle zh, ISAM_P *isam_p, int no,
         qsort(isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
     else
         qsort(isam_p, no, sizeof(*isam_p), isams_trunc_cmp);
-    trunc_chunk = atoi(res_get_def(zh->res, "truncchunk", "20"));
-    result = rset_trunc_r(zh, term, length, flags, isam_p, 0, no, trunc_chunk,
+    int trunc_chunk = atoi(res_get_def(zh->res, "truncchunk", "20"));
+    RSET result = rset_trunc_r(zh, term, length, flags, isam_p, 0, no, trunc_chunk,
                           preserve_position, term_type, rset_nmem, kctrl,
                           scope, termid);
     return result;

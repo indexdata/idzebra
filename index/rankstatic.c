@@ -77,12 +77,11 @@ static void *begin (struct zebra_register *reg,
 {
     struct rank_set_info *si =
         (struct rank_set_info *) nmem_malloc (nmem, sizeof(*si));
-    int i;
 
     yaz_log(log_level, "rank-static begin");
     /* count how many terms are ranked (2=102 or similar) */
     si->no_rank_entries = 0;
-    for (i = 0; i < numterms; i++)
+    for (int i = 0; i < numterms; i++)
     {
         struct ord_list *ol = terms[i]->ol;
 

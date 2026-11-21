@@ -50,7 +50,6 @@ static int dirs_client_proc(char *name, const char *info, int pos,
                              void *client)
 {
     struct dirs_info *ci = (struct dirs_info *) client;
-    struct dirs_entry *entry;
 
     if (memcmp(name, ci->prefix, ci->prelen))
         return 1;
@@ -60,7 +59,7 @@ static int dirs_client_proc(char *name, const char *info, int pos,
         return 0;
     }
     assert(ci->no_cur < ci->no_max);
-    entry = ci->entries + ci->no_cur;
+    struct dirs_entry *entry = ci->entries + ci->no_cur;
     if (info[0] == sizeof(entry->sysno)+sizeof(entry->mtime))
     {
         strcpy(entry->path, name + ci->prelen);
@@ -82,11 +81,10 @@ static int dirs_client_proc(char *name, const char *info, int pos,
 
 struct dirs_info *dirs_open(Dict dict, const char *rep, int rw)
 {
-    struct dirs_info *p;
-    int before = 0, after;
+    int before = 0;
 
     yaz_log(YLOG_DEBUG, "dirs_open %s", rep);
-    p = (struct dirs_info *) xmalloc(sizeof(*p));
+    struct dirs_info *p = (struct dirs_info *) xmalloc(sizeof(*p));
     p->dict = dict;
     p->rw = rw;
     strcpy(p->prefix, rep);
@@ -94,7 +92,7 @@ struct dirs_info *dirs_open(Dict dict, const char *rep, int rw)
     strcpy(p->nextpath, rep);
     p->nextpath_deleted = 0;
     p->no_read = p->no_cur = 0;
-    after = p->no_max = 100;
+    int after = p->no_max = 100;
     p->entries = (struct dirs_entry *)
         xmalloc(sizeof(*p->entries) * (p->no_max));
     yaz_log(YLOG_DEBUG, "dirs_open first scan");
@@ -104,11 +102,7 @@ struct dirs_info *dirs_open(Dict dict, const char *rep, int rw)
 
 struct dirs_info *dirs_fopen(Dict dict, const char *path, int rw)
 {
-    struct dirs_info *p;
-    struct dirs_entry *entry;
-    char *info;
-
-    p = (struct dirs_info *) xmalloc(sizeof(*p));
+    struct dirs_info *p = (struct dirs_info *) xmalloc(sizeof(*p));
     p->dict = dict;
     p->rw = rw;
     *p->prefix = '\0';
@@ -117,8 +111,8 @@ struct dirs_info *dirs_fopen(Dict dict, const char *path, int rw)
     p->no_cur = 0;
     p->no_max = 2;
 
-    entry = p->entries;
-    info = dict_lookup(dict, path);
+    struct dirs_entry *entry = p->entries;
+    char *info = dict_lookup(dict, path);
     if (info && info[0] == sizeof(entry->sysno)+sizeof(entry->mtime))
     {
         strcpy(entry->path, path);

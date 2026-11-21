@@ -28,11 +28,10 @@ WRBUF zebra_mk_ord_str(int ord, const char *str)
 {
     char pref[20];
     WRBUF w = wrbuf_alloc();
-    int len;
 
     assert(ord >= 0);
 
-    len = key_SU_encode(ord, pref);
+    int len = key_SU_encode(ord, pref);
 
     wrbuf_write(w, pref, len);
     wrbuf_puts(w, str);

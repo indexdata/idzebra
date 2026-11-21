@@ -31,16 +31,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static char *dict_look(Dict dict, const Dict_char *str, Dict_ptr ptr)
 {
-    int mid, lo, hi;
+    int lo;
     int cmp;
     void *p;
-    short *indxp;
     char *info;
 
     dict_bf_readp(dict->dbf, ptr, &p);
-    mid = lo = 0;
-    hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
+    int mid = lo = 0;
+    int hi = DICT_nodir(p)-1;
+    short *indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     while (lo <= hi)
     {
         mid = (lo+hi)/2;

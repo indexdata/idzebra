@@ -108,13 +108,12 @@ static void sort_term_encode2(void *p, char **dst, const char **src)
 static void sort_term_decode1(void *p, char **dst, const char **src)
 {
     struct sort_term a1;
-    size_t slen;
 
     zebra_zint_decode(src, &a1.sysno);
     a1.section_id = 0;
 
     strcpy(a1.term, *src);
-    slen = 1 + strlen(a1.term);
+    size_t slen = 1 + strlen(a1.term);
     *src += slen;
     a1.length = slen;
 
@@ -340,9 +339,8 @@ static void zebra_sortf_rewind(struct sortFile *sf)
 void zebra_sort_sysno(zebra_sort_index_t si, zint sysno)
 {
     zint new_sysno = rec_sysno_to_int(sysno);
-    struct sortFile *sf;
 
-    for (sf = si->files; sf; sf = sf->next)
+    for (struct sortFile *sf = si->files; sf; sf = sf->next)
     {
         if (sf->no_inserted || sf->no_deleted)
             zebra_sortf_rewind(sf);

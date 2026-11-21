@@ -76,10 +76,8 @@ static Z_Variant *make_variant(data1_node *n, int num, ODR o)
      */
     for (p = n, num--; p && num >= 0; p = p->parent, num--)
     {
-        Z_Triple *t;
-
         assert(p->which == DATA1N_variant);
-        t = v->triples[num] = (Z_Triple *)odr_malloc(o, sizeof(*t));
+        Z_Triple *t = v->triples[num] = (Z_Triple *)odr_malloc(o, sizeof(*t));
         t->variantSetId = 0;
         t->zclass = odr_intdup(o, p->u.variant.type->zclass->zclass);
         t->type = odr_intdup(o, p->u.variant.type->type);
@@ -106,9 +104,7 @@ static Z_Variant *make_variant(data1_node *n, int num, ODR o)
 static int traverse_triples(data1_node *n, int level, Z_ElementMetaData *m,
     ODR o)
 {
-    data1_node *c;
-
-    for (c = n->child; c; c = c->next)
+    for (data1_node *c = n->child; c; c = c->next)
         if (c->which == DATA1N_data && level)
         {
             if (!m->supportedVariants)
@@ -137,7 +133,6 @@ static int traverse_triples(data1_node *n, int level, Z_ElementMetaData *m,
  */
 static char *get_data(data1_node *n, int *len)
 {
-    char *r;
     data1_node *np = 0;
 
     while (n)
@@ -165,7 +160,7 @@ static char *get_data(data1_node *n, int *len)
             np = 0;
         }
     }
-    r = "";
+    char *r = "";
     *len = strlen(r);
     return r;
 }

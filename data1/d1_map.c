@@ -48,7 +48,6 @@ data1_maptab *data1_read_maptab(data1_handle dh, const char *file)
     int lineno = 0;
     int argc;
     char *argv[50], line[512];
-    data1_mapunit **mapp;
     int local_numeric = 0;
 
     if (!(f = data1_path_fopen(dh, file, "r")))
@@ -57,7 +56,7 @@ data1_maptab *data1_read_maptab(data1_handle dh, const char *file)
     res->name = 0;
     res->oid = 0;
     res->map = 0;
-    mapp = &res->map;
+    data1_mapunit **mapp = &res->map;
     res->next = 0;
 
     while ((argc = readconf_line(f, &lineno, line, 512, argv, 50)))
@@ -101,7 +100,6 @@ data1_maptab *data1_read_maptab(data1_handle dh, const char *file)
         }
         else if (!strcmp(argv[0], "map"))
         {
-            data1_maptag **mtp;
             char *ep, *path = argv[2];
 
             if (argc < 3)
@@ -121,7 +119,7 @@ data1_maptab *data1_read_maptab(data1_handle dh, const char *file)
             else
                 (*mapp)->no_chop = 0;
             (*mapp)->source_element_name = nmem_strdup(mem, argv[1]);
-            mtp = &(*mapp)->target_path;
+            data1_maptag **mtp = &(*mapp)->target_path;
             if (*path == '/')
                 path++;
             for (ep = strchr(path, '/'); path; (void)((path = ep) &&
@@ -246,26 +244,24 @@ static int map_children(data1_handle dh, data1_node *n, data1_maptab *map,
                         data1_node *res, NMEM mem)
 {
     data1_node *c;
-    data1_mapunit *m;
     /*
      * locate each source element in turn.
      */
     for (c = n->child; c; c = c->next)
         if (c->which == DATA1N_tag && c->u.tag.element)
         {
-            for (m = map->map; m; m = m->next)
+            for (data1_mapunit *m = map->map; m; m = m->next)
             {
                 if (!data1_matchstr(m->source_element_name,
                     c->u.tag.element->name))
                 {
                     data1_node *pn = res;
                     data1_node *cur = pn->last_child;
-                    data1_maptag *mt;
 
                     /*
                      * process the target path specification.
                      */
-                    for (mt = m->target_path; mt; mt = mt->next)
+                    for (data1_maptag *mt = m->target_path; mt; mt = mt->next)
                     {
                         if (!cur || mt->new_field || !tagmatch(cur, mt))
                         {

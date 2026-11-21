@@ -94,13 +94,12 @@ struct read_info {
 int code_read(void *vp, char **dst, int *insertMode)
 {
     struct read_info *ri = (struct read_info *)vp;
-    int x;
 
     if (ri->no >= ri->max)
         return 0;
     ri->no++;
 
-    x = ri->val;
+    int x = ri->val;
     memset(*dst, 0, ri->sz);
     **dst = ri->sz;
     memcpy(*dst + 1, &x, sizeof(int));
@@ -123,7 +122,7 @@ void bench_insert(ISAMB isb, int number_of_trees,
     ISAMC_I isamc_i;
     ISAM_P *isamc_p = xmalloc(sizeof(ISAM_P) * number_of_trees);
     struct read_info ri;
-    int round, i;
+    int i;
 
     for (i = 0; i<number_of_trees; i++)
         isamc_p[i] = 0; /* initially, is empty */
@@ -133,7 +132,7 @@ void bench_insert(ISAMB isb, int number_of_trees,
     ri.insertMode = 1;
     ri.sz = sizeof(int) + 1 + extra_size;
 
-    for (round = 0; round < number_of_rounds; round++)
+    for (int round = 0; round < number_of_rounds; round++)
     {
         yaz_timing_t t = yaz_timing_create();
 
@@ -178,8 +177,6 @@ void exit_usage(void)
 
 int main(int argc, char **argv)
 {
-    BFiles bfs;
-    ISAMB isb;
     ISAMC_M method;
     int ret;
     char *arg;
@@ -228,7 +225,7 @@ int main(int argc, char **argv)
     yaz_timing_start(t);
 
     /* create block system */
-    bfs = bfs_create(0, 0);
+    BFiles bfs = bfs_create(0, 0);
     if (!bfs)
     {
         yaz_log(YLOG_WARN, "bfs_create failed");
@@ -238,7 +235,7 @@ int main(int argc, char **argv)
     bf_reset(bfs);
 
     /* create isam handle */
-    isb = isamb_open (bfs, "isamb", 1, &method, 0);
+    ISAMB isb = isamb_open (bfs, "isamb", 1, &method, 0);
     if (!isb)
     {
         yaz_log(YLOG_WARN, "isamb_open failed");

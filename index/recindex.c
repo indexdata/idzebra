@@ -48,11 +48,10 @@ struct record_index_entry {
 static void rect_log_item(int level, const void *b, const char *txt)
 {
     zint sys;
-    int len;
 
 
     memcpy(&sys, b, sizeof(sys));
-    len = ((const char *) b)[sizeof(sys)];
+    int len = ((const char *) b)[sizeof(sys)];
 
     if (len == sizeof(struct record_index_entry))
     {
@@ -87,13 +86,12 @@ void *rect_code_start(void)
 void rect_encode(void *p, char **dst, const char **src)
 {
     zint sys;
-    int len;
 
     memcpy(&sys, *src, sizeof(sys));
     zebra_zint_encode(dst, sys);
     (*src) += sizeof(sys);
 
-    len = **src;
+    int len = **src;
     **dst = len;
     (*src)++;
     (*dst)++;
@@ -106,13 +104,12 @@ void rect_encode(void *p, char **dst, const char **src)
 void rect_decode(void *p, char **dst, const char **src)
 {
     zint sys;
-    int len;
 
     zebra_zint_decode(src, &sys);
     memcpy(*dst, &sys, sizeof(sys));
     *dst += sizeof(sys);
 
-    len = **src;
+    int len = **src;
     **dst = len;
     (*src)++;
     (*dst)++;
@@ -207,13 +204,11 @@ const char *recindex_get_fname(recindex_t p)
 
 ZEBRA_RES recindex_write_head(recindex_t p, const void *buf, size_t len)
 {
-    int r;
-
     assert(p);
 
     assert(p->index_BFile);
 
-    r = bf_write(p->index_BFile, 0, 0, len, buf);
+    int r = bf_write(p->index_BFile, 0, 0, len, buf);
     if (r)
     {
         yaz_log(YLOG_FATAL|YLOG_ERRNO, "write head of %s", p->index_fname);

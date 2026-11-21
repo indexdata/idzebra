@@ -183,7 +183,6 @@ static void destroy_schemas(struct filter_info *tinfo)
 static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 {
     char tmp_full_name[1024];
-    xmlNodePtr ptr;
     tinfo->fname = xstrdup(fname);
 
     if (yaz_filepath_resolve(tinfo->fname, tinfo->profile_path,
@@ -204,7 +203,7 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
         return ZEBRA_FAIL;
     }
 
-    ptr = xmlDocGetRootElement(tinfo->doc);
+    xmlNodePtr ptr = xmlDocGetRootElement(tinfo->doc);
     if (!ptr || ptr->type != XML_ELEMENT_NODE
         || XML_STRCMP(ptr->name, "schemaInfo"))
     {
@@ -221,7 +220,6 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
             continue;
         if (!XML_STRCMP(ptr->name, "schema"))
         {
-            struct _xmlAttr *attr;
             struct filter_schema *schema = xmalloc(sizeof(*schema));
             schema->name = 0;
             schema->identifier = 0;
@@ -230,7 +228,7 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
             schema->next = tinfo->schemas;
             schema->stylesheet_xsp = 0;
             tinfo->schemas = schema;
-            for (attr = ptr->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = ptr->properties; attr; attr = attr->next)
             {
                 attr_content(attr, "identifier", &schema->identifier);
                 attr_content(attr, "name", &schema->name);
@@ -266,8 +264,7 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
         }
         else if (!XML_STRCMP(ptr->name, "split"))
         {
-            struct _xmlAttr *attr;
-            for (attr = ptr->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = ptr->properties; attr; attr = attr->next)
             {
                 const char *split_level_str = 0;
                 attr_content(attr, "level", &split_level_str);
@@ -287,9 +284,7 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 static struct filter_schema *lookup_schema(struct filter_info *tinfo,
                                            const char *est)
 {
-    struct filter_schema *schema;
-
-    for (schema = tinfo->schemas; schema; schema = schema->next)
+    for (struct filter_schema *schema = tinfo->schemas; schema; schema = schema->next)
     {
         /* find requested schema */
         if (est)
@@ -381,8 +376,7 @@ static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
             const char *name_str = 0;
             const char *type_str = 0;
             const char *xpath_str = 0;
-            struct _xmlAttr *attr;
-            for (attr = ptr->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = ptr->properties; attr; attr = attr->next)
             {
                 attr_content(attr, "name", &name_str);
                 attr_content(attr, "xpath", &xpath_str);
@@ -414,8 +408,7 @@ static void index_record(struct filter_info *tinfo,struct recExtractCtrl *ctrl,
     {
         const char *id_str = 0;
         const char *rank_str = 0;
-        struct _xmlAttr *attr;
-        for (attr = ptr->properties; attr; attr = attr->next)
+        for (struct _xmlAttr *attr = ptr->properties; attr; attr = attr->next)
         {
             attr_content(attr, "type", &type_str);
             attr_content(attr, "id", &id_str);
@@ -455,7 +448,6 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
 
     if (schema && schema->stylesheet_xsp)
     {
-        xmlNodePtr root_ptr;
         xmlDocPtr resDoc =
             xsltApplyStylesheet(schema->stylesheet_xsp,
                                 doc, params);
@@ -465,7 +457,7 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
             fwrite(buf_out, len_out, 1, stdout);
             xmlFree(buf_out);
         }
-        root_ptr = xmlDocGetRootElement(resDoc);
+        xmlNodePtr root_ptr = xmlDocGetRootElement(resDoc);
         if (root_ptr)
             index_record(tinfo, p, root_ptr, &recWord);
         else
@@ -489,8 +481,6 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
 
 static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
 {
-    int ret;
-
     if (p->first_record)
     {
         if (tinfo->reader)
@@ -506,7 +496,7 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
     if (!tinfo->reader)
         return RECCTRL_EXTRACT_ERROR_GENERIC;
 
-    ret = xmlTextReaderRead(tinfo->reader);
+    int ret = xmlTextReaderRead(tinfo->reader);
     while (ret == 1)
     {
         int type = xmlTextReaderNodeType(tinfo->reader);
@@ -590,8 +580,6 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     const char *params[32];
     struct filter_info *tinfo = clientData;
     xmlDocPtr resDoc;
-    xmlDocPtr doc;
-    struct filter_schema *schema;
 
     if (p->comp)
     {
@@ -608,7 +596,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
             esn = p->comp->u.complex->generic->elementSpec->u.elementSetName;
         }
     }
-    schema = lookup_schema(tinfo, esn);
+    struct filter_schema *schema = lookup_schema(tinfo, esn);
     if (!schema)
     {
         p->diagnostic =
@@ -637,7 +625,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
         set_param_int(params, "score", p->score, p->odr);
     set_param_int(params, "size", p->recordSize, p->odr);
 
-    doc = xmlReadIO(ioread_ret, ioclose_ret, p /* I/O handler */,
+    xmlDocPtr doc = xmlReadIO(ioread_ret, ioclose_ret, p /* I/O handler */,
                     0 /* URL */,
                     0 /* encoding */,
                     XML_PARSE_XINCLUDE | XML_PARSE_NOENT | XML_PARSE_NONET);

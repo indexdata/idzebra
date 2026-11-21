@@ -58,11 +58,9 @@ ZebraHandle index_some(ZebraService zs,
 
 void tst(int argc, char **argv)
 {
-    ZebraHandle zh;
-
     ZebraService zs = tl_start_up(0, argc, argv);
 
-    zh = index_some(zs, "dom.bad.xml", "marc-col.xml");
+    ZebraHandle zh = index_some(zs, "dom.bad.xml", "marc-col.xml");
     zebra_close(zh);
 
 

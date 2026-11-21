@@ -249,8 +249,7 @@ static void destroy_dom(struct filter_info *tinfo)
     }
     if (tinfo->input_list)
     {
-        struct filter_input *i_ptr;
-        for (i_ptr = tinfo->input_list; i_ptr; i_ptr = i_ptr->next)
+        for (struct filter_input *i_ptr = tinfo->input_list; i_ptr; i_ptr = i_ptr->next)
         {
             switch(i_ptr->type)
             {
@@ -269,8 +268,8 @@ static void destroy_dom(struct filter_info *tinfo)
     }
     if (tinfo->retrieve_list)
     {
-        struct filter_retrieve *r_ptr;
-        for (r_ptr = tinfo->retrieve_list; r_ptr; r_ptr = r_ptr->next)
+        for (struct filter_retrieve *r_ptr = tinfo->retrieve_list;
+             r_ptr; r_ptr = r_ptr->next)
             destroy_xsp(r_ptr->convert);
         tinfo->retrieve_list = 0;
     }
@@ -290,7 +289,6 @@ static ZEBRA_RES parse_convert(struct filter_info *tinfo, xmlNodePtr ptr,
     FOR_EACH_ELEMENT(ptr) {
         if (!XML_STRCMP(ptr->name, "xslt"))
         {
-            struct _xmlAttr *attr;
             struct convert_s *p = nmem_malloc(tinfo->nmem_config, sizeof(*p));
 
             p->next = 0;
@@ -298,7 +296,7 @@ static ZEBRA_RES parse_convert(struct filter_info *tinfo, xmlNodePtr ptr,
             p->u.xslt.stylesheet = 0;
             p->u.xslt.stylesheet_xsp = 0;
 
-            for (attr = ptr->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = ptr->properties; attr; attr = attr->next)
                 if (attr_content(attr, "stylesheet", &p->u.xslt.stylesheet))
                     ;
                 else
@@ -344,13 +342,12 @@ static ZEBRA_RES parse_convert(struct filter_info *tinfo, xmlNodePtr ptr,
         }
         else if (!XML_STRCMP(ptr->name, "process-meta"))
         {
-            struct _xmlAttr *attr;
             struct convert_s *p = nmem_malloc(tinfo->nmem_config, sizeof(*p));
 
             p->next = 0;
             p->which = convert_meta_type;
 
-            for (attr = ptr->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = ptr->properties; attr; attr = attr->next)
                 dom_log(YLOG_WARN, tinfo, ptr,
                         "bad attribute @%s", attr->name);
             *l = p;
@@ -377,8 +374,7 @@ static int process_meta(struct filter_info *tinfo, xmlDocPtr doc, xmlNodePtr nod
         {
             const char *element_set_name = 0;
 
-            struct _xmlAttr *attr;
-            for (attr = node->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = node->properties; attr; attr = attr->next)
             {
                 if (attr_content(attr, "name", &element_set_name))
                     ;
@@ -394,9 +390,8 @@ static int process_meta(struct filter_info *tinfo, xmlDocPtr doc, xmlNodePtr nod
                 WRBUF addinfo = wrbuf_alloc();
                 const Odr_oid *input_format = yaz_oid_recsyn_xml;
                 const Odr_oid *output_format = 0;
-                int ret;
 
-                ret = retctr->special_fetch(retctr->handle,
+                int ret = retctr->special_fetch(retctr->handle,
                                             element_set_name,
                                             input_format, &output_format,
                                             result, addinfo);
@@ -479,11 +474,10 @@ static ZEBRA_RES perform_convert(struct filter_info *tinfo,
 
 static struct filter_input *new_input(struct filter_info *tinfo, int type)
 {
-    struct filter_input *p;
     struct filter_input **np = &tinfo->input_list;
     for (;*np; np = &(*np)->next)
         ;
-    p = *np = nmem_malloc(tinfo->nmem_config, sizeof(*p));
+    struct filter_input *p = *np = nmem_malloc(tinfo->nmem_config, sizeof(*p));
     p->next = 0;
     p->syntax = 0;
     p->name = 0;
@@ -500,9 +494,8 @@ static ZEBRA_RES parse_input(struct filter_info *tinfo, xmlNodePtr ptr,
         {
             yaz_iconv_t iconv = 0;
             const char *input_charset = "marc-8";
-            struct _xmlAttr *attr;
 
-            for (attr = ptr->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = ptr->properties; attr; attr = attr->next)
             {
                 if (attr_content(attr, "inputcharset", &input_charset))
                     ;
@@ -540,13 +533,12 @@ static ZEBRA_RES parse_input(struct filter_info *tinfo, xmlNodePtr ptr,
         {
             struct filter_input *p
                 = new_input(tinfo, DOM_INPUT_XMLREADER);
-            struct _xmlAttr *attr;
             const char *level_str = 0;
 
             p->u.xmlreader.split_level = 0;
             p->u.xmlreader.reader = 0;
 
-            for (attr = ptr->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = ptr->properties; attr; attr = attr->next)
             {
                 if (attr_content(attr, "level", &level_str))
                     ;
@@ -579,8 +571,6 @@ static ZEBRA_RES parse_input(struct filter_info *tinfo, xmlNodePtr ptr,
 static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
 {
     char tmp_full_name[1024];
-    xmlNodePtr ptr;
-    xmlDocPtr doc;
 
     tinfo->fname = nmem_strdup(tinfo->nmem_config, fname);
 
@@ -593,7 +583,7 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
     yaz_log(YLOG_LOG, "%s dom filter: "
             "loading config file %s", tinfo->fname, tinfo->full_name);
 
-    doc = xmlParseFile(tinfo->full_name);
+    xmlDocPtr doc = xmlParseFile(tinfo->full_name);
     if (!doc)
     {
         yaz_log(YLOG_WARN, "%s: dom filter: "
@@ -604,7 +594,7 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
     /* save because we store ptrs to the content */
     tinfo->doc_config = doc;
 
-    ptr = xmlDocGetRootElement(doc);
+    xmlNodePtr ptr = xmlDocGetRootElement(doc);
     if (!ptr || ptr->type != XML_ELEMENT_NODE
         || XML_STRCMP(ptr->name, "dom"))
     {
@@ -624,14 +614,13 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
               <xslt stylesheet="second.xsl"/>
               </extract>
             */
-            struct _xmlAttr *attr;
             struct filter_extract *f =
                 nmem_malloc(tinfo->nmem_config, sizeof(*f));
 
             tinfo->extract = f;
             f->name = 0;
             f->convert = 0;
-            for (attr = ptr->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = ptr->properties; attr; attr = attr->next)
             {
                 if (attr_content(attr, "name", &f->name))
                     ;
@@ -652,7 +641,6 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
                <xslt stylesheet="some.xsl"/>
                </retrieve>
             */
-            struct _xmlAttr *attr;
             struct filter_retrieve **fp = &tinfo->retrieve_list;
             struct filter_retrieve *f =
                 nmem_malloc(tinfo->nmem_config, sizeof(*f));
@@ -666,7 +654,7 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
             f->convert = 0;
             f->next = 0;
 
-            for (attr = ptr->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = ptr->properties; attr; attr = attr->next)
             {
                 if (attr_content(attr, "identifier",
                                  &f->identifier))
@@ -707,10 +695,9 @@ static ZEBRA_RES parse_dom(struct filter_info *tinfo, const char *fname)
               <marc inputcharset="marc-8"/>
               </input>
             */
-            struct _xmlAttr *attr;
             const char  *syntax = 0;
             const char *name = 0;
-            for (attr = ptr->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = ptr->properties; attr; attr = attr->next)
             {
                 if (attr_content(attr, "syntax", &syntax))
                     ;
@@ -830,8 +817,6 @@ static void index_value_of(struct filter_info *tinfo,
 
 
             const char *look = index_p;
-            const char *bval;
-            const char *eval;
 
             xmlChar index[256];
             xmlChar type[256];
@@ -849,12 +834,12 @@ static void index_value_of(struct filter_info *tinfo,
                 *type = '\0';
 
                 /* parsing one index name */
-                bval = look;
+                const char *bval = look;
                 while (*look && ':' != *look && ' ' != *look)
                 {
                     look++;
                 }
-                eval = look;
+                const char *eval = look;
                 strncpy((char *)index, (const char *)bval, eval - bval);
                 index[eval - bval] = '\0';
 
@@ -982,8 +967,7 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
         {
             const char *index_p = 0;
 
-            struct _xmlAttr *attr;
-            for (attr = node->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = node->properties; attr; attr = attr->next)
             {
                 if (attr_content(attr, "name", &index_p))
                 {
@@ -1001,8 +985,7 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
         {
             const char *unit_p = "element";
 
-            struct _xmlAttr *attr;
-            for (attr = node->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = node->properties; attr; attr = attr->next)
             {
                 if (attr_content(attr, "unit", &unit_p))
                     ;
@@ -1054,8 +1037,7 @@ static void process_xml_element_zebra_node(struct filter_info *tinfo,
             const char *rank_p = 0;
             const char *type_p = 0;
 
-            struct _xmlAttr *attr;
-            for (attr = node->properties; attr; attr = attr->next)
+            for (struct _xmlAttr *attr = node->properties; attr; attr = attr->next)
             {
                 if (attr_content(attr, "id", &id_p))
                     ;
@@ -1311,8 +1293,6 @@ static int extract_xml_split(struct filter_info *tinfo,
                              struct filter_input *input,
                              struct recExtractCtrl *p)
 {
-    int ret;
-
     if (p->first_record)
     {
         if (input->u.xmlreader.reader)
@@ -1328,7 +1308,7 @@ static int extract_xml_split(struct filter_info *tinfo,
     if (!input->u.xmlreader.reader)
         return RECCTRL_EXTRACT_ERROR_GENERIC;
 
-    ret = xmlTextReaderRead(input->u.xmlreader.reader);
+    int ret = xmlTextReaderRead(input->u.xmlreader.reader);
     while (ret == 1)
     {
         int type = xmlTextReaderNodeType(input->u.xmlreader.reader);
@@ -1337,12 +1317,10 @@ static int extract_xml_split(struct filter_info *tinfo,
         if (type == XML_READER_TYPE_ELEMENT &&
             input->u.xmlreader.split_level == depth)
         {
-            xmlNodePtr ptr;
-
             /* per default do not ingest record */
             tinfo->record_info_invoked = 0;
 
-            ptr = xmlTextReaderExpand(input->u.xmlreader.reader);
+            xmlNodePtr ptr = xmlTextReaderExpand(input->u.xmlreader.reader);
             if (ptr)
             {
                 /* we have a new document */
@@ -1408,39 +1386,35 @@ static int extract_iso2709(struct filter_info *tinfo,
                            struct recExtractCtrl *p)
 {
     char buf[100000];
-    int record_length;
-    int read_bytes, r;
 
     if (p->stream->readf(p->stream, buf, 5) != 5)
         return RECCTRL_EXTRACT_EOF;
     while (*buf < '0' || *buf > '9')
     {
-        int i;
-
         dom_log(YLOG_WARN, tinfo, 0,
                 "MARC: Skipping bad byte %d (0x%02X)",
                 *buf & 0xff, *buf & 0xff);
-        for (i = 0; i < 4; i++)
+        for (int i = 0; i < 4; i++)
             buf[i] = buf[i+1];
 
         if (p->stream->readf(p->stream, buf+4, 1) != 1)
             return RECCTRL_EXTRACT_EOF;
     }
-    record_length = atoi_n (buf, 5);
+    int record_length = atoi_n (buf, 5);
     if (record_length < 25)
     {
         dom_log(YLOG_WARN, tinfo, 0,
                 "MARC record length < 25, is %d",  record_length);
         return RECCTRL_EXTRACT_ERROR_GENERIC;
     }
-    read_bytes = p->stream->readf(p->stream, buf+5, record_length-5);
+    int read_bytes = p->stream->readf(p->stream, buf+5, record_length-5);
     if (read_bytes < record_length-5)
     {
         dom_log(YLOG_WARN, tinfo, 0,
                 "couldn't read whole MARC record");
         return RECCTRL_EXTRACT_ERROR_GENERIC;
     }
-    r = yaz_marc_read_iso2709(input->u.marc.handle,  buf, record_length);
+    int r = yaz_marc_read_iso2709(input->u.marc.handle,  buf, record_length);
     if (r < record_length)
     {
         dom_log (YLOG_WARN, tinfo, 0,
@@ -1450,11 +1424,10 @@ static int extract_iso2709(struct filter_info *tinfo,
     }
     else
     {
-        xmlDocPtr rdoc;
         xmlNode *root_ptr;
         yaz_marc_write_xml(input->u.marc.handle, &root_ptr,
                            "http://www.loc.gov/MARC21/slim", 0, 0);
-        rdoc = xmlNewDoc((const xmlChar*) "1.0");
+        xmlDocPtr rdoc = xmlNewDoc((const xmlChar*) "1.0");
         xmlDocSetRootElement(rdoc, root_ptr);
         return convert_extract_doc(tinfo, input, p, rdoc);
     }
@@ -1505,8 +1478,6 @@ static int filter_retrieve(void *clientData, struct recRetrieveCtrl *p)
     const char *esn = 0;
     const char *params[32];
     struct filter_info *tinfo = clientData;
-    xmlDocPtr doc;
-    struct filter_retrieve *retrieve;
     xsltStylesheetPtr last_xsp = 0;
 
     if (p->comp)
@@ -1524,7 +1495,7 @@ static int filter_retrieve(void *clientData, struct recRetrieveCtrl *p)
             esn = p->comp->u.complex->generic->elementSpec->u.elementSetName;
         }
     }
-    retrieve = lookup_retrieve(tinfo, esn);
+    struct filter_retrieve *retrieve = lookup_retrieve(tinfo, esn);
     if (!retrieve)
     {
         p->diagnostic =
@@ -1554,7 +1525,7 @@ static int filter_retrieve(void *clientData, struct recRetrieveCtrl *p)
         set_param_int(params, "score", p->score, p->odr->mem);
     set_param_int(params, "size", p->recordSize, p->odr->mem);
 
-    doc = xmlReadIO(ioread_ret, ioclose_ret, p /* I/O handler */,
+    xmlDocPtr doc = xmlReadIO(ioread_ret, ioclose_ret, p /* I/O handler */,
                     0 /* URL */,
                     0 /* encoding */,
                     XML_PARSE_XINCLUDE | XML_PARSE_NOENT | XML_PARSE_NONET);

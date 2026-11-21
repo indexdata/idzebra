@@ -31,8 +31,6 @@ static void tst(int argc, char **argv)
 {
     char path[FILENAME_MAX];
     char record_buf[20000];
-    FILE *f;
-    size_t r;
 
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
@@ -48,11 +46,11 @@ static void tst(int argc, char **argv)
     zebra_set_resource(zh, "recordType", "alvis.marcschema-one.xml");
 
     yaz_snprintf(path, sizeof(path), "%s/marc-missing-ns.xml", tl_get_srcdir());
-    f = fopen(path, "rb");
+    FILE *f = fopen(path, "rb");
     YAZ_CHECK(f);
     if (f)
     {
-        r = fread(record_buf, 1, sizeof(record_buf)-1, f);
+        size_t r = fread(record_buf, 1, sizeof(record_buf)-1, f);
         YAZ_CHECK(r > 0);
         fclose(f);
         YAZ_CHECK(r > 2);

@@ -25,8 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static void pr_string (FILE *out, const char *str, int len)
 {
-    int i;
-    for (i = 0; i<len; i++)
+    for (int i = 0; i<len; i++)
     {
         int c = str[i];
         if (c < 32 || c >126)

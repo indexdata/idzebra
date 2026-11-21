@@ -77,18 +77,16 @@ static INLINE MatchWord get_bit (MatchContext *mc, MatchWord *m, int ch,
 static MatchContext *mk_MatchContext (struct DFA *dfa, int range)
 {
     MatchContext *mc = imalloc (sizeof(*mc));
-    int i;
 
     mc->n = (dfa->no_states+WORD_BITS) / WORD_BITS;
     mc->range = range;
     mc->Sc = icalloc (sizeof(*mc->Sc) * 256 * mc->n);
 
-    for (i=0; i<dfa->no_states; i++)
+    for (int i=0; i<dfa->no_states; i++)
     {
-        int j;
         struct DFA_state *state = dfa->states[i];
 
-        for (j=0; j<state->tran_no; j++)
+        for (int j=0; j<state->tran_no; j++)
         {
             int ch;
             int ch0 = state->trans[j].ch[0];
@@ -107,14 +105,14 @@ static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                         struct DFA *dfa, int ch)
 {
     int j, s = 0;
-    MatchWord *Rsrc_p = Rsrc, mask;
+    MatchWord *Rsrc_p = Rsrc;
 
     Rdst[0] = 1;
     for (j = 1; j<mc->n; j++)
         Rdst[j] = 0;
     while (1)
     {
-        mask = *Rsrc_p++;
+        MatchWord mask = *Rsrc_p++;
         for (j = 0; j<WORD_BITS/4; j++)
         {
             if (mask & 15)
@@ -168,12 +166,12 @@ static void shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                    struct DFA *dfa)
 {
     int j, s = 0;
-    MatchWord *Rsrc_p = Rsrc, mask;
+    MatchWord *Rsrc_p = Rsrc;
     for (j = 0; j<mc->n; j++)
         Rdst[j] = 0;
     while (1)
     {
-        mask = *Rsrc_p++;
+        MatchWord mask = *Rsrc_p++;
         for (j = 0; j<WORD_BITS/4; j++)
         {
             if (mask & 15)
@@ -218,8 +216,7 @@ static void shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
 static void or (MatchContext *mc, MatchWord *Rdst,
                 MatchWord *Rsrc1, MatchWord *Rsrc2)
 {
-    int i;
-    for (i = 0; i<mc->n; i++)
+    for (int i = 0; i<mc->n; i++)
         Rdst[i] = Rsrc1[i] | Rsrc2[i];
 }
 
@@ -229,11 +226,10 @@ static int go (MatchContext *mc, struct DFA *dfa, FILE *inf)
     MatchWord *Rj, *Rj1, *Rj_a, *Rj_b, *Rj_c;
     int s, d, ch;
     int lineno = 1;
-    char *infbuf;
     int inf_ptr = 1;
     int no_match = 0;
 
-    infbuf = imalloc (INFBUF_SIZE);
+    char *infbuf = imalloc (INFBUF_SIZE);
     infbuf[0] = '\n';
     Rj = icalloc (mc->n * (mc->range+1) * sizeof(*Rj));
     Rj1 = icalloc (mc->n * (mc->range+1) * sizeof(*Rj));
@@ -244,9 +240,8 @@ static int go (MatchContext *mc, struct DFA *dfa, FILE *inf)
     set_bit (mc, Rj, 0, 0);
     for (d = 1; d<=mc->range; d++)
     {
-        int s;
         memcpy (Rj + mc->n * d, Rj + mc->n * (d-1), mc->n * sizeof(*Rj));
-        for (s = 0; s<dfa->no_states; s++)
+        for (int s = 0; s<dfa->no_states; s++)
         {
             if (get_bit (mc, Rj, d-1, s))
             {
@@ -259,8 +254,6 @@ static int go (MatchContext *mc, struct DFA *dfa, FILE *inf)
     }
     while ((ch = getc (inf)) != EOF)
     {
-        MatchWord *Rj_t;
-
         infbuf[inf_ptr] = ch;
         if (ch == '\n')
         {
@@ -307,7 +300,7 @@ static int go (MatchContext *mc, struct DFA *dfa, FILE *inf)
         }
         for (d = 0; d <= mc->range; d++)
             reset_bit (mc, Rj1+d*mc->n, 0, dfa->no_states);
-        Rj_t = Rj1;
+        MatchWord *Rj_t = Rj1;
         Rj1 = Rj;
         Rj = Rj_t;
     }
@@ -323,7 +316,6 @@ static int go (MatchContext *mc, struct DFA *dfa, FILE *inf)
 static int grep_file (struct DFA *dfa, const char *fname, int range)
 {
     FILE *inf;
-    MatchContext *mc;
 
     if (fname)
     {
@@ -337,7 +329,7 @@ static int grep_file (struct DFA *dfa, const char *fname, int range)
     else
         inf = stdin;
 
-    mc = mk_MatchContext (dfa, range);
+    MatchContext *mc = mk_MatchContext (dfa, range);
 
     go (mc, dfa, inf);
 
@@ -362,9 +354,8 @@ int main (int argc, char **argv)
         {
             if (!pattern)
             {
-                int i;
                 pattern = arg;
-                i = dfa_parse (dfa, &pattern);
+                int i = dfa_parse (dfa, &pattern);
                 if (i || *pattern)
                 {
                     fprintf (stderr, "%s: illegal pattern\n", prog);

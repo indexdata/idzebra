@@ -75,9 +75,7 @@ static void common_init(Dict_BFile bf, int block_size, int cache)
 Dict_BFile dict_bf_open(BFiles bfs, const char *name, int block_size,
                         int cache, int rw)
 {
-    Dict_BFile dbf;
-
-    dbf = (Dict_BFile) xmalloc(sizeof(*dbf));
+    Dict_BFile dbf = (Dict_BFile) xmalloc(sizeof(*dbf));
     dbf->bf = bf_open(bfs, name, block_size, rw);
     if (!dbf->bf)
     {

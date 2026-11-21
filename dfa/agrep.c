@@ -116,13 +116,12 @@ static int inf_eof, line_no;
 static int inf_flush (int fd)
 {
     char *p;
-    unsigned b, r;
 
-    r = (unsigned) (inf_buf+INF_BUF_SIZE - inf_ptr);  /* no of `wrap' bytes */
+    unsigned r = (unsigned) (inf_buf+INF_BUF_SIZE - inf_ptr);  /* no of `wrap' bytes */
     if (r)
         memcpy (inf_buf, inf_ptr, r);
     inf_ptr = p = inf_buf + r;
-    b = INF_BUF_SIZE - r;
+    unsigned b = INF_BUF_SIZE - r;
     do
         if ((r = read (fd, p, b)) == (unsigned) -1)
             return -1;
@@ -145,12 +144,10 @@ static int inf_flush (int fd)
 
 static char *prline (char *p)
 {
-    char *p0;
-
     --p;
     while (p != inf_buf && p[-1] != '\n')
         --p;
-    p0 = p;
+    char *p0 = p;
     while (*p++ != '\n')
         ;
     p[-1] = '\0';
@@ -166,7 +163,6 @@ static int go (int fd, struct DFA_state **dfaar)
 {
     struct DFA_state *s = dfaar[0];
     struct DFA_tran *t;
-    char *p;
     int i;
     unsigned char c;
     int start_line = 1;
@@ -176,7 +172,7 @@ static int go (int fd, struct DFA_state **dfaar)
         for (c = *inf_ptr++, t=s->trans, i=s->tran_no; --i >= 0; t++)
             if (c >= t->ch[0] && c <= t->ch[1])
             {
-                p = inf_ptr;
+                char *p = inf_ptr;
                 do
                 {
                     if ((s = dfaar[t->to])->rule_no &&
@@ -236,7 +232,7 @@ int main (int argc, char **argv)
 {
     const char *pattern = NULL;
     char outbuf[BUFSIZ];
-    int fd, i, no = 0;
+    int no = 0;
     struct DFA *dfa = dfa_init();
 
     prog = *argv;
@@ -250,7 +246,7 @@ int main (int argc, char **argv)
         exit (1);
     }
     setbuf (stdout, outbuf);
-    i = agrep_options (argc, argv);
+    int i = agrep_options (argc, argv);
     if (i)
         return i;
     while (--argc > 0)
@@ -270,7 +266,7 @@ int main (int argc, char **argv)
             else
             {
                 ++no;
-                fd = open (*argv, O_RDONLY | O_BINARY);
+                int fd = open (*argv, O_RDONLY | O_BINARY);
                 if (fd == -1)
                 {
                     fprintf (stderr, "%s: couldn't open `%s'\n", prog, *argv);

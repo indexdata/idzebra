@@ -70,7 +70,7 @@ static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd);
 
 static int sp_range(struct source_parser *sp, data1_node *n, RecWord *wrd)
 {
-    int start, len;
+    int len;
     RecWord tmp_w;
 
     /* ( */
@@ -90,7 +90,7 @@ static int sp_range(struct source_parser *sp, data1_node *n, RecWord *wrd)
     /* 2nd arg: start */
     if (!sp_expr(sp, n, &tmp_w))
         return 0;
-    start = atoi_n(tmp_w.term_buf, tmp_w.term_len);
+    int start = atoi_n(tmp_w.term_buf, tmp_w.term_len);
 
     if (sp->lookahead == ',')
     {
@@ -229,18 +229,16 @@ static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
     }
     else if (sp->len > 0 && isdigit(*(unsigned char *)sp->tok))
     {
-        char *b;
         wrd->term_len = sp->len;
-        b = nmem_malloc(sp->nmem, sp->len);
+        char *b = nmem_malloc(sp->nmem, sp->len);
         memcpy(b, sp->tok, sp->len);
         wrd->term_buf = b;
         sp_lex(sp);
     }
     else if (sp->len > 2 && sp->tok[0] == '\'' && sp->tok[sp->len-1] == '\'')
     {
-        char *b;
         wrd->term_len = sp->len - 2;
-        b = nmem_malloc(sp->nmem, wrd->term_len);
+        char *b = nmem_malloc(sp->nmem, wrd->term_len);
         memcpy(b, sp->tok+1, wrd->term_len);
         wrd->term_buf = b;
         sp_lex(sp);
@@ -286,8 +284,6 @@ static int sp_parse(struct source_parser *sp,
 int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
 {
     int res = 1;
-    char *attname;
-    data1_xattr *attr;
 
     if (!p) {
         return 1;
@@ -300,10 +296,10 @@ int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
                     yaz_log(YLOG_WARN, "predicate %s ignored", p->u.relation.name);
                     return 1;
                 }
-                attname = p->u.relation.name + 1;
+                char *attname = p->u.relation.name + 1;
                 res = 0;
                 /* looking for the attribute with a specified name */
-                for (attr = n->u.tag.attributes; attr; attr = attr->next) {
+                for (data1_xattr *attr = n->u.tag.attributes; attr; attr = attr->next) {
                     if (!strcmp(attr->name, attname)) {
                         if (p->u.relation.op[0]) {
                             if (*p->u.relation.op != '=') {
@@ -510,10 +506,9 @@ static void index_xpath_attr(char *tag_path, char *name, char *value,
 static void mk_tag_path_full(char *tag_path_full, size_t max, data1_node *n)
 {
     size_t flen = 0;
-    data1_node *nn;
 
     /* we have to fetch the whole path to the data tag */
-    for (nn = n; nn; nn = nn->parent)
+    for (data1_node *nn = n; nn; nn = nn->parent)
     {
         if (nn->which == DATA1N_tag)
         {
@@ -899,7 +894,6 @@ static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
                            NMEM mem,
                            data1_node *(*grs_read)(struct grs_read_info *))
 {
-    data1_node *n;
     struct grs_read_info gri;
     RecWord wrd;
 
@@ -908,7 +902,7 @@ static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
     gri.dh = p->dh;
     gri.clientData = clientData;
 
-    n = (*grs_read)(&gri);
+    data1_node *n = (*grs_read)(&gri);
     if (!n)
         return RECCTRL_EXTRACT_EOF;
     if (n->u.root.absyn && n->u.root.absyn->oid)
@@ -936,9 +930,8 @@ static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
 int zebra_grs_extract(void *clientData, struct recExtractCtrl *p,
                       data1_node *(*grs_read)(struct grs_read_info *))
 {
-    int ret;
     NMEM mem = nmem_create();
-    ret = grs_extract_sub(clientData, p, mem, grs_read);
+    int ret = grs_extract_sub(clientData, p, mem, grs_read);
     nmem_destroy(mem);
     return ret;
 }
@@ -1038,7 +1031,6 @@ static void zebra_xml_metadata(struct recRetrieveCtrl *p, data1_node *top,
     const char *idzebra_ns[3];
     const char *i2 = "\n  ";
     const char *i4 = "\n    ";
-    data1_node *n;
 
     idzebra_ns[0] = "xmlns";
     idzebra_ns[1] = "http://www.indexdata.dk/zebra/";
@@ -1046,7 +1038,7 @@ static void zebra_xml_metadata(struct recRetrieveCtrl *p, data1_node *top,
 
     data1_mk_text(p->dh, mem, i2, top);
 
-    n = data1_mk_tag(p->dh, mem, "idzebra", idzebra_ns, top);
+    data1_node *n = data1_mk_tag(p->dh, mem, "idzebra", idzebra_ns, top);
 
     data1_mk_text(p->dh, mem, "\n", top);
 
@@ -1076,15 +1068,13 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     data1_node *dnew;
     data1_maptab *map;
     int res, selected = 0;
-    NMEM mem;
     struct grs_read_info gri;
-    const char *tagname;
 
     const Odr_oid *requested_schema = 0;
     data1_marctab *marctab;
     int dummy;
 
-    mem = nmem_create();
+    NMEM mem = nmem_create();
     gri.stream = p->stream;
     gri.mem = mem;
     gri.dh = p->dh;
@@ -1108,7 +1098,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     top = data1_get_root_tag(p->dh, node);
 
     yaz_log(YLOG_DEBUG, "grs_retrieve: size");
-    tagname = data1_systag_lookup(node->u.root.absyn, "size", "size");
+    const char *tagname = data1_systag_lookup(node->u.root.absyn, "size", "size");
     if (tagname &&
         (dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {

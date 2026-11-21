@@ -79,13 +79,12 @@ static void file_update_r(ZebraHandle zh,
                           const char *base, char *src,
                           int level)
 {
-    struct dir_entry *e_src;
     int i_src = 0;
     static char tmppath[1024];
     size_t src_len = strlen(src);
 
     yaz_snprintf(tmppath, sizeof(tmppath), "%s%s", base, src);
-    e_src = dir_open(tmppath, zh->path_reg, zh->m_follow_links);
+    struct dir_entry *e_src = dir_open(tmppath, zh->path_reg, zh->m_follow_links);
     yaz_log(YLOG_LOG, "dir %s", tmppath);
 
     if (!dst || strcmp(dst->path, src))
@@ -216,7 +215,6 @@ static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
     struct stat sbuf;
     char src[1024];
     char dst[1024];
-    int src_len, ret;
 
     assert(path);
 
@@ -228,10 +226,10 @@ static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
     else
         *src = '\0';
     strcat(src, path);
-    ret = zebra_file_stat(src, &sbuf, zh->m_follow_links);
+    int ret = zebra_file_stat(src, &sbuf, zh->m_follow_links);
 
     strcpy(src, path);
-    src_len = strlen(src);
+    int src_len = strlen(src);
 
     if (ret == -1)
     {
@@ -239,10 +237,9 @@ static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
     }
     else if (S_ISREG(sbuf.st_mode))
     {
-        struct dirs_entry *e_dst;
         di = dirs_fopen(dict, src, zh->m_flag_rw);
 
-        e_dst = dirs_read(di);
+        struct dirs_entry *e_dst = dirs_read(di);
         if (e_dst)
         {
             if (sbuf.st_mtime > e_dst->mtime)
@@ -278,9 +275,8 @@ static void file_update_top(ZebraHandle zh, Dict dict, const char *path)
 static ZEBRA_RES zebra_open_fmatch(ZebraHandle zh, Dict *dictp)
 {
     char fmatch_fname[1024];
-    int ord;
 
-    ord = zebraExplain_get_database_ord(zh->reg->zei);
+    int ord = zebraExplain_get_database_ord(zh->reg->zei);
     yaz_snprintf(fmatch_fname, sizeof(fmatch_fname), FMATCH_DICT, ord);
     if (!(*dictp = dict_open_res(zh->reg->bfs, fmatch_fname, 50,
                                 zh->m_flag_rw, 0, zh->res)))

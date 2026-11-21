@@ -68,21 +68,18 @@ static void pkey(const char *b, int mode)
 
 void extract_get_fname_tmp(ZebraHandle zh, char *fname, size_t fname_size, int no)
 {
-    const char *pre;
-
-    pre = res_get_def(zh->res, "keyTmpDir", ".");
+    const char *pre = res_get_def(zh->res, "keyTmpDir", ".");
     yaz_snprintf(fname, fname_size, "%s/key%d.tmp", pre, no);
 }
 
 void key_file_chunk_read(struct key_file *f)
 {
-    int nr = 0, r = 0, fd;
+    int nr = 0, r = 0;
     char fname[1024];
-    const char *pre;
 
-    pre = res_get_def(f->res, "keyTmpDir", ".");
+    const char *pre = res_get_def(f->res, "keyTmpDir", ".");
     yaz_snprintf(fname, sizeof(fname), "%s/key%d.tmp", pre, f->no);
-    fd = open(fname, O_BINARY|O_RDONLY);
+    int fd = open(fname, O_BINARY|O_RDONLY);
 
     f->buf_ptr = 0;
     f->buf_size = 0;
@@ -135,9 +132,7 @@ void key_file_destroy(struct key_file *f)
 
 struct key_file *key_file_init(int no, int chunk, Res res)
 {
-    struct key_file *f;
-
-    f = (struct key_file *) xmalloc(sizeof(*f));
+    struct key_file *f = (struct key_file *) xmalloc(sizeof(*f));
     f->res = res;
     f->decode_handle = iscz1_start();
     f->no = no;
@@ -168,13 +163,11 @@ int key_file_getc(struct key_file *f)
 
 int key_file_read(struct key_file *f, char *key)
 {
-    int i, c;
+    int i;
     char srcbuf[128];
     const char *src = srcbuf;
-    char *dst;
-    int j;
 
-    c = key_file_getc(f);
+    int c = key_file_getc(f);
     if (c == 0)
     {
         strcpy(key, f->prev_name);
@@ -198,9 +191,9 @@ int key_file_read(struct key_file *f, char *key)
     c = key_file_getc(f); /* length +  insert/delete combined */
     key[i++] = c & 128;
     c = c & 127;
-    for (j = 0; j < c; j++)
+    for (int j = 0; j < c; j++)
         srcbuf[j] = key_file_getc(f);
-    dst = key + i;
+    char *dst = key + i;
     iscz1_decode(f->decode_handle, &dst, &src);
 
 #if 0
@@ -235,8 +228,7 @@ struct heap_info {
 
 static struct heap_info *key_heap_malloc(void)
 {  /* malloc and clear it */
-    struct heap_info *hi;
-    hi = (struct heap_info *) xmalloc(sizeof(*hi));
+    struct heap_info *hi = (struct heap_info *) xmalloc(sizeof(*hi));
     hi->info.file = 0;
     hi->info.buf = 0;
     hi->heapnum = 0;
@@ -254,17 +246,14 @@ struct heap_info *key_heap_init_file(ZebraHandle zh,
                                      int nkeys,
                                      int (*cmp)(const void *p1, const void *p2))
 {
-    struct heap_info *hi;
-    int i;
-
-    hi = key_heap_malloc();
+    struct heap_info *hi = key_heap_malloc();
     hi->zh = zh;
     hi->info.file = (struct key_file **)
         xmalloc(sizeof(*hi->info.file) * (1+nkeys));
     hi->info.buf = (char **) xmalloc(sizeof(*hi->info.buf) * (1+nkeys));
     hi->ptr = (int *) xmalloc(sizeof(*hi->ptr) * (1+nkeys));
     hi->cmp = cmp;
-    for (i = 0; i<= nkeys; i++)
+    for (int i = 0; i<= nkeys; i++)
     {
         hi->ptr[i] = i;
         hi->info.buf[i] = (char *) xmalloc(INP_NAME_MAX);
@@ -274,8 +263,7 @@ struct heap_info *key_heap_init_file(ZebraHandle zh,
 
 void key_heap_destroy(struct heap_info *hi, int nkeys)
 {
-    int i;
-    for (i = 0; i<=nkeys; i++)
+    for (int i = 0; i<=nkeys; i++)
         xfree(hi->info.buf[i]);
     xfree(hi->info.buf);
     xfree(hi->ptr);
@@ -285,9 +273,7 @@ void key_heap_destroy(struct heap_info *hi, int nkeys)
 
 static void key_heap_swap(struct heap_info *hi, int i1, int i2)
 {
-    int swap;
-
-    swap = hi->ptr[i1];
+    int swap = hi->ptr[i1];
     hi->ptr[i1] = hi->ptr[i2];
     hi->ptr[i2] = swap;
 }
@@ -321,15 +307,13 @@ static void key_heap_delete(struct heap_info *hi)
 static void key_heap_insert(struct heap_info *hi, const char *buf, int nbytes,
                              struct key_file *kf)
 {
-    int cur, parent;
-
     assert(nbytes < INP_NAME_MAX);
 
-    cur = ++(hi->heapnum);
+    int cur = ++(hi->heapnum);
     memcpy(hi->info.buf[hi->ptr[cur]], buf, nbytes);
     hi->info.file[hi->ptr[cur]] = kf;
 
-    parent = cur/2;
+    int parent = cur/2;
     while (parent && (*hi->cmp)(&hi->info.buf[hi->ptr[parent]],
                                 &hi->info.buf[hi->ptr[cur]]) > 0)
     {
@@ -341,16 +325,14 @@ static void key_heap_insert(struct heap_info *hi, const char *buf, int nbytes,
 
 static int heap_read_one(struct heap_info *hi, char *name, char *key)
 {
-    int n, r;
     char rbuf[INP_NAME_MAX];
-    struct key_file *kf;
 
     if (!hi->heapnum)
         return 0;
-    n = hi->ptr[1];
+    int n = hi->ptr[1];
     strcpy(name, hi->info.buf[n]);
-    kf = hi->info.file[n];
-    r = strlen(name);
+    struct key_file *kf = hi->info.file[n];
+    int r = strlen(name);
     memcpy(key, hi->info.buf[n] + r+1, KEY_SIZE);
     key_heap_delete(hi);
     if ((r = key_file_read(kf, rbuf)))
@@ -681,7 +663,7 @@ struct progressInfo {
 void progressFunc(struct key_file *keyp, void *info)
 {
     struct progressInfo *p = (struct progressInfo *) info;
-    time_t now, remaining;
+    time_t now;
 
     if (keyp->buf_size <= 0 || p->totalBytes <= 0)
         return ;
@@ -690,7 +672,7 @@ void progressFunc(struct key_file *keyp, void *info)
     if (now >= p->lastTime+10)
     {
         p->lastTime = now;
-        remaining = (time_t) ((now - p->startTime)*
+        time_t remaining = (time_t) ((now - p->startTime)*
             ((double) p->totalBytes/p->totalOffset - 1.0));
         if (remaining <= 130)
             yaz_log(YLOG_LOG, "Merge %2.1f%% completed; %ld seconds remaining",
@@ -711,7 +693,6 @@ void zebra_index_merge(ZebraHandle zh)
     struct key_file **kf = 0;
     char rbuf[1024];
     int i, r;
-    struct heap_info *hi;
     struct progressInfo progressInfo;
     int nkeys = key_block_get_no_files(zh->reg->key_block);
 
@@ -745,7 +726,7 @@ void zebra_index_merge(ZebraHandle zh)
         progressInfo.totalBytes += kf[i]->length;
         progressInfo.totalOffset += kf[i]->buf_size;
     }
-    hi = key_heap_init_file(zh, nkeys, key_qsort_compare);
+    struct heap_info *hi = key_heap_init_file(zh, nkeys, key_qsort_compare);
     hi->reg = zh->reg;
 
     for (i = 1; i<=nkeys; i++)

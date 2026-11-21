@@ -177,7 +177,6 @@ static int cb_external_entity(XML_Parser pparser,
     struct user_info *ui = (struct user_info*) XML_GetUserData(pparser);
     FILE *inf;
     int done = 0;
-    XML_Parser parser;
 
     yaz_log(ui->loglevel,
             "external entity context=%s base=%s systemid=%s publicid=%s",
@@ -191,17 +190,16 @@ static int cb_external_entity(XML_Parser pparser,
         return 0;
     }
 
-    parser = XML_ExternalEntityParserCreate(pparser, "", 0);
+    XML_Parser parser = XML_ExternalEntityParserCreate(pparser, "", 0);
     while (!done)
     {
-        int r;
         void *buf = XML_GetBuffer(parser, XML_CHUNK);
         if (!buf)
         {
             yaz_log(YLOG_WARN, "XML_GetBuffer fail");
             break;
         }
-        r = fread(buf, 1, XML_CHUNK, inf);
+        int r = fread(buf, 1, XML_CHUNK, inf);
         if (r == 0)
         {
             if (ferror(inf))
@@ -227,7 +225,6 @@ static int cb_external_entity(XML_Parser pparser,
 static int cb_encoding_convert(void *data, const char *s)
 {
     iconv_t t = (iconv_t) data;
-    size_t ret;
     size_t outleft = 2;
     char outbuf_[2], *outbuf = outbuf_;
     size_t inleft = 4;
@@ -237,7 +234,7 @@ static int cb_encoding_convert(void *data, const char *s)
 #if 1
     yaz_log(YLOG_LOG, "------------------------- cb_encoding_convert --- ");
 #endif
-    ret = iconv(t, &inbuf, &inleft, &outbuf, &outleft);
+    size_t ret = iconv(t, &inbuf, &inleft, &outbuf, &outleft);
     if (ret == (size_t) (-1) && errno != E2BIG)
     {
         iconv (t, 0, 0, 0, 0);
@@ -270,7 +267,6 @@ static int cb_encoding_handler(void *userData, const char *name,
     yaz_log(ui->loglevel, "Encoding handler of %s", name);
     for (i = 0; i<256; i++)
     {
-        size_t ret;
         char outbuf_[5];
         char inbuf_[5];
         char *inbuf = inbuf_;
@@ -281,7 +277,7 @@ static int cb_encoding_handler(void *userData, const char *name,
 
         iconv (t, 0, 0, 0, 0);  /* reset iconv */
 
-        ret = iconv(t, &inbuf, &inleft, &outbuf, &outleft);
+        size_t ret = iconv(t, &inbuf, &inleft, &outbuf, &outleft);
         if (ret == (size_t) (-1))
         {
             if (errno == EILSEQ)
@@ -398,10 +394,8 @@ data1_node *zebra_read_xml(data1_handle dh,
                            struct ZebraRecStream *stream,
                            NMEM m)
 {
-    XML_Parser parser;
     struct user_info uinfo;
     int done = 0;
-    data1_node *first_node;
     int no_read = 0;
 
     uinfo.loglevel = YLOG_DEBUG;
@@ -411,7 +405,7 @@ data1_node *zebra_read_xml(data1_handle dh,
     uinfo.d1_stack[0] = data1_mk_node2 (dh, m, DATA1N_root, 0);
     uinfo.d1_stack[1] = 0; /* indicate no children (see end of routine) */
 
-    parser = XML_ParserCreate (0 /* encoding */);
+    XML_Parser parser = XML_ParserCreate (0 /* encoding */);
 
     XML_SetElementHandler(parser, cb_start, cb_end);
     XML_SetCharacterDataHandler(parser, cb_chardata);
@@ -428,7 +422,6 @@ data1_node *zebra_read_xml(data1_handle dh,
 #endif
     while (!done)
     {
-        int r;
         void *buf = XML_GetBuffer(parser, XML_CHUNK);
         if (!buf)
         {
@@ -436,7 +429,7 @@ data1_node *zebra_read_xml(data1_handle dh,
             yaz_log(YLOG_WARN, "XML_GetBuffer fail");
             break;
         }
-        r = stream->readf(stream, buf, XML_CHUNK);
+        int r = stream->readf(stream, buf, XML_CHUNK);
         if (r < 0)
         {
             /* error */
@@ -459,7 +452,7 @@ data1_node *zebra_read_xml(data1_handle dh,
     if (!uinfo.d1_stack[1] || !done)
         return 0;
     /* insert XML header if not present .. */
-    first_node = uinfo.d1_stack[0]->child;
+    data1_node *first_node = uinfo.d1_stack[0]->child;
     if (first_node->which != DATA1N_preprocess ||
         strcmp(first_node->u.preprocess.target, "xml"))
     {

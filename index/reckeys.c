@@ -78,9 +78,8 @@ static void init_hash(zebra_rec_keys_t p)
     nmem_reset(p->nmem);
     if (p->hash_size)
     {
-        size_t i;
         p->entries = nmem_malloc(p->nmem, p->hash_size * sizeof(*p->entries));
-        for (i = 0; i<p->hash_size; i++)
+        for (size_t i = 0; i<p->hash_size; i++)
             p->entries[i] = 0;
     }
 }
@@ -189,7 +188,6 @@ void zebra_rec_keys_write(zebra_rec_keys_t keys,
                           const char *str, size_t slen,
                           const struct it_key *key)
 {
-    char *dst;
     const char *src = (char*) key;
 
     assert(keys->owner_of_buffer);
@@ -217,7 +215,7 @@ void zebra_rec_keys_write(zebra_rec_keys_t keys,
         xfree (keys->buf);
         keys->buf = b;
     }
-    dst = keys->buf + keys->buf_used;
+    char *dst = keys->buf + keys->buf_used;
 
     iscz1_encode(keys->encode_handle, &dst, &src);
 

@@ -113,7 +113,6 @@ void tstcodec1(void)
 {
     char buf[100];
     char *dst = buf;
-    const char *src;
     struct it_key key1;
     struct it_key key2;
     void *codec_handle =iscz1_start();
@@ -127,7 +126,7 @@ void tstcodec1(void)
     key1.mem[2] = 125060;
     key1.mem[3] = 1;
 
-    src = (char*) &key1;
+    const char *src = (char*) &key1;
     dst = buf;
     iscz1_encode(codec_handle, &dst, &src);
 
@@ -146,8 +145,7 @@ void tstcodec1(void)
     {
         const char *cp1 = (char*) &key1;
         const char *cp2 = (char*) &key2;
-        int i;
-        for (i = 0; i<sizeof(key1); i++)
+        for (int i = 0; i<sizeof(key1); i++)
             printf ("offset=%d char1=%d char2=%d\n", i, cp1[i], cp2[i]);
     }
 }
@@ -155,14 +153,13 @@ void tstcodec1(void)
 int tstcodec2(int num)
 {
     int errors = 0;
-    int i;
     int max = 2048;
     int neg = 0;  /* iscz1_{en,de}code does not handle negative numbers */
     void *encode_handle =iscz1_start();
     void *decode_handle =iscz1_start();
 
     srand(12);
-    for (i = 0; i<num; i++)
+    for (int i = 0; i<num; i++)
     {
         struct it_key ar1, ar2;
         int j;
@@ -212,14 +209,13 @@ int tstcodec2(int num)
 int main(int argc, char **argv)
 {
     int num = 0;
-    int ret;
     prog = *argv;
     if (argc > 1)
         num = atoi(argv[1]);
     if (num < 1 || num > 100000000)
         num = 10000;
     tstcodec1();
-    ret = tstcodec2(500);
+    int ret = tstcodec2(500);
     ret = tst_encode(num);
     exit(ret);
 }

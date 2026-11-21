@@ -40,11 +40,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 static void repositoryExtractR(ZebraHandle zh, char *rep, int level,
                                enum zebra_recctrl_action_t action)
 {
-    struct dir_entry *e;
-    int i;
     size_t rep_len = strlen(rep);
 
-    e = dir_open(rep, zh->path_reg, zh->m_follow_links);
+    struct dir_entry *e = dir_open(rep, zh->path_reg, zh->m_follow_links);
     if (!e)
         return;
     yaz_log(YLOG_LOG, "dir %s", rep);
@@ -53,7 +51,7 @@ static void repositoryExtractR(ZebraHandle zh, char *rep, int level,
     else
         --rep_len;
 
-    for (i=0; e[i].name; i++)
+    for (int i=0; e[i].name; i++)
     {
         char *ecp;
         strcpy(rep +rep_len+1, e[i].name);
@@ -77,10 +75,8 @@ static void repositoryExtractR(ZebraHandle zh, char *rep, int level,
 void repositoryShow(ZebraHandle zh, const char *path)
 {
     char src[1024];
-    int src_len;
     struct dirs_entry *dst;
     Dict dict;
-    struct dirs_info *di;
 
     if (!(dict = dict_open_res(zh->reg->bfs, FMATCH_DICT, 50, 0, 0, zh->res)))
     {
@@ -90,7 +86,7 @@ void repositoryShow(ZebraHandle zh, const char *path)
 
     strncpy(src, path, sizeof(src)-1);
     src[sizeof(src)-1]='\0';
-    src_len = strlen(src);
+    int src_len = strlen(src);
 
     if (src_len && src[src_len-1] != '/')
     {
@@ -98,7 +94,7 @@ void repositoryShow(ZebraHandle zh, const char *path)
         src[++src_len] = '\0';
     }
 
-    di = dirs_open(dict, src, zh->m_flag_rw);
+    struct dirs_info *di = dirs_open(dict, src, zh->m_flag_rw);
 
     while ((dst = dirs_read(di)))
         yaz_log(YLOG_LOG, "%s", dst->path);
@@ -113,7 +109,6 @@ static void repositoryExtract(ZebraHandle zh,
 {
     struct stat sbuf;
     char src[1024];
-    int ret;
 
     assert (path);
 
@@ -125,7 +120,7 @@ static void repositoryExtract(ZebraHandle zh,
     else
         *src = '\0';
     strcat(src, path);
-    ret = zebra_file_stat(src, &sbuf, zh->m_follow_links);
+    int ret = zebra_file_stat(src, &sbuf, zh->m_follow_links);
 
     strcpy(src, path);
 

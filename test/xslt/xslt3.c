@@ -30,8 +30,6 @@ static void tst(int argc, char **argv)
     const char *records_array[] = {
         record_buf, 0
     };
-    FILE *f;
-    size_t r;
 
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
@@ -47,13 +45,13 @@ static void tst(int argc, char **argv)
     zebra_set_resource(zh, "recordType", "alvis.marcschema-one.xml");
 
     yaz_snprintf(path, sizeof(path), "%s/marc-one.xml", tl_get_srcdir());
-    f = fopen(path, "rb");
+    FILE *f = fopen(path, "rb");
     if (!f)
     {
         yaz_log(YLOG_FATAL|YLOG_ERRNO, "Cannot open %s", path);
         exit(1);
     }
-    r = fread(record_buf, 1, sizeof(record_buf)-1, f);
+    size_t r = fread(record_buf, 1, sizeof(record_buf)-1, f);
     if (r < 2 || r == sizeof(record_buf)-1)
     {
         yaz_log(YLOG_FATAL, "Bad size of %s", path);

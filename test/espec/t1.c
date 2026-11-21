@@ -27,7 +27,6 @@ static void tst(int argc, char **argv)
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs, 0);
     char path[256];
-    int i;
 
     tl_check_filter(zs, "grs.xml");
 
@@ -36,7 +35,7 @@ static void tst(int argc, char **argv)
     zebra_init(zh);
 
     YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
-    for (i = 1; i <= 1; i++)
+    for (int i = 1; i <= 1; i++)
     {
         yaz_snprintf(path, sizeof(path), "%s/rec%d.xml", tl_get_srcdir(), i);
         zebra_repository_update(zh, path);

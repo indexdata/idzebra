@@ -138,7 +138,7 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
 
 static zint file_position(MFile mf, zint pos, int offset)
 {
-    zint off = 0, ps;
+    zint off = 0;
     int c = mf->cur_file;
 
     if ((c > 0 && pos <= mf->files[c-1].top) ||
@@ -170,7 +170,7 @@ static zint file_position(MFile mf, zint pos, int offset)
             return -1;
         }
     }
-    ps = pos - off;
+    zint ps = pos - off;
     if (mfile_seek(mf->files[c].fd, ps *(mfile_off_t) mf->blocksize + offset,
         SEEK_SET) < 0)
     {
@@ -197,12 +197,11 @@ MFile_area mf_init(const char *name, const char *spec, const char *base,
                    int only_shadow_files)
 {
     MFile_area ma = (MFile_area) xmalloc(sizeof(*ma));
-    mf_dir *dirp;
     meta_file *meta_f;
     part_file *part_f = 0;
     DIR *dd;
     struct dirent *dent;
-    int fd, number;
+    int fd;
     char metaname[FILENAME_MAX+1], tmpnam[FILENAME_MAX+1];
 
     yaz_log(YLOG_DEBUG, "mf_init(%s)", name);
@@ -216,7 +215,7 @@ MFile_area mf_init(const char *name, const char *spec, const char *base,
         return 0;
     }
     /* look at each directory */
-    for (dirp = ma->dirs; dirp; dirp = dirp->next)
+    for (mf_dir *dirp = ma->dirs; dirp; dirp = dirp->next)
     {
         if (!(dd = opendir(dirp->name)))
         {
@@ -234,7 +233,7 @@ MFile_area mf_init(const char *name, const char *spec, const char *base,
                 continue;
             if (len < 5 || !cp || strcmp(dent->d_name + len - 3, ".mf"))
                 continue;
-            number = atoi(cp+1);
+            int number = atoi(cp+1);
             memcpy(metaname, dent->d_name, cp - dent->d_name);
             metaname[ cp - dent->d_name] = '\0';
 
@@ -308,11 +307,9 @@ MFile_area mf_init(const char *name, const char *spec, const char *base,
 
 void mf_destroy(MFile_area ma)
 {
-    mf_dir *dp;
-
     if (!ma)
         return;
-    dp = ma->dirs;
+    mf_dir *dp = ma->dirs;
     while (dp)
     {
         mf_dir *d = dp;
@@ -325,20 +322,17 @@ void mf_destroy(MFile_area ma)
 
 void mf_reset(MFile_area ma, int unlink_flag)
 {
-    meta_file *meta_f;
-
     if (!ma)
         return;
-    meta_f = ma->mfiles;
+    meta_file *meta_f = ma->mfiles;
     while (meta_f)
     {
-        int i;
         meta_file *m = meta_f;
 
         meta_f = meta_f->next;
 
         assert(!m->open);
-        for (i = 0; i<m->no_files; i++)
+        for (int i = 0; i<m->no_files; i++)
         {
             if (unlink_flag)
                 unlink(m->files[i].path);
@@ -430,11 +424,9 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 
 int mf_close(MFile mf)
 {
-    int i;
-
     yaz_log(YLOG_DEBUG, "mf_close(%s)", mf->name);
     assert(mf->open);
-    for (i = 0; i < mf->no_files; i++)
+    for (int i = 0; i < mf->no_files; i++)
     {
         if (mf->files[i].fd >= 0)
         {
@@ -453,7 +445,6 @@ int mf_close(MFile mf)
 int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf)
 {
     zint rd;
-    int toread;
 
     zebra_mutex_lock(&mf->mutex);
     if ((rd = file_position(mf, no, offset)) < 0)
@@ -469,7 +460,7 @@ int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf)
             return -1;
         }
     }
-    toread = nbytes ? nbytes : mf->blocksize;
+    int toread = nbytes ? nbytes : mf->blocksize;
     if ((rd = read(mf->files[mf->cur_file].fd, buf, toread)) < 0)
     {
         yaz_log(YLOG_FATAL|YLOG_ERRNO, "mf_read2: Read failed (%s)",
@@ -488,7 +479,6 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
     int ret = 0;
     zint ps;
     zint nblocks;
-    int towrite;
     mf_dir *dp;
     char tmp[FILENAME_MAX+1];
     unsigned char dummych = '\xff';
@@ -588,7 +578,7 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
                 nblocks * mf->blocksize;
         }
     }
-    towrite = nbytes ? nbytes : mf->blocksize;
+    int towrite = nbytes ? nbytes : mf->blocksize;
     if (write(mf->files[mf->cur_file].fd, buf, towrite) < towrite)
     {
         yaz_log(YLOG_FATAL|YLOG_ERRNO, "Write failed for file %s part %d",

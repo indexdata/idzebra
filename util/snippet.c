@@ -103,8 +103,7 @@ const zebra_snippet_word *zebra_snippets_constlist(const zebra_snippets *l)
 
 void zebra_snippets_log(const zebra_snippets *l, int log_level, int all)
 {
-    zebra_snippet_word *w;
-    for (w = l->front; w; w = w->next)
+    for (zebra_snippet_word *w = l->front; w; w = w->next)
     {
         WRBUF wr_term = wrbuf_alloc();
         wrbuf_puts_escaped(wr_term, w->term);
@@ -129,7 +128,6 @@ zebra_snippets *zebra_snippets_window(const zebra_snippets *doc,
 
     while(1)
     {
-        zint window_start;
         zint first_seq_no_best_window = 0;
         zint last_seq_no_best_window = 0;
         int number_best_window = 0;
@@ -177,7 +175,7 @@ zebra_snippets *zebra_snippets_window(const zebra_snippets *doc,
                 last_seq_no_best_window);
         yaz_log(YLOG_DEBUG, "number_best_window=%d", number_best_window);
 
-        window_start = (first_seq_no_best_window + last_seq_no_best_window -
+        zint window_start = (first_seq_no_best_window + last_seq_no_best_window -
                         window_size) / 2;
         for (doc_w = zebra_snippets_constlist(doc); doc_w; doc_w = doc_w->next)
             if (doc_w->ord == ord
@@ -206,9 +204,7 @@ zebra_snippets *zebra_snippets_window(const zebra_snippets *doc,
 
 static void zebra_snippets_clear(zebra_snippets *sn)
 {
-    zebra_snippet_word *w;
-
-    for (w = zebra_snippets_list(sn); w; w = w->next)
+    for (zebra_snippet_word *w = zebra_snippets_list(sn); w; w = w->next)
     {
         w->mark = 0;
         w->match = 0;
@@ -218,8 +214,8 @@ static void zebra_snippets_clear(zebra_snippets *sn)
 const struct zebra_snippet_word *zebra_snippets_lookup(
     const zebra_snippets *doc, const zebra_snippets *hit)
 {
-    const zebra_snippet_word *hit_w;
-    for (hit_w = zebra_snippets_constlist(hit); hit_w; hit_w = hit_w->next)
+    for (const zebra_snippet_word *hit_w = zebra_snippets_constlist(hit);
+         hit_w; hit_w = hit_w->next)
     {
         const zebra_snippet_word *doc_w;
         for (doc_w = zebra_snippets_constlist(doc); doc_w; doc_w = doc_w->next)

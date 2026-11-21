@@ -63,13 +63,13 @@ RSET rsisamc_create(NMEM nmem, struct rset_key_control *kcontrol,
                     ISAMC is, ISAM_P pos, TERMID term)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term, 0, 0);
-    struct rset_isamc_info *info;
     if (!log_level_initialized)
     {
         log_level = yaz_log_module_level("rsisamc");
         log_level_initialized = 1;
     }
-    info = (struct rset_isamc_info *) nmem_malloc(rnew->nmem, sizeof(*info));
+    struct rset_isamc_info *info =
+        (struct rset_isamc_info *) nmem_malloc(rnew->nmem, sizeof(*info));
     info->is = is;
     info->pos = pos;
     rnew->priv = info;
@@ -86,7 +86,6 @@ static void r_delete (RSET ct)
 RSFD r_open (RSET ct, int flag)
 {
     struct rset_isamc_info *info = (struct rset_isamc_info *) ct->priv;
-    RSFD rfd;
     struct rset_pp_info *ptinfo;
 
     yaz_log(log_level, "risamc_open");
@@ -95,7 +94,7 @@ RSFD r_open (RSET ct, int flag)
         yaz_log(YLOG_FATAL, "ISAMC set type is read-only");
         return NULL;
     }
-    rfd = rfd_create_base(ct);
+    RSFD rfd = rfd_create_base(ct);
     if (rfd->priv)
         ptinfo = (struct rset_pp_info *)rfd->priv;
     else {
@@ -118,8 +117,7 @@ static void r_close (RSFD rfd)
 static int r_read (RSFD rfd, void *buf, TERMID *term)
 {
     struct rset_pp_info *p = (struct rset_pp_info *)(rfd->priv);
-    int r;
-    r = isamc_pp_read(p->pt, buf);
+    int r = isamc_pp_read(p->pt, buf);
     if (term)
         *term = rfd->rset->term;
     yaz_log(log_level, "isamc.r_read");

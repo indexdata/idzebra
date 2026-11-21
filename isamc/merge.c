@@ -155,11 +155,9 @@ void isamc_merge (ISAMC is, ISAM_P *ipos, ISAMC_I *data)
 {
 
     char i_item[128], *i_item_ptr;
-    int i_more, i_mode, i;
+    int i_mode, i;
 
-    ISAMC_PP pp;
     char f_item[128], *f_item_ptr;
-    int f_more;
     int last_dirty = 0;
     int debug = is->method->debug;
 
@@ -172,16 +170,15 @@ void isamc_merge (ISAMC is, ISAM_P *ipos, ISAMC_I *data)
     int r_offset = 0;     /* current offset in r_buf */
     int ptr = 0;          /* pointer */
     void *r_clientData;   /* encode client data */
-    zint border;
     zint numKeys = 0;
 
     r_clientData = (*is->method->codec.start)();
     r_buf = is->merge_buf + 128;
 
-    pp = isamc_pp_open (is, *ipos);
+    ISAMC_PP pp = isamc_pp_open (is, *ipos);
     /* read first item from file. make sure f_more indicates no boundary */
     f_item_ptr = f_item;
-    f_more = isamc_read_item (pp, &f_item_ptr);
+    int f_more = isamc_read_item (pp, &f_item_ptr);
     if (f_more > 0)
         f_more = 1;
     cat = pp->cat;
@@ -191,13 +188,13 @@ void isamc_merge (ISAMC is, ISAM_P *ipos, ISAMC_I *data)
 
     /* read first item from i */
     i_item_ptr = i_item;
-    i_more = (*data->read_item)(data->clientData, &i_item_ptr, &i_mode);
+    int i_more = (*data->read_item)(data->clientData, &i_item_ptr, &i_mode);
 
     mb[ptr].block = pp->pos;     /* is zero if no block on disk */
     mb[ptr].dirty = 0;
     mb[ptr].offset = 0;
 
-    border = get_border (is, mb, ptr, cat, firstpos);
+    zint border = get_border (is, mb, ptr, cat, firstpos);
     while (i_more || f_more)
     {
         char *r_item = r_item_buf;
@@ -335,10 +332,9 @@ void isamc_merge (ISAMC is, ISAM_P *ipos, ISAMC_I *data)
         {
             char *r_out_ptr = r_buf + r_offset;
             const char *src = r_item;
-            int new_offset;
 
             (*is->method->codec.encode)(r_clientData, &r_out_ptr, &src);
-            new_offset = r_out_ptr - r_buf;
+            int new_offset = r_out_ptr - r_buf;
 
             numKeys++;
 

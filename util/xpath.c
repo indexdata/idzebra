@@ -162,14 +162,11 @@ static struct xpath_predicate *get_xpath_predicate(char *predicate, NMEM mem)
 int zebra_parse_xpath_str(const char *xpath_string,
                           struct xpath_location_step *xpath, int max, NMEM mem)
 {
-    const char *cp;
-    char *a;
-
     int no = 0;
 
     if (!xpath_string || *xpath_string != '/')
         return -1;
-    cp = xpath_string;
+    const char *cp = xpath_string;
 
     while (*cp && no < max)
     {
@@ -191,7 +188,7 @@ int zebra_parse_xpath_str(const char *xpath_string,
             while (*cp == ' ')
                 cp++;
 
-            a = (char *)cp;
+            char *a = (char *)cp;
             xpath[no].predicate = get_xpath_predicate(a, mem);
             while(*cp && *cp != ']') {
               cp++;
@@ -234,8 +231,7 @@ void dump_xp_predicate (struct xpath_predicate *p)
 
 void dump_xp_steps (struct xpath_location_step *xpath, int no)
 {
-    int i;
-    for (i=0; i<no; i++) {
+    for (int i=0; i<no; i++) {
         fprintf (stderr, "Step %d: %s   ",i,xpath[i].part);
         dump_xp_predicate(xpath[i].predicate);
         fprintf (stderr, "\n");

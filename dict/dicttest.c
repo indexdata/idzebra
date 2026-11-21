@@ -52,7 +52,6 @@ static int scan_handler (char *name, const char *info, int pos, void *client)
 int main (int argc, char **argv)
 {
     Res my_resource = 0;
-    BFiles bfs;
     const char *name = NULL;
     const char *inputfile = NULL;
     const char *config = NULL;
@@ -169,7 +168,7 @@ int main (int argc, char **argv)
     }
     res_read_file(my_resource, config);
 
-    bfs = bfs_create (res_get(my_resource, "register"), 0);
+    BFiles bfs = bfs_create (res_get(my_resource, "register"), 0);
     if (!bfs)
     {
         yaz_log (YLOG_FATAL, "bfs_create fail");
@@ -241,9 +240,7 @@ int main (int argc, char **argv)
                     }
                     else if(range < 0)
                     {
-                        char *cp;
-
-                        cp = dict_lookup (dict, ipf_ptr);
+                        char *cp = dict_lookup (dict, ipf_ptr);
                         if (cp && *cp)
                             no_of_hits++;
                         else

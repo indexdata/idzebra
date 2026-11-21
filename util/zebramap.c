@@ -412,14 +412,11 @@ const char **zebra_maps_input(zebra_map_t zm,
 const char **zebra_maps_search(zebra_map_t zm,
                                const char **from, int len,  int *q_map_match)
 {
-    chrmaptab maptab;
-
     *q_map_match = 0;
-    maptab = zebra_charmap_get(zm);
+    chrmaptab maptab = zebra_charmap_get(zm);
     if (maptab)
     {
-        const char **map;
-        map = chr_map_q_input(maptab, from, len, 0);
+        const char **map = chr_map_q_input(maptab, from, len, 0);
         if (map && map[0])
         {
             *q_map_match = 1;
@@ -501,12 +498,11 @@ int zebra_maps_sort(zebra_maps_t zms, Z_SortAttributes *sortAttributes,
 {
     AttrType use;
     AttrType structure;
-    int structure_value;
     attr_init_AttrList(&use, sortAttributes->list, 1);
     attr_init_AttrList(&structure, sortAttributes->list, 4);
 
     *numerical = 0;
-    structure_value = attr_find(&structure, 0);
+    int structure_value = attr_find(&structure, 0);
     if (structure_value == 109)
         *numerical = 1;
     return attr_find(&use, NULL);
@@ -522,13 +518,7 @@ int zebra_maps_attr(zebra_maps_t zms, Z_AttributesPlusTerm *zapt,
     AttrType sort_relation;
     AttrType weight;
     AttrType use;
-    int completeness_value;
-    int structure_value;
     const char *structure_str = 0;
-    int relation_value;
-    int sort_relation_value;
-    int weight_value;
-    int use_value;
 
     attr_init_APT(&structure, zapt, 4);
     attr_init_APT(&completeness, zapt, 6);
@@ -537,12 +527,12 @@ int zebra_maps_attr(zebra_maps_t zms, Z_AttributesPlusTerm *zapt,
     attr_init_APT(&weight, zapt, 9);
     attr_init_APT(&use, zapt, 1);
 
-    completeness_value = attr_find(&completeness, NULL);
-    structure_value = attr_find_ex(&structure, NULL, &structure_str);
-    relation_value = attr_find(&relation, NULL);
-    sort_relation_value = attr_find(&sort_relation, NULL);
-    weight_value = attr_find(&weight, NULL);
-    use_value = attr_find(&use, NULL);
+    int completeness_value = attr_find(&completeness, NULL);
+    int structure_value = attr_find_ex(&structure, NULL, &structure_str);
+    int relation_value = attr_find(&relation, NULL);
+    int sort_relation_value = attr_find(&sort_relation, NULL);
+    int weight_value = attr_find(&weight, NULL);
+    int use_value = attr_find(&use, NULL);
 
     if (completeness_value == 2 || completeness_value == 3)
         *complete_flag = 1;
@@ -632,11 +622,10 @@ static int tokenize_simple(zebra_map_t zm,
     char *buf = wrbuf_buf(zm->input_str);
     size_t len = wrbuf_len(zm->input_str);
     size_t i = zm->simple_off;
-    size_t start;
 
     while (i < len && strchr(SE_CHARS, buf[i]))
         i++;
-    start = i;
+    size_t start = i;
     while (i < len && !strchr(SE_CHARS, buf[i]))
     {
         if (buf[i] > 32 && buf[i] < 127)

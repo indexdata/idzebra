@@ -65,9 +65,8 @@ static void zebra_init_log_level(void)
 
 static WRBUF wrbuf_hex_str(const char *cstr)
 {
-    size_t i;
     WRBUF w = wrbuf_alloc();
-    for (i = 0; cstr[i]; i++)
+    for (size_t i = 0; cstr[i]; i++)
     {
         if (cstr[i] < ' ' || cstr[i] > 126)
             wrbuf_printf(w, "\\%02X", cstr[i] & 0xff);
@@ -356,11 +355,10 @@ static void searchRecordKey(ZebraHandle zh,
                             const char *index_name,
                             const char **ws, int ws_length)
 {
-    int i;
     int ch = -1;
     zinfo_index_category_t cat = zinfo_index_category_index;
 
-    for (i = 0; i<ws_length; i++)
+    for (int i = 0; i<ws_length; i++)
         ws[i] = NULL;
 
     if (ch < 0)
@@ -379,20 +377,17 @@ static void searchRecordKey(ZebraHandle zh,
         const char *str;
         size_t slen;
         struct it_key key;
-        zint seqno;
         while (zebra_rec_keys_read(reckeys, &str, &slen, &key))
         {
             assert(key.len <= IT_KEY_LEVEL_MAX && key.len > 2);
 
-            seqno = key.mem[key.len-1];
+            zint seqno = key.mem[key.len-1];
 
             if (key.mem[0] == ch)
             {
-                zint woff;
-
                 if (startSeq == -1)
                     startSeq = seqno;
-                woff = seqno - startSeq;
+                zint woff = seqno - startSeq;
                 if (woff >= 0 && woff < ws_length)
                     ws[woff] = str;
             }
@@ -487,14 +482,13 @@ static char *get_match_from_spec(ZebraHandle zh,
         }
         else if (*s == '$')
         {
-            int spec_len;
             char special[64];
             const char *spec_src = NULL;
             const char *s1 = ++s;
             while (*s1 && !strchr(FILE_MATCH_BLANK, *s1))
                 s1++;
 
-            spec_len = s1 - s;
+            int spec_len = s1 - s;
             if (spec_len > sizeof(special)-1)
                 spec_len = sizeof(special)-1;
             memcpy(special, s, spec_len);
@@ -610,7 +604,7 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
                              enum zebra_recctrl_action_t action)
 {
     ZEBRA_RES r = ZEBRA_OK;
-    int i, fd;
+    int fd;
     char gprefix[128];
     char ext[128];
     char ext_res[266];
@@ -630,7 +624,7 @@ ZEBRA_RES zebra_extract_file(ZebraHandle zh, zint *sysno, const char *fname,
 
     /* determine file extension */
     *ext = '\0';
-    for (i = strlen(fname); --i >= 0; )
+    for (int i = strlen(fname); --i >= 0; )
         if (fname[i] == '/')
             break;
         else if (fname[i] == '.')
@@ -790,7 +784,6 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
     zint sysno0 = 0;
     RecordAttr *recordAttr;
     struct recExtractCtrl extractCtrl;
-    int r;
     const char *matchStr = 0;
     Record rec;
     off_t start_offset = 0, end_offset = 0;
@@ -837,7 +830,7 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
 
         extract_set_store_data_prepare(&extractCtrl);
 
-        r = (*recType->extract)(recTypeClientData, &extractCtrl);
+        int r = (*recType->extract)(recTypeClientData, &extractCtrl);
 
         if (action == action_update)
         {
@@ -914,8 +907,7 @@ static ZEBRA_RES zebra_extract_record_stream(ZebraHandle zh,
                 if (0 && matchStr)
                 {
                     WRBUF w = wrbuf_alloc();
-                    size_t i;
-                    for (i = 0; i < strlen(matchStr); i++)
+                    for (size_t i = 0; i < strlen(matchStr); i++)
                     {
                         wrbuf_printf(w, "%02X", matchStr[i] & 0xff);
                     }
@@ -1315,7 +1307,6 @@ void zebra_it_key_str_dump(ZebraHandle zh, struct it_key *key,
 
     if (*str < CHR_BASE_CHAR)
     {
-        int i;
         WRBUF w1 = wrbuf_alloc();
 
         if (!strcmp(str, ""))
@@ -1329,7 +1320,7 @@ void zebra_it_key_str_dump(ZebraHandle zh, struct it_key *key,
         else
             wrbuf_puts(w1, "?");
 
-        for (i = 0; i<slen; i++)
+        for (int i = 0; i<slen; i++)
         {
             wrbuf_printf(w1, " %d", str[i] & 0xff);
         }
@@ -1515,13 +1506,11 @@ ZEBRA_RES zebra_rec_keys_to_snippets1(ZebraHandle zh,
         while (zebra_rec_keys_read(reckeys, &str, &slen, &key))
         {
             char *dst_term = 0;
-            int ord;
-            zint seqno;
             const char *index_type;
 
             assert(key.len <= IT_KEY_LEVEL_MAX && key.len > 2);
-            seqno = key.mem[key.len-1];
-            ord = CAST_ZINT_TO_INT(key.mem[0]);
+            zint seqno = key.mem[key.len-1];
+            int ord = CAST_ZINT_TO_INT(key.mem[0]);
 
             zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type,
                                     0/* db */, 0 /* string_index */);
@@ -1547,7 +1536,6 @@ void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys)
         while (zebra_rec_keys_read(reckeys, &str, &slen, &key))
         {
             char dst_buf[IT_MAX_WORD];
-            zint seqno;
             const char *index_type;
             int ord = CAST_ZINT_TO_INT(key.mem[0]);
             const char *db = 0;
@@ -1555,7 +1543,7 @@ void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys)
 
             zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type, &db, 0);
 
-            seqno = key.mem[key.len-1];
+            zint seqno = key.mem[key.len-1];
 
             zebra_term_untrans(zh, index_type, dst_buf, str);
 
@@ -1571,13 +1559,12 @@ static void extract_add_index_string(RecWord *p, zinfo_index_category_t cat,
     struct it_key key;
     ZebraHandle zh = p->extractCtrl->handle;
     ZebraExplainInfo zei = zh->reg->zei;
-    int ch, i;
 
-    ch = zebraExplain_lookup_attr_str(zei, cat, p->index_type, p->index_name);
+    int ch = zebraExplain_lookup_attr_str(zei, cat, p->index_type, p->index_name);
     if (ch < 0)
         ch = zebraExplain_add_attr_str(zei, cat, p->index_type, p->index_name);
 
-    i = 0;
+    int i = 0;
     key.mem[i++] = ch;
     key.mem[i++] = p->record_id;
     key.mem[i++] = p->section_id;
@@ -1595,10 +1582,9 @@ static void extract_add_sort_string(RecWord *p, const char *str, int length)
     struct it_key key;
     ZebraHandle zh = p->extractCtrl->handle;
     ZebraExplainInfo zei = zh->reg->zei;
-    int ch;
     zinfo_index_category_t cat = zinfo_index_category_sort;
 
-    ch = zebraExplain_lookup_attr_str(zei, cat, p->index_type, p->index_name);
+    int ch = zebraExplain_lookup_attr_str(zei, cat, p->index_type, p->index_name);
     if (ch < 0)
         ch = zebraExplain_add_attr_str(zei, cat, p->index_type, p->index_name);
     key.len = 3;
@@ -1676,7 +1662,7 @@ static void extract_add_incomplete_field(RecWord *p, zebra_map_t zm)
     while (map)
     {
         char buf[IT_MAX_WORD+1];
-        int i, remain;
+        int remain;
 
         /* Skip spaces */
         while (map && *map && **map == *CHR_SPACE)
@@ -1689,7 +1675,7 @@ static void extract_add_incomplete_field(RecWord *p, zebra_map_t zm)
         }
         if (!map)
             break;
-        i = 0;
+        int i = 0;
         while (map && *map && **map != *CHR_SPACE)
         {
             const char *cp = *map;

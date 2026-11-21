@@ -77,8 +77,8 @@ RSET rset_create_prox(NMEM nmem, struct rset_key_control *kcontrol,
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, 0,
                                  rset_no, rset);
-    struct rset_prox_info *info;
-    info = (struct rset_prox_info *) nmem_malloc(rnew->nmem,sizeof(*info));
+    struct rset_prox_info *info =
+        (struct rset_prox_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->ordered = ordered;
     info->exclusion = exclusion;
     info->relation = relation;
@@ -93,7 +93,6 @@ static void r_delete(RSET ct)
 
 static RSFD r_open(RSET ct, int flag)
 {
-    RSFD rfd;
     struct rset_prox_rfd *p;
     int i;
 
@@ -102,7 +101,7 @@ static RSFD r_open(RSET ct, int flag)
         yaz_log(YLOG_FATAL, "prox set type is read-only");
         return NULL;
     }
-    rfd = rfd_create_base(ct);
+    RSFD rfd = rfd_create_base(ct);
     if (rfd->priv)
         p = (struct rset_prox_rfd *)(rfd->priv);
     else
@@ -136,8 +135,7 @@ static void r_close(RSFD rfd)
     RSET ct = rfd->rset;
     struct rset_prox_rfd *p = (struct rset_prox_rfd *)(rfd->priv);
 
-    int i;
-    for (i = 0; i < ct->no_children; i++)
+    for (int i = 0; i < ct->no_children; i++)
         rset_close(p->rfd[i]);
 }
 
@@ -334,8 +332,7 @@ static void r_pos(RSFD rfd, double *current, double *total)
 
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
 {
-    int i;
-    for (i = 0; i < ct->no_children; i++)
+    for (int i = 0; i < ct->no_children; i++)
         rset_getterms(ct->children[i], terms, maxterms, curterm);
 }
 

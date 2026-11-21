@@ -97,11 +97,10 @@ static void small_sleep(void)
 
 void *run_func(void *arg)
 {
-    int i;
     int *pdata = (int*) arg;
     int use_write_lock = *pdata;
     ZebraLockHandle lh = zebra_lock_create(0, "my.LCK");
-    for (i = 0; i<2; i++)
+    for (int i = 0; i<2; i++)
     {
         int write_lock = use_write_lock;
 
@@ -155,11 +154,11 @@ static void tst_thread(int num, int write_flag)
 #if YAZ_POSIX_THREADS
     pthread_t child_thread[NUM_THREADS];
 #endif
-    int i, id[NUM_THREADS];
+    int id[NUM_THREADS];
 
     seqp = seq;
     assert (num <= NUM_THREADS);
-    for (i = 0; i < num; i++)
+    for (int i = 0; i < num; i++)
     {
         id[i] = write_flag;
 #if YAZ_POSIX_THREADS
@@ -181,13 +180,13 @@ static void tst_thread(int num, int write_flag)
 #endif
     }
 #if YAZ_POSIX_THREADS
-    for (i = 0; i<num; i++)
+    for (int i = 0; i<num; i++)
         pthread_join(child_thread[i], 0);
 #endif
 #ifdef _WIN32
     WaitForMultipleObjects(num, handles, TRUE, INFINITE);
 #endif
-    for (i = 0; i < num; i++)
+    for (int i = 0; i < num; i++)
         YAZ_CHECK(id[i] == 123);
     *seqp++ = '\0';
     yaz_log(YLOG_LOG, "tst_thread(%d,%d) returns seq=%s",

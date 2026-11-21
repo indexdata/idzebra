@@ -61,7 +61,6 @@ void *run_func(void *arg)
 void tst(void)
 {
     pthread_t child_thread;
-    int r;
     fd = open("my.LCK", (O_CREAT|O_RDWR), 0666);
 
     YAZ_CHECK(fd != -1);
@@ -71,7 +70,7 @@ void tst(void)
         return;
     }
 
-    r = file_lock(fd, F_WRLCK, F_SETLKW);
+    int r = file_lock(fd, F_WRLCK, F_SETLKW);
     YAZ_CHECK(r != -1);
     if (r == -1)
     {

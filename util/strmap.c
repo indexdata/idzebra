@@ -44,7 +44,6 @@ struct zebra_strmap {
 
 zebra_strmap_t zebra_strmap_create(void)
 {
-    int i;
     NMEM nmem_ent = nmem_create();
     zebra_strmap_t st = nmem_malloc(nmem_ent, sizeof(*st));
     st->nmem_ent = nmem_ent;
@@ -53,7 +52,7 @@ zebra_strmap_t zebra_strmap_create(void)
     st->size = 0;
     st->free_entries = 0;
     st->entries = nmem_malloc(nmem_ent, st->hsize * sizeof(*st->entries));
-    for (i = 0; i < st->hsize; i++)
+    for (int i = 0; i < st->hsize; i++)
         st->entries[i] = 0;
     return st;
 }
@@ -70,8 +69,7 @@ void zebra_strmap_destroy(zebra_strmap_t st)
 static struct strmap_entry **hash(zebra_strmap_t st, const char *name)
 {
     unsigned hash = 0;
-    int i;
-    for (i = 0; name[i]; i++)
+    for (int i = 0; name[i]; i++)
         hash += hash*65519 + name[i];
     hash = hash % st->hsize;
     return st->entries + hash;

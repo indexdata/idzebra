@@ -34,13 +34,12 @@ static void test1(void)
     }
     {
         int v = 1;
-        void *data_buf;
         size_t data_len;
         zebra_strmap_t sm = zebra_strmap_create();
         YAZ_CHECK(!zebra_strmap_lookup(sm, "a", 0, 0));
 
         zebra_strmap_add(sm, "a", &v, sizeof v);
-        data_buf = zebra_strmap_lookup(sm, "a", 0, &data_len);
+        void *data_buf = zebra_strmap_lookup(sm, "a", 0, &data_len);
         YAZ_CHECK(data_buf && data_len == sizeof v
                   && v == *((int*) data_buf));
 
@@ -78,9 +77,8 @@ static void test2(int no_iter)
 {
     zebra_strmap_t sm = zebra_strmap_create();
     {
-        int i;
         srand(12);
-        for (i = 0; i < no_iter; i++)
+        for (int i = 0; i < no_iter; i++)
         {
             char str[8];
             int j;
@@ -95,9 +93,8 @@ static void test2(int no_iter)
     }
     {
         int failed = 0;
-        int i;
         srand(12);
-        for (i = 0; i < no_iter; i++)
+        for (int i = 0; i < no_iter; i++)
         {
             char str[8];
             int j;

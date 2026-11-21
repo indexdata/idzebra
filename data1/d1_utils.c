@@ -42,10 +42,8 @@ void data1_remove_node(data1_handle dh, data1_node *n)
     /* n is one of the following childrens */
     else
     {
-        data1_node * before;
-
         /* need to find sibling before me */
-        before = n->parent->child;
+        data1_node * before = n->parent->child;
         while (before->next != n)
             before = before->next;
 

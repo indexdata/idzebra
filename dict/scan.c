@@ -33,13 +33,12 @@ static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                            int (*userfunc)(char *, const char *, int, void *),
                            int dir)
 {
-    int lo, hi, j;
+    int lo, j;
     void *p;
-    short *indxp;
     char *info;
 
     dict_bf_readp(dict->dbf, ptr, &p);
-    hi = DICT_nodir(p)-1;
+    int hi = DICT_nodir(p)-1;
     if (start != -1)
         lo = start;
     else
@@ -49,7 +48,7 @@ static void scan_direction(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
         else
             lo = 0;
     }
-    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
+    short *indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
 
     while (lo <= hi && lo >= 0 && *count > 0)
     {
@@ -125,17 +124,16 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                  int *before, int *after, void *client,
                  int (*userfunc)(char *, const char *, int, void *))
 {
-    int cmp = 0, mid, lo, hi;
+    int cmp = 0, lo;
     void *p;
-    short *indxp;
     char *info;
 
     dict_bf_readp(dict->dbf, ptr, &p);
     if (!p)
         return;
-    mid = lo = 0;
-    hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
+    int mid = lo = 0;
+    int hi = DICT_nodir(p)-1;
+    short *indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     while (lo <= hi)
     {
         mid = (lo+hi)/2;
@@ -242,10 +240,8 @@ void dict_scan_r(Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 int dict_scan(Dict dict, char *str, int *before, int *after, void *client,
               int (*f)(char *name, const char *info, int pos, void *client))
 {
-    int i;
-
     yaz_log(YLOG_DEBUG, "dict_scan");
-    for (i = 0; str[i]; i++)
+    for (int i = 0; str[i]; i++)
     {
         yaz_log(YLOG_DEBUG, "start_term pos %d %3d  %c", i, str[i],
                 (str[i] > ' ' && str[i] < 127) ? str[i] : '?');

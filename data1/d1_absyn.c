@@ -66,14 +66,13 @@ unsigned data1_hash_calc(struct data1_hash_table *ht, const char *str)
 
 struct data1_hash_table *data1_hash_open(int size, NMEM nmem)
 {
-    int i;
     struct data1_hash_table *ht = nmem_malloc(nmem, sizeof(*ht));
     ht->nmem = nmem;
     ht->size = size;
     if (ht->size <= 0)
         ht->size = 29;
     ht->ar = nmem_malloc(nmem, sizeof(*ht->ar) * ht->size);
-    for (i = 0; i<ht->size; i++)
+    for (int i = 0; i<ht->size; i++)
         ht->ar[i] = 0;
     return ht;
 }
@@ -84,8 +83,7 @@ void data1_hash_insert(struct data1_hash_table *ht, const char *str,
     char *dstr = copy ? nmem_strdup(ht->nmem, str) : (char*) str;
     if (strchr(str, '?') || strchr(str, '.'))
     {
-        int i;
-        for (i = 0; i<ht->size; i++)
+        for (int i = 0; i<ht->size; i++)
         {
             struct data1_hash_entry **he = &ht->ar[i];
             for (; *he && strcmp(str, (*he)->str); he = &(*he)->next)
@@ -267,9 +265,8 @@ data1_attset *data1_attset_search_id(data1_handle dh, const Odr_oid *oid)
 data1_attset *data1_attset_add(data1_handle dh, const char *name)
 {
     NMEM mem = data1_nmem_get(dh);
-    data1_attset *attset;
 
-    attset = data1_read_attset(dh, name);
+    data1_attset *attset = data1_read_attset(dh, name);
     if (!attset)
         yaz_log(YLOG_WARN|YLOG_ERRNO, "Couldn't load attribute set %s", name);
     else
@@ -298,9 +295,7 @@ data1_attset *data1_get_attset(data1_handle dh, const char *name)
 data1_esetname *data1_getesetbyname(data1_handle dh, data1_absyn *a,
                                     const char *name)
 {
-    data1_esetname *r;
-
-    for (r = a->esetnames; r; r = r->next)
+    for (data1_esetname *r = a->esetnames; r; r = r->next)
         if (!data1_matchstr(r->name, name))
             return r;
     return 0;
@@ -337,9 +332,7 @@ data1_element *data1_getelementbytagname(data1_handle dh, data1_absyn *abs,
         ht = r->hash = data1_hash_open(29, data1_nmem_get(dh));
         for (; r; r = r->next)
         {
-            data1_name *n;
-
-            for (n = r->tag->names; n; n = n->next)
+            for (data1_name *n = r->tag->names; n; n = n->next)
                 data1_hash_insert(ht, n->name, r, 0);
         }
     }
@@ -361,12 +354,10 @@ data1_element *data1_getelementbytagname(data1_handle dh, data1_absyn *abs,
 data1_element *data1_getelementbyname(data1_handle dh, data1_absyn *absyn,
                                       const char *name)
 {
-    data1_element *r;
-
     /* It's now possible to have a data1 tree with no abstract syntax */
     if (absyn == 0)
         return 0;
-    for (r = absyn->main_elements; r; r = r->next)
+    for (data1_element *r = absyn->main_elements; r; r = r->next)
         if (!data1_matchstr(r->name, name))
             return r;
     return 0;
@@ -440,13 +431,12 @@ static const char * mk_xpath_regexp(data1_handle dh, const char *expr)
     while (*p && e < 30)
     {
         int is_predicate = 0;
-        char *s;
-        int i, j;
+        int i;
         for (i = 0; *p && !strchr("/",*p); i++, p++)
             ;
         res_size += (i+3); /* we'll add / between later .. */
-        s = stack[e] = (char *) nmem_malloc(data1_nmem_get(dh), i + 1);
-        for (j = 0; j < i; j++)
+        char *s = stack[e] = (char *) nmem_malloc(data1_nmem_get(dh), i + 1);
+        for (int j = 0; j < i; j++)
         {
             const char *pp = p-i+j;
             if (*pp == '[')
@@ -501,7 +491,7 @@ static int parse_termlists(data1_handle dh, data1_termlist ***tpp,
     {
         char attname[512], structure[512];
         char *source;
-        int r, i;
+        int i;
         int level = 0;
         structure[0] = '\0';
         for (i = 0; cp[i] && i<sizeof(attname)-1; i++)
@@ -518,7 +508,7 @@ static int parse_termlists(data1_handle dh, data1_termlist ***tpp,
             break;
         }
         attname[i] = '\0';
-        r = 1;
+        int r = 1;
         cp += i;
         if (*cp == ':')
             cp++;
@@ -682,20 +672,14 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
     data1_attset_child **attset_childp = &attset_list->children;
 
     data1_absyn *res = 0;
-    FILE *f;
     data1_element **ppl[D1_MAX_NESTING];
-    data1_esetname **esetpp;
-    data1_maptab **maptabp;
-    data1_marctab **marcp;
     data1_termlist *all = 0;
-    data1_tagset **tagset_childp;
-    struct data1_systag **systagsp;
     int level = 0;
     int lineno = 0;
     int argc;
     char *argv[50], line[512];
 
-    f = data1_path_fopen(dh, file, "r");
+    FILE *f = data1_path_fopen(dh, file, "r");
 
     res = (data1_absyn *) nmem_malloc(data1_nmem_get(dh), sizeof(*res));
     res->name = 0;
@@ -705,16 +689,16 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
     res->xpath_indexing =
         (f ? DATA1_XPATH_INDEXING_DISABLE : default_xpath);
     res->systags = 0;
-    systagsp = &res->systags;
-    tagset_childp = &res->tagset;
+    struct data1_systag **systagsp = &res->systags;
+    data1_tagset **tagset_childp = &res->tagset;
 
     res->varset = 0;
     res->esetnames = 0;
-    esetpp = &res->esetnames;
+    data1_esetname **esetpp = &res->esetnames;
     res->maptabs = 0;
-    maptabp = &res->maptabs;
+    data1_maptab **maptabp = &res->maptabs;
     res->marc = 0;
-    marcp = &res->marc;
+    data1_marctab **marcp = &res->marc;
     res->sub_elements = NULL;
     res->main_elements = NULL;
     res->xp_elements = NULL;
@@ -725,11 +709,9 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
         char *cmd = *argv;
         if (!strcmp(cmd, "elm") || !strcmp(cmd, "element"))
         {
-            data1_element *new_element;
             int i;
             char *p, *sub_p, *path, *name, *termlists;
             int type, value;
-            data1_termlist **tp;
 
             if (argc < 4)
             {
@@ -769,9 +751,9 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                 return 0;
             }
             level = i;
-            new_element = *ppl[level-1] = data1_mk_element(dh);
+            data1_element *new_element = *ppl[level-1] = data1_mk_element(dh);
 
-            tp = &new_element->termlists;
+            data1_termlist **tp = &new_element->termlists;
             ppl[level-1] = &new_element->next;
             ppl[level] = &new_element->children;
 
@@ -854,11 +836,8 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
 
         else if (!strcmp(cmd, "xelm") || !strcmp(cmd, "melm")) {
 
-            int i;
             char *p, *xpath_expr, *termlists;
-            const char *regexp;
             struct DFA *dfa = 0;
-            data1_termlist **tp;
             char melm_xpath[128];
             data1_xpelement *xp_ele = 0;
             data1_xpelement *last_match = 0;
@@ -878,7 +857,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                 xpath_expr = argv[1];
             }
             termlists = argv[2];
-            regexp = mk_xpath_regexp(dh, xpath_expr);
+            const char *regexp = mk_xpath_regexp(dh, xpath_expr);
 
 #if OPTIMIZE_MELM
             /* get last of existing regulars with same regexp */
@@ -892,7 +871,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                 const char *regexp_ptr = regexp;
 
                 dfa = dfa_init();
-                i = dfa_parse (dfa, &regexp_ptr);
+                int i = dfa_parse (dfa, &regexp_ptr);
                 if (i || *regexp_ptr) {
                     yaz_log(YLOG_WARN, "%s:%d: Bad xpath to xelm", file, lineno);
                     dfa_delete (&dfa);
@@ -923,7 +902,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                     data1_nmem_get(dh));
 #endif
             (*cur_xpelement)->termlists = 0;
-            tp = &(*cur_xpelement)->termlists;
+            data1_termlist **tp = &(*cur_xpelement)->termlists;
 
             /* parse termList definitions */
             p = termlists;
@@ -941,15 +920,13 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
         }
         else if (!strcmp(cmd, "section"))
         {
-            char *name;
-
             if (argc < 2)
             {
                 yaz_log(YLOG_WARN, "%s:%d: Bad # of args to section",
                         file, lineno);
                 continue;
             }
-            name = argv[1];
+            char *name = argv[1];
 
             cur_elements = (data1_sub_elements *)
                 nmem_malloc(data1_nmem_get(dh), sizeof(*cur_elements));
@@ -1013,15 +990,13 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
         }
         else if (!strcmp(cmd, "reference"))
         {
-            char *name;
-
             if (argc != 2)
             {
                 yaz_log(YLOG_WARN, "%s:%d: Bad # of args to reference",
                      file, lineno);
                 continue;
             }
-            name = argv[1];
+            char *name = argv[1];
             res->oid = yaz_string_to_oid_nmem(yaz_oid_std(),
                                               CLASS_SCHEMA, name,
                                               data1_nmem_get(dh));
@@ -1034,7 +1009,6 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
         }
         else if (!strcmp(cmd, "attset"))
         {
-           char *name;
            data1_attset *attset;
 
            if (argc != 2)
@@ -1043,7 +1017,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                     file, lineno);
                continue;
            }
-           name = argv[1];
+           char *name = argv[1];
            if (!(attset = data1_get_attset(dh, name)))
            {
                yaz_log(YLOG_WARN, "%s:%d: Couldn't find attset  %s",
@@ -1058,7 +1032,6 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
         }
         else if (!strcmp(cmd, "tagset"))
         {
-            char *name;
             int type = 0;
             if (argc < 2)
             {
@@ -1066,7 +1039,7 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
                      file, lineno);
                 continue;
             }
-            name = argv[1];
+            char *name = argv[1];
             if (argc == 3)
                 type = atoi(argv[2]);
             *tagset_childp = data1_read_tagset(dh, name, type);
@@ -1080,15 +1053,13 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
         }
         else if (!strcmp(cmd, "varset"))
         {
-            char *name;
-
             if (argc != 2)
             {
                 yaz_log(YLOG_WARN, "%s:%d: Bad # of args in varset",
                      file, lineno);
                 continue;
             }
-            name = argv[1];
+            char *name = argv[1];
             if (!(res->varset = data1_read_varset(dh, name)))
             {
                 yaz_log(YLOG_WARN, "%s:%d: Couldn't load Varset %s",
@@ -1125,15 +1096,13 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
         }
         else if (!strcmp(cmd, "maptab"))
         {
-            char *name;
-
             if (argc != 2)
             {
                 yaz_log(YLOG_WARN, "%s:%d: Bad # of args for maptab",
                      file, lineno);
                 continue;
             }
-            name = argv[1];
+            char *name = argv[1];
             if (!(*maptabp = data1_read_maptab(dh, name)))
             {
                 yaz_log(YLOG_WARN, "%s:%d: Couldn't load maptab %s",
@@ -1144,15 +1113,13 @@ static data1_absyn *data1_read_absyn(data1_handle dh, const char *file,
         }
         else if (!strcmp(cmd, "marc"))
         {
-            char *name;
-
             if (argc != 2)
             {
                 yaz_log(YLOG_WARN, "%s:%d: Bad # or args for marc",
                      file, lineno);
                 continue;
             }
-            name = argv[1];
+            char *name = argv[1];
             if (!(*marcp = data1_read_marctab(dh, name)))
             {
                 yaz_log(YLOG_WARN, "%s:%d: Couldn't read marctab %s",

@@ -33,7 +33,6 @@ const char *myrec[] = {
 static void tst(int argc, char **argv)
 {
     zint hits;
-    ZEBRA_RES res;
     const char * zebra_xml_sysno
         = "<record xmlns=\"http://www.indexdata.com/zebra/\" sysno=\"2\"/>\n";
 
@@ -55,7 +54,7 @@ static void tst(int argc, char **argv)
 
     YAZ_CHECK(tl_init_data(zh, myrec));
 
-    res = zebra_search_PQF(zh, "@attr 1=4 my", "rsetname", &hits);
+    ZEBRA_RES res = zebra_search_PQF(zh, "@attr 1=4 my", "rsetname", &hits);
     YAZ_CHECK_EQ(res, ZEBRA_OK);
     YAZ_CHECK_EQ(hits, 1);
 

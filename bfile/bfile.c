@@ -171,9 +171,7 @@ BFile bf_open(BFiles bfs, const char *name, int block_size, int wflag)
         }
         if (first_time)
         {
-            FILE *outf;
-
-            outf = open_cache(bfs, "ab");
+            FILE *outf = open_cache(bfs, "ab");
             if (!outf)
             {
                 yaz_log(YLOG_FATAL|YLOG_ERRNO, "open %s", bfs->cache_fname);
@@ -254,9 +252,7 @@ int bf_write2(BFile bf, zint no, int offset, int nbytes, const void *buf)
 
 int bf_commitExists(BFiles bfs)
 {
-    FILE *inf;
-
-    inf = open_cache(bfs, "rb");
+    FILE *inf = open_cache(bfs, "rb");
     if (inf)
     {
         fclose(inf);
@@ -279,8 +275,6 @@ int bf_commitExec(BFiles bfs)
     FILE *inf;
     int block_size;
     char path[256];
-    MFile mf;
-    CFile cf;
     int first_time;
     int r = 0;
 
@@ -292,13 +286,13 @@ int bf_commitExec(BFiles bfs)
     }
     while (fscanf(inf, "%s %d", path, &block_size) == 2)
     {
-        mf = mf_open(bfs->register_area, path, block_size, 1);
+        MFile mf = mf_open(bfs->register_area, path, block_size, 1);
         if (!mf)
         {
             r = -1;
             break;
         }
-        cf = cf_open(mf, bfs->commit_area, path, block_size, 0, &first_time);
+        CFile cf = cf_open(mf, bfs->commit_area, path, block_size, 0, &first_time);
         if (!cf)
         {
             mf_close(mf);

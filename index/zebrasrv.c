@@ -61,7 +61,6 @@ bend_initresult *bend_init(bend_initrequest *q)
     bend_initresult *r = (bend_initresult *)
         odr_malloc(q->stream, sizeof(*r));
     ZebraHandle zh;
-    struct statserv_options_block *sob;
     char *user = NULL;
     char *passwd = NULL;
     char version_str[16];
@@ -83,7 +82,7 @@ bend_initresult *bend_init(bend_initrequest *q)
 
     yaz_log(YLOG_DEBUG, "bend_init");
 
-    sob = statserv_getcontrol();
+    struct statserv_options_block *sob = statserv_getcontrol();
     if (!(zh = zebra_open(sob->handle, 0)))
     {
         yaz_log(YLOG_WARN, "Failed to read config `%s'", sob->configname);
@@ -128,14 +127,13 @@ bend_initresult *bend_init(bend_initrequest *q)
         char **langs = 0;
         int num_langs = 0;
         int selected = 0;
-        int i;
         NMEM nmem = nmem_create();
 
         yaz_get_proposal_charneg(nmem, q->charneg_request,
                                  &charsets, &num_charsets,
                                  &langs, &num_langs, &selected);
 
-        for (i = 0; i < num_charsets; i++)
+        for (int i = 0; i < num_charsets; i++)
         {
             const char *right_name = "";
             /*
@@ -183,10 +181,7 @@ bend_initresult *bend_init(bend_initrequest *q)
 static void search_terms(ZebraHandle zh, bend_search_rr *r)
 {
     int no_terms;
-    int i;
     int type = Z_Term_general;
-    struct Z_External *ext;
-    Z_SearchInfoReport *sr;
 
     zebra_result_set_term_no(zh, r->setname, &no_terms);
     if (!no_terms)
@@ -201,21 +196,20 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
         odr_malloc(r->stream, sizeof(**r->search_info->list));
     r->search_info->list[0]->category = 0;
     r->search_info->list[0]->which = Z_OtherInfo_externallyDefinedInfo;
-    ext = odr_malloc(r->stream, sizeof(*ext));
+    struct Z_External *ext = odr_malloc(r->stream, sizeof(*ext));
     r->search_info->list[0]->information.externallyDefinedInfo = ext;
     ext->direct_reference = odr_oiddup(r->stream,
                                        yaz_oid_userinfo_searchresult_1);
     ext->indirect_reference = 0;
     ext->descriptor = 0;
     ext->which = Z_External_searchResult1;
-    sr = odr_malloc(r->stream, sizeof(Z_SearchInfoReport));
+    Z_SearchInfoReport *sr = odr_malloc(r->stream, sizeof(Z_SearchInfoReport));
     ext->u.searchResult1 = sr;
     sr->num = no_terms;
     sr->elements = odr_malloc(r->stream, sr->num *
                                sizeof(*sr->elements));
-    for (i = 0; i < no_terms; i++)
+    for (int i = 0; i < no_terms; i++)
     {
-        Z_SearchInfoReport_s *se;
         Z_Term *term;
         zint count;
         int approx;
@@ -226,7 +220,8 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
         zebra_result_set_term_info(zh, r->setname, i,
                                    &count, &approx, outbuf, &len,
                                    &term_ref_id);
-        se = sr->elements[i] = odr_malloc(r->stream, sizeof(**sr->elements));
+        Z_SearchInfoReport_s *se =
+            sr->elements[i] = odr_malloc(r->stream, sizeof(**sr->elements));
         se->subqueryId = term_ref_id ?
             odr_strdup(r->stream, term_ref_id) : 0;
 
@@ -282,18 +277,16 @@ static Z_RPNQuery *query_add_sortkeys(ODR o, Z_RPNQuery *query,
     /* see cql_sortby_to_sortkeys of YAZ. */
     char **sortspec;
     int num_sortspec = 0;
-    int i;
 
     if (sortKeys)
         nmem_strsplit_blank(odr_getmem(o), sortKeys, &sortspec, &num_sortspec);
     if (num_sortspec > 0)
     {
-        Z_RPNQuery *nquery;
         WRBUF w = wrbuf_alloc();
 
         /* left operand 'd' will be replaced by original query */
         wrbuf_puts(w, "@or d");
-        for (i = 0; i < num_sortspec; i++)
+        for (int i = 0; i < num_sortspec; i++)
         {
             char **arg;
             int num_arg;
@@ -315,7 +308,7 @@ static Z_RPNQuery *query_add_sortkeys(ODR o, Z_RPNQuery *query,
             yaz_encode_pqf_term(w, arg[0], strlen(arg[0]));
             wrbuf_printf(w, "@attr 7=%d %d", ascending ? 1 : 2, i);
         }
-        nquery = p_query_rpn(o, wrbuf_cstr(w));
+        Z_RPNQuery *nquery = p_query_rpn(o, wrbuf_cstr(w));
         if (!nquery)
         {
             yaz_log(YLOG_WARN, "query_add_sortkeys: bad RPN: '%s'",
@@ -352,11 +345,10 @@ int bend_search(void *handle, bend_search_rr *r)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     zint zhits = 0;
-    ZEBRA_RES res;
     Z_RPNQuery *q2;
 
-    res = zebra_select_databases(zh, r->num_bases,
-                                  (const char **) r->basenames);
+    ZEBRA_RES res =
+        zebra_select_databases(zh, r->num_bases, (const char **) r->basenames);
     if (res != ZEBRA_OK)
     {
         zebra_result(zh, &r->errcode, &r->errstring);
@@ -396,13 +388,13 @@ int bend_fetch(void *handle, bend_fetch_rr *r)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     ZebraRetrievalRecord retrievalRecord;
-    ZEBRA_RES res;
 
     retrievalRecord.position = r->number;
 
     r->last_in_set = 0;
-    res = zebra_records_retrieve(zh, r->stream, r->setname, r->comp,
-                                  r->request_format, 1, &retrievalRecord);
+    ZEBRA_RES res =
+        zebra_records_retrieve(zh, r->stream, r->setname, r->comp,
+                               r->request_format, 1, &retrievalRecord);
     if (res != ZEBRA_OK)
     {
         /* non-surrogate diagnostic */
@@ -430,11 +422,10 @@ static int bend_scan(void *handle, bend_scan_rr *r)
 {
     ZebraScanEntry *entries;
     ZebraHandle zh = (ZebraHandle) handle;
-    int is_partial, i;
-    ZEBRA_RES res;
+    int is_partial;
 
-    res = zebra_select_databases(zh, r->num_bases,
-                                 (const char **) r->basenames);
+    ZEBRA_RES res =
+        zebra_select_databases(zh, r->num_bases, (const char **) r->basenames);
     if (res != ZEBRA_OK)
     {
         zebra_result(zh, &r->errcode, &r->errstring);
@@ -456,7 +447,7 @@ static int bend_scan(void *handle, bend_scan_rr *r)
             r->status = BEND_SCAN_PARTIAL;
         else
             r->status = BEND_SCAN_SUCCESS;
-        for (i = 0; i < r->num_entries; i++)
+        for (int i = 0; i < r->num_entries; i++)
         {
             r->entries[i].term = entries[i].term;
             r->entries[i].display_term = entries[i].display_term;
@@ -727,7 +718,6 @@ int bend_esrequest(void *handle, bend_esrequest_rr *rr)
                         enum zebra_recctrl_action_t action = action_update;
                         char recid_str[256];
                         const char *match_criteria = 0;
-                        ZEBRA_RES res;
 
                         if (*toKeep->action ==
                             Z_IUOriginPartToKeep_recordInsert)
@@ -762,7 +752,7 @@ int bend_esrequest(void *handle, bend_esrequest_rr *rr)
                             recid_str[l] = '\0';
                             match_criteria = recid_str;
                         }
-                        res = zebra_update_record(
+                        ZEBRA_RES res = zebra_update_record(
                             zh, action,
                             0, /* recordType */
                             sysno, match_criteria, 0, /* fname */
@@ -816,11 +806,10 @@ static void bend_start(struct statserv_options_block *sob)
     {
         char pidfname[4096];
         struct flock area;
-        int fd;
 
         zebra_pidfname(sob->handle, pidfname);
 
-        fd = open(pidfname, O_EXCL|O_WRONLY|O_CREAT, 0666);
+        int fd = open(pidfname, O_EXCL|O_WRONLY|O_CREAT, 0666);
         if (fd == -1)
         {
             if (errno != EEXIST)
@@ -879,10 +868,7 @@ static void bend_stop(struct statserv_options_block *sob)
 
 int main(int argc, char **argv)
 {
-    int exit_code;
-    struct statserv_options_block *sob;
-
-    sob = statserv_getcontrol();
+    struct statserv_options_block *sob = statserv_getcontrol();
     strcpy(sob->configname, "zebra.cfg");
     sob->bend_start = bend_start;
     sob->bend_stop = bend_stop;
@@ -891,7 +877,7 @@ int main(int argc, char **argv)
     strcpy(sob->service_display_name, "Zebra Server");
 #endif
     statserv_setcontrol(sob);
-    exit_code = statserv_main(argc, argv, bend_init, bend_close);
+    int exit_code = statserv_main(argc, argv, bend_init, bend_close);
     zebra_stop((ZebraService) sob->handle);
     return exit_code;
 }

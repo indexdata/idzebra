@@ -87,7 +87,6 @@ static void read_rules (struct DFA *dfa)
 {
     char *s;
     const char *sc;
-    int i;
     int no = 0;
 
     fputs ("\n#ifndef YY_BREAK\n#define YY_BREAK break;\n#endif\n", outf);
@@ -106,7 +105,7 @@ static void read_rules (struct DFA *dfa)
             prep (&s);
             /* now parse regular expression */
             sc = s;
-            i = dfa_parse (dfa, &sc);
+            int i = dfa_parse (dfa, &sc);
             if (i)
             {
                 fprintf (stderr, "%s #%d: regular expression syntax error\n",
