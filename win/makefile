@@ -193,10 +193,18 @@ iconv:
 !if $(HAVE_LIBXML2)
 LIBXML2_LIB="$(LIBXML2_DIR)\lib\libxml2.lib"
 LIBXML2_DEF=/DYAZ_HAVE_XML2=1 /D HAVE_XML2=1 /I"$(LIBXML2_DIR)\include\libxml2"
-libxml2: $(BINDIR)\libxml2.dll
+# vcpkg packages zlib as libz.dll or z.dll, depending on the version.
+!if exist("$(LIBXML2_DIR)\bin\libz.dll")
+LIBXML2_ZLIB_DLL=libz.dll
+!else
+LIBXML2_ZLIB_DLL=z.dll
+!endif
+libxml2: $(BINDIR)\libxml2.dll $(BINDIR)\$(LIBXML2_ZLIB_DLL)
+
+$(BINDIR)\$(LIBXML2_ZLIB_DLL): "$(LIBXML2_DIR)\bin\$(LIBXML2_ZLIB_DLL)"
+	copy "$(LIBXML2_DIR)\bin\$(LIBXML2_ZLIB_DLL)" $(BINDIR)
 
 $(BINDIR)\libxml2.dll:
-	copy "$(LIBXML2_DIR)\bin\z.dll" $(BINDIR)
 	copy "$(LIBXML2_DIR)\bin\iconv-2.dll" $(BINDIR)
 	copy "$(LIBXML2_DIR)\bin\libxml2.dll" $(BINDIR)
 !else
