@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef ZEBRA_LOCK_H
 #define ZEBRA_LOCK_H
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 #if YAZ_POSIX_THREADS
@@ -34,7 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 YAZ_BEGIN_CDECL
 
 typedef struct {
-#ifdef WIN32
+#ifdef _WIN32
     CRITICAL_SECTION mutex;
 #else
 # if YAZ_POSIX_THREADS

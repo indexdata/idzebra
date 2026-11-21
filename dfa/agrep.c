@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #endif
 #if HAVE_UNISTD_H

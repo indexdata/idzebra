@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 #include <assert.h>
 #include <sys/types.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #define S_ISREG(x) (x & _S_IFREG)
 #define S_ISDIR(x) (x & _S_IFDIR)

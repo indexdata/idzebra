@@ -38,7 +38,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 int zebra_file_stat(const char *file_name, struct stat *buf,
                      int follow_links)
 {
-#ifndef WIN32
+#ifndef _WIN32
     if (!follow_links)
         return lstat(file_name, buf);
 #endif

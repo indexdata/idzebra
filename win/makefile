@@ -264,7 +264,6 @@ COMMON_C_OPTIONS=          \
   /nologo /W3 /EHsc /FD /c \
   /D"_CRT_SECURE_NO_DEPRECATE" \
   /D"_CRT_NONSTDC_NO_DEPRECATE" \
-  /D "WIN32"               \
   $(ICONV_DEF)             \
   $(EXPAT_DEF)             \
   $(LIBXML2_DEF)           \

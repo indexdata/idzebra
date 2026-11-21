@@ -34,7 +34,7 @@ int zebra_mutex_init (Zebra_mutex *p)
 #if YAZ_POSIX_THREADS
     pthread_mutex_init (&p->mutex, 0);
 #endif
-#ifdef WIN32
+#ifdef _WIN32
     InitializeCriticalSection (&p->mutex);
 #endif
     return 0;
@@ -50,7 +50,7 @@ int zebra_mutex_destroy (Zebra_mutex *p)
 #if YAZ_POSIX_THREADS
     pthread_mutex_destroy (&p->mutex);
 #endif
-#ifdef WIN32
+#ifdef _WIN32
     DeleteCriticalSection (&p->mutex);
 #endif
     return 0;
@@ -65,7 +65,7 @@ int zebra_mutex_lock (Zebra_mutex *p)
 #if YAZ_POSIX_THREADS
     pthread_mutex_lock (&p->mutex);
 #endif
-#ifdef WIN32
+#ifdef _WIN32
     EnterCriticalSection (&p->mutex);
 #endif
     return 0;
@@ -80,7 +80,7 @@ int zebra_mutex_unlock (Zebra_mutex *p)
 #if YAZ_POSIX_THREADS
     pthread_mutex_unlock (&p->mutex);
 #endif
-#ifdef WIN32
+#ifdef _WIN32
     LeaveCriticalSection (&p->mutex);
 #endif
     return 0;

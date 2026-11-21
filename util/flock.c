@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #include <sys/locking.h>
 #endif
@@ -54,7 +54,7 @@ static struct zebra_lock_info *lock_list = 0;
 
 /** the internal handle, with a pointer to each lock file info */
 struct zebra_lock_handle {
-#ifndef WIN32
+#ifndef _WIN32
     /** so we can call zebra_lock_rdwr_wunlock or zebra_lock_lock_runlock */
     int write_flag;
 #endif
@@ -68,7 +68,7 @@ struct zebra_lock_info {
     char *fname;
     /** reference counter: number of zebra_lock_handles pointing to us */
     int ref_count;
-#ifndef WIN32
+#ifndef _WIN32
     /** number of file write locks/read locks */
     int no_file_write_lock;
     int no_file_read_lock;
@@ -91,7 +91,7 @@ char *zebra_mk_fname(const char *dir, const char *name)
     {
         int last_one = dir[dlen-1];
         strcat(fname, dir);
-#ifdef WIN32
+#ifdef _WIN32
         if (!strchr("/\\:", last_one))
            strcat(fname, "\\");
 #else
@@ -113,7 +113,7 @@ ZebraLockHandle zebra_lock_create(const char *dir, const char *name)
 
     zebra_mutex_lock(&lock_list_mutex);
     /* see if we have the same filename in a global list of "lock files" */
-#ifndef WIN32
+#ifndef _WIN32
     if (posix_locks)
     {
         for (p = lock_list; p ; p = p->next)
@@ -126,7 +126,7 @@ ZebraLockHandle zebra_lock_create(const char *dir, const char *name)
         p = (struct zebra_lock_info *) xmalloc(sizeof(*p));
 
         p->ref_count = 0;
-#ifdef WIN32
+#ifdef _WIN32
         p->fd = open(name, O_BINARY|O_RDONLY);
         if (p->fd == -1)
             p->fd = open(fname, (O_BINARY|O_CREAT|O_RDWR), 0666);
@@ -144,7 +144,7 @@ ZebraLockHandle zebra_lock_create(const char *dir, const char *name)
         {
             p->fname = fname;
             fname = 0;  /* fname buffer now owned by p->fname */
-#ifndef WIN32
+#ifndef _WIN32
             if (posix_locks)
                 zebra_lock_rdwr_init(&p->rdwr_lock);
 
@@ -162,7 +162,7 @@ ZebraLockHandle zebra_lock_create(const char *dir, const char *name)
         p->ref_count++;
         h = (ZebraLockHandle) xmalloc(sizeof(*h));
         h->p = p;
-#ifndef WIN32
+#ifndef _WIN32
         h->write_flag = 0;
 #endif
         yaz_log(log_level, "zebra_lock_create fd=%d p=%p fname=%s",
@@ -203,7 +203,7 @@ void zebra_lock_destroy(ZebraLockHandle h)
         yaz_log(log_level, "zebra_lock_destroy fd=%d p=%p fname=%s remove",
                 h->p->fd, h, h->p->fname);
 
-#ifndef WIN32
+#ifndef _WIN32
         if (posix_locks)
             zebra_lock_rdwr_destroy(&h->p->rdwr_lock);
         zebra_mutex_destroy(&h->p->file_mutex);
@@ -217,7 +217,7 @@ void zebra_lock_destroy(ZebraLockHandle h)
     zebra_mutex_unlock(&lock_list_mutex);
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 static int unixLock(int fd, int type, int cmd)
 {
     struct flock area;
@@ -244,7 +244,7 @@ int zebra_lock_w(ZebraLockHandle h)
     yaz_log(log_level, "zebra_lock_w fd=%d p=%p fname=%s begin",
             h->p->fd, h, h->p->fname);
 
-#ifdef WIN32
+#ifdef _WIN32
     while ((r = _locking(h->p->fd, _LK_LOCK, 1)))
         ;
 #else
@@ -281,7 +281,7 @@ int zebra_lock_r(ZebraLockHandle h)
 
     yaz_log(log_level, "zebra_lock_r fd=%d p=%p fname=%s begin",
             h->p->fd, h, h->p->fname);
-#ifdef WIN32
+#ifdef _WIN32
     while ((r = _locking(h->p->fd, _LK_LOCK, 1)))
         ;
 #else
@@ -315,7 +315,7 @@ int zebra_unlock(ZebraLockHandle h)
     int r = 0;
     yaz_log(log_level, "zebra_unlock fd=%d p=%p fname=%s begin",
             h->p->fd, h, h->p->fname);
-#ifdef WIN32
+#ifdef _WIN32
     r = _locking(h->p->fd, _LK_UNLCK, 1);
 #else
     zebra_mutex_lock(&h->p->file_mutex);

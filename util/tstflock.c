@@ -44,14 +44,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <fcntl.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #endif
 
 #if YAZ_POSIX_THREADS
 #include <pthread.h>
 #endif
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #include <process.h>
 #endif
@@ -73,7 +73,7 @@ int test_fd = 0;
 
 static void small_sleep(void)
 {
-#ifdef WIN32
+#ifdef _WIN32
     Sleep(2);
 #else
 #if YAZ_POSIX_THREADS
@@ -138,7 +138,7 @@ void *run_func(void *arg)
     return 0;
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 DWORD WINAPI ThreadProc(void *p)
 {
     run_func(p);
@@ -148,7 +148,7 @@ DWORD WINAPI ThreadProc(void *p)
 
 static void tst_thread(int num, int write_flag)
 {
-#ifdef WIN32
+#ifdef _WIN32
     HANDLE handles[NUM_THREADS];
     DWORD dwThreadId[NUM_THREADS];
 #endif
@@ -165,7 +165,7 @@ static void tst_thread(int num, int write_flag)
 #if YAZ_POSIX_THREADS
         pthread_create(&child_thread[i], 0 /* attr */, run_func, &id[i]);
 #endif
-#ifdef WIN32
+#ifdef _WIN32
         if (1)
         {
             void *pData = &id[i];
@@ -184,7 +184,7 @@ static void tst_thread(int num, int write_flag)
     for (i = 0; i<num; i++)
         pthread_join(child_thread[i], 0);
 #endif
-#ifdef WIN32
+#ifdef _WIN32
     WaitForMultipleObjects(num, handles, TRUE, INFINITE);
 #endif
     for (i = 0; i < num; i++)

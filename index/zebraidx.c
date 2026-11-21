@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #endif
 #if HAVE_UNISTD_H
@@ -64,13 +64,13 @@ int main(int argc, char **argv)
     Res default_res = res_open(0, 0);
 
     int trans_started = 0;
-#ifndef WIN32
+#ifndef _WIN32
     char nbuf[100];
 #endif
     ZebraService zs = 0;
     ZebraHandle zh = 0;
 
-#ifdef WIN32
+#ifdef _WIN32
 #else
     yaz_snprintf(nbuf, sizeof(nbuf), "%s(%ld)", *argv, (long) getpid());
     yaz_log_init_prefix(nbuf);
