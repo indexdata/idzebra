@@ -35,11 +35,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 int init_DFA_states (struct DFA_states **dfasp, DFASetType st, int hash)
 {
-    struct DFA_states *dfas;
     struct DFA_trans *tm;
-    int i;
 
-    dfas = (struct DFA_states *) imalloc (sizeof(struct DFA_states));
+    struct DFA_states *dfas = (struct DFA_states *) imalloc (sizeof(struct DFA_states));
     assert (dfas);
     dfas->hasharray = (struct DFA_state **)
         imalloc (sizeof(struct DFA_state*) * hash);
@@ -62,7 +60,7 @@ int init_DFA_states (struct DFA_states **dfasp, DFASetType st, int hash)
     assert (tm->tran_block);
 
     dfas->sortarray = NULL;
-    for (i=0; i<dfas->hash; i++)
+    for (int i=0; i<dfas->hash; i++)
         dfas->hasharray[i] = NULL;
     return 0;
 }
@@ -97,9 +95,7 @@ int rm_DFA_states (struct DFA_states **dfasp)
 
 int add_DFA_state (struct DFA_states *dfas, DFASet *s, struct DFA_state **sp)
 {
-    int i;
     struct DFA_state *si, **sip;
-    DFA_stateb *sb;
 
     assert (dfas);
     assert (*s);
@@ -114,12 +110,12 @@ int add_DFA_state (struct DFA_states *dfas, DFASet *s, struct DFA_state **sp)
         }
     if (!dfas->freelist)
     {
-        sb = (DFA_stateb *) imalloc (sizeof(*sb));
+        DFA_stateb *sb = (DFA_stateb *) imalloc (sizeof(*sb));
         sb->next = dfas->statemem;
         dfas->statemem = sb;
         sb->state_block = si = dfas->freelist =
             (struct DFA_state *) imalloc (sizeof(struct DFA_state)*DFA_CHUNK);
-        for (i = 0; i<DFA_CHUNK-1; i++, si++)
+        for (int i = 0; i<DFA_CHUNK-1; i++, si++)
             si->next = si+1;
         si->next = NULL;
     }
@@ -144,10 +140,7 @@ int add_DFA_state (struct DFA_states *dfas, DFASet *s, struct DFA_state **sp)
 void add_DFA_tran (struct DFA_states *dfas, struct DFA_state *s,
                    int ch0, int ch1, int to)
 {
-    struct DFA_trans *tm;
-    struct DFA_tran *t;
-
-    tm = dfas->transmem;
+    struct DFA_trans *tm = dfas->transmem;
     if (tm->ptr == tm->size)
     {
         tm = (struct DFA_trans *) imalloc (sizeof(struct DFA_trans));
@@ -165,7 +158,7 @@ void add_DFA_tran (struct DFA_states *dfas, struct DFA_state *s,
         s->trans = tm->tran_block;
     }
     s->tran_no++;
-    t = tm->tran_block + tm->ptr++;
+    struct DFA_tran *t = tm->tran_block + tm->ptr++;
     t->ch[0] = ch0;
     t->ch[1] = ch1;
     t->to = to;
@@ -187,11 +180,10 @@ struct DFA_state *get_DFA_state (struct DFA_states *dfas)
 
 void sort_DFA_states (struct DFA_states *dfas)
 {
-    struct DFA_state *s;
     assert (dfas);
     dfas->sortarray = (struct DFA_state **)
         imalloc (sizeof(struct DFA_state *)*dfas->no);
-    for (s = dfas->marked; s; s=s->next)
+    for (struct DFA_state *s = dfas->marked; s; s=s->next)
         dfas->sortarray[s->no] = s;
     ifree (dfas->hasharray);
     dfas->hasharray = NULL;

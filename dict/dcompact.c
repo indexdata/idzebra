@@ -31,14 +31,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static void dict_copy_page(Dict dict, char *to_p, char *from_p, int *map)
 {
-    int i, slen, no = 0;
+    int slen, no = 0;
     short *from_indxp, *to_indxp;
     char *from_info, *to_info;
 
     from_indxp = (short*) ((char*) from_p+DICT_bsize(from_p));
     to_indxp = (short*) ((char*) to_p+DICT_bsize(to_p));
     to_info = (char*) to_p + DICT_infoffset;
-    for (i = DICT_nodir(from_p); --i >= 0; )
+    for (int i = DICT_nodir(from_p); --i >= 0; )
     {
         if (*--from_indxp > 0) /* tail string here! */
         {
@@ -90,15 +90,14 @@ static void dict_copy_page(Dict dict, char *to_p, char *from_p, int *map)
 int dict_copy_compact(BFiles bfs, const char *from_name, const char *to_name)
 {
     int no_dir = 0;
-    Dict dict_from, dict_to;
-    int *map, i;
-    dict_from = dict_open(bfs, from_name, 0, 0, 0, 4096);
+    int i;
+    Dict dict_from = dict_open(bfs, from_name, 0, 0, 0, 4096);
     if (!dict_from)
         return -1;
-    map = (int *) xmalloc((dict_from->head.last+1) * sizeof(*map));
+    int *map = (int *) xmalloc((dict_from->head.last+1) * sizeof(*map));
     for (i = 0; i <= (int)(dict_from->head.last); i++)
         map[i] = -1;
-    dict_to = dict_open(bfs, to_name, 0, 1, 1, 4096);
+    Dict dict_to = dict_open(bfs, to_name, 0, 1, 1, 4096);
     if (!dict_to)
         return -1;
     map[0] = 0;
@@ -107,9 +106,8 @@ int dict_copy_compact(BFiles bfs, const char *from_name, const char *to_name)
     for (i = 1; i < (int) (dict_from->head.last); i++)
     {
         void *buf;
-        int size;
         dict_bf_readp(dict_from->dbf, i, &buf);
-        size = ((DICT_size(buf)+sizeof(short)-1)/sizeof(short) +
+        int size = ((DICT_size(buf)+sizeof(short)-1)/sizeof(short) +
                 DICT_nodir(buf))*sizeof(short);
         map[i+1] = map[i] + size;
         no_dir += DICT_nodir(buf);

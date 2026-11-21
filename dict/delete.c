@@ -32,16 +32,14 @@ static void dict_del_subtree(Dict dict, Dict_ptr ptr,
                              int (*f)(const char *, void *))
 {
     void *p = 0;
-    short *indxp;
-    int i, hi;
 
     if (!ptr)
         return;
 
     dict_bf_readp(dict->dbf, ptr, &p);
-    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
-    hi = DICT_nodir(p)-1;
-    for (i = 0; i <= hi; i++)
+    short *indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
+    int hi = DICT_nodir(p)-1;
+    for (int i = 0; i <= hi; i++)
     {
         if (indxp[-i] > 0)
         {
@@ -88,10 +86,9 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
                            int sub_flag, void *client,
                            int (*f)(const char *, void *))
 {
-    int mid, lo, hi;
+    int lo;
     int cmp;
     void *p;
-    short *indxp;
     char *info;
     int r = 0;
     Dict_ptr subptr = 0;
@@ -99,9 +96,9 @@ static int dict_del_string(Dict dict, const Dict_char *str, Dict_ptr ptr,
     if (!ptr)
         return 0;
     dict_bf_readp(dict->dbf, ptr, &p);
-    mid = lo = 0;
-    hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
+    int mid = lo = 0;
+    int hi = DICT_nodir(p)-1;
+    short *indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     while (lo <= hi)
     {
         mid = (lo+hi)/2;

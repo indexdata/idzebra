@@ -146,7 +146,6 @@ const char *data1_get_tabroot(data1_handle dp)
 
 FILE *data1_path_fopen(data1_handle dh, const char *file, const char *mode)
 {
-    FILE *f;
     const char *path = data1_get_tabpath(dh);
     const char *root = data1_get_tabroot(dh);
 
@@ -155,7 +154,7 @@ FILE *data1_path_fopen(data1_handle dh, const char *file, const char *mode)
             root ? root : "NULL", file, mode);
     if (!path || !*path)
         return 0;
-    f = yaz_fopen(path, file, mode, root);
+    FILE *f = yaz_fopen(path, file, mode, root);
     if (!f)
     {
         yaz_log(YLOG_WARN|YLOG_ERRNO, "Couldn't open %s", file);

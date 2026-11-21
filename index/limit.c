@@ -63,12 +63,11 @@ static int zebra_limit_filter_cb(const void *buf, void *data)
 {
     struct zebra_limit *zl = data;
     const struct it_key *key = buf;
-    size_t i;
 
 #if ZEBRA_LIMIT_DEBUG
     yaz_log(YLOG_LOG, "zebra_limit_filter_cb zl=%p key->len=%d", zl, key->len);
 #endif
-    for (i = 0; zl->ids[i]; i++)
+    for (size_t i = 0; zl->ids[i]; i++)
     {
 #if ZEBRA_LIMIT_DEBUG
         yaz_log(YLOG_LOG, " i=%d ids=" ZINT_FORMAT " mem=" ZINT_FORMAT,
@@ -103,12 +102,10 @@ void zebra_limit_for_rset(struct zebra_limit *zl,
 #endif
     if (zl && zl->ids)
     {
-        struct zebra_limit *hl;
-
 #if ZEBRA_LIMIT_DEBUG
         yaz_log(YLOG_LOG, "enable limit");
 #endif
-        hl = zebra_limit_create(zl->complement_flag, zl->ids);
+        struct zebra_limit *hl = zebra_limit_create(zl->complement_flag, zl->ids);
         *filter_data = hl;
         *filter_func = zebra_limit_filter_cb;
         *filter_destroy = zebra_limit_destroy_cb;

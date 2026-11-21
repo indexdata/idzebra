@@ -181,9 +181,8 @@ void recTypeClass_load_modules(RecTypeClass *rts, NMEM nmem,
     {
         const char *comp_ptr;
         char comp[FILENAME_MAX+1];
-        size_t len;
 
-        len = yaz_filepath_comp(&module_path, &comp_ptr);
+        size_t len = yaz_filepath_comp(&module_path, &comp_ptr);
         if (!len || len >= FILENAME_MAX)
             break;
 
@@ -252,9 +251,7 @@ RecTypes recTypes_init(RecTypeClass rtc, data1_handle dh)
 
 void recTypes_destroy (RecTypes rts)
 {
-    struct recTypeInstance *rti;
-
-    for (rti = rts->entries; rti; rti = rti->next)
+    for (struct recTypeInstance *rti = rts->entries; rti; rti = rti->next)
     {
         if (rti->init_flag)
             (*(rti->recType)->destroy)(rti->clientData);
@@ -264,9 +261,7 @@ void recTypes_destroy (RecTypes rts)
 RecType recType_byName (RecTypes rts, Res res, const char *name,
                         void **clientDataP)
 {
-    struct recTypeInstance *rti;
-
-    for (rti = rts->entries; rti; rti = rti->next)
+    for (struct recTypeInstance *rti = rts->entries; rti; rti = rti->next)
     {
         size_t slen = strlen(rti->recType->name);
         if (!strncmp (rti->recType->name, name, slen)

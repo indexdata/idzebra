@@ -35,7 +35,6 @@ static Z_Variant *read_variant(int argc, char **argv, NMEM nmem,
                                const char *file, int lineno)
 {
     Z_Variant *r = (Z_Variant *)nmem_malloc(nmem, sizeof(*r));
-    int i;
 
     r->globalVariantSetId = odr_oiddup_nmem(nmem, yaz_oid_varset_variant_1);
     if (argc)
@@ -43,11 +42,10 @@ static Z_Variant *read_variant(int argc, char **argv, NMEM nmem,
     else
         r->triples = 0;
     r->num_triples = argc;
-    for (i = 0; i < argc; i++)
+    for (int i = 0; i < argc; i++)
     {
         int zclass, type;
         char value[512];
-        Z_Triple *t;
 
         if (sscanf(argv[i], "(%d,%d,%511[^)])", &zclass, &type, value) < 3)
         {
@@ -55,7 +53,7 @@ static Z_Variant *read_variant(int argc, char **argv, NMEM nmem,
                     file, lineno, argv[i]);
             return 0;
         }
-        t = r->triples[i] = (Z_Triple *)nmem_malloc(nmem, sizeof(Z_Triple));
+        Z_Triple *t = r->triples[i] = (Z_Triple *)nmem_malloc(nmem, sizeof(Z_Triple));
         t->variantSetId = 0;
         t->zclass = nmem_intdup(nmem, zclass);
         t->type = nmem_intdup(nmem, type);
@@ -152,7 +150,6 @@ static Z_ETagUnit *read_tagunit(char *buf, NMEM nmem,
     else if ((terms = sscanf(buf, "(%d,%511[^)]):%511[a-zA-Z0-9+]",
                              &type, value, occ)) >= 2)
     {
-        int numval;
         Z_SpecificTag *t;
         char *valp = value;
         int force_string = 0;
@@ -171,7 +168,7 @@ static Z_ETagUnit *read_tagunit(char *buf, NMEM nmem,
             nmem_malloc(nmem, sizeof(*t->tagValue));
         if (!force_string && isdigit(*(unsigned char *)valp))
         {
-            numval = atoi(valp);
+            int numval = atoi(valp);
             t->tagValue->which = Z_StringOrNumeric_numeric;
             t->tagValue->u.numeric = nmem_intdup(nmem, numval);
         }
@@ -233,7 +230,7 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
     while ((argc = readconf_line(f, &lineno, line, 512, argv, 50)))
         if (!strcmp(argv[0], "elementsetnames"))
         {
-            int nnames = argc-1, i;
+            int nnames = argc-1;
 
             if (!nnames)
             {
@@ -244,7 +241,7 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
 
             res->elementSetNames =
                 (char **)nmem_malloc(nmem, sizeof(char**)*nnames);
-            for (i = 0; i < nnames; i++)
+            for (int i = 0; i < nnames; i++)
             {
                 res->elementSetNames[i] = nmem_strdup(nmem, argv[i+1]);
             }
@@ -332,12 +329,11 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
             for ((ep = strchr(path, '/')) ; path ;
                  (void)((path = ep) && (ep = strchr(path, '/'))))
             {
-                Z_ETagUnit *tagunit;
                 if (ep)
                     ep++;
 
                 assert(i<num);
-                tagunit = read_tagunit(path, nmem, file, lineno);
+                Z_ETagUnit *tagunit = read_tagunit(path, nmem, file, lineno);
                 if (!tagunit)
                 {
                     yaz_log (YLOG_WARN, "%s%d: Bad tag unit at %s",

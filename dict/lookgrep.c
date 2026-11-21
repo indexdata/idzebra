@@ -73,14 +73,13 @@ static INLINE MatchWord get_bit(MatchContext *mc, MatchWord *m, int ch,
 static MatchContext *mk_MatchContext(struct DFA *dfa, int range)
 {
     MatchContext *mc = (MatchContext *) xmalloc(sizeof(*mc));
-    int s;
 
     mc->n = (dfa->no_states+WORD_BITS) / WORD_BITS;
     mc->range = range;
     mc->fact = (range+1)*mc->n;
     mc->match_mask = (MatchWord *) xcalloc(mc->n, sizeof(*mc->match_mask));
 
-    for (s = 0; s<dfa->no_states; s++)
+    for (int s = 0; s<dfa->no_states; s++)
         if (dfa->states[s]->rule_no)
             set_bit(mc, mc->match_mask, 0, s);
     return mc;
@@ -97,13 +96,13 @@ static void mask_shift(MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                        struct DFA *dfa, int ch)
 {
     int j, s = 0;
-    MatchWord *Rsrc_p = Rsrc, mask;
+    MatchWord *Rsrc_p = Rsrc;
 
     for (j = 0; j<mc->n; j++)
         Rdst[j] = 0;
     while (1)
     {
-        mask = *Rsrc_p++;
+        MatchWord mask = *Rsrc_p++;
         for (j = 0; j<WORD_BITS/4; j++)
         {
             if (mask & 15)
@@ -157,12 +156,12 @@ static void shift(MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                   struct DFA *dfa)
 {
     int j, s = 0;
-    MatchWord *Rsrc_p = Rsrc, mask;
+    MatchWord *Rsrc_p = Rsrc;
     for (j = 0; j<mc->n; j++)
         Rdst[j] = 0;
     while (1)
     {
-        mask = *Rsrc_p++;
+        MatchWord mask = *Rsrc_p++;
         for (j = 0; j<WORD_BITS/4; j++)
         {
             if (mask & 15)
@@ -207,8 +206,7 @@ static void shift(MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
 static void or(MatchContext *mc, MatchWord *Rdst,
                MatchWord *Rsrc1, MatchWord *Rsrc2)
 {
-    int i;
-    for (i = 0; i<mc->n; i++)
+    for (int i = 0; i<mc->n; i++)
         Rdst[i] = Rsrc1[i] | Rsrc2[i];
 }
 
@@ -216,11 +214,10 @@ static INLINE int move(MatchContext *mc, MatchWord *Rj1, MatchWord *Rj,
                        Dict_char ch, struct DFA *dfa, MatchWord *Rtmp,
                        int range)
 {
-    int d;
     MatchWord *Rtmp_2 = Rtmp + mc->n;
 
     mask_shift(mc, Rj1, Rj, dfa, ch);
-    for (d = 1; d <= mc->range; d++)
+    for (int d = 1; d <= mc->range; d++)
     {
         or(mc, Rtmp, Rj, Rj1);                         /* 2,3 */
 
@@ -247,15 +244,14 @@ static int grep(Dict dict, Dict_ptr ptr, MatchContext *mc,
                 Dict_char *prefix, struct DFA *dfa,
                 int *max_pos, int init_pos)
 {
-    int lo, hi, d;
+    int d;
     void *p;
-    short *indxp;
     char *info;
 
     dict_bf_readp(dict->dbf, ptr, &p);
-    lo = 0;
-    hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
+    int lo = 0;
+    int hi = DICT_nodir(p)-1;
+    short *indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
 
     while (lo <= hi)
     {
@@ -264,10 +260,9 @@ static int grep(Dict dict, Dict_ptr ptr, MatchContext *mc,
             /* string (Dict_char *) DICT_EOS terminated */
             /* unsigned char        length of information */
             /* char *               information */
-            int j;
             int was_match = 0;
             info = (char*)p + indxp[-lo];
-            for (j=0; ; j++)
+            for (int j=0; ; j++)
             {
                 Dict_char ch;
                 MatchWord *Rj0 =    Rj + j    *mc->fact;
@@ -342,9 +337,8 @@ static int grep(Dict dict, Dict_ptr ptr, MatchContext *mc,
                     for (d = mc->n; --d >= 0; )
                         if (Rj1[range*mc->n + d] & mc->match_mask[d])
                         {
-                            int ret;
                             prefix[pos+1] = DICT_EOS;
-                            ret = userfunc((char*) prefix,
+                            int ret = userfunc((char*) prefix,
                                            info+sizeof(Dict_ptr)+
                                            sizeof(Dict_char), client);
                             if (ret)
@@ -376,12 +370,10 @@ int dict_lookup_grep(Dict dict, const char *pattern, int range, void *client,
                      int (*userfunc)(char *name, const char *info,
                                      void *client))
 {
-    MatchWord *Rj;
     Dict_char prefix[MAX_LENGTH+1];
     const char *this_pattern = pattern;
-    MatchContext *mc;
     struct DFA *dfa = dfa_init();
-    int i, d, ret = 0;
+    int i, ret = 0;
 
 #if 0
     debug_dfa_trav = 1;
@@ -410,16 +402,15 @@ int dict_lookup_grep(Dict dict, const char *pattern, int range, void *client,
     }
     dfa_mkstate(dfa);
 
-    mc = mk_MatchContext(dfa, range);
+    MatchContext *mc = mk_MatchContext(dfa, range);
 
-    Rj = (MatchWord *) xcalloc((MAX_LENGTH+2) * mc->fact, sizeof(*Rj));
+    MatchWord *Rj = (MatchWord *) xcalloc((MAX_LENGTH+2) * mc->fact, sizeof(*Rj));
 
     set_bit (mc, Rj, 0, 0);
-    for (d = 1; d<=mc->range; d++)
+    for (int d = 1; d<=mc->range; d++)
     {
-        int s;
         memcpy(Rj + mc->n * d, Rj + mc->n * (d-1), mc->n * sizeof(*Rj));
-        for (s = 0; s < dfa->no_states; s++)
+        for (int s = 0; s < dfa->no_states; s++)
         {
             if (get_bit(mc, Rj, d-1, s))
             {

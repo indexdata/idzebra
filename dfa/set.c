@@ -34,11 +34,9 @@ static DFASet mk_DFASetElement (DFASetType st, int n);
 
 DFASetType mk_DFASetType (int chunk)
 {
-    DFASetType st;
-
     assert (chunk > 8 && chunk < 8000);
 
-    st = (DFASetType) imalloc (sizeof(*st));
+    DFASetType st = (DFASetType) imalloc (sizeof(*st));
     assert (st);
 
     st->alloclist = st->freelist = NULL;
@@ -49,19 +47,18 @@ DFASetType mk_DFASetType (int chunk)
 
 int inf_DFASetType (DFASetType st, long *used, long *allocated)
 {
-    DFASet s;
     assert (st);
     *used = st->used;
     *allocated = 0;
-    for (s = st->alloclist; s; s = s->next)
+    for (DFASet s = st->alloclist; s; s = s->next)
          *allocated += st->chunk;
     return sizeof (DFASetElement);
 }
 
 DFASetType rm_DFASetType (DFASetType st)
 {
-    DFASet s, s1;
-    for (s = st->alloclist; (s1 = s);)
+    DFASet s1;
+    for (DFASet s = st->alloclist; (s1 = s);)
     {
         s = s->next;
         ifree (s1);
@@ -79,7 +76,6 @@ DFASet mk_DFASet (DFASetType st)
 static DFASet mk_DFASetElement (DFASetType st, int n)
 {
     DFASet s;
-    int i;
     assert (st);
 
     assert (st->chunk > 8);
@@ -90,7 +86,7 @@ static DFASet mk_DFASetElement (DFASetType st, int n)
         s->next = st->alloclist;
         st->alloclist = s;
         st->freelist = ++s;
-        for (i=st->chunk; --i > 0; s++)
+        for (int i=st->chunk; --i > 0; s++)
             s->next = s+1;
         s->next = NULL;
     }
@@ -135,14 +131,14 @@ DFASet rm_DFASet (DFASetType st, DFASet s)
 DFASet add_DFASet (DFASetType st, DFASet s, int n)
 {
     DFASetElement dummy;
-    DFASet p = &dummy, snew;
+    DFASet p = &dummy;
     p->next = s;
     while (p->next && p->next->value < n)
         p = p->next;
     assert (p);
     if (!(p->next && p->next->value == n))
     {
-        snew = mk_DFASetElement (st, n);
+        DFASet snew = mk_DFASetElement (st, n);
         snew->next = p->next;
         p->next = snew;
     }

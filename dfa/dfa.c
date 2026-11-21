@@ -357,11 +357,11 @@ static int nextchar_set (struct DFA_parse *parse_info, int *esc)
 
 static int read_charset (struct DFA_parse *parse_info)
 {
-    int i, ch0, esc0, cc = 0;
+    int esc0, cc = 0;
     parse_info->look_chars = mk_BSet (&parse_info->charset);
     res_BSet (parse_info->charset, parse_info->look_chars);
 
-    ch0 = nextchar_set (parse_info, &esc0);
+    int ch0 = nextchar_set (parse_info, &esc0);
     if (!esc0 && ch0 == '^')
     {
         cc = 1;
@@ -393,11 +393,10 @@ static int read_charset (struct DFA_parse *parse_info)
             {
                 if (parse_info->cmap)
                 {
-                    const char **mapto;
                     char mapfrom[2];
                     const char *mcp = mapfrom;
                     mapfrom[0] = ch0;
-                    mapto = parse_info->cmap(parse_info->cmap_data, &mcp, 1);
+                    const char **mapto = parse_info->cmap(parse_info->cmap_data, &mcp, 1);
                     assert (mapto);
                     ch0 = mapto[0][0];
                 }
@@ -421,15 +420,14 @@ static int read_charset (struct DFA_parse *parse_info)
             }
             else if (parse_info->cmap)
             {
-                const char **mapto;
                 char mapfrom[2];
                 const char *mcp = mapfrom;
                 mapfrom[0] = ch1;
-                mapto = (*parse_info->cmap) (parse_info->cmap_data, &mcp, 1);
+                const char **mapto = (*parse_info->cmap) (parse_info->cmap_data, &mcp, 1);
                 assert (mapto);
                 ch1 = mapto[0][0];
             }
-            for (i = ch0; ++i <= ch1;)
+            for (int i = ch0; ++i <= ch1;)
                 add_BSet (parse_info->charset, parse_info->look_chars, i);
 
             if (open_range)
@@ -449,7 +447,6 @@ static int read_charset (struct DFA_parse *parse_info)
 
 static int map_l_char (struct DFA_parse *parse_info)
 {
-    const char **mapto;
     const char *cp0 = (const char *) (parse_info->expr_ptr-1);
     int i = 0, len = strlen(cp0);
 
@@ -462,7 +459,7 @@ static int map_l_char (struct DFA_parse *parse_info)
     if (!parse_info->cmap)
         return L_CHAR;
 
-    mapto = (*parse_info->cmap) (parse_info->cmap_data, &cp0, len);
+    const char **mapto = (*parse_info->cmap) (parse_info->cmap_data, &cp0, len);
     assert (mapto);
 
     parse_info->expr_ptr = (const unsigned char *) cp0;
@@ -487,8 +484,7 @@ static int lex_sub(struct DFA_parse *parse_info)
             return read_charset(parse_info);
         else
         {
-            const int *cc;
-            for (cc = parse_info->charMap; *cc; cc += 2)
+            for (const int *cc = parse_info->charMap; *cc; cc += 2)
                 if (*cc == (int) (parse_info->look_ch))
                 {
                     if (!cc[1])
@@ -562,11 +558,9 @@ static void term_Tnode (struct DFA_parse *parse_info)
 
 static struct Tnode *mk_Tnode (struct DFA_parse *parse_info)
 {
-    struct Tblock *tnew;
-
     if (parse_info->use_Tnode == parse_info->max_Tnode)
     {
-        tnew = (struct Tblock *) imalloc (sizeof(struct Tblock));
+        struct Tblock *tnew = (struct Tblock *) imalloc (sizeof(struct Tblock));
         tnew->tarray = (struct Tnode *) imalloc (TADD*sizeof(struct Tnode));
         if (!tnew->tarray)
             return NULL;
@@ -584,14 +578,14 @@ static struct Tnode *mk_Tnode (struct DFA_parse *parse_info)
 struct Tnode *mk_Tnode_cset (struct DFA_parse *parse_info, BSet charset)
 {
     struct Tnode *tn1, *tn0 = mk_Tnode(parse_info);
-    int ch1, ch0 = trav_BSet (parse_info->charset, charset, 0);
+    int ch0 = trav_BSet (parse_info->charset, charset, 0);
     if (ch0 == -1)
         tn0->pos = EPSILON;
     else
     {
         tn0->u.ch[0] = ch0;
         tn0->pos = ++parse_info->position;
-        ch1 = travi_BSet (parse_info->charset, charset, ch0+1) ;
+        int ch1 = travi_BSet (parse_info->charset, charset, ch0+1) ;
         if (ch1 == -1)
             tn0->u.ch[1] = parse_info->charset->size;
         else
@@ -754,41 +748,35 @@ static void dfa_trav (struct DFA_parse *parse_info, struct Tnode *n)
 static void init_followpos (struct DFA_parse *parse_info)
 {
     DFASet *fa;
-    int i;
     parse_info->followpos = fa =
         (DFASet *) imalloc (sizeof(DFASet) * (1+parse_info->position));
-    for (i = parse_info->position+1; --i >= 0; fa++)
+    for (int i = parse_info->position+1; --i >= 0; fa++)
         *fa = mk_DFASet (parse_info->poset);
 }
 
 static void mk_dfa_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
 {
-    int i, j, c;
-    int max_char;
+    int c;
     short *pos, *pos_i;
-    DFASet tran_set;
-    int char_0, char_1;
     struct DFA_state *dfa_from, *dfa_to;
-    struct Tnode **posar;
     DFASetType poset;
-    DFASet *followpos;
 
     assert (parse_info);
 
-    posar = parse_info->posar;
-    max_char = parse_info->charset->size;
+    struct Tnode **posar = parse_info->posar;
+    int max_char = parse_info->charset->size;
     pos = (short *) imalloc (sizeof(*pos) * (parse_info->position+1));
 
-    tran_set = cp_DFASet (parse_info->poset, parse_info->root->firstpos);
-    i = add_DFA_state (dfas, &tran_set, &dfa_from);
+    DFASet tran_set = cp_DFASet (parse_info->poset, parse_info->root->firstpos);
+    int i = add_DFA_state (dfas, &tran_set, &dfa_from);
     assert (i);
     dfa_from->rule_no = 0;
     poset = parse_info->poset;
-    followpos = parse_info->followpos;
+    DFASet *followpos = parse_info->followpos;
     while ((dfa_from = get_DFA_state (dfas)))
     {
         pos_i = pos;
-        j = i = 0;
+        int j = i = 0;
         for (tran_set = dfa_from->set; tran_set; tran_set = tran_set->next)
             if ((c = posar[tran_set->value]->u.ch[0]) >= 0 && c <= max_char)
                 *pos_i++ = tran_set->value;
@@ -804,9 +792,9 @@ static void mk_dfa_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
         dfa_from->rule_no = -i;
         dfa_from->rule_nno = -j;
 
-        for (char_1 = 0; char_1 <= max_char; char_1++)
+        for (int char_1 = 0; char_1 <= max_char; char_1++)
         {
-            char_0 = max_char+1;
+            int char_0 = max_char+1;
             for (pos_i = pos; (i = *pos_i) != -1; ++pos_i)
                 if (posar[i]->u.ch[1] >= char_1
                     && (c=posar[i]->u.ch[0]) < char_0)
@@ -845,13 +833,12 @@ static void mk_dfa_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
 
 static void pr_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
 {
-    struct DFA_state *s;
     struct DFA_tran *tran;
-    int prev_no, i, c, no;
+    int i;
 
-    for (no=0; no < dfas->no; ++no)
+    for (int no=0; no < dfas->no; ++no)
     {
-        s = dfas->sortarray[no];
+        struct DFA_state *s = dfas->sortarray[no];
         assert (s->no == no);
         printf ("DFA state %d", no);
         if (s->rule_no)
@@ -861,7 +848,7 @@ static void pr_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
 
         putchar (':');
         pr_DFASet (parse_info->poset, s->set);
-        prev_no = -1;
+        int prev_no = -1;
         for (i=s->tran_no, tran=s->trans; --i >= 0; tran++)
         {
             if (prev_no != tran->to)
@@ -871,7 +858,7 @@ static void pr_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
                 printf (" goto %d on [", tran->to);
                 prev_no = tran->to;
             }
-            for (c = tran->ch[0]; c <= tran->ch[1]; c++)
+            for (int c = tran->ch[0]; c <= tran->ch[1]; c++)
                 printf ("%s", str_char(c));
         }
         if (prev_no != -1)
@@ -883,10 +870,9 @@ static void pr_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
 static void pr_verbose (struct DFA_parse *parse_info, struct DFA_states *dfas)
 {
     long i, j;
-    int k;
     printf ("%d/%d tree nodes used, %ld bytes each\n",
         parse_info->use_Tnode, parse_info->max_Tnode, (long) sizeof (struct Tnode));
-    k = inf_BSetHandle (parse_info->charset, &i, &j);
+    int k = inf_BSetHandle (parse_info->charset, &i, &j);
     printf ("%ld/%ld character sets, %ld bytes each\n",
             i/k, j/k, (long) k*sizeof(BSetWord));
     k = inf_DFASetType (parse_info->poset, &i, &j);
@@ -897,9 +883,8 @@ static void pr_verbose (struct DFA_parse *parse_info, struct DFA_states *dfas)
 static void pr_followpos (struct DFA_parse *parse_info)
 {
     struct Tnode **posar = parse_info->posar;
-    int i;
     printf ("\nfollowsets:\n");
-    for (i=1; i <= parse_info->position; i++)
+    for (int i=1; i <= parse_info->position; i++)
     {
         printf ("%3d:", i);
         pr_DFASet (parse_info->poset, parse_info->followpos[i]);
@@ -941,12 +926,11 @@ void dfa_parse_cmap_new (struct DFA *d, const int *cmap)
 {
     struct DFA_parse *dfa = d->parse_info;
     const int *cp;
-    int size;
 
     assert (dfa);
     for (cp = cmap; *cp; cp += 2)
         ;
-    size = cp - cmap + 1;
+    int size = cp - cmap + 1;
     if (size > dfa->charMapSize)
     {
         if (dfa->charMap)
@@ -960,10 +944,9 @@ void dfa_parse_cmap_new (struct DFA *d, const int *cmap)
 void dfa_parse_cmap_del (struct DFA *d, int from)
 {
     struct DFA_parse *dfa = d->parse_info;
-    int *cc;
 
     assert (dfa);
-    for (cc = dfa->charMap; *cc; cc += 2)
+    for (int *cc = dfa->charMap; *cc; cc += 2)
         if (*cc == from)
         {
             while ((cc[0] = cc[2]))
@@ -979,7 +962,6 @@ void dfa_parse_cmap_add (struct DFA *d, int from, int to)
 {
     struct DFA_parse *dfa = d->parse_info;
     int *cc;
-    int indx, size;
 
     assert (dfa);
     for (cc = dfa->charMap; *cc; cc += 2)
@@ -988,8 +970,8 @@ void dfa_parse_cmap_add (struct DFA *d, int from, int to)
             cc[1] = to;
             return ;
         }
-    indx = cc - dfa->charMap;
-    size = dfa->charMapSize;
+    int indx = cc - dfa->charMap;
+    int size = dfa->charMapSize;
     if (indx >= size)
     {
         int *cn = (int *) imalloc ((size+16) * sizeof(*dfa->charMap));
@@ -1091,9 +1073,7 @@ static struct DFA_states *mk_dfas (struct DFA_parse *dfap, int poset_chunk)
 
 struct DFA *dfa_init (void)
 {
-    struct DFA *dfa;
-
-    dfa = (struct DFA *) imalloc (sizeof(*dfa));
+    struct DFA *dfa = (struct DFA *) imalloc (sizeof(*dfa));
     dfa->parse_info = dfa_parse_init ();
     dfa->state_info = NULL;
     dfa->states = NULL;
@@ -1134,9 +1114,7 @@ int dfa_parse (struct DFA *dfa, const char **pattern)
         dfa->parse_info->root = top;
     else
     {
-        struct Tnode *n;
-
-        n = mk_Tnode (parse_info);
+        struct Tnode *n = mk_Tnode (parse_info);
         n->pos = OR;
         n->u.p[0] = dfa->parse_info->root;
         n->u.p[1] = top;

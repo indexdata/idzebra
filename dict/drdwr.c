@@ -36,8 +36,7 @@
 
 void dict_pr_lru(Dict_BFile bf)
 {
-    struct Dict_file_block *p;
-    for (p=bf->lru_back; p; p = p->lru_next)
+    for (struct Dict_file_block *p=bf->lru_back; p; p = p->lru_next)
     {
         printf(" %d", p->no);
     }
@@ -81,11 +80,9 @@ static void release_block(Dict_BFile bf, struct Dict_file_block *p)
 
 void dict_bf_flush_blocks(Dict_BFile bf, int no_to_flush)
 {
-    struct Dict_file_block *p;
-    int i;
-    for (i=0; i != no_to_flush && bf->lru_back; i++)
+    for (int i=0; i != no_to_flush && bf->lru_back; i++)
     {
-        p = bf->lru_back;
+        struct Dict_file_block *p = bf->lru_back;
         if (p->dirty)
         {
             if (!bf->compact_flag)

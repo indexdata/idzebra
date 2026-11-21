@@ -42,8 +42,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static void update_process(ZebraService zs, int iter)
 {
-    int i;
-    for (i = 0; i<iter; i++)
+    for (int i = 0; i<iter; i++)
     {
         const char *rec = "<gils><title>some</title></gils>";
         ZebraHandle zh = zebra_open(zs, 0);
@@ -57,8 +56,7 @@ static void update_process(ZebraService zs, int iter)
 static void search_process(ZebraService zs, int iter)
 {
     zint hits_max = 0;
-    int i;
-    for (i = 0; i<iter; i++)
+    for (int i = 0; i<iter; i++)
     {
         ZebraHandle zh = zebra_open(zs, 0);
         zint hits;
@@ -89,16 +87,13 @@ static pid_t fork_service(ZebraService zs, int iter,
 
 static void tst(int argc, char **argv)
 {
-    ZebraService zs;
-    ZebraHandle zh;
-
     mkdir("register", 0775);
     mkdir("shadow", 0775);
 
-    zs = tl_start_up("test_zebra_fork.cfg", argc, argv);
+    ZebraService zs = tl_start_up("test_zebra_fork.cfg", argc, argv);
     YAZ_CHECK(zs);
 
-    zh = zebra_open(zs, 0);
+    ZebraHandle zh = zebra_open(zs, 0);
     YAZ_CHECK(zh);
 
     YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);

@@ -131,8 +131,7 @@ static int log_level_initialized = 0;
 
 static void heap_swap(HEAP h, int x, int y)
 {
-    struct heap_item *swap;
-    swap = h->heap[x];
+    struct heap_item *swap = h->heap[x];
     h->heap[x] = h->heap[y];
     h->heap[y] = swap;
 }
@@ -193,12 +192,10 @@ static void heap_balance(HEAP h)
 
 static void heap_insert(HEAP h, struct heap_item *hi)
 {
-    int cur, parent;
-
-    cur = ++(h->heapnum);
+    int cur = ++(h->heapnum);
     assert(cur <= h->heapmax);
     h->heap[cur] = hi;
-    parent = cur/2;
+    int parent = cur/2;
     while (parent && (heap_cmp(h,parent,cur) > 0))
     {
         assert(parent>0);
@@ -258,14 +255,14 @@ static RSET rsmulti_andor_create(NMEM nmem,
 {
     RSET rnew = rset_create_base(ctrl, nmem, kcontrol, scope, termid,
                                  no_rsets, rsets);
-    struct rset_private *info;
     if (!log_level_initialized)
     {
         log_level = yaz_log_module_level("rsmultiandor");
         log_level_initialized = 1;
     }
     yaz_log(log_level, "rsmultiand_andor_create scope=%d", scope);
-    info = (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
+    struct rset_private *info =
+        (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
     rnew->priv = info;
     return rnew;
 }
@@ -290,7 +287,6 @@ static void r_delete(RSET ct)
 
 static RSFD r_open_andor(RSET ct, int flag, int is_and)
 {
-    RSFD rfd;
     struct rfd_private *p;
     const struct rset_key_control *kctrl = ct->keycontrol;
     int i;
@@ -300,7 +296,7 @@ static RSFD r_open_andor(RSET ct, int flag, int is_and)
         yaz_log(YLOG_FATAL, "multiandor set type is read-only");
         return NULL;
     }
-    rfd = rfd_create_base(ct);
+    RSFD rfd = rfd_create_base(ct);
     if (rfd->priv)
     {
         p = (struct rfd_private *)rfd->priv;
@@ -367,11 +363,10 @@ static RSFD r_open_and(RSET ct, int flag)
 static void r_close(RSFD rfd)
 {
     struct rfd_private *p=(struct rfd_private *)(rfd->priv);
-    int i;
 
     if (p->h)
         heap_destroy(p->h);
-    for (i = 0; i < rfd->rset->no_children; i++)
+    for (int i = 0; i < rfd->rset->no_children; i++)
         if (p->items[i].fd)
             rset_close(p->items[i].fd);
 }
@@ -411,11 +406,9 @@ static int r_read_or(RSFD rfd, void *buf, TERMID *term)
     RSET rset = rfd->rset;
     struct rfd_private *mrfd = rfd->priv;
     const struct rset_key_control *kctrl = rset->keycontrol;
-    struct heap_item *it;
-    int rdres;
     if (heap_empty(mrfd->h))
         return 0;
-    it = mrfd->h->heap[1];
+    struct heap_item *it = mrfd->h->heap[1];
     memcpy(buf, it->buf, kctrl->key_size);
     if (term)
     {
@@ -425,7 +418,7 @@ static int r_read_or(RSFD rfd, void *buf, TERMID *term)
             *term = it->term;
     }
     (mrfd->hits)++;
-    rdres = rset_read(it->fd, it->buf, &it->term);
+    int rdres = rset_read(it->fd, it->buf, &it->term);
     if (rdres)
         heap_balance(mrfd->h);
     else
@@ -563,12 +556,11 @@ static int r_forward_and(RSFD rfd, void *buf, TERMID *term,
     RSET ct = rfd->rset;
     const struct rset_key_control *kctrl = ct->keycontrol;
     int i;
-    int cmp;
     int killtail = 0;
 
     for (i = 0; i < ct->no_children; i++)
     {
-        cmp = (*kctrl->cmp)(p->items[i].buf,untilbuf);
+        int cmp = (*kctrl->cmp)(p->items[i].buf,untilbuf);
         if (cmp <= -rfd->rset->scope)
         {
             killtail = 1; /* we are moving to a different hit */
@@ -595,10 +587,9 @@ static void r_pos_x(RSFD rfd, double *current, double *total, int and_op)
     RSET ct = rfd->rset;
     struct rfd_private *mrfd = (struct rfd_private *)(rfd->priv);
     double ratio = and_op ? 0.0 : 1.0;
-    int i;
     double sum_cur = 0.0;
     double sum_tot = 0.0;
-    for (i = 0; i < ct->no_children; i++)
+    for (int i = 0; i < ct->no_children; i++)
     {
         double cur, tot;
         rset_pos(mrfd->items[i].fd, &cur, &tot);
@@ -660,8 +651,7 @@ static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
            have different terms under them. Those we want.
         */
         int firstterm = *curterm;
-        int i;
-        for (i = 0; i < ct->no_children; i++)
+        for (int i = 0; i < ct->no_children; i++)
         {
             rset_getterms(ct->children[i], terms, maxterms, curterm);
             if (*curterm > firstterm + 1 && *curterm <= maxterms &&

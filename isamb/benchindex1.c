@@ -97,13 +97,12 @@ static int cmp_ar(const void *p1, const void *p2)
 int code_read(void *vp, char **dst, int *insertMode)
 {
     struct index_block *b = (struct index_block *)vp;
-    struct index_term *t;
     struct it_key key;
 
     if (b->current_entry >= b->no_entries)
         return 0;
 
-    t = b->ar[b->current_entry];
+    struct index_term *t = b->ar[b->current_entry];
     b->current_entry++;
 
     key.len = 3;
@@ -433,11 +432,9 @@ void index_marc_from_file(ISAMB isb,
 
     while (1)
     {
-        size_t r;
         char buf[100001];
-        int len, rlen;
 
-        r = fread (buf, 1, 5, inf);
+        size_t r = fread (buf, 1, 5, inf);
         if (r < 5)
         {
             if (r && print_offset && verbose)
@@ -447,14 +444,13 @@ void index_marc_from_file(ISAMB isb,
         }
         while (*buf < '0' || *buf > '9')
         {
-            int i;
             long off = ftell(inf) - 5;
             if (verbose || print_offset)
                 printf("<!-- Skipping bad byte %d (0x%02X) at offset "
                        "%ld (0x%lx) -->\n",
                        *buf & 0xff, *buf & 0xff,
                        off, off);
-            for (i = 0; i<4; i++)
+            for (int i = 0; i<4; i++)
                 buf[i] = buf[i+1];
             r = fread(buf+4, 1, 1, inf);
             if (r < 1)
@@ -466,7 +462,7 @@ void index_marc_from_file(ISAMB isb,
                 printf ("<!-- End of file with data -->\n");
             break;
         }
-        len = atoi_n(buf, 5);
+        int len = atoi_n(buf, 5);
         if (len < 25 || len > 100000)
         {
             long off = ftell(inf) - 5;
@@ -474,7 +470,7 @@ void index_marc_from_file(ISAMB isb,
                    (long)len, (long) off, (long) off);
             break;
         }
-        rlen = len - 5;
+        int rlen = len - 5;
         r = fread (buf + 5, 1, rlen, inf);
         if (r < rlen)
             break;
@@ -504,10 +500,7 @@ void exit_usage(void)
 
 int main(int argc, char **argv)
 {
-    BFiles bfs;
-    ISAMB isb_postings;
     ISAMC_M method_postings;
-    Dict dict;
     int ret;
     int reset = 0;
     char *arg;
@@ -518,7 +511,6 @@ int main(int argc, char **argv)
     FILE *inf = stdin;
     yaz_timing_t tim = 0;
     zint docid_seq = 1;
-    const char *dict_info;
     const char *type = "iso2709";
     int int_count_enable = 1;
     char version_str[16];
@@ -593,7 +585,7 @@ int main(int argc, char **argv)
     method_postings.debug = 0;
 
     /* create block system */
-    bfs = bfs_create(0, 0);
+    BFiles bfs = bfs_create(0, 0);
     if (!bfs)
     {
         yaz_log(YLOG_WARN, "bfs_create failed");
@@ -605,7 +597,7 @@ int main(int argc, char **argv)
 
     tim = yaz_timing_create();
     /* create isam handle */
-    isb_postings = isamb_open (bfs, "isamb", isam_cache_size ? 1 : 0,
+    ISAMB isb_postings = isamb_open (bfs, "isamb", isam_cache_size ? 1 : 0,
                                &method_postings, 0);
     if (!isb_postings)
     {
@@ -614,9 +606,9 @@ int main(int argc, char **argv)
     }
     isamb_set_cache_size(isb_postings, isam_cache_size);
     isamb_set_int_count(isb_postings, int_count_enable);
-    dict = dict_open(bfs, "dict", dict_cache_size, 1, 0, 4096);
+    Dict dict = dict_open(bfs, "dict", dict_cache_size, 1, 0, 4096);
 
-    dict_info = dict_lookup(dict, "_s");
+    const char *dict_info = dict_lookup(dict, "_s");
     if (dict_info)
     {
         assert(*dict_info == sizeof(docid_seq));

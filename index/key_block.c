@@ -260,8 +260,7 @@ void key_block_write(zebra_key_block_t p, zint sysno, struct it_key *key_in,
                      int cmd, const char *str_buf, size_t str_len,
                      zint staticrank, int static_rank_enable)
 {
-    int ch;
-    int i, j = 0;
+    int j = 0;
     struct it_key key_out;
 
     if (p->key_buf_used + 1024 > (p->ptr_top -p->ptr_i)*sizeof(char*))
@@ -275,7 +274,7 @@ void key_block_write(zebra_key_block_t p, zint sysno, struct it_key *key_in,
     /* key_in->mem[1] filter specified record ID */
 
     /* encode the ordinal value (field/use/attribute) .. */
-    ch = CAST_ZINT_TO_INT(key_in->mem[0]);
+    int ch = CAST_ZINT_TO_INT(key_in->mem[0]);
     p->key_buf_used +=
         key_SU_encode(ch, (char*)p->key_buf +
                       p->key_buf_used);
@@ -298,7 +297,7 @@ void key_block_write(zebra_key_block_t p, zint sysno, struct it_key *key_in,
         key_out.mem[j++] = key_in->mem[1];
     else
         key_out.mem[j++] = sysno;
-    for (i = 2; i < key_in->len; i++)
+    for (int i = 2; i < key_in->len; i++)
         key_out.mem[j++] = key_in->mem[i];
     key_out.len = j;
 
@@ -375,7 +374,6 @@ void key_block_flush(zebra_key_block_t p, int is_final)
     if (p->use_threads)
     {
 #if YAZ_POSIX_THREADS
-        char **tmp;
 
         pthread_mutex_lock(&p->mutex);
 
@@ -388,7 +386,7 @@ void key_block_flush(zebra_key_block_t p, int is_final)
         p->thread_ptr_i = p->ptr_i;
         p->thread_key_buf = p->key_buf;
 
-        tmp = p->key_buf;
+        char **tmp = p->key_buf;
         p->key_buf = p->alt_buf;
         p->alt_buf = tmp;
 

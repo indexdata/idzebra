@@ -148,17 +148,15 @@ static void rec_tmp_expand(Records p, int size)
 static ZEBRA_RES rec_release_blocks(Records p, zint sysno)
 {
     struct record_index_entry entry;
-    zint freeblock;
     char block_and_ref[sizeof(zint) + sizeof(short)];
-    int dst_type;
     int first = 1;
 
     if (recindex_read_indx(p->recindex, sysno, &entry, sizeof(entry), 1) != 1)
         return ZEBRA_FAIL;
 
-    freeblock = entry.next;
+    zint freeblock = entry.next;
     assert(freeblock > 0);
-    dst_type = CAST_ZINT_TO_INT(freeblock & 7);
+    int dst_type = CAST_ZINT_TO_INT(freeblock & 7);
     assert(dst_type < REC_BLOCK_TYPES);
     freeblock = freeblock / 8;
     while (freeblock)
@@ -229,12 +227,11 @@ static ZEBRA_RES rec_write_tmp_buf(Records p, int size, zint *sysnos)
     char *cptr = p->tmp_buf;
     zint block_prev = -1, block_free;
     int dst_type = 0;
-    int i;
 
     /* all data in entry must be reset, since it's written verbatim */
     memset(&entry, '\0', sizeof(entry));
 
-    for (i = 1; i<REC_BLOCK_TYPES; i++)
+    for (int i = 1; i<REC_BLOCK_TYPES; i++)
         if (size >= p->head.block_move[i])
             dst_type = i;
     while (no_written < size)
@@ -308,12 +305,11 @@ int rec_check_compression_method(int compression_method)
 
 Records rec_open(BFiles bfs, int rw, int compression_method)
 {
-    Records p;
-    int i, r;
+    int i;
     int version;
     ZEBRA_RES ret = ZEBRA_OK;
 
-    p = (Records) xmalloc(sizeof(*p));
+    Records p = (Records) xmalloc(sizeof(*p));
     memset(&p->head, '\0', sizeof(p->head));
     p->compression_method = compression_method;
     p->rw = rw;
@@ -323,7 +319,7 @@ Records rec_open(BFiles bfs, int rw, int compression_method)
     if (compression_method == REC_COMPRESS_BZIP2)
         p->compression_chunk_size = 90000;
     p->recindex = recindex_open(bfs, rw, 0 /* 1=isamb for recindex */);
-    r = recindex_read_head(p->recindex, p->tmp_buf);
+    int r = recindex_read_head(p->recindex, p->tmp_buf);
     switch (r)
     {
     case 0:
@@ -464,10 +460,9 @@ static void rec_cache_flush_block1(Records p, Record rec, Record last_rec,
                                    char **out_buf, int *out_size,
                                    int *out_offset)
 {
-    int i;
     int len;
 
-    for (i = 0; i<REC_NO_INFO; i++)
+    for (int i = 0; i<REC_NO_INFO; i++)
     {
         if (*out_offset + CAST_ZINT_TO_INT(rec->size[i]) + 20 > *out_size)
         {
@@ -528,10 +523,9 @@ static ZEBRA_RES rec_flush_shared(Records p, short ref_count, zint *sysnos,
             csize = out_offset + (out_offset >> 6) + 620;
             while (1)
             {
-                int r;
                 uLongf destLen = csize;
                 rec_tmp_expand(p, csize);
-                r = compress((Bytef *) p->tmp_buf+sizeof(zint)+sizeof(short)+
+                int r = compress((Bytef *) p->tmp_buf+sizeof(zint)+sizeof(short)+
                              sizeof(char),
                              &destLen, (const Bytef *) out_buf, out_offset);
                 csize = destLen;
@@ -595,7 +589,6 @@ static ZEBRA_RES rec_flush_shared(Records p, short ref_count, zint *sysnos,
 
 static ZEBRA_RES rec_write_multiple(Records p, int saveCount)
 {
-    int i;
     short ref_count = 0;
     Record last_rec = 0;
     int out_size = 1000;
@@ -605,7 +598,7 @@ static ZEBRA_RES rec_write_multiple(Records p, int saveCount)
     zint *sysnop = sysnos;
     ZEBRA_RES ret = ZEBRA_OK;
 
-    for (i = 0; i<p->cache_cur - saveCount; i++)
+    for (int i = 0; i<p->cache_cur - saveCount; i++)
     {
         struct record_cache_entry *e = p->record_cache + i;
         switch (e->flag)
@@ -652,13 +645,12 @@ static ZEBRA_RES rec_write_multiple(Records p, int saveCount)
 
 static ZEBRA_RES rec_cache_flush(Records p, int saveCount)
 {
-    int i, j;
-    ZEBRA_RES ret;
+    int i;
 
     if (saveCount >= p->cache_cur)
         saveCount = 0;
 
-    ret = rec_write_multiple(p, saveCount);
+    ZEBRA_RES ret = rec_write_multiple(p, saveCount);
 
     for (i = 0; i<p->cache_cur - saveCount; i++)
     {
@@ -666,7 +658,7 @@ static ZEBRA_RES rec_cache_flush(Records p, int saveCount)
         rec_free(&e->rec);
     }
     /* i still being used ... */
-    for (j = 0; j<saveCount; j++, i++)
+    for (int j = 0; j<saveCount; j++, i++)
         memcpy(p->record_cache+j, p->record_cache+i,
                 sizeof(*p->record_cache));
     p->cache_cur = saveCount;
@@ -676,8 +668,7 @@ static ZEBRA_RES rec_cache_flush(Records p, int saveCount)
 static Record *rec_cache_lookup(Records p, zint sysno,
                                 enum recordCacheFlag flag)
 {
-    int i;
-    for (i = 0; i<p->cache_cur; i++)
+    for (int i = 0; i<p->cache_cur; i++)
     {
         struct record_cache_entry *e = p->record_cache + i;
         if (e->rec->sysno == sysno)
@@ -692,19 +683,17 @@ static Record *rec_cache_lookup(Records p, zint sysno,
 
 static ZEBRA_RES rec_cache_insert(Records p, Record rec, enum recordCacheFlag flag)
 {
-    struct record_cache_entry *e;
     ZEBRA_RES ret = ZEBRA_OK;
 
     if (p->cache_cur == p->cache_max)
         ret = rec_cache_flush(p, 1);
     else if (p->cache_cur > 0)
     {
-        int i, j;
         int used = 0;
-        for (i = 0; i<p->cache_cur; i++)
+        for (int i = 0; i<p->cache_cur; i++)
         {
             Record r = (p->record_cache + i)->rec;
-            for (j = 0; j<REC_NO_INFO; j++)
+            for (int j = 0; j<REC_NO_INFO; j++)
                 used += r->size[j];
         }
         if (used > p->compression_chunk_size)
@@ -712,7 +701,7 @@ static ZEBRA_RES rec_cache_insert(Records p, Record rec, enum recordCacheFlag fl
     }
     assert(p->cache_cur < p->cache_max);
 
-    e = p->record_cache + (p->cache_cur)++;
+    struct record_cache_entry *e = p->record_cache + (p->cache_cur)++;
     e->flag = flag;
     e->rec = rec_cp(rec);
     return ret;
@@ -721,7 +710,6 @@ static ZEBRA_RES rec_cache_insert(Records p, Record rec, enum recordCacheFlag fl
 ZEBRA_RES rec_close(Records *pp)
 {
     Records p = *pp;
-    int i;
     ZEBRA_RES ret = ZEBRA_OK;
 
     if (!p)
@@ -741,7 +729,7 @@ ZEBRA_RES rec_close(Records *pp)
 
     recindex_close(p->recindex);
 
-    for (i = 0; i<REC_BLOCK_TYPES; i++)
+    for (int i = 0; i<REC_BLOCK_TYPES; i++)
     {
         if (p->data_BFile[i])
             bf_close(p->data_BFile[i]);
@@ -755,11 +743,9 @@ ZEBRA_RES rec_close(Records *pp)
 
 static Record rec_get_int(Records p, zint sysno)
 {
-    int i, in_size, r;
+    int i;
     Record rec, *recp;
     struct record_index_entry entry;
-    zint freeblock;
-    int dst_type;
     char *nptr, *cptr;
     char *in_buf = 0;
     char *bz_buf = 0;
@@ -777,16 +763,16 @@ static Record rec_get_int(Records p, zint sysno)
     if (!entry.size)
         return NULL;       /* record is deleted */
 
-    dst_type = (int) (entry.next & 7);
+    int dst_type = (int) (entry.next & 7);
     assert(dst_type < REC_BLOCK_TYPES);
-    freeblock = entry.next / 8;
+    zint freeblock = entry.next / 8;
 
     assert(freeblock > 0);
 
     rec_tmp_expand(p, entry.size);
 
     cptr = p->tmp_buf;
-    r = bf_read(p->data_BFile[dst_type], freeblock, 0, 0, cptr);
+    int r = bf_read(p->data_BFile[dst_type], freeblock, 0, 0, cptr);
     if (r < 0)
         return 0;
     memcpy(&freeblock, cptr, sizeof(freeblock));
@@ -810,7 +796,7 @@ static Record rec_get_int(Records p, zint sysno)
     memcpy(&compression_method, p->tmp_buf + sizeof(zint) + sizeof(short),
             sizeof(compression_method));
     in_buf = p->tmp_buf + sizeof(zint) + sizeof(short) + sizeof(char);
-    in_size = entry.size - sizeof(short) - sizeof(char);
+    int in_size = entry.size - sizeof(short) - sizeof(char);
     switch (compression_method)
     {
     case REC_COMPRESS_ZLIB:
@@ -927,10 +913,9 @@ static Record rec_get_int(Records p, zint sysno)
 
 Record rec_get(Records p, zint sysno)
 {
-    Record rec;
     zebra_mutex_lock(&p->mutex);
 
-    rec = rec_get_int(p, sysno);
+    Record rec = rec_get_int(p, sysno);
     zebra_mutex_unlock(&p->mutex);
     return rec;
 }
@@ -957,12 +942,10 @@ Record rec_get_next(Records p, Record rec)
 
 static Record rec_new_int(Records p)
 {
-    int i;
     zint sysno;
-    Record rec;
 
     assert(p);
-    rec = (Record) xmalloc(sizeof(*rec));
+    Record rec = (Record) xmalloc(sizeof(*rec));
     if (1 || p->head.index_free == 0)
         sysno = (p->head.index_last)++;
     else
@@ -979,7 +962,7 @@ static Record rec_new_int(Records p)
     }
     (p->head.no_records)++;
     rec->sysno = rec_sysno_to_ext(sysno);
-    for (i = 0; i < REC_NO_INFO; i++)
+    for (int i = 0; i < REC_NO_INFO; i++)
     {
         rec->info[i] = NULL;
         rec->size[i] = 0;
@@ -990,10 +973,9 @@ static Record rec_new_int(Records p)
 
 Record rec_new(Records p)
 {
-    Record rec;
     zebra_mutex_lock(&p->mutex);
 
-    rec = rec_new_int(p);
+    Record rec = rec_new_int(p);
     zebra_mutex_unlock(&p->mutex);
     return rec;
 }
@@ -1043,11 +1025,9 @@ ZEBRA_RES rec_put(Records p, Record *recpp)
 
 void rec_free(Record *recpp)
 {
-    int i;
-
     if (!*recpp)
         return ;
-    for (i = 0; i < REC_NO_INFO; i++)
+    for (int i = 0; i < REC_NO_INFO; i++)
         xfree((*recpp)->info[i]);
     xfree(*recpp);
     *recpp = NULL;
@@ -1055,12 +1035,9 @@ void rec_free(Record *recpp)
 
 Record rec_cp(Record rec)
 {
-    Record n;
-    int i;
-
-    n = (Record) xmalloc(sizeof(*n));
+    Record n = (Record) xmalloc(sizeof(*n));
     n->sysno = rec->sysno;
-    for (i = 0; i < REC_NO_INFO; i++)
+    for (int i = 0; i < REC_NO_INFO; i++)
         if (!rec->info[i])
         {
             n->info[i] = NULL;
@@ -1079,29 +1056,26 @@ Record rec_cp(Record rec)
 
 char *rec_strdup(const char *s, size_t *len)
 {
-    char *p;
-
     if (!s)
     {
         *len = 0;
         return NULL;
     }
     *len = strlen(s)+1;
-    p = (char *) xmalloc(*len);
+    char *p = (char *) xmalloc(*len);
     strcpy(p, s);
     return p;
 }
 
 void rec_prstat(Records records, int verbose)
 {
-    int i;
     zint total_bytes = 0;
 
     yaz_log (YLOG_LOG,
           "Total records                        %8" ZINT_FORMAT0,
           records->head.no_records);
 
-    for (i = 0; i< REC_BLOCK_TYPES; i++)
+    for (int i = 0; i< REC_BLOCK_TYPES; i++)
     {
         yaz_log (YLOG_LOG, "Record blocks of size "ZINT_FORMAT,
               records->head.block_size[i]);

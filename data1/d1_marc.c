@@ -232,8 +232,6 @@ static int nodetomarc(data1_handle dh,
     int len = 26;
     int dlen;
     int base_address = 25;
-    int entry_p, data_p;
-    char *op;
     data1_node *field, *subf;
 
 #if 0
@@ -325,7 +323,7 @@ static int nodetomarc(data1_handle dh,
     else if (*size <= len)
         *buf = (char *)xrealloc(*buf, *size = len);
 
-    op = *buf;
+    char *op = *buf;
 
     /* we know the base address now */
     memint(leader+12, base_address, 5);
@@ -334,8 +332,8 @@ static int nodetomarc(data1_handle dh,
     memcpy(op, leader, 24);
     memint(op, len, 5);
 
-    entry_p = 24;
-    data_p = base_address;
+    int entry_p = 24;
+    int data_p = base_address;
 
     for (field = n->child; field; field = field->next)
     {
@@ -391,8 +389,7 @@ static int nodetomarc(data1_handle dh,
         }
         else if (marc_xml == 1 && !control_field)
         {
-            data1_xattr *xa;
-            for (xa = field->u.tag.attributes; xa; xa = xa->next)
+            for (data1_xattr *xa = field->u.tag.attributes; xa; xa = xa->next)
             {
                 if (!strcmp(xa->name, "ind1"))
                     indicator_data[0] = xa->value[0];
@@ -414,14 +411,13 @@ static int nodetomarc(data1_handle dh,
                 const char *identifier = "a";
                 if (marc_xml)
                 {
-                    data1_xattr *xa;
                     if (subf->which != DATA1N_tag)
                         continue;
                     if (strcmp(subf->u.tag.tag, "subfield"))
                         yaz_log(YLOG_WARN, "Unhandled tag %s",
                                 subf->u.tag.tag);
 
-                    for (xa = subf->u.tag.attributes; xa; xa = xa->next)
+                    for (data1_xattr *xa = subf->u.tag.attributes; xa; xa = xa->next)
                         if (!strcmp(xa->name, "code"))
                             identifier = xa->value;
                 }
@@ -440,8 +436,7 @@ static int nodetomarc(data1_handle dh,
 
         if (marc_xml)
         {
-            data1_xattr *xa;
-            for (xa = field->u.tag.attributes; xa; xa = xa->next)
+            for (data1_xattr *xa = field->u.tag.attributes; xa; xa = xa->next)
                 if (!strcmp(xa->name, "tag"))
                     tag = xa->value;
         }

@@ -92,13 +92,12 @@ struct read_info {
 int code_read(void *vp, char **dst, int *insertMode)
 {
     struct read_info *ri = (struct read_info *)vp;
-    int x;
 
     if (ri->no >= ri->max)
         return 0;
     ri->no++;
 
-    x = ri->val;
+    int x = ri->val;
     memcpy (*dst, &x, sizeof(int));
     (*dst)+=sizeof(int);
 
@@ -114,9 +113,7 @@ int code_read(void *vp, char **dst, int *insertMode)
 void tst_insert(ISAMB isb, int n)
 {
     ISAMC_I isamc_i;
-    ISAM_P isamc_p;
     struct read_info ri;
-    ISAMB_PP pp;
     char key_buf[20];
     int nerrs = 0;
 
@@ -131,11 +128,11 @@ void tst_insert(ISAMB isb, int n)
     isamc_i.clientData = &ri;
     isamc_i.read_item = code_read;
 
-    isamc_p = 0; /* new list */
+    ISAM_P isamc_p = 0; /* new list */
     isamb_merge (isb, &isamc_p , &isamc_i);
 
     /* read the entries */
-    pp = isamb_pp_open (isb, isamc_p, 1);
+    ISAMB_PP pp = isamb_pp_open (isb, isamc_p, 1);
 
     ri.val = 0;
     while(isamb_pp_read (pp, key_buf))
@@ -201,10 +198,8 @@ void tst_insert(ISAMB isb, int n)
 void tst_forward(ISAMB isb, int n)
 {
     ISAMC_I isamc_i;
-    ISAM_P isamc_p;
     struct read_info ri;
     int i;
-    ISAMB_PP pp;
 
     /* insert a number of entries */
     ri.val = 0;
@@ -217,11 +212,11 @@ void tst_forward(ISAMB isb, int n)
     isamc_i.clientData = &ri;
     isamc_i.read_item = code_read;
 
-    isamc_p = 0;
+    ISAM_P isamc_p = 0;
     isamb_merge (isb, &isamc_p, &isamc_i);
 
     /* read the entries */
-    pp = isamb_pp_open (isb, isamc_p, 1);
+    ISAMB_PP pp = isamb_pp_open (isb, isamc_p, 1);
 
     for (i = 0; i<ri.max; i +=2 )
     {
@@ -289,10 +284,9 @@ void tst_append(ISAMB isb, int n)
     ISAMC_I isamc_i;
     ISAM_P isamb_p = 0;
     struct read_info ri;
-    int i;
     int chunk = 10;
 
-    for (i = 0; i < n; i += chunk)
+    for (int i = 0; i < n; i += chunk)
     {
         /* insert a number of entries */
         ri.no = 0;
@@ -320,7 +314,6 @@ struct random_read_info {
 int tst_random_read(void *vp, char **dst, int *insertMode)
 {
     struct random_read_info *ri = (struct random_read_info *)vp;
-    int x;
 
     while(ri->idx < ri->max && ri->delta[ri->idx] == ri->level)
     {
@@ -340,7 +333,7 @@ int tst_random_read(void *vp, char **dst, int *insertMode)
         ri->level--;
         *insertMode = 0;
     }
-    x = ri->idx;
+    int x = ri->idx;
     memcpy (*dst, &x, sizeof(int));
     (*dst)+=sizeof(int);
 
@@ -354,11 +347,11 @@ void tst_random(ISAMB isb, int n, int rounds, int max_dups)
 
     int *freq = malloc(sizeof(int) * n);
     int *delta = malloc(sizeof(int) * n);
-    int i, j;
+    int i;
     for (i = 0; i<n; i++)
         freq[i] = 0;
 
-    for (j = 0; j<rounds; j++)
+    for (int j = 0; j<rounds; j++)
     {
         yaz_log(YLOG_DEBUG, "round %d", j);
         for (i = 0; i<n; i++)
@@ -532,8 +525,6 @@ static void identical_keys_tests(ISAMB isb)
 
 int main(int argc, char **argv)
 {
-    BFiles bfs;
-    ISAMB isb;
     ISAMC_M method;
 
     if (argc == 2)
@@ -549,7 +540,7 @@ int main(int argc, char **argv)
     method.codec.stop = code_stop;
 
     /* create block system */
-    bfs = bfs_create(0, 0);
+    BFiles bfs = bfs_create(0, 0);
     if (!bfs)
     {
         yaz_log(YLOG_WARN, "bfs_create failed");
@@ -559,7 +550,7 @@ int main(int argc, char **argv)
     bf_reset(bfs);
 
     /* create isam handle */
-    isb = isamb_open (bfs, "isamb", 1, &method, 0);
+    ISAMB isb = isamb_open (bfs, "isamb", 1, &method, 0);
     if (!isb)
     {
         yaz_log(YLOG_WARN, "isamb_open failed");

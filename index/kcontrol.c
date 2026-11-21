@@ -30,19 +30,15 @@ struct context_control {
 
 static void my_inc(struct rset_key_control *kc)
 {
-    struct context_control *cp;
-
     assert(kc);
-    cp = kc->context;
+    struct context_control *cp = kc->context;
     (cp->ref_count)++;
 }
 
 static void my_dec(struct rset_key_control *kc)
 {
-    struct context_control *cp;
-
     assert(kc);
-    cp = kc->context;
+    struct context_control *cp = kc->context;
     (cp->ref_count)--;
     if (cp->ref_count == 0)
     {

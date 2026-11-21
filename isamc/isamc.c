@@ -76,16 +76,14 @@ void isamc_getmethod (ISAMC_M *m)
 
 ISAMC isamc_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
 {
-    ISAMC is;
-    ISAMC_filecat filecat;
     int i = 0;
     int max_buf_size = 0;
 
-    is = (ISAMC) xmalloc (sizeof(*is));
+    ISAMC is = (ISAMC) xmalloc (sizeof(*is));
 
     is->method = (ISAMC_M *) xmalloc (sizeof(*is->method));
     memcpy (is->method, method, sizeof(*method));
-    filecat = is->method->filecat;
+    ISAMC_filecat filecat = is->method->filecat;
     assert (filecat);
 
     /* determine number of block categories */
@@ -148,7 +146,6 @@ ISAMC isamc_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
     for (i = 0; i<is->no_files; i++)
     {
         char fname[FILENAME_MAX];
-        int r;
 
         yaz_snprintf(fname, sizeof(fname), "%s%c", name, i+'A');
         is->files[i].bf = bf_open(bfs, fname, is->method->filecat[i].bsize,
@@ -158,7 +155,7 @@ ISAMC isamc_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
             isamc_close(is);
             return 0;
         }
-        r = bf_read(is->files[i].bf, 0, 0, sizeof(ISAMC_head),
+        int r = bf_read(is->files[i].bf, 0, 0, sizeof(ISAMC_head),
                      &is->files[i].head);
         if (r == -1)
         {
@@ -397,9 +394,8 @@ zint isamc_alloc_block (ISAMC is, int cat)
 
     if (is->files[cat].fc_list)
     {
-        int j;
         zint nb;
-        for (j = 0; j < is->files[cat].fc_max; j++)
+        for (int j = 0; j < is->files[cat].fc_max; j++)
             if ((nb = is->files[cat].fc_list[j]) && (!block || nb < block))
             {
                 is->files[cat].fc_list[j] = 0;
@@ -420,8 +416,7 @@ void isamc_release_block (ISAMC is, int cat, zint pos)
         yaz_log (YLOG_LOG, "isc: release_block in cat %d:" ZINT_FORMAT, cat, pos);
     if (is->files[cat].fc_list)
     {
-        int j;
-        for (j = 0; j<is->files[cat].fc_max; j++)
+        for (int j = 0; j<is->files[cat].fc_max; j++)
             if (!is->files[cat].fc_list[j])
             {
                 is->files[cat].fc_list[j] = pos;
@@ -467,12 +462,11 @@ void isamc_pp_close (ISAMC_PP pp)
 ISAMC_PP isamc_pp_open (ISAMC is, ISAM_P ipos)
 {
     ISAMC_PP pp = (ISAMC_PP) xmalloc (sizeof(*pp));
-    char *src;
 
     pp->cat = (int) isamc_type(ipos);
     pp->pos = isamc_block(ipos);
 
-    src = pp->buf = (char *) xmalloc (is->method->filecat[pp->cat].bsize);
+    char *src = pp->buf = (char *) xmalloc (is->method->filecat[pp->cat].bsize);
 
     pp->next = 0;
     pp->size = 0;

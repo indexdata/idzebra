@@ -88,13 +88,13 @@ RSET rset_create_temp(NMEM nmem, struct rset_key_control *kcontrol,
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term,
                                  0, 0);
-    struct rset_private *info;
     if (!log_level_initialized)
     {
         log_level = yaz_log_module_level("rstemp");
         log_level_initialized = 1;
     }
-    info = (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
+    struct rset_private *info =
+        (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
     info->fd = -1;
     info->fname = NULL;
     info->buf_size = 4096;
@@ -127,7 +127,6 @@ static void r_delete(RSET ct)
 static RSFD r_open(RSET ct, int flag)
 {
     struct rset_private *info = (struct rset_private *) ct->priv;
-    RSFD rfd;
     struct rfd_private *prfd;
 
     if (info->fd == -1 && info->fname)
@@ -142,7 +141,7 @@ static RSFD r_open(RSET ct, int flag)
             zebra_exit("r_open");
         }
     }
-    rfd = rfd_create_base(ct);
+    RSFD rfd = rfd_create_base(ct);
     if (!rfd->priv)
     {
         prfd = (struct rfd_private *) nmem_malloc(ct->nmem, sizeof(*prfd));
@@ -204,7 +203,6 @@ static void r_flush(RSFD rfd, int mk)
     }
     if (info->fname && info->fd != -1 && info->dirty)
     {
-        size_t count;
         int r;
 
         if (lseek(info->fd, info->pos_buf, SEEK_SET) == -1)
@@ -212,7 +210,7 @@ static void r_flush(RSFD rfd, int mk)
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: lseek (1) %s", info->fname);
             zebra_exit("r_flusxh");
         }
-        count = info->buf_size;
+        size_t count = info->buf_size;
         if (count > info->pos_end - info->pos_buf)
             count = info->pos_end - info->pos_buf;
         if ((r = write(info->fd, info->buf_mem, count)) < (int) count)
@@ -254,14 +252,13 @@ static void r_reread(RSFD rfd)
 
     if (info->fname)
     {
-        size_t count;
         int r;
 
         info->pos_border = mrfd->pos_cur +
             info->buf_size;
         if (info->pos_border > info->pos_end)
             info->pos_border = info->pos_end;
-        count = info->pos_border - info->pos_buf;
+        size_t count = info->pos_border - info->pos_buf;
         if (count > 0)
         {
             if (lseek(info->fd, info->pos_buf, SEEK_SET) == -1)

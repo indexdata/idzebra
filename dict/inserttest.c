@@ -52,12 +52,10 @@ int main(int argc, char **argv)
 
     if (dict)
     {
-        int pass;
-        for (pass = 0; pass < 2; pass++)
+        for (int pass = 0; pass < 2; pass++)
         {
-            long i;
             srand(9);
-            for (i = 0; i < no; i++)
+            for (long i = 0; i < no; i++)
             {
                 char userinfo[USERINFO_SIZE + 1];
                 int userlen = USERINFO_SIZE;

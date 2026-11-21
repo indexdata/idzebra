@@ -64,9 +64,7 @@ static Dict_ptr new_page(Dict dict, Dict_ptr back_ptr, void **pp)
 static int split_page(Dict dict, Dict_ptr ptr, void *p)
 {
     void *subp;
-    char *info_here;
-    Dict_ptr subptr;
-    int i, j;
+    int i;
     short *indxp, *best_indxp = NULL;
     Dict_char best_char = 0;
     Dict_char prev_char = 0;
@@ -101,25 +99,24 @@ static int split_page(Dict dict, Dict_ptr ptr, void *p)
     }
     assert(best_no > 0); /* we didn't find any tail string entry at all! */
 
-    j = best_indxp - (short*) p;
+    int j = best_indxp - (short*) p;
     i = DICT_nodir(p);
-    subptr = new_page(dict, ptr, &subp);
+    Dict_ptr subptr = new_page(dict, ptr, &subp);
     assert(i == DICT_nodir(p));
     /* scan entries to see if there is a string with */
     /* length 1. info_here indicates if such entry exist */
-    info_here = NULL;
+    char *info_here = NULL;
     char info_char = 0;
     for (i=0; i<best_no; i++, j++)
     {
         char *info, *info1;
-        int slen;
         Dict_char dc;
 
         info = (char*) p + ((short*) p)[j];
         /* entry start */
         memcpy(&dc, info, sizeof(dc));
         assert(dc == best_char);
-        slen = 1+dict_strlen((Dict_char*) info);
+        int slen = 1+dict_strlen((Dict_char*) info);
 
         assert(slen > 1);
         if (slen == 2)
@@ -148,7 +145,7 @@ static void clean_page(Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
                        Dict_ptr subptr, char *userinfo)
 {
     char *np = (char *) xmalloc(dict->head.page_size);
-    int i, slen, no = 0;
+    int slen, no = 0;
     short *indxp1, *indxp2;
     char *info1, *info2;
 
@@ -157,7 +154,7 @@ static void clean_page(Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
     indxp1 = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     indxp2 = (short*) ((char*) np+DICT_bsize(np));
     info2 = (char*) np + DICT_infoffset;
-    for (i = DICT_nodir(p); --i >= 0; --indxp1)
+    for (int i = DICT_nodir(p); --i >= 0; --indxp1)
     {
         if (*indxp1 > 0) /* tail string here! */
         {
@@ -249,8 +246,7 @@ static void checkPage(Dict dict, void *p)
 static int dict_ins(Dict dict, const Dict_char *str,
                     Dict_ptr ptr, int userlen, void *userinfo)
 {
-    int hi, lo, mid, slen, cmp = 1;
-    short *indxp;
+    int lo, cmp = 1;
     char *info;
     void *p;
 
@@ -259,9 +255,9 @@ static int dict_ins(Dict dict, const Dict_char *str,
     assert(p);
     assert(ptr);
 
-    mid = lo = 0;
-    hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
+    int mid = lo = 0;
+    int hi = DICT_nodir(p)-1;
+    short *indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     while (lo <= hi)
     {
         mid = (lo+hi)/2;
@@ -398,7 +394,7 @@ static int dict_ins(Dict dict, const Dict_char *str,
     indxp = indxp-mid;
     if (lo>hi && cmp < 0)
         --indxp;
-    slen = (dict_strlen(str)+1)*sizeof(Dict_char);
+    int slen = (dict_strlen(str)+1)*sizeof(Dict_char);
     if (DICT_size(p)+slen+userlen >=
         (int)(DICT_bsize(p) - (1+DICT_nodir(p))*sizeof(short)))/* overflow? */
     {
@@ -412,9 +408,8 @@ static int dict_ins(Dict dict, const Dict_char *str,
     }
     if (cmp)
     {
-        short *indxp1;
         (DICT_nodir(p))++;
-        indxp1 = (short*)((char*) p + DICT_bsize(p)
+        short *indxp1 = (short*)((char*) p + DICT_bsize(p)
                           - DICT_nodir(p)*sizeof(short));
         for (; indxp1 != indxp; indxp1++)
             indxp1[0] = indxp1[1];

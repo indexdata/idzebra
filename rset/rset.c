@@ -68,12 +68,11 @@ RSFD rfd_create_base(RSET rs)
 
 static void rset_close_int(RSET rs, RSFD rfd)
 {
-    RSFD *pfd;
     (*rs->control->f_close)(rfd);
 
     yaz_log(log_level, "rfd_delete_base: rfd=%p rs=%p priv=%p fl=%p",
             rfd, rs, rfd->priv, rs->free_list);
-    for (pfd = &rs->use_list; *pfd; pfd = &(*pfd)->next)
+    for (RSFD *pfd = &rs->use_list; *pfd; pfd = &(*pfd)->next)
         if (*pfd == rfd)
         {
             *pfd = (*pfd)->next;
@@ -116,19 +115,17 @@ void rset_close(RSFD rfd)
         if (rs->hits_count > rs->hits_limit && rs->hits_limit > 0)
         {
             double cur, tot;
-            zint est;
             rset_pos(rfd, &cur, &tot);
             if (tot > 0) {
-                int i;
                 double ratio = cur/tot;
-                est = (zint)(0.5 + rs->hits_count / ratio);
+                zint est = (zint)(0.5 + rs->hits_count / ratio);
                 yaz_log(log_level, "Estimating hits (%s) "
                         "%0.1f->" ZINT_FORMAT
                         "; %0.1f->" ZINT_FORMAT,
                         rs->control->desc,
                         cur, rs->hits_count,
                         tot, est);
-                i = 0; /* round to significant digits */
+                int i = 0; /* round to significant digits */
                 while (est > rs->hits_round) {
                     est /= 10;
                     i++;
@@ -166,7 +163,6 @@ RSET rset_create_base(const struct rset_control *sel,
                       int scope, TERMID term,
                       int no_children, RSET *children)
 {
-    RSET rset;
     assert(nmem);
     if (!log_level_initialized)
     {
@@ -174,7 +170,7 @@ RSET rset_create_base(const struct rset_control *sel,
         log_level_initialized = 1;
     }
 
-    rset = (RSET) nmem_malloc(nmem, sizeof(*rset));
+    RSET rset = (RSET) nmem_malloc(nmem, sizeof(*rset));
     yaz_log(log_level, "rs_create(%s) rs=%p (nm=%p)", sel->desc, rset, nmem);
     yaz_log(log_level, " ref_id=%s",
             (term && term->ref_id ? term->ref_id : "null"));
@@ -222,11 +218,10 @@ void rset_delete(RSET rs)
             rs->control->desc, rs, rs->refcount);
     if (!rs->refcount)
     {
-        int i;
         if (rs->use_list)
             yaz_log(YLOG_WARN, "rs_delete(%s) still has RFDs in use",
                     rs->control->desc);
-        for (i = 0; i<rs->no_children; i++)
+        for (int i = 0; i<rs->no_children; i++)
             rset_delete(rs->children[i]);
         (*rs->control->f_delete)(rs);
         (*rs->keycontrol->dec)(rs->keycontrol);
@@ -420,11 +415,10 @@ int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
 
 void rset_visit(RSET rset, int level)
 {
-    int i;
     yaz_log(YLOG_LOG, "%*s%c " ZINT_FORMAT, level, "",
             rset->hits_approx ? '~' : '=',
             rset->hits_count);
-    for (i = 0; i<rset->no_children; i++)
+    for (int i = 0; i<rset->no_children; i++)
         rset_visit(rset->children[i], level+1);
 }
 

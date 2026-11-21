@@ -86,11 +86,10 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 
     if (stat_info->zh->reg->isams)
     {
-        ISAMS_PP pp;
         int occurx = 0;
         struct it_key key;
 
-        pp = isams_pp_open (stat_info->zh->reg->isams, isam_p);
+        ISAMS_PP pp = isams_pp_open (stat_info->zh->reg->isams, isam_p);
         occur = isams_pp_num (pp);
         while (isams_pp_read(pp, &key))
         {
@@ -102,11 +101,10 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     }
     if (stat_info->zh->reg->isamc)
     {
-        ISAMC_PP pp;
         zint occurx = 0;
         struct it_key key;
 
-        pp = isamc_pp_open (stat_info->zh->reg->isamc, isam_p);
+        ISAMC_PP pp = isamc_pp_open (stat_info->zh->reg->isamc, isam_p);
         occur = isamc_pp_num (pp);
         while (isamc_pp_read(pp, &key))
         {
@@ -118,14 +116,13 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     }
     if (stat_info->zh->reg->isamb)
     {
-        ISAMB_PP pp;
         struct it_key key;
         int cat = CAST_ZINT_TO_INT(isam_p & 3);
         int level;
         zint size;
         zint blocks;
 
-        pp = isamb_pp_open_x(stat_info->zh->reg->isamb, isam_p, &level, 0);
+        ISAMB_PP pp = isamb_pp_open_x(stat_info->zh->reg->isamb, isam_p, &level, 0);
 
         while (isamb_pp_read(pp, &key))
         {
@@ -173,9 +170,8 @@ static void show_bfs_stats(BFiles bfs)
 
 int zebra_register_statistics (ZebraHandle zh, int dumpdict)
 {
-    int i, prev;
+    int i;
     int before = 0;
-    zint occur;
     int after = 1000000000;
     struct inv_stat_info stat_info;
     char term_dict[2*IT_MAX_WORD+2];
@@ -222,8 +218,7 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
 
     for (i = 0; i<10; i++)
     {
-        int j;
-        for (j = 0; j<5; j++)
+        for (int j = 0; j<5; j++)
             stat_info.isamb_levels[i][j] = 0;
         stat_info.isamb_sizes[i] = 0;
         stat_info.isamb_blocks[i] = 0;
@@ -257,7 +252,6 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
     {
         for (i = 0; i<4; i++)
         {
-            int j;
             int bsize = isamb_block_info(zh->reg->isamb, i);
             if (bsize < 0)
                 break;
@@ -269,7 +263,7 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
                      stat_info.no_isam_entries[i]);
             fprintf (stdout, "Total      " ZINT_FORMAT "\n", stat_info.isamb_blocks[i]*
                      bsize);
-            for (j = 0; j<5; j++)
+            for (int j = 0; j<5; j++)
                 if (stat_info.isamb_levels[i][j])
                     fprintf (stdout, "Level%d     %d\n", j,
                              stat_info.isamb_levels[i][j]);
@@ -279,12 +273,12 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
     fprintf (stdout, "Checksum       %08lX\n", stat_info.cksum);
 
     fprintf (stdout, "Distinct words %d\n", stat_info.no_dict_entries);
-    occur = 0;
+    zint occur = 0;
     for (i = 0; i<9; i++)
         occur += stat_info.no_isam_entries[i];
     fprintf (stdout, "Word pos       " ZINT_FORMAT "\n", occur);
     fprintf (stdout, "    Occurrences     Words\n");
-    prev = 1;
+    int prev = 1;
     for (i = 0; stat_info.isam_bounds[i]; i++)
     {
         int here = stat_info.isam_bounds[i];

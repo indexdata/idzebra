@@ -31,13 +31,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 data1_att *data1_getattbyname(data1_handle dh, data1_attset *s, const char *name)
 {
     data1_att *r;
-    data1_attset_child *c;
 
     /* scan local set */
     for (r = s->atts; r; r = r->next)
         if (!data1_matchstr(r->name, name))
             return r;
-    for (c = s->children; c; c = c->next)
+    for (data1_attset_child *c = s->children; c; c = c->next)
     {
         assert (c->child);
         /* scan included sets */
@@ -63,8 +62,6 @@ data1_attset *data1_empty_attset(data1_handle dh)
 data1_attset *data1_read_attset(data1_handle dh, const char *file)
 {
     data1_attset *res = 0;
-    data1_attset_child **childp;
-    data1_att **attp;
     FILE *f;
     NMEM mem = data1_nmem_get(dh);
     int lineno = 0;
@@ -75,18 +72,15 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
         return NULL;
     res = data1_empty_attset(dh);
 
-    childp = &res->children;
-    attp = &res->atts;
+    data1_attset_child **childp = &res->children;
+    data1_att **attp = &res->atts;
 
     while ((argc = readconf_line(f, &lineno, line, 512, argv, 50)))
     {
         char *cmd = argv[0];
         if (!strcmp(cmd, "att"))
         {
-            int num;
-            char *name;
             char *endptr;
-            data1_att *t;
 
             if (argc < 3)
             {
@@ -98,16 +92,16 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
                 yaz_log(YLOG_WARN, "%s:%d: Local attributes not supported",
                         file, lineno);
             }
-            num = strtol(argv[1], &endptr, 10);
+            int num = strtol(argv[1], &endptr, 10);
             if (*endptr != '\0')
             {
                 yaz_log(YLOG_WARN, "%s:%d: Bad attribute integer %s",
                         file, lineno, argv[1]);
                 continue;
             }
-            name = argv[2];
+            char *name = argv[2];
 
-            t = *attp = (data1_att *)nmem_malloc(mem, sizeof(*t));
+            data1_att *t = *attp = (data1_att *)nmem_malloc(mem, sizeof(*t));
             t->parent = res;
             t->name = nmem_strdup(mem, name);
             t->value = num;
@@ -124,15 +118,13 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
         }
         else if (!strcmp(cmd, "reference"))
         {
-            char *name;
-
             if (argc != 2)
             {
                 yaz_log(YLOG_WARN, "%s:%d: Bad # of args to reference",
                         file, lineno);
                 continue;
             }
-            name = argv[1];
+            char *name = argv[1];
 
             res->oid = yaz_string_to_oid_nmem(yaz_oid_std(),
                                               CLASS_ATTSET, name, mem);
@@ -151,7 +143,6 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
         }
         else if (!strcmp(cmd, "include"))
         {
-            char *name;
             data1_attset *attset;
 
             if (argc != 2)
@@ -160,7 +151,7 @@ data1_attset *data1_read_attset(data1_handle dh, const char *file)
                         file, lineno);
                 continue;
             }
-            name = argv[1];
+            char *name = argv[1];
 
             if (!(attset = data1_get_attset(dh, name)))
             {

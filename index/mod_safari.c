@@ -190,7 +190,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 
 static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
-    int r, filter_ptr = 0;
+    int filter_ptr = 0;
     /* not reentrant and thread safe as static buffer is returned */
     static char *filter_buf = NULL;
     static int filter_size = 0;
@@ -222,10 +222,8 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     {
         if (filter_ptr + 4096 >= filter_size)
         {
-            char *nb;
-
             filter_size = 2*filter_size + 8192;
-            nb = (char *) xmalloc(filter_size);
+            char *nb = (char *) xmalloc(filter_size);
             if (filter_buf)
             {
                 memcpy(nb, filter_buf, filter_ptr);
@@ -252,7 +250,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
         }
         if (!make_body)
             break;
-        r = p->stream->readf(p->stream, filter_buf + filter_ptr, 4096);
+        int r = p->stream->readf(p->stream, filter_buf + filter_ptr, 4096);
         if (r <= 0)
             break;
         filter_ptr += r;

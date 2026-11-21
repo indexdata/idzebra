@@ -30,13 +30,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 data1_vartype *data1_getvartypebyct (data1_handle dh, data1_varset *set,
                                      const char *zclass, const char *type)
 {
-    data1_varclass *c;
-    data1_vartype *t;
-
-    for (c = set->classes; c; c = c->next)
+    for (data1_varclass *c = set->classes; c; c = c->next)
         if (!data1_matchstr(c->name, zclass))
         {
-            for (t = c->types; t; t = t->next)
+            for (data1_vartype *t = c->types; t; t = t->next)
                 if (!data1_matchstr(t->name, type))
                     return t;
             yaz_log(YLOG_WARN, "Unknown variant type %s in class %s",

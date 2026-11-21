@@ -30,10 +30,6 @@ static void tst_res(void)
 {
     Res default_res;  /* default resources */
     Res temp_res;     /* temporary resources */
-    ZebraService zs;
-    ZebraHandle zh;
-    const char *val;
-    int i;
 
     default_res = res_open(0, 0); /* completely empty */
     YAZ_CHECK(default_res);
@@ -43,19 +39,19 @@ static void tst_res(void)
     temp_res = res_open(0, 0); /* completely empty */
     YAZ_CHECK(temp_res);
 
-    zs = zebra_start_res(0, default_res, temp_res);
+    ZebraService zs = zebra_start_res(0, default_res, temp_res);
     YAZ_CHECK(zs);
 
-    zh = zebra_open(zs, 0);
+    ZebraHandle zh = zebra_open(zs, 0);
     YAZ_CHECK(zh);
 
     YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
     /* run this a few times so we can see leaks easier */
-    for (i = 0; i<10; i++)
+    for (int i = 0; i<10; i++)
     {
         /* we should find the name1 from default_res */
-        val = zebra_get_resource(zh, "name1", 0);
+        const char *val = zebra_get_resource(zh, "name1", 0);
         YAZ_CHECK(val && !strcmp(val, "value1"));
 
         /* make local override */
@@ -81,14 +77,12 @@ static void tst_res(void)
 static void tst_no_config(void)
 {
     static char *xml_buf = "<gils><title>myx</title></gils>";
-    ZebraService zs;
-    ZebraHandle zh;
     zint sysno = 0;
 
-    zs = zebra_start_res(0, 0, 0);
+    ZebraService zs = zebra_start_res(0, 0, 0);
     YAZ_CHECK(zs);
 
-    zh = zebra_open(zs, 0);
+    ZebraHandle zh = zebra_open(zs, 0);
     YAZ_CHECK(zh);
 
     YAZ_CHECK_EQ(zebra_select_database(zh, "Default"), ZEBRA_OK);

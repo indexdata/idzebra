@@ -32,13 +32,12 @@ const char *myrec[] ={
 
 static void tst(int argc, char **argv)
 {
-    int i;
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
 
     YAZ_CHECK(tl_init_data(zh, myrec));
 
-    for (i = 0; i<4; i++)
+    for (int i = 0; i<4; i++)
     {
         char setname[20];
         char *setnamep = setname;

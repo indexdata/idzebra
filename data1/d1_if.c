@@ -263,10 +263,9 @@ int data1_CountOccurences(data1_node* node, char* pTagPath)
          ( n->which == DATA1N_tag ) &&
          ( n->parent ) )
     {
-        data1_node* current_child;
         pParent = n->parent;
 
-        for ( current_child = pParent->child;
+        for ( data1_node * current_child = pParent->child;
               current_child;
               current_child = current_child->next )
         {

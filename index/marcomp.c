@@ -153,9 +153,9 @@ int mc_getdata(mc_context *c, char *s, int sz)
 void mc_getinterval(mc_context *c, int *start, int *end)
 {
     char buf[6+1];
-    int start_pos, end_pos;
+    int end_pos;
 
-    start_pos = end_pos = -1;
+    int start_pos = end_pos = -1;
 
     if (mc_gettoken(c) == LINTERVAL)
     {
@@ -213,9 +213,7 @@ void mc_destroy_field(mc_field *p)
 }
 mc_field *mc_getfield(mc_context *c)
 {
-    mc_field *pf;
-
-    pf = mc_mk_field();
+    mc_field *pf = mc_mk_field();
 
     if (!pf)
     {

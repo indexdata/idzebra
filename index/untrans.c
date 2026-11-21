@@ -73,9 +73,8 @@ void zebra_term_untrans_iconv2(ZebraHandle zh, NMEM stream,
         size_t inleft = strlen(src);
         char *outbuf = term_dst;
         size_t outleft = sizeof(term_dst)-1;
-        size_t ret;
 
-        ret = yaz_iconv (zh->iconv_from_utf8, &inbuf, &inleft,
+        size_t ret = yaz_iconv (zh->iconv_from_utf8, &inbuf, &inleft,
                          &outbuf, &outleft);
         if (ret == (size_t)(-1))
             len = 0;
@@ -97,10 +96,9 @@ int zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream,
                              const char *index_type,
                              char **dst, const char *src)
 {
-    int r;
     char term_src[IT_MAX_WORD];
 
-    r = zebra_term_untrans(zh, index_type, term_src, src);
+    int r = zebra_term_untrans(zh, index_type, term_src, src);
     if (r == 0)
         zebra_term_untrans_iconv2(zh, stream, dst, term_src);
     return r;

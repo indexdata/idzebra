@@ -42,11 +42,9 @@ static Odr_int *f_integer(data1_node *c, ODR o)
 
 static char *f_string(data1_node *c, ODR o)
 {
-    char *r;
-
     if (!c->child || c->child->which != DATA1N_data)
         return 0;
-    r = (char *)odr_malloc(o, c->child->u.data.len + 1);
+    char *r = (char *)odr_malloc(o, c->child->u.data.len + 1);
     memcpy(r, c->child->u.data.data, c->child->u.data.len);
     r[c->child->u.data.len] = '\0';
     return r;
@@ -56,7 +54,6 @@ Z_BriefBib *data1_nodetosummary(data1_handle dh, data1_node *n,
                                 int select, ODR o)
 {
     Z_BriefBib *res = (Z_BriefBib *)odr_malloc(o, sizeof(*res));
-    data1_node *c;
 
     assert(n->which == DATA1N_root);
     if (strcmp(n->u.root.type, "summary"))
@@ -81,7 +78,7 @@ Z_BriefBib *data1_nodetosummary(data1_handle dh, data1_node *n,
     res->abstract = 0;
     res->otherInfo = 0;
 
-    for (c = n->child; c; c = c->next)
+    for (data1_node *c = n->child; c; c = c->next)
     {
         if (c->which != DATA1N_tag || !c->u.tag.element)
         {

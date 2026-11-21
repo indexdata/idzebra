@@ -33,14 +33,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 static data1_att *getatt(data1_attset *p, int att)
 {
     data1_att *a;
-    data1_attset_child *c;
 
     /* scan local set */
     for (a = p->atts; a; a = a->next)
         if (a->value == att)
             return a;
     /* scan included sets */
-    for (c = p->children; c; c = c->next)
+    for (data1_attset_child *c = p->children; c; c = c->next)
         if ((a = getatt(c->child, att)))
             return a;
     return 0;
@@ -88,9 +87,8 @@ ZEBRA_RES zebra_attr_list_get_ord(ZebraHandle zh,
     else
     {
         /* we have a use attribute and attribute set */
-        int r;
 
-        r = att_getentbyatt(zh, curAttributeSet, use_value, &use_string);
+        int r = att_getentbyatt(zh, curAttributeSet, use_value, &use_string);
         if (r == -2)
         {
             zebra_setError_zint(zh,  YAZ_BIB1_UNSUPP_ATTRIBUTE_SET, 0);
@@ -141,11 +139,10 @@ ZEBRA_RES zebra_apt_get_ord(ZebraHandle zh,
 {
     ZEBRA_RES res = ZEBRA_OK;
     AttrType relation;
-    int relation_value;
     zinfo_index_category_t cat = zinfo_index_category_index;
 
     attr_init_APT(&relation, zapt, 2);
-    relation_value = attr_find(&relation, NULL);
+    int relation_value = attr_find(&relation, NULL);
 
     if (relation_value == 103) /* always matches */
         cat = zinfo_index_category_alwaysmatches;
@@ -193,12 +190,11 @@ ZEBRA_RES zebra_sort_get_ord(ZebraHandle zh,
                              int *numerical)
 {
     AttrType structure;
-    int structure_value;
 
     attr_init_AttrList(&structure, sortAttributes->list, 4);
 
     *numerical = 0;
-    structure_value = attr_find(&structure, 0);
+    int structure_value = attr_find(&structure, 0);
     if (structure_value == 109)
         *numerical = 1;
 

@@ -53,9 +53,8 @@ data1_datatype data1_maptype(data1_handle dh, char *t)
         {"null", DATA1K_null},
         {NULL, (data1_datatype) -1}
     };
-    int i;
 
-    for (i = 0; types[i].tname; i++)
+    for (int i = 0; types[i].tname; i++)
         if (!data1_matchstr(types[i].tname, t))
             return types[i].type;
     return DATA1K_unknown;
@@ -91,9 +90,7 @@ data1_tag *data1_gettagbyname(data1_handle dh, data1_tagset *s,
         /* scan local set */
         for (r = s->tags; r; r = r->next)
         {
-            data1_name *np;
-
-            for (np = r->names; np; np = np->next)
+            for (data1_name *np = r->names; np; np = np->next)
                 if (!data1_matchstr(np->name, name))
                     return r;
         }
@@ -121,8 +118,6 @@ data1_tagset *data1_read_tagset(data1_handle dh, const char *file, int type)
 {
     NMEM mem = data1_nmem_get(dh);
     data1_tagset *res = 0;
-    data1_tagset **childp;
-    data1_tag **tagp;
     FILE *f;
     int lineno = 0;
     int argc;
@@ -135,29 +130,26 @@ data1_tagset *data1_read_tagset(data1_handle dh, const char *file, int type)
     }
     res = data1_empty_tagset(dh);
     res->type = type;
-    childp = &res->children;
-    tagp = &res->tags;
+    data1_tagset **childp = &res->children;
+    data1_tag **tagp = &res->tags;
 
     while ((argc = readconf_line(f, &lineno, line, 512, argv, 50)))
     {
         char *cmd = *argv;
         if (!strcmp(cmd, "tag"))
         {
-            int value;
             char *names, *type, *nm;
-            data1_tag *rr;
-            data1_name **npp;
 
             if (argc != 4)
             {
                 yaz_log(YLOG_WARN, "%s:%d: Bad # args to tag", file, lineno);
                 continue;
             }
-            value = atoi(argv[1]);
+            int value = atoi(argv[1]);
             names = argv[2];
             type = argv[3];
 
-            rr = *tagp = (data1_tag *)nmem_malloc(mem, sizeof(*rr));
+            data1_tag *rr = *tagp = (data1_tag *)nmem_malloc(mem, sizeof(*rr));
             rr->tagset = res;
             rr->next = 0;
             rr->which = DATA1T_numeric;
@@ -176,7 +168,7 @@ data1_tagset *data1_read_tagset(data1_handle dh, const char *file, int type)
 
             /* read namelist */
             nm = names;
-            npp = &rr->names;
+            data1_name **npp = &rr->names;
             do
             {
                 char *e;
@@ -203,15 +195,13 @@ data1_tagset *data1_read_tagset(data1_handle dh, const char *file, int type)
         }
         else if (!strcmp(cmd, "reference"))
         {
-            char *name;
-
             if (argc != 2)
             {
                 yaz_log(YLOG_WARN, "%s:%d: Bad # args to reference",
                         file, lineno);
                 continue;
             }
-            name = argv[1];
+            char *name = argv[1];
             res->oid = yaz_string_to_oid_nmem(yaz_oid_std(),
                                               CLASS_TAGSET, name, mem);
             if (!res->oid)
@@ -233,7 +223,6 @@ data1_tagset *data1_read_tagset(data1_handle dh, const char *file, int type)
         }
         else if (!strcmp(cmd, "include"))
         {
-            char *name;
             int type = 0;
 
             if (argc < 2)
@@ -242,7 +231,7 @@ data1_tagset *data1_read_tagset(data1_handle dh, const char *file, int type)
                         file, lineno);
                 continue;
             }
-            name = argv[1];
+            char *name = argv[1];
             if (argc == 3)
                 type = atoi(argv[2]);
             *childp = data1_read_tagset(dh, name, type);

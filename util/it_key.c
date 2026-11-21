@@ -43,12 +43,11 @@ void key_logdump_txt(int logmask, const void *p, const char *txt)
     if (p)
     {
         char formstr[IT_KEY_LEVEL_MAX * 24];
-        int i;
 
         memcpy(&key, p, sizeof(key));
         assert(key.len > 0 && key.len <= IT_KEY_LEVEL_MAX);
         *formstr = '\0';
-        for (i = 0; i<key.len; i++)
+        for (int i = 0; i<key.len; i++)
         {
             if (i)
                 strcat(formstr, ".");
@@ -74,14 +73,13 @@ char *key_print_it (const void *p, char *buf)
 int key_compare (const void *p1, const void *p2)
 {
     struct it_key i1, i2;
-    int i, l;
     memcpy (&i1, p1, sizeof(i1));
     memcpy (&i2, p2, sizeof(i2));
-    l = i1.len;
+    int l = i1.len;
     if (i2.len > l)
         l = i2.len;
     assert (l <= IT_KEY_LEVEL_MAX && l > 0);
-    for (i = 0; i < l; i++)
+    for (int i = 0; i < l; i++)
     {
         if (i1.mem[i] != i2.mem[i])
         {
@@ -111,13 +109,12 @@ zint key_get_segment(const void *p)
 int key_qsort_compare (const void *p1, const void *p2)
 {
     int r;
-    size_t l;
     char *cp1 = *(char **) p1;
     char *cp2 = *(char **) p2;
 
     if ((r = strcmp (cp1, cp2)))
         return r;
-    l = strlen(cp1)+1;
+    size_t l = strlen(cp1)+1;
     if ((r = key_compare (cp1+l+1, cp2+l+1)))
         return r;
     return cp1[l] - cp2[l];
@@ -137,18 +134,16 @@ void *iscz1_start (void)
 
 void key_init(struct it_key *key)
 {
-    int i;
     key->len = 0;
-    for (i = 0; i < IT_KEY_LEVEL_MAX; i++)
+    for (int i = 0; i < IT_KEY_LEVEL_MAX; i++)
         key->mem[i] = 0;
 }
 
 void iscz1_reset (void *vp)
 {
     struct iscz1_code_info *p = (struct iscz1_code_info *) vp;
-    int i;
     p->key.len = 0;
-    for (i = 0; i < IT_KEY_LEVEL_MAX; i++)
+    for (int i = 0; i < IT_KEY_LEVEL_MAX; i++)
         p->key.mem[i] = 0;
 }
 
@@ -191,7 +186,6 @@ void iscz1_encode (void *vp, char **dst, const char **src)
 {
     struct iscz1_code_info *p = (struct iscz1_code_info *) vp;
     struct it_key tkey;
-    zint d;
     int i;
 
     /*   1
@@ -205,7 +199,7 @@ void iscz1_encode (void *vp, char **dst, const char **src)
     memcpy (&tkey, *src, sizeof(struct it_key));
 
     /* deal with leader + delta encoding .. */
-    d = 0;
+    zint d = 0;
     assert(tkey.len > 0 && tkey.len <= IT_KEY_LEVEL_MAX);
     for (i = 0; i < tkey.len; i++)
     {
@@ -238,10 +232,9 @@ void iscz1_encode (void *vp, char **dst, const char **src)
 void iscz1_decode (void *vp, char **dst, const char **src)
 {
     struct iscz1_code_info *p = (struct iscz1_code_info *) vp;
-    int i;
 
     int leader = (int) iscz1_decode_int ((unsigned char **) src);
-    i = leader & 7;
+    int i = leader & 7;
     if (leader & 64)
         p->key.mem[i] += iscz1_decode_int ((unsigned char **) src);
     else

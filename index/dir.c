@@ -51,11 +51,9 @@ struct dir_entry *dir_open(const char *rep, const char *base,
     DIR *dir;
     char path[1024];
     char full_rep[1024];
-    size_t pathpos;
     struct dirent dent_s, *dent = &dent_s;
     size_t entry_max = 500;
     size_t idx = 0;
-    struct dir_entry *entry;
 
     if (base && !yaz_is_abspath(rep))
     {
@@ -72,9 +70,10 @@ struct dir_entry *dir_open(const char *rep, const char *base,
         yaz_log(YLOG_WARN|YLOG_ERRNO, "opendir %s", rep);
         return NULL;
     }
-    entry = (struct dir_entry *) xmalloc(sizeof(*entry) * entry_max);
+    struct dir_entry *entry =
+        (struct dir_entry *) xmalloc(sizeof(*entry) * entry_max);
     strcpy(path, rep);
-    pathpos = strlen(path);
+    size_t pathpos = strlen(path);
     if (!pathpos || path[pathpos-1] != '/')
         path[pathpos++] = '/';
     while ( (dent = readdir(dir)) )
@@ -85,9 +84,7 @@ struct dir_entry *dir_open(const char *rep, const char *base,
             continue;
         if (idx == entry_max-1)
         {
-            struct dir_entry *entry_n;
-
-            entry_n = (struct dir_entry *)
+            struct dir_entry *entry_n = (struct dir_entry *)
                 xmalloc(sizeof(*entry) * (entry_max += 1000));
             memcpy(entry_n, entry, idx * sizeof(*entry));
             xfree(entry);

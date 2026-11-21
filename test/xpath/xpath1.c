@@ -26,8 +26,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static void tst(int argc, char **argv)
 {
-    ZebraService zs;
-    ZebraHandle zh;
     const char *myrec[] = {
         "<sgml> \n"
         "  before \n"
@@ -38,8 +36,8 @@ static void tst(int argc, char **argv)
         "</sgml> \n",
         0};
 
-    zs = tl_start_up(0, argc, argv);
-    zh = zebra_open(zs, 0);
+    ZebraService zs = tl_start_up(0, argc, argv);
+    ZebraHandle zh = zebra_open(zs, 0);
     YAZ_CHECK(tl_init_data(zh, myrec));
 
     YAZ_CHECK(tl_query(zh, "@attr 1=/sgml/tag before", 0));

@@ -41,16 +41,14 @@ static int lookup_ec(Dict dict, Dict_ptr ptr,
                      int pos, int (*userfunc)(char *), int range,
                      Dict_char *prefix)
 {
-    int lo, hi;
     void *p;
-    short *indxp;
     char *info;
     MatchWord match_mask = 1<<(mi->m-1);
 
     dict_bf_readp(dict->dbf, ptr, &p);
-    lo = 0;
-    hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
+    int lo = 0;
+    int hi = DICT_nodir(p)-1;
+    short *indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     while (lo <= hi)
     {
         if (indxp[-lo] > 0)
@@ -59,9 +57,8 @@ static int lookup_ec(Dict dict, Dict_ptr ptr,
             /* unsigned char        length of information */
             /* char *               information */
             MatchWord *ri = ri_base, sc;
-            int i, j;
             info = (char*)p + indxp[-lo];
-            for (j=0; ; j++)
+            for (int j=0; ; j++)
             {
                 Dict_char ch;
 
@@ -77,7 +74,7 @@ static int lookup_ec(Dict dict, Dict_ptr ptr,
                     break;
                 sc = mi->s[ch & 255];
                 ri[1+range] = SH(ri[0]) & sc;
-                for (i=1; i<=range; i++)
+                for (int i=1; i<=range; i++)
                     ri[i+1+range] = (SH(ri[i]) & sc) | SH(ri[i-1])
                         | SH(ri[i+range]) | ri[i-1];
                 ri += 1+range;
@@ -88,8 +85,7 @@ static int lookup_ec(Dict dict, Dict_ptr ptr,
         else
         {
             Dict_char ch;
-            MatchWord *ri = ri_base, sc;
-            int i;
+            MatchWord *ri = ri_base;
 
             /* Dict_ptr             subptr */
             /* Dict_char            sub char */
@@ -99,9 +95,9 @@ static int lookup_ec(Dict dict, Dict_ptr ptr,
             memcpy(&ch, info+sizeof(Dict_ptr), sizeof(Dict_char));
             prefix[pos] = ch;
 
-            sc = mi->s[ch & 255];
+            MatchWord sc = mi->s[ch & 255];
             ri[1+range] = SH(ri[0]) & sc;
-            for (i=1; i<=range; i++)
+            for (int i=1; i<=range; i++)
                 ri[i+1+range] = (SH(ri[i]) & sc) | SH(ri[i-1])
                     | SH(ri[i+range]) | ri[i-1];
             ri += 1+range;
@@ -134,9 +130,8 @@ static MatchInfo *prepare_match(Dict_char *pattern)
 {
     int i;
     MatchWord *s;
-    MatchInfo *mi;
 
-    mi = (MatchInfo *) xmalloc(sizeof(*mi));
+    MatchInfo *mi = (MatchInfo *) xmalloc(sizeof(*mi));
     mi->m = dict_strlen(pattern);
     mi->s = s = (MatchWord *) xmalloc(sizeof(*s)*256);  /* 256 !!! */
     for (i = 0; i < 256; i++)
@@ -149,22 +144,19 @@ static MatchInfo *prepare_match(Dict_char *pattern)
 int dict_lookup_ec(Dict dict, char *pattern, int range,
                    int (*userfunc)(char *name))
 {
-    MatchInfo *mi;
-    MatchWord *ri;
-    int ret, i;
     Dict_char prefix[2048];
 
     if (!dict->head.root)
         return 0;
 
-    mi = prepare_match((Dict_char*) pattern);
+    MatchInfo *mi = prepare_match((Dict_char*) pattern);
 
-    ri = (MatchWord *) xmalloc((dict_strlen((Dict_char*) pattern)+range+2)
+    MatchWord *ri = (MatchWord *) xmalloc((dict_strlen((Dict_char*) pattern)+range+2)
                                * (range+1)*sizeof(*ri));
-    for (i = 0; i <= range; i++)
+    for (int i = 0; i <= range; i++)
         ri[i] = (2<<i)-1;
 
-    ret = lookup_ec(dict, dict->head.root, mi, ri, 0, userfunc,
+    int ret = lookup_ec(dict, dict->head.root, mi, ri, 0, userfunc,
                     range, prefix);
     xfree(ri);
     return ret;

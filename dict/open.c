@@ -50,10 +50,9 @@ void dict_clean(Dict dict)
 Dict dict_open(BFiles bfs, const char *name, int cache, int rw,
                int compact_flag, int page_size)
 {
-    Dict dict;
     void *head_buf;
 
-    dict = (Dict) xmalloc(sizeof(*dict));
+    Dict dict = (Dict) xmalloc(sizeof(*dict));
 
     if (cache < 5)
         cache = 5;

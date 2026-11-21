@@ -115,13 +115,12 @@ int isams_close (ISAMS is)
 ISAM_P isams_merge (ISAMS is, ISAMS_I data)
 {
     char i_item[128];
-    int i_more, i_mode;
-    void *r_clientData;
+    int i_mode;
     int first_block = is->head.last_block;
     int first_offset = is->head.last_offset;
     int count = 0;
 
-    r_clientData = (*is->method->codec.start)();
+    void *r_clientData = (*is->method->codec.start)();
 
     is->head.last_offset += sizeof(int);
     if (is->head.last_offset > is->block_size)
@@ -137,7 +136,7 @@ ISAM_P isams_merge (ISAMS is, ISAMS_I data)
     while (1)
     {
         char *tmp_ptr = i_item;
-        i_more = (*data->read_item)(data->clientData, &tmp_ptr, &i_mode);
+        int i_more = (*data->read_item)(data->clientData, &tmp_ptr, &i_mode);
         assert (i_mode);
 
         if (!i_more)
@@ -232,7 +231,6 @@ int isams_pp_read (ISAMS_PP pp, void *buf)
 
 int isams_read_item (ISAMS_PP pp, char **dst)
 {
-    const char *src;
     if (pp->numRead >= pp->numKeys)
         return 0;
     (pp->numRead)++;
@@ -244,7 +242,7 @@ int isams_read_item (ISAMS_PP pp, char **dst)
         bf_read (pp->is->bf, pp->block_no+1, 0, 0,
                  pp->buf + pp->is->block_size);
     }
-    src = pp->buf + pp->block_offset;
+    const char *src = pp->buf + pp->block_offset;
     (*pp->is->method->codec.decode)(pp->decodeClientData, dst, &src);
     pp->block_offset = src - pp->buf;
     return 1;

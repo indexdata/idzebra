@@ -221,13 +221,12 @@ void zebra_lock_destroy(ZebraLockHandle h)
 static int unixLock(int fd, int type, int cmd)
 {
     struct flock area;
-    int r;
     area.l_type = type;
     area.l_whence = SEEK_SET;
     area.l_len = area.l_start = 0L;
 
     yaz_log(log_level, "fcntl begin type=%d fd=%d", type, fd);
-    r = fcntl(fd, cmd, &area);
+    int r = fcntl(fd, cmd, &area);
     if (r == -1)
         yaz_log(YLOG_WARN|YLOG_ERRNO, "fcntl FAIL type=%d fd=%d", type, fd);
     else

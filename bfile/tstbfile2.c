@@ -32,9 +32,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 void tst(void)
 {
-    int r;
-    BFiles bfs;
-    BFile bf;
     char buf[256];
     int block_size = 16;
     zint max_block = 200000;
@@ -45,13 +42,13 @@ void tst(void)
 
     YAZ_CHECK(max_block * block_size < 4 * 1000000); /* 4M */
 
-    r = mkdir("register", 0777);
+    int r = mkdir("register", 0777);
     YAZ_CHECK(r == 0 || (r == -1 && errno == EEXIST));
 
     r = mkdir("shadow", 0777);
     YAZ_CHECK(r == 0 || (r == -1 && errno == EEXIST));
 
-    bfs = bfs_create("register.bad:4M", 0 /* base: current dir */);
+    BFiles bfs = bfs_create("register.bad:4M", 0 /* base: current dir */);
     YAZ_CHECK(!bfs);
     if (bfs)
         return;
@@ -83,7 +80,7 @@ void tst(void)
 #endif
 
     yaz_log(YLOG_LOG, "writing file 1");
-    bf = bf_open(bfs, "file", block_size, 1);
+    BFile bf = bf_open(bfs, "file", block_size, 1);
     YAZ_CHECK(bf);
     if (bf)
     {

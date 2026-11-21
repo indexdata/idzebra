@@ -36,10 +36,9 @@ const char *get_srcdir(void)
 }
 
 void tst_string(chrmaptab tab, const char *input, int value) {
-    const char **output;
     const char *from = input;
     int len = strlen(from);
-    output = chr_map_input_x(tab, &from, &len, 0);
+    const char **output = chr_map_input_x(tab, &from, &len, 0);
     YAZ_CHECK_EQ(0, len);
     YAZ_CHECK(output);
     if (output)

@@ -42,8 +42,7 @@ static int wordlen(char *b, int max)
 
 static void indent(WRBUF b, int col)
 {
-    int i;
-    for (i = 0; i < col; i++)
+    for (int i = 0; i < col; i++)
         wrbuf_putc(b, ' ');
 }
 
@@ -71,13 +70,13 @@ static void wrbuf_put_xattr(WRBUF b, data1_xattr *p)
 
 static void wrbuf_write_tag(WRBUF b, const char *tag, int opening)
 {
-    int i, fixup = 0;
+    int fixup = 0;
 
     /* see if we must fix the tag.. The grs.marc filter produces
        a data1 tree with not well-formed XML */
     if (*tag >= '0' && *tag <= '9')
         fixup = 1;
-    for (i = 0; tag[i]; i++)
+    for (int i = 0; tag[i]; i++)
         if (strchr( " <>$,()[]", tag[i]))
             fixup = 1;
     if (fixup)
@@ -97,9 +96,7 @@ static void wrbuf_write_tag(WRBUF b, const char *tag, int opening)
 static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
                         int pretty_format)
 {
-    data1_node *c;
-
-    for (c = n->child; c; c = c->next)
+    for (data1_node *c = n->child; c; c = c->next)
     {
         char *tag;
 

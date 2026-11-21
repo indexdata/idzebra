@@ -83,7 +83,7 @@ CFile cf_open(MFile mf, MFile_area area, const char *fname,
               int block_size, int wflag, int *firstp)
 {
     char path[1024];
-    int i, ret;
+    int i;
     CFile cf = (CFile) xmalloc(sizeof(*cf));
     int hash_bytes;
 
@@ -125,7 +125,7 @@ CFile cf_open(MFile mf, MFile_area area, const char *fname,
         cf_close(cf);
         return 0;
     }
-    ret = mf_read(cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head);
+    int ret = mf_read(cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head);
 
     if (ret == -1)
     {
@@ -213,11 +213,10 @@ static void release_bucket(CFile cf, struct CFile_hash_bucket *p)
 
 static int flush_bucket(CFile cf, int no_to_flush)
 {
-    int i;
     int ret = 0;
     struct CFile_hash_bucket *p;
 
-    for (i = 0; i != no_to_flush; i++)
+    for (int i = 0; i != no_to_flush; i++)
     {
         p = cf->bucket_lru_back;
         if (!p)
@@ -268,9 +267,7 @@ static struct CFile_hash_bucket *alloc_bucket(CFile cf, zint block_no, int hno)
 
 static struct CFile_hash_bucket *get_bucket(CFile cf, zint block_no, int hno)
 {
-    struct CFile_hash_bucket *p;
-
-    p = alloc_bucket(cf, block_no, hno);
+    struct CFile_hash_bucket *p = alloc_bucket(cf, block_no, hno);
     if (!p)
         return 0;
     p->dirty = 0;
@@ -286,17 +283,13 @@ static struct CFile_hash_bucket *get_bucket(CFile cf, zint block_no, int hno)
 
 static struct CFile_hash_bucket *new_bucket(CFile cf, zint *block_nop, int hno)
 {
-    struct CFile_hash_bucket *p;
-    int i;
-    zint block_no;
-
-    block_no = *block_nop = cf->head.next_bucket++;
-    p = alloc_bucket(cf, block_no, hno);
+    zint block_no = *block_nop = cf->head.next_bucket++;
+    struct CFile_hash_bucket *p = alloc_bucket(cf, block_no, hno);
     if (!p)
         return 0;
     p->dirty = 1;
 
-    for (i = 0; i<HASH_BUCKET; i++)
+    for (int i = 0; i<HASH_BUCKET; i++)
     {
         p->ph.vno[i] = 0;
         p->ph.no[i] = 0;
@@ -324,7 +317,6 @@ static int cf_lookup_hash(CFile cf, zint no, zint *vno)
 {
     int hno = cf_hash(cf, no);
     struct CFile_hash_bucket *hb;
-    zint block_no;
     int i;
 
     for (hb = cf->parray[hno]; hb; hb = hb->h_next)
@@ -337,7 +329,7 @@ static int cf_lookup_hash(CFile cf, zint no, zint *vno)
                 return 1;
             }
     }
-    for (block_no = cf->array[hno]; block_no; block_no = hb->ph.next_bucket)
+    for (zint block_no = cf->array[hno]; block_no; block_no = hb->ph.next_bucket)
     {
         for (hb = cf->parray[hno]; hb; hb = hb->h_next)
         {
@@ -390,10 +382,6 @@ static int cf_write_flat(CFile cf, zint no, zint vno)
 
 static int cf_moveto_flat(CFile cf)
 {
-    struct CFile_hash_bucket *p;
-    int j;
-    zint i;
-
     yaz_log(YLOG_DEBUG, "cf: Moving to flat shadow: %s", cf->rmf->name);
     yaz_log(YLOG_DEBUG, "cf: hits=%d miss=%d bucket_in_memory=" ZINT_FORMAT " total="
           ZINT_FORMAT,
@@ -403,8 +391,8 @@ static int cf_moveto_flat(CFile cf)
     if (flush_bucket(cf, -1))
         return -1;
     assert(cf->bucket_in_memory == 0);
-    p = (struct CFile_hash_bucket *) xmalloc(sizeof(*p));
-    for (i = cf->head.first_bucket; i < cf->head.next_bucket; i++)
+    struct CFile_hash_bucket *p = (struct CFile_hash_bucket *) xmalloc(sizeof(*p));
+    for (zint i = cf->head.first_bucket; i < cf->head.next_bucket; i++)
     {
         if (mf_read(cf->hash_mf, i, 0, 0, &p->ph) != 1)
         {
@@ -412,7 +400,7 @@ static int cf_moveto_flat(CFile cf)
             xfree(p);
             return -1;
         }
-        for (j = 0; j < HASH_BUCKET && p->ph.vno[j]; j++)
+        for (int j = 0; j < HASH_BUCKET && p->ph.vno[j]; j++)
         {
             if (cf_write_flat(cf, p->ph.no[j], p->ph.vno[j]))
             {
@@ -542,11 +530,10 @@ zint cf_new(CFile cf, zint no)
 int cf_read(CFile cf, zint no, int offset, int nbytes, void *buf)
 {
     zint block;
-    int ret;
 
     assert(cf);
     zebra_mutex_lock(&cf->mutex);
-    ret = cf_lookup(cf, no, &block);
+    int ret = cf_lookup(cf, no, &block);
     zebra_mutex_unlock(&cf->mutex);
     if (ret == -1)
     {
@@ -579,12 +566,11 @@ int cf_read(CFile cf, zint no, int offset, int nbytes, void *buf)
 int cf_write(CFile cf, zint no, int offset, int nbytes, const void *buf)
 {
     zint block;
-    int ret;
 
     assert(cf);
     zebra_mutex_lock(&cf->mutex);
 
-    ret = cf_lookup(cf, no, &block);
+    int ret = cf_lookup(cf, no, &block);
 
     if (ret == -1)
     {

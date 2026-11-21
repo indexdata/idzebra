@@ -163,7 +163,6 @@ static void r_delete(RSET ct)
 
 static RSFD r_open(RSET ct, int flag)
 {
-    RSFD rfd;
     struct rset_between_rfd *p;
 
     if (flag & RSETF_WRITE)
@@ -171,7 +170,7 @@ static RSFD r_open(RSET ct, int flag)
         yaz_log(YLOG_FATAL, "between set type is read-only");
         return NULL;
     }
-    rfd = rfd_create_base(ct);
+    RSFD rfd = rfd_create_base(ct);
     if (rfd->priv)
         p = (struct rset_between_rfd *) rfd->priv;
     else {
@@ -202,9 +201,8 @@ static int r_forward(RSFD rfd, void *buf,
                      TERMID *term, const void *untilbuf)
 {
     struct rset_between_rfd *p = (struct rset_between_rfd *) rfd->priv;
-    int rc;
     yaz_log(log_level, "forwarding ");
-    rc = rset_forward(p->andrfd,buf,term,untilbuf);
+    int rc = rset_forward(p->andrfd,buf,term,untilbuf);
     return rc;
 }
 
@@ -214,7 +212,6 @@ static void checkattr(RSFD rfd)
         rfd->rset->priv;
     struct rset_between_rfd *p = (struct rset_between_rfd *)rfd->priv;
     const struct rset_key_control *kctrl = rfd->rset->keycontrol;
-    int cmp;
     if (p->attrdepth)
         return; /* already found one */
     if (!info->attrterm)
@@ -224,7 +221,7 @@ static void checkattr(RSFD rfd)
     }
     if ( p->startbufok && p->attrbufok )
     { /* have buffers to compare */
-        cmp = (kctrl->cmp)(p->startbuf, p->attrbuf);
+        int cmp = (kctrl->cmp)(p->startbuf, p->attrbuf);
         if (0 == cmp) /* and the keys match */
         {
             p->attrdepth = p->depth;

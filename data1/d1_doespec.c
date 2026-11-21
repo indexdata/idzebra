@@ -53,9 +53,7 @@ static int match_children_wildpath(data1_handle dh, data1_node *n,
 static Z_Triple *find_triple(Z_Variant *var, const Odr_oid *universal_oid,
                              const Odr_oid *var_oid, int zclass, int type)
 {
-    int i;
-
-    for (i = 0; i < var->num_triples; i++)
+    for (int i = 0; i < var->num_triples; i++)
     {
         const Odr_oid *cur_oid = var->triples[i]->variantSetId;
         if (!cur_oid)
@@ -70,8 +68,6 @@ static Z_Triple *find_triple(Z_Variant *var, const Odr_oid *universal_oid,
 static void mark_subtree(data1_node *n, int make_variantlist, int no_data,
                          int get_bytes, Z_Variant *vreq, int select_flag)
 {
-    data1_node *c;
-
 #if 1
     if (n->which == DATA1N_tag)
 #else
@@ -90,7 +86,7 @@ static void mark_subtree(data1_node *n, int make_variantlist, int no_data,
         n->u.tag.get_bytes = get_bytes;
     }
 
-    for (c = n->child; c; c = c->next)
+    for (data1_node *c = n->child; c; c = c->next)
     {
         if (c->which == DATA1N_tag && (!n->child ||
             n->child->which != DATA1N_tag))
@@ -110,13 +106,11 @@ static void match_triple(data1_handle dh, Z_Variant *vreq,
                          const Odr_oid *def_oid,
                          const Odr_oid *var_oid, data1_node *n)
 {
-    data1_node **c;
-
     if (!(n = n->child))
         return;
     if (n->which != DATA1N_variant)
         return;
-    c = &n->child;
+    data1_node **c = &n->child;
     while (*c)
     {
         int remove_flag = 0;
@@ -170,8 +164,7 @@ static int match_node_and_attr (data1_node *c, const char *spec)
         return 1;
     else if (sscanf(predicate, "@%63[^=]=%63s", attr, value) == 2)
     {
-        data1_xattr *xa;
-        for (xa = c->u.tag.attributes; xa; xa = xa->next)
+        for (data1_xattr *xa = c->u.tag.attributes; xa; xa = xa->next)
             if (!strcmp(xa->name, attr) &&
                 !strcmp(xa->value, value))
                 return 1;
@@ -179,8 +172,7 @@ static int match_node_and_attr (data1_node *c, const char *spec)
     }
     else if (sscanf(predicate, "@%63s", attr) == 1)
     {
-        data1_xattr *xa;
-        for (xa = c->u.tag.attributes; xa; xa = xa->next)
+        for (data1_xattr *xa = c->u.tag.attributes; xa; xa = xa->next)
             if (!strcmp(xa->name, attr))
                 return 1;
     }
@@ -197,11 +189,10 @@ static int match_children_here (data1_handle dh, data1_node *n,
                                 int select_flag)
 {
     int counter = 0, hits = 0;
-    data1_node *c;
     Z_ETagUnit *tp = *t;
     Z_Occurrences *occur;
 
-    for (c = n->child; c ; c = c->next)
+    for (data1_node *c = n->child; c ; c = c->next)
     {
         data1_tag *tag = 0;
 
@@ -355,13 +346,11 @@ static int match_children(data1_handle dh, data1_node *n, Z_Espec1 *e,
 
 int data1_doespec1 (data1_handle dh, data1_node *n, Z_Espec1 *e)
 {
-    int i;
-
     n = data1_get_root_tag (dh, n);
     if (n && n->which == DATA1N_tag)
         n->u.tag.node_selected = 1;
 
-    for (i = 0; i < e->num_elements; i++)
+    for (int i = 0; i < e->num_elements; i++)
     {
         if (e->elements[i]->which != Z_ERequest_simpleElement)
             return 100;

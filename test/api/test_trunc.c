@@ -26,7 +26,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static void tst(int argc, char **argv)
 {
-    int i;
     ZebraService zs = tl_start_up("test_trunc.cfg", argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
     WRBUF rec_buf = wrbuf_alloc();
@@ -37,10 +36,8 @@ static void tst(int argc, char **argv)
     zebra_init(zh);
     zebra_close(zh);
 
-    for (i = 0; i < 10; i++)
+    for (int i = 0; i < 10; i++)
     {
-        int l;
-
         zh = zebra_open (zs, 0);
         YAZ_CHECK(zh);
 
@@ -48,7 +45,7 @@ static void tst(int argc, char **argv)
 
         YAZ_CHECK(zebra_begin_trans (zh, 1) == ZEBRA_OK);
 
-        for (l = 0; l < 100; l++)
+        for (int l = 0; l < 100; l++)
         {
             int j;
 

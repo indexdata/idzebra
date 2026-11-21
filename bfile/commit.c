@@ -131,8 +131,6 @@ static int cf_commit_hash (CFile cf)
 {
     int r = 0;
     int i;
-    zint bucket_no;
-    struct CFile_ph_bucket *p;
 #if CF_OPTIMIZE_COMMIT
     struct map_cache *m_p;
 #endif
@@ -141,8 +139,8 @@ static int cf_commit_hash (CFile cf)
     m_p = map_cache_init (cf);
 #endif
 
-    p = (struct CFile_ph_bucket *) xmalloc (sizeof(*p));
-    bucket_no = cf->head.first_bucket;
+    struct CFile_ph_bucket *p = (struct CFile_ph_bucket *) xmalloc (sizeof(*p));
+    zint bucket_no = cf->head.first_bucket;
     for (; bucket_no < cf->head.next_bucket; bucket_no++)
     {
         if (mf_read (cf->hash_mf, bucket_no, 0, 0, p) != 1)
@@ -186,7 +184,6 @@ static int cf_commit_hash (CFile cf)
 
 static int cf_commit_flat(CFile cf)
 {
-    zint *fp;
     zint hno;
     int i;
     int r = 0;
@@ -200,7 +197,7 @@ static int cf_commit_flat(CFile cf)
 #if CF_OPTIMIZE_COMMIT
     m_p = map_cache_init (cf);
 #endif
-    fp = (zint *) xmalloc (HASH_BSIZE);
+    zint *fp = (zint *) xmalloc (HASH_BSIZE);
     for (hno = cf->head.next_bucket; hno < cf->head.flat_bucket; hno++)
     {
         for (i = 0; i < (int) (HASH_BSIZE/sizeof(zint)); i++)

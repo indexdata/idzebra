@@ -53,11 +53,10 @@ static void tst_sortindex(int argc, char **argv, const char *type)
     Res res = res_open(0, 0);
 
     ZebraService zs = tl_start_up("test_sort3.cfg", argc, argv);
-    ZebraHandle  zh;
 
     res_set(res, "sortindex", type);
 
-    zh = zebra_open(zs, res);
+    ZebraHandle zh = zebra_open(zs, res);
 
     YAZ_CHECK(tl_init_data(zh, myrec));
 

@@ -110,7 +110,6 @@ static void *begin(struct zebra_register *reg,
 {
     struct rank_set_info *si =
         (struct rank_set_info *) nmem_malloc(nmem,sizeof(*si));
-    int i;
 
     yaz_log(log_level, "rank-1 begin");
     si->no_entries = numterms;
@@ -118,7 +117,7 @@ static void *begin(struct zebra_register *reg,
     si->nmem=nmem;
     si->entries = (struct rank_term_info *)
         nmem_malloc(si->nmem, sizeof(*si->entries)*numterms);
-    for (i = 0; i < numterms; i++)
+    for (int i = 0; i < numterms; i++)
     {
         zint g = rset_count(terms[i]->rset);
         yaz_log(log_level, "i=%d flags=%s '%s'", i,
@@ -168,14 +167,13 @@ static void end(struct zebra_register *reg, void *set_handle)
 static void add(void *set_handle, int seqno, TERMID term)
 {
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
-    struct rank_term_info *ti;
     assert(si);
     if (!term)
     {
         yaz_log(log_level, "rank-1 add NULL term");
         return;
     }
-    ti= (struct rank_term_info *) term->rankpriv;
+    struct rank_term_info *ti= (struct rank_term_info *) term->rankpriv;
     assert(ti);
     si->last_pos = seqno;
     ti->local_occur++;
@@ -192,7 +190,7 @@ static void add(void *set_handle, int seqno, TERMID term)
 static int calc_1(void *set_handle, zint sysno, zint staticrank,
                   int *stop_flag)
 {
-    int i, lo, divisor, score = 0;
+    int i, lo, score = 0;
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
 
     if (!si->no_rank_entries)
@@ -206,7 +204,7 @@ static int calc_1(void *set_handle, zint sysno, zint staticrank,
             score += (8+log2_int (lo)) * si->entries[i].global_inv *
                 si->entries[i].rank_weight;
     }
-    divisor = si->no_rank_entries * (8+log2_int(si->last_pos/si->no_entries));
+    int divisor = si->no_rank_entries * (8+log2_int(si->last_pos/si->no_entries));
     score = score / divisor;
     yaz_log(log_level, "calc sysno=" ZINT_FORMAT " score=%d", sysno, score);
     if (score > 1000)

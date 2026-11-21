@@ -101,8 +101,6 @@ int tl_close_down(ZebraHandle zh, ZebraService zs)
 
 int tl_init_data(ZebraHandle zh, const char **recs)
 {
-    ZEBRA_RES res;
-
     if (!zh)
         return 0;
 
@@ -110,7 +108,7 @@ int tl_init_data(ZebraHandle zh, const char **recs)
         return 0;
 
     yaz_log(log_level, "going to call init");
-    res = zebra_init(zh);
+    ZEBRA_RES res = zebra_init(zh);
     if (res == ZEBRA_FAIL)
     {
         yaz_log(log_level, "init_data: zebra_init failed with %d", res);
@@ -119,10 +117,9 @@ int tl_init_data(ZebraHandle zh, const char **recs)
     }
     if (recs)
     {
-        int i;
         if (zebra_begin_trans (zh, 1) != ZEBRA_OK)
             return 0;
-        for (i = 0; recs[i]; i++)
+        for (int i = 0; recs[i]; i++)
         {
             if (zebra_add_record(zh, recs[i], strlen(recs[i])) != ZEBRA_OK)
             {
@@ -140,21 +137,17 @@ int tl_init_data(ZebraHandle zh, const char **recs)
 
 int tl_query_x(ZebraHandle zh, const char *query, zint exphits, int experror)
 {
-    ODR odr;
-    YAZ_PQF_Parser parser;
-    Z_RPNQuery *rpn;
     const char *setname="rsetname";
     zint hits;
-    ZEBRA_RES rc;
 
     yaz_log(log_level, "======================================");
     yaz_log(log_level, "query: %s", query);
-    odr = odr_createmem (ODR_DECODE);
+    ODR odr = odr_createmem (ODR_DECODE);
     if (!odr)
         return 0;
 
-    parser = yaz_pqf_create();
-    rpn = yaz_pqf_parse(parser, odr, query);
+    YAZ_PQF_Parser parser = yaz_pqf_create();
+    Z_RPNQuery *rpn = yaz_pqf_parse(parser, odr, query);
     yaz_pqf_destroy(parser);
     if (!rpn)
     {
@@ -164,11 +157,10 @@ int tl_query_x(ZebraHandle zh, const char *query, zint exphits, int experror)
         return 0;
     }
 
-    rc = zebra_search_RPN(zh, odr, rpn, setname, &hits);
+    ZEBRA_RES rc = zebra_search_RPN(zh, odr, rpn, setname, &hits);
     odr_destroy(odr);
     if (experror)
     {
-        int code;
         if (rc != ZEBRA_FAIL)
         {
             yaz_log(log_level, "search returned %d (OK), but error was "
@@ -177,7 +169,7 @@ int tl_query_x(ZebraHandle zh, const char *query, zint exphits, int experror)
                    "%s\n",  rc, query);
             return 0;
         }
-        code = zebra_errCode(zh);
+        int code = zebra_errCode(zh);
         if (code != experror)
         {
             yaz_log(log_level, "search returned error code %d, but error %d "
@@ -226,12 +218,11 @@ int tl_scan(ZebraHandle zh, const char *query,
     ODR odr = odr_createmem(ODR_ENCODE);
     ZebraScanEntry *entries = 0;
     int partial = -123;
-    ZEBRA_RES res;
 
     yaz_log(log_level, "======================================");
     yaz_log(log_level, "scan: pos=%d num=%d %s", pos, num, query);
 
-    res = zebra_scan_PQF(zh, odr, query, &pos, &num, &entries, &partial,
+    ZEBRA_RES res = zebra_scan_PQF(zh, odr, query, &pos, &num, &entries, &partial,
                          0 /* setname */);
 
     if (partial == -123)
@@ -280,8 +271,7 @@ int tl_scan(ZebraHandle zh, const char *query,
             {
                 if (exp_entries)
                 {
-                    int i;
-                    for (i = 0; i<num; i++)
+                    for (int i = 0; i<num; i++)
                     {
                         if (strcmp(exp_entries[i], entries[i].term))
                         {
@@ -310,18 +300,16 @@ int tl_ranking_query(ZebraHandle zh, char *query,
     ZebraRetrievalRecord retrievalRecord[10];
     ODR odr_output = 0;
     const char *setname = "rsetname";
-    int rc;
-    int i;
     int ret = 1;
 
     if (!tl_query(zh, query, exphits))
         return 0;
 
-    for (i = 0; i<10; i++)
+    for (int i = 0; i<10; i++)
         retrievalRecord[i].position = i+1;
 
     odr_output = odr_createmem(ODR_ENCODE);
-    rc = zebra_records_retrieve(zh, odr_output, setname, 0,
+    int rc = zebra_records_retrieve(zh, odr_output, setname, 0,
                                 yaz_oid_recsyn_xml, exphits, retrievalRecord);
     if (rc != ZEBRA_OK)
         ret = 0;
@@ -345,7 +333,6 @@ int tl_ranking_query(ZebraHandle zh, char *query,
 int tl_meta_query(ZebraHandle zh, char *query, int exphits,
                   zint *ids)
 {
-    ZebraMetaRecord *meta;
     const char *setname= "rsetname";
     zint *positions = 0;
     int i, ret = 1;
@@ -357,7 +344,7 @@ int tl_meta_query(ZebraHandle zh, char *query, int exphits,
     for (i = 0; i<exphits; i++)
         positions[i] = i+1;
 
-    meta = zebra_meta_records_create(zh, setname,  exphits, positions);
+    ZebraMetaRecord *meta = zebra_meta_records_create(zh, setname,  exphits, positions);
 
     if (!meta)
     {
@@ -382,7 +369,6 @@ int tl_meta_query(ZebraHandle zh, char *query, int exphits,
 
 int tl_sort(ZebraHandle zh, const char *query, zint hits, zint *exp)
 {
-    ZebraMetaRecord *recs;
     zint i;
     int errs = 0;
     zint min_val_recs = 0;
@@ -392,7 +378,7 @@ int tl_sort(ZebraHandle zh, const char *query, zint hits, zint *exp)
     if (!tl_query(zh, query, hits))
         return 0;
 
-    recs = zebra_meta_records_create_range (zh, "rsetname", 1, 4);
+    ZebraMetaRecord *recs = zebra_meta_records_create_range (zh, "rsetname", 1, 4);
     if (!recs)
         return 0;
 
@@ -457,13 +443,12 @@ ZEBRA_RES tl_fetch(ZebraHandle zh, int position, const char *element_set,
 {
     ZebraRetrievalRecord retrievalRecord[1];
     Z_RecordComposition *comp;
-    ZEBRA_RES res;
 
     retrievalRecord[0].position = position;
 
     yaz_set_esn(&comp, element_set, odr->mem);
 
-    res = zebra_records_retrieve(zh, odr, "rsetname", comp, format, 1,
+    ZEBRA_RES res = zebra_records_retrieve(zh, odr, "rsetname", comp, format, 1,
                                  retrievalRecord);
     if (res != ZEBRA_OK)
     {

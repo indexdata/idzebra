@@ -76,13 +76,13 @@ static RSET rsbool_create_base(const struct rset_control *ctrl,
                                struct rset_key_control *kcontrol,
                                int scope, RSET rset_l, RSET rset_r)
 {
-    RSET children[2], rnew;
-    struct rset_private *info;
+    RSET children[2];
 
     children[0] = rset_l;
     children[1] = rset_r;
-    rnew = rset_create_base(ctrl, nmem, kcontrol, scope, 0, 2, children);
-    info = (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
+    RSET rnew = rset_create_base(ctrl, nmem, kcontrol, scope, 0, 2, children);
+    struct rset_private *info =
+        (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
     info->rset_l = rset_l;
     info->rset_r = rset_r;
     rnew->priv = info;
@@ -103,7 +103,6 @@ static void r_delete(RSET ct)
 static RSFD r_open(RSET ct, int flag)
 {
     struct rset_private *info = (struct rset_private *) ct->priv;
-    RSFD rfd;
     struct rfd_private *p;
 
     if (flag & RSETF_WRITE)
@@ -111,7 +110,7 @@ static RSFD r_open(RSET ct, int flag)
         yaz_log(YLOG_FATAL, "bool set type is read-only");
         return NULL;
     }
-    rfd = rfd_create_base(ct);
+    RSFD rfd = rfd_create_base(ct);
     if (rfd->priv)
         p = (struct rfd_private *)rfd->priv;
     else {
@@ -227,11 +226,10 @@ static int r_read_not(RSFD rfd, void *buf, TERMID *term)
 static void r_pos(RSFD rfd, double *current, double *total)
 {
     struct rfd_private *p = (struct rfd_private *)rfd->priv;
-    double lcur, ltot;
-    double rcur, rtot;
-    double r;
-    ltot = -1;
-    rtot = -1;
+    double lcur;
+    double rcur;
+    double ltot = -1;
+    double rtot = -1;
     rset_pos(p->rfd_l, &lcur, &ltot);
     rset_pos(p->rfd_r, &rcur, &rtot);
     if ( (rtot<0) && (ltot<0)) { /*no position */
@@ -247,7 +245,7 @@ static void r_pos(RSFD rfd, double *current, double *total)
         *current = *total = 0;
         return;
     }
-    r = 1.0*(lcur+rcur)/(ltot+rtot); /* weighed average of l and r */
+    double r = 1.0*(lcur+rcur)/(ltot+rtot); /* weighed average of l and r */
     *current = (double) (p->hits);
     *total = *current/r ;
 #if RSET_DEBUG

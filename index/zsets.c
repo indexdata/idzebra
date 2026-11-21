@@ -100,11 +100,10 @@ static ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
                                  Z_RPNQuery *rpn, ZebraSet sset)
 {
     RSET rset = 0;
-    Z_SortKeySpecList *sort_sequence;
     int sort_status, i;
     ZEBRA_RES res = ZEBRA_OK;
 
-    sort_sequence = (Z_SortKeySpecList *)
+    Z_SortKeySpecList *sort_sequence = (Z_SortKeySpecList *)
         nmem_malloc(nmem, sizeof(*sort_sequence));
     sort_sequence->num_specs = 10; /* FIXME - Hard-coded number */
     sort_sequence->specs = (Z_SortKeySpec **)
@@ -150,14 +149,10 @@ ZEBRA_RES resultSetAddRPN(ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
                           const char *setname,
                           zint *hits, int *estimated_hit_count)
 {
-    ZebraSet zebraSet;
-    int i;
-    ZEBRA_RES res;
-
     *hits = 0;
     *estimated_hit_count = 0;
 
-    zebraSet = resultSetAdd(zh, setname, 1);
+    ZebraSet zebraSet = resultSetAdd(zh, setname, 1);
     if (!zebraSet)
         return ZEBRA_FAIL;
     zebraSet->locked = 1;
@@ -168,10 +163,10 @@ ZEBRA_RES resultSetAddRPN(ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
     zebraSet->num_bases = num_bases;
     zebraSet->basenames =
         nmem_malloc(zebraSet->nmem, num_bases * sizeof(*zebraSet->basenames));
-    for (i = 0; i<num_bases; i++)
+    for (int i = 0; i<num_bases; i++)
         zebraSet->basenames[i] = nmem_strdup(zebraSet->nmem, basenames[i]);
 
-    res = resultSetSearch(zh, zebraSet->nmem, zebraSet->rset_nmem,
+    ZEBRA_RES res = resultSetSearch(zh, zebraSet->nmem, zebraSet->rset_nmem,
                           rpn, zebraSet);
     *hits = zebraSet->hits;
     if (zebraSet->estimated_hit_count)
@@ -194,12 +189,11 @@ void resultSetAddTerm(ZebraHandle zh, ZebraSet s, int reg_type,
         s->nmem = nmem_create();
     if (!s->term_entries)
     {
-        int i;
         s->term_entries_max = 1000;
         s->term_entries =
             nmem_malloc(s->nmem, s->term_entries_max *
                         sizeof(*s->term_entries));
-        for (i = 0; i < s->term_entries_max; i++)
+        for (int i = 0; i < s->term_entries_max; i++)
             s->term_entries[i].term = 0;
     }
     if (s->hits < s->term_entries_max)
@@ -215,7 +209,6 @@ void resultSetAddTerm(ZebraHandle zh, ZebraSet s, int reg_type,
 ZebraSet resultSetAdd(ZebraHandle zh, const char *name, int ov)
 {
     ZebraSet s;
-    int i;
 
     for (s = zh->sets; s; s = s->next)
         if (!strcmp(s->name, name))
@@ -261,7 +254,7 @@ ZebraSet resultSetAdd(ZebraHandle zh, const char *name, int ov)
         s->sort_info->all_entries = (struct zset_sort_entry *)
             xmalloc(sizeof(*s->sort_info->all_entries) *
                     s->sort_info->max_entries);
-        for (i = 0; i < s->sort_info->max_entries; i++)
+        for (int i = 0; i < s->sort_info->max_entries; i++)
             s->sort_info->entries[i] = s->sort_info->all_entries + i;
     }
     s->locked = 0;
@@ -396,8 +389,6 @@ ZebraMetaRecord *zebra_meta_records_create_range(ZebraHandle zh,
 {
     zint pos_small[10];
     zint *pos = pos_small;
-    ZebraMetaRecord *mr;
-    int i;
 
     if (num > 10000 || num <= 0)
         return 0;
@@ -405,10 +396,10 @@ ZebraMetaRecord *zebra_meta_records_create_range(ZebraHandle zh,
     if (num > 10)
         pos = xmalloc(sizeof(*pos) * num);
 
-    for (i = 0; i<num; i++)
+    for (int i = 0; i<num; i++)
         pos[i] = start+i;
 
-    mr = zebra_meta_records_create(zh, name, num, pos);
+    ZebraMetaRecord *mr = zebra_meta_records_create(zh, name, num, pos);
 
     if (num > 10)
         xfree(pos);
@@ -422,7 +413,6 @@ ZebraMetaRecord *zebra_meta_records_create(ZebraHandle zh, const char *name,
     ZebraMetaRecord *sr = 0;
     RSET rset;
     int i;
-    struct zset_sort_info *sort_info;
     size_t sysno_mem_index = 0;
 
     if (zh->m_staticrank)
@@ -461,7 +451,7 @@ ZebraMetaRecord *zebra_meta_records_create(ZebraHandle zh, const char *name,
             sr[i].term = 0;
             sr[i].db = 0;
         }
-        sort_info = sset->sort_info;
+        struct zset_sort_info *sort_info = sset->sort_info;
         if (sort_info)
         {
             zint position;
@@ -627,13 +617,12 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
             {
                 char this_entry_org[1024];
                 char other_entry_org[1024];
-                double diff;
                 const char *index_type = criteria[j].index_type;
                 zebra_term_untrans(zh, index_type, this_entry_org,
                                    this_entry_buf);
                 zebra_term_untrans(zh, index_type, other_entry_org,
                                    other_entry_buf);
-                diff = atof(this_entry_org) - atof(other_entry_org);
+                double diff = atof(this_entry_org) - atof(other_entry_org);
 
                 if (diff > 0.0)
                     rel = 1;
@@ -681,8 +670,7 @@ void resultSetInsertSort(ZebraHandle zh, ZebraSet sset,
     /* move up all higher entries (to make room) */
     while (j != i)
     {
-        int k;
-        for (k = 0; k<num_criteria; k++)
+        for (int k = 0; k<num_criteria; k++)
         {
             char *j_buf = cmp_buf[k] + j * SORT_IDX_ENTRYSIZE;
             char *j_1_buf = cmp_buf[k] + (j-1) * SORT_IDX_ENTRYSIZE;
@@ -709,10 +697,9 @@ void resultSetInsertRank(ZebraHandle zh, struct zset_sort_info *sort_info,
                          zint sysno, int score, int relation)
 {
     struct zset_sort_entry *new_entry = NULL;
-    int i, j;
     assert(zh); /* compiler shut up about unused arg */
 
-    i = sort_info->num_entries;
+    int i = sort_info->num_entries;
     while (--i >= 0)
     {
         int rel = 0;
@@ -731,7 +718,7 @@ void resultSetInsertRank(ZebraHandle zh, struct zset_sort_info *sort_info,
         }
     }
     ++i;
-    j = sort_info->max_entries;
+    int j = sort_info->max_entries;
     if (i == j)
         return;
 
@@ -801,10 +788,7 @@ static Z_SortKeySpecList *copy_SortKeySpecList(Z_SortKeySpecList *src, NMEM nmem
 ZebraSet resultSetClone(ZebraHandle zh, const char *setname,
                         ZebraSet rset)
 {
-    ZebraSet nset;
-    int i;
-
-    nset = resultSetAdd(zh, setname, 1);
+    ZebraSet nset = resultSetAdd(zh, setname, 1);
     if (!nset)
         return 0;
 
@@ -813,7 +797,7 @@ ZebraSet resultSetClone(ZebraHandle zh, const char *setname,
     nset->num_bases = rset->num_bases;
     nset->basenames =
         nmem_malloc(nset->nmem, nset->num_bases * sizeof(*rset->basenames));
-    for (i = 0; i<rset->num_bases; i++)
+    for (int i = 0; i<rset->num_bases; i++)
         nset->basenames[i] = nmem_strdup(nset->nmem, rset->basenames[i]);
 
     if (rset->rset)
@@ -828,7 +812,6 @@ ZEBRA_RES resultSetSort(ZebraHandle zh, NMEM nmem,
                         const char *output_setname,
                         Z_SortKeySpecList *sort_sequence, int *sort_status)
 {
-    ZebraSet sset;
     RSET rset;
 
     if (num_input_setnames == 0)
@@ -845,7 +828,7 @@ ZEBRA_RES resultSetSort(ZebraHandle zh, NMEM nmem,
         loglevels();
     yaz_log(log_level_sort, "result set sort input=%s output=%s",
             *input_setnames, output_setname);
-    sset = resultSetGet(zh, input_setnames[0]);
+    ZebraSet sset = resultSetGet(zh, input_setnames[0]);
     if (!sset)
     {
         zebra_setError(zh, YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST,
@@ -879,10 +862,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     struct sortKeyInfo sort_criteria[ZSET_SORT_MAX_LEVEL];
     char *cmp_buf[ZSET_SORT_MAX_LEVEL];
     char *tmp_cmp_buf[ZSET_SORT_MAX_LEVEL];
-    int num_criteria;
-    RSFD rfd;
     TERMID termid;
-    TERMID *terms;
     int numTerms = 0;
     size_t sysno_mem_index = 0;
 
@@ -896,18 +876,17 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     sset->sort_info->num_entries = 0;
 
     rset_getterms(rset, 0, 0, &n);
-    terms = (TERMID *) nmem_malloc(nmem, sizeof(*terms)*n);
+    TERMID *terms = (TERMID *) nmem_malloc(nmem, sizeof(*terms)*n);
     rset_getterms(rset, terms, n, &numTerms);
 
     sset->hits = 0;
-    num_criteria = sort_sequence->num_specs;
+    int num_criteria = sort_sequence->num_specs;
     if (num_criteria > ZSET_SORT_MAX_LEVEL)
         num_criteria = ZSET_SORT_MAX_LEVEL;
     /* set up the search criteria */
     for (i = 0; i < num_criteria; i++)
     {
         Z_SortKeySpec *sks = sort_sequence->specs[i];
-        Z_SortKey *sk;
 
         sort_criteria[i].ord = (int *)
             nmem_malloc(nmem, sizeof(int)*numbases);
@@ -945,7 +924,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
             zebra_setError(zh, YAZ_BIB1_SORT_ILLEGAL_SORT, 0);
             return ZEBRA_FAIL;
         }
-        sk = sks->sortElement->u.generic;
+        Z_SortKey *sk = sks->sortElement->u.generic;
         switch (sk->which)
         {
         case Z_SortKey_sortField:
@@ -1010,7 +989,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
                              * SORT_IDX_ENTRYSIZE);
         tmp_cmp_buf[i] = xmalloc(SORT_IDX_ENTRYSIZE);
     }
-    rfd = rset_open(rset, RSETF_READ);
+    RSFD rfd = rset_open(rset, RSETF_READ);
     while (rset_read(rfd, &key, &termid))
     {
         zint this_sys = key.mem[sysno_mem_index];
@@ -1086,13 +1065,9 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 {
     struct it_key key;
     TERMID termid;
-    TERMID *terms;
     zint kno = 0;
     int numTerms = 0;
     int n = 0;
-    int i;
-    ZebraRankClass rank_class;
-    struct zset_sort_info *sort_info;
     const char *rank_handler_name = res_get_def(zh->res, "rank", "rank-1");
     size_t sysno_mem_index = 0;
 
@@ -1101,15 +1076,15 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 
     if (!log_level_set)
         loglevels();
-    sort_info = zebraSet->sort_info;
+    struct zset_sort_info *sort_info = zebraSet->sort_info;
     sort_info->num_entries = 0;
     zebraSet->hits = 0;
     zebraSet->estimated_hit_count = 0;
     rset_getterms(rset, 0, 0, &n);
-    terms = (TERMID *) nmem_malloc(nmem, sizeof(*terms)*n);
+    TERMID *terms = (TERMID *) nmem_malloc(nmem, sizeof(*terms)*n);
     rset_getterms(rset, terms, n, &numTerms);
 
-    rank_class = zebraRankLookup(zh, rank_handler_name);
+    ZebraRankClass rank_class = zebraRankLookup(zh, rank_handler_name);
     if (!rank_class)
     {
         yaz_log(YLOG_WARN, "No such rank handler: %s", rank_handler_name);
@@ -1178,7 +1153,7 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 
     yaz_log(log_level_searchterms, ZINT_FORMAT " keys, "
             ZINT_FORMAT " sysnos, rank",  kno, zebraSet->hits);
-    for (i = 0; i < numTerms; i++)
+    for (int i = 0; i < numTerms; i++)
     {
         yaz_log(log_level_searchterms, "term=\"%s\" type=%s count="
                 ZINT_FORMAT,
@@ -1232,8 +1207,7 @@ static int trav_rset_for_termids(RSET rset, TERMID *termid_array,
                                  zint *hits_array, int *approx_array)
 {
     int no = 0;
-    int i;
-    for (i = 0; i<rset->no_children; i++)
+    for (int i = 0; i<rset->no_children; i++)
         no += trav_rset_for_termids(rset->children[i],
                                     (termid_array ? termid_array + no : 0),
                                     (hits_array ? hits_array + no : 0),
@@ -1300,9 +1274,8 @@ ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
                 if (zh->iconv_from_utf8 != 0)
                 {
                     char *outbuf = termbuf;
-                    size_t ret;
 
-                    ret = yaz_iconv(zh->iconv_from_utf8, &inbuf, &inleft,
+                    size_t ret = yaz_iconv(zh->iconv_from_utf8, &inbuf, &inleft,
                                     &outbuf, &outleft);
                     if (ret == (size_t)(-1))
                         *termlen = 0;
@@ -1347,7 +1320,7 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
         struct rset_key_control *kc = zebra_key_control_create(zh);
         NMEM nmem = nmem_create();
         struct it_key key;
-        RSET rsets[2], rset_comb;
+        RSET rsets[2];
         RSET rset_temp = rset_create_temp(nmem, kc, kc->scope,
                                           res_get(zh->res, "setTmpDir"),0 );
 
@@ -1365,7 +1338,7 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
         rsets[0] = rset_temp;
         rsets[1] = rset_dup(sset->rset);
 
-        rset_comb = rset_create_and(nmem, kc, kc->scope, 2, rsets);
+        RSET rset_comb = rset_create_and(nmem, kc, kc->scope, 2, rsets);
 
         rsfd = rset_open(rset_comb, RSETF_READ);
 
@@ -1373,8 +1346,7 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
         {
             if (termid)
             {
-                struct ord_list *ol;
-                for (ol = termid->ol; ol; ol = ol->next)
+                for (struct ord_list *ol = termid->ol; ol; ol = ol->next)
                 {
                     zebra_snippets_append(snippets, key.mem[key.len-1], 0,
                                           ol->ord, termid->name);
@@ -1414,19 +1386,17 @@ static ZEBRA_RES zebra_recid_to_sysno(ZebraHandle zh,
             {
                 const char *index_type = "w";
                 const char *use_string = "_ALLRECORDS";
-                int ord;
                 zinfo_index_category_t cat = zinfo_index_category_alwaysmatches;
-                ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat,
+                int ord = zebraExplain_lookup_attr_str(zh->reg->zei, cat,
                                                    index_type, use_string);
                 if (ord != -1)
                 {
                     char ord_buf[32];
                     int ord_len = key_SU_encode(ord, ord_buf);
-                    char *info;
 
                     ord_buf[ord_len] = '\0';
 
-                    info = dict_lookup(zh->reg->dict, ord_buf);
+                    char *info = dict_lookup(zh->reg->dict, ord_buf);
                     if (info)
                     {
                         if (*info != sizeof(ISAM_P))
@@ -1436,14 +1406,12 @@ static ZEBRA_RES zebra_recid_to_sysno(ZebraHandle zh,
                         else
                         {
                             ISAM_P isam_p;
-                            ISAMB_PP pt;
                             struct it_key key_until, key_found;
                             int i = 0;
-                            int r;
 
                             memcpy(&isam_p, info+1, sizeof(ISAM_P));
 
-                            pt = isamb_pp_open(zh->reg->isamb, isam_p, 2);
+                            ISAMB_PP pt = isamb_pp_open(zh->reg->isamb, isam_p, 2);
                             if (!pt)
                                 res = ZEBRA_FAIL;
                             else
@@ -1455,7 +1423,7 @@ static ZEBRA_RES zebra_recid_to_sysno(ZebraHandle zh,
                                 key_until.mem[i++] = 0;
                                 key_until.len = i;
 
-                                r = isamb_pp_forward(pt, &key_found, &key_until);
+                                int r = isamb_pp_forward(pt, &key_found, &key_until);
                                 while (r && key_found.mem[0] == recid)
                                 {
                                     if (sysnos_offset < *no_sysnos)
@@ -1482,9 +1450,8 @@ ZEBRA_RES zebra_result_recid_to_sysno(ZebraHandle zh,
 {
     const char **basenames;
     int num_bases;
-    ZEBRA_RES res;
 
-    res = resultSetGetBaseNames(zh, setname, &basenames, &num_bases);
+    ZEBRA_RES res = resultSetGetBaseNames(zh, setname, &basenames, &num_bases);
     if (res != ZEBRA_OK)
         return ZEBRA_FAIL;
 
@@ -1497,14 +1464,13 @@ void zebra_count_set(ZebraHandle zh, RSET rset, zint *count,
 {
     zint psysno = 0;
     struct it_key key;
-    RSFD rfd;
 
     yaz_log(YLOG_DEBUG, "count_set");
 
     rset->hits_limit = approx_limit;
 
     *count = 0;
-    rfd = rset_open(rset, RSETF_READ);
+    RSFD rfd = rset_open(rset, RSETF_READ);
     while (rset_read(rfd, &key,0 /* never mind terms */))
     {
         if (key.mem[0] != psysno)

@@ -54,13 +54,12 @@ RSET rset_create_null(NMEM nmem, struct rset_key_control *kcontrol,
 
 static RSFD r_open(RSET ct, int flag)
 {
-    RSFD rfd;
     if (flag & RSETF_WRITE)
     {
         yaz_log (YLOG_FATAL, "NULL set type is read-only");
         return NULL;
     }
-    rfd = rfd_create_base(ct);
+    RSFD rfd = rfd_create_base(ct);
     rfd->priv = 0;
     return rfd;
 }

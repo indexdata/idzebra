@@ -96,9 +96,7 @@ struct ranksimilarity_set_info {
 /* local clean-up function */
 static void  ranksimilar_rec_reset(struct ranksimilarity_set_info *si)
 {
-  int i;
-
-  for (i = 0; i < si->no_terms_query; i++)
+  for (int i = 0; i < si->no_terms_query; i++)
     {
       si->entries[i].freq_term_docfield = 0;
     }
@@ -148,7 +146,6 @@ static void *begin (struct zebra_register *reg,
 {
   struct ranksimilarity_set_info *si =
     (struct ranksimilarity_set_info *) nmem_malloc (nmem, sizeof(*si));
-  int i;
 
   yaz_log(log_level, "begin() numterms=%d", numterms);
 
@@ -170,7 +167,7 @@ static void *begin (struct zebra_register *reg,
 
 
   /* looping all terms in a specific fieldindex of query */
-  for (i = 0; i < numterms; i++)
+  for (int i = 0; i < numterms; i++)
     {
       struct ord_list *ol = NULL;
 
@@ -282,7 +279,6 @@ static void add (void *set_handle, int seqno, TERMID term)
 {
   struct ranksimilarity_set_info *si
     = (struct ranksimilarity_set_info *) set_handle;
-  struct ranksimilarity_term_info *ti;
   assert(si);
   if (!term)
     {
@@ -290,7 +286,7 @@ static void add (void *set_handle, int seqno, TERMID term)
       return;
     }
 
-  ti= (struct ranksimilarity_term_info *) term->rankpriv;
+  struct ranksimilarity_term_info *ti= (struct ranksimilarity_term_info *) term->rankpriv;
   assert(ti);
   si->last_pos = seqno;
   ti->freq_term_docfield++;
@@ -307,7 +303,7 @@ static void add (void *set_handle, int seqno, TERMID term)
 static int calc (void *set_handle, zint sysno, zint staticrank,
                  int *stop_flag)
 {
-  int i, score = 0;
+  int score = 0;
   struct ranksimilarity_set_info *si
     = (struct ranksimilarity_set_info *) set_handle;
 
@@ -334,7 +330,7 @@ static int calc (void *set_handle, zint sysno, zint staticrank,
 
   /* here goes your formula to compute a scoring function */
   /* you may use all the gathered statistics here */
-  for (i = 0; i < si->no_terms_query; i++)
+  for (int i = 0; i < si->no_terms_query; i++)
     {
       yaz_log(log_level, "calc() entries[%d] termid %p",
               i, si->entries[i].term);

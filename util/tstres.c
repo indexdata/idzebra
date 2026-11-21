@@ -61,15 +61,13 @@ static void tst_res_read_file(void)
     }
     if (res)
     {
-        const char *v;
         char path[1024];
-        int r;
 
         yaz_snprintf(path, sizeof(path), "%s/tstres.cfg", get_srcdir());
-        r = res_read_file(res, path);
+        int r = res_read_file(res, path);
         YAZ_CHECK_EQ(r, ZEBRA_OK);
 
-        v = res_get_def(res, "register", "none");
+        const char *v = res_get_def(res, "register", "none");
         YAZ_CHECK(!strcmp(v, "a:b"));
 
         v = res_get_def(res, "name", "none");

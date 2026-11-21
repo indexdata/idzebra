@@ -75,14 +75,12 @@ static int get_entry (const char **p, char *dst, int max)
 static int passwd_db_file_int(Passwd_db db, const char *fname,
                               int encrypt_flag)
 {
-    FILE *f;
     char buf[1024];
-    f = fopen (fname, "r");
+    FILE *f = fopen (fname, "r");
     if (!f)
         return -1;
     while (fgets (buf, sizeof(buf)-1, f))
     {
-        struct passwd_entry *pe;
         char name[128];
         char des[128];
         char *p;
@@ -92,7 +90,7 @@ static int passwd_db_file_int(Passwd_db db, const char *fname,
         get_entry (&cp, name, 128);
         get_entry (&cp, des, 128);
 
-        pe = (struct passwd_entry *) xmalloc (sizeof(*pe));
+        struct passwd_entry *pe = (struct passwd_entry *) xmalloc (sizeof(*pe));
         pe->name = xstrdup (name);
         pe->des = xstrdup (des);
         pe->encrypt_flag = encrypt_flag;
@@ -120,8 +118,7 @@ void passwd_db_close(Passwd_db db)
 
 void passwd_db_show(Passwd_db db)
 {
-    struct passwd_entry *pe;
-    for (pe = db->entries; pe; pe = pe->next)
+    for (struct passwd_entry *pe = db->entries; pe; pe = pe->next)
         yaz_log (YLOG_LOG,"%s:%s", pe->name, pe->des);
 }
 
@@ -140,7 +137,6 @@ int passwd_db_auth(Passwd_db db, const char *user, const char *pass)
     if (pe->encrypt_flag)
     {
 #if HAVE_CRYPT_H
-        const char *des_try;
         assert(pe->des);
         if (strlen (pe->des) < 3)
             return -3;
@@ -150,7 +146,7 @@ int passwd_db_auth(Passwd_db db, const char *user, const char *pass)
             if (strlen(pass) > 8) /* maximum key length is 8 */
                 return -2;
         }
-        des_try = crypt (pass, pe->des);
+        const char *des_try = crypt (pass, pe->des);
 
         assert(des_try);
         if (strcmp (des_try, pe->des))

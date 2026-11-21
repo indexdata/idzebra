@@ -44,9 +44,8 @@ ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             size_t inleft = term->u.general->len;
             char *outbuf = termz;
             size_t outleft = IT_MAX_WORD-1;
-            size_t ret;
 
-            ret = yaz_iconv(zh->iconv_to_utf8, &inbuf, &inleft,
+            size_t ret = yaz_iconv(zh->iconv_to_utf8, &inbuf, &inleft,
                         &outbuf, &outleft);
             if (ret == (size_t)(-1))
             {

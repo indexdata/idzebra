@@ -24,7 +24,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static void tst(int argc, char **argv)
 {
-    int i;
     ZebraService zs = tl_start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs, 0);
     char path[FILENAME_MAX];
@@ -38,7 +37,7 @@ static void tst(int argc, char **argv)
     zebra_set_resource(zh, "recordType", "grs.xml");
 
     YAZ_CHECK(zebra_begin_trans(zh, 1) == ZEBRA_OK);
-    for (i = 1; i <= 2; i++)
+    for (int i = 1; i <= 2; i++)
     {
         yaz_snprintf(path, sizeof(path), "%s/rec%d.xml", tl_get_srcdir(), i);
         zebra_repository_update(zh, path);

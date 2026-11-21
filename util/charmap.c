@@ -123,11 +123,9 @@ static chr_t_entry *set_map_string(chr_t_entry *root, NMEM nmem,
     {
         if (!root->children)
         {
-            int i;
-
             root->children = (chr_t_entry **)
                 nmem_malloc(nmem, sizeof(chr_t_entry*) * 256);
-            for (i = 0; i < 256; i++)
+            for (int i = 0; i < 256; i++)
                 root->children[i] = 0;
         }
         if (!(root->children[(unsigned char) *from] =
@@ -395,13 +393,12 @@ static int scan_to_utf8(yaz_iconv_t t, ucs4_t *from, size_t inlen,
 {
     size_t inbytesleft = inlen * sizeof(ucs4_t);
     char *inbuf = (char*) from;
-    size_t ret;
 
     if (t == 0)
         *outbuf++ = *from;  /* ISO-8859-1 is OK here */
     else
     {
-        ret = yaz_iconv(t, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+        size_t ret = yaz_iconv(t, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
         if (ret != (size_t) (-1))
             ret = yaz_iconv(t, 0, 0, &outbuf, &outbytesleft);
 
@@ -437,8 +434,7 @@ static int scan_string(char *s_native,
         char *inbuf = s_native;
         size_t outbytesleft = sizeof(arg)-4;
         size_t inbytesleft = strlen(s_native);
-        size_t ret;
-        ret = yaz_iconv(t_unicode, &inbuf, &inbytesleft,
+        size_t ret = yaz_iconv(t_unicode, &inbuf, &inbytesleft,
                         &outbuf, &outbytesleft);
         if (ret != (size_t)(-1))
             ret = yaz_iconv(t_unicode, 0, 0, &outbuf, &outbytesleft);
@@ -515,12 +511,10 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
 {
     FILE *f;
     char line[512], *argv[50];
-    chrmaptab res;
     int lineno = 0;
     int no_directives = 0;
     int errors = 0;
     int argc, num = (int) *CHR_BASE, i;
-    NMEM nmem;
     yaz_iconv_t t_unicode = 0;
     yaz_iconv_t t_utf8 = 0;
     unsigned endian = 31;
@@ -538,8 +532,8 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
 
     t_utf8 = yaz_iconv_open("UTF-8", ucs4_native);
 
-    nmem = nmem_create();
-    res = (chrmaptab) nmem_malloc(nmem, sizeof(*res));
+    NMEM nmem = nmem_create();
+    chrmaptab res = (chrmaptab) nmem_malloc(nmem, sizeof(*res));
     res->nmem = nmem;
     res->input = (chr_t_entry *) nmem_malloc(res->nmem, sizeof(*res->input));
     res->input->target = (unsigned char **)
@@ -685,13 +679,12 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name,
             }
             else
             {
-                char *result_str;
                 int i, slen = 5;
 
                 /* determine length of regular expression */
                 for (i = 0; i<w.no_eq; i++)
                     slen += strlen(w.eq[i]) + 1;
-                result_str = nmem_malloc(res->nmem, slen + 5);
+                char *result_str = nmem_malloc(res->nmem, slen + 5);
 
                 /* build the regular expression */
                 *result_str = '\0';

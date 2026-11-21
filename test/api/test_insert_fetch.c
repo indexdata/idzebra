@@ -61,7 +61,6 @@ static void tst(int argc, char **argv)
 
     for (i = 0; i<2; i++)
     {
-        ZEBRA_RES ret;
         ZebraRetrievalRecord retrievalRecord[NUMBER_TO_FETCH_MAX];
         char setname[20];
         int j;
@@ -72,7 +71,7 @@ static void tst(int argc, char **argv)
         zint hits;
 
         yaz_snprintf(setname, sizeof(setname), "s%d", i+1);
-        ret = zebra_search_RPN(zh, odr_input, query, setname, &hits);
+        ZEBRA_RES ret = zebra_search_RPN(zh, odr_input, query, setname, &hits);
         if (ret != ZEBRA_OK)
         {
             int code = zebra_errCode(zh);

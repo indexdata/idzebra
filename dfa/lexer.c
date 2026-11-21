@@ -99,12 +99,11 @@ static int lexer_options (int argc, char **argv)
 
 int main (int argc, char **argv)
 {
-    int i, no = 0;
-    struct DFA *dfa;
+    int no = 0;
 
     prog = *argv;
-    dfa = dfa_init ();
-    i = lexer_options (argc, argv);
+    struct DFA *dfa = dfa_init ();
+    int i = lexer_options (argc, argv);
     if (i)
         return i;
 

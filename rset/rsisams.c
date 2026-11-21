@@ -59,8 +59,8 @@ RSET rsisams_create(NMEM nmem, struct rset_key_control *kcontrol,
                     ISAMS is, ISAM_P pos, TERMID term)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term, 0, 0);
-    struct rset_private *info;
-    info = (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
+    struct rset_private *info =
+        (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
     rnew->priv = info;
     info->is = is;
     info->pos = pos;
@@ -75,7 +75,6 @@ static void r_delete (RSET ct)
 RSFD r_open (RSET ct, int flag)
 {
     struct rset_private *info = (struct rset_private *) ct->priv;
-    RSFD rfd;
     struct rfd_private *ptinfo;
 
     yaz_log (YLOG_DEBUG, "risams_open");
@@ -84,7 +83,7 @@ RSFD r_open (RSET ct, int flag)
         yaz_log (YLOG_FATAL, "ISAMS set type is read-only");
         return NULL;
     }
-    rfd = rfd_create_base(ct);
+    RSFD rfd = rfd_create_base(ct);
     if (rfd->priv)
         ptinfo = (struct rfd_private *)(rfd->priv);
     else {

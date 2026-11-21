@@ -174,7 +174,6 @@ data1_node *data1_insert_node(data1_handle dh, NMEM m, int type,
 data1_node *data1_mk_root(data1_handle dh, NMEM nmem, const char *name)
 {
     data1_absyn *absyn = data1_get_absyn(dh, name, 1);
-    data1_node *res;
 
     if (!absyn)
     {
@@ -182,7 +181,7 @@ data1_node *data1_mk_root(data1_handle dh, NMEM nmem, const char *name)
                 name);
         /* It's now OK for a record not to have an absyn */
     }
-    res = data1_mk_node2(dh, nmem, DATA1N_root, 0);
+    data1_node *res = data1_mk_node2(dh, nmem, DATA1N_root, 0);
     res->u.root.type = data1_insert_string(dh, res, nmem, name);
     res->u.root.absyn = absyn;
     return res;
@@ -482,9 +481,7 @@ data1_node *data1_mk_tag_data_zint(data1_handle dh, data1_node *at,
                                    const char *tag, zint num,
                                    NMEM nmem)
 {
-    data1_node *node_data;
-
-    node_data = data1_mk_tag_data(dh, at, tag, nmem);
+    data1_node *node_data = data1_mk_tag_data(dh, at, tag, nmem);
     if (!node_data)
         return 0;
     data1_set_data_zint(dh, node_data, nmem, num);
@@ -502,15 +499,13 @@ data1_node *data1_mk_tag_data_oid(data1_handle dh, data1_node *at,
                                   const char *tag, Odr_oid *oid,
                                   NMEM nmem)
 {
-    data1_node *node_data;
     char str[128], *p = str;
-    size_t i;
 
-    node_data = data1_mk_tag_data(dh, at, tag, nmem);
+    data1_node *node_data = data1_mk_tag_data(dh, at, tag, nmem);
     if (!node_data)
         return 0;
 
-    for (i = 0; i < 14 && oid[i] >= 0; i++)
+    for (size_t i = 0; i < 14 && oid[i] >= 0; i++)
     {
         if (i > 0)
             *p++ = '.';
@@ -634,20 +629,18 @@ data1_node *data1_read_nodex(data1_handle dh, NMEM m,
 {
     data1_node *d1_stack[256];
     data1_node *res;
-    int c, amp;
+    int amp;
     int level = 0;
     int line = 1;
 
     d1_stack[level] = 0;
-    c = ampr(get_byte, fh, &amp);
+    int c = ampr(get_byte, fh, &amp);
     while (c != '\0')
     {
         data1_node *parent = level ? d1_stack[level-1] : 0;
 
         if (amp == 0 && c == '<') /* beginning of tag */
         {
-            data1_xattr *xattr;
-
             char tag[256];
             int null_tag = 0;
             int end_tag = 0;
@@ -688,11 +681,11 @@ data1_node *data1_read_nodex(data1_handle dh, NMEM m,
             }
             else if (amp == 0 && c == '!')
             {
-                int c0, amp0;
+                int amp0;
 
                 wrbuf_rewind(wrbuf);
 
-                c0 = ampr(get_byte, fh, &amp0);
+                int c0 = ampr(get_byte, fh, &amp0);
                 if (amp0 == 0 && c0 == '\0')
                     break;
                 c = ampr(get_byte, fh, &amp);
@@ -752,7 +745,7 @@ data1_node *data1_read_nodex(data1_handle dh, NMEM m,
                 c = ampr(get_byte, fh, &amp);
             }
             tag[i] = '\0';
-            xattr = data1_read_xattr(dh, m, get_byte, fh, wrbuf, &c, &amp);
+            data1_xattr *xattr = data1_read_xattr(dh, m, get_byte, fh, wrbuf, &c, &amp);
             if (amp == 0 && c == '/')
             {    /* <tag attrs/> or <tag/> */
                 null_tag = 1;
@@ -838,8 +831,7 @@ data1_node *data1_read_nodex(data1_handle dh, NMEM m,
                      * now determine if one of our ancestor triples is of
                      * same type. If so, we break here.
                      */
-                    int i;
-                    for (i = level-1; d1_stack[i]->which==DATA1N_variant; --i)
+                    for (int i = level-1; d1_stack[i]->which==DATA1N_variant; --i)
                         if (d1_stack[i]->u.variant.type == tp)
                         {
                             level = i;
@@ -880,8 +872,6 @@ data1_node *data1_read_nodex(data1_handle dh, NMEM m,
         }
         else /* != '<'... this is a body of text */
         {
-            int len;
-
             if (level == 0)
             {
                 c = ampr(get_byte, fh, &amp);
@@ -899,7 +889,7 @@ data1_node *data1_read_nodex(data1_handle dh, NMEM m,
                 wrbuf_putc(wrbuf, c);
                 c = ampr(get_byte, fh, &amp);
             }
-            len = wrbuf_len(wrbuf);
+            int len = wrbuf_len(wrbuf);
 
             /* use local buffer of nmem if too large */
             if (len >= DATA1_LOCALDATA)
@@ -928,9 +918,8 @@ int getc_mem(void *fh)
 data1_node *data1_read_node(data1_handle dh, const char **buf, NMEM m)
 {
     WRBUF wrbuf = wrbuf_alloc();
-    data1_node *node;
 
-    node = data1_read_nodex(dh, m, getc_mem, (void *) (buf), wrbuf);
+    data1_node *node = data1_read_nodex(dh, m, getc_mem, (void *) (buf), wrbuf);
     wrbuf_destroy(wrbuf);
     return node;
 }
@@ -1010,8 +999,7 @@ static void data1_iconv_s(data1_handle dh, NMEM m, data1_node *n,
             }
             if (n->u.tag.attributes)
             {
-                data1_xattr *p;
-                for (p = n->u.tag.attributes; p; p = p->next)
+                for (data1_xattr *p = n->u.tag.attributes; p; p = p->next)
                 {
                     if (p->value &&
                         conv_item(m, t, wrbuf, p->value, strlen(p->value))
@@ -1113,11 +1101,10 @@ void data1_concat_text(data1_handle dh, NMEM m, data1_node *n)
         {
             int sz = 0;
             int off = 0;
-            char *ndata;
             data1_node *np;
             for (np = n; np && np->which == DATA1N_data; np=np->next)
                 sz += np->u.data.len;
-            ndata = nmem_malloc(m, sz);
+            char *ndata = nmem_malloc(m, sz);
             for (np = n; np && np->which == DATA1N_data; np=np->next)
             {
                 memcpy(ndata+off, np->u.data.data, np->u.data.len);

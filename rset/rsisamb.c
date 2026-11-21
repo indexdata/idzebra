@@ -80,14 +80,14 @@ RSET rsisamb_create(NMEM nmem, struct rset_key_control *kcontrol,
     RSET rnew = rset_create_base(
         kcontrol->filter_func ? &control_filter : &control,
         nmem, kcontrol, scope, term, 0, 0);
-    struct rset_private *info;
     assert(pos);
     if (!log_level_initialized)
     {
         log_level = yaz_log_module_level("rsisamb");
         log_level_initialized = 1;
     }
-    info = (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
+    struct rset_private *info =
+        (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
     info->is = is;
     info->pos = pos;
     rnew->priv = info;
@@ -103,7 +103,6 @@ static void r_delete(RSET ct)
 RSFD r_open(RSET ct, int flag)
 {
     struct rset_private *info = (struct rset_private *) ct->priv;
-    RSFD rfd;
     struct rfd_private *ptinfo;
 
     if (flag & RSETF_WRITE)
@@ -111,7 +110,7 @@ RSFD r_open(RSET ct, int flag)
         yaz_log(YLOG_FATAL, "ISAMB set type is read-only");
         return NULL;
     }
-    rfd = rfd_create_base(ct);
+    RSFD rfd = rfd_create_base(ct);
     if (rfd->priv)
         ptinfo = (struct rfd_private *) (rfd->priv);
     else {
@@ -135,8 +134,7 @@ static void r_close(RSFD rfd)
 static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
 {
     struct rfd_private *pinfo = (struct rfd_private *)(rfd->priv);
-    int rc;
-    rc = isamb_pp_forward(pinfo->pt, buf, untilbuf);
+    int rc = isamb_pp_forward(pinfo->pt, buf, untilbuf);
     if (rc && term)
         *term = rfd->rset->term;
     yaz_log(log_level, "rsisamb_forward");
@@ -155,8 +153,7 @@ static void r_pos(RSFD rfd, double *current, double *total)
 static int r_read(RSFD rfd, void *buf, TERMID *term)
 {
     struct rfd_private *pinfo = (struct rfd_private *)(rfd->priv);
-    int rc;
-    rc = isamb_pp_read(pinfo->pt, buf);
+    int rc = isamb_pp_read(pinfo->pt, buf);
     if (rc && term)
         *term = rfd->rset->term;
     yaz_log(log_level, "isamb.r_read ");

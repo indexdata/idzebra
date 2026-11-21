@@ -45,14 +45,10 @@ void attr_init_AttrList(AttrType *src, Z_AttributeList *list, int type)
 int attr_find_ex(AttrType *src, const Odr_oid **attribute_set_oid,
                  const char **string_value)
 {
-    int num_attributes;
-
-    num_attributes = src->num_attributes;
+    int num_attributes = src->num_attributes;
     while (src->major < num_attributes)
     {
-        Z_AttributeElement *element;
-
-        element = src->attributeList[src->major];
+        Z_AttributeElement *element = src->attributeList[src->major];
         if (src->type == *element->attributeType)
         {
             switch (element->which)
