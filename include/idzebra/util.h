@@ -50,7 +50,7 @@ YAZ_BEGIN_CDECL
  * number of occurrences etc. It is a "large" integer and is usually
  * 64-bit on newer architectures.
  */
-#ifdef WIN32
+#ifdef _WIN32
 typedef __int64 zint;
 #define ZINT_FORMAT0 "I64d"
 #else

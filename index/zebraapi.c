@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <assert.h>
 #include <stdio.h>
 #include <limits.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #include <process.h>
 #include <direct.h>
@@ -75,7 +75,7 @@ static int zebra_chdir(ZebraService zs)
     if (!dir)
         return 0;
     yaz_log(YLOG_DEBUG, "chdir %s", dir);
-#ifdef WIN32
+#ifdef _WIN32
     r = _chdir(dir);
 #else
     r = chdir(dir);

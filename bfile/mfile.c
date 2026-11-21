@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 #include <sys/types.h>
 #include <fcntl.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #endif
 #if HAVE_UNISTD_H
@@ -438,7 +438,7 @@ int mf_close(MFile mf)
     {
         if (mf->files[i].fd >= 0)
         {
-#ifndef WIN32
+#ifndef _WIN32
             if (mf->wr)
                 fsync(mf->files[i].fd);
 #endif

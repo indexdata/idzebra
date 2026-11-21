@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #include <process.h>
 #include <sys/locking.h>
@@ -809,7 +809,7 @@ static void bend_start(struct statserv_options_block *sob)
         yaz_log(YLOG_FATAL, "Failed to read config `%s'", sob->configname);
         exit(1);
     }
-#ifdef WIN32
+#ifdef _WIN32
 
 #else
     if (!sob->inetd && !sob->background)
@@ -860,7 +860,7 @@ static void bend_start(struct statserv_options_block *sob)
 
 static void bend_stop(struct statserv_options_block *sob)
 {
-#ifdef WIN32
+#ifdef _WIN32
 
 #else
     if (!sob->inetd && !sob->background && sob->handle)
@@ -886,7 +886,7 @@ int main(int argc, char **argv)
     strcpy(sob->configname, "zebra.cfg");
     sob->bend_start = bend_start;
     sob->bend_stop = bend_stop;
-#ifdef WIN32
+#ifdef _WIN32
     strcpy(sob->service_name, "zebrasrv");
     strcpy(sob->service_display_name, "Zebra Server");
 #endif
