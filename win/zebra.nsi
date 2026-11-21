@@ -78,7 +78,8 @@ Section "Zebra Runtime"
 	SectionIn 1 2
 	SetOutPath $INSTDIR\bin
 	!insertmacro InstallVSRedist
-	File ..\bin\*.exe
+	File ..\bin\zebraidx.exe
+	File ..\bin\zebrasrv.exe
 	File ..\bin\*.dll
 SectionEnd
 
@@ -147,6 +148,8 @@ Section "Zebra Source"
 	File ..\test\api\*.cfg
 	SetOutPath $INSTDIR\win
 	File makefile
+	File tests.mak
+	File run-tests.tcl
 	File *.nsi
 	File *.txt
 	SetOutPath $INSTDIR\m4

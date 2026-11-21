@@ -30,10 +30,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <stdlib.h>
 #include <yaz/log.h>
 #include <yaz/test.h>
-#include <fcntl.h>
 #if YAZ_POSIX_THREADS
+#include <fcntl.h>
 #include <pthread.h>
-#endif
 
 int fd;
 
@@ -78,10 +77,8 @@ void tst(void)
         return;
     }
 
-#if YAZ_POSIX_THREADS
     pthread_create(&child_thread, 0 /* attr */, run_func, 0);
     pthread_join(child_thread, 0);
-#endif
     yaz_log(YLOG_LOG, "fcntl lock scope: %s", scope);
 }
 
@@ -93,6 +90,12 @@ int main(int argc, char **argv)
     YAZ_CHECK_TERM;
     return 0;
 }
+#else
+int main(void)
+{
+    return 77; /* Requires POSIX threads and fcntl locks. */
+}
+#endif
 
 /*
  * Local variables:

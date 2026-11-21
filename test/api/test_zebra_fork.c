@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
+
+#ifndef _WIN32
 #if HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -142,6 +144,12 @@ static void tst(int argc, char **argv)
 }
 
 TL_MAIN
+#else
+int main(void)
+{
+    return 77; /* Requires fork and waitpid. */
+}
+#endif
 /*
  * Local variables:
  * c-basic-offset: 4

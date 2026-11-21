@@ -128,7 +128,7 @@ jobs:
             dll yazicu iconv icu libxml2 libxslt
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Build idzebra with NMAKE
+      - name: Build and test idzebra with NMAKE
         working-directory: idzebra/win
         run: |
           $prefix = $env:VCPKG_PREFIX
@@ -136,8 +136,12 @@ jobs:
             HAVE_LIBXML2=1 HAVE_LIBXSLT=1 HAVE_ICU=1 HAVE_EXPAT=1 `
             "LIBXML2_DIR=$prefix" "LIBXSLT_DIR=$prefix" `
             "ICU_BASE=$prefix" "ICU_VER=$env:ICU_VERSION" `
-            "EXPAT_DIR=$prefix" "BZIP2_DIR=$prefix" all
+            "EXPAT_DIR=$prefix" "BZIP2_DIR=$prefix" check |
+            Tee-Object -FilePath nmake-check.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (!(Select-String -Path nmake-check.log -Pattern '^Tests: [1-9][0-9]*, passed: [1-9][0-9]*, skipped: [0-9]+, failed: 0$' -Quiet)) {
+            throw 'NMAKE completed without a successful test-suite summary'
+          }
 
       - name: Check that zebraidx loads
         working-directory: idzebra

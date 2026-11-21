@@ -25,10 +25,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#include <direct.h>
+#endif
 
 #include <yaz/snprintf.h>
 #include <yaz/test.h>
 #include <idzebra/bfile.h>
+
+static int make_directory(const char *path)
+{
+#ifdef _WIN32
+    return _mkdir(path);
+#else
+    return mkdir(path, 0777);
+#endif
+}
 
 void tst(void)
 {
@@ -42,10 +54,10 @@ void tst(void)
 
     YAZ_CHECK(max_block * block_size < 4 * 1000000); /* 4M */
 
-    int r = mkdir("register", 0777);
+    int r = make_directory("register");
     YAZ_CHECK(r == 0 || (r == -1 && errno == EEXIST));
 
-    r = mkdir("shadow", 0777);
+    r = make_directory("shadow");
     YAZ_CHECK(r == 0 || (r == -1 && errno == EEXIST));
 
     BFiles bfs = bfs_create("register.bad:4M", 0 /* base: current dir */);
