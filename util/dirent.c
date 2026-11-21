@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <ctype.h>
 #include <assert.h>
 #ifdef _WIN32
+#include <errno.h>
 #include <io.h>
 #endif
 #include <string.h>
@@ -43,6 +44,12 @@ struct DIR {
 DIR *opendir (const char *name)
 {
     char fullName[MAX_PATH+1];
+    if (strlen(name) > sizeof(fullName) - sizeof("\\*.*"))
+    {
+        errno = ENAMETOOLONG;
+        return NULL;
+    }
+
     DIR *dd = malloc (sizeof(*dd));
 
     if (!dd)
@@ -50,6 +57,26 @@ DIR *opendir (const char *name)
     strcpy (fullName, name);
     strcat (fullName, "\\*.*");
     dd->handle = FindFirstFile(fullName, &dd->find_data);
+    if (dd->handle == INVALID_HANDLE_VALUE)
+    {
+        DWORD error = GetLastError();
+        if (error == ERROR_FILE_NOT_FOUND)
+        {
+            /* An existing directory may have no matching entries. */
+            DWORD attrs = GetFileAttributes(name);
+            if (attrs != INVALID_FILE_ATTRIBUTES &&
+                (attrs & FILE_ATTRIBUTE_DIRECTORY))
+                return dd;
+        }
+        free(dd);
+        if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND)
+            errno = ENOENT;
+        else if (error == ERROR_ACCESS_DENIED)
+            errno = EACCES;
+        else
+            errno = EIO;
+        return NULL;
+    }
     return dd;
 }
 

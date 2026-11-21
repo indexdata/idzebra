@@ -87,6 +87,7 @@ OBJDIR=$(WINDIR)\dobj       # where we store intermediate files
 !else
 OBJDIR=$(WINDIR)\obj        # where we store intermediate files
 !endif
+TESTBINDIR=$(OBJDIR)\tests
 UNIXDIR=$(ROOTDIR)\unix     # corresponding unix things
 SRCDIR=$(ROOTDIR)           # for the case we move them under src
 
@@ -580,6 +581,8 @@ $(DLL) $(IMPLIB): "$(BINDIR)" $(ZEBRALIB_OBJS) $(RES)
 clean:
 	-del $(OBJDIR)\*.obj
 	-del $(OBJDIR)\*.sbr
+	-del $(OBJDIR)\zebra_test.lib
+	-if exist "$(TESTBINDIR)" rmdir /s /q "$(TESTBINDIR)"
 	-del $(BINDIR)\*.exe
 	-del $(BINDIR)\*.dll
 	-del $(TMPDIR)\*.
@@ -595,4 +598,4 @@ yaz: $(YAZ_DLL_TARGET)
 $(YAZ_DLL_TARGET) : $(YAZ_DLL_SOURCE)
 	copy "$(YAZBINDIR)\*.dll" $(BINDIR)
 
-
+!include "$(WINDIR)\tests.mak"

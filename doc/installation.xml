@@ -451,6 +451,11 @@
     </para>
    </note>
    <para>
+    Run <literal>nmake check</literal> from the <filename>win</filename>
+    directory with the same makefile settings to build and run the C tests.
+    The test runner requires Tcl and reports the result of each test.
+   </para>
+   <para>
     If you wish to recompile &zebra; - for example if you modify
     settings in the <filename>makefile</filename> you can delete
     object files, etc by running.

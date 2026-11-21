@@ -50,7 +50,7 @@ ZebraHandle index_some(ZebraService zs,
 
     YAZ_CHECK(zebra_select_database(zh, "Default") == ZEBRA_OK);
 
-    zebra_init(zh);
+    YAZ_CHECK_EQ(zebra_init(zh), ZEBRA_OK);
 
     index_more(zh, filter, file);
     return zh;
@@ -115,6 +115,7 @@ void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224466", 0));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 11224467", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=control 73090924", 0));
+    zebra_close(zh);
 
     /* testing XMLREADER input with type attributes (insert,delete,..) */
     zh = index_some(zs, "dom.dom-config-del.xml", "del-col.xml");
@@ -123,6 +124,7 @@ void tst(int argc, char **argv)
     YAZ_CHECK(tl_query(zh, "@attr 1=title 2", 0));
     YAZ_CHECK(tl_query(zh, "@attr 1=title 3", 1));
     YAZ_CHECK(tl_query(zh, "@attr 1=title b", 1));
+    zebra_close(zh);
 
     zh = index_some(zs, "dom.gutenberg.xml", "gutenberg-sample.xml");
     YAZ_CHECK(tl_query(zh, "oscar", 1));
