@@ -1,0 +1,146 @@
+name: Build idzebra on Windows
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: Build YAZ and idzebra (VS ${{ matrix.vs }}, x64)
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - vs: '2022'
+            vs-major: '17'
+            os: windows-2022
+          - vs: '2026'
+            vs-major: '18'
+            os: windows-2025-vs2026
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: idzebra
+          fetch-depth: 1
+          submodules: recursive
+
+      - name: Checkout YAZ
+        uses: actions/checkout@v6
+        with:
+          repository: IndexData/yaz
+          ref: master
+          path: yaz
+          fetch-depth: 1
+          submodules: recursive
+
+      - name: Set up build tools
+        run: |
+          choco install winflexbison3 --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # Locate the Tcl interpreter bundled with Git for Windows.
+          $gitExecPath = git --exec-path
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $gitRuntime = Split-Path (Split-Path $gitExecPath -Parent) -Parent
+          $tclBin = Join-Path $gitRuntime 'bin'
+          $tcl = Get-ChildItem -LiteralPath $tclBin -Filter 'tclsh*.exe' -File |
+            Sort-Object Name | Select-Object -First 1
+          if (!$tcl) {
+            throw "Git for Windows Tcl interpreter not found in $tclBin"
+          }
+          'puts [info patchlevel]; exit 0' | & $tcl.FullName
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $tclBin >> $env:GITHUB_PATH
+          "TCLSH=$($tcl.Name)" >> $env:GITHUB_ENV
+
+      - name: Set up MSVC x64
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+          # Discover the latest installation: vsversion caps minor versions at 9.
+
+      - name: Verify MSVC version and architecture
+        env:
+          EXPECTED_VS_MAJOR: ${{ matrix.vs-major }}
+        run: |
+          if (!$env:VisualStudioVersion -or
+              ($env:VisualStudioVersion.Split('.')[0] -ne $env:EXPECTED_VS_MAJOR) -or
+              $env:VSCMD_ARG_TGT_ARCH -ne 'x64') {
+            throw "Expected Visual Studio $env:EXPECTED_VS_MAJOR.x x64, found '$env:VisualStudioVersion $env:VSCMD_ARG_TGT_ARCH'"
+          }
+          Write-Output "Visual Studio $env:VisualStudioVersion"
+          Write-Output "Compiler: $((Get-Command cl.exe).Source)"
+
+      - name: Configure dependency cache
+        id: vcpkg
+        run: |
+          # MSVC setup points VCPKG_ROOT at Visual Studio's bundled copy.
+          "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" >> $env:GITHUB_ENV
+          $revision = git -C $env:VCPKG_INSTALLATION_ROOT rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "revision=$revision" >> $env:GITHUB_OUTPUT
+          $cache = Join-Path $env:RUNNER_TEMP 'vcpkg-cache'
+          New-Item -ItemType Directory -Force $cache | Out-Null
+          "VCPKG_BINARY_SOURCES=clear;files,$cache,readwrite" >> $env:GITHUB_ENV
+
+      - name: Cache dependency builds
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/vcpkg-cache
+          key: >-
+            ${{ matrix.os }}-x64-vcpkg-${{ steps.vcpkg.outputs.revision }}-${{ hashFiles('idzebra/.github/workflows/build-idzebra-windows.yaml') }}
+          restore-keys: |
+            ${{ matrix.os }}-x64-vcpkg-${{ steps.vcpkg.outputs.revision }}-
+
+      - name: Install libraries
+        run: |
+          & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows --host-triplet x64-windows libxml2 libxslt libiconv icu libstemmer expat bzip2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $prefix = Join-Path $env:VCPKG_ROOT 'installed\x64-windows'
+          $icuHeader = Get-Content "$prefix\include\unicode\uvernum.h" -Raw
+          if ($icuHeader -notmatch '(?m)^#define\s+U_ICU_VERSION_SHORT\s+"(\d+)"') {
+            throw 'Cannot determine the ICU DLL version'
+          }
+          "VCPKG_PREFIX=$prefix" >> $env:GITHUB_ENV
+          "ICU_VERSION=$($Matches[1])" >> $env:GITHUB_ENV
+
+      - name: Build YAZ with NMAKE
+        working-directory: yaz/win
+        run: |
+          $prefix = $env:VCPKG_PREFIX
+          & nmake /nologo /f makefile BARCH=x64 DEBUG=0 CPP=cl "TCL=$env:TCLSH" `
+            HAVE_ICONV=1 HAVE_LIBXML2=1 HAVE_LIBXSLT=1 HAVE_ICU=1 `
+            "ICONV_DIR=$prefix" "LIBXML2_DIR=$prefix" "LIBXSLT_DIR=$prefix" `
+            "ICU_BASE=$prefix" "ICU_VER=$env:ICU_VERSION" "LIBSTEMMER_DIR=$prefix" `
+            dll yazicu iconv icu libxml2 libxslt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build idzebra with NMAKE
+        working-directory: idzebra/win
+        run: |
+          $prefix = $env:VCPKG_PREFIX
+          & nmake /nologo /f makefile BARCH=x64 DEBUG=0 CPP=cl "TCL=$env:TCLSH" `
+            HAVE_LIBXML2=1 HAVE_LIBXSLT=1 HAVE_ICU=1 HAVE_EXPAT=1 `
+            "LIBXML2_DIR=$prefix" "LIBXSLT_DIR=$prefix" `
+            "ICU_BASE=$prefix" "ICU_VER=$env:ICU_VERSION" `
+            "EXPAT_DIR=$prefix" "BZIP2_DIR=$prefix" all
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Check that zebraidx loads
+        working-directory: idzebra
+        run: |
+          & .\bin\zebraidx.exe -V
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
